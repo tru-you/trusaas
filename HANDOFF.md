@@ -7,7 +7,9 @@
 
 ## Decision (locked)
 
-### Product (host these)
+### Product suite (full story)
+
+**Core (hosted on Render / trusaas subdomains):**
 
 | Module | Host | Folder |
 |--------|------|--------|
@@ -15,12 +17,23 @@
 | **TruFlow Lite** | `flow.trusaas.co.za` | `truflow-light` |
 | **TruFlow Premium** | `premium.trusaas.co.za` | `truflow-premium` |
 
+**Also part of TruSaaS (experience + AI — demos on true-cars / technology):**
+
+| Module | Role |
+|--------|------|
+| **Web3D** | Orbit + damage pins (TruLens package) |
+| **Virtual Showroom** | Buyer site / TruWeb (true-cars.co.za) |
+| **AI Auto Chat** | Site + WhatsApp AI sales |
+| **AI Receptionist** | Front-desk qualify & CRM handoff |
+| TruVIR · TruLive · Syndication · TruReel/Copy | Trust, remote sell, growth |
+
 ### Consumer demo (separate site)
 
 | Site | Domain | Role |
 |------|--------|------|
-| **True-Cars SA** | `true-cars.co.za` | Buyer-facing retail demo; story “powered by TruSaaS” |
-| Live stock | pulls `/api/public/stock?dealer=true-cars` from Premium (see `SITES.md`) | Static `data.js` fallback |
+| **True-Cars SA** | `true-cars.co.za` | Virtual showroom + full suite story |
+| Live stock | `/api/public/stock?dealer=true-cars` | + Web3D mock/live on vehicle pages |
+| Dealers hub | `dealers.html` | Product map for DPs |
 
 ### Personal (do NOT host as product)
 

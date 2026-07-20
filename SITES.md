@@ -1,86 +1,83 @@
-# TruSaaS ↔ True-Cars site map
+# TruSaaS ↔ True-Cars — full product map
 
-How the two public faces work together. **Do not merge them into one domain.**
+## Domains
 
----
-
-## Roles
-
-| Site | Domain | Role | Audience |
-|------|--------|------|----------|
-| **TruSaaS product** | `lens` / `flow` / `premium`.trusaas.co.za (Render until DNS public) | Dealer tools: capture, DMS, CRM | Dealers, pilot (MKR), you |
-| **True-Cars SA** | `true-cars.co.za` | Consumer retail demo + “this yard runs on TruSaaS” | Buyers + dealer prospects |
-| **TruSaaS landing** | Personal (`index.html` in repo) | Your portfolio / pitch — **not** product host | You / sales narrative |
+| Site | Domain | Role |
+|------|--------|------|
+| **Product apps** | `lens` / `flow` / `premium`.trusaas.co.za (Render until DNS public) | Dealer tools |
+| **Virtual showroom demo** | `true-cars.co.za` | Buyer-facing retail proof |
+| **Personal landing** | TruSaaS `index.html` (not product host) | Pitch / portfolio |
 
 ---
 
-## Product stack (trusaas)
+## Full product suite (not only Lens / Flow / Premium)
 
-| Host | App | Public API of interest |
-|------|-----|-------------------------|
-| `lens.trusaas.co.za` · `trusaas-lens.onrender.com` | TruLens | Photos, VIR, web3d |
-| `flow.trusaas.co.za` · `trusaas-flow.onrender.com` | Flow Lite | `/api/public/stock?dealer=SLUG` |
-| `premium.trusaas.co.za` · `trusaas-premium.onrender.com` | Flow Premium | `/api/public/stock?dealer=SLUG` (primary for live feed) |
+### Core (live on Render today)
 
-**Data flow (dealer):**
+| Product | What it is | Demo |
+|---------|------------|------|
+| **TruLens** | Guided capture, VIR, PWA | https://trusaas-lens.onrender.com |
+| **TruFlow Lite** | Entry DMS — stock, leads, tasks | https://trusaas-flow.onrender.com |
+| **TruFlow Premium** | Full DMS — media, recon, public stock API | https://trusaas-premium.onrender.com |
+
+### Experience
+
+| Product | What it is | Demo |
+|---------|------------|------|
+| **Web3D** | Orbit frames + damage tags (TruLens package) | true-cars vehicle page |
+| **Virtual Showroom** | TruWeb / consumer site fed by stock API | https://true-cars.co.za |
+| **TruLive** | Live video walkaround | technology / chat |
+| **TruVIR** | Condition score + PDF | vir-report.html |
+
+### AI
+
+| Product | What it is | Demo |
+|---------|------------|------|
+| **AI Auto Chat** | Site + WhatsApp AI sales assistant | true-cars chat / technology `#ai-chat` |
+| **AI Receptionist** | Front-desk qualify & route | technology `#ai-receptionist` |
+| **TruChat / TrueX** | Family brand for chat + receptionist | technology modules |
+
+### Growth
+
+| Product | What it is |
+|---------|------------|
+| **Syndication** | AutoTrader / Cars.co.za / Facebook |
+| **TruReel / TruCopy** | Video + AI listing copy |
+| **TruSites / SEO-AEO** | Dealer web + discovery |
+
+---
+
+## How they tie together
 
 ```text
-Phone (TruLens) → Export → Flow Premium/Lite → public stock API
-                                              ↓
-                                    Dealer / True-Cars website
+TruLens (shoot)
+    ↓ export
+TruFlow Lite / Premium (DMS + CRM)
+    ↓ public stock API
+Virtual Showroom (true-cars / dealer site)
+    ├── Web3D player on each unit
+    ├── AI Auto Chat on site + WhatsApp
+    └── AI Receptionist path → CRM leads
 ```
 
----
-
-## Consumer demo (true-cars)
-
-| Piece | Today | Target tie-in |
-|-------|--------|----------------|
-| Inventory | Static `assets/js/data.js` | **+ live** stock from Premium public API |
-| Story | “Powered by TruSaaS” copy | Links to product demos (lens / premium) |
-| DMS console | `portal.html` mock / local | Optional later: deep-link to `premium` host |
-| Deploy | Own host (live true-cars.co.za) | Stay separate from Render product |
-
-**Stock bridge:** `TrueCar-SA/assets/js/stock-bridge.js`  
-- Tries Premium → Flow Lite → onrender URLs  
-- Maps API vehicles into `TCSA.vehicles`  
-- Keeps static catalogue as fallback if API empty/down  
-
-Dealer slug for the True-Cars demo feed: **`true-cars`** (set same slug in Flow Settings).
+**true-cars** = virtual showroom demo of the full story.  
+**Render apps** = real core tools.  
+**AI + Web3D** = experience layer on top of core.
 
 ---
 
-## Link rules (don’t break the story)
+## Dealer page
 
-| From | Link to | Not |
-|------|---------|-----|
-| true-cars “Book demo” | WhatsApp / you | Don’t send buyers into Flow login |
-| true-cars “Platform” | technology.html + optional product URLs | Don’t replace consumer nav with DMS |
-| TruSaaS personal landing | true-cars = consumer proof | Product CTAs → lens/flow/premium |
-| Flow Settings embed | true-cars or dealer domain | Localhost only for dev |
+true-cars: `dealers.html` — full suite cards + live core links.
 
----
+## Stock bridge
 
-## Env / URLs to keep in sync
+`TrueCar-SA/assets/js/stock-bridge.js` — dealer slug `true-cars`.
 
-| Setting | Value (until custom DNS public) | After DNS |
-|---------|----------------------------------|-----------|
-| Flow → TruLens URL | `https://trusaas-lens.onrender.com` | `https://lens.trusaas.co.za` |
-| Lens `TRUFLOW_DMS_URL` | `https://trusaas-premium.onrender.com` | `https://premium.trusaas.co.za` |
-| true-cars stock API | same premium base + `?dealer=true-cars` | same |
+## Web3D
+
+`TrueCar-SA/assets/js/web3d-mock.js` — mock package + live TruLens fetch when available.
 
 ---
 
-## Checklist — “they tie together”
-
-- [x] Roles separated (product vs consumer)
-- [x] Public stock API on Premium (and Lite)
-- [x] true-cars can load live stock via bridge (fallback static)
-- [ ] Domain `trusaas.co.za` public (HostAfrica / registry)
-- [ ] Flow dealer slug `true-cars` for demo units you want on the site
-- [ ] Redeploy true-cars after bridge deploy
-- [ ] Personal TruSaaS landing CTAs point at premium/flow/lens (not old `app.`)
-
----
-
-*See also: `HANDOFF.md`, `DEPLOY.md`, TrueCar-SA `_deploy/HOW-TO-DEPLOY.txt`.*
+*Redeploy true-cars after local edits. Redeploy Render only when product app code changes.*
