@@ -15,6 +15,13 @@
 | **TruFlow Lite** | `flow.trusaas.co.za` | `truflow-light` |
 | **TruFlow Premium** | `premium.trusaas.co.za` | `truflow-premium` |
 
+### Consumer demo (separate site)
+
+| Site | Domain | Role |
+|------|--------|------|
+| **True-Cars SA** | `true-cars.co.za` | Buyer-facing retail demo; story “powered by TruSaaS” |
+| Live stock | pulls `/api/public/stock?dealer=true-cars` from Premium (see `SITES.md`) | Static `data.js` fallback |
+
 ### Personal (do NOT host as product)
 
 - SaaS marketing landing (`index.html`)  
@@ -26,8 +33,8 @@ These stay in the repo for you. They are **not** the customer product stack.
 ### Other
 
 - Free tier: **Render** (`render.yaml` = 3 web services only)  
-- **true-cars.co.za** = consumer demo only if needed  
-- MKR primary path: **Premium** + **Lens** (Lite available as entry tier)
+- MKR primary path: **Premium** + **Lens** (Lite available as entry tier)  
+- Full site map: **`SITES.md`**
 
 ### Wiring after deploy
 
