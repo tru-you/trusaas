@@ -1608,7 +1608,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`TruFlow Premium on 0.0.0.0:${PORT} (app.trusaas.co.za)`);
+    console.log(`TruFlow Premium on 0.0.0.0:${PORT} (premium.trusaas.co.za)`);
   });
 }
 

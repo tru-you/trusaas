@@ -26,6 +26,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check for free-tier hosts (Render, etc.)
+app.get("/api/health", (_req, res) => {
+  res.json({
+    ok: true,
+    product: "truflow-lite",
+    port: PORT,
+    nodeEnv: process.env.NODE_ENV || "development",
+  });
+});
+
 const DATA_FILE = path.join(process.cwd(), "data.json");
 
 // Default high-fidelity seed data

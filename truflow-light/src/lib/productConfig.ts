@@ -4,7 +4,20 @@ export const PRODUCT_TIER = "lite" as const;
 export const PRODUCT_NAME = "TruFlow Lite";
 export const PRODUCT_TAGLINE = "Stock · Leads · Tasks · Light costs — photos via TruLens";
 
-export const DEFAULT_TRULENS_URL = "http://localhost:3000";
+/** Production defaults on trusaas.co.za; localhost when developing on PC */
+function isTruSaasHost(): boolean {
+  try {
+    return typeof window !== "undefined" && /\.?trusaas\.co\.za$/i.test(window.location.hostname);
+  } catch {
+    return false;
+  }
+}
+
+export const DEFAULT_TRULENS_URL = isTruSaasHost()
+  ? "https://lens.trusaas.co.za"
+  : "http://localhost:3000";
+
+export const DEFAULT_DEALER_SLUG = "mkr-autosales";
 export const TRULENS_URL_KEY = "truflow_trulens_url";
 export const DEALER_SLUG_KEY = "truflow_dealer_slug";
 
@@ -22,14 +35,14 @@ export function setTruLensUrl(url: string) {
 
 export function getDealerSlug(): string {
   try {
-    return localStorage.getItem(DEALER_SLUG_KEY) || "demo";
+    return localStorage.getItem(DEALER_SLUG_KEY) || DEFAULT_DEALER_SLUG;
   } catch {
-    return "demo";
+    return DEFAULT_DEALER_SLUG;
   }
 }
 
 export function setDealerSlug(slug: string) {
-  localStorage.setItem(DEALER_SLUG_KEY, slug.trim() || "demo");
+  localStorage.setItem(DEALER_SLUG_KEY, slug.trim() || DEFAULT_DEALER_SLUG);
 }
 
 export function openTruLens(stockNumber?: string) {
