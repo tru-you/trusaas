@@ -1,0 +1,44 @@
+{
+  "vehicles": [
+    {
+      "make": "Ford",
+      "stockNumber": "STK-TEST-1",
+      "year": 2023,
+      "vehicleType": "Bakkie",
+      "color": "White",
+      "vin": "TESTVIN123",
+      "quality": {},
+      "photos": {},
+      "id": "car-test-123",
+      "price": 500000,
+      "model": "Ranger",
+      "status": "In-Progress",
+      "trim": "Wildtrak",
+      "ownerId": "local-demo-user",
+      "createdAt": "2026-07-19T20:25:33.280Z",
+      "updatedAt": "2026-07-19T20:25:33.280Z"
+    },
+    {
+      "make": "sS",
+      "model": "DDAS",
+      "year": 2026,
+      "trim": "",
+      "vin": "DADADAD",
+      "stockNumber": "STK-26505",
+      "color": "Black",
+      "price": 24995,
+      "vehicleType": "SUV",
+      "status": "In-Progress",
+      "id": "car-243942",
+      "createdAt": "2026-07-19T20:24:29.930Z",
+      "updatedAt": "2026-07-19T20:42:48.623Z",
+      "photos": {},
+      "quality": {},
+      "ownerId": "P1D61qt9GiVjDPsxfljPlfqm2wp1",
+      "lastDmsExportAt": "2026-07-19T20:42:53.748Z",
+      "lastDmsExportStatus": "success",
+      "lastDmsVehicleId": "v_lens_1784493151509",
+      "lastDmsStockNumber": "STK-26505"
+    }
+  ]
+}
