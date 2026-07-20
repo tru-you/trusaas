@@ -1,6 +1,6 @@
 # TruSaaS production & phone demo checklist
 
-**Product domain:** [https://www.trusaas.co.za](https://www.trusaas.co.za) · **app** / **lens** subdomains (see `DEPLOY.md`).  
+**Product domain:** [https://trusaas-premium.onrender.com](https://trusaas-premium.onrender.com) · **app** / **lens** subdomains (see `DEPLOY.md`).  
 **Public consumer demo:** [https://true-cars.co.za](https://true-cars.co.za) — prospect retail experience only.
 
 Use this before a dealer demo or go-live. Local ports: **TruLens :3000 · Premium :3001 · Lite :3002**.
@@ -56,10 +56,10 @@ Camera may be blocked without HTTPS.
 
 Free-tier path: **Render** — full steps in `DEPLOY.md` + `render.yaml`.
 
-- [ ] TruLens on HTTPS → `https://lens.trusaas.co.za` (Render free web)
-- [ ] Flow Premium on HTTPS → `https://app.trusaas.co.za` (Render free web)
-- [ ] Landing static → `https://www.trusaas.co.za` (Render static or Cloudflare Pages free)
-- [ ] `TRUFLOW_DMS_URL=https://app.trusaas.co.za` on Lens
+- [ ] TruLens on HTTPS → `https://trusaas-lens.onrender.com` (Render free web)
+- [ ] Flow Premium on HTTPS → `https://trusaas-premium.onrender.com` (Render free web)
+- [ ] Landing static → `https://trusaas-premium.onrender.com` (Render static or Cloudflare Pages free)
+- [ ] `TRUFLOW_DMS_URL=https://trusaas-premium.onrender.com` on Lens
 - [ ] Public stock: `GET /api/public/stock?dealer=mkr-autosales` live
 - [ ] Embed: `…/embed/stock-widget.js` + optional web3d viewer
 - [ ] CORS open on public feed (already `*`)

@@ -2,9 +2,9 @@
 # Domain: trusaas.co.za
 #
 # Deploy these three:
-#   lens.trusaas.co.za     → TruLens          (autolens-pro)
-#   flow.trusaas.co.za     → TruFlow Lite     (truflow-light)
-#   premium.trusaas.co.za  → TruFlow Premium  (truflow-premium)
+#   trusaas-lens.onrender.com     → TruLens          (autolens-pro)
+#   trusaas-flow.onrender.com     → TruFlow Lite     (truflow-light)
+#   trusaas-premium.onrender.com  → TruFlow Premium  (truflow-premium)
 #
 # PERSONAL (do NOT host as product):
 #   index.html, truchat-*.html, trusaas_document_hub.html, marketing landing
@@ -30,7 +30,7 @@ services:
         value: "1"
       # Default export target = Premium (MKR path). Change to flow URL if dealer is on Lite.
       - key: TRUFLOW_DMS_URL
-        value: https://premium.trusaas.co.za
+        value: https://trusaas-premium.onrender.com  # live free host; custom domain later
       - key: GEMINI_API_KEY
         sync: false
 

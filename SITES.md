@@ -4,7 +4,7 @@
 
 | Site | Domain | Role |
 |------|--------|------|
-| **Product apps** | `lens` / `flow` / `premium`.trusaas.co.za (Render until DNS public) | Dealer tools |
+| **Product apps** | Render free hosts (below) | Dealer tools |
 | **Virtual showroom demo** | `true-cars.co.za` | Buyer-facing retail proof |
 | **Personal landing** | TruSaaS `index.html` (not product host) | Pitch / portfolio |
 
@@ -12,13 +12,15 @@
 
 ## Full product suite (not only Lens / Flow / Premium)
 
-### Core (live on Render today)
+### Core (live on Render — use these URLs everywhere for now)
 
-| Product | What it is | Demo |
-|---------|------------|------|
+| Product | What it is | Live URL |
+|---------|------------|----------|
 | **TruLens** | Guided capture, VIR, PWA | https://trusaas-lens.onrender.com |
 | **TruFlow Lite** | Entry DMS — stock, leads, tasks | https://trusaas-flow.onrender.com |
 | **TruFlow Premium** | Full DMS — media, recon, public stock API | https://trusaas-premium.onrender.com |
+
+Custom domains (`*.trusaas.co.za`) are optional later — do not depend on them yet.
 
 ### Experience
 

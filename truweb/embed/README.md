@@ -6,8 +6,8 @@ One public feed + one embed for every dealership HTML site.
 
 | Product | Local URL |
 |---------|-----------|
-| TruFlow Premium (live) | `https://app.trusaas.co.za/api/public/stock?dealer=YOUR-SLUG` |
-| TruLens (live) | `https://lens.trusaas.co.za/api/public/stock?dealer=YOUR-SLUG` |
+| TruFlow Premium (live) | `https://trusaas-premium.onrender.com/api/public/stock?dealer=YOUR-SLUG` |
+| TruLens (live) | `https://trusaas-lens.onrender.com/api/public/stock?dealer=YOUR-SLUG` |
 | TruFlow Premium (local) | `http://localhost:3001/api/public/stock?dealer=YOUR-SLUG` |
 | TruFlow Lite (local) | `http://localhost:3002/api/public/stock?dealer=YOUR-SLUG` |
 | TruLens only (local) | `http://localhost:3000/api/public/stock?dealer=YOUR-SLUG` |
@@ -46,8 +46,8 @@ Response shape:
 ```html
 <div id="trusass-stock"></div>
 <script
-  src="https://app.trusaas.co.za/embed/stock-widget.js"
-  data-api="https://app.trusaas.co.za/api/public/stock"
+  src="https://trusaas-premium.onrender.com/embed/stock-widget.js"
+  data-api="https://trusaas-premium.onrender.com/api/public/stock"
   data-dealer="mkr-autosales"
   data-theme="light"
   data-wa="27662912809"

@@ -10,9 +10,9 @@
 
 | Module | Folder | Host | Service name |
 |--------|--------|------|--------------|
-| **TruLens** | `autolens-pro/` | `lens.trusaas.co.za` | `trusaas-lens` |
-| **TruFlow Lite** | `truflow-light/` | `flow.trusaas.co.za` | `trusaas-flow` |
-| **TruFlow Premium** | `truflow-premium/` | `premium.trusaas.co.za` | `trusaas-premium` |
+| **TruLens** | `autolens-pro/` | `trusaas-lens.onrender.com` | `trusaas-lens` |
+| **TruFlow Lite** | `truflow-light/` | `trusaas-flow.onrender.com` | `trusaas-flow` |
+| **TruFlow Premium** | `truflow-premium/` | `trusaas-premium.onrender.com` | `trusaas-premium` |
 
 Three Node apps. That’s the product stack.
 
@@ -37,9 +37,9 @@ Dealer showroom mock (`truweb/mkr-autosales/`) is optional later; not required f
 
 | DNS host | Points to |
 |----------|-----------|
-| `lens.trusaas.co.za` | trusaas-lens |
-| `flow.trusaas.co.za` | trusaas-flow (Lite) |
-| `premium.trusaas.co.za` | trusaas-premium |
+| `trusaas-lens.onrender.com` | trusaas-lens |
+| `trusaas-flow.onrender.com` | trusaas-flow (Lite) |
+| `trusaas-premium.onrender.com` | trusaas-premium |
 
 No `www` product site required for day-one modules.
 
@@ -49,8 +49,8 @@ No `www` product site required for day-one modules.
 
 | Setting | Value |
 |---------|--------|
-| Flow Lite / Premium → TruLens URL | `https://lens.trusaas.co.za` |
-| TruLens `TRUFLOW_DMS_URL` (export) | `https://premium.trusaas.co.za` for MKR Premium path, **or** `https://flow.trusaas.co.za` if dealer is on Lite |
+| Flow Lite / Premium → TruLens URL | `https://trusaas-lens.onrender.com` |
+| TruLens `TRUFLOW_DMS_URL` (export) | `https://trusaas-premium.onrender.com` for MKR Premium path, **or** `https://trusaas-flow.onrender.com` if dealer is on Lite |
 | Dealer slug (MKR) | `mkr-autosales` |
 
 ---

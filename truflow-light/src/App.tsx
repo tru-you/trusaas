@@ -638,7 +638,7 @@ export default function App() {
           <div className="w-full flex items-center justify-center px-1">
             <img src={logo} alt="TruFlow Lite" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
-          <a href="https://www.trusaas.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#15C7C0] hover:underline tracking-widest mt-2 uppercase">www.trusaas.co.za</a>
+          <a href="https://trusaas-premium.onrender.com" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#15C7C0] hover:underline tracking-widest mt-2 uppercase">www.trusaas.co.za</a>
           <div className="flex gap-2 mt-2">
             <button type="button" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#15C7C0]/12 text-[#15C7C0] border border-[#15C7C0]/25 hover:bg-[#15C7C0]/2">Bot</button>
             <button type="button" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#C9A24B]/12 text-[#C9A24B] border border-[#C9A24B]/25 hover:bg-[#C9A24B]/2">Support</button>

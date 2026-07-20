@@ -982,9 +982,9 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
 /* ============ DATA — TruSaaS public stock (Premium → Lite → TruLens → fallback) ============ */
 /* Point data-api at whichever product this dealer uses. */
 const STOCK_APIS = [
-  "https://premium.trusaas.co.za/api/public/stock?dealer=mkr-autosales", // Flow Premium (live)
-  "https://flow.trusaas.co.za/api/public/stock?dealer=mkr-autosales", // Flow Lite (live)
-  "https://lens.trusaas.co.za/api/public/stock?dealer=mkr-autosales", // TruLens fallback
+  "https://trusaas-premium.onrender.com/api/public/stock?dealer=mkr-autosales", // Flow Premium (live)
+  "https://trusaas-flow.onrender.com/api/public/stock?dealer=mkr-autosales", // Flow Lite (live)
+  "https://trusaas-lens.onrender.com/api/public/stock?dealer=mkr-autosales", // TruLens fallback
   "http://localhost:3001/api/public/stock?dealer=mkr-autosales", // local Premium
   "http://localhost:3002/api/public/stock?dealer=mkr-autosales", // local Lite
   "http://localhost:3000/api/public/stock?dealer=mkr-autosales", // local TruLens

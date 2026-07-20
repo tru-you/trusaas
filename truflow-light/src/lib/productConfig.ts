@@ -4,17 +4,19 @@ export const PRODUCT_TIER = "lite" as const;
 export const PRODUCT_NAME = "TruFlow Lite";
 export const PRODUCT_TAGLINE = "Stock · Leads · Tasks · Light costs — photos via TruLens";
 
-/** Production defaults on trusaas.co.za; localhost when developing on PC */
+/** Production defaults on Render (*.onrender.com); localhost when developing on PC */
 function isTruSaasHost(): boolean {
   try {
-    return typeof window !== "undefined" && /\.?trusaas\.co\.za$/i.test(window.location.hostname);
+    if (typeof window === "undefined") return false;
+    const h = window.location.hostname;
+    return /\.onrender\.com$/i.test(h) || /\.?trusaas\.co\.za$/i.test(h);
   } catch {
     return false;
   }
 }
 
 export const DEFAULT_TRULENS_URL = isTruSaasHost()
-  ? "https://lens.trusaas.co.za"
+  ? "https://trusaas-lens.onrender.com"
   : "http://localhost:3000";
 
 export const DEFAULT_DEALER_SLUG = "mkr-autosales";

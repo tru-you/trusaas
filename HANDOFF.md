@@ -13,9 +13,9 @@
 
 | Module | Host | Folder |
 |--------|------|--------|
-| **TruLens** | `lens.trusaas.co.za` | `autolens-pro` |
-| **TruFlow Lite** | `flow.trusaas.co.za` | `truflow-light` |
-| **TruFlow Premium** | `premium.trusaas.co.za` | `truflow-premium` |
+| **TruLens** | `trusaas-lens.onrender.com` | `autolens-pro` |
+| **TruFlow Lite** | `trusaas-flow.onrender.com` | `truflow-light` |
+| **TruFlow Premium** | `trusaas-premium.onrender.com` | `truflow-premium` |
 
 **Also part of TruSaaS (experience + AI — demos on true-cars / technology):**
 
@@ -52,9 +52,9 @@ These stay in the repo for you. They are **not** the customer product stack.
 
 ### Wiring after deploy
 
-- Settings → TruLens URL = `https://lens.trusaas.co.za`  
+- Settings → TruLens URL = `https://trusaas-lens.onrender.com`  
 - Dealer slug = `mkr-autosales`, WhatsApp `27…`  
-- Lens env `TRUFLOW_DMS_URL` = `https://premium.trusaas.co.za` (or `flow` if on Lite)
+- Lens env `TRUFLOW_DMS_URL` = `https://trusaas-premium.onrender.com` (or `flow` if on Lite)
 
 ---
 
