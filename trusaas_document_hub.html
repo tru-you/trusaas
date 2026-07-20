@@ -785,28 +785,35 @@ function restoreFormData(data) {
 
 // ─── Quick-fill packages ───────────────────────────────────────────────────
 const PACKAGES = {
-  'DMS Core': [
-    { desc: 'DMS Core Platform', detail: 'Full Dealer Management System — Stock, Sales, Finance & Compliance', qty: 1, rate: 24500 },
-    { desc: 'CRM & Pipeline Module', detail: 'Lead Management • Automated Workflows • Reporting', qty: 1, rate: 18500 },
-    { desc: '360° VIR + AI Inspection', detail: 'True360 Spin • AI Damage Detection • Certified Reports', qty: 1, rate: 12500 }
+  'TruFlow Core': [
+    { desc: 'TruFlow Premium', detail: 'Full DMS — Stock, Sales, Finance, Media Hub & Recon', qty: 1, rate: 24500 },
+    { desc: 'TruCRM (in TruFlow)', detail: 'Lead Pipeline • WhatsApp-native • POPIA Audit Trail', qty: 1, rate: 18500 },
+    { desc: 'TruLens', detail: 'Guided Capture • PWA • VIR Export • Yard Phone App', qty: 1, rate: 12500 }
   ],
-  'CRM Only': [
-    { desc: 'CRM & Pipeline Module', detail: 'Advanced CRM • Lead Management • Automated Workflows', qty: 1, rate: 18500 },
-    { desc: 'True360 Interactive Viewer', detail: 'Immersive 360° Vehicle Viewer • Damage Hotspots', qty: 1, rate: 9800 }
+  'TruFlow Lite': [
+    { desc: 'TruFlow Lite', detail: 'Entry DMS — Stock, Leads, Tasks & Light Costs', qty: 1, rate: 14500 },
+    { desc: 'TruLens', detail: 'Guided Capture • PWA • Export to TruFlow', qty: 1, rate: 12500 }
   ],
-  'VIR Only': [
-    { desc: '360° VIR + AI Inspection', detail: 'True360 Spin • AI Damage Detection (95%+) • Certified Reports', qty: 1, rate: 12500 },
-    { desc: 'Live Video Walkaround', detail: 'Real-time Video Inspection • Remote Viewing • Recording', qty: 1, rate: 7500 }
+  'Tru3D + TruVIR': [
+    { desc: 'Tru3D', detail: 'Orbit Frames • Damage Pins • TruShowroom Embed', qty: 1, rate: 9800 },
+    { desc: 'TruVIR', detail: 'Condition Score • PDF Audit Trail • AI Assist', qty: 1, rate: 12500 },
+    { desc: 'TruLive', detail: 'Live Video Walkaround • Remote Buyer • Recording', qty: 1, rate: 7500 }
   ],
-  'Marketing': [
-    { desc: 'AI Ad Copy & Syndication', detail: 'AI-generated Listings • Marketplace Syndication • SEO', qty: 1, rate: 6500 },
-    { desc: 'Social Media Management', detail: 'Content Creation • Scheduling • Analytics', qty: 1, rate: 4500 }
+  'TruChat AI': [
+    { desc: 'TruChat', detail: 'Site & WhatsApp AI — Stock Match • Bookings • Handoff', qty: 1, rate: 8500 },
+    { desc: 'TruReceptionist', detail: 'Front-desk AI Qualify & Route • CRM Integration', qty: 1, rate: 7500 }
+  ],
+  'TruShowroom': [
+    { desc: 'TruShowroom', detail: 'Virtual Buyer Site • Live Stock API • Tru3D Pages', qty: 1, rate: 18500 },
+    { desc: 'TruSync', detail: 'AutoTrader • Cars.co.za • Facebook Marketplace', qty: 1, rate: 6500 }
   ],
   'Full Stack': [
-    { desc: 'DMS Core Platform', detail: 'Full Dealer Management System', qty: 1, rate: 24500 },
-    { desc: 'CRM & Pipeline Module', detail: 'Advanced CRM & Workflows', qty: 1, rate: 18500 },
-    { desc: '360° VIR + AI Inspection', detail: 'True360 Spin • AI Detection', qty: 1, rate: 12500 },
-    { desc: 'AI Ad Copy & Syndication', detail: 'AI Listings • SEO Optimised', qty: 1, rate: 6500 }
+    { desc: 'TruFlow Premium', detail: 'Full Dealer Management System', qty: 1, rate: 24500 },
+    { desc: 'TruLens', detail: 'Guided Capture • PWA • VIR Export', qty: 1, rate: 12500 },
+    { desc: 'Tru3D + TruVIR', detail: 'Orbit Condition Proof • Certified Reports', qty: 1, rate: 12500 },
+    { desc: 'TruShowroom', detail: 'Virtual Buyer Site • Live Stock Feed', qty: 1, rate: 18500 },
+    { desc: 'TruChat + TruReceptionist', detail: 'AI Sales Chat • Front-desk AI', qty: 1, rate: 12000 },
+    { desc: 'TruSync', detail: 'Marketplace Syndication • SEO Listings', qty: 1, rate: 6500 }
   ]
 };
 
@@ -861,9 +868,9 @@ function makeLineItemHTML(i, desc='', detail='', qty='', rate='') {
 
 function getDefaultLines(count) {
   const defaults = [
-    { desc: 'DMS Core Platform', detail: 'Full Dealer Management System — Stock, Sales, Finance & Compliance', qty: 1, rate: 24500 },
-    { desc: 'CRM & Pipeline Module', detail: 'Advanced CRM • Lead Management • Automated Workflows • Reporting', qty: 1, rate: 18500 },
-    { desc: '360° VIR + AI Inspection', detail: 'True360 Spin • AI Damage Detection • Certified Reports', qty: 1, rate: 12500 }
+    { desc: 'TruFlow Premium', detail: 'Full DMS — Stock, Sales, Finance, Media Hub & Compliance', qty: 1, rate: 24500 },
+    { desc: 'TruLens', detail: 'Guided Capture • PWA • VIR Export • Yard Phone App', qty: 1, rate: 12500 },
+    { desc: 'Tru3D + TruVIR', detail: 'Orbit Condition Proof • Damage Pins • Certified Reports', qty: 1, rate: 12500 }
   ];
   let html = '';
   for (let i = 0; i < count; i++) {
@@ -973,10 +980,11 @@ function getSLAForm() {
     <div class="field-group"><label>Client Contact (Name & Role)</label><input type="text" id="f-client-contact" value="John Smith — Dealer Principal"></div>
     <div class="divider"></div>
     <div class="field-group"><label>Service Package</label><select id="f-package">
-      <option value="DMS Core">DMS Core</option>
-      <option value="CRM Only">CRM Only</option>
-      <option value="VIR Only">VIR Only</option>
-      <option value="Marketing">Marketing</option>
+      <option value="TruFlow Core">TruFlow Core</option>
+      <option value="TruFlow Lite">TruFlow Lite</option>
+      <option value="Tru3D + TruVIR">Tru3D + TruVIR</option>
+      <option value="TruChat AI">TruChat AI</option>
+      <option value="TruShowroom">TruShowroom</option>
       <option value="Full Stack" selected>Full Stack</option>
       <option value="Custom">Custom</option>
     </select></div>
