@@ -47,7 +47,8 @@ These stay in the repo for you. They are **not** the customer product stack.
 
 - Free tier: **Render** (`render.yaml` = 3 web services only)  
 - MKR primary path: **Premium** + **Lens** (Lite available as entry tier)  
-- Full site map: **`SITES.md`**
+- Full site map: **`SITES.md`**  
+- **Ray / Your Car Guy TruChat:** `truchat/ray/index.html` (web bot + personal WA handoff; shared `truchat/shared/qualifier.js` for future WhatsApp Business)
 
 ### Wiring after deploy
 

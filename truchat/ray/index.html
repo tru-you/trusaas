@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Ray · TruChat · Your Car Guy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07080e;
+      --card: rgba(17, 20, 37, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --red: #c8102e;
+      --gold: #e8b923;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --green: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, system-ui, sans-serif; }
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(circle at 50% 0%, #111425 0%, #07080e 80%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+    @media (min-width: 960px) { .wrap { grid-template-columns: 1fr 1.15fr; } }
+    header {
+      grid-column: 1 / -1;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;
+      padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo h1 { font-family: "Plus Jakarta Sans", sans-serif; font-size: 22px; color: var(--red); line-height: 1.1; }
+    .logo p { font-size: 12px; color: var(--muted); }
+    .badge {
+      font-size: 11px; font-weight: 600; color: var(--gold);
+      border: 1px solid rgba(232, 185, 35, 0.35); padding: 8px 12px; border-radius: 999px;
+    }
+    .panel {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 18px; backdrop-filter: blur(12px);
+    }
+    .panel h2 { font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+    .panel p { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 12px; }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .pill {
+      font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--muted);
+    }
+    .pill strong { color: var(--text); }
+    .ops { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .btn {
+      border: none; border-radius: 10px; padding: 10px 14px; font-weight: 700; font-size: 12px;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-gold { background: rgba(232,185,35,0.15); color: var(--gold); border: 1px solid rgba(232,185,35,0.35); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn:hover { filter: brightness(1.08); }
+
+    /* Chat */
+    .chat-shell { display: flex; flex-direction: column; height: min(720px, 85vh); min-height: 520px; }
+    .chat-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+    }
+    .chat-head .who { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--red), #7a0a1c);
+      display: grid; place-items: center; font-weight: 800; font-size: 14px;
+    }
+    .status { font-size: 11px; color: var(--green); }
+    #history {
+      flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;
+    }
+    .msg { max-width: 92%; padding: 12px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; }
+    .msg.bot { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
+    .msg.user { align-self: flex-end; background: rgba(200,16,46,0.2); border: 1px solid rgba(200,16,46,0.35); }
+    .suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .sug {
+      font-size: 11px; font-weight: 600; padding: 7px 10px; border-radius: 999px; cursor: pointer;
+      background: rgba(232,185,35,0.1); border: 1px solid rgba(232,185,35,0.3); color: var(--gold);
+    }
+    .car-card {
+      background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+    }
+    .car-card b { display: block; font-size: 13px; margin-bottom: 4px; }
+    .car-card .meta { font-size: 11px; color: var(--muted); }
+    .car-card .price { color: var(--gold); font-weight: 700; margin: 6px 0; }
+    .car-acts { display: flex; gap: 6px; margin-top: 8px; }
+    .car-acts button {
+      flex: 1; border: none; border-radius: 8px; padding: 8px; font-size: 11px; font-weight: 700; cursor: pointer;
+    }
+    .car-acts .pri { background: var(--red); color: #fff; }
+    .car-acts .sec { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); }
+    .cal-box {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 100%;
+    }
+    .cal-title { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+    .cal-grid, .slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .cal-grid button, .slot-grid button {
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text);
+      border-radius: 8px; padding: 8px; font-size: 11px; cursor: pointer;
+    }
+    .cal-grid button.sel, .slot-grid button.sel { border-color: var(--red); background: rgba(200,16,46,0.2); }
+    .composer {
+      display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+    }
+    .composer input {
+      flex: 1; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.35);
+      color: var(--text); padding: 12px 14px; font-size: 14px; outline: none;
+    }
+    .composer button {
+      border: none; border-radius: 12px; background: var(--red); color: #fff; padding: 0 16px;
+      font-weight: 700; cursor: pointer;
+    }
+    .typing { font-size: 11px; color: var(--muted); min-height: 16px; margin-top: 4px; }
+
+    /* CRM */
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .q-yes { color: var(--green); font-weight: 700; }
+    .q-no { color: var(--muted); }
+    .ticket-box {
+      margin-top: 12px; background: rgba(0,0,0,0.35); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px; font-size: 11px; white-space: pre-wrap; color: var(--muted);
+      max-height: 180px; overflow: auto;
+    }
+    .note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <svg width="44" height="44" viewBox="0 0 100 100" fill="none">
+          <polygon points="50,6 90,28 90,72 50,94 10,72 10,28" stroke="#c8102e" stroke-width="7" fill="none"/>
+          <path d="M30,32 L45,56 L45,74 M70,32 L55,56" stroke="#c8102e" stroke-width="8" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <h1>YOUR CAR GUY</h1>
+          <p>TruChat · Ray · Newton Park PE</p>
+        </div>
+      </div>
+      <div class="badge" id="hoursBadge">Checking hours…</div>
+    </header>
+
+    <!-- Left: ops + CRM -->
+    <section class="panel">
+      <h2>Ray · TruChat console</h2>
+      <p>
+        Personal-first qualifier for Ray’s showroom. Same engine can later power WhatsApp Business (Cloud API)
+        without rewriting the sales flow.
+      </p>
+      <div class="pills">
+        <span class="pill"><strong>Web bot</strong> live below</span>
+        <span class="pill"><strong>WhatsApp</strong> handoff ticket</span>
+        <span class="pill"><strong>Pathway</strong> logged</span>
+      </div>
+
+      <div class="ops">
+        <button class="btn btn-red" type="button" id="btnHandoff">WhatsApp handoff</button>
+        <button class="btn btn-gold" type="button" id="btnCopy">Copy ticket</button>
+        <button class="btn btn-ghost" type="button" id="btnReset">Reset chat</button>
+      </div>
+      <div class="ticket-box" id="ticketPreview">Ticket will appear as the visitor chats…</div>
+      <p class="note">
+        <strong>Personal use:</strong> handoff opens WhatsApp to Ray/showroom with a full ticket.<br />
+        <strong>Business later:</strong> point a Cloud API webhook at the same <code>qualifier.js</code> + this config.
+      </p>
+
+      <h2 style="margin-top:20px">Live lead (this session)</h2>
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Value</th></tr>
+        </thead>
+        <tbody id="leadTable"></tbody>
+      </table>
+
+      <h2 style="margin-top:18px">Saved leads (this browser)</h2>
+      <table>
+        <thead>
+          <tr><th>When</th><th>Client</th><th>Q?</th><th></th></tr>
+        </thead>
+        <tbody id="savedLeads"></tbody>
+      </table>
+    </section>
+
+    <!-- Right: chat -->
+    <section class="panel chat-shell">
+      <div class="chat-head">
+        <div class="who">
+          <div class="avatar">R</div>
+          <div>
+            <div style="font-weight:700">Ray</div>
+            <div class="status">● Online · TruChat</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost" type="button" id="btnSaveLead">Save lead</button>
+      </div>
+      <div id="history"></div>
+      <div class="typing" id="typing"></div>
+      <div class="composer">
+        <input id="input" type="text" placeholder="Type a message…" autocomplete="off" />
+        <button type="button" id="send">Send</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="../shared/qualifier.js"></script>
+  <script src="config.js"></script>
+  <script>
+    const CFG = window.RAY_TRUCHAT_CONFIG;
+    const LS_KEY = "ray_truchat_leads_v1";
+
+    const bot = TruChatQualifier.createQualifier({
+      dealerName: CFG.dealerName,
+      address: CFG.address,
+      hoursText: CFG.hoursText,
+      salesWhatsApp: CFG.salesWhatsApp,
+      catalog: CFG.catalog.slice(),
+      brandMap: CFG.brandMap,
+    });
+
+    const history = document.getElementById("history");
+    const typingEl = document.getElementById("typing");
+    const input = document.getElementById("input");
+
+    function esc(s) {
+      return String(s || "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+    }
+
+    function renderLeadTable() {
+      const s = bot.getSession();
+      document.getElementById("leadTable").innerHTML = [
+        ["Name", s.name],
+        ["Phone", s.phone || "—"],
+        ["Interest", s.vehicleInterest],
+        ["Trade-in", s.tradeInDetails || "—"],
+        ["Test drive", s.testDriveDate || "—"],
+        ["Valuation", s.inspectionDate || "—"],
+        ["Finance", s.financeInterest ? "Yes" : "—"],
+        ["Qualified", s.qualified ? "YES" : "Not yet"],
+      ]
+        .map(
+          ([k, v]) =>
+            `<tr><td style="color:var(--muted)">${esc(k)}</td><td class="${
+              k === "Qualified" ? (s.qualified ? "q-yes" : "q-no") : ""
+            }">${esc(v)}</td></tr>`
+        )
+        .join("");
+      document.getElementById("ticketPreview").textContent = bot.buildTicket();
+    }
+
+    function loadSaved() {
+      try {
+        return JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+    function renderSaved() {
+      const rows = loadSaved();
+      document.getElementById("savedLeads").innerHTML = rows.length
+        ? rows
+            .slice(0, 12)
+            .map(
+              (r, i) => `<tr>
+            <td>${esc(new Date(r.at).toLocaleString())}</td>
+            <td><b>${esc(r.name)}</b><br/><span style="color:var(--muted)">${esc(r.phone)} · ${esc(r.vehicleInterest)}</span></td>
+            <td class="${r.qualified ? "q-yes" : "q-no"}">${r.qualified ? "YES" : "—"}</td>
+            <td><button class="btn btn-ghost" style="padding:6px 8px" onclick="replayTicket(${i})">Ticket</button></td>
+          </tr>`
+            )
+            .join("")
+        : `<tr><td colspan="4" style="color:var(--muted)">No saved leads yet</td></tr>`;
+    }
+    window.replayTicket = function (i) {
+      const r = loadSaved()[i];
+      if (!r) return;
+      document.getElementById("ticketPreview").textContent = r.ticket;
+    };
+
+    function saveLead() {
+      const s = bot.getSession();
+      const list = loadSaved();
+      list.unshift({
+        at: new Date().toISOString(),
+        name: s.name,
+        phone: s.phone,
+        vehicleInterest: s.vehicleInterest,
+        qualified: s.qualified,
+        ticket: bot.buildTicket(),
+        session: JSON.parse(JSON.stringify(s)),
+      });
+      localStorage.setItem(LS_KEY, JSON.stringify(list.slice(0, 50)));
+      renderSaved();
+      alert("Lead saved in this browser.");
+    }
+
+    function addBotText(text, suggestions) {
+      const div = document.createElement("div");
+      div.className = "msg bot";
+      div.innerHTML = esc(text).replace(/\n/g, "<br>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      if (suggestions && suggestions.length) {
+        const sug = document.createElement("div");
+        sug.className = "suggestions";
+        suggestions.forEach((s) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "sug";
+          b.textContent = s;
+          b.onclick = () => userSay(s);
+          sug.appendChild(b);
+        });
+        div.appendChild(sug);
+      }
+      history.appendChild(div);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function addUserText(text) {
+      const div = document.createElement("div");
+      div.className = "msg user";
+      div.textContent = text;
+      history.appendChild(div);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function addCatalog(vehicles) {
+      const wrap = document.createElement("div");
+      wrap.style.display = "flex";
+      wrap.style.flexDirection = "column";
+      wrap.style.gap = "8px";
+      wrap.style.alignSelf = "flex-start";
+      wrap.style.maxWidth = "92%";
+      (vehicles || []).forEach((v) => {
+        const card = document.createElement("div");
+        card.className = "car-card";
+        const label = v.year + " " + v.brand + " " + v.model;
+        card.innerHTML =
+          "<b>" +
+          esc(label) +
+          '</b><div class="meta">' +
+          esc(v.km || "") +
+          " · " +
+          esc(v.fuel || "") +
+          '</div><div class="price">R ' +
+          Number(v.price || 0).toLocaleString("en-ZA") +
+          '</div><div class="car-acts">' +
+          '<button type="button" class="sec" data-a="finance">Finance</button>' +
+          '<button type="button" class="pri" data-a="test_drive">Test drive</button></div>';
+        card.querySelectorAll("button").forEach((btn) => {
+          btn.onclick = () => {
+            const out = bot.selectVehicleAction(label, btn.getAttribute("data-a"));
+            handleOut(out);
+          };
+        });
+        wrap.appendChild(card);
+      });
+      history.appendChild(wrap);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function addScheduler(scheduleType, days) {
+      const box = document.createElement("div");
+      box.className = "cal-box";
+      box.innerHTML =
+        '<div class="cal-title">' +
+        (scheduleType === "test_drive" ? "Test drive date" : "Valuation date") +
+        '</div><div class="cal-grid"></div><div class="slot-grid" style="display:none;margin-top:8px"></div>';
+      const grid = box.querySelector(".cal-grid");
+      const slots = box.querySelector(".slot-grid");
+      days.forEach((d) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = d.label;
+        b.onclick = () => {
+          grid.querySelectorAll("button").forEach((x) => x.classList.remove("sel"));
+          b.classList.add("sel");
+          slots.style.display = "grid";
+          slots.innerHTML = "";
+          bot.slotsFor(d.isSaturday).forEach((hr) => {
+            const s = document.createElement("button");
+            s.type = "button";
+            s.textContent = hr;
+            s.onclick = () => {
+              slots.querySelectorAll("button").forEach((x) => x.classList.remove("sel"));
+              s.classList.add("sel");
+              box.style.opacity = "0.75";
+              box.style.pointerEvents = "none";
+              handleOut(bot.confirmSlot(scheduleType, d.label, hr));
+            };
+            slots.appendChild(s);
+          });
+        };
+        grid.appendChild(b);
+      });
+      history.appendChild(box);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function handleOut(out) {
+      (out.replies || []).forEach((r) => {
+        if (r.type === "text") addBotText(r.text, r.suggestions);
+        if (r.type === "catalog") addCatalog(r.vehicles);
+        if (r.type === "schedule") addScheduler(r.scheduleType, r.days);
+      });
+      renderLeadTable();
+      if (out.handoffReady) {
+        // soft prompt — personal ops
+        addBotText("You're qualified. I can package a WhatsApp ticket for Ray now.", ["Open handoff"]);
+      }
+    }
+
+    function userSay(text) {
+      if (!text || !String(text).trim()) return;
+      const t = String(text).trim();
+      if (t.toLowerCase() === "open handoff") {
+        window.open(bot.whatsappHandoffUrl(), "_blank");
+        return;
+      }
+      addUserText(t);
+      typingEl.textContent = "Ray is typing…";
+      setTimeout(() => {
+        typingEl.textContent = "";
+        handleOut(bot.process(t));
+      }, 450);
+    }
+
+    document.getElementById("send").onclick = () => {
+      userSay(input.value);
+      input.value = "";
+      input.focus();
+    };
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        userSay(input.value);
+        input.value = "";
+      }
+    });
+    document.getElementById("btnHandoff").onclick = () => window.open(bot.whatsappHandoffUrl(), "_blank");
+    document.getElementById("btnCopy").onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(bot.buildTicket());
+        alert("Ticket copied — paste into WhatsApp anywhere.");
+      } catch {
+        prompt("Copy ticket:", bot.buildTicket());
+      }
+    };
+    document.getElementById("btnReset").onclick = () => {
+      bot.reset();
+      history.innerHTML = "";
+      startChat();
+      renderLeadTable();
+    };
+    document.getElementById("btnSaveLead").onclick = saveLead;
+
+    function updateHours() {
+      const now = new Date();
+      const day = now.getDay();
+      const mins = now.getHours() * 60 + now.getMinutes();
+      let open = false;
+      if (day >= 1 && day <= 5) open = mins >= 450 && mins <= 1050;
+      if (day === 6) open = mins >= 450 && mins <= 780;
+      const el = document.getElementById("hoursBadge");
+      el.textContent = open ? "Showroom open · Newton Park" : "Showroom closed · leave a message with Ray";
+      el.style.color = open ? "var(--green)" : "var(--muted)";
+    }
+
+    async function loadStock() {
+      const urls = [CFG.stockApi].concat(CFG.stockApiFallback || []).filter(Boolean);
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { cache: "no-store", mode: "cors" });
+          if (!res.ok) continue;
+          const data = await res.json();
+          const list = data.vehicles || [];
+          if (!list.length) continue;
+          const mapped = list.slice(0, 12).map((v) => ({
+            id: v.stockNumber || v.id,
+            brand: (v.make || "").toUpperCase(),
+            model: v.model || v.trim || "",
+            year: v.year,
+            price: v.price || v.retailPrice || 0,
+            km: (v.mileage || v.km || "") + (v.mileage ? " km" : ""),
+            fuel: v.fuelType || v.fuel || "",
+          }));
+          if (mapped.length) {
+            bot.setCatalog(mapped);
+            return;
+          }
+        } catch (e) {}
+      }
+    }
+
+    function startChat() {
+      addBotText(CFG.greeting, CFG.suggestions);
+      renderLeadTable();
+    }
+
+    updateHours();
+    setInterval(updateHours, 30000);
+    renderSaved();
+    loadStock().finally(startChat);
+  </script>
+</body>
+</html>
