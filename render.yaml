@@ -1,0 +1,59 @@
+# TruSaaS — Render Blueprint (free-tier friendly)
+# Domain: trusaas.co.za
+#
+# Day-one services:
+#   lens.trusaas.co.za  → TruLens (Node)
+#   app.trusaas.co.za   → TruFlow Premium (Node)
+#   www.trusaas.co.za   → Marketing + MKR showroom (static)
+#
+# Create from Dashboard → New → Blueprint → this repo (or monorepo path).
+# After deploy: attach custom domains in each service → Settings → Custom Domains.
+# Free web services spin down after ~15 min idle (cold start ~30–60s).
+
+services:
+  # ── TruLens (camera / PWA / VIR) ──────────────────────────────────────────
+  - type: web
+    name: trusaas-lens
+    runtime: node
+    plan: free
+    rootDir: autolens-pro
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOCAL_MODE
+        value: "1"
+      - key: TRUFLOW_DMS_URL
+        value: https://app.trusaas.co.za
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # ── TruFlow Premium (DMS / CRM / public stock API) ────────────────────────
+  - type: web
+    name: trusaas-app
+    runtime: node
+    plan: free
+    rootDir: truflow-premium
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # ── Marketing landing + MKR static showroom ───────────────────────────────
+  # Copies only public HTML (excludes node_modules / app sources)
+  - type: web
+    name: trusaas-www
+    runtime: static
+    plan: free
+    buildCommand: mkdir -p dist-www && cp index.html truchat-your-car-guy.html dist-www/ && cp -r truweb dist-www/
+    staticPublishPath: dist-www
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN

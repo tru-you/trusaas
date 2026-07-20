@@ -1,0 +1,305 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Archivo", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-bg: #070d15;
+  --color-card: #0f1826;
+  --color-card-hover: #16212f;
+  --color-border-tc: rgba(126, 164, 214, 0.10);
+  --color-border-tc-hover: rgba(126, 164, 214, 0.22);
+  --color-primary-tc: #1466E0;
+  --color-primary-light-tc: #4D9BFF;
+  --color-secondary-tc: #C9A24B;
+  --color-accent-tc: #15C7C0;
+  --color-teal-tc: #15C7C0;
+  --color-teal-bright-tc: #4FE3DC;
+  --color-gold-tc: #C9A24B;
+  --color-gold-light-tc: #E7CD84;
+  --color-text-tc: #E8EEF6;
+  --color-text-dim-tc: #9DB0C6;
+  --color-text-faint-tc: #5F7590;
+  --color-success-tc: #35C46B;
+  --color-warning-tc: #E7B24B;
+  --color-danger-tc: #F0555A;
+  --color-info-tc: #4D9BFF;
+}
+
+:root {
+  --bg: #070d15;
+  --card: #0f1826;
+  --card-hover: #16212f;
+  --border: rgba(126,164,214,0.10);
+  --border-hover: rgba(126,164,214,0.22);
+  --primary: #1466E0;
+  --primary-light: #4D9BFF;
+  --secondary: #C9A24B;
+  --accent: #15C7C0;
+  --teal: #15C7C0;
+  --teal-bright: #4FE3DC;
+  --gold: #C9A24B;
+  --gold-light: #E7CD84;
+  --text: #E8EEF6;
+  --text-dim: #9DB0C6;
+  --text-faint: #5F7590;
+  --success: #35C46B;
+  --success-bg: rgba(53,196,107,0.12);
+  --warning: #E7B24B;
+  --warning-bg: rgba(231,178,75,0.12);
+  --danger: #F0555A;
+  --danger-bg: rgba(240,85,90,0.12);
+  --info: #4D9BFF;
+  --info-bg: rgba(77,155,255,0.12);
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Background grid */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(126,164,214,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(126,164,214,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(80% 55% at 78% -5%, rgba(20,102,224,0.12), transparent 60%), radial-gradient(60% 45% at 12% 8%, rgba(21,199,192,0.07), transparent 62%);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(20,102,224,0.06), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -10%;
+  left: -5%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(21,199,192,0.04), transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Glassmorphism + soft 3D ───────────────────────────────── */
+.perspective-scene {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.card, .v-card, .pipeline-card, .stat-card, .glass-panel {
+  --mx: 50%;
+  --my: 50%;
+  --rx: 0deg;
+  --ry: 0deg;
+  --tz: 0px;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.07) 0%, transparent 42%),
+    linear-gradient(160deg, rgba(22,33,49,0.72), rgba(10,16,28,0.55));
+  backdrop-filter: blur(22px) saturate(1.45);
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+  border: 1px solid rgba(126,164,214,0.14);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 0 0 1px rgba(0,0,0,0.25) inset,
+    0 18px 40px -24px rgba(0,0,0,0.75),
+    0 0 40px -28px rgba(20,102,224,0.35);
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(var(--tz));
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.18s ease-out;
+  will-change: transform;
+}
+
+.card:hover, .v-card:hover, .stat-card:hover, .glass-panel:hover {
+  border-color: rgba(77,155,255,0.28);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.1) inset,
+    0 0 0 1px rgba(21,199,192,0.08) inset,
+    0 28px 50px -22px rgba(0,0,0,0.8),
+    0 0 48px -16px rgba(21,199,192,0.25);
+}
+
+.v-card, .stat-card, .tilt-3d {
+  transform-style: preserve-3d;
+}
+
+.card::before, .v-card::before, .pipeline-card::before, .stat-card::before, .glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(420px circle at var(--mx) var(--my), rgba(77,155,255,0.16), transparent 55%),
+    radial-gradient(280px circle at calc(var(--mx) + 10%) calc(var(--my) + 15%), rgba(21,199,192,0.1), transparent 50%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card:hover::before, .v-card:hover::before, .pipeline-card:hover::before,
+.stat-card:hover::before, .glass-panel:hover::before {
+  opacity: 1;
+}
+
+/* Specular top edge */
+.card::after, .v-card::after, .stat-card::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.7;
+}
+
+.card > *, .v-card > *, .stat-card > *, .glass-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Glass sidebar */
+.glass-sidebar {
+  background: linear-gradient(180deg, rgba(12,18,30,0.88), rgba(7,13,21,0.92));
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  border-right: 1px solid rgba(126,164,214,0.12) !important;
+  box-shadow: 8px 0 40px -20px rgba(0,0,0,0.65);
+}
+
+.glass-nav-item {
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.glass-nav-item:hover {
+  transform: translateX(3px);
+}
+.glass-nav-item.is-active {
+  box-shadow: 0 0 24px -8px rgba(21,199,192,0.45);
+}
+
+/* Logo float */
+.logo-float {
+  filter: drop-shadow(0 8px 20px rgba(20,102,224,0.35));
+  transition: transform 0.35s cubic-bezier(.22,1,.36,1), filter 0.35s ease;
+}
+.logo-float:hover {
+  transform: translateY(-2px) scale(1.03);
+  filter: drop-shadow(0 12px 28px rgba(21,199,192,0.45));
+}
+
+/* Primary button 3D press */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px -10px rgba(20,102,224,0.65), 0 1px 0 rgba(255,255,255,0.15) inset !important;
+  transition: transform 0.15s ease, box-shadow 0.2s ease !important;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -10px rgba(21,199,192,0.45), 0 1px 0 rgba(255,255,255,0.2) inset !important;
+}
+.btn-primary:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Scroll progress */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--teal), var(--primary), var(--gold));
+  transform-origin: left;
+  z-index: 9999;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+@keyframes demoPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(0.75); }
+}
+
+.animate-pulse-custom {
+  animation: demoPulse 1.8s ease-in-out infinite;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+}
+
+@utility btn-primary {
+  @apply bg-primary-tc text-white shadow-lg shadow-primary-tc/20 hover:bg-primary-tc/90 border border-white/10;
+}
+
+@utility btn-secondary {
+  @apply bg-white/5 border border-white/10 text-text-dim-tc hover:text-text-tc hover:bg-white/10;
+}
+
+@utility btn-sm {
+  @apply px-3 py-1.5 text-[10px];
+}
+
+@utility btn-xs {
+  @apply px-2 py-1 text-[9px];
+}
+
+@utility btn-danger {
+  @apply bg-danger-tc/10 border border-danger-tc/20 text-danger-tc hover:bg-danger-tc/20;
+}
+
+@keyframes progress-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@utility animate-progress-shrink {
+  animation: progress-shrink 10s linear forwards;
+}

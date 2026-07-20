@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 80" fill="none">
+  <defs>
+    <linearGradient id="lens-glow" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#E879F9"/>
+      <stop offset="50%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <filter id="neon">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Lens U-crown icon -->
+  <g filter="url(#neon)" transform="translate(10, 8)">
+    <!-- U shape -->
+    <path d="M10 15 Q10 52 30 52 Q50 52 50 15" fill="none" stroke="url(#lens-glow)" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- Crown diamonds -->
+    <rect x="10" y="6" width="7" height="7" rx="1" transform="rotate(45 13.5 9.5)" fill="#E879F9" opacity="0.9"/>
+    <rect x="22" y="2" width="7" height="7" rx="1" transform="rotate(45 25.5 5.5)" fill="#D946EF"/>
+    <rect x="34" y="6" width="7" height="7" rx="1" transform="rotate(45 37.5 9.5)" fill="#E879F9" opacity="0.9"/>
+    <rect x="16" y="2" width="5" height="5" rx="1" transform="rotate(45 18.5 4.5)" fill="#E879F9" opacity="0.6"/>
+    <rect x="30" y="2" width="5" height="5" rx="1" transform="rotate(45 32.5 4.5)" fill="#E879F9" opacity="0.6"/>
+  </g>
+  <!-- TRULENS text -->
+  <text x="80" y="50" font-family="'Segoe UI', 'Inter', Arial, sans-serif" font-size="36" font-weight="800" fill="#E8EEF6" letter-spacing="3">TRU<tspan fill="url(#lens-glow)">LENS</tspan></text>
+</svg>

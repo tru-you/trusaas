@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>TruLens — Dealer Photo Studio</title>
+    <meta
+      name="description"
+      content="Guided vehicle photography, VIR reports, DMS export and web 3D for South African dealerships."
+    />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="TruLens" />
+
+    <!-- iOS home screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TruLens" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+    <link rel="icon" href="/icons/icon-192.png" />
+
+    <!-- Open Graph (share link to install) -->
+    <meta property="og:title" content="TruLens" />
+    <meta property="og:description" content="Dealer vehicle photo studio — shoot, score, export." />
+    <meta property="og:type" content="website" />
+
+    <style>
+      /* Instant dark shell while JS loads */
+      html, body, #root {
+        margin: 0;
+        min-height: 100%;
+        min-height: 100dvh;
+        background: #0a0a0a;
+        color: #f5f5f5;
+      }
+      /* Safe areas for notched phones when installed */
+      body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

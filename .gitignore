@@ -1,0 +1,34 @@
+# Dependencies & builds
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+dist-www/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+
+# Secrets — never commit real env files
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Host clutter / local data
+.vercel
+.railway
+.fly
+data/local-inventory.json
+**/data/local-inventory.json
+
+# OS / editor
+.idea/
+.vscode/
+*.swp
+
+# Local AI tooling
+.claude/
+

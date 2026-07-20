@@ -1,0 +1,46 @@
+{
+  "id": "/",
+  "name": "TruLens — Dealer Photo Studio",
+  "short_name": "TruLens",
+  "description": "Guided vehicle photography, VIR reports, DMS export and web 3D for dealerships.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0a",
+  "theme_color": "#4f46e5",
+  "lang": "en-ZA",
+  "dir": "ltr",
+  "categories": ["business", "photo", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open catalogue",
+      "short_name": "Catalogue",
+      "description": "Vehicle inventory and capture queue",
+      "url": "/?view=inventory",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

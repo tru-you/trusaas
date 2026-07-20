@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Your Car Guy • Premium AI Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #07080e;
+            --showroom-depth: radial-gradient(circle at 50% 0%, #111425 0%, #07080e 80%);
+            --card-bg: rgba(17, 20, 37, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --red: #c8102e;
+            --red-glow: rgba(200, 16, 46, 0.4);
+            --gold: #e8b923;
+            --gold-glow: rgba(232, 185, 35, 0.2);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --green: #10b981;
+            --green-glow: rgba(16, 185, 129, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: var(--bg);
+            background-image: var(--showroom-depth);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .workspace {
+            max-width: 1240px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-content: start;
+            z-index: 1;
+        }
+
+        @media (min-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr 1.3fr;
+            }
+        }
+
+        /* === BRAND HEADER === */
+        .brand-header {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 20px;
+            margin-bottom: 12px;
+        }
+
+        @media (min-width: 640px) {
+            .brand-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .brand-identity {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-hexagon {
+            filter: drop-shadow(0 0 12px var(--red-glow));
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.05;
+        }
+
+        .logo-text .primary-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 28px;
+            color: var(--red);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text .sub-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 22px;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .logo-text .domain-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--red);
+            margin-bottom: -4px;
+        }
+
+        .showroom-location-card {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        @media (min-width: 640px) {
+            .showroom-location-card {
+                align-items: flex-end;
+            }
+        }
+
+        .address-badge {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .address-badge svg {
+            color: var(--red);
+        }
+
+        /* === GLASS PANELS === */
+        .glass-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: border-color 0.3s ease;
+        }
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .panel-heading {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-main);
+        }
+
+        /* === INTERACTIVE TABS === */
+        .tab-menu {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab-trigger {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .tab-trigger.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .capability-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .capability-item {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 18px;
+        }
+
+        .capability-item h4 {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .capability-item p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.55;
+        }
+
+        /* === PORTAL ANALYTICS BAR === */
+        .analytics-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .metric-label {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* === CRM TABLE === */
+        .table-scroller {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+        }
+
+        .crm-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.005);
+        }
+
+        .crm-table th, .crm-table td {
+            padding: 14px;
+            text-align: left;
+            font-size: 13px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .crm-table th {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .crm-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .crm-contact {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .pill {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .pill-interest {
+            background: rgba(232, 185, 35, 0.08);
+            color: var(--gold);
+            border: 1px solid rgba(232, 185, 35, 0.15);
+        }
+
+        .pill-booking {
+            background: rgba(16, 185, 129, 0.08);
+            color: var(--green);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+        }
+
+        .pill-inspection {
+            background: rgba(59, 130, 246, 0.08);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+
+        .action-button-whatsapp {
+            background: #25d366;
+            color: #000 !important;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+        .action-button-whatsapp:hover {
+            background: #1ebd51;
+            transform: translateY(-1px);
+        }
+
+        .action-button-delete {
+            color: #ef4444;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            margin-left: 8px;
+            transition: color 0.2s;
+        }
+        .action-button-delete:hover {
+            color: #f87171;
+            text-decoration: underline;
+        }
+
+        /* === PREMIUM FLOATING CHAT ASSISTANT === */
+        #ycg-chat-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 26px;
+            z-index: 99999;
+        }
+
+        #ycg-chat-launcher {
+            background: linear-gradient(135deg, var(--red), #9f1239);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 16px 24px;
+            font-size: 14.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(200, 16, 46, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: launcherGlow 3s infinite alternate;
+        }
+
+        #ycg-chat-launcher:hover {
+            transform: translateY(-2px);
+        }
+
+        @keyframes launcherGlow {
+            0% { box-shadow: 0 10px 30px rgba(200, 16, 46, 0.4); }
+            100% { box-shadow: 0 10px 40px rgba(200, 16, 46, 0.7), 0 0 0 8px rgba(200, 16, 46, 0.25); }
+        }
+
+        #ycg-chat-window {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #070912;
+            box-shadow: 0 -20px 60px rgba(0,0,0,0.7);
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 100000;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        #ycg-chat-window.open {
+            display: flex;
+        }
+
+        @media (min-width: 480px) {
+            #ycg-chat-window {
+                width: 390px;
+                height: 600px;
+                bottom: 30px;
+                right: 30px;
+                left: auto;
+                border-radius: 24px;
+                border: 1px solid var(--card-border);
+            }
+        }
+
+        .ycg-chat-header {
+            background: #0f1224;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .ycg-avatar-ring {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #171b35;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+
+        .ycg-online-indicator {
+            width: 7px;
+            height: 7px;
+            background: var(--green);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--green);
+        }
+
+        .ycg-close-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .ycg-close-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .ycg-chat-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #03040a;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ycg-message {
+            max-width: 82%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            animation: messageEntry 0.3s ease forwards;
+        }
+
+        @keyframes messageEntry {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ycg-message.bot {
+            background: #14172c;
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 3px;
+        }
+
+        .ycg-message.user {
+            background: linear-gradient(135deg, var(--red), #a01127);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 3px;
+            box-shadow: 0 4px 12px var(--red-glow);
+        }
+
+        .ycg-input-container {
+            border-top: 1px solid var(--card-border);
+            padding: 12px 16px;
+            background: #060813;
+            display: flex;
+            gap: 10px;
+        }
+
+        .ycg-input {
+            flex: 1;
+            background: #14172c;
+            border: 1px solid var(--card-border);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 999px;
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .ycg-input:focus {
+            border-color: var(--red);
+        }
+
+        .ycg-send-btn {
+            width: 42px;
+            height: 42px;
+            background: var(--red);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .ycg-send-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Showroom Catalog Card styles */
+        .showroom-item-card {
+            background: #0d101f;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 8px;
+        }
+
+        .showroom-item-title {
+            font-weight: 700;
+            font-size: 13.5px;
+            color: var(--text-main);
+        }
+
+        .showroom-item-price {
+            color: var(--gold);
+            font-weight: 800;
+            font-size: 14.5px;
+            margin-top: 6px;
+        }
+
+        .showroom-item-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .showroom-act-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .showroom-act-btn:hover {
+            opacity: 0.9;
+        }
+
+        .showroom-act-btn.primary {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .showroom-act-btn.secondary {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        /* Inline Cal widget inside chat history */
+        .inline-cal-box {
+            background: #0f1225;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 14px;
+            margin-top: 8px;
+        }
+
+        .inline-cal-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .inline-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .inline-cal-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 2px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .inline-cal-btn.selected {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+
+        .inline-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+            border-top: 1px solid var(--card-border);
+            padding-top: 10px;
+        }
+
+        .inline-slot-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .inline-slot-btn.selected {
+            background: var(--red);
+            color: #fff;
+            border-color: var(--red);
+        }
+
+        .inline-confirm-btn {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--green);
+            color: #000;
+            font-weight: 700;
+            font-size: 11.5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #ycg-chat-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 9999;
+        }
+
+        #ycg-chat-backdrop.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ycg-chat-backdrop" onclick="toggleChat(false)"></div>
+
+    <div class="workspace">
+        
+        <!-- HEADER UNIT (FRAME-FREE IMPROVED BRANDING) -->
+        <header class="brand-header">
+            <div class="brand-identity">
+                <!-- Cleaner Red Hexagon Logo Symbol (improved Y) -->
+                <svg class="logo-hexagon" width="52" height="52" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,6 90,28 90,72 50,94 10,72 10,28" stroke="#c8102e" stroke-width="7" stroke-linejoin="round" fill="none"/>
+                    <path d="M30,32 L45,56 L45,74" stroke="#c8102e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M70,32 L55,56" stroke="#c8102e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M38,40 L45,32" stroke="#c8102e" stroke-width="6" stroke-linecap="round"/>
+                    <path d="M34,48 L45,38" stroke="#c8102e" stroke-width="6" stroke-linecap="round"/>
+                    <path d="M30,56 L45,44" stroke="#c8102e" stroke-width="6" stroke-linecap="round"/>
+                </svg>
+                <div class="logo-text">
+                    <span class="primary-title">YOUR</span>
+                    <span class="sub-title">CAR GUY<span class="domain-text">.CO.ZA</span></span>
+                </div>
+            </div>
+            <div class="showroom-location-card">
+                <span class="address-badge">
+                    <!-- Custom clean SVG map marker icon -->
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    17 Burt Drive, Newton Park, Port Elizabeth
+                </span>
+            </div>
+        </header>
+
+        <!-- PANEL 1: PLATFORM DETAILS & TABBED CAPABILITIES -->
+        <section class="glass-panel">
+            <h2 class="panel-heading">
+                <!-- Dynamic Gear icon -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Showroom Assistant Platform
+            </h2>
+            <p>
+                An automated sales assistant designed for pre-owned car dealerships. It standardizes client inquiries, logs user pathway interactions, handles trade-in profiles, and schedules showroom test drives.
+            </p>
+
+            <div class="tab-menu">
+                <button class="tab-trigger active" onclick="switchTab(event, 'capabilities')">Core Modules</button>
+                <button class="tab-trigger" onclick="switchTab(event, 'scheduler-tech')">Scheduler Rules</button>
+                <button class="tab-trigger" onclick="switchTab(event, 'security')">Lead Safety</button>
+            </div>
+
+            <!-- Tab 1 -->
+            <div id="capabilities" class="tab-content active">
+                <div class="capability-list">
+                    <div class="capability-item">
+                        <h4>🛡️ Live Portfolio Sync</h4>
+                        <p>Matches active query keywords directly against real available inventory (bakkies, SUVs, hatchbacks) to present matching entries.</p>
+                    </div>
+                    <div class="capability-item">
+                        <h4>🔄 Trade-In Valuations</h4>
+                        <p>Processes vehicle criteria (Year, Model, Mileage, Condition) and transitions directly to scheduling a physical appraisal slot.</p>
+                    </div>
+                    <div class="capability-item">
+                        <h4>📱 WhatsApp Lead Dispatch</h4>
+                        <p>Allows showroom operators to package visitor trace paths and send them directly to sales representatives on WhatsApp with one click.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2 -->
+            <div id="scheduler-tech" class="tab-content">
+                <div class="capability-list">
+                    <div class="capability-item">
+                        <h4>📅 Sunday Exclusion</h4>
+                        <p>The scheduler automatically skips Sundays, ensuring all appointment options map to standard operational hours.</p>
+                    </div>
+                    <div class="capability-item">
+                        <h4>⏰ Saturday Adjusted Slots</h4>
+                        <p>Recognizes weekend operations to limit Saturday bookings to 07:30 - 13:00, preventing out-of-bounds schedules.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3 -->
+            <div id="security" class="tab-content">
+                <div class="capability-list">
+                    <div class="capability-item">
+                        <h4>🔒 Local Storage Persist</h4>
+                        <p>User pathway checkpoints and contact details are stored within the session state, protecting entries from browser refreshes.</p>
+                    </div>
+                    <div class="capability-item">
+                        <h4>📡 Real-time Database Sync</h4>
+                        <p>Simulates continuous AJAX transmissions, ensuring local dashboards update instantly as a user navigates the assistant.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANEL 2: CRM & PORTAL CONSOLE (WITH SAMPLE DATA) -->
+        <section class="glass-panel">
+            <div class="portal-header">
+                <h2 class="panel-heading" style="margin-bottom:0;">
+                    <!-- Activity Icon -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                    PE Showroom Console
+                </h2>
+                <span id="showroom-status" style="font-size:11px; font-weight:700; color: var(--green);">Checking showroom...</span>
+            </div>
+
+            <p style="margin-top: 10px;">
+                Below is the real-time activity log tracking local showroom leads. You can use the chat bot on the bottom-right to test adding new entries.
+            </p>
+
+            <!-- Metrics -->
+            <div class="analytics-strip">
+                <div class="metric-card">
+                    <div class="metric-value">4</div>
+                    <div class="metric-label">Showroom Leads</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">2</div>
+                    <div class="metric-label">Test Drives</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">2</div>
+                    <div class="metric-label">Evaluations</div>
+                </div>
+            </div>
+
+            <div class="table-scroller">
+                <table class="crm-table" id="leads-table-element">
+                    <thead>
+                        <tr>
+                            <th>Prospect</th>
+                            <th>Target Interest</th>
+                            <th>Showroom Bookings</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Mock Lead 1 -->
+                        <tr id="lead-row-1">
+                            <td>
+                                <span class="crm-name">Sipho Ndlovu</span>
+                                <div class="crm-contact">082 491 8823 • Newton Park</div>
+                            </td>
+                            <td>
+                                <span class="pill pill-interest">Ford Ranger Wildtrak</span>
+                            </td>
+                            <td>
+                                <div style="margin-bottom: 4px;">
+                                    <span class="pill pill-booking">🚗 Test Drive: Mon 20 Jul @ 11:00 AM</span>
+                                </div>
+                                <div>
+                                    <span class="pill pill-inspection">🔄 Valuation: Tue 21 Jul @ 09:00 AM</span>
+                                </div>
+                                <div class="crm-contact" style="margin-top:4px;">Trade-in: 2017 Nissan NP200</div>
+                            </td>
+                            <td>
+                                <a class="action-button-whatsapp" onclick="dispatchMockLead(1)">Handoff</a>
+                                <button class="action-button-delete" onclick="deleteRow(1)">Delete</button>
+                            </td>
+                        </tr>
+
+                        <!-- Mock Lead 2 -->
+                        <tr id="lead-row-2">
+                            <td>
+                                <span class="crm-name">Sarah Barkhuizen</span>
+                                <div class="crm-contact">073 552 1904 • Summerstrand</div>
+                            </td>
+                            <td>
+                                <span class="pill pill-interest">VW Polo Vivo 1.4</span>
+                            </td>
+                            <td>
+                                <span class="pill pill-booking">🚗 Test Drive: Wed 22 Jul @ 02:00 PM</span>
+                            </td>
+                            <td>
+                                <a class="action-button-whatsapp" onclick="dispatchMockLead(2)">Handoff</a>
+                                <button class="action-button-delete" onclick="deleteRow(2)">Delete</button>
+                            </td>
+                        </tr>
+
+                        <!-- Mock Lead 3 -->
+                        <tr id="lead-row-3">
+                            <td>
+                                <span class="crm-name">Johan Potgieter</span>
+                                <div class="crm-contact">083 221 7745 • Lorraine</div>
+                            </td>
+                            <td>
+                                <span class="pill pill-interest">Toyota Hilux Legend</span>
+                            </td>
+                            <td>
+                                <div style="margin-bottom: 4px;">
+                                    <span class="pill pill-inspection">🔄 Valuation: Mon 20 Jul @ 02:00 PM</span>
+                                </div>
+                                <div class="crm-contact">Trade-in: 2018 Toyota Hilux GD-6</div>
+                            </td>
+                            <td>
+                                <a class="action-button-whatsapp" onclick="dispatchMockLead(3)">Handoff</a>
+                                <button class="action-button-delete" onclick="deleteRow(3)">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- CHAT ASSISTANT -->
+    <div id="ycg-chat-widget">
+        <button id="ycg-chat-launcher" onclick="toggleChat(true)">
+            <!-- Cleaned Geometric Hex logo -->
+            <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,6 90,28 90,72 50,94 10,72 10,28" stroke="white" stroke-width="8" stroke-linejoin="round" fill="none"/>
+                <path d="M30,32 L45,56 L45,74" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M70,32 L55,56" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Showroom Assistant</span>
+        </button>
+
+        <div id="ycg-chat-window">
+            <div class="ycg-chat-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="ycg-avatar-ring">
+                        <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="50,6 90,28 90,72 50,94 10,72 10,28" stroke="#e8b923" stroke-width="8" stroke-linejoin="round" fill="none"/>
+                            <path d="M30,32 L45,56 L45,74" stroke="#e8b923" stroke-width="10" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 14px; font-weight: 700; margin: 0; color:#fff;">Your Car Guy</h3>
+                        <p style="font-size:10.5px; margin: 0; color: var(--gold); display: flex; align-items: center; gap: 4px;">
+                            <span class="ycg-online-indicator"></span> Showroom Assistant
+                        </p>
+                    </div>
+                </div>
+                <button class="ycg-close-btn" onclick="toggleChat(false)">×</button>
+            </div>
+
+            <div class="ycg-chat-history" id="ycg-chat-history">
+                <div class="ycg-typing" id="ycg-typing-indicator" style="display:none;">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+            </div>
+
+            <div class="ycg-input-container">
+                <input type="text" id="ycg-user-input" class="ycg-input" placeholder="Ask about bakkies, trade-ins..." onkeypress="if(event.key==='Enter')handleSend()">
+                <button class="ycg-send-btn" onclick="handleSend()">
+                    <!-- Send Arrow Icon -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        const ycgCatalog = [
+            { id: "ford-ranger", brand: "FORD", model: "Ranger 2.0D Bi-Turbo Wildtrak 4x4", year: 2021, price: 499000, km: "80,000 km", type: "Bakkie Double Cab", fuel: "Diesel" },
+            { id: "audi-s3", brand: "AUDI", model: "S3 Sportback", year: 2012, price: 255000, km: "141,000 km", type: "Hatchback", fuel: "Petrol" },
+            { id: "ford-everest", brand: "FORD", model: "Everest 2.2 TDCi XLS A/T", year: 2018, price: 369000, km: "94,000 km", type: "SUV", fuel: "Diesel" },
+            { id: "vw-polo", brand: "VOLKSWAGEN", model: "Polo Vivo 1.4 Trendline", year: 2020, price: 189000, km: "55,000 km", type: "Hatchback", fuel: "Petrol" },
+            { id: "toyota-hilux", brand: "TOYOTA", model: "Hilux 2.8 GD-6 Legend 4x4", year: 2022, price: 589000, km: "45,000 km", type: "Bakkie Double Cab", fuel: "Diesel" }
+        ];
+
+        let visitorLead = {
+            name: "Prospect Client",
+            phone: "",
+            vehicleInterest: "Browsing general",
+            tradeInDetails: "",
+            inspectionDate: "",
+            testDriveDate: "",
+            pathway: []
+        };
+
+        let activeSchedulerType = "";
+
+        // Tab Swapping Controller
+        function switchTab(evt, tabId) {
+            const panel = evt.target.closest('.glass-panel');
+            panel.querySelectorAll('.tab-trigger').forEach(btn => btn.classList.remove('active'));
+            panel.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            evt.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Live Operational Hours Tracker
+        function runHoursTracker() {
+            const now = new Date();
+            const day = now.getDay(); 
+            const hr = now.getHours();
+            const min = now.getMinutes();
+            const totalMinutes = (hr * 60) + min;
+            const badge = document.getElementById("showroom-status");
+
+            if (day >= 1 && day <= 5) { // Mon - Fri: 07:30 to 17:30
+                if (totalMinutes >= 450 && totalMinutes <= 1050) {
+                    badge.textContent = "Showroom Open (Newton Park)";
+                    badge.style.color = "var(--green)";
+                    return;
+                }
+            } else if (day === 6) { // Sat: 07:30 to 13:00
+                if (totalMinutes >= 450 && totalMinutes <= 780) {
+                    badge.textContent = "Showroom Open (Saturday)";
+                    badge.style.color = "var(--green)";
+                    return;
+                }
+            }
+            badge.textContent = "Showroom Closed (Offline)";
+            badge.style.color = "var(--red)";
+        }
+
+        // Toggle chat UI state
+        function toggleChat(show) {
+            const win = document.getElementById('ycg-chat-window');
+            const launcher = document.getElementById('ycg-chat-launcher');
+            const backdrop = document.getElementById('ycg-chat-backdrop');
+            if (show) {
+                win.style.display = 'flex';
+                setTimeout(() => win.classList.add('open'), 20);
+                backdrop.classList.add('show');
+                launcher.style.opacity = '0';
+                setTimeout(() => launcher.style.display = 'none', 300);
+                logPathwayStep("Opened Showroom Assistant");
+            } else {
+                win.classList.remove('open');
+                backdrop.classList.remove('show');
+                setTimeout(() => {
+                    win.style.display = 'none';
+                    launcher.style.display = 'flex';
+                    setTimeout(() => launcher.style.opacity = '1', 50);
+                }, 400);
+            }
+        }
+
+        function logPathwayStep(action) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            visitorLead.pathway.push({ action: action, time: timeStr });
+            updateDashboardRow();
+        }
+
+        function updateDashboardRow() {
+            let row = document.getElementById("lead-row-active");
+            const tbody = document.querySelector("#leads-table-element tbody");
+
+            if (!row) {
+                row = document.createElement("tr");
+                row.id = "lead-row-active";
+                tbody.insertBefore(row, tbody.firstChild);
+            }
+
+            let bookingsHtml = "";
+            if (visitorLead.testDriveDate) {
+                bookingsHtml += `<div style="margin-bottom: 6px;"><span class="pill pill-booking">🚗 Test Drive: ${visitorLead.testDriveDate}</span></div>`;
+            }
+            if (visitorLead.tradeInDetails) {
+                bookingsHtml += `<div class="crm-contact" style="margin-bottom: 4px;">Trade-in: ${visitorLead.tradeInDetails}</div>`;
+                if (visitorLead.inspectionDate) {
+                    bookingsHtml += `<div><span class="pill pill-inspection">🔄 Valuation: ${visitorLead.inspectionDate}</span></div>`;
+                }
+            }
+
+            row.innerHTML = `
+                <td>
+                    <span class="crm-name" style="color:var(--gold);">${visitorLead.name} (You)</span>
+                    <div class="crm-contact">${visitorLead.phone ? visitorLead.phone : 'Awaiting contact details...'} • Showroom visitor</div>
+                </td>
+                <td>
+                    <span class="pill pill-interest">${visitorLead.vehicleInterest}</span>
+                </td>
+                <td>
+                    ${bookingsHtml ? bookingsHtml : '<span style="color:var(--text-muted); font-style:italic; font-size:12px;">Configuring profile...</span>'}
+                </td>
+                <td>
+                    <a class="action-button-whatsapp" onclick="dispatchLiveLead()">Handoff</a>
+                    <button class="action-button-delete" onclick="deleteRow('active')">Delete</button>
+                </td>
+            `;
+        }
+
+        // Calendar Date Generation Utilities
+        function getWorkingDays() {
+            const days = [];
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            let today = new Date();
+
+            while (days.length < 6) {
+                today.setDate(today.getDate() + 1);
+                if (today.getDay() !== 0) { // Exclude Sunday
+                    days.push({
+                        label: `${dayNames[today.getDay()]} ${today.getDate()} ${monthNames[today.getMonth()]}`,
+                        isSaturday: today.getDay() === 6
+                    });
+                }
+            }
+            return days;
+        }
+
+        function renderInlineScheduler(type) {
+            activeSchedulerType = type;
+            const history = document.getElementById('ycg-chat-history');
+            const typing = document.getElementById('ycg-typing-indicator');
+            const box = document.createElement('div');
+            box.className = "inline-cal-box";
+            
+            const label = (type === 'test_drive') ? "Select Showroom Test Drive Date:" : "Select Inspection Date:";
+            box.innerHTML = `<div class="inline-cal-title">${label}</div>`;
+
+            const grid = document.createElement('div');
+            grid.className = "inline-cal-grid";
+
+            const dates = getWorkingDays();
+            dates.forEach(date => {
+                const btn = document.createElement('button');
+                btn.className = "inline-cal-btn";
+                btn.textContent = date.label;
+                btn.onclick = () => {
+                    box.querySelectorAll('.inline-cal-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    renderInlineTimeSlots(box, date.label, date.isSaturday);
+                };
+                grid.appendChild(btn);
+            });
+
+            box.appendChild(grid);
+
+            const slotGrid = document.createElement('div');
+            slotGrid.className = "inline-slots-grid";
+            slotGrid.style.display = "none";
+            box.appendChild(slotGrid);
+
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = "inline-confirm-btn";
+            confirmBtn.style.display = "none";
+            confirmBtn.textContent = "Confirm Booking Time";
+            box.appendChild(confirmBtn);
+
+            history.insertBefore(box, typing);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        function renderInlineTimeSlots(box, dateLabel, isSaturday) {
+            const grid = box.querySelector('.inline-slots-grid');
+            const confirm = box.querySelector('.inline-confirm-btn');
+            grid.innerHTML = "";
+            grid.style.display = "grid";
+
+            const standardHours = ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM"];
+            const satHours = ["08:30 AM", "10:00 AM", "11:30 AM"];
+            const hours = isSaturday ? satHours : standardHours;
+
+            hours.forEach(hr => {
+                const btn = document.createElement('button');
+                btn.className = "inline-slot-btn";
+                btn.textContent = hr;
+                btn.onclick = () => {
+                    box.querySelectorAll('.inline-slot-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    confirm.style.display = "block";
+                    confirm.onclick = () => {
+                        const finalTimestamp = `${dateLabel} @ ${hr}`;
+                        box.style.pointerEvents = "none";
+                        box.style.opacity = "0.7";
+                        confirm.style.display = "none";
+
+                        if (activeSchedulerType === 'test_drive') {
+                            visitorLead.testDriveDate = finalTimestamp;
+                            logPathwayStep(`Selected Test Drive: ${finalTimestamp}`);
+                            addMessage(`Got it! I have scheduled your Test Drive on **${finalTimestamp}** at 17 Burt Drive, Newton Park.\n\nPlease share your phone number to complete.`);
+                        } else {
+                            visitorLead.inspectionDate = finalTimestamp;
+                            logPathwayStep(`Selected Trade-In Inspection: ${finalTimestamp}`);
+                            addMessage(`Awesome! Your Trade-In evaluation slot is confirmed for **${finalTimestamp}**.\n\nPlease drop your phone number here to finalize.`);
+                        }
+                    };
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        // Base Chat Elements
+        function addMessage(text, isUser = false, suggestions = []) {
+            const history = document.getElementById('ycg-chat-history');
+            const typing = document.getElementById('ycg-typing-indicator');
+            const div = document.createElement('div');
+            div.className = `ycg-message ${isUser ? 'user' : 'bot'}`;
+            div.innerHTML = text.replace(/\n/g, '<br>');
+
+            if (suggestions.length) {
+                const sdiv = document.createElement('div');
+                sdiv.className = 'ycg-suggestions';
+                suggestions.forEach(s => {
+                    const b = document.createElement('button');
+                    b.className = 'ycg-suggestion-btn';
+                    b.textContent = s;
+                    b.onclick = () => {
+                        addMessage(s, true);
+                        processYcgInput(s);
+                    };
+                    sdiv.appendChild(b);
+                });
+                div.appendChild(sdiv);
+            }
+
+            history.insertBefore(div, typing);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        function handleSend() {
+            const input = document.getElementById('ycg-user-input');
+            const t = input.value.trim();
+            if (!t) return;
+            addMessage(t, true);
+            input.value = '';
+            processYcgInput(t);
+        }
+
+        function showTyping(show) {
+            document.getElementById('ycg-typing-indicator').style.display = show ? 'flex' : 'none';
+            const history = document.getElementById('ycg-chat-history');
+            history.scrollTop = history.scrollHeight;
+        }
+
+        // Dialog Process
+        function processYcgInput(text) {
+            const lower = text.toLowerCase();
+            showTyping(true);
+            logPathwayStep(`Client: "${text}"`);
+
+            setTimeout(() => {
+                showTyping(false);
+
+                // Phone parser
+                const phoneMatched = text.match(/(?:\+27|0)\d{9}/);
+                if (phoneMatched) {
+                    visitorLead.phone = phoneMatched[0];
+                    logPathwayStep(`Saved Phone: ${visitorLead.phone}`);
+                    addMessage(`Thank you, I have registered your phone number (${visitorLead.phone}). \n\nOne of our showroom sales team members will follow up with you on WhatsApp shortly.`, false, ["Browse Catalog", "Address & Hours"]);
+                    return;
+                }
+
+                // Name parser
+                const nameMatched = text.match(/(?:my name is|i am|i'm|call me)\s+([a-zA-Z\s]{2,15})/i);
+                if (nameMatched) {
+                    visitorLead.name = nameMatched[1].trim();
+                    logPathwayStep(`Identified Name: ${visitorLead.name}`);
+                    addMessage(`Nice to connect with you, ${visitorLead.name}! How can I help you navigate our showroom portfolio?`, false, ["Browse Catalog", "I have a Trade-In"]);
+                    return;
+                }
+
+                // Locations & Hours Info
+                if (lower.includes('address') || lower.includes('location') || lower.includes('where') || lower.includes('hours') || lower.includes('open')) {
+                    addMessage(`We look forward to welcoming you to our physical showroom:\n📍 **17 Burt Drive, Newton Park, Port Elizabeth**.\n\n*Working Hours:*\n• Mon–Fri: 07:30 – 17:30\n• Saturday: 07:30 – 13:00\n• Sunday: Closed`, false, ["Browse Catalog", "I have a Trade-In"]);
+                    return;
+                }
+
+                // Catalog list trigger
+                if (lower.includes('catalog') || lower.includes('stock') || lower.includes('inventory') || lower.includes('cars')) {
+                    addMessage(`Here is a select range of pre-owned models currently available:`);
+                    renderInlineCatalog(ycgCatalog);
+                    return;
+                }
+
+                // Trade-In trigger
+                if (lower.includes('trade-in') || lower.includes('sell my car') || lower.includes('valuation') || lower.includes('trade in')) {
+                    addMessage(`We buy pre-owned vehicles daily. \n\nPlease describe your vehicle (Year, Make, Model, Mileage & General Condition):`);
+                    visitorLead.tradeInDetails = "Awaiting input...";
+                    return;
+                }
+
+                if (visitorLead.tradeInDetails === "Awaiting input...") {
+                    visitorLead.tradeInDetails = text;
+                    logPathwayStep(`Saved Trade-In specs: ${text}`);
+                    addMessage(`Thank you for providing those vehicle details.\n\nLet's schedule a brief 15-minute physical valuation slot at our showroom:`);
+                    setTimeout(() => { renderInlineScheduler('inspection'); }, 600);
+                    return;
+                }
+
+                // Specific brand or model searches
+                let matches = [];
+                if (lower.includes('ranger') || lower.includes('ford') || lower.includes('everest')) {
+                    matches = ycgCatalog.filter(c => c.brand === "FORD");
+                } else if (lower.includes('hilux') || lower.includes('toyota')) {
+                    matches = ycgCatalog.filter(c => c.brand === "TOYOTA");
+                } else if (lower.includes('polo') || lower.includes('vw') || lower.includes('volkswagen')) {
+                    matches = ycgCatalog.filter(c => c.brand === "VOLKSWAGEN");
+                } else if (lower.includes('audi') || lower.includes('s3')) {
+                    matches = ycgCatalog.filter(c => c.brand === "AUDI");
+                }
+
+                if (matches.length > 0) {
+                    visitorLead.vehicleInterest = matches[0].brand + " " + matches[0].model;
+                    logPathwayStep(`Matched: ${matches[0].brand} ${matches[0].model}`);
+                    addMessage(`I found these matching options currently on our floor:`);
+                    renderInlineCatalog(matches);
+                    return;
+                }
+
+                // Default Fallback
+                addYcgFallbackResponse(lower);
+
+            }, 800);
+        }
+
+        function addYcgFallbackResponse(lower) {
+            // Smart Fallback for Brands not currently in our database
+            const alternatives = ["mercedes", "merc", "benz", "audi", "bmw", "isuzu", "nissan"];
+            let detectedAlternative = alternatives.find(b => lower.includes(b));
+            if (detectedAlternative) {
+                addMessage(`We do not have any ${detectedAlternative.toUpperCase()} models in stock right now, but would you be interested in these premium pre-owned options?`);
+                renderInlineCatalog(ycgCatalog.slice(0, 2));
+                return;
+            }
+
+            addMessage(`I can guide you through our pre-owned stock, help you schedule showroom test drives, or arrange a valuation for a trade-in.\n\nWhat can we help you coordinate?`, false, ["Browse Catalog", "Trade-In Valuation"]);
+        }
+
+        function renderInlineCatalog(list) {
+            const history = document.getElementById('ycg-chat-history');
+            const typing = document.getElementById('ycg-typing-indicator');
+            const container = document.createElement('div');
+            container.style.width = "100%";
+            container.style.display = "flex";
+            container.style.flexDirection = "column";
+            container.style.gap = "8px";
+
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "showroom-item-card";
+                card.innerHTML = `
+                    <div class="showroom-item-title">${item.year} ${item.brand} ${item.model}</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Mileage: ${item.km} • ${item.fuel}</div>
+                    <div class="showroom-item-price">R ${item.price.toLocaleString()}</div>
+                    <div class="showroom-item-actions">
+                        <button class="showroom-act-btn secondary" onclick="handleCardAction('${item.brand} ${item.model}', 'finance')">💰 Finance</button>
+                        <button class="showroom-act-btn primary" onclick="handleCardAction('${item.brand} ${item.model}', 'test_drive')">🚗 Test Drive</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            history.insertBefore(container, typing);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        window.handleCardAction = function(carName, action) {
+            visitorLead.vehicleInterest = carName;
+            if (action === 'finance') {
+                logPathwayStep(`Finance Query: ${carName}`);
+                addMessage(`Estimating terms for the **${carName}**...\n\nStandard repayment terms are typically modeled over 60 or 72 months. Would you like our in-house finance department to set up a preliminary assessment?`, false, ["Yes, help with Finance", "Schedule Test Drive Instead"]);
+            } else {
+                logPathwayStep(`Init Test Drive: ${carName}`);
+                addMessage(`Let's book a showroom viewing for the **${carName}**.\n\nPlease pick an available date:`);
+                setTimeout(() => { renderInlineScheduler('test_drive'); }, 600);
+            }
+        };
+
+        const peShowroomNum = "27834659921";
+
+        function dispatchMockLead(id) {
+            let mockText = "";
+            if (id === 1) {
+                mockText = `🚗 *SHOWROOM TICKET: SIPHO NDLOVU* 🚗\n\n👤 *Client:* Sipho Ndlovu\n📞 *Phone:* 0824918823\n⭐ *Interest:* Ford Ranger Wildtrak\n\n🗓️ *Test Drive Booking:*\n👉 Mon 20 Jul @ 11:00 AM\n\n🔄 *Trade-in Valuation:*\n👉 2017 Nissan NP200\n🗓️ *Showroom Appointment:* Tue 21 Jul @ 09:00 AM`;
+            } else if (id === 2) {
+                mockText = `🚗 *SHOWROOM TICKET: SARAH BARKHUIZEN* 🚗\n\n👤 *Client:* Sarah Barkhuizen\n📞 *Phone:* 0735521904\n⭐ *Interest:* VW Polo Vivo 1.4\n\n🗓️ *Test Drive Booking:*\n👉 Wed 22 Jul @ 02:00 PM`;
+            } else {
+                mockText = `🚗 *SHOWROOM TICKET: JOHAN POTGIETER* 🚗\n\n👤 *Client:* Johan Potgieter\n📞 *Phone:* 0832217745\n⭐ *Interest:* Toyota Hilux Legend\n\n🔄 *Trade-in Valuation:*\n👉 2018 Toyota Hilux GD-6\n🗓️ *Showroom Appointment:* Mon 20 Jul @ 02:00 PM`;
+            }
+            window.open(`https://api.whatsapp.com/send?phone=${peShowroomNum}&text=${encodeURIComponent(mockText)}`, '_blank');
+        }
+
+        function dispatchLiveLead() {
+            let msg = `🚗 *LIVE SHOWROOM TICKET* 🚗\n\n`;
+            msg += `👤 *Client:* ${visitorLead.name}\n`;
+            msg += `📞 *Phone:* ${visitorLead.phone ? visitorLead.phone : 'Not provided'}\n`;
+            msg += `⭐ *Interest:* ${visitorLead.vehicleInterest}\n\n`;
+
+            if (visitorLead.testDriveDate) {
+                msg += `🗓️ *Test Drive Booking:*\n👉 ${visitorLead.testDriveDate}\n\n`;
+            }
+            if (visitorLead.tradeInDetails) {
+                msg += `🔄 *Trade-In Details:*\n👉 ${visitorLead.tradeInDetails}\n`;
+                if (visitorLead.inspectionDate) {
+                    msg += `🗓️ *Valuation Slot:* ${visitorLead.inspectionDate}\n\n`;
+                }
+            }
+
+            msg += `👣 *Client Pathway Traces:*\n`;
+            visitorLead.pathway.forEach((step, idx) => {
+                msg += `${idx + 1}. [${step.time}] ${step.action}\n`;
+            });
+
+            window.open(`https://api.whatsapp.com/send?phone=${peShowroomNum}&text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function deleteRow(id) {
+            const row = document.getElementById(`lead-row-${id}`);
+            if (row) row.remove();
+        }
+
+        window.onload = () => {
+            runHoursTracker();
+            setInterval(runHoursTracker, 30000);
+
+            setTimeout(() => {
+                addMessage(`Hello! I'm your virtual **Your Car Guy** showroom assistant. \n\nHow can I help you navigate our available stock, schedule a showroom test drive, or register a trade-in evaluation slot today?`, false, ["Browse Catalog", "Valuation / Trade-In", "Showroom Hours"]);
+            }, 800);
+        };
+    </script>
+</body>
+</html>

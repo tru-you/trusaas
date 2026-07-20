@@ -1,0 +1,6 @@
+{
+  "name": "TruLens",
+  "description": "Mobile lot-photography guide for car dealerships. Employs real-time angle overlays, bubble-level sensor aids, smart background removal, studio backdrops, and Gemini-driven listing title and copy generation with cloud sync.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
