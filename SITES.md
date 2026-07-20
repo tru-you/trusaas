@@ -24,8 +24,8 @@
 
 | Product | What it is | Demo |
 |---------|------------|------|
-| **Web3D** | Orbit frames + damage tags (TruLens package) | true-cars vehicle page |
-| **Virtual Showroom** | TruWeb / consumer site fed by stock API | https://true-cars.co.za |
+| **Tru3D** | Orbit frames + damage tags (TruLens package) | true-cars vehicle page |
+| **TruShowroom** | TruWeb / consumer site fed by stock API | https://true-cars.co.za |
 | **TruLive** | Live video walkaround | technology / chat |
 | **TruVIR** | Condition score + PDF | vir-report.html |
 
@@ -33,9 +33,9 @@
 
 | Product | What it is | Demo |
 |---------|------------|------|
-| **AI Auto Chat** | Site + WhatsApp AI sales assistant | true-cars chat / technology `#ai-chat` |
-| **AI Receptionist** | Front-desk qualify & route | technology `#ai-receptionist` |
-| **TruChat / TrueX** | Family brand for chat + receptionist | technology modules |
+| **TruChat** | Site + WhatsApp AI sales assistant | true-cars chat / technology `#truchat` |
+| **TruReceptionist** | Front-desk qualify & route | technology `#trureceptionist` |
+| **TruChat** | Family brand for chat + receptionist | technology modules |
 
 ### Growth
 
@@ -54,15 +54,15 @@ TruLens (shoot)
     ↓ export
 TruFlow Lite / Premium (DMS + CRM)
     ↓ public stock API
-Virtual Showroom (true-cars / dealer site)
-    ├── Web3D player on each unit
-    ├── AI Auto Chat on site + WhatsApp
-    └── AI Receptionist path → CRM leads
+TruShowroom (true-cars / dealer site)
+    ├── Tru3D player on each unit
+    ├── TruChat on site + WhatsApp
+    └── TruReceptionist path → CRM leads
 ```
 
 **true-cars** = virtual showroom demo of the full story.  
 **Render apps** = real core tools.  
-**AI + Web3D** = experience layer on top of core.
+**AI + Tru3D** = experience layer on top of core.
 
 ---
 
@@ -74,7 +74,7 @@ true-cars: `dealers.html` — full suite cards + live core links.
 
 `TrueCar-SA/assets/js/stock-bridge.js` — dealer slug `true-cars`.
 
-## Web3D
+## Tru3D
 
 `TrueCar-SA/assets/js/web3d-mock.js` — mock package + live TruLens fetch when available.
 

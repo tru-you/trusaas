@@ -21,10 +21,10 @@
 
 | Module | Role |
 |--------|------|
-| **Web3D** | Orbit + damage pins (TruLens package) |
-| **Virtual Showroom** | Buyer site / TruWeb (true-cars.co.za) |
-| **AI Auto Chat** | Site + WhatsApp AI sales |
-| **AI Receptionist** | Front-desk qualify & CRM handoff |
+| **Tru3D** | Orbit + damage pins (TruLens package) |
+| **TruShowroom** | Buyer site / TruWeb (true-cars.co.za) |
+| **TruChat** | Site + WhatsApp AI sales |
+| **TruReceptionist** | Front-desk qualify & CRM handoff |
 | TruVIR · TruLive · Syndication · TruReel/Copy | Trust, remote sell, growth |
 
 ### Consumer demo (separate site)
@@ -32,7 +32,7 @@
 | Site | Domain | Role |
 |------|--------|------|
 | **True-Cars SA** | `true-cars.co.za` | Virtual showroom + full suite story |
-| Live stock | `/api/public/stock?dealer=true-cars` | + Web3D mock/live on vehicle pages |
+| Live stock | `/api/public/stock?dealer=true-cars` | + Tru3D mock/live on vehicle pages |
 | Dealers hub | `dealers.html` | Product map for DPs |
 
 ### Personal (do NOT host as product)
