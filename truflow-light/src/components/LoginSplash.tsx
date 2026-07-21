@@ -1,4 +1,4 @@
-import logo from "../assets/truflow-lite-logo.svg";
+import logo from "../assets/truflow-logo.jpg";
 import React, { useState } from 'react';
 import { Lock, ExternalLink } from 'lucide-react';
 import { TRUE_CARS_URL, TRUESAAS_URL } from '../lib/ecosystem';

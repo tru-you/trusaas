@@ -5,7 +5,7 @@ import {
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
   FileText, Settings, Camera, LogOut
 } from 'lucide-react';
-import trulensLogo from '../assets/images/trulens_logo_accurate_1784306811555.jpg';
+import trulensLogo from '../assets/images/trulens-lockup.jpg';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,

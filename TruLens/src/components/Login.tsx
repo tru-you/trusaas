@@ -3,7 +3,7 @@ import { LogIn, Lock, User, Sparkles, AlertCircle, Loader2, UserPlus, Monitor } 
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import trulensLogo from '../assets/images/trulens_logo_accurate_1784306811555.jpg';
+import trulensLogo from '../assets/images/trulens-lockup.jpg';
 
 export default function Login() {
   const { enterDemoMode } = useAuth();

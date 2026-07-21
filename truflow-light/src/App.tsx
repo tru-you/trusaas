@@ -1,4 +1,4 @@
-import logo from "./assets/truflow-lite-logo.svg";
+import logo from "./assets/truflow-logo.jpg";
 import React, { useState, useEffect } from "react";
 import {
   Home,
