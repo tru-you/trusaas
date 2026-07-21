@@ -410,6 +410,30 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     return { w: Math.round(w * scale), h: Math.round(h * scale) };
   };
 
+  /** WYSIWYG capture: crop the stream to the region the object-cover viewfinder
+      actually shows, so the saved photo matches what the shooter framed. */
+  const drawViewfinderFrame = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, video: HTMLVideoElement) => {
+    const vw = video.videoWidth || 1280;
+    const vh = video.videoHeight || 720;
+    let sx = 0, sy = 0, sw = vw, sh = vh;
+    const rect = video.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      const elAspect = rect.width / rect.height;
+      const srcAspect = vw / vh;
+      if (srcAspect > elAspect) {
+        sw = Math.round(vh * elAspect); // stream wider than screen — sides are hidden
+        sx = Math.round((vw - sw) / 2);
+      } else if (srcAspect < elAspect) {
+        sh = Math.round(vw / elAspect); // stream taller — top/bottom are hidden
+        sy = Math.round((vh - sh) / 2);
+      }
+    }
+    const { w, h } = fitDims(sw, sh);
+    canvas.width = w;
+    canvas.height = h;
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+  };
+
   // Capture Photo action — always take/confirm a shot (never navigates elsewhere)
   const handleCapture = (e?: React.MouseEvent) => {
     e?.preventDefault?.();
@@ -438,11 +462,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             const ctx = canvas.getContext('2d');
             if (ctx) {
               if (isCameraActive && videoRef.current) {
-                const video = videoRef.current;
-                const { w, h } = fitDims(video.videoWidth, video.videoHeight);
-                canvas.width = w;
-                canvas.height = h;
-                ctx.drawImage(video, 0, 0, w, h);
+                drawViewfinderFrame(ctx, canvas, videoRef.current);
               } else {
                 canvas.width = 1080;
                 canvas.height = 720;
@@ -478,11 +498,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     // Draw frame (live camera → uploaded file → still capture without leaving this screen)
     // Canvas must match the SOURCE aspect ratio — a fixed 1080x720 squashes portrait streams.
     if (isCameraActive && videoRef.current) {
-      const video = videoRef.current;
-      const { w, h } = fitDims(video.videoWidth, video.videoHeight);
-      canvas.width = w;
-      canvas.height = h;
-      ctx.drawImage(video, 0, 0, w, h);
+      drawViewfinderFrame(ctx, canvas, videoRef.current);
       finalizeCapture(canvas);
       return;
     }
