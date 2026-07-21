@@ -1,25 +1,31 @@
-# TruSaaS — PRODUCT modules only (Render free tier)
+# TruSaaS — PRODUCT modules only (Render starter plan, always-on since 2026-07-21)
 # Domain: trusaas.co.za
 #
 # Deploy these three:
-#   trusaas-lens.onrender.com     → TruLens          (autolens-pro)
+#   trusaas-lens.onrender.com     → TruLens          (TruLens/)
 #   trusaas-flow.onrender.com     → TruFlow Lite     (truflow-light)
 #   trusaas-premium.onrender.com  → TruFlow Premium  (truflow-premium)
 #
+# STABILITY (see STABILITY.md):
+#   - Services are on paid starter plan → always-on, no spin-down. Do NOT
+#     revert plan to free: Blueprint sync would downgrade and bring back
+#     30–60s cold starts.
+#   - Keep-alive scripts retired (no longer needed on starter plan)
+#   - Smoke: scripts/smoke-trusaas.ps1
+#   - Health path MUST stay /api/health (JSON)
+#
 # PERSONAL (do NOT host as product):
 #   index.html, truchat-*.html, trusaas_document_hub.html, marketing landing
-#   Keep in repo for you; not a public product service.
 #
 # After deploy: Custom Domains on each service + DNS CNAMEs.
-# Free web services spin down after ~15 min idle (cold start ~30–60s).
 
 services:
   # ── 1. TruLens — guided capture / PWA / VIR ───────────────────────────────
   - type: web
     name: trusaas-lens
     runtime: node
-    plan: free
-    rootDir: autolens-pro
+    plan: starter
+    rootDir: TruLens
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
@@ -38,7 +44,7 @@ services:
   - type: web
     name: trusaas-flow
     runtime: node
-    plan: free
+    plan: starter
     rootDir: truflow-light
     buildCommand: npm install && npm run build
     startCommand: npm start
@@ -53,7 +59,7 @@ services:
   - type: web
     name: trusaas-premium
     runtime: node
-    plan: free
+    plan: starter
     rootDir: truflow-premium
     buildCommand: npm install && npm run build
     startCommand: npm start

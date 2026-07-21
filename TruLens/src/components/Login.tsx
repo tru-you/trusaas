@@ -157,13 +157,13 @@ export default function Login() {
           {mode === 'login' ? "New Inspector? Sign Up" : "Back to Login"}
         </button>
 
-        {/* Footer Info */}
+        {/* Footer Info — ecosystem links */}
         <div className="mt-12 flex flex-col items-center space-y-4">
           <div className="flex items-center gap-3">
-            <div className="flex flex-col items-end">
+            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
               <span className="text-[8px] text-neutral-600 uppercase tracking-tighter">Powered By</span>
-              <span className="text-[9px] font-bold text-neutral-400">TruSaaS</span>
-            </div>
+              <span className="text-[9px] font-bold text-violet-300 underline underline-offset-2">TrueSaas</span>
+            </a>
             <div className="w-[1px] h-6 bg-neutral-800" />
             <div className="flex flex-col items-start">
               <span className="text-[8px] text-neutral-600 uppercase tracking-tighter">Secured By</span>
@@ -172,6 +172,15 @@ export default function Login() {
               </span>
             </div>
           </div>
+
+          <a
+            href="https://true-cars.co.za"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-bold text-emerald-400/90 uppercase tracking-widest hover:text-emerald-300 underline underline-offset-2"
+          >
+            true-cars.co.za showroom
+          </a>
           
           <p className="text-[8px] text-neutral-700 max-w-[200px] text-center leading-relaxed">
             By initializing, you agree to the Automated Photography & AI Processing Terms of Service.

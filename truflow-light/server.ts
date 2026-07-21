@@ -26,13 +26,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check for free-tier hosts (Render, etc.)
+// Health check for free-tier hosts (Render, etc.) + keep-alive pings
+const STARTED_AT = Date.now();
 app.get("/api/health", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   res.json({
     ok: true,
     product: "truflow-lite",
     port: PORT,
     nodeEnv: process.env.NODE_ENV || "development",
+    uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
+    ts: new Date().toISOString(),
   });
 });
 
@@ -896,10 +900,22 @@ function toPublicVehicle(v: any, source: string = "lite") {
   };
 }
 
+function isJunkPublicVehicle(v: any): boolean {
+  const blob = [v.make, v.model, v.trim, v.stockNumber, v.description]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (/stk-lite-test|test vehicle|demo junk|lorem ipsum/.test(blob)) return true;
+  if (/\bss\b/.test(blob) && /ddas/.test(blob)) return true;
+  if (v.make && String(v.make).length <= 2 && /ddas|test|xxx/i.test(String(v.model || ""))) return true;
+  return false;
+}
+
 function buildPublicStock(state: any, dealerSlug: string) {
   const vehicles = (state.vehicles || [])
     .map((v: any) => toPublicVehicle(v, "lite"))
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((v: any) => !isJunkPublicVehicle(v));
   return {
     success: true,
     dealer: dealerSlug || "TruFlow Lite Dealer",

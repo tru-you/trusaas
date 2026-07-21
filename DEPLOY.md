@@ -10,7 +10,7 @@
 
 | Module | Folder | Host | Service name |
 |--------|--------|------|--------------|
-| **TruLens** | `autolens-pro/` | `trusaas-lens.onrender.com` | `trusaas-lens` |
+| **TruLens** | `TruLens/` | `trusaas-lens.onrender.com` | `trusaas-lens` |
 | **TruFlow Lite** | `truflow-light/` | `trusaas-flow.onrender.com` | `trusaas-flow` |
 | **TruFlow Premium** | `truflow-premium/` | `trusaas-premium.onrender.com` | `trusaas-premium` |
 

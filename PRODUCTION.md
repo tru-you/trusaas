@@ -16,7 +16,7 @@ Phone cameras and “Add to Home Screen” need a secure origin.
 **Fast tunnel (dev demo):**
 
 ```bash
-# From autolens-pro folder, with npm run dev already on :3000
+# From TruLens folder, with npm run dev already on :3000
 npx cloudflared tunnel --url http://localhost:3000
 # or: npx localtunnel --port 3000
 ```

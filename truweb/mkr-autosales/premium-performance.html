@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MKR Auto Sales — Welcome To The Next Level | Premium Pre-Owned, Gqeberha</title>
-<meta name="description" content="MKR Auto Sales — premium pre-owned in Gqeberha. Three portals: Buy, Sell & Trade-In, Finance (VAF Bridge). AA Authorised. Free nationwide delivery.">
+<title>Premium Performance — MKR Auto Sales | Gqeberha</title>
+<meta name="description" content="Premium Performance is the enthusiast lane — GTI, AMG, RS, M-cars and high-spec bakkies. Same MKR standards, more heart rate.">
 <meta name="theme-color" content="#0A1626">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -849,12 +849,75 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 .chat-foot{padding:10px;border-top:1px solid var(--line);background:rgba(255,255,255,.7);flex-shrink:0;}
 .chat-foot a{display:flex;width:100%;justify-content:center;}
 </style>
+
+<style>
+.page-hero{position:relative;color:#fff;overflow:hidden;padding:48px 0 40px;min-height:auto;}
+.page-hero .hero-bg{position:absolute;inset:0;}
+.page-hero.theme-select .hero-bg{
+  background:
+    linear-gradient(115deg,rgba(10,22,38,.94) 0%,rgba(10,22,38,.6) 50%,rgba(10,22,38,.88) 100%),
+    radial-gradient(ellipse 70% 80% at 90% 10%,rgba(200,162,75,.22),transparent 55%),
+    url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2000&q=80') center 40%/cover no-repeat;
+}
+.page-hero.theme-perf .hero-bg{
+  background:
+    linear-gradient(115deg,rgba(10,22,38,.94) 0%,rgba(10,22,38,.55) 50%,rgba(10,22,38,.9) 100%),
+    radial-gradient(ellipse 70% 80% at 90% 10%,rgba(220,38,38,.22),transparent 55%),
+    url('https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=2000&q=80') center 45%/cover no-repeat;
+}
+.page-hero .wrap{position:relative;z-index:1;}
+.page-hero .crumb{font-size:12px;font-weight:600;color:rgba(255,255,255,.55);margin-bottom:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.page-hero .crumb a{color:rgba(255,255,255,.75);}
+.page-hero .crumb a:hover{color:#fff;}
+.page-hero .crumb span{opacity:.4;}
+.page-hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(32px,6vw,52px);letter-spacing:-.03em;line-height:1.08;max-width:16ch;margin-bottom:12px;}
+.page-hero.theme-select h1 em{font-style:italic;color:var(--gold-light);}
+.page-hero.theme-perf h1 em{font-style:italic;color:#ff6b6b;}
+.page-hero .lede{color:rgba(255,255,255,.7);font-size:clamp(14px,2.2vw,16px);max-width:46ch;line-height:1.65;margin-bottom:18px;}
+.page-hero .hero-pills{margin-bottom:0;}
+.page-hero.theme-select .hero-pills span{border-color:rgba(200,162,75,.3);}
+.page-hero.theme-perf .hero-pills span{border-color:rgba(255,107,107,.28);}
+.cat-bar{padding:20px 0 0;}
+.cat-bar-inner{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  background:var(--glass-strong);backdrop-filter:blur(16px);border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);padding:14px 16px;
+  box-shadow:0 8px 28px -16px rgba(10,22,38,.12);
+}
+.cat-bar .results{font-size:14px;font-weight:700;}
+.cat-bar .results b{color:var(--blue);}
+body.page-perf .cat-bar .results b{color:#dc2626;}
+.theme-select ~ * .cat-bar .results b, .page-hero.theme-select ~ .wrap .results b{color:var(--gold);}
+.cat-bar .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.cat-bar select{
+  padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);
+  background:#fff;font:600 13px var(--ff);color:var(--ink);min-height:42px;
+}
+.cat-links{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 8px;}
+.cat-links a{
+  font-size:12px;font-weight:800;padding:9px 14px;border-radius:100px;
+  border:1px solid var(--glass-border);background:var(--glass);
+  transition:transform .25s var(--spring),background .2s,color .2s,border-color .2s;
+}
+.cat-links a:hover{transform:translateY(-2px);color:var(--blue);border-color:rgba(11,91,215,.3);}
+.cat-links a.on-select{background:linear-gradient(145deg,var(--gold-light),var(--gold));color:var(--ink);border-color:transparent;}
+.cat-links a.on-perf{background:linear-gradient(145deg,#ef4444,#b91c1c);color:#fff;border-color:transparent;}
+.inventory.cat-page{padding:12px 0 72px;}
+.empty-msg{grid-column:1/-1;text-align:center;padding:48px 16px;font-size:14px;font-weight:600;color:var(--grey);}
+.sister-card{
+  display:flex;flex-direction:column;gap:10px;padding:22px 20px;border-radius:var(--radius-lg);
+  background:var(--ink);color:#fff;margin-top:28px;
+  border:1px solid rgba(255,255,255,.08);
+}
+.sister-card h3{font-family:var(--serif);font-size:22px;font-weight:600;}
+.sister-card p{font-size:13px;color:rgba(255,255,255,.55);max-width:40ch;}
+.sister-card .btn-row{margin-top:4px;}
+.nav-links a.cat-nav{font-size:12.5px;}
+</style>
+
 </head>
-<body>
-
+<body class="page-perf">
 <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
-
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="wrap">
     <span>📍 <b>495 Cape Road, Westering · Gqeberha</b></span>
@@ -862,22 +925,19 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     <a href="tel:+27662912809">📞 <b>+27 66 291 2809</b></a>
   </div>
 </div>
-
-<!-- HEADER -->
 <header class="site-header" id="siteHeader">
   <div class="wrap nav">
-    <a class="logo" href="#top"><img src="mkr-logo.png" alt="MKR Auto Sales" width="160" height="56"></a>
+    <a class="logo" href="index.html"><img src="mkr-logo.png" alt="MKR Auto Sales" width="160" height="56"></a>
     <nav class="nav-links" aria-label="Primary">
-      <a href="#portals" class="active">Portals</a>
-      <a href="premium-select.html">Premium Select</a>
-      <a href="premium-performance.html">Performance</a>
-      <a href="#stock">Buy</a>
-      <a href="#sell">Sell</a>
-      <a href="#finance">Finance</a>
-      <a href="#visit">Visit</a>
+      <a href="index.html">Home</a>
+      <a class="cat-nav " href="premium-select.html">Premium Select</a>
+      <a class="cat-nav active" href="premium-performance.html">Premium Performance</a>
+      <a href="index.html#stock">All stock</a>
+      <a href="index.html#finance">Finance</a>
+      <a href="index.html#visit">Visit</a>
     </nav>
     <div class="nav-ctas">
-      <a class="btn btn-ghost" href="#finance">Apply for Finance</a>
+      <a class="btn btn-ghost" href="index.html#finance">Apply for Finance</a>
       <a class="btn btn-wa" href="https://wa.me/27662912809" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.2 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.2c.1.2.1.4 0 .6l-.4.6-.5.5c-.2.2-.3.4-.1.7.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2.1 1c.3.2.5.3.6.4.1.2.1.7-.1 1.3Z"/></svg>
         WhatsApp
@@ -886,371 +946,103 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     </div>
   </div>
   <div class="m-menu" id="mmenu">
-    <a href="#portals">Three Portals</a>
+    <a href="index.html">Home</a>
     <a href="premium-select.html">Premium Select</a>
     <a href="premium-performance.html">Premium Performance</a>
-    <a href="#stock">Buy a Car</a>
-    <a href="#sell">Sell / Trade-In</a>
-    <a href="#finance">VAF Bridge Finance</a>
-    <a href="#visit">Visit Us</a>
+    <a href="index.html#stock">All stock</a>
+    <a href="index.html#sell">Sell / Trade-In</a>
+    <a href="index.html#finance">VAF Bridge Finance</a>
+    <a href="index.html#visit">Visit Us</a>
   </div>
 </header>
 
-<!-- HERO · v3 cinematic banner + index layout -->
-<section class="hero" id="top">
-  <div class="hero-media" aria-hidden="true">
-    <div class="hero-orb hero-orb-1"></div>
-    <div class="hero-orb hero-orb-2"></div>
-    <div class="hero-orb hero-orb-3"></div>
-    <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=2000&q=80" alt="" loading="eager" onerror="this.remove()">
-  </div>
-  <div class="hero-grid-overlay" aria-hidden="true"></div>
-  <div class="hero-spotlight" id="heroSpotlight" aria-hidden="true"></div>
-  <div class="hero-particles" id="heroParticles" aria-hidden="true"></div>
-  <div class="hero-skyline" aria-hidden="true">
-    <svg viewBox="0 0 1440 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0,220 L0,180 L40,180 L40,140 L55,140 L55,120 L70,120 L70,140 L85,140 L85,155 L110,155 L110,130 L120,130 L120,90 L135,90 L135,130 L150,130 L150,145 L175,145 L175,100 L180,100 L180,70 L195,70 L195,100 L200,100 L200,130 L220,130 L220,110 L230,110 L230,80 L238,80 L238,110 L245,110 L245,130 L270,130 L270,150 L300,150 L300,120 L310,120 L310,60 L318,55 L326,60 L326,120 L340,120 L340,135 L360,135 L360,105 L375,105 L375,135 L395,135 L395,155 L420,155 L420,125 L430,125 L430,100 L440,100 L440,75 L455,75 L455,100 L465,100 L465,125 L480,125 L480,145 L510,145 L510,110 L520,110 L520,50 L528,45 L536,50 L536,110 L550,110 L550,130 L580,130 L580,150 L610,150 L610,120 L620,120 L620,85 L630,85 L630,120 L645,120 L645,140 L670,140 L670,155 L700,155 L700,130 L715,130 L715,95 L720,95 L720,65 L730,65 L730,95 L735,95 L735,130 L755,130 L755,145 L785,145 L785,115 L795,115 L795,80 L805,80 L805,45 L813,40 L821,45 L821,80 L831,80 L831,115 L845,115 L845,135 L870,135 L870,155 L900,155 L900,125 L915,125 L915,90 L925,90 L925,125 L940,125 L940,140 L970,140 L970,155 L1000,155 L1000,120 L1010,120 L1010,70 L1020,70 L1020,120 L1035,120 L1035,135 L1060,135 L1060,150 L1090,150 L1090,115 L1100,115 L1100,80 L1108,75 L1116,80 L1116,115 L1130,115 L1130,140 L1160,140 L1160,155 L1190,155 L1190,130 L1200,130 L1200,100 L1210,100 L1210,130 L1225,130 L1225,145 L1255,145 L1255,160 L1280,160 L1280,135 L1290,135 L1290,110 L1300,110 L1300,135 L1315,135 L1315,150 L1345,150 L1345,165 L1370,165 L1370,140 L1385,140 L1385,155 L1410,155 L1410,170 L1440,170 L1440,220 Z" fill="rgba(6,17,35,.85)"/>
-      <g fill="rgba(77,141,255,.4)">
-        <rect x="123" y="98" width="3" height="4" rx="1" opacity=".8"/><rect x="183" y="78" width="3" height="4" rx="1" opacity=".9"/>
-        <rect x="313" y="68" width="3" height="4" rx="1" opacity=".8"/><rect x="523" y="58" width="3" height="4" rx="1" opacity=".8"/>
-        <rect x="723" y="73" width="3" height="4" rx="1" opacity=".9"/><rect x="808" y="53" width="3" height="4" rx="1" opacity=".8"/>
-        <rect x="1013" y="78" width="3" height="4" rx="1" opacity=".9"/><rect x="1203" y="108" width="3" height="4" rx="1" opacity=".8"/>
-      </g>
-      <g fill="rgba(200,162,75,.35)">
-        <rect x="133" y="112" width="3" height="4" rx="1" opacity=".6"/><rect x="453" y="96" width="3" height="4" rx="1" opacity=".5"/>
-        <rect x="818" y="73" width="3" height="4" rx="1" opacity=".7"/><rect x="1108" y="98" width="3" height="4" rx="1" opacity=".6"/>
-      </g>
-      <g fill="rgba(255,255,255,.6)">
-        <rect x="313" y="88" width="3" height="4" rx="1"><animate attributeName="opacity" values=".1;.9;.1" dur="3.2s" repeatCount="indefinite"/></rect>
-        <rect x="523" y="88" width="3" height="4" rx="1"><animate attributeName="opacity" values=".1;.8;.1" dur="4.5s" begin=".8s" repeatCount="indefinite"/></rect>
-        <rect x="808" y="83" width="3" height="4" rx="1"><animate attributeName="opacity" values=".1;.7;.1" dur="2.8s" begin="1.5s" repeatCount="indefinite"/></rect>
-      </g>
-      <rect x="0" y="195" width="1440" height="25" fill="rgba(11,91,215,.06)"/>
-    </svg>
-  </div>
-
-  <div class="wrap hero-inner">
-    <div class="hero-eyebrow">Gqeberha · Est. 2018 · AA Authorised · Premium Pre-Owned</div>
-    <div class="hero-welcome"><span>Welcome To</span></div>
-    <div class="hero-tagline"><span class="chrome-text" id="heroTitle">The Next Level.</span></div>
-    <p class="hero-sub rv d1">Driven by instinct. Bridging the gap between aspiration and reality — one exceptional vehicle at a time.</p>
-    <div class="hero-badges rv d2">
-      <div class="tbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.3 7.2 16.9l.9-5.4L4.2 7.7l5.4-.8z"/></svg>AA Authorised Dealer</div>
-      <div class="tbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h13M13 5l7 7-7 7"/></svg>Zero-Cost Nationwide Delivery</div>
-      <div class="tbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 17l5-5 4 4 7-8M18 8h3v3"/></svg>The VAF Bridge — Custom Finance</div>
-    </div>
-    <div class="hero-ctas rv d2">
-      <a class="btn btn-blue" href="#collections">Collections →</a>
-      <a class="btn btn-ghost" href="#stock">Browse showroom</a>
-      <a class="btn btn-wa" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27d%20like%20to%20chat" target="_blank" rel="noopener">WhatsApp us</a>
-    </div>
-
-    <div class="search-panel rv d3">
-      <div class="sp-title"><h3>Search the showroom</h3><span>Prices include VAT · E&amp;OE</span></div>
-      <form class="sp-row" id="qsearch">
-        <div class="sp-field"><label>Make</label>
-          <select id="f-make"><option value="">All makes</option><option>Nissan</option><option>Volkswagen</option><option>Hyundai</option><option>Toyota</option><option>Renault</option><option>MINI</option></select>
-        </div>
-        <div class="sp-field"><label>Body</label>
-          <select id="f-body"><option value="">All types</option><option value="bakkie">Bakkie / 4×4</option><option value="suv">SUV</option><option value="hatch">Hatchback</option><option value="sedan">Sedan</option></select>
-        </div>
-        <div class="sp-field"><label>Max price</label>
-          <select id="f-price"><option value="">No limit</option><option value="150000">Under R150 000</option><option value="250000">Under R250 000</option><option value="400000">Under R400 000</option><option value="600000">Under R600 000</option></select>
-        </div>
-        <div class="sp-field"><label>Sort</label>
-          <select id="f-sort"><option value="">Featured</option><option value="lo">Price: low → high</option><option value="hi">Price: high → low</option></select>
-        </div>
-        <button class="sp-go" type="submit">Search</button>
-      </form>
-    </div>
-    <div class="hero-meta">
-      <span>495 Cape Road, Westering <span class="dot">◆</span> Gqeberha</span>
-      <span>Mon–Fri 08:00–17:30 <span class="dot">◆</span> Sat 08:00–14:00</span>
-    </div>
+<section class="page-hero theme-perf">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="crumb"><a href="index.html">Home</a> <span>/</span> <a href="index.html#stock">Showroom</a> <span>/</span> <b style="color:#fff">Premium Performance</b></div>
+    <div class="hero-eyebrow"><i></i> MKR collections · Gqeberha</div>
+    <h1 class="rv">Engineered for<br><em>adrenaline.</em></h1>
+    <p class="lede rv d1">Premium Performance is the enthusiast lane — GTI, AMG, RS, M-cars and high-spec bakkies. Same MKR standards, more heart rate.</p>
+    <div class="hero-pills rv d2"><span>🏁 Enthusiast grade</span><span>🔍 VIR graded</span><span>🚚 Free SA delivery</span></div>
   </div>
 </section>
 
-<!-- THREE PORTALS -->
-<section class="portals" id="portals">
-  <div class="wrap">
-    <div class="sec-head rv">
-      <div class="sec-eyebrow">How MKR works</div>
-      <h2 class="sec-h">Three portals.<br><em>One premium experience.</em></h2>
-      <p class="sec-lede">Same idea as true-cars — clear lanes so you never guess where to start. Tap a portal and we take you straight there (or open the lead desk in chat).</p>
-    </div>
-    <div class="portal-grid">
-      <!-- BUY -->
-      <a class="portal-card buy rv" href="#stock" data-portal="buy">
-        <div class="pc-bg" style="background-image:url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80')"></div>
-        <div class="pc-veil"></div>
-        <span class="pc-accent">Portal 01</span>
-        <div class="pc-body">
-          <div class="pc-num">01 · Buyer portal</div>
-          <h3>Buy a car</h3>
-          <p>Browse VIR-graded stock, filter by body and budget, book a viewing or live video — then finance or cash.</p>
-          <ul>
-            <li>Live showroom + inspection grades</li>
-            <li>Test drive &amp; live video viewing</li>
-            <li>Free insured delivery nationwide</li>
-          </ul>
-          <span class="pc-cta">Enter buyer portal →</span>
-        </div>
-      </a>
-      <!-- SELL -->
-      <a class="portal-card sell rv d1" href="#sell" data-portal="sell">
-        <div class="pc-bg" style="background-image:url('https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1200&q=80')"></div>
-        <div class="pc-veil"></div>
-        <span class="pc-accent">Portal 02</span>
-        <div class="pc-body">
-          <div class="pc-num">02 · Seller portal</div>
-          <h3>Sell or trade-in</h3>
-          <p>Fair valuation, clean paperwork, and trade-in against anything on the floor — or a cash offer when you want out clean.</p>
-          <ul>
-            <li>Photo valuation via WhatsApp</li>
-            <li>Trade-in against live stock</li>
-            <li>Transparent market-based offer</li>
-          </ul>
-          <span class="pc-cta">Enter seller portal →</span>
-        </div>
-      </a>
-      <!-- FINANCE -->
-      <a class="portal-card finance rv d2" href="#finance" data-portal="finance">
-        <div class="pc-bg" style="background-image:url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80')"></div>
-        <div class="pc-veil"></div>
-        <span class="pc-accent">Portal 03</span>
-        <div class="pc-body">
-          <div class="pc-num">03 · Finance portal</div>
-          <h3>VAF Bridge</h3>
-          <p>When the banks say no, we build the road. Custom vehicle asset finance for real-world credit profiles — plus major banks.</p>
-          <ul>
-            <li>Major banks + structured VAF</li>
-            <li>Self-employed &amp; thin files welcome</li>
-            <li>Estimate in minutes, apply in two</li>
-          </ul>
-          <span class="pc-cta">Enter finance portal →</span>
-        </div>
-      </a>
-    </div>
+<div class="wrap">
+  <div class="cat-links">
+    <a href="premium-select.html" class="">Premium Select</a>
+    <a href="premium-performance.html" class="on-perf">Premium Performance</a>
+    <a href="index.html#stock">All vehicles</a>
   </div>
-</section>
-
-<!-- COLLECTIONS -->
-<section class="portals" id="collections" style="padding-top:20px">
-  <div class="wrap">
-    <div class="sec-head rv">
-      <div class="sec-eyebrow">Vehicle categories</div>
-      <h2 class="sec-h">Two lanes.<br><em>True-cars energy.</em></h2>
-      <p class="sec-lede">Shop by collection — each has its own page, filters, and the same floating chat + lead desk.</p>
-    </div>
-    <div class="portal-grid" style="grid-template-columns:1fr;gap:14px">
-      <style>
-        @media(min-width:780px){#collections .portal-grid{grid-template-columns:1fr 1fr!important;}}
-      </style>
-      <a class="portal-card sell rv" href="premium-select.html">
-        <div class="pc-bg" style="background-image:url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80')"></div>
-        <div class="pc-veil"></div>
-        <span class="pc-accent">Premium Select</span>
-        <div class="pc-body">
-          <div class="pc-num">Collection · Gold lane</div>
-          <h3>Premium Select</h3>
-          <p>Hand-curated low-km daily drivers and family cars — polished, VIR-minded, finance-ready.</p>
-          <ul>
-            <li>Dedicated category page</li>
-            <li>Sort &amp; body filters</li>
-            <li>FAB + lead portal</li>
-          </ul>
-          <span class="pc-cta">Open Premium Select →</span>
-        </div>
-      </a>
-      <a class="portal-card buy rv d1" href="premium-performance.html" style="--_acc:perf">
-        <div class="pc-bg" style="background-image:url('https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80')"></div>
-        <div class="pc-veil"></div>
-        <span class="pc-accent" style="background:linear-gradient(145deg,#ef4444,#b91c1c)">Premium Performance</span>
-        <div class="pc-body">
-          <div class="pc-num">Collection · Red lane</div>
-          <h3>Premium Performance</h3>
-          <p>GTI, AMG, RS, M-cars and high-spec enthusiast metal — same MKR standards, more heart rate.</p>
-          <ul>
-            <li>Dedicated category page</li>
-            <li>Sort &amp; body filters</li>
-            <li>FAB + lead portal</li>
-          </ul>
-          <span class="pc-cta">Open Premium Performance →</span>
-        </div>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- SHOWROOM -->
-<section class="inventory" id="stock">
-  <div class="wrap">
-    <div class="inv-bar">
-      <div>
-        <div class="sec-eyebrow">Buyer portal · full yard</div>
-        <h2>Showroom</h2>
-        <p class="inv-lede">All categories on one floor — or jump into Premium Select / Performance pages for a focused lane.</p>
-        <span class="stock-source" id="stockSource"><span class="dot"></span> <span id="stockSourceLbl">Current stock</span></span>
+  <div class="cat-bar">
+    <div class="cat-bar-inner">
+      <div class="results"><span id="countLabel">Loading…</span></div>
+      <div class="tools">
+        <select id="sort" aria-label="Sort">
+          <option value="">Featured</option>
+          <option value="lo">Price: low → high</option>
+          <option value="hi">Price: high → low</option>
+        </select>
+        <select id="body" aria-label="Body type">
+          <option value="">All body types</option>
+          <option value="hatch">Hatchback</option>
+          <option value="suv">SUV</option>
+          <option value="bakkie">Bakkie</option>
+          <option value="sedan">Sedan</option>
+          <option value="coupe">Coupe</option>
+        </select>
       </div>
     </div>
-    <div class="inv-chips" id="chips" role="tablist">
-      <button type="button" class="chip on" data-f="">All</button>
-      <button type="button" class="chip" data-f="select">Premium Select</button>
-      <button type="button" class="chip" data-f="performance">Premium Performance</button>
-      <button type="button" class="chip" data-f="hatch">Hatchbacks</button>
-      <button type="button" class="chip" data-f="suv">SUVs</button>
-      <button type="button" class="chip" data-f="bakkie">Bakkies</button>
-      <button type="button" class="chip" data-f="sedan">Sedans</button>
-    </div>
+  </div>
+</div>
+
+<section class="inventory cat-page">
+  <div class="wrap">
     <div class="grid" id="invgrid"></div>
-    <div class="inv-foot rv">
-      <a class="btn btn-dark" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27d%20like%20to%20see%20more%20stock" target="_blank" rel="noopener">WhatsApp for more stock →</a>
-    </div>
-  </div>
-</section>
-
-<!-- FINANCE -->
-<section class="finance" id="finance">
-  <div class="wrap fin-grid">
-    <div class="fin-left rv">
-      <div class="eyebrow">Portal 03 · Finance</div>
-      <h2>The VAF Bridge.<br><em>When banks say no.</em></h2>
-      <p>Traditional finance leaves good buyers behind. The VAF Bridge is MKR’s custom vehicle asset finance channel — structured deals for self-employed buyers, thin credit files, and everyone the conventional system overlooks.</p>
-      <div class="fp"><div class="n">01</div><div><b>Apply in minutes</b><p>One short path on your phone. We handle structuring — no branch mountain.</p></div></div>
-      <div class="fp"><div class="n">02</div><div><b>Banks + bridge</b><p>WesBank, MFC, Absa, Standard Bank, Capitec — and VAF when you need another road.</p></div></div>
-      <div class="fp"><div class="n">03</div><div><b>Plain-language terms</b><p>Deposit, term, balloon — explained clearly before you sign anything.</p></div></div>
-      <div class="banks"><span>WesBank</span><span>MFC / Nedbank</span><span>Absa</span><span>Standard Bank</span><span>Capitec</span><span>VAF Bridge</span></div>
-      <div class="btn-row" style="margin-top:20px">
-        <a class="btn btn-blue" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27d%20like%20VAF%20Bridge%20finance" target="_blank" rel="noopener">Chat to finance</a>
-        <button type="button" class="btn btn-ghost" id="openLeadFinance">Leave a finance lead</button>
-      </div>
-    </div>
-    <div class="calc rv d2">
-      <div class="c-head">Repayment estimator <i></i></div>
-      <div class="c-row"><div class="c-lab"><span>Vehicle price</span><output id="o-price">R385 000</output></div><input type="range" id="r-price" min="80000" max="1200000" step="5000" value="385000"></div>
-      <div class="c-row"><div class="c-lab"><span>Deposit</span><output id="o-dep">10%</output></div><input type="range" id="r-dep" min="0" max="40" step="5" value="10"></div>
-      <div class="c-row"><div class="c-lab"><span>Term</span><output id="o-term">72 months</output></div><input type="range" id="r-term" min="12" max="96" step="12" value="72"></div>
-      <div class="c-result">
-        <div><div class="cr-label">Estimated monthly</div><div class="cr-val" id="o-monthly">R7 480<small> /pm</small></div></div>
-        <a class="btn btn-blue" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27d%20like%20to%20apply%20for%20finance" target="_blank" rel="noopener">Apply now</a>
-      </div>
-      <p class="fine">Estimate at 11.75% linked rate over selected term, excluding fees &amp; insurance. Final rate subject to credit approval. VAF Bridge structures vary by profile.</p>
-    </div>
-  </div>
-</section>
-
-<!-- SELL -->
-<section class="sell" id="sell">
-  <div class="wrap sell-grid">
-    <div class="sell-img rv">
-      <div class="si-badge"><div class="sb1">Seller portal</div><div class="sb2">Valuation in hours</div></div>
-    </div>
-    <div class="sell-right">
-      <div class="eyebrow rv">Portal 02 · Sell &amp; trade-in</div>
-      <h2 class="rv d1">Your car, sold properly.</h2>
-      <p class="rv d2">Trade it in against anything on the floor, or sell outright. We price off live market data and real condition — not a low-ball script.</p>
-      <div class="ss rv"><div class="sn">1</div><div><b>Tell us about the car</b><p>WhatsApp photos, mileage and service notes — or drive in to Cape Road.</p></div></div>
-      <div class="ss rv d1"><div class="sn">2</div><div><b>Graded valuation</b><p>Inspection + market comps = a clear number you can act on.</p></div></div>
-      <div class="ss rv d2"><div class="sn">3</div><div><b>Cash or trade-in</b><p>Walk away with funds or roll equity into your next MKR vehicle.</p></div></div>
+    <div class="sister-card rv">
+      <h3>Prefer polished daily drivers?</h3>
+      <p>Low-km SUVs, hatches and family cars live in Premium Select.</p>
       <div class="btn-row">
-        <a class="btn btn-blue rv d3" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27d%20like%20a%20valuation" target="_blank" rel="noopener">Get a free valuation</a>
-        <button type="button" class="btn btn-outline rv d3" id="openLeadSell">Submit seller lead</button>
+        <a class="btn btn-blue" href="premium-select.html">Open Premium Select →</a>
+        <a class="btn btn-ghost" href="index.html#stock">Full showroom</a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- TRUST -->
-<section class="trust" id="trust">
-  <div class="wrap">
-    <div class="sec-head rv">
-      <div class="sec-eyebrow" style="color:var(--gold-light)">Why MKR</div>
-      <h2 class="sec-h">Premium standards.<br><em>Technology that earns trust.</em></h2>
-      <p class="sec-lede">AA authorised. VIR-minded inspections. Free delivery from Gqeberha to your door. Digital retailing powered by TruSaaS under the hood — you only see the polished showroom.</p>
-    </div>
-    <div class="trust-grid">
-      <div class="tc rv">
-        <div class="ti"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-5"/><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/></svg></div>
-        <h3>VIR-minded inspections</h3>
-        <p>Body, OBD and condition grades so you buy with eyes open — not marketing copy alone.</p>
-        <span class="tag">Inspection grade</span>
-      </div>
-      <div class="tc rv d1">
-        <div class="ti"><svg viewBox="0 0 24 24"><path d="M3 12h13M13 5l7 7-7 7"/></svg></div>
-        <h3>Zero-cost nationwide delivery</h3>
-        <p>Buy in Gqeberha, take delivery in Sandton or Cape Town — insured to your door at no charge.</p>
-        <span class="tag">Door-to-door SA</span>
-      </div>
-      <div class="tc rv d2">
-        <div class="ti"><svg viewBox="0 0 24 24"><path d="M15 10l5-3v10l-5-3"/><rect x="3" y="6" width="12" height="12" rx="2.5"/></svg></div>
-        <h3>Live video viewings</h3>
-        <p>Can’t visit Cape Road? We’ll walk the car live — cold start, bay, underbody — you direct the camera.</p>
-        <span class="tag">Book via WhatsApp</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- VISIT -->
-<section class="visit" id="visit">
-  <div class="wrap">
-    <div class="visit-card rv">
-      <div class="visit-l">
-        <div class="eyebrow">Come say hello</div>
-        <h2>The floor is open.<br>The next level starts here.</h2>
-        <p>Find us on Cape Road in Westering, Gqeberha — easy access, safe parking, no pressure sales.</p>
-        <div style="margin-top:20px">
-          <div class="v-row"><span class="vk">Address</span><span class="vv">495 Cape Road, Westering, Gqeberha, 6025</span></div>
-          <div class="v-row"><span class="vk">Phone</span><span class="vv"><a href="tel:+27662912809">+27 66 291 2809</a></span></div>
-          <div class="v-row"><span class="vk">Hours</span><span class="vv">Mon–Fri 08:00–17:30 · Sat 08:00–14:00</span></div>
-        </div>
-        <div class="btn-row">
-          <a class="btn btn-blue" href="https://maps.google.com/?q=495+Cape+Road+Westering+Gqeberha" target="_blank" rel="noopener">Get directions</a>
-          <a class="btn btn-ghost" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27d%20like%20to%20book%20a%20viewing" target="_blank" rel="noopener">Book a viewing</a>
-        </div>
-      </div>
-      <div class="visit-r"><div class="pin"><div class="dot"></div><div class="pl">495 Cape Rd · Gqeberha</div></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
 <footer>
   <div class="wrap">
     <div class="f-grid">
       <div class="f-about">
         <img src="mkr-logo.png" alt="MKR Auto Sales">
-        <p>Premium pre-owned and enthusiast vehicles in Gqeberha since 2018. AA Authorised. The VAF Bridge. Delivered nationwide at zero cost.</p>
-      </div>
-      <div>
-        <h4>Portals</h4>
-        <a href="#stock">Buy a car</a>
-        <a href="#sell">Sell / trade-in</a>
-        <a href="#finance">VAF Bridge finance</a>
-        <a href="#portals">How portals work</a>
+        <p>Premium pre-owned in Gqeberha. Premium Select · Premium Performance · VAF Bridge · Free nationwide delivery.</p>
       </div>
       <div>
         <h4>Collections</h4>
         <a href="premium-select.html">Premium Select</a>
         <a href="premium-performance.html">Premium Performance</a>
-        <a href="#stock">All vehicles</a>
-        <a href="#visit">Visit us</a>
+        <a href="index.html#stock">All stock</a>
+      </div>
+      <div>
+        <h4>Portals</h4>
+        <a href="index.html#stock">Buy</a>
+        <a href="index.html#sell">Sell / trade-in</a>
+        <a href="index.html#finance">VAF finance</a>
       </div>
       <div>
         <h4>Contact</h4>
         <a href="tel:+27662912809">+27 66 291 2809</a>
         <a href="https://wa.me/27662912809" target="_blank" rel="noopener">WhatsApp</a>
-        <a href="#visit">495 Cape Road, Westering</a>
+        <a href="index.html#visit">495 Cape Road, Westering</a>
       </div>
     </div>
     <div class="f-bottom">
-      <span>© 2026 MKR Auto Sales · All prices include VAT · E&amp;OE</span>
-      <span class="ax">Powered by <a href="https://true-cars.co.za/truesaas.html" style="color:inherit"><b>TrueSaas</b></a> · <a href="https://true-cars.co.za" style="color:inherit">true-cars.co.za</a></span>
+      <span>© 2026 MKR Auto Sales · VAT incl. · E&amp;OE</span>
+      <span class="ax">Powered by <a href="https://true-cars.co.za/truesaas.html" style="color:inherit"><b>TrueSaas</b></a></span>
     </div>
   </div>
 </footer>
 
-<!-- FAB RAIL -->
+
 <div class="fab-rail" id="fabRail" aria-label="Quick actions">
   <button type="button" class="fab-btn fab-bot" id="fabBot" aria-label="Chat with MKR">
     <span class="ring" aria-hidden="true"></span>
@@ -1265,17 +1057,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8.5V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-1.5l5 3.5V5z"/></svg>
     <span class="fab-label">Live video viewing</span>
   </a>
-  <a class="fab-btn fab-wa" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27m%20interested%20in%20a%20vehicle" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <a class="fab-btn fab-wa" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27m%20interested%20in%20Premium%20Performance" target="_blank" rel="noopener" aria-label="WhatsApp">
     <svg viewBox="0 0 32 32" fill="currentColor"><path d="M16 3.2C8.9 3.2 3.2 8.9 3.2 16c0 2.3.6 4.5 1.7 6.4L3 29l6.8-1.8c1.9 1 4 1.6 6.2 1.6h.01c7.1 0 12.8-5.7 12.8-12.8S23.1 3.2 16 3.2zm0 23.3c-2 0-3.9-.5-5.6-1.5l-.4-.2-4 1.1 1.1-3.9-.3-.4c-1.1-1.7-1.6-3.7-1.6-5.6C5.2 10 10 5.3 16 5.3c2.9 0 5.6 1.1 7.6 3.2 2 2 3.2 4.7 3.2 7.6 0 6-4.8 10.8-10.8 10.8zm5.9-8c-.3-.2-1.9-1-2.2-1-.3-.1-.5-.2-.7.2s-.8 1-1 1.2c-.2.2-.4.2-.7.1-1.9-1-3.2-1.7-4.5-3.9-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.9-.8 2.1-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg>
     <span class="fab-label">WhatsApp us</span>
   </a>
 </div>
 
-<!-- CHAT + LEAD PORTAL -->
 <div class="mkr-chat" id="mkrChat" role="dialog" aria-label="MKR chat and leads" aria-hidden="true">
   <div class="chat-head">
     <div class="av">MKR</div>
-    <div><b>MKR assistant</b><span>Chat · Lead portal · Usually minutes</span></div>
+    <div><b>MKR assistant</b><span>Premium Performance · Lead portal</span></div>
     <button type="button" id="chatClose" aria-label="Close">×</button>
   </div>
   <div class="chat-tabs" role="tablist">
@@ -1284,53 +1075,37 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
   </div>
   <div class="chat-body">
     <div class="chat-panel on" id="panelChat" role="tabpanel">
-      <div class="msg bot">Hi — welcome to MKR Auto Sales. Three portals: <b>Buy</b>, <b>Sell / trade-in</b>, and <b>VAF finance</b>. What do you need?</div>
+      <div class="msg bot">You're in <b>Premium Performance</b>. Browse the grid, book a viewing, or leave a lead — same floating desk as the main site.</div>
       <div class="quick" id="chatQuick">
-        <button type="button" data-q="buy">Buy a car</button>
-        <button type="button" data-q="select">Premium Select</button>
         <button type="button" data-q="performance">Premium Performance</button>
-        <button type="button" data-q="sell">Sell / trade-in</button>
+        <button type="button" data-q="viewing">Book viewing</button>
         <button type="button" data-q="finance">VAF finance</button>
         <button type="button" data-q="lead">Leave my details</button>
       </div>
     </div>
     <div class="chat-panel" id="panelLead" role="tabpanel">
       <form class="lead-form" id="leadForm">
-        <p class="lf-intro">Leave your details — we’ll route you to the right portal (buy, sell, or finance) and follow up on WhatsApp or phone.</p>
-        <div>
-          <label for="leadName">Full name</label>
-          <input id="leadName" name="name" required autocomplete="name" placeholder="Your name">
-        </div>
+        <p class="lf-intro">Lead portal for Premium Performance. We'll follow up on WhatsApp or phone.</p>
+        <div><label for="leadName">Full name</label><input id="leadName" name="name" required autocomplete="name" placeholder="Your name"></div>
         <div class="lf-row">
-          <div>
-            <label for="leadPhone">Mobile</label>
-            <input id="leadPhone" name="phone" type="tel" required autocomplete="tel" placeholder="06…">
-          </div>
-          <div>
-            <label for="leadEmail">Email</label>
-            <input id="leadEmail" name="email" type="email" autocomplete="email" placeholder="optional">
-          </div>
+          <div><label for="leadPhone">Mobile</label><input id="leadPhone" name="phone" type="tel" required autocomplete="tel" placeholder="06…"></div>
+          <div><label for="leadEmail">Email</label><input id="leadEmail" name="email" type="email" autocomplete="email" placeholder="optional"></div>
         </div>
         <div>
-          <label for="leadPortal">Portal interest</label>
+          <label for="leadPortal">Interest</label>
           <select id="leadPortal" name="portal" required>
-            <option value="buy">01 · Buy a car</option>
-            <option value="sell">02 · Sell / trade-in</option>
-            <option value="finance">03 · VAF Bridge finance</option>
+            <option value="performance" selected>Premium Performance</option>
+            <option value="buy">Buy a car</option>
+            <option value="sell">Sell / trade-in</option>
+            <option value="finance">VAF Bridge finance</option>
             <option value="general">General enquiry</option>
           </select>
         </div>
-        <div>
-          <label for="leadMsg">Message</label>
-          <textarea id="leadMsg" name="message" placeholder="Budget, vehicle, timeline…"></textarea>
-        </div>
+        <div><label for="leadMsg">Message</label><textarea id="leadMsg" name="message" placeholder="Vehicle, budget, timeline…"></textarea></div>
         <button type="submit" class="btn btn-blue lf-submit">Submit lead</button>
-        <p class="lf-note">Leads open WhatsApp to MKR with your details pre-filled. No spam — yard team only.</p>
+        <p class="lf-note">Opens WhatsApp to MKR with your details pre-filled.</p>
       </form>
-      <div class="lead-success" id="leadSuccess" hidden>
-        <b>Lead ready ✓</b>
-        <p>WhatsApp is opening with your details. If it didn’t, use Continue on WhatsApp below.</p>
-      </div>
+      <div class="lead-success" id="leadSuccess" hidden><b>Lead ready ✓</b><p>WhatsApp is opening with your details.</p></div>
     </div>
   </div>
   <div class="chat-foot">
@@ -1338,427 +1113,32 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
   </div>
 </div>
 
+
+<script src="mkr-shared.js"></script>
 <script>
-const WA = "27662912809";
-const STOCK_APIS = [
-  "https://trusaas-premium.onrender.com/api/public/stock?dealer=mkr-autosales",
-  "https://trusaas-flow.onrender.com/api/public/stock?dealer=mkr-autosales",
-  "https://trusaas-lens.onrender.com/api/public/stock?dealer=mkr-autosales"
-];
-
-const MOCK = [
-  {y:2023,make:"Nissan",name:"Navara 2.5DDTi PRO-2X",variant:"Double Cab 4×4 Auto",body:"bakkie",cat:"performance",km:"42 846 km",tr:"Auto",fuel:"Diesel",price:529900,tag:"Premium Performance",img:"https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80"},
-  {y:2021,make:"Volkswagen",name:"Golf 8 GTI",variant:"DSG · Performance pack",body:"hatch",cat:"performance",km:"38 200 km",tr:"DSG",fuel:"Petrol",price:489900,tag:"Premium Performance",img:"https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&w=1000&q=80"},
-  {y:2018,make:"BMW",name:"M2 Coupé",variant:"Manual · Long Beach Blue",body:"coupe",cat:"performance",km:"64 000 km",tr:"Manual",fuel:"Petrol",price:589900,tag:"Premium Performance",img:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=80"},
-  {y:2019,make:"Hyundai",name:"Tucson 2.0 Premium",variant:"Auto · Full history",body:"suv",cat:"select",km:"33 711 km",tr:"Auto",fuel:"Petrol",price:259900,tag:"Premium Select",img:"https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1000&q=80"},
-  {y:2026,make:"Volkswagen",name:"Polo Vivo 1.4 Life",variant:"Hatch · Like new",body:"hatch",cat:"select",km:"3 736 km",tr:"Manual",fuel:"Petrol",price:279900,tag:"Premium Select",img:"https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80"},
-  {y:2022,make:"Toyota",name:"Fortuner 2.8 GD-6",variant:"4×4 Epic Auto",body:"suv",cat:"select",km:"48 000 km",tr:"Auto",fuel:"Diesel",price:569900,tag:"Premium Select",img:"https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1000&q=80"},
-  {y:2025,make:"Hyundai",name:"Grand i10 1.0 Motion",variant:"Hatch",body:"hatch",cat:"used",km:"11 136 km",tr:"Manual",fuel:"Petrol",price:219900,tag:"Premium Used",img:"https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80"},
-  {y:2016,make:"Toyota",name:"Corolla 1.6 Esteem",variant:"Sedan",body:"sedan",cat:"used",km:"91 906 km",tr:"Manual",fuel:"Petrol",price:179900,tag:"Premium Used",img:"https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=1000&q=80"}
-];
-
-let STOCK = MOCK.slice();
-const fmtR = n => "R " + Number(n||0).toLocaleString("en-ZA");
-const monthly = p => { const r=.1175/12,n=72; return Math.round(p*.9*r/(1-Math.pow(1+r,-n))); };
-
-let io;
-function observeAll(){
-  io = io || new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target);} }),{threshold:.12});
-  document.querySelectorAll(".rv:not(.in)").forEach(el=>io.observe(el));
-}
-
-function setStockSource(live, label){
-  const el = document.getElementById("stockSource");
-  const lbl = document.getElementById("stockSourceLbl");
-  if(el) el.classList.toggle("live", !!live);
-  if(lbl) lbl.textContent = label;
-}
-
-const grid = document.getElementById("invgrid");
-function render(list){
-  const show = list.length ? list : STOCK.slice(0,6);
-  grid.innerHTML = show.map((c,i)=>{
-    const badgeClass = c.cat==="performance" ? "perf" : (c.cat==="select" ? "gold" : "");
-    const wa = encodeURIComponent(`Hi MKR, I'm interested in the ${c.y} ${c.make} ${c.name} (${fmtR(c.price)}) — ${c.tag||""}. Is it still available?`);
-    return `<article class="card rv d${(i%3)+1}">
-      <div class="card-shine" aria-hidden="true"></div>
-      <div class="ph">
-        <div class="im" style="background-image:linear-gradient(180deg,transparent 50%,rgba(10,22,38,.4)),url('${c.img||''}')"></div>
-        <span class="badge ${badgeClass}">${c.tag||"Featured"}</span>
-        <span class="vir">VIR ★ ${c.vir||"4.5"}</span>
-      </div>
-      <div class="card-body">
-        <div class="yr">${c.y} · ${c.make}</div>
-        <h3>${c.name}</h3>
-        <div class="var">${c.variant||""}</div>
-        <div class="specs"><span>${c.km||"—"}</span><span>${c.tr||"—"}</span><span>${c.fuel||"—"}</span><span>${c.body||"—"}</span></div>
-        <div class="price-row"><div class="pr">${fmtR(c.price)}</div><div class="pm">from <b>${fmtR(monthly(c.price))}/pm</b></div></div>
-        <div class="cta-row">
-          <a class="btn btn-wa" href="https://wa.me/${WA}?text=${wa}" target="_blank" rel="noopener">WhatsApp</a>
-          <a class="btn btn-ghost-blue" href="https://wa.me/${WA}?text=${encodeURIComponent("Hi MKR, I'd like a viewing of the "+c.y+" "+c.make+" "+c.name)}" target="_blank" rel="noopener">Viewing</a>
-        </div>
-      </div>
-    </article>`;
-  }).join("");
-  observeAll();
-}
-
-function isJunkApi(v){
-  const blob = [v.make,v.model,v.trim,v.stockNumber,v.description].filter(Boolean).join(" ").toLowerCase();
-  if(/stk-lite-test|test vehicle|demo junk|lorem ipsum/.test(blob)) return true;
-  if(/\bss\b/.test(blob) && /ddas/.test(blob)) return true;
-  if(v.make && String(v.make).length<=2 && /ddas|test|xxx/i.test(String(v.model||""))) return true;
-  return false;
-}
-function mapApi(v){
-  if(isJunkApi(v)) return null;
-  const price = Number(v.price)||0;
-  const bodyRaw = String(v.bodyType||v.body||"").toLowerCase();
-  let body = "sedan";
-  if(/suv|crossover/.test(bodyRaw)) body="suv";
-  else if(/bakkie|truck|4x4|double/.test(bodyRaw)) body="bakkie";
-  else if(/hatch/.test(bodyRaw)) body="hatch";
-  const name = [v.model, v.trim].filter(Boolean).join(" ") || v.make || "Vehicle";
-  const full = ((v.make||"")+" "+name).toLowerCase();
-  const isPerf = /gti|amg|rs\b|m2|m3|m4|pro-2x|cooper s|performance|type r|st\b|gr\b|n line|r-line/.test(full) || price>=500000;
-  const isSelect = !isPerf && (price>=250000 || /premium|executive|limited|exclusive|luxury|epic|wildtrak|legend/.test(full));
-  const cat = isPerf ? "performance" : isSelect ? "select" : "used";
-  return {
-    y: v.year||"—", make: v.make||"—", name, variant: v.trim||v.stockNumber||"",
-    body, cat, km: v.mileage!=null ? Number(v.mileage).toLocaleString("en-ZA")+" km" : (v.km||"—"),
-    tr: v.transmission||"—", fuel: v.fuelType||v.fuel||"—", price,
-    tag: cat==="performance" ? "Premium Performance" : cat==="select" ? "Premium Select" : "Premium Used",
-    vir: v.vir||"4.5",
-    img: v.heroImage || (Array.isArray(v.images)&&v.images[0]) || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=80"
-  };
-}
-
-async function tryLoadLive(){
-  setStockSource(false, "Loading yard…");
-  for(const url of STOCK_APIS){
-    for(let attempt=0; attempt<2; attempt++){
-      try{
-        const ctrl = new AbortController();
-        const t = setTimeout(()=>ctrl.abort(), 18000);
-        const res = await fetch(url, {signal: ctrl.signal, cache:"no-store"});
-        clearTimeout(t);
-        if(!res.ok) continue;
-        const data = await res.json();
-        const list = Array.isArray(data.vehicles) ? data.vehicles : (Array.isArray(data)?data:[]);
-        if(!list.length) continue;
-        const mapped = list.map(mapApi).filter(Boolean);
-        if(!mapped.length) continue;
-        STOCK = mapped;
-        setStockSource(true, STOCK.length+" vehicles in stock");
-        applyFilters();
-        return;
-      }catch(e){ if(attempt===0) await new Promise(r=>setTimeout(r,1500)); }
-    }
-  }
-  setStockSource(false, STOCK.length+" vehicles in stock");
-}
-
-let activeChip = "";
-function applyFilters(make="", body="", maxP="", sort=""){
-  let list = [...STOCK];
-  if(activeChip==="select" || activeChip==="performance") list = list.filter(c=>c.cat===activeChip);
-  else if(activeChip) list = list.filter(c=>c.body===activeChip);
-  if(make) list = list.filter(c=>c.make===make);
-  if(body) list = list.filter(c=>c.body===body);
-  if(maxP) list = list.filter(c=>c.price<=+maxP);
-  if(sort==="lo") list.sort((a,b)=>a.price-b.price);
-  if(sort==="hi") list.sort((a,b)=>b.price-a.price);
-  if(!list.length){
-    render(STOCK.slice(0,6));
-    grid.insertAdjacentHTML("afterbegin",'<p style="grid-column:1/-1;text-align:center;padding:36px 12px;font-size:13px;color:var(--grey);font-weight:600;">No exact matches — showing featured stock. WhatsApp us to source.</p>');
-  } else render(list);
-}
-
-document.getElementById("chips").addEventListener("click", e=>{
-  const b = e.target.closest(".chip"); if(!b) return;
-  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
-  b.classList.add("on"); activeChip = b.dataset.f||"";
-  applyFilters();
-});
-document.getElementById("qsearch").addEventListener("submit", e=>{
-  e.preventDefault();
-  activeChip = "";
-  document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", c.dataset.f===""));
-  applyFilters(
-    document.getElementById("f-make").value,
-    document.getElementById("f-body").value,
-    document.getElementById("f-price").value,
-    document.getElementById("f-sort").value
-  );
-  document.getElementById("stock").scrollIntoView({behavior:"smooth"});
-});
-
-/* finance calc */
-const rP=document.getElementById("r-price"), rD=document.getElementById("r-dep"), rT=document.getElementById("r-term");
-function fill(el){ if(!el) return; el.style.setProperty("--fill", ((el.value-el.min)/(el.max-el.min)*100)+"%"); }
-function calc(){
-  if(!rP) return;
-  const P=+rP.value, dep=+rD.value/100, n=+rT.value, r=.1175/12;
-  const m=Math.round(P*(1-dep)*r/(1-Math.pow(1+r,-n)));
-  document.getElementById("o-price").textContent=fmtR(P);
-  document.getElementById("o-dep").textContent=rD.value+"%";
-  document.getElementById("o-term").textContent=n+" months";
-  document.getElementById("o-monthly").innerHTML=fmtR(m)+'<small> /pm</small>';
-  [rP,rD,rT].forEach(fill);
-}
-if(rP){ [rP,rD,rT].forEach(el=>el.addEventListener("input", calc)); calc(); }
-
-/* nav */
-document.getElementById("burger").addEventListener("click", ()=>document.getElementById("mmenu").classList.toggle("open"));
-document.querySelectorAll("#mmenu a").forEach(a=>a.addEventListener("click", ()=>document.getElementById("mmenu").classList.remove("open")));
-
-/* chat + lead portal */
-(function(){
-  const bot = document.getElementById("fabBot");
-  const panel = document.getElementById("mkrChat");
-  const close = document.getElementById("chatClose");
-  const panelChat = document.getElementById("panelChat");
-  const panelLead = document.getElementById("panelLead");
-  const tabs = document.querySelectorAll(".chat-tabs button");
-
-  function openChat(tab){
-    panel.classList.add("open");
-    panel.setAttribute("aria-hidden","false");
-    if(tab) switchTab(tab);
-  }
-  function closeChat(){
-    panel.classList.remove("open");
-    panel.setAttribute("aria-hidden","true");
-  }
-  function switchTab(name){
-    tabs.forEach(t=>{
-      const on = t.dataset.tab===name;
-      t.classList.toggle("on", on);
-      t.setAttribute("aria-selected", on?"true":"false");
-    });
-    panelChat.classList.toggle("on", name==="chat");
-    panelLead.classList.toggle("on", name==="lead");
-  }
-
-  bot.addEventListener("click", ()=> panel.classList.contains("open") ? closeChat() : openChat("chat"));
-  close.addEventListener("click", closeChat);
-  tabs.forEach(t=>t.addEventListener("click", ()=>switchTab(t.dataset.tab)));
-
-  document.getElementById("openLeadFinance")?.addEventListener("click", ()=>{
-    document.getElementById("leadPortal").value="finance";
-    openChat("lead");
-  });
-  document.getElementById("openLeadSell")?.addEventListener("click", ()=>{
-    document.getElementById("leadPortal").value="sell";
-    openChat("lead");
-  });
-
-  const replies = {
-    buy: "Open the Buyer portal — filter the showroom, then WhatsApp a unit or book a viewing / live video.",
-    select: "Premium Select — hand-curated daily drivers. Opening the dedicated page…",
-    performance: "Premium Performance — GTI, AMG, RS, M-cars. Opening the dedicated page…",
-    sell: "Seller portal: send photos and mileage on WhatsApp, or leave a lead and we’ll call back with a valuation path.",
-    finance: "Finance portal — use the VAF Bridge estimator, then apply or leave a finance lead. Banks + structured VAF.",
-    viewing: "Happy to arrange a viewing at 495 Cape Road or a live video walk. WhatsApp a day/time that works.",
-    lead: "Switching you to the Lead portal — name, mobile, and which portal you need."
-  };
-  document.getElementById("chatQuick")?.addEventListener("click", e=>{
-    const b = e.target.closest("button[data-q]"); if(!b) return;
-    const q = b.dataset.q;
-    const labels = {buy:"Buy a car",select:"Premium Select",performance:"Premium Performance",sell:"Sell / trade-in",finance:"VAF finance",viewing:"Book viewing",lead:"Leave my details"};
-    const u = document.createElement("div"); u.className="msg user"; u.textContent=labels[q]||q; panelChat.appendChild(u);
-    setTimeout(()=>{
-      const m = document.createElement("div"); m.className="msg bot"; m.textContent=replies[q]||"WhatsApp us and we’ll help right away."; panelChat.appendChild(m);
-      panelChat.scrollTop = panelChat.scrollHeight;
-      if(q==="buy") document.getElementById("stock")?.scrollIntoView({behavior:"smooth"});
-      if(q==="select") location.href = "premium-select.html";
-      if(q==="performance") location.href = "premium-performance.html";
-      if(q==="sell") document.getElementById("sell")?.scrollIntoView({behavior:"smooth"});
-      if(q==="finance") document.getElementById("finance")?.scrollIntoView({behavior:"smooth"});
-      if(q==="lead") switchTab("lead");
-    }, 280);
-  });
-
-  document.getElementById("leadForm")?.addEventListener("submit", e=>{
-    e.preventDefault();
-    const name = document.getElementById("leadName").value.trim();
-    const phone = document.getElementById("leadPhone").value.trim();
-    const email = document.getElementById("leadEmail").value.trim();
-    const portal = document.getElementById("leadPortal").value;
-    const msg = document.getElementById("leadMsg").value.trim();
-    const portalLabel = {buy:"Buy a car",sell:"Sell / trade-in",finance:"VAF Bridge finance",general:"General"}[portal]||portal;
-    const text = [
-      "Hi MKR — new website lead",
-      "Name: "+name,
-      "Phone: "+phone,
-      email ? "Email: "+email : null,
-      "Portal: "+portalLabel,
-      msg ? "Message: "+msg : null
-    ].filter(Boolean).join("\n");
-    const href = "https://wa.me/"+WA+"?text="+encodeURIComponent(text);
-    document.getElementById("chatWa").href = href;
-    document.getElementById("leadForm").hidden = true;
-    document.getElementById("leadSuccess").hidden = false;
-    window.open(href, "_blank", "noopener");
-  });
-})();
-
-/* scroll UI */
-(function(){
-  const header = document.getElementById("siteHeader");
-  const prog = document.getElementById("scrollProgress");
-  const sections = ["portals","stock","sell","finance","trust","visit"].map(id=>document.getElementById(id)).filter(Boolean);
-  const navLinks = document.querySelectorAll(".nav-links a");
-  function onScroll(){
-    const y = window.scrollY||0;
-    header?.classList.toggle("scrolled", y>20);
-    if(prog){
-      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      prog.style.width = Math.min(100, (y/max)*100)+"%";
-    }
-    let cur = "portals";
-    const mid = y + 130;
-    sections.forEach(s=>{ if(s.offsetTop <= mid) cur = s.id; });
-    navLinks.forEach(a=>{
-      const href = (a.getAttribute("href")||"").replace("#","");
-      a.classList.toggle("active", href===cur);
-    });
-  }
-  window.addEventListener("scroll", onScroll, {passive:true});
-  onScroll();
-})();
-
-render(STOCK);
-setStockSource(false, STOCK.length+" vehicles in stock");
-tryLoadLive();
-observeAll();
-
-/* ── Interactive UX: magnetic buttons, ripples, card/portal glow ── */
-(function(){
-  const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(reduce) return;
-
-  /* pointer glow on buttons */
-  document.addEventListener("pointermove", e=>{
-    const btn = e.target.closest(".btn");
-    if(!btn) return;
-    const r = btn.getBoundingClientRect();
-    btn.style.setProperty("--mx", ((e.clientX-r.left)/r.width*100)+"%");
-    btn.style.setProperty("--my", ((e.clientY-r.top)/r.height*100)+"%");
-  }, {passive:true});
-
-  /* click ripple */
-  document.addEventListener("click", e=>{
-    const btn = e.target.closest(".btn, .chip, .fab-btn");
-    if(!btn || btn.classList.contains("fab-btn") && e.target.closest("a.fab-btn") && e.metaKey) return;
-    if(!btn.classList.contains("btn") && !btn.classList.contains("chip")) return;
-    const r = btn.getBoundingClientRect();
-    const size = Math.max(r.width, r.height);
-    const span = document.createElement("span");
-    span.className = "ripple";
-    span.style.width = span.style.height = size+"px";
-    span.style.left = (e.clientX - r.left - size/2)+"px";
-    span.style.top = (e.clientY - r.top - size/2)+"px";
-    if(btn.classList.contains("chip")){
-      span.style.position="absolute"; span.style.borderRadius="50%";
-      span.style.background="rgba(11,91,215,.25)"; span.style.pointerEvents="none";
-      span.style.animation="btnRipple .55s var(--ease) forwards";
-      if(getComputedStyle(btn).position==="static") btn.style.position="relative";
-      btn.style.overflow="hidden";
-    }
-    btn.appendChild(span);
-    setTimeout(()=>span.remove(), 700);
-  });
-
-  if(!fine) return;
-
-  /* magnetic buttons */
-  document.querySelectorAll(".btn, .fab-btn").forEach(el=>{
-    el.classList.add("btn-magnetic");
-    el.addEventListener("pointermove", e=>{
-      const r = el.getBoundingClientRect();
-      const x = e.clientX - r.left - r.width/2;
-      const y = e.clientY - r.top - r.height/2;
-      const strength = el.classList.contains("fab-btn") ? 0.28 : 0.18;
-      el.style.transform = `translate(${x*strength}px,${y*strength}px) scale(${el.matches(":active")?0.96:1.03})`;
-    });
-    el.addEventListener("pointerleave", ()=>{ el.style.transform = ""; });
-  });
-
-  /* card 3D tilt + shine */
-  function bindTilt(sel){
-    document.querySelectorAll(sel).forEach(card=>{
-      if(card.dataset.tiltBound) return;
-      card.dataset.tiltBound = "1";
-      card.addEventListener("pointermove", e=>{
-        const r = card.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width;
-        const py = (e.clientY - r.top) / r.height;
-        const rx = (py - 0.5) * -10;
-        const ry = (px - 0.5) * 12;
-        card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-8px)`;
-        card.style.setProperty("--mx", (px*100)+"%");
-        card.style.setProperty("--my", (py*100)+"%");
-        const shine = card.querySelector(".card-shine, .pc-shine");
-        if(shine){ shine.style.setProperty("--mx", (px*100)+"%"); shine.style.setProperty("--my", (py*100)+"%"); }
-      });
-      card.addEventListener("pointerleave", ()=>{ card.style.transform = ""; });
-    });
-  }
-  bindTilt(".card, .portal-card");
+(async function(){
+  const CAT = "performance";
+  const TITLE = "Premium Performance";
+  MKR.initChrome();
+  MKR.initChat({ category: CAT });
   const grid = document.getElementById("invgrid");
-  if(grid){
-    const mo = new MutationObserver(()=>bindTilt(".card"));
-    mo.observe(grid, {childList:true});
+  const countLabel = document.getElementById("countLabel");
+  let stock = await MKR.loadStock(CAT);
+  function apply(){
+    let list = stock.slice();
+    const body = document.getElementById("body").value;
+    const sort = document.getElementById("sort").value;
+    if(body) list = list.filter(c => c.body === body);
+    if(sort === "lo") list.sort((a,b)=>a.price-b.price);
+    if(sort === "hi") list.sort((a,b)=>b.price-a.price);
+    const n = list.length;
+    countLabel.innerHTML = n ? ("<b>" + n + "</b> vehicle" + (n===1?"":"s") + " in " + TITLE) : ("No matches in " + TITLE);
+    MKR.renderCards(list, grid);
   }
-
-  /* portal shine layers if missing */
-  document.querySelectorAll(".portal-card").forEach(pc=>{
-    if(!pc.querySelector(".pc-shine")){
-      const s = document.createElement("div");
-      s.className = "pc-shine";
-      s.setAttribute("aria-hidden","true");
-      pc.insertBefore(s, pc.firstChild?.nextSibling || null);
-    }
-  });
-
-  /* v3 hero particles + mouse spotlight */
-  (function initHeroFx(){
-    const container = document.getElementById("heroParticles");
-    if(container && fine){
-      for(let i=0;i<28;i++){
-        const p = document.createElement("div");
-        p.className = "particle";
-        p.style.left = Math.random()*100+"%";
-        p.style.animationDuration = (8+Math.random()*12)+"s";
-        p.style.animationDelay = (Math.random()*10)+"s";
-        p.style.opacity = String(.2+Math.random()*.5);
-        container.appendChild(p);
-      }
-    }
-    const spotlight = document.getElementById("heroSpotlight");
-    const hero = document.querySelector(".hero");
-    if(spotlight && hero && fine){
-      hero.addEventListener("mousemove", e=>{
-        const rect = hero.getBoundingClientRect();
-        spotlight.style.setProperty("--mx", (e.clientX - rect.left)+"px");
-        spotlight.style.setProperty("--my", (e.clientY - rect.top)+"px");
-        spotlight.classList.add("active");
-      });
-      hero.addEventListener("mouseleave", ()=>spotlight.classList.remove("active"));
-    }
-    const heroTitle = document.getElementById("heroTitle");
-    if(heroTitle){
-      heroTitle.style.opacity = "0";
-      heroTitle.style.transform = "translateY(18px)";
-      heroTitle.style.transition = "opacity .9s var(--ease), transform .9s var(--ease)";
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        heroTitle.style.opacity = "1";
-        heroTitle.style.transform = "none";
-      }));
-    }
-  })();
+  document.getElementById("sort").addEventListener("change", apply);
+  document.getElementById("body").addEventListener("change", apply);
+  apply();
+  MKR.observeAll();
 })();
 </script>
 

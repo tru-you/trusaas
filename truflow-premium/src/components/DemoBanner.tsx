@@ -1,10 +1,12 @@
 import React from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, X, ExternalLink } from "lucide-react";
+import { TRUE_CARS_URL, TRUESAAS_URL } from "../lib/ecosystem";
 
 const DISMISS_KEY = "truflow_demo_banner_dismissed";
 
 /**
  * Honest demo/session banner — password gate is not multi-user production auth.
+ * Always surfaces links to true-cars.co.za showroom + TrueSaas platform page.
  */
 export default function DemoBanner({ productName = "TruFlow" }: { productName?: string }) {
   const [open, setOpen] = React.useState(() => {
@@ -26,7 +28,14 @@ export default function DemoBanner({ productName = "TruFlow" }: { productName?: 
             {productName} · Demo / pilot session
           </p>
           <p className="text-[10px] text-amber-100/80 leading-snug mt-0.5">
-            Password login is for demos. Photos: shoot in <b>TruLens</b> only. CRM chats & website analytics may include sample data until live channels are connected.
+            Password login is for demos. Photos: shoot in <b>TruLens</b> only. Public showroom:{" "}
+            <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-amber-100 underline underline-offset-2 font-bold inline-flex items-center gap-0.5">
+              true-cars.co.za <ExternalLink size={10} />
+            </a>
+            {" · "}
+            <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-violet-200 underline underline-offset-2 font-bold">
+              TrueSaas platform
+            </a>
           </p>
         </div>
         <button

@@ -306,13 +306,17 @@ async function deleteVehicle(id: string): Promise<boolean> {
 
 // ==================== API ROUTES ====================
 
-// Health / mode check (no auth)
+// Health / mode check (no auth) + keep-alive pings
+const STARTED_AT = Date.now();
 app.get('/api/health', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
   res.json({
     ok: true,
     mode: LOCAL_MODE ? 'local' : 'cloud',
     dmsUrl: DEFAULT_DMS_URL,
     port: PORT,
+    uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
+    ts: new Date().toISOString(),
   });
 });
 
