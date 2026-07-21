@@ -11,7 +11,7 @@
 - [x] **Upgrade to Starter** (always-on): `trusaas-lens`, `trusaas-flow`, `trusaas-premium` — done 2026-07-21
 - [ ] **Redeploy** latest code (junk filter + health uptime) after git push.
 - [ ] Confirm env:
-  - Lens `TRUFLOW_DMS_URL` = `https://trusaas-premium.onrender.com`
+  - Lens `TRUFLOW_DMS_URL` = `https://premium.tru-saas.com`
   - Lens `LOCAL_MODE` = `1` (pilot) or `0` + Firebase (if ready)
 - [ ] Change **pilot password** off `2026` before real dealers use it.
 - [ ] In Premium UI: **delete** junk unit `sS DDAS` / `STK-26505` (sites already hide it client-side).

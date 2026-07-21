@@ -16,7 +16,7 @@ function isTruSaasHost(): boolean {
 }
 
 export const DEFAULT_TRULENS_URL = isTruSaasHost()
-  ? "https://trusaas-lens.onrender.com"
+  ? "https://lens.tru-saas.com"
   : "http://localhost:3000";
 
 export const DEFAULT_DEALER_SLUG = "mkr-autosales";

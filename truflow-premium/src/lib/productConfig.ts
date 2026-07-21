@@ -16,7 +16,7 @@ function isTruSaasHost(): boolean {
 }
 
 export const DEFAULT_TRULENS_URL = isTruSaasHost()
-  ? "https://trusaas-lens.onrender.com"
+  ? "https://lens.tru-saas.com"
   : "http://localhost:3000";
 
 /** MKR pilot default; change in Settings for other dealers */

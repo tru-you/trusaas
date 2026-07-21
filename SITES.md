@@ -16,9 +16,9 @@
 
 | Product | What it is | Live URL |
 |---------|------------|----------|
-| **TruLens** | Guided capture, VIR, PWA | https://trusaas-lens.onrender.com |
-| **TruFlow Lite** | Entry DMS — stock, leads, tasks | https://trusaas-flow.onrender.com |
-| **TruFlow Premium** | Full DMS — media, recon, public stock API | https://trusaas-premium.onrender.com |
+| **TruLens** | Guided capture, VIR, PWA | https://lens.tru-saas.com |
+| **TruFlow Lite** | Entry DMS — stock, leads, tasks | https://flow.tru-saas.com |
+| **TruFlow Premium** | Full DMS — media, recon, public stock API | https://premium.tru-saas.com |
 
 Custom domains (`*.trusaas.co.za`) are optional later — do not depend on them yet.
 

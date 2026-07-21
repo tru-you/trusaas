@@ -36,7 +36,7 @@ services:
         value: "1"
       # Default export target = Premium (MKR path). Change to flow URL if dealer is on Lite.
       - key: TRUFLOW_DMS_URL
-        value: https://trusaas-premium.onrender.com  # live free host; custom domain later
+        value: https://premium.tru-saas.com  # custom domain on Render (onrender host still works as fallback)
       - key: GEMINI_API_KEY
         sync: false
 

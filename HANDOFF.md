@@ -9,13 +9,13 @@
 
 | Module | URL | Health |
 |--------|-----|--------|
-| **TruLens** | https://trusaas-lens.onrender.com | `{"ok":true,"mode":"local","dmsUrl":"https://trusaas-premium.onrender.com"}` |
-| **TruFlow Lite** | https://trusaas-flow.onrender.com | `{"ok":true,"product":"truflow-lite"}` |
-| **TruFlow Premium** | https://trusaas-premium.onrender.com | `{"ok":true,"product":"truflow-premium"}` |
+| **TruLens** | https://lens.tru-saas.com | `{"ok":true,"mode":"local","dmsUrl":"https://premium.tru-saas.com"}` |
+| **TruFlow Lite** | https://flow.tru-saas.com | `{"ok":true,"product":"truflow-lite"}` |
+| **TruFlow Premium** | https://premium.tru-saas.com | `{"ok":true,"product":"truflow-premium"}` |
 
 **Stock API (MKR):**
-- Premium: `https://trusaas-premium.onrender.com/api/public/stock?dealer=mkr-autosales` → 5 vehicles (incl. TruLens import)
-- Lite: `https://trusaas-flow.onrender.com/api/public/stock?dealer=mkr-autosales` → 5 vehicles
+- Premium: `https://premium.tru-saas.com/api/public/stock?dealer=mkr-autosales` → 5 vehicles (incl. TruLens import)
+- Lite: `https://flow.tru-saas.com/api/public/stock?dealer=mkr-autosales` → 5 vehicles
 
 **Wiring already set on Render:**
 - Lens `TRUFLOW_DMS_URL` → Premium (MKR path)
@@ -74,9 +74,9 @@ These stay in the repo for you. They are **not** the customer product stack.
 
 ### Wiring after deploy
 
-- Settings → TruLens URL = `https://trusaas-lens.onrender.com`  
+- Settings → TruLens URL = `https://lens.tru-saas.com`  
 - Dealer slug = `mkr-autosales`, WhatsApp `27…`  
-- Lens env `TRUFLOW_DMS_URL` = `https://trusaas-premium.onrender.com` (or `flow` if on Lite)
+- Lens env `TRUFLOW_DMS_URL` = `https://premium.tru-saas.com` (or `flow` if on Lite)
 
 ---
 

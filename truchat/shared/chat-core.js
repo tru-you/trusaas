@@ -262,6 +262,7 @@
     var LS_KEY = CFG.leadStorageKey || DEFAULT_LS_KEY;
     var pageVehicle = options.vehicleInterest || CFG.pageVehicle || detectVehicleFromPage();
     var bot = TQ.createQualifier({
+      assistantName: CFG.assistantName,
       dealerName: CFG.dealerName,
       address: CFG.address,
       hoursText: CFG.hoursText,
@@ -299,14 +300,16 @@
         ? '<button type="button" class="tc-iconbtn" id="tcClose" aria-label="Close" title="Close">✕</button>'
         : "") +
       "</div></div>" +
-      '<div class="tc-history" id="tcHist"></div>' +
+      '<div class="tc-history" id="tcHist" role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false" aria-label="Conversation with ' +
+      esc(CFG.assistantName || "the assistant") +
+      '"></div>' +
       '<div class="tc-typing" id="tcTyping"><span class="tc-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="tc-typing-txt"></span></div>' +
       '<div class="tc-wa-bar" id="tcWaBar"><span>You\'re ready — continue with the yard on WhatsApp</span>' +
       '<button type="button" id="tcWaBtn">Open WhatsApp</button></div>' +
       '<div class="tc-composer"><input id="tcIn" type="text" placeholder="Ask about stock, finance, trade-in…" autocomplete="off" enterkeyhint="send" />' +
       '<button type="button" id="tcSend" aria-label="Send">Send</button></div>' +
       (options.showFoot !== false
-        ? '<div class="tc-foot">Newton Park PE · <span>TruChat</span></div>'
+        ? '<div class="tc-foot">' + esc(CFG.brandLine || CFG.dealerName || "") + ' · <span>TruChat</span> by TruSaaS</div>'
         : "") +
       "</div>";
 

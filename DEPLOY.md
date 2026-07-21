@@ -49,8 +49,8 @@ No `www` product site required for day-one modules.
 
 | Setting | Value |
 |---------|--------|
-| Flow Lite / Premium → TruLens URL | `https://trusaas-lens.onrender.com` |
-| TruLens `TRUFLOW_DMS_URL` (export) | `https://trusaas-premium.onrender.com` for MKR Premium path, **or** `https://trusaas-flow.onrender.com` if dealer is on Lite |
+| Flow Lite / Premium → TruLens URL | `https://lens.tru-saas.com` |
+| TruLens `TRUFLOW_DMS_URL` (export) | `https://premium.tru-saas.com` for MKR Premium path, **or** `https://flow.tru-saas.com` if dealer is on Lite |
 | Dealer slug (MKR) | `mkr-autosales` |
 
 ---

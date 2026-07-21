@@ -2,9 +2,10 @@
 const MKR = (() => {
   const WA = "27662912809";
   const STOCK_APIS = [
-    "https://trusaas-premium.onrender.com/api/public/stock?dealer=mkr-autosales",
-    "https://trusaas-flow.onrender.com/api/public/stock?dealer=mkr-autosales",
-    "https://trusaas-lens.onrender.com/api/public/stock?dealer=mkr-autosales"
+    "https://premium.tru-saas.com/api/public/stock?dealer=mkr-autosales",
+    "https://flow.tru-saas.com/api/public/stock?dealer=mkr-autosales",
+    "https://lens.tru-saas.com/api/public/stock?dealer=mkr-autosales",
+    "https://trusaas-premium.onrender.com/api/public/stock?dealer=mkr-autosales"
   ];
 
   const MOCK = [

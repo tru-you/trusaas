@@ -41,7 +41,7 @@ pwsh -File scripts\smoke-trusaas.ps1
 
 | Service | Key | Value |
 |---------|-----|--------|
-| Lens | `TRUFLOW_DMS_URL` | `https://trusaas-premium.onrender.com` |
+| Lens | `TRUFLOW_DMS_URL` | `https://premium.tru-saas.com` |
 | Lens | `LOCAL_MODE` | `1` pilot / `0` when Firebase ready |
 | All | `NODE_ENV` | `production` |
 | All | `GEMINI_API_KEY` | your key (secret) |

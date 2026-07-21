@@ -23,6 +23,7 @@
   function createQualifier(config) {
     const cfg = Object.assign(
       {
+        assistantName: "Assistant",
         dealerName: "Showroom",
         address: "",
         hoursText: "",
@@ -148,6 +149,29 @@
         return { replies: replies, session: session };
       }
 
+      // Greeting (standalone only — won't swallow "hi, I want a Ranger")
+      if (/^\s*(hi+|hey+|hello|howzit|hallo|yo|greetings|good\s+(morning|afternoon|evening|day))[\s!.,]*$/i.test(raw)) {
+        say(
+          "Hi there! 👋 I'm **" +
+            (cfg.assistantName || "your assistant") +
+            "** at **" +
+            cfg.dealerName +
+            "**. I can help with **stock**, **test drives**, **trade-in valuations**, **finance**, or **hours**. What are you after?",
+          ["Browse stock", "Trade-in valuation", "Book test drive", "Finance help"]
+        );
+        return { replies: replies, session: session };
+      }
+
+      // Thanks (standalone)
+      if (/^\s*(thanks?|thank\s+you|thank\s+u|cheers|much\s+appreciated|dankie|lekker)[\s!.,]*$/i.test(raw)) {
+        say("Pleasure! 🙌 Anything else I can sort — stock, finance, or a test drive?", [
+          "Browse stock",
+          "Finance help",
+          "Book test drive",
+        ]);
+        return { replies: replies, session: session };
+      }
+
       // Hours / address
       if (
         lower.includes("address") ||
@@ -209,6 +233,25 @@
         return { replies: replies, session: session };
       }
 
+      // Finance interest (standalone)
+      if (
+        lower.includes("finance") ||
+        lower.includes("financ") ||
+        lower.includes("afford") ||
+        lower.includes("instal") ||
+        lower.includes("repayment") ||
+        lower.includes("deposit") ||
+        lower.includes("credit")
+      ) {
+        session.financeInterest = true;
+        log("Finance interest");
+        say(
+          "We arrange **vehicle finance** through the major banks on our approved pre-owned stock.\n\nShare your **mobile number** and I'll have the finance desk start a soft, no-obligation assessment on WhatsApp.",
+          ["Browse stock", "Book test drive"]
+        );
+        return { replies: replies, session: session };
+      }
+
       // Brand / model match
       const matches = matchCatalog(raw);
       if (matches.length) {
@@ -235,8 +278,8 @@
       }
 
       say(
-        "I can help with **stock**, **test drives**, **trade-in valuations**, or **showroom hours**.\n\nWhat would you like?",
-        ["Browse stock", "Trade-in valuation", "Showroom hours"]
+        "I can help with **stock**, **test drives**, **trade-in valuations**, **finance**, or **showroom hours**.\n\nWhat would you like?",
+        ["Browse stock", "Trade-in valuation", "Finance help", "Showroom hours"]
       );
       return { replies: replies, session: session };
     }
@@ -299,11 +342,6 @@
       return { replies: replies, session: session };
     }
 
-    function recomputeQualified() {
-      session.qualified = isQualified();
-      return session.qualified;
-    }
-
     function buildTicket() {
       let msg = "🚗 *" + cfg.dealerName.toUpperCase() + " — LIVE TICKET* 🚗\n\n";
       msg += "👤 *Client:* " + session.name + "\n";
@@ -321,6 +359,7 @@
         msg += idx + 1 + ". [" + step.time + "] " + step.action + "\n";
       });
       msg += "\n✅ Qualified: " + (session.qualified ? "YES" : "pending phone/intent");
+      msg += "\n\n— sent via *TruChat* by TruSaaS";
       return msg;
     }
 
