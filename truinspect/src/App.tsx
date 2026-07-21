@@ -5,6 +5,7 @@ import CameraGuide from './components/CameraGuide';
 import ImageEditor from './components/ImageEditor';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
+import InspectionChecklist from './components/InspectionChecklist';
 import { Vehicle, QualityReport, DmsExportResult, DamageFinding, PHOTO_SLOTS } from './types';
 import { useAuth } from './contexts/AuthContext';
 
@@ -60,7 +61,7 @@ export default function App() {
   const { user, loading } = useAuth();
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
-  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report'>('inventory');
+  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist'>('inventory');
   const [loadError, setLoadError] = React.useState<string | null>(null);
   
   // Editor view states
@@ -438,6 +439,13 @@ export default function App() {
     }
   };
 
+  // Open the inspector questionnaire for a vehicle
+  const handleOpenChecklist = (vehicle: Vehicle) => {
+    setActiveVehicleId(vehicle.id);
+    setActiveView('checklist');
+    setLoadError(null);
+  };
+
   // Open the inspection Report for a vehicle
   const handleViewReport = (vehicle: Vehicle) => {
     try {
@@ -498,12 +506,22 @@ export default function App() {
                 onViewReport={handleViewReport}
                 onAddVehicle={handleAddVehicle}
                 onDeleteVehicle={handleDeleteVehicle}
-                onExportToDms={handleExportToDms}
+                onOpenChecklist={handleOpenChecklist}
                 onUpdateVehicle={handleUpdateVehicle}
                 syncStatus={syncStatus}
                 onForceSync={fetchInventory}
               />
             </>
+          )}
+
+          {activeView === 'checklist' && activeVehicle && (
+            <InspectionChecklist
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onSave={async (answers) => {
+                await handleUpdateVehicle(activeVehicle, { inspectionChecklist: answers });
+              }}
+            />
           )}
 
           {activeView === 'report' && activeVehicle && (

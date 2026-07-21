@@ -3,7 +3,7 @@ import {
   ArrowLeft, Download, Printer, Share2, Award, AlertTriangle, CheckCircle2,
   Camera, FileText, Wrench, ClipboardList, Clock, Copy, Check, MessageCircle, Box,
 } from 'lucide-react';
-import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport } from '../types';
+import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, INSPECTION_CHECKLIST } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
@@ -119,6 +119,29 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const readiness = useMemo(() => computeWebReadiness(brandedVehicle), [brandedVehicle]);
   const overall = useMemo(() => computeOverallScore(vehicle), [vehicle]);
   const condition = useMemo(() => computeCondition(vehicle), [vehicle]);
+
+  /** Inspector questionnaire: answered items + the flagged (disclosure) subset */
+  const checklistRows = useMemo(() => INSPECTION_CHECKLIST.flatMap(section =>
+    section.items.map(item => {
+      const a = vehicle.inspectionChecklist?.[item.id];
+      return { section: section.section, item, answer: a?.answer, note: a?.note, flagged: a?.answer === item.flagWhen };
+    })
+  ), [vehicle.inspectionChecklist]);
+  const checklistFlags = useMemo(() => checklistRows.filter(r => r.flagged), [checklistRows]);
+  const checklistAnswered = useMemo(() => checklistRows.filter(r => r.answer), [checklistRows]);
+
+  /** Standalone HTML export — self-contained (styles + base64 photos inline) */
+  const exportHtml = () => {
+    const el = reportRef.current;
+    if (!el) return;
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TruInspect VIR · ${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.stockNumber || ''}</title></head><body style="margin:0;background:#F1F5F9;padding:16px">${el.outerHTML}</body></html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `TruInspect_VIR_${vehicle.stockNumber || 'draft'}.html`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  };
   const overallGrade = gradeFor(overall.score);
   const waBlurb = useMemo(
     () => whatsAppSalesBlurb(brandedVehicle, readiness, { dealerName, waNumber: dealerWa || undefined }),
@@ -257,38 +280,21 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           </button>
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="text-[9px] font-bold px-2 py-1 rounded-full border"
-              style={{ color: readiness.color, borderColor: readiness.color + '55', background: readiness.color + '18' }}
+              className={`text-[9px] font-bold px-2 py-1 rounded-full border ${
+                condition.stars >= 3.5
+                  ? 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
+                  : condition.stars >= 2.5
+                    ? 'text-amber-300 border-amber-500/40 bg-amber-500/10'
+                    : 'text-red-300 border-red-500/40 bg-red-500/10'
+              }`}
             >
-              {readiness.label}
+              Condition {condition.stars.toFixed(1)}/5
             </span>
             <button onClick={handleCopyWa} className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[10px] font-bold text-emerald-300">
               {waCopied ? <Check size={12} /> : <MessageCircle size={12} />} WhatsApp blurb
             </button>
-            <button
-              type="button"
-              onClick={handleTogglePublish}
-              disabled={publishBusy}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-600/20 border border-sky-500/30 rounded-lg text-[10px] font-bold text-sky-300 disabled:opacity-50"
-            >
-              {publishBusy ? '…' : vehicle.showOnWebsite ? 'Unpublish web' : 'Publish to web'}
-            </button>
-            <button onClick={handleExportWeb3d} disabled={web3dBusy}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-[10px] font-bold text-cyan-300 disabled:opacity-50">
-              <Box size={12} /> {web3dBusy ? 'Building 3D…' : 'Export web 3D'}
-            </button>
-            {embedUrl && (
-              <button
-                type="button"
-                onClick={() => window.open(embedUrl, '_blank')}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200"
-              >
-                Open 3D viewer
-              </button>
-            )}
-            <button onClick={() => runPdf('sales')} disabled={!!generating}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200">
-              <Share2 size={12} /> {generating === 'sales' ? '…' : 'Sales PDF'}
+            <button onClick={exportHtml} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200">
+              <FileText size={12} /> HTML
             </button>
             <button onClick={() => window.print()} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200">
               <Printer size={12} /> Print
@@ -296,30 +302,29 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <button onClick={() => runPdf('full')} disabled={!!generating}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white"
               style={{ background: 'linear-gradient(120deg, #22d3ee, #3B82F6)' }}>
-              <Download size={12} /> {generating === 'full' ? '…' : 'Full VIR PDF'}
+              <Download size={12} /> {generating === 'full' ? '…' : 'Inspection PDF'}
             </button>
           </div>
         </div>
-        {web3dMsg && (
-          <div className="text-center text-[10px] text-cyan-300/90 pb-2 no-print">{web3dMsg}</div>
-        )}
       </div>
 
       {/* Hidden-on-screen sales pack used only for PDF (also shown in print if user wants) */}
       <div className="max-w-5xl mx-auto p-3 space-y-4">
-        {/* On-screen readiness card */}
+        {/* On-screen inspection summary card */}
         <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[11px]">
           <div className="flex justify-between gap-2">
             <div>
-              <div className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Web readiness</div>
-              <div className="font-bold text-sm" style={{ color: readiness.color }}>{readiness.label}</div>
+              <div className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Inspection status</div>
+              <div className="font-bold text-sm text-cyan-300">{condition.label}</div>
               <div className="text-slate-400 mt-1">
-                Required {readiness.requiredTaken}/{readiness.requiredTotal}
-                {readiness.overallScore != null ? ` · VIR ${readiness.overallScore}/100` : ''}
+                Photos {readiness.requiredTaken}/{readiness.requiredTotal}
+                {readiness.overallScore != null ? ` · Capture quality ${readiness.overallScore}/100` : ''}
+                {` · ${condition.findings.length} AI finding${condition.findings.length === 1 ? '' : 's'}`}
+                {` · ${checklistFlags.length} checklist flag${checklistFlags.length === 1 ? '' : 's'}`}
               </div>
             </div>
             <div className="text-right text-slate-500 text-[10px] max-w-[200px]">
-              {readiness.reasons.length ? readiness.reasons.join(' · ') : 'Meets publish rules for website + DMS.'}
+              Export the report as PDF or standalone HTML when capture and checklist are complete.
             </div>
           </div>
         </div>
@@ -568,6 +573,44 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             )}
           </section>
 
+          <section>
+            <h2><ClipboardList size={16} /> Inspector checklist</h2>
+            {checklistAnswered.length === 0 ? (
+              <div style={{ fontSize:12, color:'#94A3B8', fontStyle:'italic' }}>
+                Checklist not completed for this inspection.
+              </div>
+            ) : (
+              <>
+                {checklistFlags.length > 0 && (
+                  <div style={{ marginBottom:12 }}>
+                    {checklistFlags.map(({ item, note }) => (
+                      <div className="finding" key={item.id}>
+                        <div className="h">Disclosure · {item.q}</div>
+                        <div className="l">{note || (item.flagWhen === 'yes' ? 'Confirmed by inspector' : 'Not confirmed by inspector')}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <table className="checklist">
+                  <thead>
+                    <tr><th>Item</th><th style={{width:70}}>Answer</th><th>Note</th></tr>
+                  </thead>
+                  <tbody>
+                    {checklistAnswered.map(({ section: sec, item, answer, note, flagged }) => (
+                      <tr key={item.id} style={flagged ? { background:'#FFFBEB' } : undefined}>
+                        <td><span style={{ color:'#94A3B8', fontSize:9, textTransform:'uppercase', letterSpacing:'.08em' }}>{sec}</span><br/>{item.q}</td>
+                        <td style={{ fontWeight:700, color: flagged ? '#B45309' : '#16A34A' }}>
+                          {answer === 'na' ? 'N/A' : answer === 'yes' ? 'Yes' : 'No'}
+                        </td>
+                        <td style={{ color:'#64748B' }}>{note || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+          </section>
+
           {damagePhotos.length > 0 && (
             <section>
               <h2><AlertTriangle size={16} /> Damage & recon</h2>
@@ -602,33 +645,27 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           </section>
 
           <section>
-            <h2><Award size={16} /> Dealer & digital readiness</h2>
+            <h2><Award size={16} /> Inspection summary</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'#94A3B8' }}>Dealership</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'#94A3B8' }}>Inspected by</div>
                 <div style={{ fontWeight:700, marginTop:4 }}>{dealerName}</div>
                 {dealerBranch ? <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{dealerBranch}</div> : null}
                 {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'#94A3B8' }}>Digital assets</div>
-                <div style={{ fontWeight:700, marginTop:4, color: readiness.color }}>{readiness.label}</div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:4 }}>
-                  Website: {vehicle.showOnWebsite ? 'Published' : 'Not published'}
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'#94A3B8' }}>Scope covered</div>
+                <div style={{ fontSize:12, color:'#334155', marginTop:4 }}>
+                  Photos captured: {Object.keys(vehicle.photos || {}).length}
                 </div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>
-                  Web 3D: {vehicle.lastWeb3dExportAt ? `Exported ${new Date(vehicle.lastWeb3dExportAt).toLocaleDateString('en-ZA')}` : 'Not exported yet'}
+                <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
+                  AI damage findings: {condition.findings.length}
                 </div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>
-                  DMS: {vehicle.lastDmsExportAt ? `Synced ${new Date(vehicle.lastDmsExportAt).toLocaleDateString('en-ZA')}` : 'Not exported'}
+                <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
+                  Checklist answered: {checklistAnswered.length} · flagged: {checklistFlags.length}
                 </div>
               </div>
             </div>
-            {readiness.reasons.length > 0 && (
-              <div style={{ marginTop:10, fontSize:12, color:'#92400E', background:'#FFFBEB', borderRadius:10, padding:'10px 12px' }}>
-                Next steps: {readiness.reasons.join(' · ')}
-              </div>
-            )}
           </section>
 
           <div className="foot">

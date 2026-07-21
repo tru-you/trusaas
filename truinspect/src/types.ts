@@ -64,7 +64,76 @@ export interface Vehicle {
   web3dPublicPath?: string;
   /** TruInspect: AI damage findings per photo slot */
   damageFindings?: Record<string, DamageFinding[]>;
+  /** TruInspect: inspector questionnaire answers, keyed by checklist item id */
+  inspectionChecklist?: Record<string, ChecklistAnswer>;
 }
+
+/** TruInspect: one answered checklist question */
+export interface ChecklistAnswer {
+  answer: 'yes' | 'no' | 'na';
+  note?: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  q: string;
+  /** Which answer means "problem — disclose on report" */
+  flagWhen: 'yes' | 'no';
+}
+
+/** Inspector questionnaire — the things a camera can't prove */
+export const INSPECTION_CHECKLIST: { section: string; items: ChecklistItem[] }[] = [
+  {
+    section: 'Mechanical',
+    items: [
+      { id: 'oil_leaks', q: 'Any visible oil leaks (engine bay or under vehicle)?', flagWhen: 'yes' },
+      { id: 'coolant', q: 'Coolant at level with no visible leaks?', flagWhen: 'no' },
+      { id: 'battery', q: 'Battery secure, terminals clean?', flagWhen: 'no' },
+      { id: 'startup_smoke', q: 'Abnormal smoke on startup?', flagWhen: 'yes' },
+      { id: 'warning_lights', q: 'Any dashboard warning lights on?', flagWhen: 'yes' },
+      { id: 'diag_scan', q: 'OBD diagnostic scan done and clear?', flagWhen: 'no' },
+      { id: 'drive_noise', q: 'Abnormal noise / vibration on short drive?', flagWhen: 'yes' },
+    ],
+  },
+  {
+    section: 'Body panels',
+    items: [
+      { id: 'hidden_dents', q: 'Any dents or dings not clearly visible in the photos?', flagWhen: 'yes' },
+      { id: 'respray', q: 'Signs of respray or panel-beating on any panel?', flagWhen: 'yes' },
+      { id: 'panel_gaps', q: 'Panel gaps even all round?', flagWhen: 'no' },
+      { id: 'underbody_rust', q: 'Rust on underbody, sills or arches?', flagWhen: 'yes' },
+      { id: 'glass_damage', q: 'Windscreen or glass chips / cracks?', flagWhen: 'yes' },
+    ],
+  },
+  {
+    section: 'Interior & electronics',
+    items: [
+      { id: 'aircon', q: 'Aircon blows cold?', flagWhen: 'no' },
+      { id: 'electric_windows', q: 'All windows, mirrors and central locking working?', flagWhen: 'no' },
+      { id: 'infotainment', q: 'Infotainment / reverse camera working?', flagWhen: 'no' },
+      { id: 'seat_wear', q: 'Excessive seat or trim wear for the mileage?', flagWhen: 'yes' },
+      { id: 'odour', q: 'Damp or smoke odour inside?', flagWhen: 'yes' },
+    ],
+  },
+  {
+    section: 'Wheels & tyres',
+    items: [
+      { id: 'tread', q: 'All tyres above 3mm tread?', flagWhen: 'no' },
+      { id: 'tyre_match', q: 'Matching tyre brands per axle?', flagWhen: 'no' },
+      { id: 'rims', q: 'Rim damage (kerbing, cracks, buckles)?', flagWhen: 'yes' },
+      { id: 'spare_tools', q: 'Spare wheel, jack and tools present?', flagWhen: 'no' },
+    ],
+  },
+  {
+    section: 'Documents & compliance',
+    items: [
+      { id: 'license_disc', q: 'License disc present and current? (photograph it in Documents)', flagWhen: 'no' },
+      { id: 'service_history', q: 'Service book / digital service history verified?', flagWhen: 'no' },
+      { id: 'spare_key', q: 'Spare key present?', flagWhen: 'no' },
+      { id: 'vin_match', q: 'VIN plate matches papers?', flagWhen: 'no' },
+    ],
+  },
+];
 
 /** TruInspect: a single AI-detected (or manually logged) damage item on a photo */
 export interface DamageFinding {

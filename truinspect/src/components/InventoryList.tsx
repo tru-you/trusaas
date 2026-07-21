@@ -20,6 +20,7 @@ interface InventoryListProps {
   onAddVehicle: (newVehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => void;
   onDeleteVehicle: (id: string) => void;
   onExportToDms?: (vehicle: Vehicle) => Promise<DmsExportResult>;
+  onOpenChecklist?: (vehicle: Vehicle) => void;
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
@@ -40,6 +41,7 @@ export default function InventoryList({
   onAddVehicle,
   onDeleteVehicle,
   onExportToDms,
+  onOpenChecklist,
   onUpdateVehicle,
   syncStatus,
   onForceSync
@@ -334,17 +336,9 @@ export default function InventoryList({
           </div>
         </div>
 
-        {/* Flow DMS, sync & log out */}
+        {/* Sync & log out */}
         <div className="flex items-center gap-1.5">
-          <button 
-            onClick={() => window.open(dmsUrl || DEFAULT_DMS_URL, '_blank')}
-            className="flex items-center gap-1.5 px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/50 text-[9px] text-white font-black uppercase tracking-wider transition-all shadow-sm shadow-indigo-600/20 cursor-pointer"
-            title={`Open TruFlow DMS (${dmsUrl || DEFAULT_DMS_URL})`}
-          >
-            <ExternalLink size={10} />
-            <span className="hidden sm:inline">TruFlow</span>
-          </button>
-          <button 
+          <button
             onClick={onForceSync}
             className="flex items-center gap-1.5 px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-[10px] text-neutral-300 transition-colors cursor-pointer"
             title="Force Cloud Sync"
@@ -689,8 +683,8 @@ export default function InventoryList({
               </p>
               <p className="text-[10px] text-neutral-500 mt-1.5 max-w-[220px] leading-relaxed">
                 {searchTerm
-                  ? `Nothing matched “${searchTerm}”. Clear search or add the unit from DMS stock #.`
-                  : 'Add a stock unit, then take the guided shots. Export to DMS when ready.'}
+                  ? `Nothing matched “${searchTerm}”. Clear search or add the unit to inspect.`
+                  : 'Add a vehicle, take the guided shots, answer the checklist, then issue the report.'}
               </p>
               <button
                 type="button"
@@ -790,14 +784,14 @@ export default function InventoryList({
                               : 'bg-amber-500/15 text-amber-400 border-amber-500/20'
                           }`}>
                             {vehicle.status === 'Listed'
-                              ? 'In DMS'
+                              ? 'Report Issued'
                               : vehicle.status === 'Ready'
-                              ? 'Ready for Web'
+                              ? 'Inspection Done'
                               : 'Capture Mode'}
                           </span>
-                          {vehicle.lastDmsExportAt && (
-                            <span className="text-[7px] text-neutral-500 font-mono" title={vehicle.lastDmsExportAt}>
-                              Exported {new Date(vehicle.lastDmsExportAt).toLocaleDateString()}
+                          {vehicle.inspectionChecklist && Object.keys(vehicle.inspectionChecklist).length > 0 && (
+                            <span className="text-[7px] font-bold px-1.5 py-0.5 rounded border bg-cyan-500/10 text-cyan-400 border-cyan-500/20">
+                              Checklist {Object.keys(vehicle.inspectionChecklist).length}
                             </span>
                           )}
                           <span
@@ -855,22 +849,13 @@ export default function InventoryList({
                         <Camera size={12} /> Take pictures
                       </button>
 
-                      {takenCount > 0 && (
+                      {onOpenChecklist && (
                         <button
-                          onClick={(e) => handleExportClick(e, vehicle)}
-                          disabled={exportingId === vehicle.id || !onExportToDms}
-                          title={`Push ${takenCount} photos to TruFlow DMS (match by stock #)`}
-                          className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 cursor-pointer whitespace-nowrap bg-emerald-500/10 px-2 py-1.5 rounded border border-emerald-500/20 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                          onClick={(e) => { e.stopPropagation(); onOpenChecklist(vehicle); }}
+                          title="Inspector questionnaire — leaks, hidden dents, diagnostics, documents"
+                          className="flex items-center gap-1 text-[10px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer whitespace-nowrap bg-cyan-500/10 px-2 py-1.5 rounded border border-cyan-500/20 transition-colors"
                         >
-                          {exportingId === vehicle.id ? (
-                            <>
-                              <RefreshCw size={10} className="animate-spin" /> Exporting…
-                            </>
-                          ) : (
-                            <>
-                              Export to DMS <Download size={10} />
-                            </>
-                          )}
+                          <BookOpen size={10} /> Checklist
                         </button>
                       )}
 
@@ -1134,96 +1119,6 @@ export default function InventoryList({
                     className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* DMS Integration — Premium or Lite */}
-            <div className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-neutral-850 bg-neutral-900/40 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-neutral-400 uppercase">TruFlow DMS Export Target</span>
-                <ExternalLink size={12} className="text-indigo-400" />
-              </div>
-              <div className="p-4 space-y-3">
-                <p className="text-[9px] text-neutral-500 leading-relaxed">
-                  <strong className="text-neutral-300">Export to DMS</strong> pushes photos via{' '}
-                  <span className="font-mono text-neutral-400">/api/sync/push-photos</span>.
-                  Match by stock number; missing stock is created automatically.
-                </p>
-
-                <div className="grid grid-cols-3 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => applyDmsPreset('premium')}
-                    className={`py-2 px-1 rounded-lg text-[9px] font-bold border cursor-pointer ${
-                      dmsPreset === 'premium'
-                        ? 'bg-indigo-600 border-indigo-500 text-white'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
-                    }`}
-                  >
-                    Premium
-                    <span className="block text-[7px] font-mono opacity-70 mt-0.5">:3001</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => applyDmsPreset('lite')}
-                    className={`py-2 px-1 rounded-lg text-[9px] font-bold border cursor-pointer ${
-                      dmsPreset === 'lite'
-                        ? 'bg-emerald-600 border-emerald-500 text-white'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
-                    }`}
-                  >
-                    Lite
-                    <span className="block text-[7px] font-mono opacity-70 mt-0.5">:3002</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => applyDmsPreset('custom')}
-                    className={`py-2 px-1 rounded-lg text-[9px] font-bold border cursor-pointer ${
-                      dmsPreset === 'custom'
-                        ? 'bg-neutral-700 border-neutral-600 text-white'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
-                    }`}
-                  >
-                    Custom
-                    <span className="block text-[7px] font-mono opacity-70 mt-0.5">URL</span>
-                  </button>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[9px] text-neutral-500 uppercase font-bold">DMS Base URL</label>
-                  <input
-                    type="url"
-                    value={dmsUrl}
-                    onChange={(e) => {
-                      setDmsUrl(e.target.value);
-                      setDmsPreset('custom');
-                    }}
-                    placeholder="http://localhost:3002"
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={saveDmsUrl}
-                    className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold cursor-pointer"
-                  >
-                    {dmsUrlSaved ? 'Saved ✓' : 'Save DMS target'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => window.open(dmsUrl || DEFAULT_DMS_URL, '_blank')}
-                    className="px-3 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-[10px] font-bold cursor-pointer"
-                    title="Open DMS in browser"
-                  >
-                    Open
-                  </button>
-                </div>
-                <p className="text-[8px] text-neutral-600 leading-relaxed">
-                  Ports: TruLens <span className="text-neutral-400">3000</span> · Premium{' '}
-                  <span className="text-neutral-400">3001</span> · Lite{' '}
-                  <span className="text-neutral-400">3002</span>
-                </p>
               </div>
             </div>
 
