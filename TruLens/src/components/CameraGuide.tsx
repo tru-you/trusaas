@@ -1328,6 +1328,24 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
         {/* Secondary tools */}
         <div className="flex items-center justify-between gap-2">
+          {/* Native camera fallback — capture attr skips the gallery picker when the
+              in-app live camera is blocked (e.g. PWA denied getUserMedia) */}
+          <label className={`flex-1 py-2 rounded-xl text-[9px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
+            !isCameraActive
+              ? 'bg-amber-600/20 border-amber-500/40 text-amber-300 hover:bg-amber-600/30'
+              : 'bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-neutral-300'
+          }`}>
+            <Camera size={13} className={!isCameraActive ? 'text-amber-400' : 'text-neutral-400'} />
+            Take Photo
+            <input
+              type="file"
+              accept={activeSlot.id === 'video_360' ? 'video/*' : 'image/*'}
+              capture="environment"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </label>
+
           <label className={`flex-1 py-2 rounded-xl text-[9px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
             !isCameraActive
               ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-600/30'
