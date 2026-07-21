@@ -1,9 +1,10 @@
-import { Vehicle, Lead, Task, Invoice, Agreement, User, Communication, Expense, DMSState } from "./types";
+import { Vehicle, Lead, Task, Invoice, Agreement, DealerDocument, User, Communication, Expense, DMSState } from "./types";
 
 const DEFAULT_MOCK_STATE: DMSState = {
   dealerships: [
     { id: 'd1', name: 'TruFlow Pre-Owned', location: 'Johannesburg' }
   ],
+  documents: [],
   digitalProducts: [],
   digitalSales: [],
   vehicles: [
@@ -308,6 +309,42 @@ export async function createAgreement(agreement: Omit<Agreement, "id" | "agreeme
   const newA = { ...agreement, id: 'agr' + Date.now(), agreementNumber: 'AGR-' + Date.now() } as Agreement;
   await updateState(s => s.agreements.push(newA));
   return newA;
+}
+
+/** Upload a dealer's own document (any file type/template) — persisted server-side. */
+export async function uploadDocument(doc: {
+  fileName: string;
+  mimeType: string;
+  fileData: string;
+  leadId?: string;
+  vehicleId?: string;
+  dealershipId?: string;
+}): Promise<DealerDocument> {
+  const res = await fetch("/api/documents", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(doc),
+  });
+  if (!res.ok) throw new Error(`Document upload failed (${res.status})`);
+  const body = await res.json();
+  return body.document as DealerDocument;
+}
+
+/** Capture a signature on an uploaded document. */
+export async function signDocument(id: string, signature: string, signedBy: string): Promise<DealerDocument> {
+  const res = await fetch(`/api/documents/${id}/sign`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ signature, signedBy }),
+  });
+  if (!res.ok) throw new Error(`Document sign failed (${res.status})`);
+  const body = await res.json();
+  return body.document as DealerDocument;
+}
+
+export async function deleteDocument(id: string): Promise<void> {
+  const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Document delete failed (${res.status})`);
 }
 
 export async function createUser(user: Omit<User, "id">): Promise<User> {

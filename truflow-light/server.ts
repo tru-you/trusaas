@@ -124,6 +124,7 @@ const DEFAULT_MOCK_STATE = {
   agreements: [
     { id: 'agr-1', agreementNumber: 'AGR-2026-0012', leadId: 'l1', vehicleId: 'v4', purchasePrice: 945000, depositAmount: 50000, type: 'Vehicle Sale', status: 'Pending Signature' }
   ],
+  documents: [] as any[],
   users: [
     { id: 'u1', name: 'Aiden Fourie', email: 'aiden@true-cars.co.za', role: 'salesperson', phone: '082 441 0021', isActive: true },
     { id: 'u2', name: 'Zanele Booi', email: 'zanele@true-cars.co.za', role: 'salesperson', phone: '083 552 8834', isActive: true },
@@ -161,6 +162,9 @@ function readState(): typeof DEFAULT_MOCK_STATE {
       }
       if (!parsed.settings) {
         parsed.settings = DEFAULT_MOCK_STATE.settings;
+      }
+      if (!parsed.documents) {
+        parsed.documents = [];
       }
       parsed.vehicles.forEach((v: any) => {
         if (!v.images) v.images = [];
@@ -477,6 +481,64 @@ app.put("/api/agreements/:id", (req, res) => {
 
   writeState(state);
   res.json({ message: "Agreement updated successfully.", agreement: state.agreements[index] });
+});
+
+// Dealer Documents API — dealership uploads its own files (any doc type/template)
+// and captures a signature on them. No fixed template: whatever the dealer needs.
+app.get("/api/documents", (req, res) => {
+  const state = readState();
+  res.json(state.documents || []);
+});
+
+app.post("/api/documents", (req, res) => {
+  const state = readState();
+  const { fileName, mimeType, fileData, leadId, vehicleId, dealershipId } = req.body || {};
+  if (!fileName || !fileData) {
+    return res.status(400).json({ error: "fileName and fileData are required" });
+  }
+  const newDoc = {
+    id: "doc_" + Date.now(),
+    fileName,
+    mimeType: mimeType || "application/octet-stream",
+    fileData,
+    status: "Unsigned",
+    uploadedAt: new Date().toISOString(),
+    leadId: leadId || undefined,
+    vehicleId: vehicleId || undefined,
+    dealershipId: dealershipId || undefined,
+  };
+  if (!state.documents) state.documents = [];
+  state.documents.unshift(newDoc);
+  writeState(state);
+  res.status(201).json({ message: "Document uploaded.", document: newDoc });
+});
+
+app.post("/api/documents/:id/sign", (req, res) => {
+  const state = readState();
+  const index = (state.documents || []).findIndex((d: any) => d.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ error: "Document not found" });
+  }
+  const { signature, signedBy } = req.body || {};
+  if (!signature) {
+    return res.status(400).json({ error: "signature is required" });
+  }
+  state.documents[index] = {
+    ...state.documents[index],
+    status: "Signed",
+    signature,
+    signedBy: signedBy || "Signee",
+    signedAt: new Date().toISOString(),
+  };
+  writeState(state);
+  res.json({ message: "Document signed.", document: state.documents[index] });
+});
+
+app.delete("/api/documents/:id", (req, res) => {
+  const state = readState();
+  state.documents = (state.documents || []).filter((d: any) => d.id !== req.params.id);
+  writeState(state);
+  res.json({ message: "Document deleted." });
 });
 
 // Accounting Expenses API

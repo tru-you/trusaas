@@ -99,6 +99,22 @@ export interface Agreement {
   date?: string;
 }
 
+/** A dealer's own uploaded document (any file/template — we don't prescribe what it is) with an e-sign flow. */
+export interface DealerDocument {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  fileData: string; // data URL — original uploaded file
+  status: 'Unsigned' | 'Signed';
+  uploadedAt: string;
+  signature?: string; // data URL of drawn signature, or "TYPED:Name"
+  signedBy?: string;
+  signedAt?: string;
+  leadId?: string;
+  vehicleId?: string;
+  dealershipId?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -153,6 +169,7 @@ export interface DMSState {
   tasks: Task[];
   invoices: Invoice[];
   agreements: Agreement[];
+  documents: DealerDocument[];
   users: User[];
   communications: Communication[];
   expenses: Expense[];

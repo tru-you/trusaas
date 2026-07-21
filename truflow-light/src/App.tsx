@@ -33,6 +33,7 @@ import {
   Camera,
   MessageCircle,
   Copy,
+  FileText,
 } from "lucide-react";
 
 import {
@@ -50,7 +51,10 @@ import {
   updateAgreement,
   createExpense,
   reconcileExpense,
-  createUser
+  createUser,
+  uploadDocument,
+  signDocument,
+  deleteDocument
 } from "./api";
 
 import { Vehicle, Lead, Task, Invoice, Agreement, User, Communication, Expense, DMSState } from "./types";
@@ -61,6 +65,7 @@ import ChatWidget from "./components/ChatWidget";
 import WebsiteChatWidget from "./components/WebsiteChatWidget";
 import InvoicePreview from "./components/InvoicePreview";
 import AgreementPreview from "./components/AgreementPreview";
+import DocumentsHub from "./components/DocumentsHub";
 import AmortizationCalc from "./components/AmortizationCalc";
 import LeadDetailModal from "./components/LeadDetailModal";
 import AccountingRecon from "./components/AccountingRecon";
@@ -117,6 +122,7 @@ export default function App() {
   const filteredTasks = state ? (isMasterAdmin ? state.tasks : state.tasks.filter(t => t.dealershipId === dealershipId)) : [];
   const filteredInvoices = state ? (isMasterAdmin ? state.invoices : state.invoices.filter(i => i.dealershipId === dealershipId)) : [];
   const filteredAgreements = state ? (isMasterAdmin ? state.agreements : state.agreements.filter(a => a.dealershipId === dealershipId)) : [];
+  const filteredDocuments = state ? (isMasterAdmin ? state.documents : (state.documents || []).filter(d => !d.dealershipId || d.dealershipId === dealershipId)) : [];
   const filteredCommunications = state ? (isMasterAdmin ? state.communications : state.communications.filter(c => c.dealershipId === dealershipId)) : [];
   const filteredExpenses = state ? (isMasterAdmin ? state.expenses : state.expenses.filter(e => e.dealershipId === dealershipId)) : [];
   const [selectedDetailVehicle, setSelectedDetailVehicle] = useState<Vehicle | null>(null);
@@ -359,6 +365,7 @@ export default function App() {
       items: [
         { id: "leads", label: "Lead CRM", icon: Users },
         { id: "tasks", label: "Tasks", icon: CheckSquare },
+        { id: "documents", label: "Documents", icon: FileText },
         { id: "accounting_recon", label: "Costs & margin", icon: Receipt },
       ]
     },
@@ -403,6 +410,21 @@ export default function App() {
 
   const handleReconcileExpense = async (id: string, reconciled: boolean) => {
     await reconcileExpense(id, reconciled);
+    loadAllState();
+  };
+
+  const handleUploadDocument = async (doc: { fileName: string; mimeType: string; fileData: string }) => {
+    await uploadDocument({ ...doc, dealershipId });
+    loadAllState();
+  };
+
+  const handleSignDocument = async (id: string, signature: string, signedBy: string) => {
+    await signDocument(id, signature, signedBy);
+    loadAllState();
+  };
+
+  const handleDeleteDocument = async (id: string) => {
+    await deleteDocument(id);
     loadAllState();
   };
 
@@ -1754,6 +1776,17 @@ export default function App() {
         )}
 
         {/* INVOICES SECTION */}
+        {activeSection === "documents" && (
+          <DocumentsHub
+            documents={filteredDocuments}
+            getLeadLabel={getLeadLabel}
+            getVehicleLabel={getVehicleLabel}
+            onUpload={handleUploadDocument}
+            onSign={handleSignDocument}
+            onDelete={handleDeleteDocument}
+          />
+        )}
+
         {activeSection === "invoices" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
