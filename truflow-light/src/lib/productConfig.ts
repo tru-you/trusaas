@@ -9,7 +9,7 @@ function isTruSaasHost(): boolean {
   try {
     if (typeof window === "undefined") return false;
     const h = window.location.hostname;
-    return /\.onrender\.com$/i.test(h) || /\.?trusaas\.co\.za$/i.test(h);
+    return /\.onrender\.com$/i.test(h) || /(^|\.)tru-saas\.com$/i.test(h) || /\.?trusaas\.co\.za$/i.test(h);
   } catch {
     return false;
   }

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Vehicle } from "../types";
+import { openTruLens } from "../lib/productConfig";
 import { 
   X, 
   Camera, 
@@ -235,14 +236,13 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               {photoCount} gallery photo{photoCount === 1 ? "" : "s"} · stock media only (no in-DMS camera)
             </span>
           </div>
-          <a
-            href="http://localhost:3000"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg bg-[#15C7C0]/15 text-[#15C7C0] border border-[#15C7C0]/30 hover:bg-[#15C7C0]/25"
+          <button
+            type="button"
+            onClick={() => openTruLens(vehicle.stockNumber)}
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg bg-[#15C7C0]/15 text-[#15C7C0] border border-[#15C7C0]/30 hover:bg-[#15C7C0]/25 cursor-pointer"
           >
             <Camera size={12} /> Complete shoot in TruLens
-          </a>
+          </button>
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
