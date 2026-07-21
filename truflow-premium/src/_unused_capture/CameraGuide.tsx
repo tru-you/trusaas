@@ -269,7 +269,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     ctx.fillRect(0, 0, 1080, 720);
     
     // Draw grid
-    ctx.strokeStyle = 'rgba(139, 92, 246, 0.1)';
+    ctx.strokeStyle = 'rgba(34, 211, 238, 0.1)';
     ctx.lineWidth = 1;
     for (let i = 0; i < 1080; i += 40) {
       ctx.beginPath();
@@ -368,7 +368,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               ctx.save();
               ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
               ctx.fillRect(40, 40, 260, 60);
-              ctx.strokeStyle = '#8b5cf6';
+              ctx.strokeStyle = '#22d3ee';
               ctx.lineWidth = 2;
               ctx.strokeRect(40, 40, 260, 60);
               
@@ -936,7 +936,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                   <div
                     style={{
                       width: status.completed ? '100%' : isActive ? '50%' : '0%',
-                      backgroundColor: status.completed ? '#10b981' : '#6366f1'
+                      backgroundColor: status.completed ? '#10b981' : '#06b6d4'
                     }}
                     className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}
                   />
@@ -953,7 +953,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                      status.completed 
                       ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)]' 
                       : isActive 
-                      ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]' 
+                      ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400 shadow-[0_0_8px_rgba(6,182,212,0.2)]' 
                       : 'bg-neutral-900 border-neutral-800 text-neutral-500'
                    }`}>
                       {status.completed ? (

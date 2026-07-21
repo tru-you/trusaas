@@ -66,7 +66,7 @@ export function computeDmsGalleryReadiness(v: {
     return {
       level: "listed",
       label: "Sold",
-      color: "#6366F1",
+      color: "#06b6d4",
       photoCount,
       webReady: false,
       reasons: ["Unit sold — remove from active web stock"],

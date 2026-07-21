@@ -60,7 +60,7 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
   if (vehicle.status === 'Listed' || vehicle.lastDmsExportAt) {
     level = 'listed';
     label = canPublishWeb ? 'Listed · web ready' : 'Exported · finish shots for web';
-    color = canPublishWeb ? '#0EA5E9' : '#6366F1';
+    color = canPublishWeb ? '#0EA5E9' : '#06b6d4';
   } else if (allRequired && scoreOk && vehicle.showOnWebsite === true) {
     level = 'web-ready';
     label = 'Published to web';

@@ -56,7 +56,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
           <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#15C7C0] hover:underline inline-flex items-center gap-1">
             true-cars.co.za showroom <ExternalLink size={10} />
           </a>
-          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#A78BFA] hover:underline">
+          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#67e8f9] hover:underline">
             TrueSaas platform
           </a>
         </div>

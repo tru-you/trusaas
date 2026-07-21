@@ -639,7 +639,7 @@ export default function App() {
             <img src={logo} alt="TruFlow Lite" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
           <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#15C7C0] hover:underline tracking-widest mt-2 uppercase">true-cars.co.za</a>
-          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#A78BFA]/90 hover:underline tracking-widest mt-1 uppercase">TrueSaas platform</a>
+          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 uppercase">TrueSaas platform</a>
           <div className="flex gap-2 mt-2">
             <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#15C7C0]/12 text-[#15C7C0] border border-[#15C7C0]/25 hover:bg-[#15C7C0]/2">Showroom</a>
             <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#A855F7]/15 text-[#C084FC] border border-[#A855F7]/30 hover:bg-[#A855F7]/25">TrueSaas</a>
@@ -1498,7 +1498,7 @@ export default function App() {
                   className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-purple-500/10 ${
                     isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)
                       ? "bg-[#0f1826]/3 border-white/5 text-[#9DB0C6] cursor-not-allowed"
-                      : "bg-[#8B5CF6]/15 border-[#8B5CF6]/30 text-[#A78BFA] hover:bg-[#8B5CF6]/25 hover:border-[#8B5CF6]/50"
+                      : "bg-[#22d3ee]/15 border-[#22d3ee]/30 text-[#67e8f9] hover:bg-[#22d3ee]/25 hover:border-[#22d3ee]/50"
                   }`}
                 >
                   <Sparkles size={14} className={isAutoAssigning ? "animate-pulse" : ""} />
@@ -2685,7 +2685,7 @@ export default function App() {
               <div className="bg-[#1466E0]/10 border border-[#1466E0]/20 rounded-xl p-3 flex flex-col gap-0.5">
                 <span className="text-[9px] font-bold text-[#4D9BFF] uppercase font-mono">EOD Net Profit</span>
                 <span className="text-lg font-black text-[#15C7C0]">R 185,000</span>
-                <span className="text-[9px] text-[#8B5CF6]">11.4% avg margin</span>
+                <span className="text-[9px] text-[#22d3ee]">11.4% avg margin</span>
               </div>
             </div>
 

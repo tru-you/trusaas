@@ -115,7 +115,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-white/5 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-[#8B5CF6]/15 text-[#A78BFA] border border-[#8B5CF6]/20">
+            <div className="p-1.5 rounded-lg bg-[#22d3ee]/15 text-[#67e8f9] border border-[#22d3ee]/20">
               <Award size={16} />
             </div>
             <h3 className="font-serif text-lg font-black text-[#E8EEF6]">Commission Estimation Engine</h3>
@@ -214,7 +214,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
               </div>
               <div className="bg-[#070d15] border border-white/5 rounded-lg p-2 flex flex-col gap-0.5">
                 <span className="text-[#9DB0C6] text-[8px] tracking-widest">5+ units</span>
-                <span className="text-[#A78BFA]">12% Rate</span>
+                <span className="text-[#67e8f9]">12% Rate</span>
               </div>
             </div>
           </div>
@@ -267,7 +267,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
         </div>
         <div className="bg-[#1466E0]/10 border border-[#1466E0]/20 rounded-xl p-3 flex flex-col gap-1 shadow-lg shadow-[#1466E0]/5">
           <span className="text-[8px] font-bold text-[#4D9BFF] uppercase tracking-wider">Estimated Comm. Pool</span>
-          <span className="text-lg font-black text-[#8B5CF6]">{formatZAR(totalDealershipCommission)}</span>
+          <span className="text-lg font-black text-[#22d3ee]">{formatZAR(totalDealershipCommission)}</span>
         </div>
       </div>
 
@@ -286,7 +286,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                 className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 cursor-pointer hover:bg-[#0f1826]/1 transition-all select-none"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#1466E0] flex items-center justify-center font-bold text-xs text-white">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#22d3ee] to-[#1466E0] flex items-center justify-center font-bold text-xs text-white">
                     {rep.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div>
@@ -303,8 +303,8 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                     <span className="text-xs font-bold text-[#E8EEF6]">{formatZAR(totalMargin)}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[8px] font-bold text-[#A78BFA] uppercase tracking-wider block">Est. Commission</span>
-                    <span className="text-xs font-black text-[#A78BFA]">{formatZAR(commission)}</span>
+                    <span className="text-[8px] font-bold text-[#67e8f9] uppercase tracking-wider block">Est. Commission</span>
+                    <span className="text-xs font-black text-[#67e8f9]">{formatZAR(commission)}</span>
                   </div>
                   <div className="text-[#9DB0C6] hover:text-[#E8EEF6] transition-colors p-1 rounded">
                     {expandedRep === rep.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -332,7 +332,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                                 <th className="py-2 px-3 text-right">Retail Price</th>
                                 <th className="py-2 px-3 text-right">Cost Price</th>
                                 <th className="py-2 px-3 text-right">Gross profit</th>
-                                <th className="py-2 px-3 text-right text-[#A78BFA]">Est. Commission</th>
+                                <th className="py-2 px-3 text-right text-[#67e8f9]">Est. Commission</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -345,7 +345,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                                   <td className="py-2.5 px-3 text-right text-[#9DB0C6]">{formatZAR(item.vehicle.retailPrice)}</td>
                                   <td className="py-2.5 px-3 text-right text-[#9DB0C6]">{formatZAR(item.vehicle.costPrice)}</td>
                                   <td className="py-2.5 px-3 text-right text-[#15C7C0] font-bold">{formatZAR(item.margin)}</td>
-                                  <td className="py-2.5 px-3 text-right text-[#A78BFA] font-black">{formatZAR(item.commission)}</td>
+                                  <td className="py-2.5 px-3 text-right text-[#67e8f9] font-black">{formatZAR(item.commission)}</td>
                                 </tr>
                               ))}
                             </tbody>

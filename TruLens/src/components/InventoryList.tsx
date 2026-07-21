@@ -329,14 +329,8 @@ export default function InventoryList({
       
       {/* App Header */}
       <div className="tl-glass p-4 border-b border-violet-500/20 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2.5">
-          <img src={trulensLogo} alt="TruLens Logo" className="h-7 w-auto object-contain tl-float drop-shadow-[0_0_12px_rgba(139,92,246,0.45)]" />
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-neutral-100 flex items-center gap-1 font-display">
-              TruLens
-            </h1>
-            <p className="text-[10px] text-neutral-400">Lot photos → VIR → DMS & web</p>
-          </div>
+        <div className="flex items-center">
+          <img src={trulensLogo} alt="TruLens" className="h-8 w-auto object-contain tl-float drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]" />
         </div>
 
         {/* Flow DMS, sync & log out */}
@@ -887,7 +881,7 @@ export default function InventoryList({
                           }}
                           title="Open inspection report with score, findings & damage photos"
                           className="flex items-center justify-center gap-1 text-[10px] font-bold text-white cursor-pointer whitespace-nowrap px-2 py-1.5 rounded transition-colors shadow-sm"
-                          style={{ background: 'linear-gradient(120deg, #8B5CF6, #3B82F6)' }}
+                          style={{ background: 'linear-gradient(120deg, #22d3ee, #3B82F6)' }}
                         >
                           Report <FileText size={10} />
                         </button>
@@ -1049,7 +1043,7 @@ export default function InventoryList({
                         cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                         contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #262626', fontSize: '9px' }}
                       />
-                      <Bar dataKey="photos" fill="#6366f1" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="photos" fill="#06b6d4" radius={[2, 2, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

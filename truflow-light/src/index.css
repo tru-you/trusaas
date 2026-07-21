@@ -2,6 +2,18 @@
 @import "tailwindcss";
 
 @theme {
+  /* TruSaaS rebrand: cyan accent — remap legacy indigo/purple/violet utilities */
+  --color-indigo-50: #ecfeff; --color-indigo-100: #cffafe; --color-indigo-200: #a5f3fc;
+  --color-indigo-300: #67e8f9; --color-indigo-400: #22d3ee; --color-indigo-500: #06b6d4;
+  --color-indigo-600: #0891b2; --color-indigo-700: #0e7490; --color-indigo-800: #155e75;
+  --color-indigo-900: #164e63; --color-indigo-950: #083344;
+  --color-purple-50: #f0f9ff; --color-purple-100: #e0f2fe; --color-purple-200: #bae6fd;
+  --color-purple-300: #7dd3fc; --color-purple-400: #38bdf8; --color-purple-500: #0ea5e9;
+  --color-purple-600: #0284c7; --color-purple-700: #0369a1; --color-purple-800: #075985;
+  --color-purple-900: #0c4a6e; --color-purple-950: #082f49;
+  --color-violet-300: #67e8f9; --color-violet-400: #22d3ee; --color-violet-500: #06b6d4;
+  --color-violet-600: #0891b2; --color-violet-900: #164e63; --color-violet-950: #083344;
+
   --font-sans: "Archivo", system-ui, sans-serif;
   --font-serif: "Fraunces", Georgia, serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -11,8 +23,8 @@
   --color-card-hover: #16212f;
   --color-border-tc: rgba(126, 164, 214, 0.10);
   --color-border-tc-hover: rgba(126, 164, 214, 0.22);
-  --color-primary-tc: #1466E0;
-  --color-primary-light-tc: #4D9BFF;
+  --color-primary-tc: #0891b2;
+  --color-primary-light-tc: #22d3ee;
   --color-secondary-tc: #C9A24B;
   --color-accent-tc: #15C7C0;
   --color-teal-tc: #15C7C0;
