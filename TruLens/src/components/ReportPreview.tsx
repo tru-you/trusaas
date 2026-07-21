@@ -7,6 +7,9 @@ import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
+import trulensLockup from '../assets/images/trulens-lockup.png';
+import trusaasLogo from '../assets/images/trusaas-lockup.png';
+import trusaasLogoDark from '../assets/images/trusaas-lockup-dark.png';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -424,13 +427,16 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="cover">
             <div className="cover-head">
               <div className="brand">
-                <div className="mark">T</div>
                 <div className="txt">
-                  Tru<em>Lens</em> · Full VIR
+                  <img src={trulensLockup} alt="TruLens" style={{ height:30, width:'auto', display:'block', marginBottom:4 }} />
+                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'rgba(248,250,252,.85)' }}>
+                    Full Vehicle Inspection Report
+                  </div>
                   <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
                 </div>
               </div>
               <div className="meta-row">
+                <img src={trusaasLogo} alt="TruSaaS" style={{ height:34, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
                 <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
                 <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
                 <div>Web: {readiness.label}</div>
@@ -582,7 +588,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           </section>
 
           <div className="foot">
-            <div>Prepared by <b style={{color:'#06b6d4'}}>{dealerName}</b> · powered by TruLens</div>
+            <div>Prepared by <b style={{color:'#06b6d4'}}>{dealerName}</b> · powered by <b>TruLens</b></div>
+            <img src={trusaasLogoDark} alt="TruSaaS" style={{ height:16, width:'auto' }} />
             <div>{reportId}</div>
             <div>Visual inspection at a moment in time — not a mechanical warranty</div>
           </div>
