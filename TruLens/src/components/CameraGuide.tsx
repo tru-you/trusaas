@@ -176,6 +176,20 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     };
   }, [startCamera]);
 
+  // The <video> element only mounts AFTER isCameraActive flips true, so the
+  // srcObject assignment inside startCamera can run before the element exists
+  // (black viewfinder despite a live stream). Re-attach once it is mounted.
+  React.useEffect(() => {
+    const video = videoRef.current;
+    const stream = streamRef.current;
+    if (isCameraActive && video && stream && video.srcObject !== stream) {
+      video.srcObject = stream;
+      video.play().catch(() => {
+        /* autoplay policy — frames still render once allowed */
+      });
+    }
+  }, [isCameraActive]);
+
   // Update simulator's ideal rotation when slot changes
   React.useEffect(() => {
     if (activeSlot) {
