@@ -40,6 +40,23 @@ services:
       - key: GEMINI_API_KEY
         sync: false
 
+  # ── 1b. TruInspect — AI damage detection / PDF inspection reports ─────────
+  - type: web
+    name: trusaas-inspect
+    runtime: node
+    plan: starter
+    rootDir: truinspect
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOCAL_MODE
+        value: "1"
+      - key: GEMINI_API_KEY
+        sync: false
+
   # ── 2. TruFlow Lite — stock / leads / tasks ───────────────────────────────
   - type: web
     name: trusaas-flow
