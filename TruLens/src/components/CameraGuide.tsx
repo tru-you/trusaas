@@ -402,6 +402,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     onPhotoCaptured('service_book', base64Data, report);
   };
 
+  /** Canvas dims matching the source aspect ratio, long edge capped (keeps export payloads sane). */
+  const fitDims = (srcW: number, srcH: number, maxEdge = 1920) => {
+    const w = srcW || 1280;
+    const h = srcH || 720;
+    const scale = Math.min(1, maxEdge / Math.max(w, h));
+    return { w: Math.round(w * scale), h: Math.round(h * scale) };
+  };
+
   // Capture Photo action — always take/confirm a shot (never navigates elsewhere)
   const handleCapture = (e?: React.MouseEvent) => {
     e?.preventDefault?.();
@@ -429,12 +437,15 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           if (canvas) {
             const ctx = canvas.getContext('2d');
             if (ctx) {
-              canvas.width = 1080;
-              canvas.height = 720;
-              
               if (isCameraActive && videoRef.current) {
-                ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+                const video = videoRef.current;
+                const { w, h } = fitDims(video.videoWidth, video.videoHeight);
+                canvas.width = w;
+                canvas.height = h;
+                ctx.drawImage(video, 0, 0, w, h);
               } else {
+                canvas.width = 1080;
+                canvas.height = 720;
                 drawSimulatedCarScene(ctx, canvas.width, canvas.height);
               }
               
@@ -464,13 +475,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set high-resolution dimensions
-    canvas.width = 1080;
-    canvas.height = 720;
-
     // Draw frame (live camera → uploaded file → still capture without leaving this screen)
+    // Canvas must match the SOURCE aspect ratio — a fixed 1080x720 squashes portrait streams.
     if (isCameraActive && videoRef.current) {
-      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      const video = videoRef.current;
+      const { w, h } = fitDims(video.videoWidth, video.videoHeight);
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(video, 0, 0, w, h);
       finalizeCapture(canvas);
       return;
     }
@@ -478,7 +490,10 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     if (customFile) {
       const img = new Image();
       img.onload = () => {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const { w, h } = fitDims(img.naturalWidth, img.naturalHeight);
+        canvas.width = w;
+        canvas.height = h;
+        ctx.drawImage(img, 0, 0, w, h);
         finalizeCapture(canvas);
       };
       img.onerror = () => {
@@ -490,6 +505,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
     // PC / no camera: still produce a usable frame from the guide view (user can re-upload)
     // Do NOT navigate away or open Settings.
+    canvas.width = 1080;
+    canvas.height = 720;
     drawSimulatedCarScene(ctx, canvas.width, canvas.height);
     finalizeCapture(canvas);
   };
