@@ -7,6 +7,8 @@ import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, INSPECTION_CHECKLIST } 
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
+import trusaasLogo from '../assets/images/trusaas-lockup.png';
+import trusaasLogoDark from '../assets/images/trusaas-lockup-dark.png';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -329,83 +331,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           </div>
         </div>
 
-        {/* ── SALES PACK (1 page) ── */}
-        <div ref={salesRef} className="tl-sales bg-white text-slate-900 rounded-xl overflow-hidden shadow-xl">
-          <style>{`
-            .tl-sales { font-family: Inter, system-ui, sans-serif; }
-            .tl-sales .band { background: linear-gradient(120deg,#0F172A,#1E3A5F); color:#fff; padding:20px 22px; }
-            .tl-sales .grid2 { display:grid; grid-template-columns:1.1fr .9fr; gap:16px; padding:18px 22px; }
-            .tl-sales h1 { font-size:22px; font-weight:800; margin:0 0 4px; letter-spacing:-.02em; }
-            .tl-sales .muted { color:#64748B; font-size:12px; }
-            .tl-sales .price { font-size:26px; font-weight:900; color:#0B5BD7; margin:10px 0; }
-            .tl-sales .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
-            .tl-sales .hero { width:100%; border-radius:12px; object-fit:cover; aspect-ratio:16/10; background:#F1F5F9; }
-            .tl-sales .box { border:1px solid #E2E8F0; border-radius:12px; padding:12px; }
-            .tl-sales .k { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#94A3B8; font-weight:700; }
-            .tl-sales .v { font-size:13px; font-weight:700; margin-top:3px; }
-            .tl-sales .foot { border-top:1px solid #E2E8F0; padding:12px 22px; font-size:10px; color:#94A3B8; display:flex; justify-content:space-between; }
-          `}</style>
-          <div className="band">
-            <div style={{ display:'flex', justifyContent:'space-between', gap:12 }}>
-              <div>
-                <div style={{ fontSize:10, letterSpacing:'.16em', textTransform:'uppercase', opacity:.7 }}>
-                  {dealerName}{dealerBranch ? ` · ${dealerBranch}` : ''} · Sales pack
-                </div>
-                <div style={{ fontSize:18, fontWeight:800, marginTop:4 }}>{vehicle.year} {vehicle.make} {vehicle.model}</div>
-                <div style={{ opacity:.75, fontSize:12 }}>{vehicle.trim} · Stock {vehicle.stockNumber}</div>
-                {dealerWa ? (
-                  <div style={{ opacity:.7, fontSize:11, marginTop:6 }}>WhatsApp {dealerWa}</div>
-                ) : null}
-              </div>
-              <div style={{ textAlign:'right' }}>
-                <div className="pill" style={{ background: overallGrade.color + '33', color:'#fff', border:`1px solid ${overallGrade.color}` }}>
-                  {overallGrade.grade} · {overall.score}/100
-                </div>
-                <div style={{ fontSize:11, marginTop:8, opacity:.85 }}>{overallGrade.sales}</div>
-                <div style={{ fontSize:10, marginTop:6, opacity:.7 }}>
-                  {vehicle.showOnWebsite ? 'Live on website' : readiness.label}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="grid2">
-            <div>
-              {hero ? <img className="hero" src={hero} alt="Hero" /> : <div className="hero" />}
-              <div className="muted" style={{ marginTop:8 }}>
-                Required photos {readiness.requiredTaken}/{readiness.requiredTotal}
-                {vehicle.lastWeb3dExportAt ? ' · Web 3D package available' : ''}
-              </div>
-            </div>
-            <div>
-              <div className="price">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</div>
-              <div className="box" style={{ marginBottom:10 }}>
-                <div className="k">Sales verdict</div>
-                <div className="v">{overallGrade.sales}</div>
-                <div className="muted" style={{ marginTop:6 }}>
-                  {allFindings.unique.length
-                    ? `${allFindings.unique.length} note(s) for recon / disclosure`
-                    : 'No material issues flagged on captured shots'}
-                </div>
-              </div>
-              <div className="box" style={{ marginBottom:10 }}>
-                <div className="k">VIN</div>
-                <div className="v" style={{ fontFamily:'ui-monospace,monospace', fontSize:11 }}>{vehicle.vin || '—'}</div>
-                <div className="k" style={{ marginTop:8 }}>Colour · type</div>
-                <div className="v">{vehicle.color || '—'} · {vehicle.vehicleType || '—'}</div>
-              </div>
-              <div className="box">
-                <div className="k">WhatsApp paste</div>
-                <div style={{ whiteSpace:'pre-wrap', fontSize:11, marginTop:6, lineHeight:1.45 }}>{waBlurb}</div>
-              </div>
-            </div>
-          </div>
-          <div className="foot">
-            <span>Not a mechanical guarantee — visual inspection pack</span>
-            <span>{reportId}</span>
-          </div>
-        </div>
-
-        {/* ── FULL VIR ── */}
         <div ref={reportRef} className="tl-report">
           <style>{`
             .tl-report {
@@ -456,16 +381,18 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="cover">
             <div className="cover-head">
               <div className="brand">
-                <div className="mark">T</div>
-                <div className="txt">
-                  Tru<em>Inspect</em> · Vehicle Inspection Report
+                <div className="txt" style={{ fontSize: 26 }}>
+                  <span style={{ color:'#E2E8F0' }}>Tru</span><em style={{ color:'#22d3ee' }}>Inspect</em>
+                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'rgba(248,250,252,.85)', marginTop:2 }}>
+                    Vehicle Inspection Report
+                  </div>
                   <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
                 </div>
               </div>
               <div className="meta-row">
+                <img src={trusaasLogo} alt="TruSaaS" style={{ height:34, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
                 <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
                 <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
-                <div>Web: {readiness.label}</div>
                 {dealerBranch ? <div>{dealerBranch}</div> : null}
               </div>
             </div>
@@ -668,9 +595,12 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </div>
           </section>
 
-          <div className="foot">
-            <div>Prepared by <b style={{color:'#06b6d4'}}>{dealerName}</b> · powered by TruInspect · TruSaaS</div>
-            <div>{reportId}</div>
+          <div className="foot" style={{ alignItems:'center' }}>
+            <div>Prepared by <b style={{color:'#06b6d4'}}>{dealerName}</b> · powered by <b>TruInspect</b></div>
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <img src={trusaasLogoDark} alt="TruSaaS" style={{ height:16, width:'auto' }} />
+              <span>{reportId}</span>
+            </div>
             <div>Visual inspection at a moment in time — not a mechanical warranty</div>
           </div>
         </div>
