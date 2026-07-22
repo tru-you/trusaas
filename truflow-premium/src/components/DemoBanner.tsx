@@ -6,7 +6,7 @@ const DISMISS_KEY = "truflow_demo_banner_dismissed";
 
 /**
  * Honest demo/session banner — password gate is not multi-user production auth.
- * Always surfaces links to true-cars.co.za showroom + TrueSaas platform page.
+ * Always surfaces links to true-cars.co.za showroom + TruSaas platform page.
  */
 export default function DemoBanner({ productName = "TruFlow" }: { productName?: string }) {
   const [open, setOpen] = React.useState(() => {
@@ -34,7 +34,7 @@ export default function DemoBanner({ productName = "TruFlow" }: { productName?: 
             </a>
             {" · "}
             <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-violet-200 underline underline-offset-2 font-bold">
-              TrueSaas platform
+              TruSaas platform
             </a>
           </p>
         </div>

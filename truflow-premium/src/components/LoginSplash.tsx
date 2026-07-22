@@ -53,11 +53,11 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
         </form>
 
         <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center gap-2">
-          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#C084FC] hover:underline inline-flex items-center gap-1">
+          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#67E8F9] hover:underline inline-flex items-center gap-1">
             true-cars.co.za showroom <ExternalLink size={10} />
           </a>
           <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#67e8f9] hover:underline">
-            TrueSaas platform
+            TruSaas platform
           </a>
         </div>
       </div>

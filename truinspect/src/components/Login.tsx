@@ -116,7 +116,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-[11px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden hover:scale-[1.01] active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 py-3.5 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-[11px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden hover:scale-[1.01] active:scale-[0.98]"
           >
             {isSubmitting ? (
               <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ export default function Login() {
           <div className="flex items-center gap-3">
             <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
               <span className="text-[8px] text-neutral-600 uppercase tracking-tighter">Powered By</span>
-              <span className="text-[9px] font-bold text-violet-300 underline underline-offset-2">TrueSaas</span>
+              <span className="text-[9px] font-bold text-violet-300 underline underline-offset-2">TruSaas</span>
             </a>
             <div className="w-[1px] h-6 bg-neutral-800" />
             <div className="flex flex-col items-start">

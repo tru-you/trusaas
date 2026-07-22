@@ -120,7 +120,7 @@ export default function PwaInstallBanner() {
               <button
                 type="button"
                 onClick={handleInstall}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider"
               >
                 <Download size={12} />
                 {deferred ? 'Install app' : isIosSafari() ? (iosHelp ? 'Got it' : 'How to install') : 'Install'}

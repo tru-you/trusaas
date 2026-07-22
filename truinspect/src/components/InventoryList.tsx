@@ -698,7 +698,7 @@ export default function InventoryList({
                     setShowAddForm(true);
                   }
                 }}
-                className="mt-4 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"
+                className="mt-4 px-4 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"
               >
                 <Plus size={12} />{' '}
                 {searchTerm || readinessFilter !== 'ALL' || activeFilter !== 'All' ? 'Clear filters' : 'Add first vehicle'}
@@ -843,7 +843,7 @@ export default function InventoryList({
                       <button
                         type="button"
                         onClick={() => onSelectVehicle(vehicle)}
-                        className="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-white bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-2 py-2 rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
+                        className="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-white tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-2 py-2 rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
                         title="Open camera guide and take pictures"
                       >
                         <Camera size={12} /> Take pictures
@@ -1198,7 +1198,7 @@ export default function InventoryList({
                   setTimeout(() => setExportToast(null), 2800);
                   setTimeout(() => setDmsUrlSaved(false), 1600);
                 }}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
+                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
               >
                 Save Configuration
               </button>

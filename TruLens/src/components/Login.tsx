@@ -162,7 +162,7 @@ export default function Login() {
           <div className="flex items-center gap-3">
             <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
               <span className="text-[8px] text-neutral-600 uppercase tracking-tighter">Powered By</span>
-              <span className="text-[9px] font-bold text-violet-300 underline underline-offset-2">TrueSaas</span>
+              <span className="text-[9px] font-bold text-violet-300 underline underline-offset-2">TruSaas</span>
             </a>
             <div className="w-[1px] h-6 bg-neutral-800" />
             <div className="flex flex-col items-start">

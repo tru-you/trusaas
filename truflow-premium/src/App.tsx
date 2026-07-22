@@ -706,11 +706,11 @@ export default function App() {
           <div className="w-full flex items-center justify-center px-1">
             <img src={logo} alt="TruFlow Premium" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
-          <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#C084FC] hover:underline tracking-widest mt-2 uppercase">true-cars.co.za</a>
-          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 uppercase">TrueSaas platform</a>
+          <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#67E8F9] hover:underline tracking-widest mt-2 uppercase">true-cars.co.za</a>
+          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 uppercase">TruSaas platform</a>
           <div className="flex gap-2 mt-2">
             <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#15C7C0]/12 text-[#15C7C0] border border-[#15C7C0]/25 hover:bg-[#15C7C0]/2">Showroom</a>
-            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#A855F7]/15 text-[#C084FC] border border-[#A855F7]/30 hover:bg-[#A855F7]/25">TrueSaas</a>
+            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#22D3EE]/15 text-[#67E8F9] border border-[#22D3EE]/30 hover:bg-[#22D3EE]/25">TruSaas</a>
           </div>
         </div>
 
@@ -730,14 +730,14 @@ export default function App() {
                     onClick={() => navigateTo(n.id)}
                     className={`glass-nav-item flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-left relative cursor-pointer border ${
                       active
-                        ? "is-active bg-gradient-to-r from-[#A855F7]/20 to-[#1466E0]/15 text-white border-[#A855F7]/35"
+                        ? "is-active bg-gradient-to-r from-[#22D3EE]/20 to-[#1466E0]/15 text-white border-[#22D3EE]/35"
                         : "text-[#9DB0C6] hover:text-[#E8EEF6] hover:bg-white/[0.04] border-transparent"
                     }`}
                   >
                     {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/5 rounded-r bg-[#C084FC]" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/5 rounded-r bg-[#67E8F9]" />
                     )}
-                    <Icon size={14} className={active ? "text-[#C084FC]" : "text-[#9DB0C6]"} />
+                    <Icon size={14} className={active ? "text-[#67E8F9]" : "text-[#9DB0C6]"} />
                     {n.label}
                   </button>
                 );

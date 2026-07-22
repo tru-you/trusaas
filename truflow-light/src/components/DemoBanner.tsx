@@ -30,7 +30,7 @@ export default function DemoBanner({ productName = "TruFlow Lite" }: { productNa
             </a>
             {" · "}
             <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-violet-200 underline underline-offset-2 font-bold">
-              TrueSaas platform
+              TruSaas platform
             </a>
           </p>
         </div>

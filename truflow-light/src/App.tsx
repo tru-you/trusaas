@@ -670,10 +670,10 @@ export default function App() {
             <img src={logo} alt="TruFlow Lite" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
           <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#15C7C0] hover:underline tracking-widest mt-2 uppercase">true-cars.co.za</a>
-          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 uppercase">TrueSaas platform</a>
+          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 uppercase">TruSaas platform</a>
           <div className="flex gap-2 mt-2">
             <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#15C7C0]/12 text-[#15C7C0] border border-[#15C7C0]/25 hover:bg-[#15C7C0]/2">Showroom</a>
-            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#A855F7]/15 text-[#C084FC] border border-[#A855F7]/30 hover:bg-[#A855F7]/25">TrueSaas</a>
+            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#22D3EE]/15 text-[#67E8F9] border border-[#22D3EE]/30 hover:bg-[#22D3EE]/25">TruSaas</a>
           </div>
         </div>
 

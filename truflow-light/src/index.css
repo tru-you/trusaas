@@ -233,18 +233,35 @@ body::after {
 }
 
 /* Primary button 3D press */
+/* Moulded, not flat: a lit top edge and a shaded underside so the button
+   reads as a physical surface. Background-agnostic — works over the blue,
+   teal and gold gradients used across Lite. */
 .btn-primary {
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 24px -10px rgba(20,102,224,0.65), 0 1px 0 rgba(255,255,255,0.15) inset !important;
-  transition: transform 0.15s ease, box-shadow 0.2s ease !important;
+  border-top: 1px solid rgba(255,255,255,0.28);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.45),
+    inset 0 -3px 7px rgba(0,18,38,0.45),
+    0 7px 20px -8px rgba(20,102,224,0.6),
+    0 14px 30px -14px rgba(0,0,0,0.8) !important;
+  transition: transform 0.12s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
 }
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 32px -10px rgba(21,199,192,0.45), 0 1px 0 rgba(255,255,255,0.2) inset !important;
+  filter: brightness(1.06);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.55),
+    inset 0 -3px 7px rgba(0,18,38,0.4),
+    0 16px 34px -10px rgba(21,199,192,0.45),
+    0 18px 36px -16px rgba(0,0,0,0.8) !important;
 }
 .btn-primary:active {
-  transform: translateY(1px) scale(0.98);
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 3px 8px rgba(0,18,38,0.6),
+    inset 0 -1px 0 rgba(255,255,255,0.22),
+    0 2px 6px -3px rgba(0,0,0,0.7) !important;
 }
 
 /* Scroll progress */

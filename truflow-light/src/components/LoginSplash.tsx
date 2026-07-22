@@ -57,7 +57,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
             true-cars.co.za showroom <ExternalLink size={10} />
           </a>
           <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#67e8f9] hover:underline">
-            TrueSaas platform
+            TruSaas platform
           </a>
         </div>
       </div>

@@ -135,16 +135,16 @@ body::after {
   overflow: hidden;
   background:
     linear-gradient(145deg, rgba(255,255,255,0.08) 0%, transparent 42%),
-    linear-gradient(160deg, rgba(28,22,48,0.55), rgba(10,16,28,0.6));
+    linear-gradient(160deg, rgba(15,24,38,0.60), rgba(10,16,28,0.6));
   backdrop-filter: blur(22px) saturate(1.5);
   -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  border: 1px solid rgba(168,85,247,0.12);
+  border: 1px solid rgba(21,199,192,0.14);
   border-radius: 16px;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.07) inset,
     0 0 0 1px rgba(0,0,0,0.25) inset,
     0 18px 40px -24px rgba(0,0,0,0.75),
-    0 0 48px -26px rgba(168,85,247,0.35);
+    0 0 48px -26px rgba(21,199,192,0.30);
   transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(var(--tz));
   transition:
     border-color 0.25s ease,
@@ -154,12 +154,12 @@ body::after {
 }
 
 .card:hover, .v-card:hover, .stat-card:hover, .glass-panel:hover {
-  border-color: rgba(192,132,252,0.35);
+  border-color: rgba(21,199,192,0.35);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.12) inset,
     0 0 0 1px rgba(21,199,192,0.08) inset,
     0 28px 50px -22px rgba(0,0,0,0.8),
-    0 0 52px -14px rgba(168,85,247,0.4);
+    0 0 52px -14px rgba(20,102,224,0.40);
 }
 
 .v-card, .stat-card, .tilt-3d {
@@ -171,7 +171,7 @@ body::after {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(420px circle at var(--mx) var(--my), rgba(168,85,247,0.18), transparent 55%),
+    radial-gradient(420px circle at var(--mx) var(--my), rgba(21,199,192,0.18), transparent 55%),
     radial-gradient(280px circle at calc(var(--mx) + 12%) calc(var(--my) + 10%), rgba(20,102,224,0.12), transparent 50%);
   opacity: 0;
   transition: opacity 0.35s ease;
@@ -206,7 +206,7 @@ body::after {
   background: linear-gradient(180deg, rgba(18,12,32,0.9), rgba(7,13,21,0.94));
   backdrop-filter: blur(28px) saturate(1.45);
   -webkit-backdrop-filter: blur(28px) saturate(1.45);
-  border-right: 1px solid rgba(168,85,247,0.14) !important;
+  border-right: 1px solid rgba(21,199,192,0.14) !important;
   box-shadow: 8px 0 40px -18px rgba(88,28,135,0.45);
 }
 
@@ -217,11 +217,11 @@ body::after {
   transform: translateX(3px);
 }
 .glass-nav-item.is-active {
-  box-shadow: 0 0 28px -8px rgba(168,85,247,0.55);
+  box-shadow: 0 0 28px -8px rgba(20,102,224,0.65);
 }
 
 .logo-float {
-  filter: drop-shadow(0 8px 22px rgba(168,85,247,0.4));
+  filter: drop-shadow(0 8px 22px rgba(20,102,224,0.40));
   transition: transform 0.35s cubic-bezier(.22,1,.36,1), filter 0.35s ease;
 }
 .logo-float:hover {
@@ -229,18 +229,35 @@ body::after {
   filter: drop-shadow(0 14px 30px rgba(21,199,192,0.4));
 }
 
+/* Moulded, not flat: a lit top edge and a shaded underside so the button
+   reads as a physical surface. Background-agnostic — works over the blue,
+   teal and gold gradients used across Premium. */
 .btn-primary {
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 24px -10px rgba(168,85,247,0.55), 0 1px 0 rgba(255,255,255,0.15) inset !important;
-  transition: transform 0.15s ease, box-shadow 0.2s ease !important;
+  border-top: 1px solid rgba(255,255,255,0.28);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.45),
+    inset 0 -3px 7px rgba(0,18,38,0.45),
+    0 7px 20px -8px rgba(20,102,224,0.6),
+    0 14px 30px -14px rgba(0,0,0,0.8) !important;
+  transition: transform 0.12s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
 }
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 32px -10px rgba(20,102,224,0.5), 0 1px 0 rgba(255,255,255,0.2) inset !important;
+  filter: brightness(1.06);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.55),
+    inset 0 -3px 7px rgba(0,18,38,0.4),
+    0 16px 34px -10px rgba(21,199,192,0.45),
+    0 18px 36px -16px rgba(0,0,0,0.8) !important;
 }
 .btn-primary:active {
-  transform: translateY(1px) scale(0.98);
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 3px 8px rgba(0,18,38,0.6),
+    inset 0 -1px 0 rgba(255,255,255,0.22),
+    0 2px 6px -3px rgba(0,0,0,0.7) !important;
 }
 
 /* Scroll progress */
