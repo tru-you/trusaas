@@ -1150,7 +1150,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               <button
                 type="button"
                 onClick={(e) => handleCapture(e)}
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg"
+                className="w-full py-3 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg"
               >
                 <Camera size={14} /> Take picture
               </button>
@@ -1587,7 +1587,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <button
               onClick={handleSyncBulkPhotos}
               disabled={bulkItems.length === 0 || bulkProgress.status === 'syncing'}
-              className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-xs font-extrabold text-white flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
+              className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-xs font-extrabold text-white flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
             >
               {bulkProgress.status === 'syncing' ? (
                 <>

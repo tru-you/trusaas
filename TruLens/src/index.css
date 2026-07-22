@@ -114,6 +114,44 @@
   background: linear-gradient(160deg, rgba(14, 116, 144, 0.35), rgba(10, 10, 14, 0.9)) !important;
 }
 
+/* Moulded control surfaces — matches the chrome/cyan of the TruSaaS 3D lockups.
+   Plain (unlayered) CSS, so these win over the Tailwind bg-* utilities on the
+   same element without needing the classNames stripped. */
+.tl-btn-3d {
+  background: linear-gradient(180deg, #6ceaff 0%, #22d3ee 40%, #0aa8cc 100%);
+  border: 1px solid rgba(255,255,255,0.22);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.8),
+    inset 0 -3px 6px rgba(0,45,66,0.45),
+    0 6px 16px -5px rgba(34,211,238,0.55),
+    0 14px 30px -12px rgba(0,0,0,0.8);
+  transition: transform 90ms ease, box-shadow 90ms ease, filter 90ms ease;
+}
+.tl-btn-3d:hover { filter: brightness(1.07); }
+.tl-btn-3d:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 3px 8px rgba(0,45,66,0.6),
+    inset 0 -1px 0 rgba(255,255,255,0.25),
+    0 2px 6px -3px rgba(0,0,0,0.7);
+}
+.tl-btn-3d:disabled { filter: saturate(0.4) brightness(0.7); transform: none; }
+
+.tl-btn-3d-dark {
+  background: linear-gradient(180deg, #26262e 0%, #191920 55%, #111116 100%);
+  border: 1px solid rgba(255,255,255,0.11);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.13),
+    inset 0 -3px 6px rgba(0,0,0,0.55),
+    0 4px 12px -4px rgba(0,0,0,0.75);
+  transition: transform 90ms ease, box-shadow 90ms ease;
+}
+.tl-btn-3d-dark:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 3px 7px rgba(0,0,0,0.7), 0 1px 3px -1px rgba(0,0,0,0.6);
+}
+
 /* Glass panels in app chrome */
 .tl-glass {
   background: linear-gradient(160deg, rgba(30,30,40,0.72), rgba(12,12,18,0.8));

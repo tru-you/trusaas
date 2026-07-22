@@ -48,11 +48,11 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
       <div className="relative flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-neutral-950 text-white font-sans select-none overflow-hidden">
         {/* Thin status strip only when not installed (browser chrome already there when not standalone) */}
         {!isStandaloneDisplay() && (
-          <div className="h-7 shrink-0 bg-neutral-950 text-white px-4 flex items-center justify-between text-[10px] font-semibold tracking-wider border-b border-neutral-900">
+          <div className="h-10 shrink-0 bg-neutral-950 text-white px-4 flex items-center justify-between text-[12px] font-semibold tracking-wider border-b border-neutral-900">
             <span className="text-neutral-300">TruLens</span>
-            <div className="flex items-center gap-1.5 text-neutral-400">
-              <Wifi size={11} className="text-indigo-400" />
-              <span className="text-[9px]">Yard mode</span>
+            <div className="flex items-center gap-2 text-neutral-400">
+              <Wifi size={13} className="text-indigo-400" />
+              <span className="text-[11px]">Yard mode</span>
             </div>
           </div>
         )}
