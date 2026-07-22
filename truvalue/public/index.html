@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<title>TruValue — Live Video Trade-In Appraisal</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#0a0a0a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="TruValue" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a;--panel:#111113;--panel-2:#161619;--line:#26262b;--line-soft:#1c1c20;
+  --text:#f5f5f5;--muted:#8a8a93;--dim:#5a5a63;--cyan:#22d3ee;--cyan-600:#0891b2;
+  --emerald:#10b981;--amber:#f59e0b;--red:#f43f5e;--gold:#C9A24B;--glow:rgba(30,58,138,0.25);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px;
+  --r-xs:6px; --r-sm:12px; --r-lg:16px; --r-pill:999px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased}
+.label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);font-weight:500}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.app{max-width:520px;margin:0 auto;height:100dvh;position:relative;display:flex;flex-direction:column;background:var(--bg);box-shadow:0 0 80px rgba(0,0,0,.6)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;animation:fade .35s ease}
+.screen.active{display:flex}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.landing,.join{justify-content:center;padding:32px 26px;gap:24px;overflow-y:auto;background:radial-gradient(120% 60% at 50% -10%,rgba(34,211,238,.10),transparent 60%),radial-gradient(100% 50% at 50% 110%,rgba(201,162,75,.06),transparent 60%),var(--bg)}
+.brand{display:flex;align-items:center;gap:12px;justify-content:center}
+.brand .lockup{height:72px;width:auto;max-width:82%;display:block}
+.brand-fallback{display:flex;align-items:center;gap:12px}
+.brand.no-logo .lockup{display:none}
+.brand:not(.no-logo) .brand-fallback{display:none}
+.logo-mark{width:46px;height:46px;border-radius:12px;display:grid;place-items:center}
+.logo-mark svg{width:26px;height:26px}
+.brand h1{font-size:27px;font-weight:800;letter-spacing:-.02em;color:#c9ced8}
+.brand h1 span{color:var(--cyan)}
+.suite-lockup{height:34px;width:auto;display:block;margin:0 auto}
+.tag{text-align:center;color:var(--muted);font-size:14.5px;line-height:1.5;max-width:350px;margin:0 auto}
+.pill-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.pill{border:1px solid var(--line);border-radius:var(--r-pill);padding:6px 12px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.pill svg{width:12px;height:12px;color:var(--emerald)}
+.card-btn{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;text-align:left;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden}
+.card-btn .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto}
+.card-btn .ic svg{width:22px;height:22px}
+.card-btn h3{font-size:15.5px;font-weight:700;margin-bottom:3px}
+.card-btn p{font-size:12.5px;color:var(--muted);line-height:1.4}
+.card-btn .arrow{margin-left:auto;color:var(--dim)}
+.foot{text-align:center}
+.foot .label{color:var(--dim)}
+.setup{padding:24px 22px;gap:16px;overflow-y:auto}
+.setup .h{font-size:19px;font-weight:800}
+.setup .sub{font-size:13px;color:var(--muted);line-height:1.5;margin-top:-8px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field input,.field textarea{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px;color:var(--text);font-size:14px;font-family:inherit}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+.link-box{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.link-url{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);word-break:break-all;line-height:1.4}
+.link-meta{display:flex;gap:8px;flex-wrap:wrap}
+.link-meta .m{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:4px 8px;display:flex;gap:4px;align-items:center}
+.link-meta .m svg{width:11px;height:11px;color:var(--emerald)}
+.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.share-btn{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12.5px;font-weight:600}
+.share-btn svg{width:24px;height:24px}
+.share-btn.wa svg{color:#25D366}
+.share-btn.cp svg{color:var(--cyan)}
+.go-btn{color:#04222a;font-weight:800;font-size:15px;border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.go-btn svg{width:20px;height:20px}
+.go-btn:disabled{opacity:.5}
+.back-link{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;padding:4px;justify-content:center}
+.back-link svg{width:16px}
+.veh-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;text-align:left}
+.veh-card .vt{font-size:17px;font-weight:800}
+.veh-card .vr{color:var(--cyan);font-size:14px;font-weight:700;margin-top:2px;font-family:'JetBrains Mono',monospace}
+.veh-card .vm{color:var(--muted);font-size:12px;margin-top:8px}
+.secured{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:12px;text-align:left}
+.secured svg{width:15px;color:var(--emerald);flex:0 0 auto}
+/* live */
+.topbar{display:flex;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid var(--line-soft);background:rgba(10,10,10,.9);backdrop-filter:blur(8px);z-index:5}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.topbar .live{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;font-weight:600}
+.topbar .veh{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.role-chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;padding:4px 8px;border-radius:6px;border:1px solid var(--line);color:var(--cyan)}
+.stage{position:relative;flex:1;background:#000;overflow:hidden;min-height:0}
+.stage video{width:100%;height:100%;object-fit:cover;background:#000}
+.novid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--dim);text-align:center;padding:30px}
+.novid svg{width:40px;height:40px;opacity:.5}
+.pip{position:absolute;top:12px;right:12px;width:82px;height:112px;border-radius:12px;border:1.5px solid rgba(255,255,255,.2);overflow:hidden;background:#0d0d0d}
+.pip video{width:100%;height:100%;object-fit:cover}
+.pip .lab{position:absolute;bottom:0;left:0;right:0;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;text-align:center;background:rgba(0,0,0,.6);padding:2px}
+.conn{position:absolute;top:12px;left:12px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;padding:5px 8px;border-radius:6px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:flex;align-items:center;gap:8px;color:var(--muted)}
+.conn .cd{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+.conn.on .cd{background:var(--emerald);box-shadow:0 0 8px var(--emerald)}
+.prompt-ov{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(12,12,14,.88);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 15px}
+.prompt-ov .sec-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.prompt-ov .sec-idx{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);border:1px solid rgba(34,211,238,.35);border-radius:6px;padding:2px 8px}
+.prompt-ov .sec-name{font-size:14px;font-weight:700}
+.prompt-ov .instr{font-size:13px;line-height:1.45;display:flex;gap:8px;align-items:flex-start}
+.prompt-ov .instr .who{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--cyan);border:1px solid var(--line);border-radius:6px;padding:2px 6px;margin-top:1px;flex:0 0 auto}
+.defect-list{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}
+.defect-tag{font-size:11px;color:var(--amber);border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.08);border-radius:6px;padding:3px 8px}
+.rail{display:flex;gap:4px;padding:8px 14px;background:var(--panel);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.rail .seg{flex:1;height:4px;border-radius:var(--r-pill);background:var(--line);transition:.3s}
+.rail .seg.done{background:var(--emerald)}
+.rail .seg.cur{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.controls{display:flex;align-items:center;gap:8px;padding:12px 14px calc(16px + env(safe-area-inset-bottom));background:var(--panel)}
+.ctrl{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto}
+.ctrl svg{width:21px;height:21px;color:var(--text)}
+.ctrl.end svg{color:#fff}
+.nav-next{flex:1;height:48px;border-radius:12px;color:#04222a;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.nav-next svg{width:18px;height:18px}
+.nav-back{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto}
+.nav-back svg{width:20px;height:20px;color:var(--muted)}
+.nav-back:disabled{opacity:.35}
+/* dealer panel (private) */
+.tabs{display:flex;gap:8px;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--line-soft)}
+.tab{flex:1;padding:8px;border-radius:8px;font-size:11.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);background:var(--panel-2);display:flex;align-items:center;justify-content:center;gap:6px}
+.tab.on{color:var(--cyan);border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.08)}
+.tab .n{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--line);border-radius:var(--r-pill);padding:1px 6px;color:var(--text)}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:44%;background:var(--panel);border-top:1px solid var(--line);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow-y:auto;z-index:8;display:none;flex-direction:column;gap:12px}
+.sheet.open{display:flex}
+.sheet-head{display:flex;align-items:center;justify-content:between;gap:8px}
+.sheet-head .t{font-size:15px;font-weight:800;flex:1}
+.sheet-x{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.q{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.q .qt{font-size:12.5px;font-weight:600;margin-bottom:8px}
+.q input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;color:var(--text);font-size:13px;font-family:inherit}
+.q input:focus{outline:none;border-color:var(--cyan)}
+.q.answered{border-color:rgba(16,185,129,.4)}
+.priv{font-size:11px;color:var(--amber);display:flex;align-items:center;gap:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:8px 10px}
+.priv svg{width:13px;flex:0 0 auto}
+/* price + offer */
+.summary{padding:24px 22px;gap:16px;overflow-y:auto}
+.sum-hero{text-align:center;padding:6px 0 2px}
+.sum-hero h2{font-size:20px;font-weight:800}
+.sum-hero p{color:var(--muted);font-size:13px;margin-top:4px}
+.tp-box{background:linear-gradient(160deg,rgba(34,211,238,.10),rgba(10,10,14,.6));border:1px solid rgba(34,211,238,.35);border-radius:var(--r-lg);padding:18px;text-align:center}
+.tp-box .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--cyan);text-transform:uppercase}
+.tp-box .amt{font-size:32px;font-weight:900;font-family:'JetBrains Mono',monospace;margin:6px 0 2px}
+.tp-box .sub{font-size:11.5px;color:var(--amber);font-weight:600}
+.tp-input{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;align-items:center;gap:8px}
+.tp-input span{font-size:19px;font-weight:800;color:var(--muted)}
+.tp-input input{flex:1;background:none;border:none;color:var(--text);font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;outline:none;min-width:0}
+.sum-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 10px;text-align:center}
+.stat .n{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace}
+.stat .n.cy{color:var(--cyan)}.stat .n.am{color:var(--amber)}.stat .n.em{color:var(--emerald)}
+.stat .l{font-size:10px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-top:4px;font-family:'JetBrains Mono',monospace}
+.ai-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px}
+.ai-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ai-head .b{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--cyan);border:1px solid rgba(34,211,238,.35);border-radius:6px;padding:3px 8px}
+.ai-head span{font-size:13px;font-weight:700}
+.ai-text{font-size:13px;line-height:1.55;white-space:pre-wrap}
+.ai-text.loading{color:var(--dim)}
+.sum-snaps{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.snap-thumb{width:76px;height:76px;border-radius:12px;flex:0 0 auto;background:var(--panel-2);border:1px solid var(--line);object-fit:cover}
+.sum-section{display:flex;flex-direction:column;gap:8px}
+.dl{display:flex;flex-direction:column;gap:8px}
+.dl .row{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:11px 13px;font-size:13px}
+.dl .row b{color:var(--amber)}
+.al{display:flex;flex-direction:column;gap:8px}
+.al .row{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:12.5px}
+.al .row b{display:block;color:var(--muted);font-size:11px;font-weight:600;margin-bottom:3px}
+.report-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.report-actions .share-btn{padding:13px 6px;font-size:11.5px;gap:8px}
+.report-actions .share-btn svg{width:21px;height:21px}
+.share-btn.pr svg{color:var(--text)}
+.share-btn.em svg{color:var(--cyan)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:11px 16px;font-size:13px;display:flex;align-items:center;gap:8px;z-index:50;opacity:0;pointer-events:none;transition:.25s;max-width:88%}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.toast svg{width:16px;height:16px;color:var(--emerald);flex:0 0 auto}
+.waiting{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(10,10,10,.75);backdrop-filter:blur(4px);z-index:6;text-align:center;padding:30px}
+.waiting .spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--cyan);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.waiting p{color:var(--muted);font-size:13.5px;line-height:1.5;max-width:290px}
+.waiting b{color:var(--text)}
+
+/* ===== 3D CONTROL SURFACES (shared with TruLive) ===== */
+.go-btn,.nav-next{
+  background:linear-gradient(180deg,#6ceaff 0%,#22d3ee 40%,#0aa8cc 100%);
+  border:1px solid rgba(255,255,255,.22);text-shadow:0 1px 0 rgba(255,255,255,.4);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.8),inset 0 -3px 6px rgba(0,45,66,.45),
+    0 6px 16px -5px rgba(34,211,238,.55),0 14px 30px -12px rgba(0,0,0,.8);
+  transition:transform .09s ease,box-shadow .09s ease,background .09s ease;
+}
+.go-btn:active,.nav-next:active{background:linear-gradient(180deg,#0aa8cc,#22d3ee);transform:translateY(2px);
+  box-shadow:inset 0 3px 8px rgba(0,45,66,.6),0 2px 6px -3px rgba(0,0,0,.7);}
+.ctrl,.nav-back,.share-btn,.tab,.sheet-x{
+  background:linear-gradient(180deg,#26262e 0%,#191920 55%,#111116 100%);
+  border:1px solid rgba(255,255,255,.11);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.13),inset 0 -3px 6px rgba(0,0,0,.55),0 4px 12px -4px rgba(0,0,0,.75);
+  transition:transform .09s ease,box-shadow .09s ease;
+}
+.ctrl:active,.nav-back:active,.share-btn:active,.tab:active{transform:translateY(2px);
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.7),0 1px 3px -1px rgba(0,0,0,.6);}
+.card-btn{background:linear-gradient(180deg,#20323a 0%,#182831 55%,#111a20 100%);
+  border:1px solid rgba(34,211,238,.42);
+  box-shadow:inset 0 1.5px 0 rgba(160,240,255,.28),inset 0 -4px 9px rgba(0,20,30,.55),
+    0 0 34px -10px rgba(34,211,238,.35),0 10px 26px -9px rgba(0,0,0,.85);
+  transition:transform .09s ease,box-shadow .09s ease;}
+.card-btn:active{transform:translateY(2px);box-shadow:inset 0 4px 10px rgba(0,20,30,.7);}
+.card-btn .ic,.logo-mark{background:linear-gradient(160deg,#7cecff 0%,#22d3ee 45%,#0891b2 100%);
+  border:1px solid rgba(255,255,255,.3);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.75),inset 0 -3px 7px rgba(0,45,66,.5),0 5px 16px -4px rgba(34,211,238,.5);}
+.ctrl.end{background:linear-gradient(180deg,#ff7089 0%,#f43f5e 42%,#c81e3c 100%);border:1px solid rgba(255,255,255,.22);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6),inset 0 -3px 6px rgba(90,0,20,.5),0 6px 16px -5px rgba(244,63,94,.5);margin-left:auto;}
+.ctrl.end:active{transform:translateY(2px);box-shadow:inset 0 3px 8px rgba(90,0,20,.6);}
+.ctrl svg,.nav-back svg,.share-btn svg,.card-btn .ic svg,.logo-mark svg,.nav-next svg,.go-btn svg{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.55));}
+.pill{background:linear-gradient(180deg,#212128 0%,#16161b 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.10);}
+.veh-card,.ai-box,.stat,.link-box{box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 8px 20px -10px rgba(0,0,0,.8);}
+
+/* ===== PRINTABLE OFFER ===== */
+#print-offer{display:none}
+@media print{
+  @page{margin:14mm}
+  html,body{height:auto;overflow:visible;background:#fff}
+  .app,.toast{display:none !important}
+  #print-offer{display:block;background:#fff;color:#111;font-family:Inter,sans-serif}
+  .po-head{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:16px}
+  .po-head img{height:34px;width:auto}
+  .po-kicker{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#666;font-family:'JetBrains Mono',monospace;text-align:right}
+  .po-title{font-size:21px;font-weight:800}
+  .po-veh{font-size:15px;font-weight:600;margin-top:4px}
+  .po-reg{font-size:13px;color:#444;font-family:'JetBrains Mono',monospace}
+  .po-tp{border:2px solid #111;border-radius:8px;padding:14px 16px;margin:14px 0;display:flex;align-items:baseline;justify-content:space-between}
+  .po-tp .l{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#555;font-family:'JetBrains Mono',monospace}
+  .po-tp .v{font-size:27px;font-weight:900;font-family:'JetBrains Mono',monospace}
+  .po-subject{font-size:11px;font-weight:700;color:#a35a00;margin-top:4px}
+  #print-offer h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#666;margin:15px 0 6px;font-family:'JetBrains Mono',monospace}
+  .po-text{font-size:12.5px;line-height:1.6;white-space:pre-wrap}
+  .po-list{list-style:none;font-size:12.5px;line-height:1.7}
+  .po-list li{padding-left:15px;position:relative;break-inside:avoid}
+  .po-list li::before{content:"•";position:absolute;left:2px}
+  .po-snaps{display:flex;flex-wrap:wrap;gap:7px}
+  .po-snaps img{width:118px;height:88px;object-fit:cover;border:1px solid #ccc;break-inside:avoid}
+  .po-foot{margin-top:20px;padding-top:9px;border-top:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;font-size:9.5px;color:#777;font-family:'JetBrains Mono',monospace}
+  .po-foot img{height:20px;width:auto}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- LANDING (dealer) -->
+  <section class="screen active landing" id="s-landing">
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruValue" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Value</span></h1></div></div>
+    <p class="tag">Live video trade-in appraisals. The customer shows you their car, you ask the questions, and issue a trade price — subject to viewing.</p>
+    <div class="pill-row">
+      <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Secure link</div>
+      <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Guided + questions</div>
+      <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7Z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>No app for customer</div>
+    </div>
+    <button class="card-btn" onclick="startSetup()">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div><h3>Start a trade-in appraisal</h3><p>Send the customer a link and appraise live</p></div>
+      <div class="arrow"><svg width="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+    </button>
+    <div class="foot"><img class="suite-lockup" src="/assets/trusaas-lockup.png" alt="TruSaas" onerror="this.style.display='none'"><div class="label" style="margin-top:8px">Secured by <b>AI Audit Core</b></div></div>
+  </section>
+
+  <!-- SETUP (dealer) -->
+  <section class="screen setup" id="s-setup">
+    <button class="back-link" style="align-self:flex-start" onclick="show('s-landing')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg> Back</button>
+    <div class="h">New trade-in appraisal</div>
+    <div class="sub">Enter the customer's vehicle. They get a single-use link — no app, opens in their browser.</div>
+    <div class="field"><span class="label">Customer's vehicle</span><input id="in-veh" placeholder="e.g. 2019 VW Polo 1.0 TSI Comfortline" /></div>
+    <div class="field"><span class="label">Registration</span><input id="in-reg" placeholder="e.g. HXY 412 EC" /></div>
+    <div class="field"><span class="label">Customer name</span><input id="in-cust" placeholder="e.g. Sipho M." /></div>
+    <button class="go-btn" id="gen-btn" onclick="createAppraisal()"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg>Generate customer link</button>
+    <div class="link-box" id="link-box" style="display:none">
+      <span class="label">Secure customer link</span>
+      <div class="link-url" id="link-url">…</div>
+      <div class="link-meta">
+        <div class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Single-use</div>
+        <div class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Expires 24h</div>
+        <div class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Encrypted</div>
+      </div>
+    </div>
+    <div class="share-grid" id="share-grid" style="display:none">
+      <button class="share-btn wa" onclick="shareWA()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1s-.5-.2-.7.1-.8 1-.9 1.2-.3.2-.6.1a8 8 0 0 1-2.4-1.5 9 9 0 0 1-1.6-2c-.2-.3 0-.5.1-.6l.5-.5.3-.5c.1-.2 0-.4 0-.5L9 6.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3A2.8 2.8 0 0 0 6.3 9c0 1.2.9 2.4 1 2.6s1.7 2.7 4.2 3.8a14 14 0 0 0 1.4.5c.6.2 1.1.2 1.5.1.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3l-.5-.4M12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.5A10 10 0 1 0 12 2Z"/></svg>WhatsApp</button>
+      <button class="share-btn cp" onclick="copyLink()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy link</button>
+    </div>
+    <button class="go-btn" id="live-btn" style="display:none" onclick="beginSession('dealer')"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8Z" fill="#04222a"/></svg>Start appraisal</button>
+  </section>
+
+  <!-- JOIN (customer) -->
+  <section class="screen join" id="s-join">
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruValue" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Value</span></h1></div></div>
+    <p class="tag" style="margin-top:-4px">The dealer would like to appraise your vehicle over a short video call:</p>
+    <div class="veh-card">
+      <div class="vt" id="j-veh">Loading…</div>
+      <div class="vr" id="j-reg"></div>
+      <div class="vm">You'll be asked to walk around your car with your phone camera while the dealer asks a few questions. Takes about 5 minutes.</div>
+    </div>
+    <div class="secured"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Secure single-use link · opens right here in your browser, nothing to install</div>
+    <button class="go-btn" onclick="beginSession('customer')"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.4"><path d="M23 7l-7 5 7 5V7Z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Start the call</button>
+    <div class="foot"><img class="suite-lockup" src="/assets/trusaas-lockup.png" alt="TruSaas" onerror="this.style.display='none'"></div>
+  </section>
+
+  <!-- LIVE -->
+  <section class="screen" id="s-live">
+    <div class="topbar"><div class="dot"></div><div class="live">LIVE</div><div class="veh" id="live-veh"></div><div class="role-chip" id="role-chip">DEALER</div><div class="timer" id="timer">00:00</div></div>
+    <div class="tabs" id="dealer-tabs">
+      <button class="tab on" id="tab-guide" onclick="closeSheet()"><svg width="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Guide</button>
+      <button class="tab" id="tab-q" onclick="openSheet('questions')"><svg width="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>Questions <span class="n" id="q-count">0/9</span></button>
+      <button class="tab" id="tab-d" onclick="openSheet('defects')"><svg width="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>Defects <span class="n" id="d-count">0</span></button>
+    </div>
+    <div class="stage">
+      <video id="mainVideo" autoplay playsinline></video>
+      <div class="novid" id="novid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M23 7l-7 5 7 5V7Z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div style="font-size:13px" id="novid-txt">Starting camera…</div></div>
+      <div class="conn" id="conn"><div class="cd"></div><span id="conn-txt">Connecting…</span></div>
+      <div class="pip"><video id="pipVideo" autoplay playsinline muted></video><div class="lab" id="pip-lab">YOU</div></div>
+      <div class="prompt-ov">
+        <div class="sec-head"><div class="sec-idx" id="sec-idx">01 / 09</div><div class="sec-name" id="sec-name"></div></div>
+        <div class="instr"><span class="who" id="instr-who">SHOW</span><span id="instr-text"></span></div>
+        <div class="defect-list" id="defect-list"></div>
+      </div>
+      <div class="waiting" id="waiting"><div class="spin"></div><p id="wait-txt"></p></div>
+      <!-- dealer private sheet -->
+      <div class="sheet" id="sheet">
+        <div class="sheet-head"><div class="t" id="sheet-title">Questions</div><button class="sheet-x" onclick="closeSheet()"><svg width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+        <div class="priv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Only you can see this — the customer's screen shows the walkaround guide.</div>
+        <div id="sheet-body" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+    </div>
+    <div class="rail" id="rail"></div>
+    <div class="controls" id="dealer-controls">
+      <button class="nav-back" id="btn-back" onclick="prevSection()" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="ctrl" onclick="snap()" title="Capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></button>
+      <button class="ctrl" onclick="addDefect()" title="Note defect"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></button>
+      <button class="nav-next" onclick="nextSection()"><span id="next-label">Next</span><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg></button>
+      <button class="ctrl end" onclick="endSession()"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M10.7 5.6A16 16 0 0 1 22 8.8a2 2 0 0 1-.5 2.3l-1.9 1.5a2 2 0 0 1-2.3.1l-2-1.3M6.5 3.8 3 2M2 9a16 16 0 0 0 13 13"/><path d="m2 2 20 20"/></svg></button>
+    </div>
+    <div class="controls" id="customer-controls" style="display:none">
+      <button class="ctrl" onclick="flipCam()" title="Flip camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg></button>
+      <div style="flex:1;text-align:center;font-size:12px;color:var(--muted);line-height:1.35">Point your camera at the car<br><span style="color:var(--dim);font-size:11px">The dealer will guide you</span></div>
+      <button class="ctrl end" onclick="endSession()"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M10.7 5.6A16 16 0 0 1 22 8.8a2 2 0 0 1-.5 2.3l-1.9 1.5a2 2 0 0 1-2.3.1l-2-1.3M6.5 3.8 3 2M2 9a16 16 0 0 0 13 13"/><path d="m2 2 20 20"/></svg></button>
+    </div>
+  </section>
+
+  <!-- PRICE (dealer only) -->
+  <section class="screen summary" id="s-price">
+    <div class="sum-hero"><h2>Set the trade price</h2><p id="price-veh"></p></div>
+    <div class="sum-stats">
+      <div class="stat"><div class="n cy" id="pst-dur">00:00</div><div class="l">Duration</div></div>
+      <div class="stat"><div class="n am" id="pst-def">0</div><div class="l">Defects</div></div>
+      <div class="stat"><div class="n em" id="pst-q">0</div><div class="l">Answered</div></div>
+    </div>
+    <div class="field"><span class="label">Trade price (TP)</span>
+      <div class="tp-input"><span>R</span><input id="in-tp" type="text" inputmode="numeric" placeholder="0" oninput="formatTP(this)" /></div>
+    </div>
+    <div class="field"><span class="label">Offer valid for (days)</span><input id="in-valid" type="number" value="7" min="1" max="60" /></div>
+    <div class="field"><span class="label">Conditions</span><textarea id="in-cond" rows="4">Subject to physical viewing and verification. Assumes no undisclosed accident damage, mechanical faults or outstanding finance beyond that disclosed. Subject to roadworthy inspection and confirmation of service history and settlement figure.</textarea></div>
+    <div class="priv" style="color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>You set this price. TruValue never estimates or suggests a value.</div>
+    <button class="go-btn" onclick="issueOffer()"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Issue offer</button>
+  </section>
+
+  <!-- OFFER -->
+  <section class="screen summary" id="s-offer">
+    <div class="sum-hero"><h2>Trade-in offer</h2><p id="sum-veh"></p></div>
+    <div class="tp-box"><div class="lbl">Trade price</div><div class="amt" id="tp-amt">R 0</div><div class="sub">Subject to physical viewing</div></div>
+    <div class="ai-box">
+      <div class="ai-head"><div class="b">AI AUDIT CORE</div><span>Condition write-up</span></div>
+      <div class="ai-text loading" id="ai-text">Generating write-up…</div>
+    </div>
+    <div class="sum-section" id="def-wrap" style="display:none"><span class="label">Defects noted</span><div class="dl" id="def-list"></div></div>
+    <div class="sum-section" id="ans-wrap" style="display:none"><span class="label">Customer disclosures</span><div class="al" id="ans-list"></div></div>
+    <div class="sum-section"><span class="label">Captured evidence</span><div class="sum-snaps" id="sum-snaps"><span style="color:var(--dim);font-size:12.5px">No captures</span></div></div>
+    <div class="sum-section"><span class="label">Send the offer</span>
+      <div class="report-actions">
+        <button class="share-btn pr" onclick="offerPrint()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print / PDF</button>
+        <button class="share-btn em" onclick="offerEmail()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>Email</button>
+        <button class="share-btn wa" onclick="offerWA()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1s-.5-.2-.7.1-.8 1-.9 1.2-.3.2-.6.1a8 8 0 0 1-2.4-1.5 9 9 0 0 1-1.6-2c-.2-.3 0-.5.1-.6l.5-.5.3-.5c.1-.2 0-.4 0-.5L9 6.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3A2.8 2.8 0 0 0 6.3 9c0 1.2.9 2.4 1 2.6s1.7 2.7 4.2 3.8a14 14 0 0 0 1.4.5c.6.2 1.1.2 1.5.1.5-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3l-.5-.4M12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.5A10 10 0 1 0 12 2Z"/></svg>WhatsApp</button>
+      </div>
+    </div>
+    <button class="back-link" onclick="location.href='/'">New appraisal</button>
+  </section>
+
+  <div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg><span id="toast-txt">Done</span></div>
+</div>
+
+<!-- PRINTABLE OFFER -->
+<div id="print-offer">
+  <div class="po-head">
+    <img src="/assets/trusaas-lockup-dark.png" alt="TruSaas" onerror="this.style.display='none'">
+    <div class="po-kicker">TruValue Trade-In Offer<br><span id="po-date"></span></div>
+  </div>
+  <div class="po-title">Trade-In Offer</div>
+  <div class="po-veh" id="po-veh"></div>
+  <div class="po-reg" id="po-reg"></div>
+  <div class="po-tp"><div><div class="l">Trade price</div><div class="po-subject">Subject to physical viewing</div></div><div class="v" id="po-tp"></div></div>
+  <div class="po-text" id="po-valid"></div>
+  <h2>Condition write-up</h2>
+  <div class="po-text" id="po-writeup"></div>
+  <div id="po-def-wrap"><h2>Defects noted</h2><ul class="po-list" id="po-defects"></ul></div>
+  <div id="po-ans-wrap"><h2>Customer disclosures</h2><ul class="po-list" id="po-answers"></ul></div>
+  <h2>Conditions</h2>
+  <div class="po-text" id="po-cond"></div>
+  <div id="po-snaps-wrap"><h2>Captured evidence</h2><div class="po-snaps" id="po-snaps"></div></div>
+  <div class="po-foot"><span>Issued via TruValue · a TruSaas module · not a binding offer until physical inspection</span><img src="/assets/trusaas-lockup-dark.png" alt="TruSaas" onerror="this.style.display='none'"></div>
+</div>
+
+<canvas id="snapCanvas" style="display:none"></canvas>
+
+<script>
+/* ===== APPRAISAL SCRIPT — defect-focused, not sales-focused ===== */
+const SECTIONS=[
+ {name:"Front & Bonnet",who:"SHOW",instr:"Stand at the front. Show the bumper, grille, lights and bonnet."},
+ {name:"Driver Side",who:"SHOW",instr:"Walk slowly down the driver's side, keeping the whole side in view."},
+ {name:"Rear & Boot",who:"SHOW",instr:"Show the rear, then open the boot so we can see inside."},
+ {name:"Passenger Side",who:"SHOW",instr:"Walk back along the passenger side, then show the sills underneath."},
+ {name:"Wheels & Tyres",who:"CLOSE",instr:"Hold the camera close to each tyre so we can see the tread and the rim."},
+ {name:"Engine Bay & Start",who:"OPEN",instr:"Open the bonnet, show the engine, then start the car so we can hear it."},
+ {name:"Interior & Odometer",who:"SHOW",instr:"Show the dash with the car on — then hold the camera on the odometer reading."},
+ {name:"Damage Close-ups",who:"CLOSE",instr:"Show us any scratches, dents, chips or wear you know about, up close."},
+ {name:"Documents & Keys",who:"SHOW",instr:"Show the service book and all the keys you have for the car."}
+];
+
+/* Dealer-private questions — verbal, not visual */
+const QUESTIONS=[
+ "Current mileage on the clock?",
+ "Is the vehicle under finance? If so, which bank and what's the settlement?",
+ "Is it registered in your name?",
+ "Service history — full, partial or none? Franchise or independent?",
+ "Any accident damage or insurance claims?",
+ "How many keys do you have?",
+ "Spare wheel, jack and tools present?",
+ "Any known mechanical faults or warning lights?",
+ "Any extras fitted — tow bar, canopy, sound system?"
+];
+
+let role='dealer',roomId=null,cur=0,timerInt=null,seconds=0,stream=null,facing='environment';
+let snaps=[],defects=[],answers=[],ws=null,pc=null,vehName='',vehReg='',custName='';
+let writeupText='',tp=0,validDays=7,conditions='',rpt={dur:'',def:0,q:0};
+
+const m=location.pathname.match(/^\/a\/([a-f0-9]+)/);
+if(m){roomId=m[1];role='customer';initCustomer();}
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function toast(msg){const t=document.getElementById('toast');document.getElementById('toast-txt').textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
+
+async function initCustomer(){
+  show('s-join');
+  try{const r=await fetch('/api/appraisal/'+roomId);if(!r.ok)throw 0;const d=await r.json();
+    vehName=d.veh;vehReg=d.reg;custName=d.customer;
+    document.getElementById('j-veh').textContent=d.veh;
+    document.getElementById('j-reg').textContent=d.reg||'';
+  }catch(e){document.getElementById('j-veh').textContent='This link has expired';}
+}
+
+function startSetup(){document.getElementById('link-box').style.display='none';document.getElementById('share-grid').style.display='none';document.getElementById('live-btn').style.display='none';document.getElementById('gen-btn').style.display='flex';show('s-setup');}
+async function createAppraisal(){
+  vehName=document.getElementById('in-veh').value||'Vehicle';
+  vehReg=document.getElementById('in-reg').value||'';
+  custName=document.getElementById('in-cust').value||'';
+  const r=await fetch('/api/appraisal',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({veh:vehName,reg:vehReg,customer:custName})});
+  const d=await r.json();roomId=d.id;
+  document.getElementById('link-url').textContent=location.origin+d.url;
+  document.getElementById('gen-btn').style.display='none';
+  document.getElementById('link-box').style.display='flex';
+  document.getElementById('share-grid').style.display='grid';
+  document.getElementById('live-btn').style.display='flex';
+}
+const fullLink=()=>document.getElementById('link-url').textContent;
+function copyLink(){navigator.clipboard?.writeText(fullLink()).catch(()=>{});toast('Link copied');}
+function shareWA(){
+  const hi=custName?`Hi ${custName} 👋`:'Hi 👋';
+  const msg=encodeURIComponent(`${hi}\n\nTo give you a trade-in price on your ${vehName}, we just need a quick video walkaround — about 5 minutes, right in your browser, nothing to install.\n\nTap when you're at the car:\n${fullLink()}`);
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+/* ===== networking ===== */
+function connect(){
+  ws=new WebSocket((location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/ws');
+  ws.onopen=()=>ws.send(JSON.stringify({type:'join',roomId,role}));
+  ws.onmessage=async ev=>{
+    const msg=JSON.parse(ev.data);
+    switch(msg.type){
+      case 'joined': if(msg.veh){vehName=msg.veh;vehReg=msg.reg||vehReg;document.getElementById('live-veh').textContent=msg.veh;} break;
+      case 'error': toast(msg.reason==='in-use'?'This appraisal is already in progress':'This link has expired'); break;
+      case 'peer-joined': setPeer(true); if(role==='dealer'){toast('Customer joined');broadcastState();} break;
+      case 'ready': if(role==='dealer') makeOffer(); break;
+      case 'peer-left': setPeer(false); toast((role==='dealer'?'Customer':'Dealer')+' disconnected'); break;
+      case 'offer': await onOffer(msg.sdp); break;
+      case 'answer-sdp': await pc.setRemoteDescription(msg.sdp); break;
+      case 'ice': if(msg.candidate) try{await pc.addIceCandidate(msg.candidate)}catch(e){} break;
+      case 'state': cur=msg.cur; renderSection(); break;
+      case 'snapshot': toast('📸 Dealer captured this view'); break;
+      case 'end': toast('The dealer has ended the call'); finishCustomer(); break;
+    }
+  };
+  ws.onclose=()=>setPeer(false);
+}
+const sig=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o));};
+function setPeer(on){const c=document.getElementById('conn');c.classList.toggle('on',on);document.getElementById('conn-txt').textContent=on?'Connected':'Connecting…';document.getElementById('waiting').style.display=on?'none':'flex';}
+
+function newPC(){
+  pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});
+  if(stream)stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+  pc.onicecandidate=e=>{if(e.candidate)sig({type:'ice',candidate:e.candidate});};
+  pc.ontrack=e=>{
+    // The CUSTOMER's camera is the appraisal feed, so it is always the main view
+    // for the dealer. The customer sees their own camera large (so they can aim it).
+    const el=(role==='dealer')?document.getElementById('mainVideo'):document.getElementById('pipVideo');
+    el.srcObject=e.streams[0];
+    if(role==='dealer'){el.muted=false;document.getElementById('novid').style.display='none';}
+    setPeer(true);
+  };
+  pc.onconnectionstatechange=()=>{if(['failed','disconnected'].includes(pc.connectionState))setPeer(false);};
+}
+async function makeOffer(){if(!pc)newPC();const o=await pc.createOffer();await pc.setLocalDescription(o);sig({type:'offer',sdp:o});}
+async function onOffer(sdp){if(!pc)newPC();await pc.setRemoteDescription(sdp);const a=await pc.createAnswer();await pc.setLocalDescription(a);sig({type:'answer-sdp',sdp:a});}
+
+/* ===== session ===== */
+function beginSession(r){
+  role=r;cur=0;seconds=0;snaps=[];defects=[];answers=QUESTIONS.map(q=>({q,a:''}));
+  document.getElementById('role-chip').textContent=r==='dealer'?'DEALER':'YOUR CAR';
+  document.getElementById('pip-lab').textContent=r==='dealer'?'YOU':'DEALER';
+  document.getElementById('dealer-controls').style.display=r==='dealer'?'flex':'none';
+  document.getElementById('customer-controls').style.display=r==='customer'?'flex':'none';
+  document.getElementById('dealer-tabs').style.display=r==='dealer'?'flex':'none';
+  document.getElementById('live-veh').textContent=vehName;
+  document.getElementById('wait-txt').innerHTML=r==='dealer'
+    ? '<b>Waiting for the customer…</b><br>Send the link if you haven\'t — the appraisal starts the moment they open it.'
+    : '<b>Connecting to the dealer…</b><br>Have your car nearby and give the camera a moment.';
+  buildRail();renderSection();renderSheet();show('s-live');startTimer();
+  startCam().then(connect);
+}
+
+function buildRail(){const r=document.getElementById('rail');r.innerHTML='';SECTIONS.forEach((_,i)=>{const d=document.createElement('div');d.className='seg';d.id='seg'+i;r.appendChild(d);});}
+function updateRail(){SECTIONS.forEach((_,i)=>{const e=document.getElementById('seg'+i);if(e)e.className='seg'+(i<cur?' done':i===cur?' cur':'');});}
+
+function renderSection(){
+  const s=SECTIONS[cur];
+  document.getElementById('sec-idx').textContent=String(cur+1).padStart(2,'0')+' / '+String(SECTIONS.length).padStart(2,'0');
+  document.getElementById('sec-name').textContent=s.name;
+  document.getElementById('instr-who').textContent=s.who;
+  document.getElementById('instr-text').textContent=s.instr;
+  const b=document.getElementById('btn-back');if(b)b.disabled=(cur===0);
+  const n=document.getElementById('next-label');if(n)n.textContent=(cur===SECTIONS.length-1)?'Finish & price':'Next';
+  const dl=document.getElementById('defect-list');
+  if(dl){const here=defects.filter(d=>d.section===s.name);
+    dl.innerHTML='';
+    if(role==='dealer')here.forEach(d=>{const t=document.createElement('div');t.className='defect-tag';t.textContent='⚠ '+d.note;dl.appendChild(t);});}
+  updateRail();
+}
+function broadcastState(){if(role==='dealer')sig({type:'state',cur});}
+function nextSection(){if(cur<SECTIONS.length-1){cur++;renderSection();broadcastState();toast(SECTIONS[cur].name);}else goPrice();}
+function prevSection(){if(cur>0){cur--;renderSection();broadcastState();}}
+function startTimer(){clearInterval(timerInt);timerInt=setInterval(()=>{seconds++;document.getElementById('timer').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');},1000);}
+
+async function startCam(){
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:role==='customer'?facing:'user'},audio:true});
+    const local=(role==='customer')?document.getElementById('mainVideo'):document.getElementById('pipVideo');
+    local.srcObject=stream;local.muted=true;
+    if(role==='customer')document.getElementById('novid').style.display='none';
+    if(pc)stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+  }catch(e){document.getElementById('novid-txt').innerHTML='Camera blocked<br><span style="color:var(--dim);font-size:11.5px">Allow camera access, then reload</span>';toast('Allow camera to continue');}
+}
+async function flipCam(){
+  facing=(facing==='environment')?'user':'environment';
+  if(!stream)return;const old=stream;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:true});
+    document.getElementById('mainVideo').srcObject=stream;
+    const s=pc?.getSenders().find(x=>x.track&&x.track.kind==='video');if(s)s.replaceTrack(stream.getVideoTracks()[0]);
+    old.getTracks().forEach(t=>t.stop());
+    toast(facing==='environment'?'Rear camera':'Front camera');
+  }catch(e){stream=old;}
+}
+
+function snap(){
+  const v=document.getElementById('mainVideo'),c=document.getElementById('snapCanvas');
+  if(v.videoWidth){c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);snaps.push({img:c.toDataURL('image/jpeg',0.7),section:SECTIONS[cur].name});}
+  else snaps.push({img:null,section:SECTIONS[cur].name});
+  sig({type:'snapshot'});toast('📸 Captured — '+SECTIONS[cur].name);
+}
+
+function addDefect(){
+  const note=prompt('Defect on "'+SECTIONS[cur].name+'":');
+  if(!note)return;
+  defects.push({section:SECTIONS[cur].name,note:note.trim()});
+  document.getElementById('d-count').textContent=defects.length;
+  renderSection();toast('⚠ Defect noted');
+}
+
+/* dealer sheet */
+let sheetMode='questions';
+function openSheet(mode){sheetMode=mode;document.getElementById('sheet').classList.add('open');
+  document.getElementById('sheet-title').textContent=mode==='questions'?'Questions':'Defects noted';
+  document.getElementById('tab-q').classList.toggle('on',mode==='questions');
+  document.getElementById('tab-d').classList.toggle('on',mode==='defects');
+  document.getElementById('tab-guide').classList.remove('on');
+  renderSheet();}
+function closeSheet(){document.getElementById('sheet').classList.remove('open');
+  document.getElementById('tab-guide').classList.add('on');
+  document.getElementById('tab-q').classList.remove('on');document.getElementById('tab-d').classList.remove('on');}
+function renderSheet(){
+  const b=document.getElementById('sheet-body');if(!b)return;b.innerHTML='';
+  if(sheetMode==='questions'){
+    answers.forEach((row,i)=>{
+      const d=document.createElement('div');d.className='q'+(row.a?' answered':'');
+      d.innerHTML='<div class="qt">'+row.q+'</div>';
+      const inp=document.createElement('input');inp.value=row.a;inp.placeholder='Type their answer…';
+      inp.oninput=e=>{answers[i].a=e.target.value;d.classList.toggle('answered',!!e.target.value);updateQCount();};
+      d.appendChild(inp);b.appendChild(d);
+    });
+  }else{
+    if(!defects.length){b.innerHTML='<div style="color:var(--dim);font-size:13px">No defects noted yet. Use the ⚠ button during the call.</div>';return;}
+    defects.forEach((d,i)=>{const r=document.createElement('div');r.className='q';
+      r.innerHTML='<div class="qt" style="color:var(--amber)">'+d.section+'</div><div style="font-size:13px">'+d.note+'</div>';
+      b.appendChild(r);});
+  }
+}
+function updateQCount(){const n=answers.filter(a=>a.a.trim()).length;document.getElementById('q-count').textContent=n+'/'+QUESTIONS.length;}
+
+/* ===== end / price / offer ===== */
+function endSession(){sig({type:'end'});if(role==='dealer')goPrice();else finishCustomer();}
+function finishCustomer(){
+  clearInterval(timerInt);try{stream?.getTracks().forEach(t=>t.stop())}catch(e){}try{pc?.close()}catch(e){}
+  document.body.innerHTML='<div style="height:100dvh;display:grid;place-items:center;text-align:center;padding:30px;font-family:Inter,sans-serif;background:#0a0a0a;color:#f5f5f5"><div><div style="font-size:19px;font-weight:800;margin-bottom:10px">Thanks — that\'s all we need</div><div style="color:#8a8a93;font-size:14px;line-height:1.5;max-width:300px">The dealer will send your trade-in offer shortly. You can close this page.</div></div></div>';
+}
+function goPrice(){
+  clearInterval(timerInt);try{stream?.getTracks().forEach(t=>t.stop())}catch(e){}try{pc?.close()}catch(e){}
+  rpt={dur:document.getElementById('timer').textContent,def:defects.length,q:answers.filter(a=>a.a.trim()).length};
+  document.getElementById('price-veh').textContent=vehName+(vehReg?' · '+vehReg:'');
+  document.getElementById('pst-dur').textContent=rpt.dur;
+  document.getElementById('pst-def').textContent=rpt.def;
+  document.getElementById('pst-q').textContent=rpt.q+'/'+QUESTIONS.length;
+  show('s-price');
+}
+function formatTP(el){
+  const n=el.value.replace(/\D/g,'');
+  el.value=n?Number(n).toLocaleString('en-ZA'):'';
+}
+function issueOffer(){
+  const raw=document.getElementById('in-tp').value.replace(/\D/g,'');
+  if(!raw){toast('Enter a trade price first');return;}
+  tp=Number(raw);
+  validDays=Number(document.getElementById('in-valid').value)||7;
+  conditions=document.getElementById('in-cond').value.trim();
+  document.getElementById('sum-veh').textContent=vehName+(vehReg?' · '+vehReg:'');
+  document.getElementById('tp-amt').textContent='R '+tp.toLocaleString('en-ZA');
+  // defects
+  const dw=document.getElementById('def-wrap'),dl=document.getElementById('def-list');
+  if(defects.length){dw.style.display='flex';dl.innerHTML='';defects.forEach(d=>{const r=document.createElement('div');r.className='row';r.innerHTML='<b>'+d.section+'</b> — '+d.note;dl.appendChild(r);});}
+  else dw.style.display='none';
+  // answers
+  const aw=document.getElementById('ans-wrap'),al=document.getElementById('ans-list');
+  const filled=answers.filter(a=>a.a.trim());
+  if(filled.length){aw.style.display='flex';al.innerHTML='';filled.forEach(a=>{const r=document.createElement('div');r.className='row';r.innerHTML='<b>'+a.q+'</b>'+a.a;al.appendChild(r);});}
+  else aw.style.display='none';
+  // snaps
+  const sw=document.getElementById('sum-snaps');
+  if(snaps.length){sw.innerHTML='';snaps.forEach(s=>{if(s.img){const i=document.createElement('img');i.className='snap-thumb';i.src=s.img;sw.appendChild(i);}else{const d=document.createElement('div');d.className='snap-thumb';d.style.display='grid';d.style.placeItems='center';d.innerHTML='<span style="font-size:9px;color:var(--dim);text-align:center;padding:4px">'+s.section+'</span>';sw.appendChild(d);}});}
+  show('s-offer');
+  fetchWriteup();
+}
+
+async function fetchWriteup(){
+  const el=document.getElementById('ai-text');
+  const mileage=(answers[0]&&answers[0].a.trim())||'';
+  try{
+    const r=await fetch('/api/writeup',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({veh:vehName,reg:vehReg,mileage,duration:rpt.dur,sections:SECTIONS.slice(0,cur+1).map(s=>s.name),defects,answers:answers.filter(a=>a.a.trim())})});
+    const d=await r.json();writeupText=d.writeup;
+  }catch(e){writeupText='Write-up unavailable.';}
+  el.textContent=writeupText;el.classList.remove('loading');
+  buildPrintOffer();
+}
+
+function offerDate(){return new Date().toLocaleString('en-ZA',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function validUntil(){const d=new Date();d.setDate(d.getDate()+validDays);return d.toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'});}
+
+function buildPrintOffer(){
+  document.getElementById('po-date').textContent=offerDate();
+  document.getElementById('po-veh').textContent=vehName+(custName?'  ·  '+custName:'');
+  document.getElementById('po-reg').textContent=vehReg||'';
+  document.getElementById('po-tp').textContent='R '+tp.toLocaleString('en-ZA');
+  document.getElementById('po-valid').textContent='Offer valid until '+validUntil()+' ('+validDays+' days). Appraised by live video call on '+offerDate()+'.';
+  document.getElementById('po-writeup').textContent=writeupText;
+  document.getElementById('po-cond').textContent=conditions;
+  const dw=document.getElementById('po-def-wrap'),dl=document.getElementById('po-defects');
+  if(defects.length){dw.style.display='block';dl.innerHTML='';defects.forEach(d=>{const li=document.createElement('li');li.innerHTML='<b>'+d.section+'</b> — '+d.note;dl.appendChild(li);});}else dw.style.display='none';
+  const aw=document.getElementById('po-ans-wrap'),al=document.getElementById('po-answers');
+  const filled=answers.filter(a=>a.a.trim());
+  if(filled.length){aw.style.display='block';al.innerHTML='';filled.forEach(a=>{const li=document.createElement('li');li.innerHTML='<b>'+a.q+'</b> '+a.a;al.appendChild(li);});}else aw.style.display='none';
+  const sw=document.getElementById('po-snaps-wrap'),sn=document.getElementById('po-snaps');
+  const imgs=snaps.filter(s=>s.img);
+  if(imgs.length){sw.style.display='block';sn.innerHTML='';imgs.forEach(s=>{const i=document.createElement('img');i.src=s.img;sn.appendChild(i);});}else sw.style.display='none';
+}
+
+function offerText(){
+  const L=[];
+  L.push('*Trade-in offer*');
+  L.push(vehName+(vehReg?' · '+vehReg:''));
+  L.push('');
+  L.push('*Trade price: R '+tp.toLocaleString('en-ZA')+'* — subject to physical viewing');
+  L.push('Valid until '+validUntil()+' ('+validDays+' days)');
+  L.push('');
+  L.push('CONDITION');
+  L.push(writeupText);
+  L.push('');
+  if(defects.length){L.push('DEFECTS NOTED');defects.forEach(d=>L.push('• '+d.section+' — '+d.note));L.push('');}
+  const filled=answers.filter(a=>a.a.trim());
+  if(filled.length){L.push('DISCLOSED');filled.forEach(a=>L.push('• '+a.q+' '+a.a));L.push('');}
+  L.push('CONDITIONS');
+  L.push(conditions);
+  L.push('');
+  L.push('Issued via TruValue · a TruSaas module. Not binding until physical inspection.');
+  return L.join('\n');
+}
+function offerPrint(){buildPrintOffer();window.print();}
+function offerEmail(){
+  const s='Trade-in offer — '+vehName+(vehReg?' ('+vehReg+')':'');
+  window.location.href='mailto:?subject='+encodeURIComponent(s)+'&body='+encodeURIComponent(offerText().replace(/\*/g,''));
+}
+function offerWA(){window.open('https://wa.me/?text='+encodeURIComponent(offerText()),'_blank');}
+</script>
+</body>
+</html>

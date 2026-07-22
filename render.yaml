@@ -7,6 +7,7 @@
 #   trusaas-flow.onrender.com     → TruFlow Lite     (truflow-light)
 #   trusaas-premium.onrender.com  → TruFlow Premium  (truflow-premium)
 #   trusaas-live.onrender.com     → TruLive          (trulive)  → live.tru-saas.com
+#   trusaas-value.onrender.com    → TruValue         (truvalue) → value.tru-saas.com
 #
 # STABILITY (see STABILITY.md):
 #   - Services are on paid starter plan → always-on, no spin-down. Do NOT
@@ -91,6 +92,25 @@ services:
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: TRULIVE_MODEL
+        value: claude-sonnet-5
+
+  # ── 2c. TruValue — live video trade-in appraisal (customer films, dealer prices)
+  - type: web
+    name: trusaas-value
+    runtime: node
+    plan: starter
+    rootDir: truvalue
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Condition write-up (Claude). Optional — falls back to a structured local
+      # write-up. Never prices a vehicle; the dealer sets the TP.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TRUVALUE_MODEL
         value: claude-sonnet-5
 
   # ── 3. TruFlow Premium — full DMS / media / recon ─────────────────────────
