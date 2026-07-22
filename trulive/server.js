@@ -79,7 +79,9 @@ Checks passed: ${d.checksDone}/${d.checksTotal}
 Sections covered: ${(d.sections || []).join(', ')}
 Buyer-flagged concerns: ${(d.flags || []).map(f => `${f.section}: ${f.note}`).join('; ') || 'none'}
 
-Write 3 short parts: (1) a one-line overall impression, (2) a short paragraph on condition covered, (3) a clear "Points to follow up" list from the flagged concerns (or "None raised"). Keep it factual and neutral. No markdown headers, plain text.`;
+Write exactly 2 short parts: (1) a one-line overall impression, then (2) a short paragraph on the condition covered, weaving in any flagged concerns as prose.
+Do NOT output a "Points to follow up" list or any bulleted list — the report already renders the flagged concerns as its own separate section, so a list here would duplicate it.
+Keep it factual and neutral. No markdown headers, plain text.`;
 
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -101,14 +103,16 @@ function localSummary(d) {
     : pct >= 60 ? 'Vehicle covered in a full walkthrough with a few items to review.'
     : 'Partial walkthrough completed — several areas still to confirm.';
   const flags = (d.flags || []);
-  const follow = flags.length
-    ? flags.map(f => `• ${f.section} — ${f.note}`).join('\n')
-    : 'None raised during the live walkthrough.';
+  // Concerns are rendered as their own report section — mention them as prose only,
+  // never as a list here, or the report duplicates them.
+  const concerns = flags.length
+    ? ` The buyer raised ${flags.length} point${flags.length > 1 ? 's' : ''} for follow-up (${flags.map(f => f.section).join(', ')}).`
+    : ' No concerns were raised during the walkthrough.';
   return `${impression}\n\n`
     + `A live guided walkthrough of the ${d.veh || 'vehicle'} was completed over ${d.duration || 'the session'}, `
     + `covering ${(d.sections || []).length} sections (${(d.sections || []).join(', ')}). `
-    + `${d.checksDone}/${d.checksTotal} inspection checkpoints were confirmed on camera (${pct}%).\n\n`
-    + `Points to follow up:\n${follow}`;
+    + `${d.checksDone}/${d.checksTotal} inspection checkpoints were confirmed on camera (${pct}%).`
+    + concerns;
 }
 
 // --- WebSocket signalling ---
