@@ -267,7 +267,8 @@ app.post("/api/inventory", (req, res) => {
     engine: req.body.engine || "",
     images: req.body.images || [],
     reconTasks: req.body.reconTasks || [],
-    dealershipId: req.body.dealershipId || undefined
+    dealershipId: req.body.dealershipId || undefined,
+    truPrice: req.body.truPrice ? parseFloat(req.body.truPrice) : undefined
   };
 
   state.vehicles.unshift(newVehicle);
@@ -946,6 +947,9 @@ function toPublicVehicle(v: any, source: string = "lite") {
     model: v.model,
     trim: v.trim || "",
     price: v.retailPrice ?? (v as any).price ?? 0,
+    // Real market-value benchmark when the dealer has set one; absent (not 0/null)
+    // when unset, so consuming sites can tell "no data" apart from "at market".
+    truPrice: (v as any).truPrice ? Number((v as any).truPrice) : undefined,
     mileage: v.mileage ?? 0,
     transmission: v.transmission || "",
     fuelType: v.fuelType || "",

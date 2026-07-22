@@ -353,6 +353,16 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <div>
                       <span className="text-[9px] text-[#9DB0C6] uppercase font-bold tracking-wider">Showroom Retail Price</span>
                       <div className="text-lg font-black text-[#15C7C0] font-mono mt-0.5">{formatZAR(vehicle.retailPrice)}</div>
+                      {vehicle.truPrice ? (
+                        <div className="text-[9px] font-bold mt-1" style={{ color: vehicle.truPrice > vehicle.retailPrice ? "#35C46B" : "#9DB0C6" }}>
+                          TruPrice {formatZAR(vehicle.truPrice)}
+                          {vehicle.truPrice > vehicle.retailPrice
+                            ? ` · ${formatZAR(vehicle.truPrice - vehicle.retailPrice)} below market`
+                            : " · at or above market"}
+                        </div>
+                      ) : (
+                        <div className="text-[9px] text-[#9DB0C6]/60 mt-1">No TruPrice benchmark set</div>
+                      )}
                     </div>
                     <div className="text-right">
                       <button
@@ -414,7 +424,19 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         </div>
                       </div>
 
-                      {/* Sync button */}
+                      {/* Two distinct actions: reprice the car, OR just record what the
+                          market says it's worth (keeps retail price + the "below
+                          market" story intact — this is what feeds public TruPrice). */}
+                      <button
+                        onClick={async () => {
+                          await onUpdateVehicle(vehicle.id, { truPrice: marketResult.avg });
+                          alert(`TruPrice benchmark set to market average R ${marketResult.avg.toLocaleString("en-ZA")} — retail price unchanged.`);
+                          setMarketResult(null);
+                        }}
+                        className="w-full py-1.5 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-black uppercase text-[9px] rounded-md text-center transition-all cursor-pointer block"
+                      >
+                        Set as TruPrice Benchmark (keep my price)
+                      </button>
                       <button
                         onClick={async () => {
                           await onUpdateVehicle(vehicle.id, { retailPrice: marketResult.recom });

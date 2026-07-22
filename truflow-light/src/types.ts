@@ -34,6 +34,10 @@ export interface Vehicle {
   natisDetails?: { verifiedAt: string; ownerMatch: string; theftCheck: string; financeLien: string; licenseExpiry: string };
   inspectionResults?: Record<string, 'Pass' | 'Attention'>;
   dealershipId?: string;
+  /** TruPrice — an honest market-value benchmark for this vehicle, independent
+   *  of retailPrice. Set manually or via the TrueAI Market Crawler's "Set as
+   *  TruPrice" action. Public sites show "R below TruPrice" from the delta. */
+  truPrice?: number;
 }
 
 export type LeadStatus = 'New' | 'Contacted' | 'Test Drive Scheduled' | 'Negotiating' | 'Closed Won' | 'Closed Lost';
