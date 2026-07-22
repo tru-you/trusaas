@@ -1,0 +1,157 @@
+/* Cars on Caledon — Polish layer: hero cinema, grid ribbons/quick-view/skeletons,
+   reviews strip (dark band), delivered ticker, mobile sticky bar.
+   Light page → any white-text section gets its own dark background. */
+
+:root{
+  --coc-blue:#23419A; --coc-blue-bright:#4C7EF3; --coc-blue-deep:#16296B;
+  --coc-gold:#D9B166; --coc-wa:#25D366;
+}
+
+/* ===== HERO CINEMA ===== */
+@media (prefers-reduced-motion: no-preference){
+  .hero .bg{animation:cocKenBurns 30s ease-in-out infinite alternate;transform-origin:60% 40%;will-change:transform;}
+  @keyframes cocKenBurns{from{transform:scale(1);}to{transform:scale(1.1);}}
+  .hero-badge{animation:cocRise .8s cubic-bezier(.22,1,.36,1) both;}
+  .hero h1{animation:cocRise .9s cubic-bezier(.22,1,.36,1) .12s both;}
+  .hero .lede{animation:cocRise .9s cubic-bezier(.22,1,.36,1) .24s both;}
+  .hero-meta{animation:cocRise .9s cubic-bezier(.22,1,.36,1) .32s both;}
+  .hero-ctas{animation:cocRise .9s cubic-bezier(.22,1,.36,1) .4s both;}
+  @keyframes cocRise{from{opacity:0;transform:translateY(24px);filter:blur(6px);}to{opacity:1;transform:none;filter:blur(0);}}
+}
+
+/* ===== CARD CLICKABILITY ===== */
+#invgrid .card{cursor:pointer;}
+
+/* ===== SKELETON LOADERS ===== */
+.coc-sk{border-radius:18px;overflow:hidden;background:#fff;border:1px solid var(--line,rgba(17,19,24,.08));box-shadow:0 8px 24px -16px rgba(17,19,24,.2);}
+.coc-sk .sk-ph{aspect-ratio:16/10;}
+.coc-sk .sk-b{padding:16px;display:grid;gap:10px;}
+.coc-sk .sk-line{height:12px;border-radius:6px;}
+.coc-sk .sk-line.s{width:55%;}
+.coc-sk .sk-line.m{width:75%;}
+.coc-sk .sk-ph,.coc-sk .sk-line{
+  background:linear-gradient(100deg,#EDEFF4 30%,#E1E5EE 50%,#EDEFF4 70%);
+  background-size:200% 100%;animation:cocShimmer 1.4s linear infinite;
+}
+@keyframes cocShimmer{from{background-position:180% 0;}to{background-position:-20% 0;}}
+
+/* ===== STATUS RIBBONS ===== */
+.coc-ribbon{
+  position:absolute;left:12px;bottom:12px;z-index:3;
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  padding:6px 11px;border-radius:100px;color:#fff;
+  backdrop-filter:blur(8px);box-shadow:0 4px 14px -4px rgba(0,0,0,.4);
+  pointer-events:none;transition:opacity .25s;
+}
+.coc-ribbon i{width:6px;height:6px;border-radius:50%;background:#fff;animation:cocPulse 1.8s ease-in-out infinite;}
+@keyframes cocPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.coc-ribbon.arrived{background:rgba(35,65,154,.9);}
+.coc-ribbon.reduced{background:rgba(217,177,102,.95);color:#141a2c;}
+.coc-ribbon.reduced i{background:#141a2c;}
+.coc-ribbon.reserved{background:rgba(220,38,38,.9);}
+.card:hover .coc-ribbon{opacity:0;}
+
+/* ===== QUICK VIEW BAR ===== */
+.coc-qv{
+  position:absolute;left:0;right:0;bottom:0;z-index:4;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 10px;cursor:pointer;
+  font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(180deg,transparent,rgba(11,18,40,.92) 45%);
+  transform:translateY(105%);transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.coc-qv svg{width:14px;height:14px;color:var(--coc-blue-bright);}
+.card:hover .coc-qv{transform:none;}
+@media (hover:none){.coc-qv{display:none;}}
+
+/* ===== REVIEWS STRIP (own dark band) ===== */
+.coc-reviews{
+  padding:72px 0;position:relative;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(76,126,243,.14), transparent 60%),
+    linear-gradient(180deg,#0E1730 0%,#0A1226 100%);
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.coc-reviews .coc-rw{max-width:1160px;margin:0 auto;padding:0 22px;}
+.coc-rev-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:26px;}
+.coc-rev-score{display:flex;align-items:center;gap:14px;}
+.coc-rev-score .n{font-family:'DM Sans',sans-serif;font-size:44px;font-weight:800;color:#fff;line-height:1;}
+.coc-rev-stars{color:var(--coc-gold);font-size:16px;letter-spacing:2px;}
+.coc-rev-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;}
+.coc-rev-badge{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:rgba(255,255,255,.65);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:100px;padding:9px 15px;}
+.coc-rev-badge img{width:20px;height:20px;border-radius:6px;}
+.coc-rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:860px){.coc-rev-grid{grid-template-columns:1fr;}}
+.coc-rev-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:22px;backdrop-filter:blur(14px);}
+.coc-rev-card .stars{color:var(--coc-gold);font-size:13px;letter-spacing:2px;margin-bottom:10px;}
+.coc-rev-card p{font-size:13.5px;line-height:1.7;color:rgba(255,255,255,.75);font-style:italic;}
+.coc-rev-card .who{margin-top:14px;display:flex;align-items:center;gap:10px;}
+.coc-rev-card .av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;background:linear-gradient(135deg,var(--coc-blue-bright),var(--coc-blue));flex-shrink:0;}
+.coc-rev-card .who b{display:block;font-size:12.5px;color:#fff;}
+.coc-rev-card .who span{font-size:11px;color:rgba(255,255,255,.4);}
+
+/* ===== DELIVERED TICKER (raised to clear TruAfford pill) ===== */
+.coc-ticker{
+  position:fixed;left:20px;bottom:92px;z-index:210;
+  display:flex;align-items:center;gap:11px;max-width:320px;
+  background:linear-gradient(160deg,rgba(20,32,62,.96),rgba(12,20,40,.97));
+  border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 16px;
+  box-shadow:0 16px 40px -12px rgba(0,0,0,.55);backdrop-filter:blur(16px);
+  opacity:0;transform:translateY(16px);pointer-events:none;
+  transition:opacity .45s,transform .45s cubic-bezier(.22,1,.36,1);
+}
+.coc-ticker.show{opacity:1;transform:none;}
+.coc-ticker .tk-ic{width:34px;height:34px;border-radius:9px;flex-shrink:0;background:rgba(34,197,94,.14);color:#22C55E;display:flex;align-items:center;justify-content:center;}
+.coc-ticker .tk-ic svg{width:16px;height:16px;}
+.coc-ticker b{display:block;font-size:12px;color:#fff;}
+.coc-ticker span{font-size:10.5px;color:rgba(255,255,255,.45);}
+@media(max-width:860px){.coc-ticker{display:none;}}
+
+/* ===== MOBILE STICKY ACTION BAR ===== */
+.coc-mbar{display:none;}
+@media(max-width:720px){
+  .coc-mbar{
+    position:fixed;left:0;right:0;bottom:0;z-index:230;
+    display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    background:rgba(255,255,255,.96);border-top:1px solid var(--line,rgba(17,19,24,.1));
+    backdrop-filter:blur(18px);box-shadow:0 -6px 24px -12px rgba(17,19,24,.25);
+  }
+  .coc-mbar a{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:800;border-radius:11px;padding:12px 8px;text-decoration:none;}
+  .coc-mbar a svg{width:15px;height:15px;flex-shrink:0;}
+  .coc-mbar .mb-call{background:var(--paper-2,#EEF0F5);color:var(--coc-blue-deep);border:1px solid var(--line,rgba(17,19,24,.1));}
+  .coc-mbar .mb-wa{background:var(--coc-wa);color:#fff;}
+  .coc-mbar .mb-stock{background:linear-gradient(135deg,var(--coc-blue-bright),var(--coc-blue));color:#fff;}
+  body.vd-lock .coc-mbar{display:none;}
+  .fab-rail{bottom:84px !important;}
+  .coc-ticker{display:none;}
+}
+
+/* ===== TRUAFFORD — Caledon colour match (overrides widget's default purple) ===== */
+#tru-afford-root{
+  --ta-signal:#2E54BE !important;
+  --ta-signal-bright:#6E9BFF !important;
+  --ta-signal-deep:#18306E !important;
+  --ta-blue:#4C7EF3 !important;
+  --ta-blue-bright:#6E9BFF !important;
+  --ta-blue-deep:#16296B !important;
+  --ta-grad:linear-gradient(115deg,#6E9BFF 0%,#2E54BE 55%,#18306E 100%) !important;
+}
+#tru-afford-root .ta-launcher{
+  border-color:rgba(76,126,243,.32) !important;
+  box-shadow:0 12px 36px -10px rgba(0,0,0,.55),0 0 24px -8px rgba(46,84,190,.4),inset 0 1px 0 rgba(255,255,255,.1) !important;
+}
+#tru-afford-root .ta-launcher:hover{
+  box-shadow:0 18px 40px -10px rgba(46,84,190,.45),0 0 32px -6px rgba(110,155,255,.32),inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+
+/* Old basic chat button hidden — TruChat widget is the single chat entry */
+#fabBot{display:none !important;}
+
+/* ===== WIDGET STACKING — TruChat fab bottom-right, rail above it ===== */
+.fab-rail{bottom:108px !important;}
+@media(max-width:720px){
+  .fab-rail{display:none !important;}
+  #tc-fab{bottom:86px !important;}
+}

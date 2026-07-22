@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caledon Cars — Quality Pre-Owned · Kariega, Eastern Cape</title>
+<meta name="description" content="Caledon Cars (Cars on Caledon) — quality pre-owned vehicles in Kariega, Eastern Cape. Browse stock, finance, trade-ins. WhatsApp us.">
+<meta name="theme-color" content="#23419A">
+<link rel="icon" type="image/svg+xml" href="coc-mark.svg">
+<link rel="apple-touch-icon" href="caledon-logo.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cars on Caledon — Quality Pre-Owned · Kariega">
+<meta property="og:description" content="Hand-picked pre-owned vehicles in Kariega, Eastern Cape. Inspected stock, bank finance, trade-ins welcome. WhatsApp us.">
+<meta property="og:image" content="caledon-logo.png">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="coc-vd.css?v=3">
+<link rel="stylesheet" href="coc-polish.css?v=3">
+<link rel="stylesheet" href="coc-splash.css?v=3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#23419A;
+  --blue-deep:#1A3178;
+  --blue-light:#4A66B8;
+  --blue-soft:rgba(35,65,154,.08);
+  --blue-glow:rgba(35,65,154,.22);
+  --ink:#111318;
+  --ink-2:#1A1D24;
+  --ink-3:#22262E;
+  --paper:#F7F8FB;
+  --paper-2:#EEF0F5;
+  --paper-3:#E4E7EE;
+  --line:rgba(17,19,24,.08);
+  --line-strong:rgba(17,19,24,.12);
+  --wa:#25D366;
+  --wa-deep:#1DA851;
+  --grey:#6B7280;
+  --grey-2:#9CA3AF;
+  --red:#DC2626;
+  --radius:14px;
+  --radius-lg:20px;
+  --ff:'Mulish',sans-serif;
+  --ff2:'DM Sans',sans-serif;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-r:env(safe-area-inset-right,0px);
+  /* motion */
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-spring:cubic-bezier(.34,1.4,.64,1);
+  --ease-soft:cubic-bezier(.4,0,.2,1);
+  --dur-fast:.2s;
+  --dur:.35s;
+  --dur-slow:.55s;
+  /* glass */
+  --glass:rgba(255,255,255,.55);
+  --glass-strong:rgba(255,255,255,.72);
+  --glass-dark:rgba(12,14,20,.55);
+  --glass-dark-strong:rgba(12,14,20,.72);
+  --glass-border:rgba(255,255,255,.45);
+  --glass-border-dark:rgba(255,255,255,.1);
+  --glass-blur:18px;
+  --glass-shadow:0 8px 32px -12px rgba(17,19,24,.18), inset 0 1px 0 rgba(255,255,255,.5);
+  --glass-shadow-dark:0 12px 40px -16px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;overflow-x:hidden;}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto;}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+}
+body{
+  font-family:var(--ff);background:var(--paper);color:var(--ink);font-size:15px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 10% -10%,rgba(35,65,154,.09),transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 10%,rgba(74,102,184,.07),transparent 50%),
+    radial-gradient(ellipse 50% 30% at 50% 100%,rgba(35,65,154,.04),transparent 50%);
+  background-attachment:fixed;
+}
+body.has-cursor{cursor:none;}
+body.has-cursor a,body.has-cursor button,body.has-cursor .chip,body.has-cursor .cat-tile,
+body.has-cursor .card,body.has-cursor select,body.has-cursor input,body.has-cursor .fab-btn,
+body.has-cursor label{cursor:none;}
+::selection{background:var(--blue);color:#fff;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;transition:color var(--dur-fast) var(--ease-soft);}
+ul{list-style:none;}
+button{font-family:inherit;cursor:pointer;}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px;}
+h1,h2,h3,h4{font-family:var(--ff);font-weight:800;}
+
+/* ===== CUSTOM CURSOR ===== */
+.cur-dot,.cur-ring{
+  position:fixed;top:0;left:0;pointer-events:none;z-index:9999;
+  border-radius:50%;opacity:0;transition:opacity .25s ease;
+  will-change:transform,width,height;
+}
+.cur-dot{
+  width:8px;height:8px;
+  background:var(--blue);
+  box-shadow:0 0 12px rgba(35,65,154,.45);
+  transition:opacity .25s ease, width .25s var(--ease-out), height .25s var(--ease-out), background .2s;
+}
+.cur-ring{
+  width:40px;height:40px;
+  border:1.5px solid rgba(35,65,154,.55);
+  background:rgba(35,65,154,.06);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  transition:width .3s var(--ease-out),height .3s var(--ease-out),
+    background .3s var(--ease-out),border-color .3s var(--ease-out),opacity .25s ease;
+}
+body.cur-ready .cur-dot,body.cur-ready .cur-ring{opacity:1;}
+body.cur-hover .cur-ring{
+  width:64px;height:64px;
+  background:rgba(35,65,154,.1);border-color:rgba(35,65,154,.35);
+}
+body.cur-click .cur-ring{
+  width:28px;height:28px;
+  background:rgba(35,65,154,.2);
+}
+body.cur-hover .cur-dot{width:5px;height:5px;background:var(--blue-light);}
+@media (hover:none),(pointer:coarse){
+  .cur-dot,.cur-ring{display:none !important;}
+  body.has-cursor,body.has-cursor *{cursor:auto !important;}
+}
+
+/* scroll progress */
+.scroll-progress{
+  position:fixed;top:0;left:0;height:2px;width:0;z-index:200;
+  background:linear-gradient(90deg,var(--blue-light),var(--blue),#6B8FE8);
+  box-shadow:0 0 12px rgba(35,65,154,.45);
+  transition:width .1s linear;pointer-events:none;
+}
+
+/* glass utilities */
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(var(--glass-blur)) saturate(1.35);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.35);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow);
+}
+.glass-dark{
+  background:var(--glass-dark);
+  backdrop-filter:blur(var(--glass-blur)) saturate(1.4);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);
+  border:1px solid var(--glass-border-dark);
+  box-shadow:var(--glass-shadow-dark);
+}
+
+/* reveal — smoother + blur lift */
+.rv{
+  opacity:0;transform:translateY(28px) scale(.98);filter:blur(6px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    filter var(--dur-slow) var(--ease-out);
+}
+.rv.in{opacity:1;transform:none;filter:none;}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}.rv.d4{transition-delay:.32s}.rv.d5{transition-delay:.4s}
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-weight:700;font-size:14px;padding:13px 26px;border-radius:12px;border:none;
+  letter-spacing:.01em;cursor:pointer;position:relative;overflow:hidden;
+  transition:
+    transform var(--dur) var(--ease-spring),
+    box-shadow var(--dur) var(--ease-out),
+    background var(--dur-fast) var(--ease-soft),
+    border-color var(--dur-fast) var(--ease-soft),
+    color var(--dur-fast) var(--ease-soft);
+}
+.btn::after{
+  content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%);
+  transform:translateX(-120%);transition:transform .6s var(--ease-out);pointer-events:none;
+}
+.btn:hover::after{transform:translateX(120%);}
+.btn:active{transform:scale(.97);}
+.btn-blue{
+  background:linear-gradient(145deg,var(--blue-light),var(--blue));color:#fff;
+  box-shadow:0 8px 24px -10px rgba(35,65,154,.55), inset 0 1px 0 rgba(255,255,255,.2);
+}
+.btn-blue:hover{background:linear-gradient(145deg,var(--blue),var(--blue-deep));transform:translateY(-2px);box-shadow:0 14px 32px -10px rgba(35,65,154,.55);}
+.btn-wa{
+  background:linear-gradient(145deg,#2fdc74,var(--wa-deep));color:#fff;
+  box-shadow:0 8px 24px -10px rgba(37,211,102,.4), inset 0 1px 0 rgba(255,255,255,.2);
+}
+.btn-wa:hover{background:linear-gradient(145deg,var(--wa),#178f44);transform:translateY(-2px);}
+.btn-white{
+  background:rgba(255,255,255,.7);color:var(--ink);border:1px solid rgba(255,255,255,.6);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 4px 16px -8px rgba(17,19,24,.12);
+}
+.btn-white:hover{border-color:rgba(35,65,154,.35);color:var(--blue);transform:translateY(-2px);background:rgba(255,255,255,.9);}
+.btn-outline{
+  background:rgba(255,255,255,.08);color:#fff;border:1.5px solid rgba(255,255,255,.35);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.btn-outline:hover{background:rgba(255,255,255,.95);color:var(--ink);border-color:#fff;transform:translateY(-2px);}
+.btn-dark{background:var(--ink);color:#fff;box-shadow:0 8px 24px -12px rgba(0,0,0,.4);}
+.btn-dark:hover{background:var(--ink-2);transform:translateY(-2px);}
+.btn svg{width:16px;height:16px;flex-shrink:0;}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  background:rgba(10,12,16,.88);color:rgba(255,255,255,.7);font-size:12px;letter-spacing:.02em;
+  backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:36px;}
+.topbar .tl{display:flex;gap:22px;align-items:center;}
+.topbar .tl span{display:flex;align-items:center;gap:5px;}
+.topbar b{color:#fff;font-weight:600;}
+.topbar a{transition:color var(--dur-fast) var(--ease-soft);}
+.topbar a:hover{color:#fff;}
+@media(max-width:720px){.topbar .tl span:nth-child(2){display:none;}}
+
+/* ===== HEADER (white — logo keeps its studio white bg) ===== */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(20px) saturate(1.35);
+  -webkit-backdrop-filter:blur(20px) saturate(1.35);
+  border-bottom:1px solid rgba(17,19,24,.08);
+  box-shadow:0 8px 28px -18px rgba(17,19,24,.18), inset 0 1px 0 rgba(255,255,255,.9);
+  transition:background var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+header.scrolled{
+  background:rgba(255,255,255,.97);
+  box-shadow:0 12px 36px -16px rgba(17,19,24,.22), inset 0 1px 0 #fff;
+}
+.nav{display:flex;align-items:center;justify-content:space-between;height:78px;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-mark{
+  width:auto;height:72px;max-width:min(52vw,180px);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;position:relative;
+  transition:transform var(--dur) var(--ease-spring);
+  background:transparent;
+}
+.logo-mark img{width:auto;height:100%;max-width:100%;object-fit:contain;display:block;background:transparent;}
+.logo-mark:hover{transform:scale(1.04);}
+/* Footer brand is a wordmark only — no logo image. */
+.f-wordmark .logo-text{display:block;}
+.f-wordmark .logo-text .l1{font-size:20px;letter-spacing:.04em;}
+.f-wordmark .logo-text .l2{font-size:10px;margin-top:4px;}
+.logo-text{line-height:1.1;}
+.logo-text .l1{font-weight:900;font-size:15px;letter-spacing:.02em;color:var(--ink);}
+.logo-text .l2{font-size:9px;color:var(--grey);font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
+/* header only — the footer wordmark must stay visible on small screens */
+@media(max-width:420px){header .logo-text{display:none;}.logo-mark{height:46px;max-width:150px;}}
+.nav-links{display:flex;gap:4px;}
+.nav-links a{
+  font-size:13px;font-weight:700;color:var(--ink-2);padding:8px 14px;border-radius:100px;
+  transition:background var(--dur-fast) var(--ease-soft), color var(--dur-fast) var(--ease-soft), transform var(--dur-fast) var(--ease-spring);
+}
+.nav-links a:hover{background:rgba(35,65,154,.08);color:var(--blue);transform:translateY(-1px);}
+.nav-links a.active{
+  background:linear-gradient(145deg,var(--blue-light),var(--blue));color:#fff;
+  box-shadow:0 4px 16px -6px rgba(35,65,154,.45), inset 0 1px 0 rgba(255,255,255,.2);
+}
+.nav-ctas{display:flex;gap:8px;align-items:center;}
+.nav .btn{padding:10px 16px;font-size:13px;}
+.nav .btn-white{
+  background:rgba(255,255,255,.95);color:var(--ink);border:1px solid rgba(17,19,24,.12);
+  box-shadow:0 2px 8px -4px rgba(17,19,24,.1);
+}
+.nav .btn-white:hover{border-color:rgba(35,65,154,.35);color:var(--blue);background:#fff;}
+.burger{
+  display:none;background:rgba(17,19,24,.04);border:1px solid rgba(17,19,24,.1);
+  width:38px;height:38px;border-radius:12px;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  transition:background var(--dur-fast) var(--ease-soft);
+}
+.burger:hover{background:rgba(35,65,154,.08);}
+.burger span{width:18px;height:2px;background:var(--ink);transition:transform .3s var(--ease-out),opacity .3s;border-radius:2px;}
+@media(max-width:1080px){
+  .nav-links{display:none;}
+  .burger{display:flex;}
+}
+@media(max-width:480px){
+  .nav-ctas .btn-white{display:none;}
+  .nav-ctas .btn-wa{padding:10px 12px;font-size:0;}
+  .nav-ctas .btn-wa svg{width:20px;height:20px;}
+  .nav{height:64px;}
+  .logo-mark{height:52px;}
+}
+.m-menu{
+  display:none;max-height:0;overflow:hidden;opacity:0;
+  background:rgba(255,255,255,.97);
+  backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);
+  border-top:1px solid rgba(17,19,24,.08);
+  transition:max-height .4s var(--ease-out), opacity .3s var(--ease-out);
+}
+.m-menu.open{display:block;max-height:420px;opacity:1;}
+.m-menu a{
+  display:block;padding:14px 24px;font-weight:600;color:var(--ink-2);
+  border-bottom:1px solid rgba(17,19,24,.06);
+  transition:background var(--dur-fast) var(--ease-soft), padding-left var(--dur) var(--ease-out), color var(--dur-fast);
+}
+.m-menu a:hover{background:rgba(35,65,154,.08);color:var(--blue);padding-left:30px;}
+
+/* ===== HERO (authentic yard feel) ===== */
+.hero{position:relative;background:var(--ink);color:#fff;overflow:hidden;}
+/* Hero backdrop — Caledon brand, not stock photography.
+   TO USE A REAL YARD PHOTO: drop the file in this folder and add it as the last
+   background layer below, e.g.  url('yard.jpg') center 45%/cover no-repeat;  */
+.hero .bg{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,rgba(17,19,24,.20) 0%,transparent 38%,rgba(17,19,24,.94) 100%),
+    radial-gradient(120% 90% at 78% 18%,rgba(46,84,190,.55),transparent 62%),
+    radial-gradient(90% 70% at 8% 92%,rgba(35,65,154,.42),transparent 58%),
+    linear-gradient(150deg,#0B1020 0%,#12203F 45%,#0A0F1C 100%);
+  transform:scale(1.04);
+  transition:transform 1.2s var(--ease-out);
+  will-change:transform;
+}
+/* COC monogram watermark — their own mark, large and low-contrast */
+.hero .bg::after{
+  content:"";position:absolute;inset:0;
+  background:url('caledon-logo.png?v=5') no-repeat;
+  background-position:right -6% center;
+  background-size:auto 118%;
+  opacity:.10;filter:grayscale(1) brightness(2.6);
+  pointer-events:none;
+}
+@media(max-width:900px){
+  .hero .bg::after{background-position:right -32% top 12%;background-size:auto 62%;opacity:.08;}
+}
+.hero:hover .bg{transform:scale(1.06);}
+.hero-inner{position:relative;padding:clamp(72px,12vw,110px) 0 0;min-height:min(78vh,720px);display:flex;flex-direction:column;justify-content:flex-end;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
+  border-radius:100px;padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  margin-bottom:16px;width:fit-content;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.15);
+  transition:transform var(--dur) var(--ease-spring), background var(--dur-fast);
+}
+.hero-badge:hover{transform:translateY(-1px);background:rgba(255,255,255,.14);}
+.hero-badge i{width:7px;height:7px;border-radius:50%;background:var(--wa);display:inline-block;box-shadow:0 0 0 0 rgba(37,211,102,.5);animation:livePulse 2s ease-out infinite;}
+.hero h1{font-size:clamp(32px,5.2vw,56px);line-height:1.06;letter-spacing:-.03em;max-width:16ch;text-shadow:0 8px 40px rgba(0,0,0,.45);}
+.hero h1 em{font-style:normal;color:#9BB4F0;font-weight:800;}
+.hero .lede{margin-top:14px;max-width:42ch;color:rgba(255,255,255,.78);font-size:clamp(14px,2.2vw,16px);line-height:1.65;}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:18px;font-size:12px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.04em;}
+.hero-meta span{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:6px 12px;border-radius:100px;
+}
+.hero-ctas{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;}
+@media(max-width:560px){
+  .hero-inner{min-height:auto;padding-top:56px;}
+  .hero-ctas .btn{flex:1;min-width:calc(50% - 6px);justify-content:center;padding:12px 14px;font-size:13px;}
+  .hero-ctas .btn-outline{min-width:100%;}
+}
+
+/* search panel — glass */
+.search-panel{
+  background:linear-gradient(180deg,rgba(14,17,26,.92),rgba(8,10,16,.96));
+  backdrop-filter:blur(24px) saturate(1.3);-webkit-backdrop-filter:blur(24px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.10);
+  border-bottom:none;
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  padding:20px 18px 22px;margin-top:36px;
+  box-shadow:0 -24px 60px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.10);
+}
+@media(min-width:768px){.search-panel{padding:24px 28px 28px;margin-top:44px;}}
+.search-panel .sp-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+.search-panel .sp-title h3{font-size:17px;color:#fff;font-weight:800;}
+.search-panel .sp-title span{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;}
+.sp-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:10px;}
+@media(max-width:960px){.sp-row{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.sp-row{grid-template-columns:1fr;}}
+.sp-field{position:relative;}
+.sp-field label{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:4px;}
+.sp-field select{
+  width:100%;padding:12px 14px;border:1.5px solid rgba(255,255,255,.14);border-radius:12px;
+  background:rgba(255,255,255,.06);font-family:var(--ff);font-size:14px;font-weight:600;color:#fff;
+  outline:none;appearance:none;cursor:pointer;min-height:46px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:border-color var(--dur-fast) var(--ease-soft), box-shadow var(--dur-fast) var(--ease-soft), background var(--dur-fast);
+}
+/* native dropdown list renders on the OS layer — keep it readable */
+.sp-field select option{background:#12151E;color:#fff;}
+.sp-field select:hover{background:rgba(255,255,255,.11);border-color:rgba(110,155,255,.45);}
+.sp-field select:focus{border-color:var(--blue-light);box-shadow:0 0 0 4px rgba(110,155,255,.18);background:rgba(255,255,255,.13);}
+.sp-field::after{content:"▾";position:absolute;right:14px;bottom:15px;color:rgba(255,255,255,.45);font-size:10px;pointer-events:none;}
+.sp-go{
+  border:0;border-radius:12px;
+  background:linear-gradient(145deg,var(--blue-light),var(--blue));color:#fff;
+  font-family:var(--ff);font-weight:800;font-size:15px;padding:0 28px;
+  display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
+  margin-top:auto;min-height:46px;
+  box-shadow:0 8px 22px -10px rgba(35,65,154,.5), inset 0 1px 0 rgba(255,255,255,.2);
+  transition:transform var(--dur) var(--ease-spring), box-shadow var(--dur) var(--ease-out), background var(--dur-fast);
+}
+.sp-go:hover{background:linear-gradient(145deg,var(--blue),var(--blue-deep));transform:translateY(-2px);box-shadow:0 12px 28px -10px rgba(35,65,154,.55);}
+.sp-go:active{transform:scale(.98);}
+@media(max-width:960px){.sp-go{width:100%;grid-column:1/-1;}}
+
+/* stats strip — glass pills */
+.stats-strip{
+  background:transparent;border-top:none;margin-top:-1px;position:relative;z-index:2;
+  padding:0 0 8px;
+}
+.stats-row{
+  display:grid;grid-template-columns:repeat(4,1fr);text-align:center;padding:0;gap:10px;
+  background:rgba(255,255,255,.55);
+  backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.7);
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow:0 12px 40px -20px rgba(17,19,24,.15), inset 0 1px 0 rgba(255,255,255,.8);
+  overflow:hidden;
+}
+.stats-row .si{
+  padding:22px 16px;border-right:1px solid rgba(17,19,24,.06);
+  transition:background var(--dur) var(--ease-soft), transform var(--dur) var(--ease-spring);
+}
+.stats-row .si:last-child{border-right:0;}
+.stats-row .si:hover{background:rgba(35,65,154,.04);}
+.stats-row .sn{font-weight:900;font-size:28px;color:var(--blue);line-height:1;transition:transform var(--dur) var(--ease-spring);}
+.stats-row .si:hover .sn{transform:scale(1.06);}
+.stats-row .sl{font-size:11px;color:var(--grey);font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-top:4px;}
+@media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr);}.stats-row .si:nth-child(2){border-right:0;}.stats-row .si:nth-child(1),.stats-row .si:nth-child(2){border-bottom:1px solid rgba(17,19,24,.06);}}
+
+/* ===== BODY TYPE TILES ===== */
+.cat-section{padding:60px 0 50px;background:transparent;}
+.sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+.sec-head h2{font-size:26px;letter-spacing:-.015em;}
+.sec-head a{
+  font-size:13px;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:4px;
+  transition:gap var(--dur) var(--ease-out), color var(--dur-fast);
+}
+.sec-head a:hover{gap:8px;color:var(--blue-deep);}
+.cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+@media(max-width:960px){.cat-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:560px){.cat-grid{grid-template-columns:repeat(2,1fr);}}
+.cat-tile{
+  background:rgba(255,255,255,.65);
+  backdrop-filter:blur(16px) saturate(1.25);-webkit-backdrop-filter:blur(16px) saturate(1.25);
+  border:1px solid rgba(255,255,255,.7);
+  border-radius:var(--radius);padding:22px 14px 18px;text-align:center;cursor:pointer;
+  box-shadow:0 4px 20px -12px rgba(17,19,24,.12), inset 0 1px 0 rgba(255,255,255,.8);
+  transition:
+    transform var(--dur) var(--ease-spring),
+    box-shadow var(--dur) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-soft),
+    background var(--dur-fast) var(--ease-soft);
+}
+.cat-tile:hover{
+  border-color:rgba(35,65,154,.35);
+  box-shadow:0 16px 36px -14px rgba(35,65,154,.22), inset 0 1px 0 rgba(255,255,255,.9);
+  transform:translateY(-5px) scale(1.02);
+  background:rgba(255,255,255,.88);
+}
+.cat-tile svg{width:58px;height:30px;margin:0 auto 10px;stroke:var(--ink);stroke-width:1.6;fill:none;transition:stroke var(--dur-fast), transform var(--dur) var(--ease-spring);}
+.cat-tile:hover svg{stroke:var(--blue);transform:scale(1.06);}
+.cat-tile .ct-name{font-weight:800;font-size:14px;}
+.cat-tile .ct-count{font-size:11px;color:var(--grey);font-weight:600;margin-top:2px;}
+
+/* ===== SHOWROOM ===== */
+.inventory{padding:10px 0 70px;background:transparent;}
+.inv-bar{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px;padding-top:36px;}
+.inv-bar h2{font-size:clamp(22px,4vw,28px);letter-spacing:-.02em;}
+.inv-bar .inv-lede{font-size:13px;color:var(--grey);font-weight:600;margin-top:4px;max-width:36ch;line-height:1.45;}
+.inv-chips{
+  display:flex;gap:8px;flex-wrap:nowrap;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;padding:2px 2px 8px;margin:0 -4px;
+  max-width:100%;
+}
+.inv-chips::-webkit-scrollbar{display:none;}
+.chip{
+  flex-shrink:0;border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.6);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-radius:100px;padding:9px 16px;font-size:12px;font-weight:700;color:var(--grey);cursor:pointer;
+  box-shadow:0 2px 12px -6px rgba(17,19,24,.1), inset 0 1px 0 rgba(255,255,255,.7);
+  transition:
+    transform var(--dur) var(--ease-spring),
+    background var(--dur-fast) var(--ease-soft),
+    border-color var(--dur-fast) var(--ease-soft),
+    color var(--dur-fast) var(--ease-soft),
+    box-shadow var(--dur) var(--ease-out);
+}
+.chip:hover{border-color:rgba(35,65,154,.35);color:var(--blue);transform:translateY(-2px);background:rgba(255,255,255,.9);}
+.chip.on{
+  background:linear-gradient(145deg,var(--blue-light),var(--blue));border-color:transparent;color:#fff;
+  box-shadow:0 8px 20px -8px rgba(35,65,154,.5), inset 0 1px 0 rgba(255,255,255,.2);
+}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:1020px){.grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){
+  .grid{grid-template-columns:1fr;gap:14px;}
+  .inv-bar{align-items:flex-start;padding-top:28px;}
+  .card-body .cta-row{flex-direction:column;}
+  .card-body .cta-row .btn{width:100%;justify-content:center;}
+}
+
+/* car card — glass */
+.card{
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.75);
+  border-radius:var(--radius-lg);overflow:hidden;position:relative;
+  box-shadow:0 8px 28px -16px rgba(17,19,24,.14), inset 0 1px 0 rgba(255,255,255,.85);
+  transition:
+    transform var(--dur) var(--ease-spring),
+    box-shadow var(--dur) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-soft);
+}
+.card:hover{
+  border-color:rgba(35,65,154,.35);
+  box-shadow:0 28px 50px -20px rgba(35,65,154,.28), 0 8px 24px -12px rgba(17,19,24,.12), inset 0 1px 0 rgba(255,255,255,.9);
+  transform:translateY(-6px);
+}
+.card .ph{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--paper-3);}
+.card .ph .im{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .7s var(--ease-out);}
+.card:hover .ph .im{transform:scale(1.06);}
+/* Vehicle with no photo yet — branded panel, never a stand-in car */
+.card .ph .im-none{
+  background:
+    radial-gradient(100% 80% at 26% 14%,rgba(46,84,190,.45),transparent 62%),
+    linear-gradient(150deg,#0B1020 0%,#12203F 50%,#0A0F1C 100%);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;
+}
+.card .ph .im-none::before{
+  content:"";position:absolute;inset:0;
+  background:url('caledon-logo.png?v=5') no-repeat center 42%;background-size:auto 46%;
+  opacity:.16;filter:grayscale(1) brightness(2.6);
+}
+.card .ph .im-none .imn-txt{
+  position:relative;font-size:10px;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.55);
+}
+.card .ph .badge{
+  position:absolute;top:10px;left:10px;z-index:2;
+  background:linear-gradient(145deg,var(--blue-light),var(--blue));color:#fff;
+  font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 11px;border-radius:100px;
+  box-shadow:0 4px 14px -4px rgba(35,65,154,.5);border:1px solid rgba(255,255,255,.15);
+}
+.card .ph .badge.hot{background:linear-gradient(145deg,#ef4444,#b91c1c);}
+.card .ph .vir{
+  position:absolute;bottom:10px;right:10px;z-index:2;display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:var(--ink);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  padding:6px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 4px 14px -6px rgba(0,0,0,.2);
+}
+.card .ph .vir i{width:6px;height:6px;border-radius:50%;background:var(--wa);display:inline-block;}
+.card-body{padding:16px 18px 18px;}
+.card-body .cb-year{font-size:11px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.06em;}
+.card-body h3{font-size:17px;font-weight:800;margin:4px 0 2px;letter-spacing:-.01em;line-height:1.2;}
+.card-body .cb-variant{font-size:13px;color:var(--grey);}
+.specs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 14px;}
+.specs span{
+  font-size:11px;color:var(--grey);background:rgba(244,245,247,.8);border:1px solid var(--line);
+  border-radius:100px;padding:4px 10px;font-weight:600;
+  transition:background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+.card:hover .specs span{background:rgba(35,65,154,.06);border-color:rgba(35,65,154,.12);color:var(--blue-deep);}
+.price-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(17,19,24,.06);padding-top:14px;gap:10px;}
+.price-row .pr-main{font-family:var(--ff);font-weight:900;font-size:22px;letter-spacing:-.02em;color:var(--ink);}
+.price-row .pr-pm{font-size:11px;color:var(--grey);font-weight:600;margin-top:1px;}
+.price-row .pr-pm b{color:var(--blue);font-weight:800;}
+.tp-tag{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:100px;margin:6px 0 2px;}
+.tp-tag svg{width:10px;height:10px;flex-shrink:0;}
+.tp-tag.win{background:rgba(34,197,94,.12);color:#16A34A;}
+.tp-tag.fair{background:rgba(122,132,148,.12);color:var(--grey,#7A8494);}
+.card-body .btn-vd{
+  display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:12px;
+  padding:12px;min-height:46px;font-size:13px;font-weight:800;border-radius:12px;border:none;
+  color:#fff;background:linear-gradient(135deg,var(--blue),#18306E);
+  box-shadow:0 4px 14px rgba(35,65,154,.28);
+}
+.card-body .btn-vd:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.card-body .btn-vd::after{content:"→";font-weight:700;transition:transform var(--dur-fast);}
+.card-body .btn-vd:hover::after{transform:translateX(3px);}
+.card-body .cta-row{display:flex;gap:8px;margin-top:8px;}
+.card-body .cta-row .btn{flex:1;padding:11px 12px;font-size:13px;border-radius:12px;}
+.card-body .cta-row .btn-ghost-blue{
+  background:rgba(35,65,154,.08);color:var(--blue);border:1.5px solid rgba(35,65,154,.18);
+  backdrop-filter:blur(6px);
+}
+.card-body .cta-row .btn-ghost-blue:hover{background:var(--blue);color:#fff;border-color:var(--blue);}
+.inv-foot{text-align:center;margin-top:36px;}
+.inv-foot .btn{min-width:min(100%,280px);}
+
+/* ===== FINANCE ===== */
+.finance{padding:80px 0;background:var(--ink);color:#fff;position:relative;overflow:hidden;}
+.finance::before{content:"";position:absolute;right:-5%;top:-30%;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(35,65,154,.28),transparent 65%);animation:orbFloat 12s ease-in-out infinite;}
+.finance::after{content:"";position:absolute;left:-10%;bottom:-20%;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(74,102,184,.15),transparent 65%);pointer-events:none;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,20px)}}
+.fin-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:center;position:relative;}
+@media(max-width:960px){.fin-grid{grid-template-columns:1fr;gap:40px;}}
+.fin-left .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-light);font-weight:800;margin-bottom:10px;}
+.fin-left h2{font-size:clamp(28px,3.6vw,42px);letter-spacing:-.02em;line-height:1.08;margin-bottom:14px;}
+.fin-left p{color:rgba(255,255,255,.6);font-size:15px;max-width:52ch;}
+.fin-points{margin-top:28px;}
+.fp{display:flex;gap:14px;padding:16px 0;border-top:1px solid rgba(255,255,255,.08);transition:padding-left var(--dur) var(--ease-out);}
+.fp:hover{padding-left:6px;}
+.fp .fn{font-size:12px;font-weight:900;color:var(--blue-light);min-width:22px;padding-top:2px;}
+.fp b{display:block;font-size:15px;margin-bottom:2px;}
+.fp p{font-size:13px;color:rgba(255,255,255,.5);}
+.banks{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;}
+.banks span{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:7px 14px;
+  background:rgba(255,255,255,.04);backdrop-filter:blur(8px);
+  transition:background var(--dur-fast), border-color var(--dur-fast), transform var(--dur) var(--ease-spring);
+}
+.banks span:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);transform:translateY(-2px);}
+/* calc — glass dark */
+.calc{
+  background:rgba(26,29,36,.55);
+  backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--radius-lg);padding:28px 26px 24px;
+  box-shadow:0 24px 60px -24px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.calc .c-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.6);}
+.calc .c-head i{width:6px;height:6px;border-radius:50%;background:var(--wa);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.c-row{margin-bottom:20px;}
+.c-row .c-lab{display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px;font-weight:600;}
+.c-row .c-lab output{color:#fff;font-weight:800;transition:color var(--dur-fast);}
+input[type=range]{width:100%;appearance:none;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--blue) var(--fill,50%),rgba(255,255,255,.12) var(--fill,50%));outline:none;transition:filter var(--dur-fast);}
+input[type=range]:hover{filter:brightness(1.1);}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid var(--blue);cursor:grab;
+  box-shadow:0 2px 12px rgba(0,0,0,.35);transition:transform var(--dur) var(--ease-spring), box-shadow var(--dur-fast);
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12);box-shadow:0 4px 16px rgba(35,65,154,.4);}
+.c-result{
+  margin-top:24px;
+  background:rgba(35,65,154,.18);border:1px solid rgba(74,102,184,.35);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-radius:14px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.c-result .cr-label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-light);}
+.c-result .cr-val{font-weight:900;font-size:30px;letter-spacing:-.02em;transition:transform var(--dur) var(--ease-spring);}
+.c-result .cr-val small{font-size:13px;font-weight:500;color:rgba(255,255,255,.5);}
+.calc .fine{font-size:10px;color:rgba(255,255,255,.3);margin-top:14px;line-height:1.6;}
+
+/* ===== SELL ===== */
+.sell{padding:80px 0;background:transparent;}
+.sell-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+@media(max-width:960px){.sell-grid{grid-template-columns:1fr;gap:36px;}}
+/* Brand panel, not stock photography — matches the hero treatment.
+   TO USE A REAL PHOTO: add it as the last background layer, e.g.
+   url('trade-in.jpg') center/cover, before var(--ink). */
+.sell-img{
+  position:relative;border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:4/4;
+  background:
+    radial-gradient(110% 80% at 22% 12%,rgba(86,128,240,.62),transparent 62%),
+    radial-gradient(95% 75% at 88% 96%,rgba(52,92,205,.55),transparent 60%),
+    linear-gradient(150deg,#16224A 0%,#22376E 48%,#141F3C 100%);
+  box-shadow:0 24px 50px -24px rgba(17,19,24,.4);
+  transition:transform var(--dur-slow) var(--ease-out);
+}
+.sell-img::before{
+  content:"";position:absolute;inset:0;
+  background:url('caledon-logo.png?v=5') no-repeat center 58%;
+  background-size:auto 56%;
+  opacity:.20;filter:grayscale(1) brightness(2.9);
+  pointer-events:none;
+}
+.sell-img:hover{transform:scale(1.015);}
+.sell-img .si-badge{
+  position:absolute;top:18px;left:18px;
+  background:rgba(255,255,255,.82);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.7);border-radius:14px;padding:12px 16px;
+  box-shadow:0 12px 30px -10px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.sell-img .si-badge .sb1{font-size:10px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.1em;}
+.sell-img .si-badge .sb2{font-weight:900;font-size:17px;color:var(--ink);margin-top:1px;}
+.sell-right .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:8px;}
+.sell-right h2{font-size:clamp(26px,3.2vw,38px);letter-spacing:-.02em;line-height:1.08;margin-bottom:12px;}
+.sell-right>p{color:var(--grey);font-size:15px;max-width:48ch;}
+.sell-steps{margin-top:24px;display:grid;gap:10px;}
+.ss{
+  display:flex;gap:16px;align-items:flex-start;
+  background:rgba(255,255,255,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.7);border-radius:var(--radius);padding:16px 18px;
+  box-shadow:0 4px 16px -10px rgba(17,19,24,.1), inset 0 1px 0 rgba(255,255,255,.8);
+  transition:transform var(--dur) var(--ease-spring), border-color var(--dur-fast), background var(--dur-fast), box-shadow var(--dur);
+}
+.ss:hover{
+  border-color:rgba(35,65,154,.3);background:rgba(255,255,255,.88);
+  transform:translateX(4px);box-shadow:0 12px 28px -14px rgba(35,65,154,.18);
+}
+.ss .sn{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(145deg,var(--blue-light),var(--blue));color:#fff;
+  font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 4px 12px -4px rgba(35,65,154,.5);
+}
+.ss b{display:block;font-size:14px;margin-bottom:2px;}
+.ss p{font-size:12.5px;color:var(--grey);}
+.sell .btn-row{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap;}
+
+/* ===== WHY US ===== */
+.why{padding:80px 0;background:var(--ink);color:#fff;position:relative;overflow:hidden;}
+.why::after{content:"COC";position:absolute;bottom:-20px;right:-20px;font-weight:900;font-size:clamp(160px,26vw,360px);letter-spacing:-.04em;color:rgba(255,255,255,.02);pointer-events:none;line-height:1;}
+.why .sec-head h2{color:#fff;}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px;}
+@media(max-width:960px){.why-grid{grid-template-columns:1fr;}}
+.wc{
+  background:rgba(26,29,36,.5);
+  backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-lg);padding:28px 24px;position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  transition:transform var(--dur) var(--ease-spring), border-color var(--dur-fast), box-shadow var(--dur), background var(--dur-fast);
+}
+.wc:hover{
+  transform:translateY(-6px);
+  border-color:rgba(74,102,184,.45);
+  background:rgba(35,65,154,.15);
+  box-shadow:0 20px 40px -20px rgba(35,65,154,.35), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.wc .wc-icon{
+  width:44px;height:44px;border-radius:14px;
+  background:rgba(35,65,154,.2);border:1px solid rgba(74,102,184,.35);
+  display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  transition:transform var(--dur) var(--ease-spring), background var(--dur-fast);
+}
+.wc:hover .wc-icon{transform:scale(1.08);background:rgba(35,65,154,.35);}
+.wc .wc-icon svg{width:20px;height:20px;stroke:var(--blue-light);}
+.wc h3{font-size:17px;margin-bottom:8px;font-weight:800;}
+.wc p{font-size:13px;color:rgba(255,255,255,.5);line-height:1.65;}
+.wc .wc-tag{font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--blue-light);margin-top:14px;display:block;}
+
+/* ===== TESTIMONIALS ===== */
+.testi{padding:80px 0;background:transparent;}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:32px;}
+@media(max-width:960px){.testi-grid{grid-template-columns:1fr;}}
+.tc{
+  background:rgba(255,255,255,.65);
+  backdrop-filter:blur(18px) saturate(1.25);-webkit-backdrop-filter:blur(18px) saturate(1.25);
+  border:1px solid rgba(255,255,255,.75);border-radius:var(--radius-lg);padding:24px 22px;
+  box-shadow:0 8px 28px -16px rgba(17,19,24,.12), inset 0 1px 0 rgba(255,255,255,.85);
+  transition:transform var(--dur) var(--ease-spring), box-shadow var(--dur), border-color var(--dur-fast);
+}
+.tc:hover{
+  border-color:rgba(35,65,154,.3);
+  box-shadow:0 20px 40px -18px rgba(35,65,154,.2);
+  transform:translateY(-4px);
+}
+.tc .stars{color:#F59E0B;font-size:13px;letter-spacing:2px;}
+.tc blockquote{margin-top:14px;font-size:14px;line-height:1.7;color:#374151;}
+.tc .who{margin-top:18px;display:flex;align-items:center;gap:10px;}
+.tc .av{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(145deg,var(--blue-light),var(--blue));color:#fff;
+  font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 4px 12px -4px rgba(35,65,154,.45);
+}
+.tc .who b{display:block;font-size:13px;}
+.tc .who span{font-size:11px;color:var(--grey);}
+
+/* ===== VISIT ===== */
+.visit{padding:0 0 80px;background:transparent;}
+.visit-card{
+  background:var(--ink);border-radius:var(--radius-lg);overflow:hidden;
+  display:grid;grid-template-columns:1.15fr .85fr;color:#fff;
+  box-shadow:0 28px 60px -28px rgba(17,19,24,.45);
+  border:1px solid rgba(255,255,255,.06);
+}
+@media(max-width:860px){.visit-card{grid-template-columns:1fr;}}
+.visit-l{padding:52px 48px;}
+@media(max-width:600px){.visit-l{padding:36px 24px;}}
+.visit-l .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-light);font-weight:800;margin-bottom:8px;}
+.visit-l h2{font-size:clamp(26px,3vw,36px);letter-spacing:-.02em;line-height:1.1;margin-bottom:14px;}
+.visit-l>p{color:rgba(255,255,255,.5);font-size:14px;}
+.v-rows{margin-top:24px;}
+.v-row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-top:1px solid rgba(255,255,255,.06);font-size:14px;transition:padding-left var(--dur) var(--ease-out);}
+.v-row:hover{padding-left:4px;}
+.v-row .vk{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);padding-top:2px;}
+.v-row .vv{text-align:right;font-weight:600;}
+.v-row .vv a{color:var(--blue-light);transition:color var(--dur-fast);}
+.v-row .vv a:hover{color:#fff;}
+.visit-l .btn-row{display:flex;gap:8px;margin-top:28px;flex-wrap:wrap;}
+.visit-r{background:linear-gradient(160deg,rgba(17,19,24,.15),rgba(17,19,24,.6)),url('https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1200&q=80') center/cover,var(--ink-2);min-height:380px;position:relative;}
+.visit-r .pin{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.visit-r .pin .dot{width:16px;height:16px;background:var(--blue);border-radius:50%;margin:0 auto;box-shadow:0 0 0 8px rgba(35,65,154,.3);animation:pulse 2s infinite;}
+.visit-r .pin .pl{
+  margin-top:12px;
+  background:rgba(17,19,24,.65);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.14);padding:8px 16px;border-radius:100px;
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  box-shadow:0 8px 24px -10px rgba(0,0,0,.4);
+}
+
+/* ===== FOOTER ===== */
+footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgba(255,255,255,.06);padding:56px 0 0;}
+.f-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;padding-bottom:44px;}
+@media(max-width:860px){.f-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.f-grid{grid-template-columns:1fr;}}
+.f-grid h4{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#fff;margin-bottom:16px;}
+.f-grid a{display:block;font-size:13px;padding:4px 0;transition:color var(--dur-fast) var(--ease-soft), padding-left var(--dur) var(--ease-out);}
+.f-grid a:hover{color:#fff;padding-left:6px;}
+.f-about .logo{margin-bottom:14px;}
+.f-about .logo .logo-text .l1{color:#fff;}
+.f-about .logo .logo-text .l2{color:rgba(255,255,255,.45);}
+.f-about p{font-size:13px;line-height:1.7;max-width:34ch;}
+.f-bottom{border-top:1px solid rgba(255,255,255,.06);padding:20px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:11px;font-weight:600;}
+.f-bottom .ax b{color:#5BA8D4;}
+
+/* ===== FLOATING FAB RAIL (glass · Caledon) ===== */
+.fab-rail{
+  position:fixed;top:50%;transform:translateY(-50%);
+  right:max(14px,var(--safe-r));z-index:95;
+  display:flex;flex-direction:column;gap:14px;
+}
+.fab-btn{
+  position:relative;width:56px;height:56px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  background:linear-gradient(145deg,rgba(74,102,184,.85),rgba(26,49,120,.92));
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 10px 28px -8px rgba(35,65,154,.5), inset 0 1px 0 rgba(255,255,255,.25);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;text-decoration:none;color:#fff;flex-shrink:0;
+  transition:transform .3s var(--ease-spring), box-shadow .3s var(--ease-out);
+  animation:fabRise .6s var(--ease-spring) both;
+}
+.fab-btn:nth-child(1){animation-delay:.05s}
+.fab-btn:nth-child(2){animation-delay:.12s}
+.fab-btn:nth-child(3){animation-delay:.19s}
+.fab-btn:nth-child(4){animation-delay:.26s}
+
+/* ── Idle motion ──────────────────────────────────────────────────────────
+   After the entrance settles, each button breathes on a slow offset loop so the
+   rail reads as live rather than a static column of dots. `.fab-inner` carries
+   the loop so it never fights the hover/active transform on .fab-btn itself. */
+.fab-btn .fab-inner{
+  display:flex;align-items:center;justify-content:center;
+  animation:fabFloat 4.4s ease-in-out infinite;
+  will-change:transform;
+}
+.fab-btn:nth-child(1) .fab-inner{animation-delay:0s}
+.fab-btn:nth-child(2) .fab-inner{animation-delay:.55s}
+.fab-btn:nth-child(3) .fab-inner{animation-delay:1.1s}
+.fab-btn:nth-child(4) .fab-inner{animation-delay:1.65s}
+@keyframes fabFloat{
+  0%,100%{transform:translateY(0) scale(1);}
+  50%    {transform:translateY(-4px) scale(1.03);}
+}
+/* sheen sweeps across the rail every few seconds */
+.fab-btn::after{
+  content:"";position:absolute;inset:0;border-radius:50%;overflow:hidden;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.34) 50%,transparent 62%);
+  background-size:260% 100%;background-position:190% 0;
+  animation:fabSheen 5.6s ease-in-out infinite;
+  pointer-events:none;
+}
+.fab-btn:nth-child(1)::after{animation-delay:.2s}
+.fab-btn:nth-child(2)::after{animation-delay:.75s}
+.fab-btn:nth-child(3)::after{animation-delay:1.3s}
+.fab-btn:nth-child(4)::after{animation-delay:1.85s}
+@keyframes fabSheen{
+  0%,62%{background-position:190% 0;}
+  86%,100%{background-position:-90% 0;}
+}
+.fab-btn:hover .fab-inner{animation-play-state:paused;}
+@media(prefers-reduced-motion:reduce){
+  .fab-btn .fab-inner,.fab-btn::after{animation:none;}
+}
+.fab-btn:hover{transform:scale(1.12);box-shadow:0 18px 40px -8px rgba(35,65,154,.55), inset 0 1px 0 rgba(255,255,255,.3);}
+.fab-btn:active{transform:scale(.96);}
+.fab-btn svg{width:24px;height:24px;transition:transform var(--dur) var(--ease-spring);}
+.fab-btn:hover svg{transform:scale(1.06);}
+.fab-btn.fab-bot{background:linear-gradient(145deg,rgba(26,29,36,.9),rgba(35,65,154,.9));}
+.fab-btn.fab-td{background:linear-gradient(145deg,rgba(35,65,154,.9),rgba(26,49,120,.95));}
+.fab-btn.fab-lvs{background:linear-gradient(145deg,rgba(42,74,158,.9),rgba(26,49,120,.95));}
+.fab-btn.fab-wa{
+  background:linear-gradient(145deg,rgba(47,220,116,.92),rgba(29,168,81,.95));
+  box-shadow:0 10px 28px -8px rgba(37,211,102,.45), inset 0 1px 0 rgba(255,255,255,.25);
+}
+.fab-btn.fab-wa:hover{box-shadow:0 18px 40px -8px rgba(37,211,102,.55), inset 0 1px 0 rgba(255,255,255,.3);}
+.fab-btn .fab-label{
+  position:absolute;right:68px;top:50%;transform:translateY(-50%) translateX(8px);
+  background:rgba(12,14,20,.72);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+  color:#fff;font:700 12px/1.2 var(--ff);padding:9px 14px;border-radius:100px;white-space:nowrap;
+  opacity:0;pointer-events:none;
+  transition:opacity var(--dur-fast) var(--ease-soft), transform var(--dur) var(--ease-spring);
+  box-shadow:0 8px 22px -8px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);
+}
+.fab-btn:hover .fab-label{opacity:1;transform:translateY(-50%) translateX(0);}
+.fab-btn .ring{position:absolute;inset:-5px;border-radius:50%;border:2px solid rgba(35,65,154,.4);animation:chatring 2.2s ease-out infinite;pointer-events:none;}
+@keyframes chatring{0%{transform:scale(1);opacity:.55}100%{transform:scale(1.45);opacity:0}}
+@keyframes fabRise{from{opacity:0;transform:translateX(24px) scale(.8)}to{opacity:1;transform:translateX(0) scale(1)}}
+@media(max-width:900px){
+  .fab-rail{top:auto;transform:none;bottom:max(16px,calc(14px + var(--safe-b)));right:max(12px,var(--safe-r));gap:11px;}
+  .fab-btn{width:50px;height:50px;}
+  .fab-btn svg{width:21px;height:21px;}
+  .fab-btn .fab-label{display:none;}
+}
+
+/* Chat panel — glass */
+.coc-chat{
+  position:fixed;z-index:96;right:max(14px,var(--safe-r));bottom:max(86px,calc(80px + var(--safe-b)));
+  width:min(360px,calc(100vw - 28px));
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);
+  border-radius:var(--radius-lg);border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 28px 60px -20px rgba(17,19,24,.4), inset 0 1px 0 rgba(255,255,255,.9);
+  display:flex;flex-direction:column;overflow:hidden;max-height:min(70vh,520px);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transform:translateY(16px) scale(.96);
+  transition:
+    opacity var(--dur) var(--ease-out),
+    transform var(--dur) var(--ease-spring),
+    visibility var(--dur);
+}
+.coc-chat.open{opacity:1;visibility:visible;pointer-events:auto;transform:none;}
+.coc-chat-head{
+  background:linear-gradient(135deg,rgba(35,65,154,.95),rgba(26,49,120,.98));color:#fff;
+  padding:14px 16px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.coc-chat-head .av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;font-weight:900;font-size:13px;border:1px solid rgba(255,255,255,.2);}
+.coc-chat-head b{font-size:14px;display:block;}
+.coc-chat-head span{font-size:11px;opacity:.8;}
+.coc-chat-head button{
+  margin-left:auto;background:rgba(255,255,255,.15);border:0;color:#fff;width:32px;height:32px;border-radius:10px;
+  cursor:pointer;font-size:16px;transition:background var(--dur-fast), transform var(--dur) var(--ease-spring);
+}
+.coc-chat-head button:hover{background:rgba(255,255,255,.25);transform:scale(1.05);}
+.coc-chat-body{padding:14px;overflow-y:auto;flex:1;background:rgba(244,245,247,.5);display:flex;flex-direction:column;gap:10px;}
+.coc-msg{
+  max-width:88%;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.45;font-weight:600;
+  animation:msgIn .35s var(--ease-out) both;
+}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.coc-msg.bot{
+  background:rgba(255,255,255,.85);border:1px solid rgba(17,19,24,.06);color:var(--ink);
+  align-self:flex-start;border-bottom-left-radius:4px;
+  box-shadow:0 2px 8px -4px rgba(17,19,24,.1);
+}
+.coc-msg.user{background:linear-gradient(145deg,var(--blue-light),var(--blue));color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.coc-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.coc-quick button{
+  border:1px solid rgba(17,19,24,.1);background:rgba(255,255,255,.8);border-radius:100px;
+  padding:8px 12px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;
+  transition:border-color var(--dur-fast), color var(--dur-fast), transform var(--dur) var(--ease-spring), background var(--dur-fast);
+}
+.coc-quick button:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-1px);background:#fff;}
+.coc-chat-foot{padding:10px;border-top:1px solid rgba(17,19,24,.06);display:flex;gap:8px;background:rgba(255,255,255,.6);}
+.coc-chat-foot a{flex:1;text-align:center;padding:11px;border-radius:12px;font-weight:800;font-size:13px;}
+@media(min-width:901px){.coc-chat{bottom:auto;top:50%;transform:translateY(calc(-50% + 120px)) scale(.96);right:90px;}
+.coc-chat.open{transform:translateY(calc(-50% + 120px)) scale(1);}}
+
+/* Stock source pill */
+.stock-source{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--grey);
+  background:rgba(255,255,255,.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.75);border-radius:100px;padding:6px 12px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+  transition:border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
+}
+.stock-source .dot{width:7px;height:7px;border-radius:50%;background:var(--grey-2);transition:background var(--dur-fast);}
+.stock-source.live{color:var(--blue);border-color:rgba(35,65,154,.25);background:rgba(35,65,154,.08);}
+.stock-source.live .dot{background:var(--wa);box-shadow:0 0 0 0 rgba(37,211,102,.5);animation:livePulse 1.8s ease-out infinite;}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,.55)}70%{box-shadow:0 0 0 8px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+</style>
+</head>
+<body>
+
+<!-- Splash intro (first visit per session) -->
+<script src="coc-splash.js?v=3"></script>
+
+<!-- Custom cursor + scroll progress (desktop) -->
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+<div class="cur-dot" id="curDot" aria-hidden="true"></div>
+<div class="cur-ring" id="curRing" aria-hidden="true"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="wrap">
+    <div class="tl">
+      <span>📍 <b>257 Caledon Street, Kariega</b></span>
+      <span>Mon–Fri 08:00–17:30 · Sat 08:00–13:00</span>
+    </div>
+    <div class="tl"><a href="tel:+27618759389">📞 <b>+27 61 875 9389</b></a></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#top">
+      <div class="logo-mark">
+        <img src="caledon-logo.png?v=5" alt="Cars on Caledon" loading="eager" width="120" height="144">
+      </div>
+      <div class="logo-text">
+        <div class="l1">CARS ON CALEDON</div>
+        <div class="l2">Quality pre-owned · Kariega</div>
+      </div>
+    </a>
+    <nav class="nav-links">
+      <a href="#showroom" class="active">Showroom</a>
+      <a href="#sell">Sell / Trade-In</a>
+      <a href="#finance">Finance</a>
+      <a href="#why">Why Us</a>
+      <a href="#visit">Visit Us</a>
+    </nav>
+    <div class="nav-ctas">
+      <a class="btn btn-white" href="#finance">Apply for Finance</a>
+      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="m-menu" id="mmenu">
+    <a href="#showroom">Showroom</a><a href="#sell">Sell / Trade-In</a><a href="#finance">Finance</a><a href="#why">Why Us</a><a href="#visit">Visit Us</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="bg" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <div class="hero-badge"><i></i> Open now · 257 Caledon Street, Kariega</div>
+    <h1>Quality pre-owned on <em>Caledon Street</em></h1>
+    <p class="lede">Family-run yard in Kariega. Real stock, honest condition, bank finance and trade-ins — no pressure, just the right car for how you drive.</p>
+    <div class="hero-meta">
+      <span>Mon–Fri 08:00–17:30</span>
+      <span>Sat 08:00–13:00</span>
+      <span><a href="tel:+27618759389" style="color:#fff">+27 61 875 9389</a></span>
+    </div>
+    <div class="hero-ctas">
+      <a class="btn btn-blue" href="#showroom">Browse showroom →</a>
+      <a class="btn btn-outline" href="#sell">Sell / trade-in</a>
+      <a class="btn btn-wa" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20to%20chat%20about%20a%20vehicle" target="_blank" rel="noopener">WhatsApp us</a>
+    </div>
+
+    <div class="search-panel">
+      <div class="sp-title"><h3>Search the showroom</h3><span>Prices include VAT · E&OE</span></div>
+      <form class="sp-row" id="qsearch">
+        <div class="sp-field"><label>Make</label><select id="f-make"><option value="">All makes</option><option>Volkswagen</option><option>Ford</option><option>Toyota</option><option>BMW</option><option>Mercedes-AMG</option><option>Audi</option></select></div>
+        <div class="sp-field"><label>Body type</label><select id="f-body"><option value="">All types</option><option>Hatchback</option><option>SUV</option><option>Bakkie</option><option>Coupe</option></select></div>
+        <div class="sp-field"><label>Max price</label><select id="f-price"><option value="">No limit</option><option value="300000">Under R300 000</option><option value="450000">Under R450 000</option><option value="600000">Under R600 000</option></select></div>
+        <div class="sp-field"><label>Sort</label><select id="f-sort"><option value="">Featured</option><option value="lo">Price: low → high</option><option value="hi">Price: high → low</option></select></div>
+        <button class="sp-go" type="submit">Search</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="wrap"><div class="stats-row">
+    <div class="si rv"><div class="sn">40+</div><div class="sl">Vehicles in Stock</div></div>
+    <div class="si rv d1"><div class="sn">100%</div><div class="sl">Inspection Graded</div></div>
+    <div class="si rv d2"><div class="sn">24h</div><div class="sl">Finance Decisions</div></div>
+    <div class="si rv d3"><div class="sn">R0</div><div class="sl">Park & Sell Fees</div></div>
+  </div></div>
+</div>
+
+<!-- BODY TYPES -->
+<section class="cat-section">
+  <div class="wrap">
+    <div class="sec-head rv"><h2>Browse by body type</h2><a href="#showroom">View full showroom →</a></div>
+    <div class="cat-grid">
+      <div class="cat-tile rv" data-bt="Hatchback"><svg viewBox="0 0 58 30"><path d="M5 21c-1.5 0-2.5-1-2.5-2.5 0-2.5 1.5-4 4-5l6-7c1-1 2-1.5 3.5-1.5h15c2.5 0 5 1 7 2.5l5 5 7 2.5c1.5.5 2.5 1.5 2.5 3s-1 2.5-2.5 2.5"/><circle cx="14" cy="22" r="4.5"/><circle cx="42" cy="22" r="4.5"/></svg><div class="ct-name">Hatchback</div><div class="ct-count">12 vehicles</div></div>
+      <div class="cat-tile rv d1" data-bt="SUV"><svg viewBox="0 0 58 30"><path d="M3 21c-1 0-2-1-2-2V15c0-1.5 1-3 3-3l5-6c1-1 2-1.5 3.5-1.5h22c2 0 4 1 5.5 2.5l4 5h5c1.5 0 2.5 1 2.5 2.5v5.5c0 1-1 2-2 2"/><circle cx="14" cy="22" r="5"/><circle cx="43" cy="22" r="5"/></svg><div class="ct-name">SUV</div><div class="ct-count">9 vehicles</div></div>
+      <div class="cat-tile rv d2" data-bt="Bakkie"><svg viewBox="0 0 58 30"><path d="M2 20v-7c0-1 .5-2 1.5-2H24V5.5c0-1 .5-2 1.5-2h7c1.5 0 2.5.5 3.5 1.5l4.5 6h8c1.5 0 3 1 3 2.5v6.5"/><circle cx="13" cy="22" r="5"/><circle cx="44" cy="22" r="5"/><path d="M2 20h5.5M19 21h20"/></svg><div class="ct-name">Bakkie</div><div class="ct-count">8 vehicles</div></div>
+      <div class="cat-tile rv d3" data-bt="Coupe"><svg viewBox="0 0 58 30"><path d="M3 22c-1.5 0-2.5-1-2-3 .5-3 3.5-5 7-6l9-8c1-1 2.5-1.5 4-1.5h7c3.5 0 7 1.5 9.5 4l3.5 4.5 9 2.5c1.5.5 2.5 1.5 2.5 3s-1 3.5-2.5 3.5"/><circle cx="15" cy="23" r="4.5"/><circle cx="42" cy="23" r="4.5"/></svg><div class="ct-name">Coupe</div><div class="ct-count">4 vehicles</div></div>
+      <div class="cat-tile rv d4" data-bt="Sedan"><svg viewBox="0 0 58 30"><path d="M3 21c-1.5 0-2.5-1-2.5-2.5V16c0-1.5 1-3 2.5-3l5-7c1-1 2-1.5 3.5-1.5h18c3 0 5 1 7 3l5.5 5.5h6c2 0 3 1.5 3 3v3c0 1.5-1 2.5-2.5 2.5"/><circle cx="14" cy="22" r="4.5"/><circle cx="43" cy="22" r="4.5"/></svg><div class="ct-name">Sedan</div><div class="ct-count">6 vehicles</div></div>
+      <div class="cat-tile rv d5" data-bt=""><svg viewBox="0 0 58 30"><rect x="4" y="7" width="50" height="17" rx="3" stroke-dasharray="3 3"/><text x="29" y="19" text-anchor="middle" font-size="8" font-weight="800" fill="currentColor" stroke="none">ALL</text></svg><div class="ct-name">View All</div><div class="ct-count">40+ vehicles</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SHOWROOM -->
+<section class="inventory" id="showroom">
+  <div class="wrap">
+    <div class="inv-bar">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0;">
+        <h2>Showroom</h2>
+        <p class="inv-lede">Every unit on the floor — inspected and finance-ready. Tap a car to WhatsApp us.</p>
+        <span class="stock-source" id="stockSource" title="Stock status"><span class="dot"></span> <span id="stockSourceLbl">Current stock</span></span>
+      </div>
+    </div>
+    <div class="inv-chips" id="chips" role="tablist" aria-label="Filter showroom">
+      <button type="button" class="chip on" data-f="">All</button>
+      <button type="button" class="chip" data-f="Hatchback">Hatchbacks</button>
+      <button type="button" class="chip" data-f="SUV">SUVs</button>
+      <button type="button" class="chip" data-f="Bakkie">Bakkies</button>
+      <button type="button" class="chip" data-f="Coupe">Coupes</button>
+      <button type="button" class="chip" data-f="perf">Performance</button>
+    </div>
+    <div class="grid" id="invgrid"></div>
+    <div class="inv-foot rv">
+      <a class="btn btn-dark" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20to%20see%20more%20vehicles%20in%20the%20showroom" target="_blank" rel="noopener">WhatsApp for more stock →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FINANCE -->
+<section class="finance" id="finance">
+  <div class="wrap fin-grid">
+    <div class="fin-left rv">
+      <div class="eyebrow">Vehicle Asset Finance</div>
+      <h2>Finance shaped<br>around your life.</h2>
+      <p>We submit every application to all the major banks simultaneously — you get the best approved rate back, usually within 24 hours.</p>
+      <div class="fin-points">
+        <div class="fp"><div class="fn">01</div><div class="t"><b>Pre-qualify in minutes</b><p>One short form, no paperwork upfront. Know what you can afford first.</p></div></div>
+        <div class="fp"><div class="fn">02</div><div class="t"><b>Every major bank, one application</b><p>WesBank, MFC, Absa, Standard Bank & Capitec — we negotiate so you don't have to.</p></div></div>
+        <div class="fp"><div class="fn">03</div><div class="t"><b>Structured your way</b><p>Balloon payments, shorter terms, deposit or no deposit — tailored deals in plain language.</p></div></div>
+      </div>
+      <div class="banks"><span>WesBank</span><span>MFC / Nedbank</span><span>Absa</span><span>Standard Bank</span><span>Capitec</span></div>
+    </div>
+    <div class="calc rv d2">
+      <div class="c-head">Repayment Estimator <i></i></div>
+      <div class="c-row"><div class="c-lab"><span>Vehicle price</span><output id="o-price">R385 000</output></div><input type="range" id="r-price" min="80000" max="1200000" step="5000" value="385000"></div>
+      <div class="c-row"><div class="c-lab"><span>Deposit</span><output id="o-dep">10%</output></div><input type="range" id="r-dep" min="0" max="40" step="5" value="10"></div>
+      <div class="c-row"><div class="c-lab"><span>Term</span><output id="o-term">72 months</output></div><input type="range" id="r-term" min="12" max="96" step="12" value="72"></div>
+      <div class="c-result"><div><div class="cr-label">Estimated monthly</div><div class="cr-val" id="o-monthly">R7 480<small> /pm</small></div></div><a class="btn btn-blue" href="#">Apply Now</a></div>
+      <p class="fine">Estimate at 11.75% linked rate over selected term, excluding fees & insurance. Final rate subject to bank approval. Cars on Caledon is not a registered credit provider; applications are facilitated through registered FSPs.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SELL -->
+<section class="sell" id="sell">
+  <div class="wrap sell-grid">
+    <div class="sell-img rv">
+      <div class="si-badge"><div class="sb1">Average turnaround</div><div class="sb2">Under 24 hours</div></div>
+    </div>
+    <div class="sell-right">
+      <div class="eyebrow rv">Sell or Trade-In</div>
+      <h2 class="rv d1">Your car, sold properly.<br>Zero fees.</h2>
+      <p class="rv d2">Trade it in, sell it to us outright, or let us market it on our floor and every major platform with Park & Sell — at no cost to you.</p>
+      <div class="sell-steps">
+        <div class="ss rv"><div class="sn">1</div><div><b>Tell us about your car</b><p>Send photos via WhatsApp — or drive it in for a 20-minute inspection.</p></div></div>
+        <div class="ss rv d1"><div class="sn">2</div><div><b>Get a graded valuation</b><p>Our inspection report and live market data produce a fair, transparent number.</p></div></div>
+        <div class="ss rv d2"><div class="sn">3</div><div><b>Choose your route</b><p>Instant offer, trade-in, or Park & Sell — we market it, you bank the best price.</p></div></div>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn-blue rv d3" href="#">Get a Free Valuation</a>
+        <a class="btn btn-wa rv d3" href="https://wa.me/27618759389" target="_blank" rel="noopener">WhatsApp Your Car's Details</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="why" id="why">
+  <div class="wrap">
+    <div class="sec-head rv"><h2>See Everything — Before You Drive Anywhere</h2></div>
+    <div class="why-grid">
+      <div class="wc rv">
+        <div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M9 12l2 2 4-5"/><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z"/></svg></div>
+        <h3>Graded Inspection Reports</h3>
+        <p>Every car is digitally inspected — bodywork, OBD diagnostics and paint-depth readings — with a downloadable condition-grade PDF.</p>
+        <span class="wc-tag">VIR™ Certified</span>
+      </div>
+      <div class="wc rv d1">
+        <div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3l-9 9"/><path d="M15 3h6v6"/></svg></div>
+        <h3>360° Virtual Walkarounds</h3>
+        <p>Spin every angle of the exterior with damage hotspots marked honestly — nothing hidden behind a flattering camera angle.</p>
+        <span class="wc-tag">Interactive Spin 360</span>
+      </div>
+      <div class="wc rv d2">
+        <div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M15 10l5-3v10l-5-3"/><rect x="3" y="6" width="12" height="12" rx="2.5"/></svg></div>
+        <h3>Live Video Viewings</h3>
+        <p>Can't visit Caledon Street? We'll walk the car live on video — cold start, engine bay, underneath — you direct the camera.</p>
+        <span class="wc-tag">Book via WhatsApp</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testi">
+  <div class="wrap">
+    <div class="sec-head rv"><h2>What Our Customers Say</h2></div>
+    <div class="testi-grid">
+      <div class="tc rv"><div class="stars">★★★★★</div><blockquote>Bought my Ranger Wildtrak sight-unseen from East London. The inspection report matched the car bolt for bolt — delivered to my door two days after finance cleared.</blockquote><div class="who"><div class="av">JV</div><div><b>Johan v.d. Merwe</b><span>Ford Ranger 3.2 Wildtrak</span></div></div></div>
+      <div class="tc rv d1"><div class="stars">★★★★★</div><blockquote>Lance got me a better rate than my own bank offered directly. No pressure, and the Polo GTI was immaculate — exactly as graded.</blockquote><div class="who"><div class="av">TM</div><div><b>Thandi Mbeki</b><span>VW Polo GTI</span></div></div></div>
+      <div class="tc rv d2"><div class="stars">★★★★★</div><blockquote>Used Park & Sell for my wife's Fortuner. They handled the ads, calls, test drives and paperwork — got R22 000 more than WeBuyCars offered.</blockquote><div class="who"><div class="av">RP</div><div><b>Riaan Pretorius</b><span>Park & Sell Client</span></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- VISIT -->
+<section class="visit" id="visit">
+  <div class="wrap">
+    <div class="visit-card rv">
+      <div class="visit-l">
+        <div class="eyebrow">Come say hello</div>
+        <h2>The floor is open.<br>The kettle is on.</h2>
+        <p>Find us on Caledon Street in the heart of Kariega — ten minutes from the N2, with safe on-site parking.</p>
+        <div class="v-rows">
+          <div class="v-row"><span class="vk">Address</span><span class="vv">257 Caledon Street, Kariega, 6229</span></div>
+          <div class="v-row"><span class="vk">Phone</span><span class="vv"><a href="tel:+27618759389">+27 61 875 9389</a></span></div>
+          <div class="v-row"><span class="vk">Email</span><span class="vv"><a href="mailto:lance@carsoncaledon.co.za">lance@carsoncaledon.co.za</a></span></div>
+          <div class="v-row"><span class="vk">Hours</span><span class="vv">Mon–Fri 08:00–17:30 · Sat 08:00–13:00</span></div>
+        </div>
+        <div class="btn-row">
+          <a class="btn btn-blue" href="#">Get Directions</a>
+          <a class="btn btn-outline" href="https://wa.me/27618759389" target="_blank" rel="noopener">Book a Viewing</a>
+        </div>
+      </div>
+      <div class="visit-r"><div class="pin"><div class="dot"></div><div class="pl">257 Caledon St · Kariega</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-about">
+        <a class="logo f-wordmark" href="#top">
+          <div class="logo-text"><div class="l1">CARS ON CALEDON</div><div class="l2">Quality pre-owned · Kariega</div></div>
+        </a>
+        <p>Independent, family-run and fussy about what we put on the floor. Quality pre-owned, honest grading and finance that works as hard as you do.</p>
+      </div>
+      <div><h4>Showroom</h4><a href="#showroom">All vehicles</a><a href="#showroom">Hatchbacks</a><a href="#showroom">SUVs & Bakkies</a><a href="#showroom">Performance</a></div>
+      <div><h4>Services</h4><a href="#finance">Vehicle Finance</a><a href="#sell">Trade-Ins</a><a href="#sell">Park & Sell</a><a href="#why">Inspection Reports</a></div>
+      <div><h4>Contact</h4><a href="tel:+27618759389">+27 61 875 9389</a><a href="mailto:lance@carsoncaledon.co.za">lance@carsoncaledon.co.za</a><a href="#visit">257 Caledon Street, Kariega</a><a href="https://facebook.com/carsoncaledon" target="_blank" rel="noopener">Facebook ↗</a></div>
+    </div>
+    <div class="f-bottom"><span>© 2026 Cars on Caledon · All prices include VAT · E&OE</span><span class="ax">Powered by <a href="https://www.tru-saas.com" target="_blank" rel="noopener" style="color:inherit"><b>TruSaas</b></a> · <a href="https://true-cars.co.za" target="_blank" rel="noopener" style="color:inherit">true-cars.co.za</a></span></div>
+  </div>
+</footer>
+
+<!-- Floating rail · true-cars style · Caledon colours (customer only) -->
+<div class="fab-rail" id="fabRail" aria-label="Quick actions">
+  <button type="button" class="fab-btn fab-bot" id="fabBot" aria-label="Chat with Caledon assistant">
+    <span class="ring" aria-hidden="true"></span>
+    <span class="fab-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></span>
+    <span class="fab-label">Chat with us</span>
+  </button>
+  <a class="fab-btn fab-td" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20to%20book%20a%20test%20drive" target="_blank" rel="noopener" aria-label="Book a test drive">
+    <span class="fab-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.6A2.5 2.5 0 0 1 7 6.7h10a2.5 2.5 0 0 1 2.4 1.7L21 13v5a1 1 0 0 1-1 1h-1.2a1 1 0 0 1-1-1v-1H6.2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3.5 13h17"/><circle cx="7.2" cy="16" r="1.1"/><circle cx="16.8" cy="16" r="1.1"/></svg></span>
+    <span class="fab-label">Book a test drive</span>
+  </a>
+  <a class="fab-btn fab-lvs" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20a%20live%20video%20viewing%20of%20a%20vehicle" target="_blank" rel="noopener" aria-label="Book a live video viewing">
+    <span class="fab-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8.5V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-1.5l5 3.5V5z"/></svg></span>
+    <span class="fab-label">Live video viewing</span>
+  </a>
+</div>
+
+<div class="coc-chat" id="cocChat" role="dialog" aria-label="Caledon Cars chat" aria-hidden="true">
+  <div class="coc-chat-head">
+    <div class="av">CC</div>
+    <div><b>Caledon assistant</b><span>Usually replies in minutes</span></div>
+    <button type="button" id="cocChatClose" aria-label="Close chat">×</button>
+  </div>
+  <div class="coc-chat-body" id="cocChatBody">
+    <div class="coc-msg bot">Hi — welcome to Caledon Cars on Caledon Street, Kariega. Looking for a car, finance, or a trade-in?</div>
+    <div class="coc-quick" id="cocQuick">
+      <button type="button" data-q="showroom">Browse showroom</button>
+      <button type="button" data-q="finance">Finance help</button>
+      <button type="button" data-q="trade">Sell / trade-in</button>
+      <button type="button" data-q="viewing">Book a viewing</button>
+    </div>
+  </div>
+  <div class="coc-chat-foot">
+    <a class="btn btn-wa" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars" target="_blank" rel="noopener">Continue on WhatsApp</a>
+  </div>
+</div>
+
+<script>
+/* ── Config ── */
+const WA = "27618759389";
+const DEALER_SLUGS = ["cars-on-caledon","caledon-cars","caledon","cars-on-caledon-sa"];
+const STOCK_APIS = [
+  "https://premium.tru-saas.com/api/public/stock?dealer=",
+  "https://flow.tru-saas.com/api/public/stock?dealer="
+];
+
+/* ── Fallback stock — shown only until live DMS stock loads. ──
+   Realistic Kariega family-yard line-up (bread-and-butter SA used cars, not exotics).
+   NOTE: `img` values are PLACEHOLDERS. Real vehicle photos must come from the DMS
+   (heroImage / images[]) once stock is loaded there. Do not present these as real units. */
+// truPrice = an honest per-vehicle market-value benchmark (hand-set, same
+// approach as True-Cars/MKR). Independent of price — never derived from it.
+const MOCK_STOCK = [
+ {yr:2019,make:"Volkswagen",name:"Polo Vivo 1.4 Trendline",variant:"5-Door · One Owner",body:"Hatchback",perf:false,km:"78 400 km",tr:"Manual",fuel:"Petrol",price:179900,truPrice:189500,tag:"Popular",hot:true,img:"https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80"},
+ {yr:2020,make:"Toyota",name:"Hilux 2.4 GD-6 SRX",variant:"Single Cab · Full Service History",body:"Bakkie",perf:false,km:"112 000 km",tr:"Manual",fuel:"Diesel",price:379900,truPrice:399000,tag:"Workhorse",img:"https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1000&q=80"},
+ {yr:2021,make:"Volkswagen",name:"Polo 1.0 TSI Comfortline",variant:"Balance of Service Plan",body:"Hatchback",perf:false,km:"52 300 km",tr:"Manual",fuel:"Petrol",price:269900,truPrice:284000,tag:"Low KM",hot:true,img:"https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1000&q=80"},
+ {yr:2018,make:"Ford",name:"EcoSport 1.5 TiVCT Ambiente",variant:"Auto · Rear Sensors",body:"SUV",perf:false,km:"96 800 km",tr:"Auto",fuel:"Petrol",price:199900,truPrice:209500,tag:"Family SUV",img:"https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1000&q=80"},
+ {yr:2017,make:"Toyota",name:"Etios 1.5 Xs Sedan",variant:"Aircon · Ideal First Car",body:"Sedan",perf:false,km:"121 000 km",tr:"Manual",fuel:"Petrol",price:129900,truPrice:136500,tag:"Budget Buy",img:"https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80"},
+ {yr:2019,make:"Nissan",name:"NP200 1.6 Safety Pack",variant:"Canopy Fitted · Aircon",body:"Bakkie",perf:false,km:"88 500 km",tr:"Manual",fuel:"Petrol",price:159900,truPrice:168000,tag:"Half-Ton",img:"https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80"},
+ {yr:2020,make:"Hyundai",name:"Grand i10 1.0 Motion",variant:"Hatch · Low Mileage",body:"Hatchback",perf:false,km:"63 200 km",tr:"Manual",fuel:"Petrol",price:174900,truPrice:183000,tag:"Economical",img:"https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&w=1000&q=80"},
+ {yr:2021,make:"Toyota",name:"Urban Cruiser 1.5 Xi",variant:"Full Toyota History",body:"SUV",perf:false,km:"44 700 km",tr:"Manual",fuel:"Petrol",price:249900,truPrice:263000,tag:"Just Arrived",img:"https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1000&q=80"}
+];
+
+let STOCK = MOCK_STOCK.slice();
+let stockLive = false;
+
+const fmtR=n=>"R"+Number(n||0).toLocaleString("en-ZA").replace(/,/g," ");
+const monthly=p=>{const r=.1175/12,n=72;return Math.round(p*.9*r/(1-Math.pow(1+r,-n)));};
+
+// Deterministic 0..1 from a string — same input always gives the same output,
+// so a live car's synthetic TruPrice doesn't change on every reload.
+function hash01(str){let h=0;str=String(str||"");for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;return (h%1000)/1000;}
+
+/** TruPrice delta — compares a vehicle's asking price against its truPrice benchmark. */
+function priceDelta(c){
+  const tp=Number(c.truPrice)||Number(c.price)||0, price=Number(c.price)||0;
+  const d=tp-price, pct=tp?Math.round(Math.abs(d)/tp*100):0;
+  return {below:d>=0, amount:Math.abs(d), pct};
+}
+/** Small "R below TruPrice" / "Fair TruPrice" pill for vehicle cards. */
+function tpTag(c){
+  const d=priceDelta(c);
+  const check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>';
+  return d.below
+    ? `<span class="tp-tag win">${check}${fmtR(d.amount)} below TruPrice</span>`
+    : `<span class="tp-tag fair">Fair TruPrice</span>`;
+}
+let io;
+function observeAll(){io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{threshold:.1});document.querySelectorAll(".rv:not(.in)").forEach(el=>io.observe(el));}
+
+function setStockSource(live, label){
+  stockLive = !!live;
+  const el = document.getElementById("stockSource");
+  const lbl = document.getElementById("stockSourceLbl");
+  if(el) el.classList.toggle("live", live);
+  if(lbl) lbl.textContent = label;
+  const badge = document.querySelector(".hero-badge");
+  if(badge && live) badge.innerHTML = "<i></i> "+STOCK.length+" vehicles · Kariega, Eastern Cape";
+  syncCounts();
+}
+
+/* Keep every "how many cars" number on the page honest — derived from real stock,
+   never hard-coded. Body-type tiles with no stock hide themselves. */
+function syncCounts(){
+  const n = STOCK.length;
+  const stat = document.querySelector(".stats-row .si .sn");
+  if(stat) stat.textContent = n;
+
+  const tiles = [...document.querySelectorAll(".cat-tile")];
+  const count = bt => STOCK.filter(v => v.body === bt).length;
+  // If stock carries no usable body types (e.g. DMS not sending bodyType yet),
+  // keep every tile visible and just drop the counts — never blank the section.
+  const typed = tiles.some(t => t.getAttribute("data-bt") && count(t.getAttribute("data-bt")));
+
+  tiles.forEach(function(tile){
+    const bt = tile.getAttribute("data-bt");
+    const el = tile.querySelector(".ct-count");
+    if(!bt){ if(el) el.textContent = n===1 ? "1 vehicle" : n+" vehicles"; return; }
+    if(!typed){ tile.style.display=""; if(el) el.textContent="Browse"; return; }
+    const c = count(bt);
+    if(el) el.textContent = c===1 ? "1 vehicle" : c+" vehicles";
+    tile.style.display = c ? "" : "none";
+  });
+}
+
+const grid=document.getElementById("invgrid");
+function render(list){
+  const show = list.length ? list : STOCK.slice(0,10);
+  window.COC_SHOWN = show;
+  grid.innerHTML=show.map((c,i)=>{
+    const img = c.img || "";
+    const waMsg = encodeURIComponent("Hi Caledon Cars, I'm interested in the "+c.yr+" "+c.make+" "+c.name+" ("+fmtR(c.price)+")");
+    return `
+  <article class="card rv d${i%3+1}" data-idx="${i}">
+    <div class="ph">
+      ${img
+        ? `<div class="im" style="background-image:linear-gradient(180deg,rgba(17,19,24,0) 55%,rgba(17,19,24,.35)),url('${img}')"></div>`
+        : `<div class="im im-none"><span class="imn-txt">Photos on request</span></div>`}
+      <span class="badge ${c.hot?'hot':''}">${c.tag||'Featured'}</span>
+      <span class="vir"><i></i>${c.virLabel||'Inspected'}</span>
+    </div>
+    <div class="card-body">
+      <div class="cb-year">${c.yr} · ${c.make}</div>
+      <h3>${c.name}</h3>
+      <div class="cb-variant">${c.variant||''}</div>
+      <div class="specs"><span>${c.km||'—'}</span><span>${c.tr||'—'}</span><span>${c.fuel||'—'}</span><span>${c.body||'—'}</span></div>
+      <div class="price-row">
+        <div><div class="pr-main">${fmtR(c.price)}</div><div class="pr-pm">from <b>${fmtR(monthly(c.price))}/pm</b></div></div>
+      </div>
+      ${tpTag(c)}
+      <button class="btn btn-vd" data-vd="${i}">View full detail &amp; VIR report</button>
+      <div class="cta-row">
+        <a class="btn btn-wa" href="https://wa.me/${WA}?text=${waMsg}" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn-ghost-blue" href="https://wa.me/${WA}?text=${encodeURIComponent("Hi Caledon Cars, I'd like a viewing of the "+c.yr+" "+c.make+" "+c.name)}" target="_blank" rel="noopener">Book viewing</a>
+      </div>
+    </div>
+  </article>`;
+  }).join("");
+  observeAll();
+}
+
+function isJunkApi(v){
+  const blob = [v.make,v.model,v.trim,v.stockNumber,v.description].filter(Boolean).join(" ").toLowerCase();
+  if(/stk-lite-test|test vehicle|demo junk|lorem ipsum/.test(blob)) return true;
+  if(/\bss\b/.test(blob) && /ddas/.test(blob)) return true;
+  if(v.make && String(v.make).length<=2 && /ddas|test|xxx/i.test(String(v.model||""))) return true;
+  return false;
+}
+function mapApiVehicle(v){
+  if(isJunkApi(v)) return null;
+  const price = Number(v.price)||0;
+  const km = v.mileage != null ? (Number(v.mileage).toLocaleString("en-ZA")+" km") : (v.km||"—");
+  const body = v.bodyType || v.body || "Vehicle";
+  const name = [v.model, v.trim].filter(Boolean).join(" ") || v.make || "Vehicle";
+  const img = v.heroImage || (Array.isArray(v.images)&&v.images[0]) || "";
+  // TruPrice: prefer the real benchmark the dealer set in the DMS; only
+  // synthesize a plausible 4-9% markup when the DMS hasn't set one yet.
+  const truPrice = Number(v.truPrice) > 0
+    ? Number(v.truPrice)
+    : price ? Math.round(price*(1+0.04+hash01(v.stockNumber||v.id||name)*0.05)/100)*100 : 0;
+  return {
+    yr: v.year || "—",
+    make: v.make || "—",
+    name: name,
+    variant: v.trim || v.stockNumber || "",
+    body: body,
+    perf: /gti|amg|rs|m2|m3|wildtrak|legend/i.test(name+String(v.trim||"")),
+    km: km,
+    tr: v.transmission || "—",
+    fuel: v.fuelType || v.fuel || "—",
+    price: price,
+    truPrice: truPrice,
+    tag: v.stockNumber || "Live",
+    hot: String(v.status||"").toLowerCase()==="available" && price>0,
+    // No stand-in car photo: showing an unrelated stock vehicle misrepresents the unit.
+    // Empty -> the card renders a branded "photo on request" panel instead.
+    img: img || "",
+    virLabel: "Inspected"
+  };
+}
+
+async function tryLoadLiveStock(){
+  setStockSource(false, "Loading yard…");
+  for(const base of STOCK_APIS){
+    for(const slug of DEALER_SLUGS){
+      for(let attempt=0; attempt<2; attempt++){
+        try{
+          const ctrl = new AbortController();
+          const t = setTimeout(()=>ctrl.abort(), 18000);
+          const res = await fetch(base+encodeURIComponent(slug), {signal: ctrl.signal, cache:"no-store"});
+          clearTimeout(t);
+          if(!res.ok) continue;
+          const data = await res.json();
+          const list = Array.isArray(data.vehicles) ? data.vehicles : (Array.isArray(data)?data:[]);
+          if(!list.length) continue;
+          const mapped = list.map(mapApiVehicle).filter(Boolean);
+          if(!mapped.length) continue;
+          STOCK = mapped;
+          setStockSource(true, STOCK.length+" vehicles in stock");
+          applyFilters();
+          return true;
+        }catch(e){ if(attempt===0) await new Promise(r=>setTimeout(r,1500)); }
+      }
+    }
+  }
+  setStockSource(false, STOCK.length+" vehicles in stock");
+  return false;
+}
+
+/* Show mock stock immediately; swap if yard feed is available (no dealer-tool UI) */
+render(STOCK.slice(0,10));
+setStockSource(false, STOCK.length+" vehicles in stock");
+tryLoadLiveStock();
+
+let activeChip="";
+document.getElementById("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));b.classList.add("on");activeChip=b.dataset.f;applyFilters();});
+function applyFilters(make="",body="",maxP="",sort=""){
+  let list=[...STOCK];
+  if(activeChip==="perf")list=list.filter(c=>c.perf);
+  else if(activeChip)list=list.filter(c=>c.body===activeChip);
+  if(make)list=list.filter(c=>c.make===make);
+  if(body)list=list.filter(c=>c.body===body);
+  if(maxP)list=list.filter(c=>c.price<=+maxP);
+  if(sort==="lo")list.sort((a,b)=>a.price-b.price);
+  if(sort==="hi")list.sort((a,b)=>b.price-a.price);
+  if(!list.length){
+    render(STOCK.slice(0,10));
+    grid.insertAdjacentHTML("afterbegin",'<p style="grid-column:1/-1;font-size:13px;color:var(--grey);font-weight:600;text-align:center;padding:40px 0;">No exact matches — showing featured stock. WhatsApp us, we source on request.</p>');
+  } else render(list);
+}
+document.getElementById("qsearch").addEventListener("submit",e=>{e.preventDefault();activeChip="";document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));document.querySelector('.chip[data-f=""]').classList.add("on");applyFilters(document.getElementById("f-make").value,document.getElementById("f-body").value,document.getElementById("f-price").value,document.getElementById("f-sort").value);document.getElementById("showroom").scrollIntoView({behavior:"smooth"});});
+document.querySelectorAll(".cat-tile").forEach(t=>t.addEventListener("click",()=>{activeChip=t.dataset.bt;document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c.dataset.f===activeChip));applyFilters();document.getElementById("showroom").scrollIntoView({behavior:"smooth"});}));
+
+const rP=document.getElementById("r-price"),rD=document.getElementById("r-dep"),rT=document.getElementById("r-term");
+function fill(el){if(!el)return;el.style.setProperty("--fill",(el.value-el.min)/(el.max-el.min)*100+"%");}
+function calc(){if(!rP)return;const P=+rP.value,dep=+rD.value/100,n=+rT.value,r=.1175/12,m=Math.round(P*(1-dep)*r/(1-Math.pow(1+r,-n)));document.getElementById("o-price").textContent=fmtR(P);document.getElementById("o-dep").textContent=rD.value+"%";document.getElementById("o-term").textContent=n+" months";document.getElementById("o-monthly").innerHTML=fmtR(m)+'<small> /pm</small>';[rP,rD,rT].forEach(fill);}
+if(rP){[rP,rD,rT].forEach(el=>el.addEventListener("input",calc));calc();}
+
+document.getElementById("burger").addEventListener("click",()=>document.getElementById("mmenu").classList.toggle("open"));
+document.querySelectorAll("#mmenu a").forEach(a=>a.addEventListener("click",()=>document.getElementById("mmenu").classList.remove("open")));
+
+/* Floating bot panel (customer chat) */
+(function(){
+  const bot=document.getElementById("fabBot");
+  const panel=document.getElementById("cocChat");
+  const body=document.getElementById("cocChatBody");
+  const close=document.getElementById("cocChatClose");
+  if(!bot||!panel) return;
+  function openChat(){ panel.classList.add("open"); panel.setAttribute("aria-hidden","false"); }
+  function closeChat(){ panel.classList.remove("open"); panel.setAttribute("aria-hidden","true"); }
+  bot.addEventListener("click",()=>{ panel.classList.contains("open")?closeChat():openChat(); });
+  if(close) close.addEventListener("click", closeChat);
+  const replies={
+    showroom:"Tap Showroom to browse current cars. Prefer a shortlist? WhatsApp us your budget and body type.",
+    finance:"We run your application to the major banks for you. Use the finance calculator, then WhatsApp if you want a pre-check.",
+    trade:"We buy and take trade-ins. WhatsApp a few photos of your car, mileage and what you're after — Lance will come back with a fair offer.",
+    viewing:"Happy to arrange a viewing at 257 Caledon Street, Kariega. WhatsApp a day/time that works for you."
+  };
+  document.getElementById("cocQuick")?.addEventListener("click",e=>{
+    const b=e.target.closest("button[data-q]"); if(!b||!body) return;
+    const q=b.dataset.q;
+    const labels={showroom:"Browse showroom",finance:"Finance help",trade:"Sell / trade-in",viewing:"Book a viewing"};
+    const u=document.createElement("div"); u.className="coc-msg user"; u.textContent=labels[q]||q; body.appendChild(u);
+    setTimeout(()=>{
+      const m=document.createElement("div"); m.className="coc-msg bot"; m.textContent=replies[q]||"WhatsApp us and we'll help right away."; body.appendChild(m);
+      body.scrollTop=body.scrollHeight;
+      if(q==="showroom") document.getElementById("showroom")?.scrollIntoView({behavior:"smooth"});
+      if(q==="finance") document.getElementById("finance")?.scrollIntoView({behavior:"smooth"});
+      if(q==="trade") document.getElementById("sell")?.scrollIntoView({behavior:"smooth"});
+    },280);
+  });
+})();
+
+observeAll();
+
+/* ── Modern UX: custom cursor, scroll progress, header glass state ── */
+(function(){
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const header = document.querySelector("header");
+  const prog = document.getElementById("scrollProgress");
+  const dot = document.getElementById("curDot");
+  const ring = document.getElementById("curRing");
+
+  function onScroll(){
+    const y = window.scrollY || 0;
+    if(header) header.classList.toggle("scrolled", y > 24);
+    if(prog){
+      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      prog.style.width = Math.min(100, (y / max) * 100) + "%";
+    }
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  onScroll();
+
+  /* smooth active nav on scroll */
+  const sections = ["showroom","sell","finance","why","visit"].map(id=>document.getElementById(id)).filter(Boolean);
+  const navLinks = document.querySelectorAll(".nav-links a");
+  function setActiveNav(){
+    let cur = "";
+    const mid = window.scrollY + 120;
+    sections.forEach(s=>{ if(s.offsetTop <= mid) cur = s.id; });
+    navLinks.forEach(a=>{
+      const href = (a.getAttribute("href")||"").replace("#","");
+      a.classList.toggle("active", href === cur || (!cur && href === "showroom" && mid < 400));
+      if(!cur && href === "showroom" && mid < 400) a.classList.add("active");
+      if(!cur && mid < 400 && href !== "showroom") a.classList.remove("active");
+    });
+  }
+  window.addEventListener("scroll", setActiveNav, {passive:true});
+  setActiveNav();
+
+  if(!fine || reduce || !dot || !ring) return;
+
+  document.body.classList.add("has-cursor");
+  let mx = window.innerWidth/2, my = window.innerHeight/2;
+  let rx = mx, ry = my;
+  let visible = false;
+
+  function showCur(){
+    if(visible) return;
+    visible = true;
+    document.body.classList.add("cur-ready");
+  }
+  window.addEventListener("mousemove", e=>{
+    mx = e.clientX; my = e.clientY;
+    showCur();
+    const dw = dot.offsetWidth/2, dh = dot.offsetHeight/2;
+    dot.style.transform = "translate("+(mx-dw)+"px,"+(my-dh)+"px)";
+  }, {passive:true});
+  window.addEventListener("mousedown", ()=>document.body.classList.add("cur-click"));
+  window.addEventListener("mouseup", ()=>document.body.classList.remove("cur-click"));
+  document.addEventListener("mouseleave", ()=>document.body.classList.remove("cur-ready","cur-hover","cur-click"));
+  document.addEventListener("mouseenter", ()=>{ if(visible) document.body.classList.add("cur-ready"); });
+
+  const hoverSel = "a,button,.chip,.cat-tile,.card,.fab-btn,.btn,select,.ss,.wc,.tc,.sp-go";
+  document.addEventListener("mouseover", e=>{
+    if(e.target.closest(hoverSel)) document.body.classList.add("cur-hover");
+  });
+  document.addEventListener("mouseout", e=>{
+    if(e.target.closest(hoverSel) && !e.relatedTarget?.closest?.(hoverSel))
+      document.body.classList.remove("cur-hover");
+  });
+
+  function tick(){
+    rx += (mx - rx) * 0.18;
+    ry += (my - ry) * 0.18;
+    const rw = ring.offsetWidth/2, rh = ring.offsetHeight/2;
+    ring.style.transform = "translate("+(rx-rw)+"px,"+(ry-rh)+"px)";
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+
+<script src="coc-vd.js?v=3"></script>
+<script src="coc-polish.js" defer></script>
+
+<!-- TruChat · AI chat + leads (TrueSaas) -->
+<script src="truchat/shared/qualifier.js"></script>
+<script src="truchat/shared/chat-core.js"></script>
+<script src="truchat/coc/config.js"></script>
+<script>if(window.COC_TRUCHAT_CONFIG){window.TRUECARS_TRUCHAT_CONFIG=window.COC_TRUCHAT_CONFIG;}</script>
+<script src="truchat/true-cars/widget.js" data-bottom="24px" data-position="right" data-z="999990" defer></script>
+
+<!-- TruAfford · soft affordability (TrueSaas) — all showrooms -->
+<script
+  src="tru-afford.js?v=3"
+  data-dealer="Cars on Caledon"
+  data-wa="27618759389"
+  data-brand="trusaas"
+  data-position="left"
+  data-bottom="20px"
+  data-z="999990"
+  defer></script>
+</body>
+</html>

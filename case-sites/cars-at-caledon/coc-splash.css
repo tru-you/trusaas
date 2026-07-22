@@ -1,0 +1,60 @@
+/* Cars on Caledon — Splash intro (first visit per session)
+   The stage background is driven from the video's own pixels by coc-splash.js, so the
+   card melts into the backdrop through the whole light-grey -> navy fade. The value
+   below is only the opening frame (#F0F0F0) and the no-JS/tainted-canvas fallback. */
+.coc-splash{
+  position:fixed;inset:0;z-index:500;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+  background:linear-gradient(180deg,#F0F0F0 0%,#E2E2E2 100%);
+  opacity:1;transition:opacity .7s cubic-bezier(.22,1,.36,1),visibility .7s;
+}
+.coc-splash.out{opacity:0;visibility:hidden;pointer-events:none;}
+
+.coc-splash video{
+  position:relative;z-index:1;
+  width:min(560px,86vw);aspect-ratio:1056/864;height:auto;
+  border-radius:22px;object-fit:cover;
+  box-shadow:none;
+  transition:box-shadow 1.4s ease;
+  animation:cocSplashIn 1s cubic-bezier(.22,1,.36,1) both;
+}
+.coc-splash.dark video{
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.85),0 0 90px -18px rgba(32,52,90,.7);
+}
+@keyframes cocSplashIn{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:none;}}
+
+.coc-splash-tag{
+  position:relative;z-index:1;
+  font-family:'Mulish',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.34em;text-transform:uppercase;color:rgba(255,255,255,.55);
+  opacity:0;transform:translateY(10px);
+  transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1);
+}
+/* Skip stays clickable from frame one — it only fades its styling in with the dark stage,
+   so an impatient visitor is never trapped waiting for the crossfade. */
+.coc-splash-skip{
+  position:relative;z-index:1;
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Mulish',sans-serif;font-size:12.5px;font-weight:800;
+  color:#11131A;background:rgba(17,19,26,.06);border:1px solid rgba(17,19,26,.14);
+  border-radius:100px;padding:12px 24px;cursor:pointer;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:color .6s ease,background .6s ease,border-color .6s ease,transform .2s;
+}
+.coc-splash.dark .coc-splash-tag{opacity:1;transform:none;}
+.coc-splash.dark .coc-splash-skip{
+  color:#fff;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);
+}
+.coc-splash-skip:hover{background:rgba(46,84,190,.5);border-color:rgba(110,155,255,.6);color:#fff;}
+.coc-splash-skip:active{transform:scale(.97);}
+.coc-splash-skip svg{width:14px;height:14px;}
+
+.coc-splash-bar{
+  position:absolute;left:0;bottom:0;height:3px;width:0;z-index:1;
+  background:linear-gradient(90deg,#6E9BFF,#2E54BE);
+  transition:width .25s linear;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .coc-splash video{animation:none;}
+}
