@@ -95,6 +95,14 @@ import {
 } from "./lib/salesShare";
 import { initGlassMotion } from "./lib/glassMotion";
 
+/** Which dealership a newly-added vehicle belongs to — must stay in sync
+ *  with DEALER_SLUG_TO_ID in server.ts (that's what the public website feed
+ *  filters on) and with each dealer's own site slug (?dealer=...). */
+const DEALERSHIPS = [
+  { id: "d1", name: "MKR Auto Sales" },
+  { id: "d2", name: "Cars on Caledon" },
+];
+
 export default function App() {
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
@@ -249,7 +257,7 @@ export default function App() {
   const [newAgreementForm, setNewAgreementForm] = useState({ leadId: "", vehicleId: "", purchasePrice: 0, depositAmount: 50000, type: "Vehicle Sale" as any, status: "Pending Signature" as any });
   const [newTaskForm, setNewTaskForm] = useState({ title: "", leadId: "", vehicleId: "", assignedUserId: "u1", dueDate: new Date().toISOString().slice(0, 10), priority: "Normal" as any, status: "Pending" as any });
   const [newUserForm, setNewUserForm] = useState({ name: "", email: "", role: "salesperson" as any, phone: "" });
-  const [newVehicleForm, setNewVehicleForm] = useState({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel" as any, transmission: "Automatic" as any, bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit." });
+  const [newVehicleForm, setNewVehicleForm] = useState({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel" as any, transmission: "Automatic" as any, bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: "d1" });
 
   const [vinInput, setVinInput] = useState("");
   const [vinDecoding, setVinDecoding] = useState(false);
@@ -632,6 +640,7 @@ export default function App() {
       mileage: 15300,
       stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000),
       description: "Immaculate condition. Full service history. Active info display cockpit.",
+      dealershipId: "d1",
     });
     loadAllState();
     if (confirm("Stock created. Open TruLens now to shoot this unit?")) {
@@ -1390,6 +1399,21 @@ export default function App() {
             <div className="card max-w-[700px] mx-auto w-full">
               <div className="card-body p-6 flex flex-col gap-4">
                 <form onSubmit={handlePublishVehicle} className="flex flex-col gap-4">
+                  {/* Dealership — which dealer site this stock belongs to */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Dealership</label>
+                    <select
+                      value={newVehicleForm.dealershipId}
+                      onChange={(e) => setNewVehicleForm((p) => ({ ...p, dealershipId: e.target.value }))}
+                      className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                    >
+                      {DEALERSHIPS.map((d) => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                    <p className="text-[9px] text-[#9DB0C6] mt-0.5">This stock will only appear on this dealer's own website and inventory.</p>
+                  </div>
+
                   {/* Specification grid panel */}
                   <div className="bg-[#15C7C0]/5 border border-[#15C7C0]/15 rounded-xl p-4 flex flex-col gap-3">
                     <span className="text-[10px] font-bold font-mono tracking-wider uppercase text-[#15C7C0]">Showroom Vehicle Specifications</span>

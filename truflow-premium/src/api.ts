@@ -194,6 +194,23 @@ export async function updateSettings(settings: Partial<DMSState['settings']>): P
 }
 
 export async function createVehicle(vehicle: Partial<Vehicle>): Promise<Vehicle> {
+  // Persist to server first — a local-only push here used to get silently
+  // wiped by the very next fetchState() (server truth wins), so vehicles
+  // added via this form never actually survived a refresh.
+  try {
+    const res = await fetch("/api/inventory", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(vehicle),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.vehicle) return body.vehicle as Vehicle;
+    }
+  } catch (err) {
+    console.warn("createVehicle server failed, local fallback", err);
+  }
+
   const newV = { ...vehicle, id: 'v' + Date.now(), status: vehicle.status || 'INVENTORY' } as Vehicle;
   await updateState(s => s.vehicles.push(newV));
   return newV;

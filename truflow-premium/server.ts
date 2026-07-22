@@ -281,7 +281,8 @@ app.post("/api/inventory", (req, res) => {
     bodyType: req.body.bodyType || "",
     engine: req.body.engine || "",
     images: req.body.images || [],
-    reconTasks: req.body.reconTasks || []
+    reconTasks: req.body.reconTasks || [],
+    dealershipId: req.body.dealershipId || undefined
   };
 
   state.vehicles.unshift(newVehicle);
