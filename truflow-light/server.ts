@@ -973,8 +973,32 @@ function isJunkPublicVehicle(v: any): boolean {
   return false;
 }
 
+/** Maps a dealer website's ?dealer= slug to the internal dealershipId that
+ *  tags its vehicles. Untagged (legacy) vehicles belong to the FIRST entry
+ *  here so existing pilot sites keep working unchanged.
+ *  Add a line here whenever a new dealer site goes live on this instance. */
+const DEALER_SLUG_TO_ID: Record<string, string> = {
+  "mkr-autosales": "d1",
+  "cars-on-caledon": "d2",
+};
+const DEFAULT_DEALERSHIP_ID = "d1";
+// Slugs that intentionally see the FULL cross-dealer catalogue (the True-Cars
+// consumer showroom aggregates every dealer on this instance — not a leak).
+const AGGREGATE_SLUGS = new Set(["true-cars", "demo"]);
+
 function buildPublicStock(state: any, dealerSlug: string) {
-  const vehicles = (state.vehicles || [])
+  // A named single-dealer site must only ever see ITS OWN stock. A slug with
+  // no mapping and not an aggregate view gets an empty result rather than
+  // leaking another dealer's inventory (was previously returning everything
+  // to everyone regardless of the ?dealer= value).
+  const wantedId = DEALER_SLUG_TO_ID[dealerSlug];
+  const rawVehicles = state.vehicles || [];
+  const scoped = wantedId
+    ? rawVehicles.filter((v: any) => (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId)
+    : AGGREGATE_SLUGS.has(dealerSlug)
+    ? rawVehicles
+    : [];
+  const vehicles = scoped
     .map((v: any) => toPublicVehicle(v, "lite"))
     .filter(Boolean)
     .filter((v: any) => !isJunkPublicVehicle(v));
