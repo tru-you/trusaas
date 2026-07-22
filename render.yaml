@@ -3,8 +3,10 @@
 #
 # Deploy these three:
 #   trusaas-lens.onrender.com     → TruLens          (TruLens/)
+#   trusaas-inspect.onrender.com  → TruInspect       (truinspect)
 #   trusaas-flow.onrender.com     → TruFlow Lite     (truflow-light)
 #   trusaas-premium.onrender.com  → TruFlow Premium  (truflow-premium)
+#   trusaas-live.onrender.com     → TruLive          (trulive)  → live.tru-saas.com
 #
 # STABILITY (see STABILITY.md):
 #   - Services are on paid starter plan → always-on, no spin-down. Do NOT
@@ -71,6 +73,25 @@ services:
         value: production
       - key: GEMINI_API_KEY
         sync: false
+
+  # ── 2b. TruLive — live guided vehicle walkaround (WebRTC, no app for buyer) ─
+  - type: web
+    name: trusaas-live
+    runtime: node
+    plan: starter
+    rootDir: trulive
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # AI walkthrough summary (Claude). Optional — falls back to a structured
+      # local summary if unset. Set the key in the Render dashboard.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TRULIVE_MODEL
+        value: claude-sonnet-5
 
   # ── 3. TruFlow Premium — full DMS / media / recon ─────────────────────────
   - type: web
