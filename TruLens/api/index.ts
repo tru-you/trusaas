@@ -104,7 +104,7 @@ app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
 app.post('/api/export/dms', authenticate, async (req: any, res) => {
   try {
     const userId = req.user.uid;
-    const { vehicleId, dmsUrl: dmsUrlOverride, createIfMissing = true } = req.body || {};
+    const { vehicleId, dmsUrl: dmsUrlOverride, dealerSlug, createIfMissing = true } = req.body || {};
     if (!vehicleId) return res.status(400).json({ error: 'vehicleId is required' });
 
     const docRef = fdb.collection('vehicles').doc(vehicleId);
@@ -125,6 +125,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       stockNumber: vehicle.stockNumber,
       vehicleId: vehicle.id,
       createIfMissing: createIfMissing !== false,
+      dealerSlug: dealerSlug || undefined,
       vehicle: {
         id: vehicle.id,
         make: vehicle.make,

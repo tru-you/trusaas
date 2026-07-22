@@ -136,6 +136,13 @@ export default function InventoryList({
   const [branch, setBranch] = React.useState(
     () => localStorage.getItem('trulens_dealer_branch') || 'Johannesburg Central'
   );
+  /** Which dealership newly-exported vehicles get tagged to in the DMS —
+      must match a slug the DMS's public website feed knows how to isolate.
+      A phone used on Caledon's floor should be set to "cars-on-caledon" so
+      captures never default to (and leak onto) MKR's site. */
+  const [dealerSlug, setDealerSlug] = React.useState(
+    () => localStorage.getItem('trulens_dealer_slug') || 'mkr-autosales'
+  );
   const [dealerWhatsApp, setDealerWhatsApp] = React.useState(
     () => localStorage.getItem('trulens_dealer_wa') || ''
   );
@@ -1126,12 +1133,26 @@ export default function InventoryList({
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[9px] text-neutral-500 uppercase font-bold">Active Branch</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
                     className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                   />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] text-neutral-500 uppercase font-bold">Dealership (DMS tagging)</label>
+                  <select
+                    value={dealerSlug}
+                    onChange={(e) => setDealerSlug(e.target.value)}
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="mkr-autosales">MKR Auto Sales</option>
+                    <option value="cars-on-caledon">Cars on Caledon</option>
+                  </select>
+                  <p className="text-[9px] text-neutral-600 leading-relaxed">
+                    This phone's captures export to the DMS tagged to this dealer — keeps every dealer's stock on their own website only.
+                  </p>
                 </div>
               </div>
             </div>
@@ -1293,6 +1314,7 @@ export default function InventoryList({
                 onClick={() => {
                   localStorage.setItem('trulens_dealer_name', dealershipName);
                   localStorage.setItem('trulens_dealer_branch', branch);
+                  localStorage.setItem('trulens_dealer_slug', dealerSlug);
                   localStorage.setItem('trulens_dealer_wa', dealerWhatsApp);
                   localStorage.setItem('trulens_currency', currency);
                   localStorage.setItem('trulens_ai_threshold', String(aiThreshold));

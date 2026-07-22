@@ -818,6 +818,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
     const {
       vehicleId,
       dmsUrl: dmsUrlOverride,
+      dealerSlug,
       createIfMissing = true,
     } = req.body || {};
 
@@ -849,6 +850,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       stockNumber: vehicle.stockNumber,
       vehicleId: vehicle.id,
       createIfMissing: createIfMissing !== false,
+      dealerSlug: dealerSlug || undefined,
       vehicle: {
         id: vehicle.id,
         make: vehicle.make,

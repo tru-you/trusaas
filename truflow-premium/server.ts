@@ -1049,6 +1049,7 @@ app.post("/api/sync/push-photos", (req, res) => {
       stockNumber,
       vehicleId,
       createIfMissing = true,
+      dealerSlug,
       vehicle: vehicleMeta = {},
       photos = {},
     } = req.body || {};
@@ -1122,6 +1123,10 @@ app.post("/api/sync/push-photos", (req, res) => {
         lastPhotoSync: new Date().toISOString(),
         reconTasks: [],
         source: "trulens",
+        // Tag to the dealer whose phone captured this — keeps it off every
+        // other dealer's website. Unrecognized/missing slug = untagged,
+        // which the public feed treats as the original pilot dealer (MKR).
+        dealershipId: DEALER_SLUG_TO_ID[dealerSlug] || undefined,
       };
 
       state.vehicles.unshift(newVehicle);

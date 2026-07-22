@@ -246,6 +246,9 @@ export default function App() {
       const dmsUrl =
         localStorage.getItem('trulens_dms_url') ||
         undefined;
+      const dealerSlug =
+        localStorage.getItem('trulens_dealer_slug') ||
+        undefined;
 
       const res = await fetch('/api/export/dms', {
         method: 'POST',
@@ -256,6 +259,7 @@ export default function App() {
         body: JSON.stringify({
           vehicleId: vehicle.id,
           dmsUrl: dmsUrl || undefined,
+          dealerSlug: dealerSlug || undefined,
           createIfMissing: true,
         }),
       });
