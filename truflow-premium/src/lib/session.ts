@@ -55,6 +55,19 @@ export function clearSession() {
   }
 }
 
+/** Enter the sandbox demo — no code. Lands in an isolated tenant seeded with
+ *  sample stock and leads, so a prospect never sees a real dealership. */
+export async function enterDemo(): Promise<Account> {
+  const res = await fetch("/api/auth/demo", { method: "POST" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || "Demo is unavailable right now.");
+  try {
+    localStorage.setItem(TOKEN_KEY, data.token);
+    localStorage.setItem(ACCOUNT_KEY, JSON.stringify(data.account));
+  } catch { /* ignore */ }
+  return data.account as Account;
+}
+
 /** Exchange an access code for a session token. Throws with a readable
  *  message on a bad code so the login screen can show it as-is. */
 export async function login(code: string, remember = true): Promise<Account> {

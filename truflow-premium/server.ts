@@ -254,6 +254,7 @@ function isPublicPath(p: string): boolean {
   return (
     p === "/api/health" ||
     p === "/api/auth/login" ||
+    p === "/api/auth/demo" ||   // the way in for a prospect — must be reachable
     p.startsWith("/api/public/") ||
     p.startsWith("/api/feed/") ||
     p.startsWith("/api/widget/") ||
@@ -518,6 +519,75 @@ app.post("/api/auth/codes/admin", (req: any, res) => {
   res.json({ ok: true, token: signToken(admin, true) });
 });
 
+
+/* ── Demo tenant ────────────────────────────────────────────────────────────
+   A prospect needs to see the product without a code and without ever touching
+   a real dealership's data. The demo is a normal tenant (dealershipId "demo"),
+   so every existing scope check isolates it for free — no special-cased reads.
+   Its data is seeded on first entry and can be reset without affecting anyone. */
+
+const DEMO_ENABLED = process.env.DEMO_MODE !== "0"; // on unless explicitly disabled
+
+function seedDemoTenant() {
+  const state = readState();
+  if (state.vehicles.some((v: any) => v.dealershipId === "demo")) return; // already seeded
+  const today = new Date().toISOString().slice(0, 10);
+  const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+
+  const cars = [
+    { make: "Toyota", model: "Hilux", trim: "2.4 GD-6 SRX", year: 2020, cost: 318000, retail: 379900, km: 112000, age: 12, body: "Bakkie" },
+    { make: "Volkswagen", model: "Polo", trim: "1.0 TSI Comfortline", year: 2021, cost: 228000, retail: 269900, km: 52300, age: 41, body: "Hatchback" },
+    { make: "Ford", model: "EcoSport", trim: "1.5 Ambiente", year: 2018, cost: 172000, retail: 199900, km: 96800, age: 74, body: "SUV" },
+  ];
+  cars.forEach((c, i) => {
+    state.vehicles.unshift({
+      id: "demo_v" + (i + 1), year: c.year, make: c.make, model: c.model, trim: c.trim,
+      status: "INVENTORY", retailPrice: c.retail, costPrice: c.cost, mileage: c.km,
+      transmission: "Manual", fuelType: i === 0 ? "Diesel" : "Petrol",
+      stockNumber: "DEMO-" + (100 + i), dateAcquired: daysAgo(c.age), daysInInventory: c.age,
+      description: `${c.year} ${c.make} ${c.model} — sample stock for the demo.`,
+      bodyType: c.body, images: [], reconTasks: i === 1 ? [{ id: "demo_r1", name: "Valet & polish", cost: 1800, status: "Completed", dateAdded: today }] : [],
+      dealershipId: "demo",
+    } as any);
+  });
+
+  state.leads.unshift({
+    id: "demo_l1", firstName: "Sipho", lastName: "Ndlovu", phone: "079 000 0001",
+    email: "sipho@example.co.za", vehicleId: "demo_v1", source: "Website", status: "New",
+    assignedUserId: "u1", createdAt: today, lastContactedAt: null, digitalScore: 82,
+    notes: "Asked about finance on the Hilux.", nextAction: "First contact", nextActionAt: today,
+    stageChangedAt: today, dealershipId: "demo",
+  } as any);
+  state.leads.unshift({
+    id: "demo_l2", firstName: "Annelie", lastName: "Botha", phone: "082 000 0002",
+    email: "annelie@example.co.za", vehicleId: "demo_v2", source: "Walk-in", status: "Contacted",
+    assignedUserId: "u1", createdAt: daysAgo(9), lastContactedAt: daysAgo(9), digitalScore: 64,
+    notes: "Wants a trade-in valuation.", nextAction: "Follow up", nextActionAt: daysAgo(4),
+    stageChangedAt: daysAgo(9), dealershipId: "demo",
+  } as any);
+
+  writeState(state);
+}
+
+/** Enter the demo. No code — that is the point. */
+app.post("/api/auth/demo", (_req, res) => {
+  if (!DEMO_ENABLED) return res.status(404).json({ error: "Demo is disabled on this instance." });
+  seedDemoTenant();
+  const store = ensureAuthStore();
+  let acc = store.accounts.find((a) => a.dealershipId === "demo");
+  if (!acc) {
+    const made = makeAccount("Demo Dealership", "principal", "demo");
+    acc = made.account;
+    store.accounts.push(acc);
+    writeAuth(store);
+  }
+  res.json({
+    token: signToken(acc, false), // short session — a demo shouldn't linger for 30 days
+    demo: true,
+    account: { label: "Demo Dealership", role: "principal", dealershipId: "demo", demo: true },
+  });
+});
+
 app.get("/api/auth/codes", (req: any, res) => {
   if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
   // Codes themselves are unrecoverable — this lists who has one.
@@ -536,7 +606,8 @@ const DEFAULT_MOCK_STATE = {
   // on their own website only.
   dealerships: [
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrautosales.co.za' },
-    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://carsoncaledon.co.za' }
+    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://carsoncaledon.co.za' },
+    { id: 'demo', name: 'Demo Dealership', location: 'Sandbox', slug: 'demo', websiteUrl: 'https://tru-saas.com' }
   ],
   vehicles: [
     { 
@@ -823,8 +894,11 @@ app.post("/api/inventory", (req, res) => {
     // know the dealer by their site (TruLens, widgets, integrations) would
     // otherwise post untagged stock, which the public feed hands to the
     // default dealer's website instead of theirs.
+    // Falls back to the session, like every other create. Without this a dealer
+    // adding a car by hand got it filed to the default dealership and it
+    // vanished from their own stock list.
     dealershipId:
-      req.body.dealershipId || DEALER_SLUG_TO_ID[req.body.dealerSlug] || undefined,
+      req.body.dealershipId || DEALER_SLUG_TO_ID[req.body.dealerSlug] || ownerDealership(req),
     // Showroom tier. Left unset when not supplied so the website falls back to
     // its own heuristic rather than defaulting everything into one category.
     category: CATEGORY_VALUES.includes(req.body.category) ? req.body.category : undefined,
@@ -1844,6 +1918,10 @@ function writePortals(portals: Portal[]) {
 const DEALER_SLUG_TO_ID: Record<string, string> = {
   "mkr-autosales": "d1",
   "cars-on-caledon": "d2",
+  // A sandbox tenant for demos and the website "try it" link. Isolated by the
+  // same dealership scoping that keeps real dealers apart, so a prospect can
+  // never see or touch live stock.
+  "demo": "demo",
 };
 const DEFAULT_DEALERSHIP_ID = "d1";
 
@@ -1907,7 +1985,11 @@ function isJunkPublicVehicle(v: any): boolean {
 
 // Slugs that intentionally see the FULL cross-dealer catalogue (the True-Cars
 // consumer showroom aggregates every dealer on this instance — not a leak).
-const AGGREGATE_SLUGS = new Set(["true-cars", "demo"]);
+/* Only the True-Cars consumer showroom aggregates every dealer. "demo" used to
+   be in here too, which meant ?dealer=demo returned every dealership's stock in
+   one public response under a guessable slug — a real leak once there is more
+   than one dealer. It is now an isolated tenant like any other. */
+const AGGREGATE_SLUGS = new Set(["true-cars"]);
 
 function buildPublicStock(state: any, dealerSlug: string, source: string) {
   // A named single-dealer site must only ever see ITS OWN stock. A slug with

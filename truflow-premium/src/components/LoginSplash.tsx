@@ -2,13 +2,14 @@ import logo from "../assets/truflow-logo.png";
 import React, { useState } from 'react';
 import { Lock, ExternalLink } from 'lucide-react';
 import { TRUE_CARS_URL, TRUESAAS_URL } from '../lib/ecosystem';
-import { login } from '../lib/session';
+import { login, enterDemo } from '../lib/session';
 
 export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [remember, setRemember] = useState(true);
+  const [demoBusy, setDemoBusy] = useState(false);
 
   // The code is checked by the server, which hands back a session token.
   // Nothing here can authorise anything on its own.
@@ -71,6 +72,20 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
             {busy ? 'Checking…' : 'Enter'}
           </button>
         </form>
+
+        <button
+          type="button"
+          disabled={demoBusy}
+          onClick={async () => {
+            setDemoBusy(true); setError('');
+            try { await enterDemo(); onLogin(); }
+            catch (err: any) { setError(err?.message || 'Demo is unavailable right now.'); }
+            finally { setDemoBusy(false); }
+          }}
+          className="mt-3 w-full py-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:border-[#4FE3DC]/40 transition-colors disabled:opacity-60"
+        >
+          {demoBusy ? 'Opening demo…' : 'Explore the demo — no login needed'}
+        </button>
 
         <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center gap-2">
           <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[#67E8F9] hover:underline inline-flex items-center gap-1">
