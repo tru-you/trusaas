@@ -23,7 +23,8 @@ function truchat_sanitize($input) {
     $out = array();
     $text_keys = array('api_key', 'model', 'dealer_name', 'address', 'website', 'hours',
         'sales_whatsapp', 'brand_color', 'from_email', 'dealer_email', 'stock_api',
-        'stock_api_fallback', 'enabled', 'greeting', 'portal_pin', 'logo_url', 'brand_line');
+        'stock_api_fallback', 'enabled', 'greeting', 'portal_pin', 'logo_url', 'brand_line',
+        'behind_proxy', 'daily_api_cap');
     foreach ($text_keys as $k) {
         if (isset($input[$k])) $out[$k] = sanitize_text_field($input[$k]);
     }
@@ -147,6 +148,8 @@ function truchat_settings_page() {
                     <p class="description">All captured leads, viewable here in the admin.</p>
                 </td></tr>
                 <?php
+                truchat_field('daily_api_cap', 'Daily AI message cap', 'text', '500', 'Hard ceiling on paid API calls per day across all visitors — protects you from a scraper or a bad week running up the bill. The chatbot still answers from its knowledge base and offers WhatsApp once the cap is reached. <code>0</code> removes the ceiling.');
+                truchat_field('behind_proxy', 'Site is behind Cloudflare / a proxy', 'text', '', 'Enter <code>1</code> only if this site really sits behind Cloudflare or another reverse proxy. It tells the rate limiter to read the forwarded-IP header. Leave blank otherwise — visitors can set that header themselves, which would let them slip the rate limit.');
                 truchat_field('portal_pin', 'Standalone portal PIN', 'text', '', 'Set a PIN to enable the mobile-friendly <code>portal.html</code> (open it on any device, no WordPress login). Leave blank to disable it. Endpoint: <code>' . esc_html(rest_url('truchat/v1/leads')) . '</code>');
                 ?>
             </table>

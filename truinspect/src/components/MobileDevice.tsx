@@ -45,14 +45,14 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
   // ── Real phone / PWA: full screen ─────────────────────────────────
   if (nativeMode) {
     return (
-      <div className="relative flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-neutral-950 text-white font-sans select-none overflow-hidden">
+      <div className="relative flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-neutral-950 text-[#E8EAE6] font-sans select-none overflow-hidden">
         {/* Thin status strip only when not installed (browser chrome already there when not standalone) */}
         {!isStandaloneDisplay() && (
-          <div className="h-10 shrink-0 bg-neutral-950 text-white px-4 flex items-center justify-between text-[12px] font-semibold tracking-wider border-b border-neutral-900">
+          <div className="h-10 shrink-0 bg-neutral-950 text-[#E8EAE6] px-4 flex items-center justify-between text-[12px] font-semibold tracking-wider border-b border-neutral-900">
             <span className="text-neutral-300">TruInspect</span>
             <div className="flex items-center gap-2 text-neutral-400">
               <Wifi size={13} className="text-indigo-400" />
-              <span className="text-[11px]">Yard mode</span>
+              <span className="text-[13px]">Yard mode</span>
             </div>
           </div>
         )}
@@ -78,7 +78,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
           <div className="w-1.5 h-1.5 rounded-full bg-neutral-900"></div>
         </div>
 
-        <div className="absolute top-6.5 left-1/2 -translate-x-1/2 w-32 h-6.5 rounded-full z-50 pointer-events-none bg-gradient-to-r from-blue-500/10 via-transparent to-purple-500/10 opacity-30"></div>
+        <div className="absolute top-6.5 left-1/2 -translate-x-1/2 w-32 h-6.5 rounded-full z-50 pointer-events-none bg-gradient-to-r from-blue-500/10 via-transparent to-cyan-500/10 opacity-30"></div>
 
         <div className="absolute top-28 -left-1 w-1 h-12 bg-neutral-800 rounded-r-md border-r border-neutral-700"></div>
         <div className="absolute top-44 -left-1 w-1 h-16 bg-neutral-800 rounded-r-md border-r border-neutral-700"></div>
@@ -86,11 +86,11 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
         <div className="absolute top-36 -right-1 w-1 h-16 bg-neutral-800 rounded-l-md border-l border-neutral-700"></div>
 
         <div className="relative w-full h-full bg-neutral-950 rounded-[40px] overflow-hidden flex flex-col border border-neutral-800 shadow-2xl">
-          <div className="h-12 bg-neutral-950 text-white px-7 flex items-center justify-between text-[11px] font-semibold tracking-wider z-40 shrink-0">
+          <div className="h-12 bg-neutral-950 text-[#E8EAE6] px-7 flex items-center justify-between text-[13px] font-semibold tracking-wider z-40 shrink-0">
             <span className="text-neutral-200">{time}</span>
             <div className="flex items-center gap-1.5 text-neutral-300">
               <Signal size={12} className="text-neutral-400" />
-              <span className="text-[10px] text-neutral-400 font-bold">5G</span>
+              <span className="text-[13px] text-neutral-400 font-bold">5G</span>
               <Wifi size={12} className="text-indigo-400" />
               <Battery size={14} className="text-emerald-400 fill-emerald-500/20" />
             </div>

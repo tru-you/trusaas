@@ -46,9 +46,9 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
   };
 
   return (
-    <div className="flex flex-col h-full bg-neutral-950 text-neutral-100 overflow-hidden">
+    <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       {/* Header */}
-      <div className="tl-glass p-4 border-b border-violet-500/20 flex items-center justify-between shrink-0">
+      <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
           <button onClick={() => handleSave(true)} className="p-1.5 -ml-1 rounded-lg hover:bg-white/5" aria-label="Back">
             <ArrowLeft size={18} />
@@ -57,14 +57,14 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
             <h1 className="text-sm font-bold tracking-tight flex items-center gap-1.5 font-display">
               <ClipboardList size={15} className="text-cyan-400" /> Inspection checklist
             </h1>
-            <p className="text-[10px] text-neutral-400">
+            <p className="text-[13px] text-neutral-400">
               {vehicle.year} {vehicle.make} {vehicle.model} · {vehicle.stockNumber}
             </p>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[10px] font-bold text-neutral-300">{answered}/{totalItems} answered</div>
-          <div className={`text-[10px] font-bold ${flagged ? 'text-amber-400' : 'text-emerald-400'}`}>
+          <div className="text-[13px] font-bold text-neutral-300">{answered}/{totalItems} answered</div>
+          <div className={`text-[13px] font-bold ${flagged ? 'text-amber-400' : 'text-emerald-400'}`}>
             {flagged ? `${flagged} flagged for report` : 'Nothing flagged'}
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
       <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
         {INSPECTION_CHECKLIST.map(section => (
           <div key={section.section}>
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 mb-2">
+            <h2 className="text-[13px] font-semibold  tracking-[0.2em] text-cyan-400 mb-2">
               {section.section}
             </h2>
             <div className="space-y-2">
@@ -108,7 +108,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
                           key={opt.value}
                           type="button"
                           onClick={() => setAnswer(item.id, opt.value)}
-                          className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border transition-colors ${
+                          className={`flex-1 py-1.5 rounded-lg text-[13px] font-semibold tracking-normal border transition-colors ${
                             a?.answer === opt.value
                               ? opt.value === item.flagWhen
                                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
@@ -126,7 +126,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
                         value={a?.note || ''}
                         onChange={e => setNote(item.id, e.target.value)}
                         placeholder="Add detail for the report (what / where / size)…"
-                        className="mt-2 w-full px-3 py-2 bg-neutral-950/80 border border-amber-500/25 rounded-lg text-[11px] text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-amber-400/50"
+                        className="mt-2 w-full px-3 py-2 bg-neutral-950/80 border border-amber-500/25 rounded-lg text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-amber-400/50"
                       />
                     )}
                   </div>
@@ -143,7 +143,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
           type="button"
           onClick={() => handleSave(false)}
           disabled={saving}
-          className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#E8EAE6] text-[13px] font-semibold  tracking-widest flex items-center justify-center gap-2 disabled:opacity-60"
         >
           <Save size={14} />
           {saving ? 'Saving…' : savedFlash ? 'Saved ✓' : 'Save checklist'}

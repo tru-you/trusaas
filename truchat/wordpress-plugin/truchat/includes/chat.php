@@ -213,6 +213,12 @@ function truchat_anthropic($messages, $system, $tools) {
     $key = truchat_opt('api_key', '');
     if (!$key) return new WP_Error('no_key', 'Missing API key');
 
+    // Day's spend ceiling. The knowledge base still answers, and the widget
+    // falls back to WhatsApp, so hitting this degrades rather than breaks.
+    if (!truchat_api_budget_ok()) {
+        return new WP_Error('budget', 'Daily API budget reached');
+    }
+
     $res = wp_remote_post('https://api.anthropic.com/v1/messages', array(
         'timeout' => 45,
         'headers' => array(

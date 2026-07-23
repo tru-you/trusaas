@@ -1,62 +1,227 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import "./brand.css";
 @import "tailwindcss";
 
 @theme {
+  /* Chromatic ramps collapsed to the brand: anything that meant good,
+     active or informational becomes cyan; warnings lose the yellow and read
+     as de-emphasised text; one muted red survives for destructive actions. */
+  --color-emerald-50: #EAFBFA;
+  --color-emerald-100: #CFF6F3;
+  --color-emerald-200: #A8EFEA;
+  --color-emerald-300: #7FF0EA;
+  --color-emerald-400: #4FE3DC;
+  --color-emerald-500: #4FE3DC;
+  --color-emerald-600: #3ECFC8;
+  --color-emerald-700: #2FB3AD;
+  --color-emerald-800: #22807C;
+  --color-emerald-900: #175A57;
+  --color-emerald-950: #0C302E;
+  --color-green-50: #EAFBFA;
+  --color-green-100: #CFF6F3;
+  --color-green-200: #A8EFEA;
+  --color-green-300: #7FF0EA;
+  --color-green-400: #4FE3DC;
+  --color-green-500: #4FE3DC;
+  --color-green-600: #3ECFC8;
+  --color-green-700: #2FB3AD;
+  --color-green-800: #22807C;
+  --color-green-900: #175A57;
+  --color-green-950: #0C302E;
+  --color-lime-50: #EAFBFA;
+  --color-lime-100: #CFF6F3;
+  --color-lime-200: #A8EFEA;
+  --color-lime-300: #7FF0EA;
+  --color-lime-400: #4FE3DC;
+  --color-lime-500: #4FE3DC;
+  --color-lime-600: #3ECFC8;
+  --color-lime-700: #2FB3AD;
+  --color-lime-800: #22807C;
+  --color-lime-900: #175A57;
+  --color-lime-950: #0C302E;
+  --color-teal-50: #EAFBFA;
+  --color-teal-100: #CFF6F3;
+  --color-teal-200: #A8EFEA;
+  --color-teal-300: #7FF0EA;
+  --color-teal-400: #4FE3DC;
+  --color-teal-500: #4FE3DC;
+  --color-teal-600: #3ECFC8;
+  --color-teal-700: #2FB3AD;
+  --color-teal-800: #22807C;
+  --color-teal-900: #175A57;
+  --color-teal-950: #0C302E;
+  --color-sky-50: #EAF2FE;
+  --color-sky-100: #D2E4FD;
+  --color-sky-200: #A8CAFB;
+  --color-sky-300: #7DB0F9;
+  --color-sky-400: #4D9BFF;
+  --color-sky-500: #2B82F5;
+  --color-sky-600: #1466E0;
+  --color-sky-700: #1152B4;
+  --color-sky-800: #0D3E87;
+  --color-sky-900: #0A2C5F;
+  --color-sky-950: #061A3A;
+  --color-blue-50: #EAF2FE;
+  --color-blue-100: #D2E4FD;
+  --color-blue-200: #A8CAFB;
+  --color-blue-300: #7DB0F9;
+  --color-blue-400: #4D9BFF;
+  --color-blue-500: #2B82F5;
+  --color-blue-600: #1466E0;
+  --color-blue-700: #1152B4;
+  --color-blue-800: #0D3E87;
+  --color-blue-900: #0A2C5F;
+  --color-blue-950: #061A3A;
+  --color-cyan-50: #EAFBFA;
+  --color-cyan-100: #CFF6F3;
+  --color-cyan-200: #A8EFEA;
+  --color-cyan-300: #7FF0EA;
+  --color-cyan-400: #4FE3DC;
+  --color-cyan-500: #4FE3DC;
+  --color-cyan-600: #3ECFC8;
+  --color-cyan-700: #2FB3AD;
+  --color-cyan-800: #22807C;
+  --color-cyan-900: #175A57;
+  --color-cyan-950: #0C302E;
+  --color-violet-50: #EAFBFA;
+  --color-violet-100: #CFF6F3;
+  --color-violet-200: #A8EFEA;
+  --color-violet-700: #2FB3AD;
+  --color-violet-800: #22807C;
+  --color-fuchsia-50: #EAFBFA;
+  --color-fuchsia-100: #CFF6F3;
+  --color-fuchsia-200: #A8EFEA;
+  --color-fuchsia-300: #7FF0EA;
+  --color-fuchsia-400: #4FE3DC;
+  --color-fuchsia-500: #4FE3DC;
+  --color-fuchsia-600: #3ECFC8;
+  --color-fuchsia-700: #2FB3AD;
+  --color-fuchsia-800: #22807C;
+  --color-fuchsia-900: #175A57;
+  --color-fuchsia-950: #0C302E;
+  --color-pink-50: #EAFBFA;
+  --color-pink-100: #CFF6F3;
+  --color-pink-200: #A8EFEA;
+  --color-pink-300: #7FF0EA;
+  --color-pink-400: #4FE3DC;
+  --color-pink-500: #4FE3DC;
+  --color-pink-600: #3ECFC8;
+  --color-pink-700: #2FB3AD;
+  --color-pink-800: #22807C;
+  --color-pink-900: #175A57;
+  --color-pink-950: #0C302E;
+  --color-amber-50: #F2F3F0;
+  --color-amber-100: #E8EAE6;
+  --color-amber-200: #D6D9D3;
+  --color-amber-300: rgba(232,234,230,0.72);
+  --color-amber-400: rgba(232,234,230,0.72);
+  --color-amber-500: rgba(232,234,230,0.55);
+  --color-amber-600: rgba(232,234,230,0.45);
+  --color-amber-700: rgba(232,234,230,0.30);
+  --color-amber-800: rgba(232,234,230,0.18);
+  --color-amber-900: rgba(232,234,230,0.12);
+  --color-amber-950: rgba(232,234,230,0.08);
+  --color-yellow-50: #F2F3F0;
+  --color-yellow-100: #E8EAE6;
+  --color-yellow-200: #D6D9D3;
+  --color-yellow-300: rgba(232,234,230,0.72);
+  --color-yellow-400: rgba(232,234,230,0.72);
+  --color-yellow-500: rgba(232,234,230,0.55);
+  --color-yellow-600: rgba(232,234,230,0.45);
+  --color-yellow-700: rgba(232,234,230,0.30);
+  --color-yellow-800: rgba(232,234,230,0.18);
+  --color-yellow-900: rgba(232,234,230,0.12);
+  --color-yellow-950: rgba(232,234,230,0.08);
+  --color-orange-50: #F2F3F0;
+  --color-orange-100: #E8EAE6;
+  --color-orange-200: #D6D9D3;
+  --color-orange-300: rgba(232,234,230,0.72);
+  --color-orange-400: rgba(232,234,230,0.72);
+  --color-orange-500: rgba(232,234,230,0.55);
+  --color-orange-600: rgba(232,234,230,0.45);
+  --color-orange-700: rgba(232,234,230,0.30);
+  --color-orange-800: rgba(232,234,230,0.18);
+  --color-orange-900: rgba(232,234,230,0.12);
+  --color-orange-950: rgba(232,234,230,0.08);
+  --color-red-50: #F7EDED;
+  --color-red-100: #EED8D8;
+  --color-red-200: #DFB6B6;
+  --color-red-300: #CE9292;
+  --color-red-400: #C07676;
+  --color-red-500: #B86A6A;
+  --color-red-600: #A55C5C;
+  --color-red-700: #8A4A4A;
+  --color-red-800: #5E3232;
+  --color-red-900: #3D2222;
+  --color-red-950: #241414;
+  --color-rose-50: #F7EDED;
+  --color-rose-100: #EED8D8;
+  --color-rose-200: #DFB6B6;
+  --color-rose-300: #CE9292;
+  --color-rose-400: #C07676;
+  --color-rose-500: #B86A6A;
+  --color-rose-600: #A55C5C;
+  --color-rose-700: #8A4A4A;
+  --color-rose-800: #5E3232;
+  --color-rose-900: #3D2222;
+  --color-rose-950: #241414;
+
   /* TruSaaS rebrand: cyan accent — remap legacy indigo/purple/violet utilities */
   --color-indigo-50: #ecfeff; --color-indigo-100: #cffafe; --color-indigo-200: #a5f3fc;
   --color-indigo-300: #67e8f9; --color-indigo-400: #22d3ee; --color-indigo-500: #06b6d4;
   --color-indigo-600: #0891b2; --color-indigo-700: #0e7490; --color-indigo-800: #155e75;
   --color-indigo-900: #164e63; --color-indigo-950: #083344;
-  --color-purple-50: #f0f9ff; --color-purple-100: #e0f2fe; --color-purple-200: #bae6fd;
-  --color-purple-300: #7dd3fc; --color-purple-400: #38bdf8; --color-purple-500: #0ea5e9;
-  --color-purple-600: #0284c7; --color-purple-700: #0369a1; --color-purple-800: #075985;
-  --color-purple-900: #0c4a6e; --color-purple-950: #082f49;
-  --color-violet-300: #67e8f9; --color-violet-400: #22d3ee; --color-violet-500: #06b6d4;
-  --color-violet-600: #0891b2; --color-violet-900: #164e63; --color-violet-950: #083344;
+  --color-purple-50: #EAFBFA; --color-purple-100: #CFF6F3; --color-purple-200: #A8EFEA;
+  --color-purple-300: #7FF0EA; --color-purple-400: #4FE3DC; --color-purple-500: #4FE3DC;
+  --color-purple-600: #3ECFC8; --color-purple-700: #2FB3AD; --color-purple-800: #22807C;
+  --color-purple-900: #175A57; --color-purple-950: #0C302E;
+  --color-violet-300: #7FF0EA; --color-violet-400: #4FE3DC; --color-violet-500: #4FE3DC;
+  --color-violet-600: #3ECFC8; --color-violet-900: #175A57; --color-violet-950: #0C302E;
 
-  --font-sans: "Archivo", system-ui, sans-serif;
-  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-bg: #070d15;
-  --color-card: #0f1826;
-  --color-card-hover: #16212f;
-  --color-border-tc: rgba(126, 164, 214, 0.10);
-  --color-border-tc-hover: rgba(126, 164, 214, 0.22);
-  --color-primary-tc: #0891b2;
-  --color-primary-light-tc: #22d3ee;
-  --color-secondary-tc: #C9A24B;
-  --color-accent-tc: #15C7C0;
-  --color-teal-tc: #15C7C0;
-  --color-teal-bright-tc: #4FE3DC;
-  --color-gold-tc: #C9A24B;
-  --color-gold-light-tc: #E7CD84;
-  --color-text-tc: #E8EEF6;
-  --color-text-dim-tc: #9DB0C6;
-  --color-text-faint-tc: #5F7590;
-  --color-success-tc: #35C46B;
-  --color-warning-tc: #E7B24B;
-  --color-danger-tc: #F0555A;
-  --color-info-tc: #4D9BFF;
+  /* Legacy names kept so existing utility classes resolve — all now point at
+     the single brand palette in brand.css rather than four competing accents. */
+  --color-bg: #06080D;
+  --color-card: #0B0F17;
+  --color-card-hover: #121826;
+  --color-border-tc: rgba(232, 234, 230, 0.14);
+  --color-border-tc-hover: rgba(79, 227, 220, 0.35);
+  --color-primary-tc: #4FE3DC;
+  --color-primary-light-tc: #7FF0EA;
+  --color-secondary-tc: #4FE3DC;
+  --color-accent-tc: #4FE3DC;
+  --color-teal-tc: #4FE3DC;
+  --color-teal-bright-tc: #7FF0EA;
+  --color-gold-tc: #4FE3DC;
+  --color-gold-light-tc: #7FF0EA;
+  --color-text-tc: #E8EAE6;
+  --color-text-dim-tc: rgba(232, 234, 230, 0.72);
+  --color-text-faint-tc: rgba(232, 234, 230, 0.55);
+  --color-success-tc: #4ADE9B;
+  --color-warning-tc: #E8C468;
+  --color-danger-tc: #FF6B6B;
+  --color-info-tc: #4FE3DC;
 }
 
 :root {
-  --bg: #070d15;
-  --card: #0f1826;
-  --card-hover: #16212f;
-  --border: rgba(126,164,214,0.10);
-  --border-hover: rgba(126,164,214,0.22);
-  --primary: #1466E0;
-  --primary-light: #4D9BFF;
-  --secondary: #C9A24B;
-  --accent: #15C7C0;
-  --teal: #15C7C0;
-  --teal-bright: #4FE3DC;
-  --gold: #C9A24B;
-  --gold-light: #E7CD84;
-  --text: #E8EEF6;
-  --text-dim: #9DB0C6;
-  --text-faint: #5F7590;
+  --bg: #06080D;
+  --card: #0B0F17;
+  --card-hover: #121826;
+  --border: rgba(232,234,230,0.14);
+  --border-hover: rgba(79,227,220,0.35);
+  --primary: #4FE3DC;
+  --primary-light: #7FF0EA;
+  --secondary: #4FE3DC;
+  --accent: #4FE3DC;
+  --teal: #4FE3DC;
+  --teal-bright: #7FF0EA;
+  --gold: #4FE3DC;
+  --gold-light: #7FF0EA;
+  --text: #E8EAE6;
+  --text-dim: rgba(232, 234, 230, 0.72);
+  --text-faint: rgba(232, 234, 230, 0.55);
   --success: #35C46B;
   --success-bg: rgba(53,196,107,0.12);
   --warning: #E7B24B;
@@ -69,196 +234,92 @@
 }
 
 body {
-  font-family: var(--font-sans);
-  background: var(--bg);
-  color: var(--text);
+  font-family: var(--sans);
+  background: var(--ink);
+  color: var(--white);
   min-height: 100vh;
-  font-size: 13px;
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Background grid */
+/* Headings tighten as they grow, and stop at 600 — nothing here needs 900. */
+h1, h2, h3, h4 { font-weight: var(--w-semibold); color: var(--white); }
+h1 { font-size: var(--t-h1); letter-spacing: var(--track-h1); line-height: 1.1; }
+h2 { font-size: var(--t-h2); letter-spacing: var(--track-h2); line-height: 1.18; }
+h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; }
+
+/* A single faint cyan wash at the top. The grid plus four radial blobs it
+   replaced were doing a lot of work for no information. */
 .bg-grid {
   position: fixed;
   inset: 0;
-  background-image: linear-gradient(rgba(126,164,214,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(126,164,214,0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 0;
-}
-.bg-grid::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(80% 55% at 78% -5%, rgba(20,102,224,0.12), transparent 60%), radial-gradient(60% 45% at 12% 8%, rgba(21,199,192,0.07), transparent 62%);
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: -20%;
-  right: -10%;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(20,102,224,0.06), transparent 60%);
+  background: radial-gradient(70% 45% at 70% -10%, rgba(79,227,220,0.055), transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
 
-body::after {
-  content: '';
-  position: fixed;
-  bottom: -10%;
-  left: -5%;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(21,199,192,0.04), transparent 65%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ── Glassmorphism + soft 3D (Premium: violet edge) ───────── */
-.perspective-scene {
-  perspective: 1200px;
-  transform-style: preserve-3d;
-}
+/* ── Surfaces ────────────────────────────────────────────────────────────
+   The vocabulary is a lit top hairline and one soft shadow. What was here
+   before: two stacked gradients, a 22px backdrop blur, four shadows including
+   a teal glow, a radial spotlight tracking the cursor, a shine line across the
+   top edge, and 3D tilt on every card. Stacked depth effects are the loudest
+   signal of a generated interface — the holding site does none of it. */
+.perspective-scene { perspective: none; }
 
 .card, .v-card, .pipeline-card, .stat-card, .glass-panel {
-  --mx: 50%;
-  --my: 50%;
-  --rx: 0deg;
-  --ry: 0deg;
-  --tz: 0px;
   position: relative;
-  overflow: hidden;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,0.08) 0%, transparent 42%),
-    linear-gradient(160deg, rgba(15,24,38,0.60), rgba(10,16,28,0.6));
-  backdrop-filter: blur(22px) saturate(1.5);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  border: 1px solid rgba(21,199,192,0.14);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.07) inset,
-    0 0 0 1px rgba(0,0,0,0.25) inset,
-    0 18px 40px -24px rgba(0,0,0,0.75),
-    0 0 48px -26px rgba(21,199,192,0.30);
-  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(var(--tz));
-  transition:
-    border-color 0.25s ease,
-    box-shadow 0.25s ease,
-    transform 0.18s ease-out;
-  will-change: transform;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .card:hover, .v-card:hover, .stat-card:hover, .glass-panel:hover {
-  border-color: rgba(21,199,192,0.35);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.12) inset,
-    0 0 0 1px rgba(21,199,192,0.08) inset,
-    0 28px 50px -22px rgba(0,0,0,0.8),
-    0 0 52px -14px rgba(20,102,224,0.40);
-}
-
-.v-card, .stat-card, .tilt-3d {
-  transform-style: preserve-3d;
-}
-
-.card::before, .v-card::before, .pipeline-card::before, .stat-card::before, .glass-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(420px circle at var(--mx) var(--my), rgba(21,199,192,0.18), transparent 55%),
-    radial-gradient(280px circle at calc(var(--mx) + 12%) calc(var(--my) + 10%), rgba(20,102,224,0.12), transparent 50%);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.card:hover::before, .v-card:hover::before, .pipeline-card:hover::before,
-.stat-card:hover::before, .glass-panel:hover::before {
-  opacity: 1;
-}
-
-.card::after, .v-card::after, .stat-card::after {
-  content: '';
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  top: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0.75;
-}
-
-.card > *, .v-card > *, .stat-card > *, .glass-panel > * {
-  position: relative;
-  z-index: 1;
+  border-color: var(--cyan-soft);
+  box-shadow: var(--shadow-lift);
 }
 
 .glass-sidebar {
-  background: linear-gradient(180deg, rgba(18,12,32,0.9), rgba(7,13,21,0.94));
-  backdrop-filter: blur(28px) saturate(1.45);
-  -webkit-backdrop-filter: blur(28px) saturate(1.45);
-  border-right: 1px solid rgba(21,199,192,0.14) !important;
-  box-shadow: 8px 0 40px -18px rgba(88,28,135,0.45);
+  background: var(--ink-2);
+  border-right: 1px solid var(--glass-line) !important;
 }
 
 .glass-nav-item {
   transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 .glass-nav-item:hover {
-  transform: translateX(3px);
+  background: var(--glass);
 }
+/* Active state is a cyan hairline, not a 28px bloom. */
 .glass-nav-item.is-active {
-  box-shadow: 0 0 28px -8px rgba(20,102,224,0.65);
+  background: var(--cyan-faint);
+  box-shadow: inset 2px 0 0 var(--cyan);
 }
 
 .logo-float {
-  filter: drop-shadow(0 8px 22px rgba(20,102,224,0.40));
-  transition: transform 0.35s cubic-bezier(.22,1,.36,1), filter 0.35s ease;
+  transition: opacity 0.25s ease;
 }
 .logo-float:hover {
-  transform: translateY(-2px) scale(1.03);
-  filter: drop-shadow(0 14px 30px rgba(21,199,192,0.4));
+  opacity: 0.85;
 }
 
-/* Moulded, not flat: a lit top edge and a shaded underside so the button
-   reads as a physical surface. Background-agnostic — works over the blue,
-   teal and gold gradients used across Premium. */
+/* Primary is a cyan fill with ink text — cyan on white fails contrast, which
+   is why the holding site never does it. The four stacked inset/outset shadows
+   that used to mould these are gone. */
 .btn-primary {
-  position: relative;
-  overflow: hidden;
-  border-top: 1px solid rgba(255,255,255,0.28);
-  box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,0.45),
-    inset 0 -3px 7px rgba(0,18,38,0.45),
-    0 7px 20px -8px rgba(20,102,224,0.6),
-    0 14px 30px -14px rgba(0,0,0,0.8) !important;
-  transition: transform 0.12s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
+  background: var(--cyan) !important;
+  color: var(--ink) !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  font-weight: var(--w-semibold) !important;
+  transition: background 0.15s ease, transform 0.1s ease !important;
 }
-.btn-primary:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.06);
-  box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,0.55),
-    inset 0 -3px 7px rgba(0,18,38,0.4),
-    0 16px 34px -10px rgba(21,199,192,0.45),
-    0 18px 36px -16px rgba(0,0,0,0.8) !important;
-}
-.btn-primary:active {
-  transform: translateY(2px);
-  box-shadow:
-    inset 0 3px 8px rgba(0,18,38,0.6),
-    inset 0 -1px 0 rgba(255,255,255,0.22),
-    0 2px 6px -3px rgba(0,0,0,0.7) !important;
-}
+.btn-primary:hover { background: var(--cyan-bright) !important; }
+.btn-primary:active { transform: translateY(1px); }
 
 /* Scroll progress */
 .scroll-progress {
@@ -267,7 +328,7 @@ body::after {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--teal), var(--primary), var(--gold));
+  background: var(--cyan);
   transform-origin: left;
   z-index: 9999;
 }
@@ -297,7 +358,7 @@ body::after {
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-medium text-[13px] transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
 }
 
 @utility btn-primary {
@@ -309,11 +370,11 @@ body::after {
 }
 
 @utility btn-sm {
-  @apply px-3 py-1.5 text-[10px];
+  @apply px-4 py-2 text-[12px];
 }
 
 @utility btn-xs {
-  @apply px-2 py-1 text-[9px];
+  @apply px-3 py-1.5 text-[12px];
 }
 
 @utility btn-danger {
@@ -327,4 +388,46 @@ body::after {
 
 @utility animate-progress-shrink {
   animation: progress-shrink 10s linear forwards;
+}
+
+/* Text on a cyan (or any light) fill. Light-on-cyan fails contrast badly —
+   these read as ghosted. The text-shadow is a letterpress highlight: it lifts
+   the lettering off the fill without resorting to a drop shadow. */
+.on-fill,
+.btn-primary {
+  color: var(--ink) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
+  font-weight: var(--w-semibold);
+}
+.on-fill svg, .btn-primary svg {
+  color: var(--ink);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.30));
+}
+
+/* ── Keyboard focus ──────────────────────────────────────────────────────
+   196 buttons shipped with no visible focus ring, so tabbing through the app
+   gave no indication of position. :focus-visible (not :focus) means mouse
+   users never see it — only keyboard navigation. */
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+/* Skip the ring on a cyan fill — it disappears into the button. */
+.btn-primary:focus-visible,
+.on-fill:focus-visible {
+  outline-color: var(--white);
 }

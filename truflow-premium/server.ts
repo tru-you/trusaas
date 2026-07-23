@@ -731,9 +731,27 @@ app.put("/api/settings", (req, res) => {
   res.json(state.settings);
 });
 
-app.post("/api/state/reset", (req, res) => {
+/** Destroys EVERY dealership's data and restores the demo seed.
+ *
+ *  Harmless while state was ephemeral; since the Render disk landed this
+ *  permanently deletes real stock, leads, invoices and signed documents, with
+ *  no backup. It was reachable by any signed-in user, so one dealer could wipe
+ *  another's yard. Admin only, and it takes a typed confirmation. */
+app.post("/api/state/reset", (req: any, res) => {
+  if (req.auth?.role !== "admin") {
+    return res.status(403).json({
+      error: "Admin only",
+      message: "Resetting wipes every dealership on this instance.",
+    });
+  }
+  if (req.body?.confirm !== "RESET EVERYTHING") {
+    return res.status(400).json({
+      error: "Confirmation required",
+      message: 'Send { "confirm": "RESET EVERYTHING" } to proceed.',
+    });
+  }
   writeState(DEFAULT_MOCK_STATE);
-  res.json({ message: "Mock data reset completed successfully.", state: DEFAULT_MOCK_STATE });
+  res.json({ message: "All dealership data reset to the seed.", state: DEFAULT_MOCK_STATE });
 });
 
 // Inventory Feed (WordPress Plugin and external integrations)
@@ -870,6 +888,10 @@ app.post("/api/leads", (req: any, res) => {
     createdAt: new Date().toISOString().slice(0, 10),
     lastContactedAt: null,
     digitalScore: req.body.digitalScore || Math.floor(Math.random() * 41) + 50, // Auto scoring
+    // A new lead is due a first contact today — not "sometime".
+    nextAction: req.body.nextAction || "First contact",
+    nextActionAt: req.body.nextActionAt || new Date().toISOString().slice(0, 10),
+    stageChangedAt: new Date().toISOString().slice(0, 10),
     notes: req.body.notes || "Generated automatically from web widget.",
     journey: req.body.journey || [
       { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), action: "Web Form Submission", detail: "Completed Lead Contact Form" }
@@ -2118,6 +2140,9 @@ app.post("/api/integration/webhook-lead", (req, res) => {
       phone,
       email: email || "",
       status: "New Lead",
+      nextAction: "First contact",
+      nextActionAt: new Date().toISOString().slice(0, 10),
+      stageChangedAt: new Date().toISOString().slice(0, 10),
       digitalScore: Math.floor(Math.random() * 30) + 60, // Warm/Hot lead from web
       vehicleId: vehicleId || state.vehicles[0]?.id || "",
       source: "WordPress Plugin",

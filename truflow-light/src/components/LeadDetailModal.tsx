@@ -289,22 +289,22 @@ export default function LeadDetailModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-      <div className="bg-[#0f1826] border border-[rgba(126,164,214,0.22)] rounded-2xl w-full max-w-[720px] max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl relative font-sans animate-in zoom-in-95 duration-150">
+      <div className="bg-[#0B0F17] border border-[rgba(126,164,214,0.22)] rounded-2xl w-full max-w-[720px] max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl relative font-sans animate-in zoom-in-95 duration-150">
         
         {/* Border strip */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#15C7C0] via-[#1466E0] to-[#C9A24B]"></div>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#4FE3DC] via-[#4FE3DC] to-[#4FE3DC]"></div>
 
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-[rgba(126,164,214,0.1)]">
           <div>
-            <span className="text-[10px] font-bold text-[#15C7C0] uppercase tracking-widest font-mono">CRM Pipeline Lead Folder</span>
-            <h3 className="font-serif text-lg font-black text-[#E8EEF6] mt-0.5">
+            <span className="text-[13px] font-bold text-[#4FE3DC]  tracking-widest font-mono">CRM Pipeline Lead Folder</span>
+            <h3 className="font-serif text-lg font-semibold text-[#E8EAE6] mt-0.5">
               Customer File — {lead.firstName} {lead.lastName}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-[#9DB0C6] hover:text-[#E8EEF6] p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+            className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -318,8 +318,8 @@ export default function LeadDetailModal({
               onClick={() => setActiveTab("overview")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "overview"
-                  ? "text-[#E8EEF6] bg-[#1466E0]/15 border-b-2 border-[#15C7C0]"
-                  : "text-[#9DB0C6] hover:text-[#E8EEF6] hover:bg-white/5"
+                  ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
+                  : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
               }`}
             >
               Overview
@@ -328,8 +328,8 @@ export default function LeadDetailModal({
               onClick={() => setActiveTab("journey")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "journey"
-                  ? "text-[#E8EEF6] bg-[#1466E0]/15 border-b-2 border-[#15C7C0]"
-                  : "text-[#9DB0C6] hover:text-[#E8EEF6] hover:bg-white/5"
+                  ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
+                  : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
               }`}
             >
               Digital Journey Tracker
@@ -338,8 +338,8 @@ export default function LeadDetailModal({
               onClick={() => setActiveTab("comm")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "comm"
-                  ? "text-[#E8EEF6] bg-[#1466E0]/15 border-b-2 border-[#15C7C0]"
-                  : "text-[#9DB0C6] hover:text-[#E8EEF6] hover:bg-white/5"
+                  ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
+                  : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
               }`}
             >
               Automated Dispatches
@@ -348,8 +348,8 @@ export default function LeadDetailModal({
               onClick={() => setActiveTab("history")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "history"
-                  ? "text-[#E8EEF6] bg-[#1466E0]/15 border-b-2 border-[#15C7C0]"
-                  : "text-[#9DB0C6] hover:text-[#E8EEF6] hover:bg-white/5"
+                  ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
+                  : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
               }`}
             >
               System History logs
@@ -358,8 +358,8 @@ export default function LeadDetailModal({
               onClick={() => setActiveTab("tasks")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "tasks"
-                  ? "text-[#E8EEF6] bg-[#1466E0]/15 border-b-2 border-[#15C7C0]"
-                  : "text-[#9DB0C6] hover:text-[#E8EEF6] hover:bg-white/5"
+                  ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
+                  : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
               }`}
             >
               Tasks & Follow-up
@@ -368,8 +368,8 @@ export default function LeadDetailModal({
               onClick={() => setActiveTab("finance")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer flex items-center gap-1 ${
                 activeTab === "finance"
-                  ? "text-[#E8EEF6] bg-[#C9A24B]/15 border-b-2 border-[#C9A24B]"
-                  : "text-[#9DB0C6] hover:text-[#E8EEF6] hover:bg-white/5"
+                  ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
+                  : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
               }`}
             >
               F&I, Docs & e-Sign Hub
@@ -381,31 +381,31 @@ export default function LeadDetailModal({
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Profile Card */}
-                <div className="card !bg-[#0f1826]/1">
+                <div className="card !bg-[#0B0F17]/1">
                   <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Contact Details</div>
-                    <div className="text-base font-bold text-[#E8EEF6]">{lead.firstName} {lead.lastName}</div>
-                    <div className="text-xs text-[#9DB0C6] flex flex-col gap-1.5 mt-1">
-                      <span className="flex items-center gap-1.5"><Phone size={13} className="text-[#15C7C0]" /> {lead.phone}</span>
-                      <span className="flex items-center gap-1.5"><Mail size={13} className="text-[#1466E0]" /> {lead.email}</span>
+                    <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Contact Details</div>
+                    <div className="text-base font-bold text-[#E8EAE6]">{lead.firstName} {lead.lastName}</div>
+                    <div className="text-xs text-[rgba(232,234,230,0.72)] flex flex-col gap-1.5 mt-1">
+                      <span className="flex items-center gap-1.5"><Phone size={13} className="text-[#4FE3DC]" /> {lead.phone}</span>
+                      <span className="flex items-center gap-1.5"><Mail size={13} className="text-[#4FE3DC]" /> {lead.email}</span>
                     </div>
                     <div className="border-t border-white/5 mt-2 pt-2 text-xs">
-                      <span className="font-bold text-[#E8EEF6]">Notes:</span> <span className="text-[#9DB0C6]">{lead.notes || "None logged"}</span>
+                      <span className="font-bold text-[#E8EAE6]">Notes:</span> <span className="text-[rgba(232,234,230,0.72)]">{lead.notes || "None logged"}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Session Card */}
-                <div className="card !bg-[#0f1826]/1">
+                <div className="card !bg-[#0B0F17]/1">
                   <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Session Attributes</div>
-                    <div className="text-xs text-[#9DB0C6] flex flex-col gap-2 leading-relaxed">
-                      <div><span className="font-bold text-[#E8EEF6]">Ad Source:</span> <span className="px-2 py-0.5 bg-[#1466E0]/15 text-[#4D9BFF] rounded text-[10px] font-bold uppercase tracking-wider">{lead.source}</span></div>
-                      <div><span className="font-bold text-[#E8EEF6]">Creation Stamp:</span> <span>{lead.createdAt}</span></div>
-                      <div><span className="font-bold text-[#E8EEF6]">Assigned Specialist:</span> <span>{assignedUser?.name || "Awaiting Pool Assign"}</span></div>
+                    <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Session Attributes</div>
+                    <div className="text-xs text-[rgba(232,234,230,0.72)] flex flex-col gap-2 leading-relaxed">
+                      <div><span className="font-bold text-[#E8EAE6]">Ad Source:</span> <span className="px-2 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[13px] font-bold tracking-normal">{lead.source}</span></div>
+                      <div><span className="font-bold text-[#E8EAE6]">Creation Stamp:</span> <span>{lead.createdAt}</span></div>
+                      <div><span className="font-bold text-[#E8EAE6]">Assigned Specialist:</span> <span>{assignedUser?.name || "Awaiting Pool Assign"}</span></div>
                       <div className="flex items-center gap-1.5 mt-1">
-                        <span className="font-bold text-[#E8EEF6]">Intent Score:</span>
-                        <span className="font-mono text-sm font-bold text-[#15C7C0] bg-[#15C7C0]/10 px-2 py-0.5 rounded">{lead.digitalScore}%</span>
+                        <span className="font-bold text-[#E8EAE6]">Intent Score:</span>
+                        <span className="font-mono text-sm font-bold text-[#4FE3DC] bg-[#4FE3DC]/10 px-2 py-0.5 rounded">{lead.digitalScore}%</span>
                       </div>
                     </div>
                   </div>
@@ -414,14 +414,14 @@ export default function LeadDetailModal({
 
               {/* Subject Vehicle */}
               {vehicle && (
-                <div className="card !bg-[#0f1826]/1">
+                <div className="card !bg-[#0B0F17]/1">
                   <div className="card-body p-4 flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono mb-1">Subject Vehicle Focus</div>
-                      <div className="text-sm font-bold text-[#E8EEF6]">{vehicle.year} {vehicle.make} {vehicle.model}</div>
-                      <div className="text-xs text-[#9DB0C6] mt-0.5">Stock No: {vehicle.stockNumber} / Price: R {vehicle.retailPrice.toLocaleString()}</div>
+                      <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-1">Subject Vehicle Focus</div>
+                      <div className="text-sm font-bold text-[#E8EAE6]">{vehicle.year} {vehicle.make} {vehicle.model}</div>
+                      <div className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Stock No: {vehicle.stockNumber} / Price: R {vehicle.retailPrice.toLocaleString()}</div>
                     </div>
-                    <span className="px-2 py-1 bg-[#35C46B]/15 text-[#35C46B] text-[10px] font-bold uppercase tracking-wider rounded">
+                    <span className="px-2 py-1 bg-[#4ADE9B]/15 text-[#4ADE9B] text-[13px] font-bold tracking-normal rounded">
                       {vehicle.status === "INVENTORY" ? "Active Showroom" : vehicle.status === "PENDING" ? "Finance Pending" : "Delivered"}
                     </span>
                   </div>
@@ -429,39 +429,39 @@ export default function LeadDetailModal({
               )}
 
               {/* TrueAI Smart Lead Qualification Hub */}
-              <div className="card !bg-[#1466E0]/5 border-[#1466E0]/20">
+              <div className="card !bg-[#4FE3DC]/5 border-[#4FE3DC]/20">
                 <div className="card-body p-5 flex flex-col gap-4 relative overflow-hidden">
-                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#15C7C0]/10 rounded-full blur-2xl"></div>
+                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#4FE3DC]/10 rounded-full blur-2xl"></div>
                   
                   <div className="flex items-center justify-between border-b border-white/5 pb-3">
                     <div className="flex items-center gap-2">
-                      <Sparkles size={16} className="text-[#15C7C0] animate-pulse" />
+                      <Sparkles size={16} className="text-[#4FE3DC] animate-pulse" />
                       <div>
-                        <span className="text-[10px] font-bold text-[#15C7C0] uppercase tracking-wider font-mono block">TrueAI Smart Qualification</span>
-                        <span className="text-[9px] text-[#9DB0C6]">Central Behavioral Analysis Node</span>
+                        <span className="text-[13px] font-bold text-[#4FE3DC] tracking-normal font-mono block">TrueAI Smart Qualification</span>
+                        <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Central Behavioral Analysis Node</span>
                       </div>
                     </div>
                     
                     {/* Dynamic Hot/Warm/Cold Rating Badge */}
                     {lead.digitalScore >= 75 ? (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/15 text-red-400 text-xs font-black uppercase tracking-wider rounded-lg border border-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.2)] font-mono">
+                      <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/15 text-red-400 text-xs font-semibold tracking-normal rounded-lg border border-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.2)] font-mono">
                         Hot 🔥 (High Intent: {lead.digitalScore}%)
                       </span>
                     ) : lead.digitalScore >= 50 ? (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-[#E7B24B]/15 text-[#E7B24B] text-xs font-black uppercase tracking-wider rounded-lg border border-[#E7B24B]/20 font-mono">
+                      <span className="flex items-center gap-1.5 px-3 py-1 bg-[#E8C468]/15 text-[#E8C468] text-xs font-semibold tracking-normal rounded-lg border border-[#E8C468]/20 font-mono">
                         Warm ☀️ (Engaged: {lead.digitalScore}%)
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-sky-500/15 text-sky-400 text-xs font-black uppercase tracking-wider rounded-lg border border-sky-500/20 font-mono">
+                      <span className="flex items-center gap-1.5 px-3 py-1 bg-sky-500/15 text-sky-400 text-xs font-semibold tracking-normal rounded-lg border border-sky-500/20 font-mono">
                         Cold ❄️ (Nurture: {lead.digitalScore}%)
                       </span>
                     )}
                   </div>
 
                   {/* Behavioral Analysis Explanation */}
-                  <div className="text-xs text-[#E8EEF6] leading-relaxed font-sans space-y-1.5">
-                    <p className="font-semibold text-white">Analysis Summary:</p>
-                    <p className="text-[#9DB0C6]">
+                  <div className="text-xs text-[#E8EAE6] leading-relaxed font-sans space-y-1.5">
+                    <p className="font-semibold text-[#E8EAE6]">Analysis Summary:</p>
+                    <p className="text-[rgba(232,234,230,0.72)]">
                       {lead.digitalScore >= 75 
                         ? `Incoming message demonstrates urgent buying intent for the ${vehicle ? vehicle.make + ' ' + vehicle.model : 'vehicle'}. Customer completed virtual financing calculations and viewed showroom photos 5+ times in past 2 hours.`
                         : lead.digitalScore >= 50
@@ -472,7 +472,7 @@ export default function LeadDetailModal({
 
                   {/* Suggested Smart Actions Grid */}
                   <div className="space-y-2 mt-1">
-                    <span className="text-[9px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono block">TrueAI Smart Suggestions:</span>
+                    <span className="text-[12px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono block">TrueAI Smart Suggestions:</span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                       
                       {/* Suggestion 1: Book Test Drive / Call Now */}
@@ -483,11 +483,11 @@ export default function LeadDetailModal({
                           setNewTaskTitle(`Call now to book test drive for ${vehicle ? vehicle.make + ' ' + vehicle.model : 'vehicle'}`);
                           setNewTaskPriority("High");
                         }}
-                        className="p-2 bg-[#0f1826]/3 border border-white/5 hover:border-[#15C7C0]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
+                        className="p-2 bg-[#0B0F17]/3 border border-white/5 hover:border-[#4FE3DC]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[8px] text-[#15C7C0] font-bold uppercase tracking-wider block font-mono">Action 01</span>
-                        <span className="text-[11px] font-bold text-white block mt-0.5 group-hover:text-[#15C7C0]">Book Test Drive</span>
-                        <span className="text-[9px] text-[#9DB0C6] block mt-0.5">Call now & schedule date</span>
+                        <span className="text-[12px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 01</span>
+                        <span className="text-[13px] font-bold text-[#E8EAE6] block mt-0.5 group-hover:text-[#4FE3DC]">Book Test Drive</span>
+                        <span className="text-[12px] text-[rgba(232,234,230,0.72)] block mt-0.5">Call now & schedule date</span>
                       </button>
 
                       {/* Suggestion 2: Send pricing PDF / WhatsApp */}
@@ -498,11 +498,11 @@ export default function LeadDetailModal({
                           setCommChannel("whatsapp");
                           handleTemplateChange("welcome");
                         }}
-                        className="p-2 bg-[#0f1826]/3 border border-white/5 hover:border-[#1466E0]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
+                        className="p-2 bg-[#0B0F17]/3 border border-white/5 hover:border-[#4FE3DC]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[8px] text-[#1466E0] font-bold uppercase tracking-wider block font-mono">Action 02</span>
-                        <span className="text-[11px] font-bold text-white block mt-0.5 group-hover:text-[#1466E0]">Send pricing PDF</span>
-                        <span className="text-[9px] text-[#9DB0C6] block mt-0.5">Push pricing template over WhatsApp</span>
+                        <span className="text-[12px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 02</span>
+                        <span className="text-[13px] font-bold text-[#E8EAE6] block mt-0.5 group-hover:text-[#4FE3DC]">Send pricing PDF</span>
+                        <span className="text-[12px] text-[rgba(232,234,230,0.72)] block mt-0.5">Push pricing template over WhatsApp</span>
                       </button>
 
                       {/* Suggestion 3: Draft Offer to Purchase (OTP) */}
@@ -512,11 +512,11 @@ export default function LeadDetailModal({
                           setActiveTab("finance");
                           setDocTypeToGenerate("Offer to Purchase");
                         }}
-                        className="p-2 bg-[#0f1826]/3 border border-white/5 hover:border-[#C9A24B]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
+                        className="p-2 bg-[#0B0F17]/3 border border-white/5 hover:border-[#4FE3DC]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[8px] text-[#C9A24B] font-bold uppercase tracking-wider block font-mono">Action 03</span>
-                        <span className="text-[11px] font-bold text-white block mt-0.5 group-hover:text-[#C9A24B]">Generate OTP Document</span>
-                        <span className="text-[9px] text-[#9DB0C6] block mt-0.5">Draft digital pre-agreement folder</span>
+                        <span className="text-[12px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 03</span>
+                        <span className="text-[13px] font-bold text-[#E8EAE6] block mt-0.5 group-hover:text-[#4FE3DC]">Generate OTP Document</span>
+                        <span className="text-[12px] text-[rgba(232,234,230,0.72)] block mt-0.5">Draft digital pre-agreement folder</span>
                       </button>
 
                     </div>
@@ -526,8 +526,8 @@ export default function LeadDetailModal({
 
               {/* Alerts */}
               {!lead.lastContactedAt && (
-                <div className="bg-[#F0555A]/10 border border-[#F0555A]/30 rounded-xl p-4 text-xs text-[#F0555A] font-medium leading-relaxed flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#F0555A]/20 flex items-center justify-center font-bold text-sm">!</span>
+                <div className="bg-[#FF6B6B]/10 border border-[#FF6B6B]/30 rounded-xl p-4 text-xs text-[#FF6B6B] font-medium leading-relaxed flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center font-bold text-sm">!</span>
                   <span>Alert: This lead is currently uncontacted. Direct follow-up or automated introductory welcome email dispatch is highly advised.</span>
                 </div>
               )}
@@ -536,26 +536,26 @@ export default function LeadDetailModal({
 
           {activeTab === "journey" && (
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-              <div className="card !bg-[#0f1826]/1">
+              <div className="card !bg-[#0B0F17]/1">
                 <div className="card-body p-4">
-                  <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono mb-4">Website Pre-Enquiry Analytics Activity Log</div>
+                  <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-4">Website Pre-Enquiry Analytics Activity Log</div>
                   <div className="relative border-l border-white/10 pl-6 flex flex-col gap-6 ml-2">
                     {(lead.journey || []).map((j, idx) => {
                       const Icon = j.action.includes('Viewed') ? Eye : j.action.includes('Requested') ? Sparkles : ShoppingCart;
                       return (
                         <div key={idx} className="relative">
-                          <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#1466E0] border-2 border-white/10 shadow-[0_0_8px_rgba(20,102,224,0.5)]"></span>
+                          <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#4FE3DC] border-2 border-white/10 shadow-[0_0_8px_rgba(20,102,224,0.5)]"></span>
                           <div className="flex items-center gap-2">
-                             <Icon size={12} className="text-[#1466E0]" />
-                             <div className="text-[10px] text-[#9DB0C6] font-mono font-medium">{j.time}</div>
+                             <Icon size={12} className="text-[#4FE3DC]" />
+                             <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono font-medium">{j.time}</div>
                           </div>
-                          <div className="text-xs font-bold text-[#E8EEF6] mt-0.5">{j.action}</div>
-                          <div className="text-xs text-[#9DB0C6] mt-0.5">{j.detail}</div>
+                          <div className="text-xs font-bold text-[#E8EAE6] mt-0.5">{j.action}</div>
+                          <div className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">{j.detail}</div>
                         </div>
                       )
                     })}
                     {(!lead.journey || lead.journey.length === 0) && (
-                      <div className="text-xs text-[#9DB0C6] italic py-2">No navigation telemetry records stored.</div>
+                      <div className="text-xs text-[rgba(232,234,230,0.72)] italic py-2">No navigation telemetry records stored.</div>
                     )}
                   </div>
                 </div>
@@ -568,30 +568,30 @@ export default function LeadDetailModal({
               <form onSubmit={handleDispatchComm} className="flex flex-col gap-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Template Dispatch</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Template Dispatch</label>
                     <select
                       value={commTemplate}
                       onChange={(e) => handleTemplateChange(e.target.value)}
-                      className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                     >
-                      <option className="bg-[#0f1826]" value="custom">Custom (No template)</option>
-                      <option className="bg-[#0f1826]" value="welcome">Welcome Pre-Owned Introduction</option>
-                      <option className="bg-[#0f1826]" value="followup">Finance Options Follow-Up</option>
-                      <option className="bg-[#0f1826]" value="finance">Pre-Approval Contract Draft</option>
+                      <option className="bg-[#0B0F17]" value="custom">Custom (No template)</option>
+                      <option className="bg-[#0B0F17]" value="welcome">Welcome Pre-Owned Introduction</option>
+                      <option className="bg-[#0B0F17]" value="followup">Finance Options Follow-Up</option>
+                      <option className="bg-[#0B0F17]" value="finance">Pre-Approval Contract Draft</option>
                     </select>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Dispatch Node Channel</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Dispatch Node Channel</label>
                     <select
                       value={commChannel}
                       onChange={(e) => setCommChannel(e.target.value as any)}
-                      className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                     >
-                      <option className="bg-[#0f1826]" value="email">Simulated Email Client</option>
-                      <option className="bg-[#0f1826]" value="sms">SMS text network</option>
-                      <option className="bg-[#0f1826]" value="whatsapp">WhatsApp Business API</option>
-                      <option className="bg-[#0f1826]" value="call">Voice Call Log Records</option>
+                      <option className="bg-[#0B0F17]" value="email">Simulated Email Client</option>
+                      <option className="bg-[#0B0F17]" value="sms">SMS text network</option>
+                      <option className="bg-[#0B0F17]" value="whatsapp">WhatsApp Business API</option>
+                      <option className="bg-[#0B0F17]" value="call">Voice Call Log Records</option>
                     </select>
                   </div>
                 </div>
@@ -600,18 +600,18 @@ export default function LeadDetailModal({
                 {commChannel === "email" && (
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Subject Line</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Subject Line</label>
                       <input
                         type="text"
                         value={emailSubject}
                         onChange={(e) => setEmailSubject(e.target.value)}
                         placeholder="Subject..."
-                        className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none focus:border-[#1466E0]"
+                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
                       />
                     </div>
                     <div className="flex flex-col gap-1 relative">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Email Body</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Email Body</label>
                         <button
                           type="button"
                           onClick={async () => {
@@ -625,7 +625,7 @@ export default function LeadDetailModal({
                               setGeneratingEmail(false);
                             }
                           }}
-                          className="flex items-center gap-1 text-[9px] font-bold text-[#15C7C0] hover:text-[#E8EEF6] transition-colors cursor-pointer"
+                          className="flex items-center gap-1 text-[12px] font-bold text-[#4FE3DC] hover:text-[#E8EAE6] transition-colors cursor-pointer"
                         >
                           {generatingEmail ? "Generating..." : <><Wand2 size={10} /> Auto-Draft with TrueAI</>}
                         </button>
@@ -635,7 +635,7 @@ export default function LeadDetailModal({
                         value={emailBody}
                         onChange={(e) => setEmailBody(e.target.value)}
                         placeholder="Type email body contents..."
-                        className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none focus:border-[#1466E0] font-sans"
+                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
                       ></textarea>
                     </div>
                   </div>
@@ -644,7 +644,7 @@ export default function LeadDetailModal({
                 {commChannel === "sms" && (
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between items-center">
-                      <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">SMS Body (160 characters max)</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">SMS Body (160 characters max)</label>
                       <button
                         type="button"
                         onClick={async () => {
@@ -653,7 +653,7 @@ export default function LeadDetailModal({
                             setSmsBody(res.substring(0, 160));
                           } catch (e) {}
                         }}
-                        className="flex items-center gap-1 text-[9px] font-bold text-[#15C7C0] hover:text-[#E8EEF6] transition-colors cursor-pointer"
+                        className="flex items-center gap-1 text-[12px] font-bold text-[#4FE3DC] hover:text-[#E8EAE6] transition-colors cursor-pointer"
                       >
                         <Wand2 size={10} /> Auto-Draft SMS
                       </button>
@@ -664,7 +664,7 @@ export default function LeadDetailModal({
                       value={smsBody}
                       onChange={(e) => setSmsBody(e.target.value)}
                       placeholder="Type SMS text..."
-                      className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none focus:border-[#1466E0] font-sans"
+                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
                     ></textarea>
                   </div>
                 )}
@@ -674,7 +674,7 @@ export default function LeadDetailModal({
                     {/* LEFT PANE: CONTROLS & COMPOSER */}
                     <div className="flex flex-col gap-3">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-bold">Compose Message</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-bold">Compose Message</label>
                         <div className="flex gap-1.5">
                           <button
                             type="button"
@@ -692,7 +692,7 @@ export default function LeadDetailModal({
                                 setAiGeneratingReply(false);
                               }
                             }}
-                            className="flex items-center gap-1 text-[9px] font-bold text-[#15C7C0] bg-[#15C7C0]/10 border border-[#15C7C0]/20 px-2 py-1 rounded-lg hover:bg-[#15C7C0]/20 transition-all cursor-pointer"
+                            className="flex items-center gap-1 text-[12px] font-bold text-[#4FE3DC] bg-[#4FE3DC]/10 border border-[#4FE3DC]/20 px-2 py-1 rounded-lg hover:bg-[#4FE3DC]/20 transition-all cursor-pointer"
                           >
                             <Sparkles size={10} /> {aiGeneratingReply ? "Thinking..." : "AI Auto-Reply Suggest"}
                           </button>
@@ -704,7 +704,7 @@ export default function LeadDetailModal({
                         value={whatsappBody}
                         onChange={(e) => setWhatsappBody(e.target.value)}
                         placeholder="Type WhatsApp content or load a template..."
-                        className="bg-[#0f1826] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none focus:border-[#1466E0] font-sans resize-none leading-relaxed"
+                        className="bg-[#0B0F17] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans resize-none leading-relaxed"
                       ></textarea>
 
                       {/* Launch Real Deep Link Button */}
@@ -715,22 +715,22 @@ export default function LeadDetailModal({
                           const encodedText = encodeURIComponent(whatsappBody || "Good day! Following up from Sandton Pre-Owned.");
                           window.open(`https://wa.me/${sanitizedPhone}?text=${encodedText}`, "_blank");
                         }}
-                        className="w-full py-1.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-1.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-semibold tracking-normal transition-all cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         <Smartphone size={12} /> Open Real WhatsApp Desktop (wa.me)
                       </button>
                     </div>
 
                     {/* RIGHT PANE: WHATSAPP PHONE SIMULATOR */}
-                    <div className="bg-[#070d15] border border-[#25D366]/20 rounded-2xl overflow-hidden flex flex-col shadow-inner h-64 font-sans text-xs">
+                    <div className="bg-[#06080D] border border-[#25D366]/20 rounded-2xl overflow-hidden flex flex-col shadow-inner h-64 font-sans text-xs">
                       {/* Phone Header */}
-                      <div className="bg-[#075e54] text-white px-3 py-2 flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-[#128C7E] flex items-center justify-center text-[10px] font-black text-white uppercase font-mono shadow-sm">
+                      <div className="bg-[#075e54] text-[#E8EAE6] px-3 py-2 flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-[#128C7E] flex items-center justify-center text-[13px] font-semibold text-[#E8EAE6]  font-mono shadow-sm">
                           {lead.firstName[0]}
                         </div>
                         <div className="flex-1">
-                          <div className="font-bold text-[11px] leading-tight">{lead.firstName} {lead.lastName}</div>
-                          <div className="text-[8px] text-[#25D366] font-bold">Online</div>
+                          <div className="font-bold text-[13px] leading-tight">{lead.firstName} {lead.lastName}</div>
+                          <div className="text-[12px] text-[#25D366] font-bold">Online</div>
                         </div>
                         <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse"></span>
                       </div>
@@ -740,14 +740,14 @@ export default function LeadDetailModal({
                         {whatsappHistory.map((msg, idx) => (
                           <div
                             key={idx}
-                            className={`max-w-[85%] rounded-lg px-2.5 py-1.5 leading-relaxed text-[11px] relative flex flex-col gap-0.5 shadow-sm ${
+                            className={`max-w-[85%] rounded-lg px-2.5 py-1.5 leading-relaxed text-[13px] relative flex flex-col gap-0.5 shadow-sm ${
                               msg.sender === "agent"
                                 ? "bg-[#dcf8c6] text-gray-900 self-end rounded-tr-none"
-                                : "bg-[#0f1826] text-gray-100 self-start rounded-tl-none border border-white/5"
+                                : "bg-[#0B0F17] text-gray-100 self-start rounded-tl-none border border-white/5"
                             }`}
                           >
                             <span>{msg.text}</span>
-                            <span className={`text-[8px] self-end mt-0.5 ${msg.sender === "agent" ? "text-gray-400" : "text-gray-400 font-mono"}`}>
+                            <span className={`text-[12px] self-end mt-0.5 ${msg.sender === "agent" ? "text-gray-400" : "text-gray-400 font-mono"}`}>
                               {msg.time}
                             </span>
                           </div>
@@ -755,9 +755,9 @@ export default function LeadDetailModal({
                       </div>
 
                       {/* Phone Footer */}
-                      <div className="bg-[#0f1826] border-t border-white/5 p-1.5 flex justify-between items-center text-[#9DB0C6] font-mono text-[9px]">
+                      <div className="bg-[#0B0F17] border-t border-white/5 p-1.5 flex justify-between items-center text-[rgba(232,234,230,0.72)] font-mono text-[12px]">
                         <span>Secure Messaging Session</span>
-                        <span className="text-[#25D366] font-bold uppercase tracking-widest text-[8px]">WhatsApp API Active</span>
+                        <span className="text-[#25D366] font-bold  tracking-widest text-[12px]">WhatsApp API Active</span>
                       </div>
                     </div>
                   </div>
@@ -767,35 +767,35 @@ export default function LeadDetailModal({
                   <div className="flex flex-col gap-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Call Duration (seconds)</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Call Duration (seconds)</label>
                         <input
                           type="number"
                           value={callDuration}
                           onChange={(e) => setCallDuration(parseInt(e.target.value) || 0)}
-                          className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Outcome State</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Outcome State</label>
                         <select
                           value={callOutcome}
                           onChange={(e) => setCallOutcome(e.target.value)}
-                          className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+                          className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                         >
-                          <option className="bg-[#0f1826]" value="Reached">Reached client directly</option>
-                          <option className="bg-[#0f1826]" value="No Answer">No Answer / Left Voicemail</option>
-                          <option className="bg-[#0f1826]" value="Call Back">Request Callback</option>
+                          <option className="bg-[#0B0F17]" value="Reached">Reached client directly</option>
+                          <option className="bg-[#0B0F17]" value="No Answer">No Answer / Left Voicemail</option>
+                          <option className="bg-[#0B0F17]" value="Call Back">Request Callback</option>
                         </select>
                       </div>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Voice Call Discussion Summary</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Voice Call Discussion Summary</label>
                       <textarea
                         rows={2}
                         value={callNotes}
                         onChange={(e) => setCallNotes(e.target.value)}
                         placeholder="Log what was discussed or agreed..."
-                        className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none focus:border-[#1466E0] font-sans"
+                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
                       ></textarea>
                     </div>
                   </div>
@@ -813,35 +813,35 @@ export default function LeadDetailModal({
 
               {/* Dispatch logs */}
               <div className="mt-4 border-t border-white/5 pt-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono mb-2">Communications Outbound logs</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-2">Communications Outbound logs</div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-[#9DB0C6] text-left border-collapse">
+                  <table className="w-full text-xs text-[rgba(232,234,230,0.72)] text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-white/10 text-[#9DB0C6]">
-                        <th className="py-2 font-bold uppercase tracking-wider text-[9px]">Date</th>
-                        <th className="py-2 font-bold uppercase tracking-wider text-[9px]">Type</th>
-                        <th className="py-2 font-bold uppercase tracking-wider text-[9px]">Subject discussion</th>
-                        <th className="py-2 font-bold uppercase tracking-wider text-[9px]">Dispatched by</th>
+                      <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
+                        <th className="py-2 font-bold tracking-normal text-[12px]">Date</th>
+                        <th className="py-2 font-bold tracking-normal text-[12px]">Type</th>
+                        <th className="py-2 font-bold tracking-normal text-[12px]">Subject discussion</th>
+                        <th className="py-2 font-bold tracking-normal text-[12px]">Dispatched by</th>
                       </tr>
                     </thead>
                     <tbody>
                       {communications.map((c) => (
-                        <tr key={c.id} className="border-b border-white/5 hover:bg-[#0f1826]/2">
+                        <tr key={c.id} className="border-b border-white/5 hover:bg-[#0B0F17]/2">
                           <td className="py-2.5 font-medium">{c.sentAt}</td>
                           <td className="py-2.5">
-                            <span className="px-1.5 py-0.5 bg-[#1466E0]/15 text-[#4D9BFF] rounded text-[9px] font-mono font-bold uppercase tracking-wider">
+                            <span className="px-1.5 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[12px] font-mono font-bold tracking-normal">
                               {c.type}
                             </span>
                           </td>
-                          <td className="py-2.5 max-w-[280px] truncate font-semibold text-[#E8EEF6]">
-                            {c.subject} <span className="block text-[10px] font-normal text-[#9DB0C6] mt-0.5">{c.content}</span>
+                          <td className="py-2.5 max-w-[280px] truncate font-semibold text-[#E8EAE6]">
+                            {c.subject} <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{c.content}</span>
                           </td>
                           <td className="py-2.5">{c.sentBy}</td>
                         </tr>
                       ))}
                       {communications.length === 0 && (
                         <tr>
-                          <td colSpan={4} className="py-4 text-center text-[#9DB0C6] italic">
+                          <td colSpan={4} className="py-4 text-center text-[rgba(232,234,230,0.72)] italic">
                             No dispatch communications logs stored for this lead file.
                           </td>
                         </tr>
@@ -855,31 +855,31 @@ export default function LeadDetailModal({
 
           {activeTab === "history" && (
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-              <div className="card !bg-[#0f1826]/1">
+              <div className="card !bg-[#0B0F17]/1">
                 <div className="card-body p-4">
-                  <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono mb-2">DMS Lifecycle events</div>
+                  <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-2">DMS Lifecycle events</div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-[#9DB0C6] border-collapse">
+                    <table className="w-full text-left text-xs text-[rgba(232,234,230,0.72)] border-collapse">
                       <thead>
-                        <tr className="border-b border-white/10 text-[#9DB0C6]">
-                          <th className="py-2 font-bold uppercase tracking-wider text-[9px]">Date Stamp</th>
-                          <th className="py-2 font-bold uppercase tracking-wider text-[9px]">Actor Node</th>
-                          <th className="py-2 font-bold uppercase tracking-wider text-[9px]">System Action</th>
-                          <th className="py-2 font-bold uppercase tracking-wider text-[9px]">Outcome</th>
+                        <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
+                          <th className="py-2 font-bold tracking-normal text-[12px]">Date Stamp</th>
+                          <th className="py-2 font-bold tracking-normal text-[12px]">Actor Node</th>
+                          <th className="py-2 font-bold tracking-normal text-[12px]">System Action</th>
+                          <th className="py-2 font-bold tracking-normal text-[12px]">Outcome</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
                           <td className="py-2.5">{lead.createdAt}</td>
                           <td className="py-2.5 font-mono">DMS CENTRAL</td>
-                          <td className="py-2.5 font-bold text-[#E8EEF6]">Lead Registered</td>
+                          <td className="py-2.5 font-bold text-[#E8EAE6]">Lead Registered</td>
                           <td className="py-2.5">Logged from {lead.source} source</td>
                         </tr>
                         {lead.lastContactedAt && (
                           <tr>
                             <td className="py-2.5">{lead.lastContactedAt}</td>
                             <td className="py-2.5 font-mono">MARC_VAN_DER_MERWE</td>
-                            <td className="py-2.5 font-bold text-[#E8EEF6]">Contact Completed</td>
+                            <td className="py-2.5 font-bold text-[#E8EAE6]">Contact Completed</td>
                             <td className="py-2.5">Outbound dispatch completed</td>
                           </tr>
                         )}
@@ -892,23 +892,23 @@ export default function LeadDetailModal({
           )}
           {activeTab === "tasks" && (
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-              <div className="card !bg-[#0f1826]/1">
+              <div className="card !bg-[#0B0F17]/1">
                 <div className="card-body p-4 flex flex-col gap-3">
-                  <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono mb-1 border-b border-white/5 pb-2">Schedule Follow-up</div>
+                  <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-1 border-b border-white/5 pb-2">Schedule Follow-up</div>
                   
                   {/* Task Suggestion (based on time since last contact or no contact) */}
                   {(!lead.lastContactedAt || new Date().getTime() - new Date(lead.lastContactedAt).getTime() > 24 * 60 * 60 * 1000) && (
-                    <div className="bg-[#1466E0]/10 border border-[#1466E0]/30 rounded-lg p-3 flex justify-between items-center">
+                    <div className="bg-[#4FE3DC]/10 border border-[#4FE3DC]/30 rounded-lg p-3 flex justify-between items-center">
                       <div className="flex gap-2 items-center">
-                        <Award size={14} className="text-[#15C7C0]" />
-                        <span className="text-xs text-[#E8EEF6]">AI Suggestion: Lead hasn't been contacted recently. Schedule a follow-up call.</span>
+                        <Award size={14} className="text-[#4FE3DC]" />
+                        <span className="text-xs text-[#E8EAE6]">AI Suggestion: Lead hasn't been contacted recently. Schedule a follow-up call.</span>
                       </div>
                       <button 
                         onClick={() => {
                           setNewTaskTitle("Follow-up Call with " + lead.firstName);
                           setNewTaskPriority("High");
                         }}
-                        className="text-[10px] bg-[#1466E0] text-white px-2 py-1 rounded cursor-pointer hover:bg-opacity-80"
+                        className="text-[13px] bg-[#4FE3DC] text-[#E8EAE6] px-2 py-1 rounded cursor-pointer hover:bg-opacity-80"
                       >
                         Apply
                       </button>
@@ -922,7 +922,7 @@ export default function LeadDetailModal({
                         placeholder="Task Description..."
                         value={newTaskTitle}
                         onChange={(e) => setNewTaskTitle(e.target.value)}
-                        className="w-full bg-[#070d15] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none placeholder:text-[#9DB0C6]"
+                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none placeholder:text-[rgba(232,234,230,0.72)]"
                         required
                       />
                     </div>
@@ -931,14 +931,14 @@ export default function LeadDetailModal({
                         type="date"
                         value={newTaskDate}
                         onChange={(e) => setNewTaskDate(e.target.value)}
-                        className="w-full bg-[#070d15] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none"
+                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
                       />
                     </div>
                     <div className="col-span-6 md:col-span-2">
                       <select
                         value={newTaskPriority}
                         onChange={(e) => setNewTaskPriority(e.target.value as any)}
-                        className="w-full bg-[#070d15] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none"
+                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
                       >
                         <option value="High">High Priority</option>
                         <option value="Normal">Normal</option>
@@ -946,7 +946,7 @@ export default function LeadDetailModal({
                       </select>
                     </div>
                     <div className="col-span-6 md:col-span-2">
-                      <button type="submit" className="w-full bg-[#0f1826]/10 hover:bg-[#0f1826]/15 border border-white/15 text-white font-bold text-xs rounded-lg py-2 transition-all cursor-pointer h-full">
+                      <button type="submit" className="w-full bg-[#0B0F17]/10 hover:bg-[#0B0F17]/15 border border-white/15 text-[#E8EAE6] font-bold text-xs rounded-lg py-2 transition-all cursor-pointer h-full">
                         Add Task
                       </button>
                     </div>
@@ -954,34 +954,34 @@ export default function LeadDetailModal({
                 </div>
               </div>
 
-              <div className="card !bg-[#0f1826]/1">
+              <div className="card !bg-[#0B0F17]/1">
                 <div className="card-body p-4 flex flex-col gap-3">
-                  <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono border-b border-white/5 pb-2">Active Tasks</div>
+                  <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono border-b border-white/5 pb-2">Active Tasks</div>
                   <div className="flex flex-col gap-2 mt-2">
                     {tasks.length === 0 ? (
-                      <div className="text-center py-6 text-xs text-[#9DB0C6]">No tasks scheduled for this lead.</div>
+                      <div className="text-center py-6 text-xs text-[rgba(232,234,230,0.72)]">No tasks scheduled for this lead.</div>
                     ) : (
                       tasks.map((task) => (
-                        <div key={task.id} className="bg-[#070d15] border border-white/5 rounded-lg p-3 flex justify-between items-center group">
+                        <div key={task.id} className="bg-[#06080D] border border-white/5 rounded-lg p-3 flex justify-between items-center group">
                           <div className="flex items-center gap-3">
                             <button 
                               onClick={() => handleCompleteTask(task.id)}
-                              className={`cursor-pointer transition-all ${task.status === "Completed" ? "text-[#15C7C0]" : "text-[#9DB0C6] hover:text-[#1466E0]"}`}
+                              className={`cursor-pointer transition-all ${task.status === "Completed" ? "text-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)] hover:text-[#4FE3DC]"}`}
                               disabled={task.status === "Completed"}
                             >
                               <CheckCircle size={18} />
                             </button>
                             <div className="flex flex-col">
-                              <span className={`text-xs font-semibold ${task.status === "Completed" ? "text-[#9DB0C6] line-through" : "text-[#E8EEF6]"}`}>
+                              <span className={`text-xs font-semibold ${task.status === "Completed" ? "text-[rgba(232,234,230,0.72)] line-through" : "text-[#E8EAE6]"}`}>
                                 {task.title}
                               </span>
                               <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] text-[#9DB0C6] flex items-center gap-1"><Calendar size={10} /> {task.dueDate}</span>
-                                {task.priority === "High" && <span className="text-[8px] bg-[#F0555A]/20 text-[#F0555A] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">High</span>}
+                                <span className="text-[12px] text-[rgba(232,234,230,0.72)] flex items-center gap-1"><Calendar size={10} /> {task.dueDate}</span>
+                                {task.priority === "High" && <span className="text-[12px] bg-[#FF6B6B]/20 text-[#FF6B6B] px-1.5 py-0.5 rounded font-bold tracking-normal">High</span>}
                               </div>
                             </div>
                           </div>
-                          <span className="text-[10px] font-mono text-[#9DB0C6] group-hover:text-[#9DB0C6] transition-colors">{task.status}</span>
+                          <span className="text-[13px] font-mono text-[rgba(232,234,230,0.72)] group-hover:text-[rgba(232,234,230,0.72)] transition-colors">{task.status}</span>
                         </div>
                       ))
                     )}
@@ -998,21 +998,21 @@ export default function LeadDetailModal({
               <div className="lg:col-span-5 flex flex-col gap-4">
                 
                 {/* 1. Pre-Approval Simulator */}
-                <div className="card !bg-[#0f1826]/1">
+                <div className="card !bg-[#0B0F17]/1">
                   <div className="card-body p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                      <div className="text-[10px] font-bold text-[#C9A24B] uppercase tracking-wider font-mono">F&I Pre-Approval Simulator</div>
-                      <span className="text-[8px] bg-[#C9A24B]/15 text-[#C9A24B] px-2 py-0.5 rounded font-bold uppercase tracking-wider">SECURE PORTAL</span>
+                      <div className="text-[13px] font-bold text-[#4FE3DC] tracking-normal font-mono">F&I Pre-Approval Simulator</div>
+                      <span className="text-[12px] bg-[#4FE3DC]/15 text-[#4FE3DC] px-2 py-0.5 rounded font-bold tracking-normal">SECURE PORTAL</span>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-black/30 border border-white/5 p-2.5 rounded-xl flex flex-col">
-                        <span className="text-[8px] text-[#9DB0C6] uppercase font-bold tracking-wider">Vehicle Price</span>
-                        <span className="text-xs font-mono font-bold text-[#35C46B]">{vehicle ? `R ${vehicle.retailPrice.toLocaleString()}` : "N/A"}</span>
+                        <span className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Vehicle Price</span>
+                        <span className="text-xs font-mono font-bold text-[#4ADE9B]">{vehicle ? `R ${vehicle.retailPrice.toLocaleString()}` : "N/A"}</span>
                       </div>
                       <div className="bg-black/30 border border-white/5 p-2.5 rounded-xl flex flex-col">
-                        <span className="text-[8px] text-[#9DB0C6] uppercase font-bold tracking-wider">Est. Monthly</span>
-                        <span className="text-xs font-mono font-bold text-[#9DB0C6]">{vehicle ? `R ${Math.round(vehicle.retailPrice * 0.0195).toLocaleString()}` : "N/A"}</span>
+                        <span className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Est. Monthly</span>
+                        <span className="text-xs font-mono font-bold text-[rgba(232,234,230,0.72)]">{vehicle ? `R ${Math.round(vehicle.retailPrice * 0.0195).toLocaleString()}` : "N/A"}</span>
                       </div>
                     </div>
 
@@ -1020,14 +1020,14 @@ export default function LeadDetailModal({
                       <button 
                         type="button"
                         onClick={() => alert("SMS with secure pre-approval link dispatched to customer cell.")}
-                        className="w-full py-2 bg-[#C9A24B]/10 hover:bg-[#C9A24B]/20 border border-[#C9A24B]/30 text-[#C9A24B] font-bold text-[10px] uppercase rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-[#4FE3DC]/10 hover:bg-[#4FE3DC]/20 border border-[#4FE3DC]/30 text-[#4FE3DC] font-bold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         <Phone size={11} /> Send Pre-Approval SMS Link
                       </button>
                       <button 
                         type="button"
                         onClick={() => alert("Bureau analysis complete. Passing probability score: 92%. Soft-check approved.")}
-                        className="w-full py-2 bg-[#0f1826]/5 hover:bg-white/10 border border-white/10 text-white font-bold text-[10px] uppercase rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-[#0B0F17]/5 hover:bg-white/10 border border-white/10 text-[#E8EAE6] font-bold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         <CheckCircle size={11} /> Soft credit bureau check
                       </button>
@@ -1036,18 +1036,18 @@ export default function LeadDetailModal({
                 </div>
 
                 {/* 2. Document Generator Panel */}
-                <div className="card !bg-[#0f1826]/1 border border-white/5">
+                <div className="card !bg-[#0B0F17]/1 border border-white/5">
                   <div className="card-body p-4 flex flex-col gap-3">
-                    <div className="text-[10px] font-bold text-[#E8EEF6] uppercase tracking-wider font-mono border-b border-white/5 pb-2">
+                    <div className="text-[13px] font-bold text-[#E8EAE6] tracking-normal font-mono border-b border-white/5 pb-2">
                       F&I Document Generator
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Select Agreement Template</label>
+                      <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Select Agreement Template</label>
                       <select
                         value={docTypeToGenerate}
                         onChange={(e) => setDocTypeToGenerate(e.target.value as any)}
-                        className="bg-[#0f1826] border border-white/10 rounded-lg p-2 text-xs text-[#E8EEF6] outline-none"
+                        className="bg-[#0B0F17] border border-white/10 rounded-lg p-2 text-xs text-[#E8EAE6] outline-none"
                       >
                         <option value="Offer to Purchase">Offer to Purchase (OTP)</option>
                         <option value="Finance Application">Finance Application</option>
@@ -1086,7 +1086,7 @@ export default function LeadDetailModal({
                           setGeneratingDoc(false);
                         }
                       }}
-                      className="w-full py-2.5 bg-[#1466E0] hover:bg-[#1466E0]/80 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md"
+                      className="w-full py-2.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/80 text-[#E8EAE6] font-bold text-[13px] tracking-normal rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md"
                     >
                       <FileSignature size={12} /> {generatingDoc ? "Drafting legal terms..." : "Generate Digital Document"}
                     </button>
@@ -1094,9 +1094,9 @@ export default function LeadDetailModal({
                 </div>
 
                 {/* 3. Generated Documents list */}
-                <div className="card !bg-[#0f1826]/1 border border-white/5">
+                <div className="card !bg-[#0B0F17]/1 border border-white/5">
                   <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">
+                    <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">
                       Draft Folders ({agreements.length})
                     </div>
                     <div className="flex flex-col gap-1.5 mt-1">
@@ -1107,20 +1107,20 @@ export default function LeadDetailModal({
                           onClick={() => setSelectedAgreementId(ag.id)}
                           className={`w-full p-2.5 text-left rounded-lg border transition-all cursor-pointer flex items-center justify-between ${
                             selectedAgreementId === ag.id
-                              ? "bg-[#C9A24B]/15 border-[#C9A24B] text-[#E8EEF6]"
-                              : "bg-black/20 border-white/5 text-[#9DB0C6] hover:bg-black/30"
+                              ? "bg-[#4FE3DC]/15 border-[#4FE3DC] text-[#E8EAE6]"
+                              : "bg-black/20 border-white/5 text-[rgba(232,234,230,0.72)] hover:bg-black/30"
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <FileText size={13} className={selectedAgreementId === ag.id ? "text-[#C9A24B]" : "text-[#9DB0C6]"} />
+                            <FileText size={13} className={selectedAgreementId === ag.id ? "text-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)]"} />
                             <div className="flex flex-col">
-                              <span className="text-[11px] font-bold">{ag.type}</span>
-                              <span className="text-[8px] text-[#9DB0C6] font-mono">{ag.id.substring(0, 8).toUpperCase()} • {ag.date}</span>
+                              <span className="text-[13px] font-bold">{ag.type}</span>
+                              <span className="text-[12px] text-[rgba(232,234,230,0.72)] font-mono">{ag.id.substring(0, 8).toUpperCase()} • {ag.date}</span>
                             </div>
                           </div>
-                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                          <span className={`text-[12px] font-bold px-1.5 py-0.5 rounded  ${
                             ag.status === "Signed" 
-                              ? "bg-[#35C46B]/10 text-[#35C46B]" 
+                              ? "bg-[#4ADE9B]/10 text-[#4ADE9B]" 
                               : "bg-red-500/10 text-red-400 animate-pulse"
                           }`}>
                             {ag.status}
@@ -1128,7 +1128,7 @@ export default function LeadDetailModal({
                         </button>
                       ))}
                       {agreements.length === 0 && (
-                        <div className="text-center py-4 text-[11px] text-[#9DB0C6] italic">
+                        <div className="text-center py-4 text-[13px] text-[rgba(232,234,230,0.72)] italic">
                           No digital contract packages generated yet.
                         </div>
                       )}
@@ -1139,7 +1139,7 @@ export default function LeadDetailModal({
               </div>
 
               {/* RIGHT COLUMN: DOCUMENT VIEW & SIGNATURE PAD (7 COLS) */}
-              <div className="lg:col-span-7 border border-white/5 bg-[#070d15] rounded-2xl overflow-hidden p-4 min-h-[500px] flex flex-col">
+              <div className="lg:col-span-7 border border-white/5 bg-[#06080D] rounded-2xl overflow-hidden p-4 min-h-[500px] flex flex-col">
                 {selectedAgreementId && agreements.find(a => a.id === selectedAgreementId) ? (
                   <AgreementPreview
                     agreement={agreements.find(a => a.id === selectedAgreementId)!}
@@ -1161,9 +1161,9 @@ export default function LeadDetailModal({
                   />
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-gray-400">
-                    <FileSignature size={48} className="text-[#9DB0C6] mb-3 opacity-40" />
-                    <h3 className="text-xs font-bold text-[#9DB0C6] uppercase tracking-wider mb-1">Contract Signature Desk</h3>
-                    <p className="text-[11px] max-w-sm text-[#9DB0C6] leading-relaxed">
+                    <FileSignature size={48} className="text-[rgba(232,234,230,0.72)] mb-3 opacity-40" />
+                    <h3 className="text-xs font-bold text-[rgba(232,234,230,0.72)] tracking-normal mb-1">Contract Signature Desk</h3>
+                    <p className="text-[13px] max-w-sm text-[rgba(232,234,230,0.72)] leading-relaxed">
                       Select or generate a contract package from the left panel to display interactive legal layouts, finance amortization grids, and the digital signature pad.
                     </p>
                   </div>
@@ -1175,17 +1175,17 @@ export default function LeadDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[rgba(126,164,214,0.1)] flex justify-between items-center bg-[#0f1826]/1">
+        <div className="px-6 py-4 border-t border-[rgba(126,164,214,0.1)] flex justify-between items-center bg-[#0B0F17]/1">
           <button
             onClick={handleDelete}
-            className="px-3 py-1.5 rounded-lg border border-[#F0555A]/30 text-[#F0555A] bg-[#F0555A]/10 text-xs font-semibold cursor-pointer active:scale-95 transition-all hover:bg-[#F0555A]/20"
+            className="px-3 py-1.5 rounded-lg border border-[#FF6B6B]/30 text-[#FF6B6B] bg-[#FF6B6B]/10 text-xs font-semibold cursor-pointer active:scale-95 transition-all hover:bg-[#FF6B6B]/20"
           >
             Delete Lead File
           </button>
           
           <div className="flex gap-2">
             {leadStatus === "Closed Won" && (
-              <label className="flex items-center gap-2 text-xs text-[#E8EEF6] cursor-pointer bg-[#0f1826]/5 px-2 py-1.5 rounded-lg">
+              <label className="flex items-center gap-2 text-xs text-[#E8EAE6] cursor-pointer bg-[#0B0F17]/5 px-2 py-1.5 rounded-lg">
                 <input type="checkbox" checked={crmSetupFee} onChange={(e) => setCrmSetupFee(e.target.checked)} />
                 CRM Setup & Training Fee (R 5,000)
               </label>
@@ -1193,14 +1193,14 @@ export default function LeadDetailModal({
             <select
               value={leadStatus}
               onChange={(e) => setLeadStatus(e.target.value)}
-              className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+              className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
             >
-              <option className="bg-[#0f1826]" value="New">New</option>
-              <option className="bg-[#0f1826]" value="Contacted">Contacted</option>
-              <option className="bg-[#0f1826]" value="Test Drive Scheduled">Test Drive Scheduled</option>
-              <option className="bg-[#0f1826]" value="Negotiating">Negotiating</option>
-              <option className="bg-[#0f1826]" value="Closed Won">Closed Won</option>
-              <option className="bg-[#0f1826]" value="Closed Lost">Closed Lost</option>
+              <option className="bg-[#0B0F17]" value="New">New</option>
+              <option className="bg-[#0B0F17]" value="Contacted">Contacted</option>
+              <option className="bg-[#0B0F17]" value="Test Drive Scheduled">Test Drive Scheduled</option>
+              <option className="bg-[#0B0F17]" value="Negotiating">Negotiating</option>
+              <option className="bg-[#0B0F17]" value="Closed Won">Closed Won</option>
+              <option className="bg-[#0B0F17]" value="Closed Lost">Closed Lost</option>
             </select>
             <button
               onClick={handleSaveStatus}

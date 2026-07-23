@@ -361,33 +361,30 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
 ];
 
 export const STUDIO_BACKGROUNDS = [
-  { id: 'none', name: 'Original Background', class: 'bg-transparent', label: 'Transparent / Off' },
+  { id: 'none', name: 'Original', class: 'bg-transparent', label: 'As shot' },
   {
-    id: 'showroom_luxury',
-    name: 'Luxury Showroom',
-    description: 'Polished marble tiles with professional overhead spotlight highlights.',
-    gradient: 'linear-gradient(135deg, #1f2937, #111827)',
-    lightingPreset: { brightness: 1.1, contrast: 1.15, saturation: 1.0 },
+    // A cutout to a transparent PNG — honest and genuinely useful: drop the car
+    // onto the dealer's own website or advert cleanly. Not a fake scene.
+    id: 'cutout',
+    name: 'Cutout',
+    description: 'Removes the background to a clean transparent PNG — drops onto any page or advert.',
+    gradient: 'transparent',
+    lightingPreset: { brightness: 1.0, contrast: 1.05, saturation: 1.0 },
   },
   {
-    id: 'studio_clean',
-    name: 'Infinity Studio',
-    description: 'Seamless minimalist white cyclorama walls with soft studio diffuser box lights.',
-    gradient: 'linear-gradient(to bottom, #f3f4f6, #e5e7eb, #d1d5db)',
-    lightingPreset: { brightness: 1.0, contrast: 1.1, saturation: 0.9 },
+    // Two neutral studio greys. This is what real vehicle photography uses —
+    // a plain seamless behind the car — rather than fake marble or a sunset.
+    id: 'studio_light',
+    name: 'Studio light',
+    description: 'A clean, neutral light-grey seamless. The safe, professional default.',
+    gradient: 'linear-gradient(to bottom, #E8EAE6, #C2C6C0)',
+    lightingPreset: { brightness: 1.0, contrast: 1.08, saturation: 0.98 },
   },
   {
-    id: 'industrial_depot',
-    name: 'Industrial Depot',
-    description: 'Exposed warm bricks, rustic iron pillars, and cinematic side ambient neon styling.',
-    gradient: 'linear-gradient(135deg, #2d3748, #1a202c)',
-    lightingPreset: { brightness: 0.95, contrast: 1.2, saturation: 1.05 },
-  },
-  {
-    id: 'outdoor_sunset',
-    name: 'Coastal Sunset',
-    description: 'Warm, golden hour horizon overlooking an outdoor coastal dealership pad.',
-    gradient: 'linear-gradient(to top, #fda4af, #fef08a, #bae6fd)',
-    lightingPreset: { brightness: 1.05, contrast: 1.0, saturation: 1.2 },
+    id: 'studio_dark',
+    name: 'Studio dark',
+    description: 'A deep neutral charcoal that makes bodywork and reflections pop.',
+    gradient: 'linear-gradient(to bottom, #1A1D22, #0B0F17)',
+    lightingPreset: { brightness: 1.02, contrast: 1.12, saturation: 1.03 },
   },
 ];

@@ -29,7 +29,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#070d15] text-white p-4 relative overflow-hidden">
+    <div className="flex items-center justify-center min-h-screen bg-[#06080D] text-white p-4 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-80" />
       <div
         className="relative w-full max-w-sm p-8 rounded-2xl border border-white/15"
@@ -42,7 +42,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
       >
         <div className="flex flex-col items-center justify-center mb-6 gap-3">
           <img src={logo} alt="TruFlow Premium" className="h-14 w-auto max-w-full object-contain logo-float" />
-          <p className="text-[10px] text-[#9DB0C6]">Enter your dealership access code</p>
+          <p className="text-[13px] text-[rgba(232,234,230,0.72)]">Enter your dealership access code</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -55,30 +55,30 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
               autoComplete="off"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#070d15] border border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#1466E0] transition-colors"
+              className="w-full bg-[#06080D] border border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#4FE3DC] transition-colors"
             />
-            <Lock className="absolute right-3 top-3.5 w-4 h-4 text-[#9DB0C6]" />
+            <Lock className="absolute right-3 top-3.5 w-4 h-4 text-[rgba(232,234,230,0.72)]" />
           </div>
           <label className="flex items-center gap-2 mb-4 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
-              className="w-3.5 h-3.5 accent-[#1466E0]"
+              className="w-3.5 h-3.5 accent-[#4FE3DC]"
             />
-            <span className="text-[10px] text-[#9DB0C6]">Keep me signed in on this device</span>
+            <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Keep me signed in on this device</span>
           </label>
-          {error && <p className="text-xs text-[#F0555A] mb-4">{error}</p>}
-          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#1466E0] hover:bg-[#1258c4] disabled:opacity-60 text-white font-bold text-sm">
+          {error && <p className="text-xs text-[#FF6B6B] mb-4">{error}</p>}
+          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#4FE3DC] hover:bg-[#1258c4] disabled:opacity-60 on-fill font-bold text-sm">
             {busy ? 'Checking…' : 'Enter'}
           </button>
         </form>
 
         <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center gap-2">
-          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#67E8F9] hover:underline inline-flex items-center gap-1">
+          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[#67E8F9] hover:underline inline-flex items-center gap-1">
             true-cars.co.za showroom <ExternalLink size={10} />
           </a>
-          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono uppercase tracking-wider text-[#67e8f9] hover:underline">
+          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[#67e8f9] hover:underline">
             TruSaas platform
           </a>
         </div>

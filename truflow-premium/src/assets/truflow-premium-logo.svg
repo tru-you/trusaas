@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 96" fill="none" role="img" aria-label="TruFlow Premium">
   <defs>
     <linearGradient id="tf-pre-glow" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#E879F9"/>
-      <stop offset="40%" stop-color="#A855F7"/>
+      <stop offset="0%" stop-color="#4FE3DC"/>
+      <stop offset="40%" stop-color="#4FE3DC"/>
       <stop offset="70%" stop-color="#1466E0"/>
       <stop offset="100%" stop-color="#15C7C0"/>
     </linearGradient>
@@ -25,11 +25,11 @@
     <circle cx="36" cy="36" r="28" fill="url(#tf-pre-glass)"/>
     <path d="M22 36 L36 18 L50 36 L36 54 Z" fill="none" stroke="url(#tf-pre-glow)" stroke-width="2.4" stroke-linejoin="round"/>
     <path d="M30 36 L36 28 L42 36 L36 44 Z" fill="url(#tf-pre-glow)" opacity="0.95"/>
-    <circle cx="52" cy="36" r="3.2" fill="#C084FC"/>
-    <path d="M44 36 H49" stroke="#C084FC" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+    <circle cx="52" cy="36" r="3.2" fill="#7FF0EA"/>
+    <path d="M44 36 H49" stroke="#7FF0EA" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
   </g>
 
   <text x="92" y="58" font-family="Archivo, Segoe UI, system-ui, sans-serif" font-size="38" font-weight="800" fill="#E8EEF6" letter-spacing="0.5">Tru<tspan fill="url(#tf-pre-glow)">Flow</tspan></text>
   <rect x="318" y="34" width="112" height="28" rx="9" fill="rgba(168,85,247,0.14)" stroke="rgba(192,132,252,0.5)" stroke-width="1"/>
-  <text x="374" y="53" text-anchor="middle" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="12" font-weight="700" fill="#C084FC" letter-spacing="1.5">PREMIUM</text>
+  <text x="374" y="53" text-anchor="middle" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="12" font-weight="700" fill="#7FF0EA" letter-spacing="1.5">PREMIUM</text>
 </svg>

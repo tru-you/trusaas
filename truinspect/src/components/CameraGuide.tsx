@@ -473,7 +473,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               ctx.save();
               ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
               ctx.fillRect(40, 40, 260, 60);
-              ctx.strokeStyle = '#22d3ee';
+              ctx.strokeStyle = '#4FE3DC';
               ctx.lineWidth = 2;
               ctx.strokeRect(40, 40, 260, 60);
               
@@ -1024,7 +1024,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   const angleCorrect = Math.abs(simPitch - activeSlot.idealAngle.pitch) < 4 && Math.abs(simRoll) < 3;
 
   return (
-    <div id="camera-guide-container" className="flex flex-col h-full bg-neutral-950 text-white overflow-hidden relative">
+    <div id="camera-guide-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden relative">
       
       {/* Hidden processing canvas */}
       <canvas ref={canvasRef} className="hidden" />
@@ -1038,8 +1038,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           <ChevronLeft size={20} />
         </button>
         <div className="text-center">
-          <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-400">Guide Overlay View</p>
-          <p className="text-[11px] text-neutral-300 font-semibold truncate max-w-[200px]">
+          <p className="text-[13px]  font-bold tracking-widest text-indigo-400">Guide Overlay View</p>
+          <p className="text-[13px] text-neutral-300 font-semibold truncate max-w-[200px]">
             {vehicle.year} {vehicle.make} {vehicle.model}
           </p>
         </div>
@@ -1051,12 +1051,12 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-1.5">
             <Sparkles size={10} className="text-indigo-400" />
-            <span className="text-[9px] font-black text-neutral-200 uppercase tracking-[0.15em]">Capture Workflow</span>
+            <span className="text-[12px] font-semibold text-neutral-200  tracking-[0.15em]">Capture Workflow</span>
           </div>
           <div className="flex items-center gap-2">
-             <div className="text-[8px] font-mono text-neutral-500 uppercase">Lot Readiness:</div>
+             <div className="text-[12px] font-mono text-neutral-500 ">Lot Readiness:</div>
              <div className="px-1.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
-                <span className="text-[9px] font-bold text-indigo-400">{progressPercentage}%</span>
+                <span className="text-[12px] font-bold text-indigo-400">{progressPercentage}%</span>
              </div>
           </div>
         </div>
@@ -1079,7 +1079,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                   <div
                     style={{
                       width: status.completed ? '100%' : isActive ? '50%' : '0%',
-                      backgroundColor: status.completed ? '#10b981' : '#06b6d4'
+                      backgroundColor: status.completed ? '#10b981' : '#4FE3DC'
                     }}
                     className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}
                   />
@@ -1097,7 +1097,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                       {status.completed ? (
                         <Check size={9} className="stroke-[4]" />
                       ) : (
-                        <span className="text-[7px] font-black">{status.phase}</span>
+                        <span className="text-[7px] font-semibold">{status.phase}</span>
                       )}
                    </div>
                 </div>
@@ -1113,7 +1113,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
         {captureHint && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 rounded-full bg-black/70 border border-white/15 text-[10px] font-bold text-white shadow-lg animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 rounded-full bg-black/70 border border-white/15 text-[13px] font-bold text-[#E8EAE6] shadow-lg animate-in fade-in slide-in-from-top-1">
             {captureHint}
           </div>
         )}
@@ -1140,8 +1140,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               <Upload size={40} strokeWidth={1.5} />
             </div>
             <div className="space-y-1.5 max-w-[260px]">
-              <p className="text-sm font-bold text-neutral-100">Ready to shoot this slot</p>
-              <p className="text-[10px] text-neutral-400 leading-relaxed">
+              <p className="text-sm font-bold text-[#E8EAE6]">Ready to shoot this slot</p>
+              <p className="text-[13px] text-neutral-400 leading-relaxed">
                 {cameraError ||
                   'Use the big Take picture button below. On PC you can also Upload a file first, then confirm.'}
               </p>
@@ -1150,14 +1150,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               <button
                 type="button"
                 onClick={(e) => handleCapture(e)}
-                className="w-full py-3 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg"
+                className="w-full py-3 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[13px] font-semibold tracking-normal flex items-center justify-center gap-1.5 shadow-lg"
               >
                 <Camera size={14} /> Take picture
               </button>
               <button
                 type="button"
                 onClick={() => singleUploadRef.current?.click()}
-                className="w-full py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/40 hover:bg-emerald-600/30 text-emerald-300 text-[10px] font-bold flex items-center justify-center gap-1.5"
+                className="w-full py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/40 hover:bg-emerald-600/30 text-emerald-300 text-[13px] font-bold flex items-center justify-center gap-1.5"
               >
                 <Upload size={12} /> Or upload from PC
               </button>
@@ -1165,14 +1165,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 type="button"
                 onClick={() => startCamera()}
                 disabled={cameraRetrying}
-                className="w-full py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 text-[10px] font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
+                className="w-full py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 text-[13px] font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 <Camera size={12} />
                 {cameraRetrying ? 'Trying camera…' : 'Retry live camera'}
               </button>
             </div>
             {hasCamPermission === false && (
-              <p className="text-[8px] text-neutral-500 max-w-[240px] leading-relaxed pt-1">
+              <p className="text-[12px] text-neutral-500 max-w-[240px] leading-relaxed pt-1">
                 Chrome/Edge: address bar → camera icon → <span className="text-neutral-300">Allow</span>. Use{' '}
                 <span className="text-neutral-300">http://localhost:3000</span> (not a blocked file:// page).
               </p>
@@ -1191,13 +1191,13 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               <div className="w-6 h-6 rounded-full bg-red-600 relative z-10"></div>
             </div>
             <div className="text-center space-y-1.5">
-              <p className="text-sm font-black text-red-500 tracking-widest animate-pulse uppercase">● RECORDING 360° WALK VIDEO</p>
+              <p className="text-sm font-semibold text-red-500 tracking-widest animate-pulse ">● RECORDING 360° WALK VIDEO</p>
               <p className="text-xs text-neutral-400 font-mono">Simulating continuous 360° loop... keep camera steady</p>
             </div>
             
             {/* Progress Bar */}
             <div className="w-full max-w-xs space-y-1">
-              <div className="flex justify-between text-[10px] font-mono text-neutral-500">
+              <div className="flex justify-between text-[13px] font-mono text-neutral-500">
                 <span>Capturing continuous footage</span>
                 <span>{recordingProgress}%</span>
               </div>
@@ -1227,8 +1227,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 }}
               ></div>
             </div>
-            <div className="text-[9px] font-mono">
-              <p className="text-[7px] uppercase text-neutral-400 tracking-wider">Level Target</p>
+            <div className="text-[12px] font-mono">
+              <p className="text-[7px]  text-neutral-400 tracking-wider">Level Target</p>
               <p className={angleCorrect ? 'text-emerald-400 font-bold' : 'text-neutral-300'}>
                 {angleCorrect ? '0.0° LOCKED' : `${simRoll.toFixed(1)}° Roll`}
               </p>
@@ -1239,15 +1239,15 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         {/* Lighting status warning flag */}
         <div className="absolute left-4 top-4 bg-neutral-950/75 border border-neutral-800 p-2 rounded-xl z-10 flex items-center gap-2 shadow-lg">
           <Sun size={14} className={lightingAdvice.color} />
-          <div className="text-[9px] font-mono">
-            <p className="text-[7px] uppercase text-neutral-400 tracking-wider">Lighting Guide</p>
+          <div className="text-[12px] font-mono">
+            <p className="text-[7px]  text-neutral-400 tracking-wider">Lighting Guide</p>
             <p className={`font-bold ${lightingAdvice.color}`}>{lightingAdvice.title}</p>
           </div>
         </div>
 
         {/* Quick Camera Source Helper overlay if webcam unavailable */}
         {!isCameraActive && !customFile && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded text-[8px] tracking-wide text-neutral-400 flex items-center gap-1">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded text-[12px] tracking-wide text-neutral-400 flex items-center gap-1">
             <Eye size={10} className="text-indigo-400" /> Use alignment guides to frame your vehicle.
           </div>
         )}
@@ -1256,7 +1256,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
       {/* Guide Slots Carousel Picker */}
       <div className="bg-neutral-900 border-t border-neutral-850 p-2 shrink-0 z-10">
         <div className="flex items-center justify-between px-2 mb-2">
-          <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">
+          <p className="text-[12px] text-neutral-400 font-bold tracking-normal">
             Phase {currentPhase}: {phaseNames[currentPhase - 1]}
           </p>
         </div>
@@ -1274,9 +1274,9 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 key={slot.id}
                 type="button"
                 onClick={() => setSelectedSlotId(slot.id)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap border cursor-pointer flex items-center gap-1.5 transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap border cursor-pointer flex items-center gap-1.5 transition-all ${
                   isSelected
-                    ? 'bg-indigo-600 border-indigo-400 text-white shadow-md shadow-indigo-600/30'
+                    ? 'bg-indigo-600 border-indigo-400 text-[#E8EAE6] shadow-md shadow-indigo-600/30'
                     : isTaken
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                     : isNext
@@ -1285,9 +1285,9 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 }`}
               >
                 {isTaken ? (
-                  <Check size={10} className="text-emerald-400 font-extrabold" />
+                  <Check size={10} className="text-emerald-400 font-semibold" />
                 ) : isNext ? (
-                  <span className="text-[8px] font-black text-amber-400">NEXT</span>
+                  <span className="text-[12px] font-semibold text-amber-400">NEXT</span>
                 ) : null}
                 {slot.name} {slot.required && !isTaken ? '*' : ''}
               </button>
@@ -1304,12 +1304,12 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               const firstSlotOfNewPhase = PHOTO_SLOTS.find(s => s.phase === newPhase);
               if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
             }}
-            className="text-[10px] font-bold text-neutral-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+            className="text-[13px] font-bold text-neutral-400 hover:text-[#E8EAE6] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
           >
             <ChevronLeft size={12} /> Prev Phase
           </button>
           
-          <p className="text-[10px] text-neutral-300 font-medium truncate max-w-[150px]">
+          <p className="text-[13px] text-neutral-300 font-medium truncate max-w-[150px]">
             {activeSlot.description}
           </p>
 
@@ -1321,7 +1321,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               const firstSlotOfNewPhase = PHOTO_SLOTS.find(s => s.phase === newPhase);
               if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
             }}
-            className={`text-[10px] font-bold flex items-center gap-1 cursor-pointer ${phaseCompleted ? 'text-indigo-400 hover:text-indigo-300' : 'text-neutral-500'}`}
+            className={`text-[13px] font-bold flex items-center gap-1 cursor-pointer ${phaseCompleted ? 'text-indigo-400 hover:text-indigo-300' : 'text-neutral-500'}`}
           >
             Next Phase <ChevronRight size={12} />
           </button>
@@ -1337,7 +1337,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <button
               type="button"
               onClick={handleMarkNoServiceBook}
-              className="w-full py-2 bg-red-950/40 border border-red-500/30 text-red-400 hover:bg-red-950/60 rounded-xl text-[10px] font-extrabold flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all uppercase tracking-wider mb-1"
+              className="w-full py-2 bg-red-950/40 border border-red-500/30 text-red-400 hover:bg-red-950/60 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all tracking-normal mb-1"
             >
               <X size={12} className="stroke-[3]" /> No booklet with vehicle? Mark "None" (Exempt)
             </button>
@@ -1349,10 +1349,10 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           type="button"
           onClick={handleCapture}
           disabled={isRecording360}
-          className={`w-full py-3.5 rounded-2xl flex items-center justify-center gap-2.5 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-black text-sm uppercase tracking-wider disabled:opacity-60 ${
+          className={`w-full py-3.5 rounded-2xl flex items-center justify-center gap-2.5 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-semibold text-sm tracking-normal disabled:opacity-60 ${
             activeSlot.id === 'video_360'
-              ? 'bg-gradient-to-r from-red-600 to-rose-500 text-white border border-red-400/40'
-              : 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border border-indigo-400/30'
+              ? 'bg-gradient-to-r from-red-600 to-rose-500 text-[#E8EAE6] border border-red-400/40'
+              : 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-cyan-600 text-[#E8EAE6] border border-indigo-400/30'
           }`}
           title={activeSlot.id === 'video_360' ? 'Record 360 walkaround' : 'Take picture for this slot'}
         >
@@ -1377,7 +1377,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         <div className="flex items-center justify-between gap-2">
           {/* Native camera fallback — capture attr skips the gallery picker when the
               in-app live camera is blocked (e.g. PWA denied getUserMedia) */}
-          <label className={`flex-1 py-2 rounded-xl text-[9px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
+          <label className={`flex-1 py-2 rounded-xl text-[12px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
             !isCameraActive
               ? 'bg-amber-600/20 border-amber-500/40 text-amber-300 hover:bg-amber-600/30'
               : 'bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-neutral-300'
@@ -1393,7 +1393,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             />
           </label>
 
-          <label className={`flex-1 py-2 rounded-xl text-[9px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
+          <label className={`flex-1 py-2 rounded-xl text-[12px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
             !isCameraActive
               ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-600/30'
               : 'bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-neutral-300'
@@ -1409,7 +1409,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             />
           </label>
 
-          <label className="flex-1 py-2 bg-indigo-950/40 border border-indigo-900/50 hover:bg-indigo-900/40 rounded-xl text-[9px] font-bold text-indigo-400 flex flex-col items-center justify-center gap-1 cursor-pointer text-center relative">
+          <label className="flex-1 py-2 bg-indigo-950/40 border border-indigo-900/50 hover:bg-indigo-900/40 rounded-xl text-[12px] font-bold text-indigo-400 flex flex-col items-center justify-center gap-1 cursor-pointer text-center relative">
             <Images size={13} className="text-indigo-400" />
             <span>Bulk Roll</span>
             <input
@@ -1424,7 +1424,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           <button
             type="button"
             onClick={() => setAutoLevelOn(!autoLevelOn)}
-            className={`flex-1 py-2 border rounded-xl text-[9px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${
+            className={`flex-1 py-2 border rounded-xl text-[12px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${
               autoLevelOn
                 ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
                 : 'bg-neutral-900 border-neutral-800 text-neutral-400'
@@ -1437,7 +1437,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         {/* Diagnostic Guide Tip box */}
         <div className="flex gap-2 bg-indigo-950/20 p-2.5 rounded-xl border border-indigo-950/30">
           <Sparkles className="text-indigo-400 shrink-0" size={13} />
-          <p className="text-[9px] text-indigo-300 leading-normal">
+          <p className="text-[12px] text-indigo-300 leading-normal">
             <strong>Lot Photographer Tip:</strong> Align the vehicle tires with guidelines. Use <strong>Bulk Roll</strong> to upload multiple photos at once.
           </p>
         </div>
@@ -1452,8 +1452,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <div className="flex items-center gap-2">
               <Images className="text-indigo-400" size={18} />
               <div>
-                <h3 className="text-xs font-bold text-neutral-100">Bulk Camera Roll Importer</h3>
-                <p className="text-[9px] text-neutral-400">Streamline inventory lot photography bulk processing</p>
+                <h3 className="text-xs font-bold text-[#E8EAE6]">Bulk Camera Roll Importer</h3>
+                <p className="text-[12px] text-neutral-400">Streamline inventory lot photography bulk processing</p>
               </div>
             </div>
             {bulkProgress.status === 'idle' && (
@@ -1481,13 +1481,13 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                     </>
                   ) : bulkProgress.status === 'done' ? (
                     <span className="text-emerald-400 flex items-center gap-1.5 font-bold">
-                      <Check size={14} className="font-extrabold" /> All photos bulk-synced successfully!
+                      <Check size={14} className="font-semibold" /> All photos bulk-synced successfully!
                     </span>
                   ) : (
                     <span className="text-red-400">Error syncing photos. Try again.</span>
                   )}
                 </span>
-                <span className="text-[10px] font-mono text-neutral-400">
+                <span className="text-[13px] font-mono text-neutral-400">
                   {Math.round((bulkProgress.current / bulkProgress.total) * 100)}%
                 </span>
               </div>
@@ -1527,7 +1527,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
                     {/* Slot Match Controller */}
                     <div className="flex-1 min-w-0">
-                      <label className="text-[8px] uppercase font-bold text-neutral-400 tracking-wider block mb-1">
+                      <label className="text-[12px]  font-bold text-neutral-400 tracking-wider block mb-1">
                         Assign Photographic Slot
                       </label>
                       <select
@@ -1537,7 +1537,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                           const val = e.target.value;
                           setBulkItems(prev => prev.map(p => p.id === item.id ? { ...p, slotId: val } : p));
                         }}
-                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg text-[11px] py-1 px-2 text-neutral-200 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg text-[13px] py-1 px-2 text-neutral-200 focus:border-indigo-500 focus:outline-none"
                       >
                         {PHOTO_SLOTS.map(slot => (
                           <option key={slot.id} value={slot.id}>
@@ -1548,7 +1548,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
                       {/* Info / Overwrite alert helper */}
                       {isTaken && (
-                        <p className="text-[8px] text-amber-400 font-medium flex items-center gap-1 mt-1 font-sans">
+                        <p className="text-[12px] text-amber-400 font-medium flex items-center gap-1 mt-1 font-sans">
                           <AlertCircle size={9} /> Already has a photo. This will replace it.
                         </p>
                       )}
@@ -1587,7 +1587,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <button
               onClick={handleSyncBulkPhotos}
               disabled={bulkItems.length === 0 || bulkProgress.status === 'syncing'}
-              className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-xs font-extrabold text-white flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
+              className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-xs font-semibold text-[#E8EAE6] flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
             >
               {bulkProgress.status === 'syncing' ? (
                 <>

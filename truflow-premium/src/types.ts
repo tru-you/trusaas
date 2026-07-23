@@ -63,6 +63,14 @@ export interface Lead {
   notes: string;
   journey?: { time: string; action: string; detail: string }[];
   dealershipId?: string;
+  /** What happens next with this customer, and when. This is the whole point
+   *  of a pipeline — a lead without a next step is a lead you have already
+   *  lost, and "overdue" previously only meant "new or never contacted", so a
+   *  customer you spoke to three weeks ago and forgot never surfaced. */
+  nextAction?: string;
+  nextActionAt?: string | null;
+  /** When the lead last moved stage — lets you see deals stuck in Negotiating. */
+  stageChangedAt?: string;
 }
 
 export interface Task {

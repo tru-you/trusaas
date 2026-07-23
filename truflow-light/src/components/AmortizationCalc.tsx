@@ -54,44 +54,44 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
       {/* Inputs */}
       <div className="card">
         <div className="card-header border-b border-[rgba(126,164,214,0.1)] px-4 py-3">
-          <h3 className="font-semibold text-xs text-[#E8EEF6]">Finance Amortization Inputs</h3>
+          <h3 className="font-semibold text-xs text-[#E8EAE6]">Finance Amortization Inputs</h3>
         </div>
         <div className="card-body p-4 flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase tracking-wider text-[#9DB0C6]">Vehicle Total Price (ZAR)</label>
+            <label className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">Vehicle Total Price (ZAR)</label>
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-              className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none focus:border-[#1466E0]"
+              className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase tracking-wider text-[#9DB0C6]">Downpayment / Initial Deposit (ZAR)</label>
+            <label className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">Downpayment / Initial Deposit (ZAR)</label>
             <input
               type="number"
               value={deposit}
               onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)}
-              className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none focus:border-[#1466E0]"
+              className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase tracking-wider text-[#9DB0C6]">Interest Financing Percentage Rate (%)</label>
+            <label className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">Interest Financing Percentage Rate (%)</label>
             <input
               type="number"
               step="0.1"
               value={interestRate}
               onChange={(e) => setInterestRate(parseFloat(e.target.value) || 0)}
-              className="bg-[#0f1826]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none focus:border-[#1466E0]"
+              className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <div className="flex justify-between text-[10px] uppercase tracking-wider text-[#9DB0C6]">
+            <div className="flex justify-between text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">
               <span>Financing Term Duration</span>
-              <span className="text-[#4D9BFF] font-bold font-mono">{term} Months</span>
+              <span className="text-[#7FF0EA] font-bold font-mono">{term} Months</span>
             </div>
             <input
               type="range"
@@ -100,14 +100,14 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
               step="6"
               value={term}
               onChange={(e) => setTerm(parseInt(e.target.value))}
-              className="w-full accent-[#1466E0] cursor-pointer my-1.5"
+              className="w-full accent-[#4FE3DC] cursor-pointer my-1.5"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <div className="flex justify-between text-[10px] uppercase tracking-wider text-[#9DB0C6]">
+            <div className="flex justify-between text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">
               <span>Residual Balloon Percentage Ratio</span>
-              <span className="text-[#15C7C0] font-bold font-mono">{balloonPct}%</span>
+              <span className="text-[#4FE3DC] font-bold font-mono">{balloonPct}%</span>
             </div>
             <input
               type="range"
@@ -116,7 +116,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
               step="5"
               value={balloonPct}
               onChange={(e) => setBalloonPct(parseInt(e.target.value))}
-              className="w-full accent-[#15C7C0] cursor-pointer my-1.5"
+              className="w-full accent-[#4FE3DC] cursor-pointer my-1.5"
             />
           </div>
         </div>
@@ -125,29 +125,29 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
       {/* Outputs / Calculations summary */}
       <div className="card">
         <div className="card-header border-b border-[rgba(126,164,214,0.1)] px-4 py-3">
-          <h3 className="font-semibold text-xs text-[#E8EEF6]">Monthly Amortization Schedule</h3>
+          <h3 className="font-semibold text-xs text-[#E8EAE6]">Monthly Amortization Schedule</h3>
         </div>
         <div className="card-body p-6 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
-          <div className="text-[10px] text-[#9DB0C6] uppercase tracking-widest font-mono mb-2">Monthly Installment Payment</div>
-          <div className="text-4xl font-serif font-black text-[#4D9BFF] mb-2">{formatZAR(monthlyInstallment)}</div>
-          <div className="text-xs text-[#9DB0C6] mb-6">Structured interest at {interestRate}% over {term} months term limit</div>
+          <div className="text-[13px] text-[rgba(232,234,230,0.72)]  tracking-widest font-mono mb-2">Monthly Installment Payment</div>
+          <div className="text-4xl font-serif font-semibold text-[#7FF0EA] mb-2">{formatZAR(monthlyInstallment)}</div>
+          <div className="text-xs text-[rgba(232,234,230,0.72)] mb-6">Structured interest at {interestRate}% over {term} months term limit</div>
 
           <div className="grid grid-cols-2 gap-3 w-full text-left">
-            <div className="bg-[#0f1826]/2 rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
-              <div className="text-[9px] text-[#9DB0C6] uppercase tracking-wider font-mono">Net Principal</div>
-              <div className="text-sm font-bold text-[#E8EEF6] mt-0.5">{formatZAR(netPrincipal)}</div>
+            <div className="bg-[#0B0F17]/2 rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
+              <div className="text-[12px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Net Principal</div>
+              <div className="text-sm font-bold text-[#E8EAE6] mt-0.5">{formatZAR(netPrincipal)}</div>
             </div>
-            <div className="bg-[#0f1826]/2 rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
-              <div className="text-[9px] text-[#9DB0C6] uppercase tracking-wider font-mono">Aggregate Interest</div>
-              <div className="text-sm font-bold text-[#E8EEF6] mt-0.5">{formatZAR(totalInterest)}</div>
+            <div className="bg-[#0B0F17]/2 rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
+              <div className="text-[12px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Aggregate Interest</div>
+              <div className="text-sm font-bold text-[#E8EAE6] mt-0.5">{formatZAR(totalInterest)}</div>
             </div>
-            <div className="bg-[#0f1826]/2 rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
-              <div className="text-[9px] text-[#9DB0C6] uppercase tracking-wider font-mono">Balloon Value</div>
-              <div className="text-sm font-bold text-[#E8EEF6] mt-0.5">{formatZAR(balloonAmount)}</div>
+            <div className="bg-[#0B0F17]/2 rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
+              <div className="text-[12px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Balloon Value</div>
+              <div className="text-sm font-bold text-[#E8EAE6] mt-0.5">{formatZAR(balloonAmount)}</div>
             </div>
-            <div className="bg-[#0f1826]/2 rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
-              <div className="text-[9px] text-[#9DB0C6] uppercase tracking-wider font-mono">Lifetime Total Cost</div>
-              <div className="text-sm font-bold text-[#E8EEF6] mt-0.5">{formatZAR(lifetimeCost)}</div>
+            <div className="bg-[#0B0F17]/2 rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
+              <div className="text-[12px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Lifetime Total Cost</div>
+              <div className="text-sm font-bold text-[#E8EAE6] mt-0.5">{formatZAR(lifetimeCost)}</div>
             </div>
           </div>
         </div>

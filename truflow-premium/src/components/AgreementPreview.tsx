@@ -30,7 +30,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
           <title>Agreement Deed - ${agreement.agreementNumber}</title>
           <style>
             body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; color: #1a1a2e; background: #fff; }
-            .doc-title { text-align: center; color: #122a48; font-size: 20px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+            .doc-title { text-align: center; color: #122a48; font-size: 20px; font-weight: 800; text-transform: ; margin-bottom: 5px; }
             .doc-sub { text-align: center; font-size: 11px; color: #666; margin-bottom: 30px; }
             .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px; font-size: 12px; line-height: 1.6; }
             .asset-panel { background: #f8f8fa; border-radius: 6px; padding: 15px; margin-bottom: 30px; font-size: 12px; border: 1px solid #ddd; }
@@ -143,20 +143,20 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
         {/* CONTRACT PAPER VIEW */}
         <div className="lg:col-span-2">
-          <div className="bg-[#0f1826] text-[#1a1a2e] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans relative overflow-hidden" id="printableAgreementFrame">
+          <div className="bg-[#0B0F17] text-[#1a1a2e] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans relative overflow-hidden" id="printableAgreementFrame">
             {/* Security Badge watermark */}
-            <div className="absolute top-8 right-8 text-[#15C7C0]/10 flex items-center gap-1 text-[10px] font-bold tracking-wider select-none">
+            <div className="absolute top-8 right-8 text-[#4FE3DC]/10 flex items-center gap-1 text-[13px] font-bold tracking-wider select-none">
               <Shield size={16} /> SECURED BY TRUECAR DMS SIGN-OFF
             </div>
 
-            <h1 className="text-center font-serif text-xl font-black text-[#122a48] tracking-tight uppercase">
+            <h1 className="text-center font-serif text-xl font-semibold text-[#122a48] tracking-tight ">
               {agreement.type === "Offer to Purchase" ? "Offer to Purchase (OTP)" :
                agreement.type === "Finance Application" ? "Pre-Approval Credit Finance Application" :
                agreement.type === "Trade-In Transfer" ? "Trade-In Exchange Agreement" :
                agreement.type === "Deposit Hold" ? "Secured Deposit Hold & Reserve Deed" :
                "Certified Binding Sales Agreement"}
             </h1>
-            <div className="text-center text-[10px] font-bold text-gray-400 font-mono tracking-widest uppercase mb-8">
+            <div className="text-center text-[13px] font-bold text-gray-400 font-mono tracking-widest  mb-8">
               Reference Index: {
                 agreement.type === "Offer to Purchase" ? "OTP-" :
                 agreement.type === "Finance Application" ? "FIN-" :
@@ -168,20 +168,20 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
             {/* Party Grid */}
             <div className="grid grid-cols-2 gap-8 mb-6 text-xs text-gray-700 leading-relaxed border-b border-gray-100 pb-6">
               <div>
-                <div className="font-bold text-gray-900 mb-1.5 text-[10px] tracking-wider uppercase text-gray-400">PART A: DEALER MERCHANT</div>
-                <div className="font-black text-gray-900">Johannesburg Auto (Pty) Ltd</div>
+                <div className="font-bold text-gray-900 mb-1.5 text-[13px] tracking-wider  text-gray-400">PART A: DEALER MERCHANT</div>
+                <div className="font-semibold text-gray-900">Johannesburg Auto (Pty) Ltd</div>
                 <div>Registration No: 2015/123456/07</div>
                 <div>Sandton Towers, Sandhurst</div>
                 <div>Johannesburg, South Africa</div>
               </div>
               <div>
-                <div className="font-bold text-gray-900 mb-1.5 text-[10px] tracking-wider uppercase text-gray-400">PART B: APPLICANT / PURCHASER</div>
+                <div className="font-bold text-gray-900 mb-1.5 text-[13px] tracking-wider  text-gray-400">PART B: APPLICANT / PURCHASER</div>
                 {lead ? (
                   <>
-                    <div className="font-black text-gray-900">{lead.firstName} {lead.lastName}</div>
+                    <div className="font-semibold text-gray-900">{lead.firstName} {lead.lastName}</div>
                     <div>Phone: {lead.phone}</div>
                     <div>Email: {lead.email}</div>
-                    <div className="italic text-[10px] text-gray-400 mt-1">Authorized Customer Account</div>
+                    <div className="italic text-[13px] text-gray-400 mt-1">Authorized Customer Account</div>
                   </>
                 ) : (
                   <div className="italic text-gray-400">Walk-In Client Account</div>
@@ -191,7 +191,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
 
             {/* Asset Identification Panel */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-xs text-gray-800">
-              <div className="font-bold text-[#122a48] mb-2 tracking-wide uppercase text-[10px]">
+              <div className="font-bold text-[#122a48] mb-2 tracking-wide  text-[13px]">
                 Acquired Asset Assignment Identification:
               </div>
               <div className="grid grid-cols-2 gap-y-2 gap-x-4">
@@ -210,7 +210,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
               </div>
               <div>
                 <span className="text-gray-400 font-medium">Downpayment / Deposit:</span>{" "}
-                <span className="font-bold text-[#1466E0]">{formatZAR(agreement.depositAmount)}</span>
+                <span className="font-bold text-[#4FE3DC]">{formatZAR(agreement.depositAmount)}</span>
               </div>
               <div>
                 <span className="text-gray-400 font-medium">Standard 15% VAT:</span>{" "}
@@ -223,7 +223,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
             </div>
 
             {/* Legal Scrollbox */}
-            <div className="text-[10px] text-gray-600 border border-gray-200 rounded-lg p-4 bg-gray-50 h-28 overflow-y-auto mb-6 line-height-relaxed select-none">
+            <div className="text-[13px] text-gray-600 border border-gray-200 rounded-lg p-4 bg-gray-50 h-28 overflow-y-auto mb-6 line-height-relaxed select-none">
               {agreement.type === "Offer to Purchase" ? (
                 <>
                   <div className="font-bold text-gray-900 mb-1.5">1. MANDATORY OFFER & ACCEPTANCE STATUTE:</div>
@@ -237,14 +237,14 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 <>
                   <div className="font-bold text-gray-900 mb-1.5">1. CREDIT ASSESSMENT DISCLOSURE:</div>
                   The applicant hereby requests Johannesburg Auto (Pty) Ltd to act as the finance & insurance (F&I) broker. The applicant explicitly authorizes soft and hard credit bureau enquiries (Experian, TransUnion, ITC).
-                  <div className="font-bold text-gray-900 mt-3 mb-1.5">2. POPI COMPLIANCE DEED:</div>
+                  <div className="font-bold text-gray-900 mt-3 mb-1.5">2. POPI Act:</div>
                   All personal credit logs, bank details, and identification files provided will be treated in strict accordance with the Protection of Personal Information (POPI) Act of South Africa.
                   <div className="font-bold text-gray-900 mt-3 mb-1.5">3. DECLARATION OF SOLVENCY:</div>
                   The applicant declares that they are not currently under debt review, administration, or declared insolvent under any South African jurisdiction.
                 </>
               ) : (
                 <>
-                  <div className="font-bold text-gray-900 mb-1.5">1. STANDARD DEED TERMS:</div>
+                  <div className="font-bold text-gray-900 mb-1.5">1. Standard terms:</div>
                   The purchaser executes this commitment with the understanding that the asset described above has been examined. The merchant provides legal warranty clearance for a structured limit of 6 months.
                   <div className="font-bold text-gray-900 mt-3 mb-1.5">2. RESIDUAL VOETSTOOTS STATUTE:</div>
                   The asset is transferred Voetstoots (As-Is) with standard factory warranties continuing where applicable. The purchaser acknowledges that they have personally inspected and approved the vehicle.
@@ -257,11 +257,11 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
             {/* Signatures */}
             <div className="grid grid-cols-2 gap-12 mt-8 text-xs border-t border-gray-100 pt-6">
               <div className="flex flex-col">
-                <div className="h-12 border-b border-gray-300 flex items-end justify-center font-mono text-[#1466E0] italic font-semibold text-center pb-1">
+                <div className="h-12 border-b border-gray-300 flex items-end justify-center font-mono text-[#4FE3DC] italic font-semibold text-center pb-1">
                   TrueCar Sandton Showroom Floor Node
                 </div>
-                <div className="font-black text-gray-900 mt-2">Signature of Dealer Representative</div>
-                <div className="text-gray-400 text-[10px] mt-0.5">Date: {agreement.signedAt?.slice(0, 10) || new Date().toISOString().slice(0, 10)}</div>
+                <div className="font-semibold text-gray-900 mt-2">Signature of Dealer Representative</div>
+                <div className="text-gray-400 text-[13px] mt-0.5">Date: {agreement.signedAt?.slice(0, 10) || new Date().toISOString().slice(0, 10)}</div>
               </div>
               <div className="flex flex-col">
                 <div className="h-12 border-b border-gray-300 flex items-center justify-center text-center">
@@ -274,11 +274,11 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                       <img src={agreement.signature} alt="Client Signature" className="max-h-12 object-contain" />
                     )
                   ) : (
-                    <span className="text-amber-500 text-[9px] uppercase font-black tracking-widest font-mono">Awaiting Digital Signature</span>
+                    <span className="text-amber-500 text-[12px]  font-semibold tracking-widest font-mono">Waiting for signature</span>
                   )}
                 </div>
-                <div className="font-black text-gray-900 mt-2">Signature of Purchaser</div>
-                <div className="text-gray-400 text-[10px] mt-0.5">
+                <div className="font-semibold text-gray-900 mt-2">Signature of Purchaser</div>
+                <div className="text-gray-400 text-[13px] mt-0.5">
                   Date: {agreement.signedAt ? agreement.signedAt.slice(0, 10) : "Pending"}
                 </div>
               </div>
@@ -287,32 +287,32 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
         </div>
 
         {/* INTERACTIVE SIGNING PAD */}
-        <div className="flex flex-col justify-between bg-[#0f1826]/3 border border-white/5 rounded-xl p-5 gap-4">
+        <div className="flex flex-col justify-between bg-[#0B0F17]/3 border border-white/5 rounded-xl p-5 gap-4">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-[#15C7C0]">
+            <div className="flex items-center gap-2 text-[#4FE3DC]">
               <FileSignature size={16} />
-              <h4 className="font-black text-xs uppercase tracking-wider">Deed Signing Hub</h4>
+              <h4 className="font-semibold text-xs tracking-normal">Signing</h4>
             </div>
-            <p className="text-[11px] text-[#9DB0C6] leading-relaxed">
+            <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
               Verify legal terms, then capture the purchaser's binding signature below to finalize this transaction record.
             </p>
           </div>
 
           {agreement.status === "Pending Signature" ? (
             <div className="flex flex-col gap-3">
-              <div className="flex bg-[#0f1826]/5 rounded-lg p-0.5 border border-white/5">
+              <div className="flex bg-[#0B0F17]/5 rounded-lg p-0.5 border border-white/5">
                 <button
                   onClick={() => setSignMode("draw")}
-                  className={`flex-1 text-center py-1 text-[11px] font-bold rounded-md transition-all ${
-                    signMode === "draw" ? "bg-[#1466E0] text-white" : "text-[#9DB0C6] hover:text-[#E8EEF6]"
+                  className={`flex-1 text-center py-1 text-[13px] font-bold rounded-md transition-all ${
+                    signMode === "draw" ? "bg-[#4FE3DC] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
                   }`}
                 >
                   Draw Signature
                 </button>
                 <button
                   onClick={() => setSignMode("type")}
-                  className={`flex-1 text-center py-1 text-[11px] font-bold rounded-md transition-all ${
-                    signMode === "type" ? "bg-[#1466E0] text-white" : "text-[#9DB0C6] hover:text-[#E8EEF6]"
+                  className={`flex-1 text-center py-1 text-[13px] font-bold rounded-md transition-all ${
+                    signMode === "type" ? "bg-[#4FE3DC] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
                   }`}
                 >
                   Type E-Sign
@@ -321,7 +321,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
 
               {signMode === "draw" ? (
                 <div className="flex flex-col gap-2">
-                  <div className="relative bg-[#0f1826] rounded-lg overflow-hidden border border-white/10">
+                  <div className="relative bg-[#0B0F17] rounded-lg overflow-hidden border border-white/10">
                     <canvas
                       ref={canvasRef}
                       width={280}
@@ -333,16 +333,16 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                       onTouchStart={startDrawing}
                       onTouchMove={draw}
                       onTouchEnd={stopDrawing}
-                      className="w-full bg-[#0f1826] cursor-crosshair touch-none"
+                      className="w-full bg-[#0B0F17] cursor-crosshair touch-none"
                     />
                     <button
                       onClick={clearCanvas}
-                      className="absolute bottom-2 right-2 p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-all flex items-center gap-1 text-[9px] font-bold"
+                      className="absolute bottom-2 right-2 p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-all flex items-center gap-1 text-[12px] font-bold"
                     >
                       <RotateCcw size={10} /> Clear Pad
                     </button>
                   </div>
-                  <span className="text-[9px] text-[#9DB0C6] italic text-center">Use your mouse or touchscreen to draw</span>
+                  <span className="text-[12px] text-[rgba(232,234,230,0.72)] italic text-center">Use your mouse or touchscreen to draw</span>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
@@ -351,10 +351,10 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                     value={typedName}
                     onChange={(e) => setTypedName(e.target.value)}
                     placeholder="Enter full legal name..."
-                    className="w-full px-3 py-2 bg-[#0f1826]/5 border border-white/10 rounded-lg text-xs text-white outline-none focus:border-[#15C7C0]"
+                    className="w-full px-3 py-2 bg-[#0B0F17]/5 border border-white/10 rounded-lg text-xs text-white outline-none focus:border-[#4FE3DC]"
                   />
-                  <div className="h-16 bg-[#0f1826]/5 rounded-lg border border-dashed border-white/10 flex items-center justify-center p-3">
-                    <span className="font-serif italic text-lg text-[#15C7C0] tracking-wider">
+                  <div className="h-16 bg-[#0B0F17]/5 rounded-lg border border-dashed border-white/10 flex items-center justify-center p-3">
+                    <span className="font-serif italic text-lg text-[#4FE3DC] tracking-wider">
                       {typedName || "Cursive Preview"}
                     </span>
                   </div>
@@ -364,33 +364,33 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
               <button
                 onClick={handleSignSubmit}
                 disabled={submitting}
-                className="w-full py-2.5 bg-gradient-to-r from-[#35C46B] to-[#2DA056] text-white hover:brightness-110 active:scale-95 transition-all text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/10 disabled:opacity-50"
+                className="w-full py-2.5 bg-gradient-to-r from-[#4ADE9B] to-[#2DA056] text-white hover:brightness-110 active:scale-95 transition-all text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/10 disabled:opacity-50"
               >
                 {submitting ? "Processing E-Sign..." : "Affix Binding Signature"}
               </button>
             </div>
           ) : (
-            <div className="bg-[#35C46B]/10 border border-[#35C46B]/20 rounded-xl p-4 flex flex-col items-center justify-center gap-3 py-6">
-              <div className="w-10 h-10 rounded-full bg-[#35C46B]/20 flex items-center justify-center text-[#35C46B]">
+            <div className="bg-[#4ADE9B]/10 border border-[#4ADE9B]/20 rounded-xl p-4 flex flex-col items-center justify-center gap-3 py-6">
+              <div className="w-10 h-10 rounded-full bg-[#4ADE9B]/20 flex items-center justify-center text-[#4ADE9B]">
                 <Check size={20} />
               </div>
               <div className="text-center">
-                <h5 className="text-xs font-black text-white uppercase tracking-wider">Deed fully executed</h5>
-                <p className="text-[10px] text-[#9DB0C6] mt-0.5">
+                <h5 className="text-xs font-semibold text-white tracking-normal">Signed</h5>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                   Digitally signed with unique hashing index. Document locked from modifications.
                 </p>
               </div>
-              <div className="text-[9px] font-mono bg-[#0f1826]/5 border border-white/5 rounded px-2.5 py-1 text-[#35C46B] text-center max-w-full truncate">
+              <div className="text-[12px] font-mono bg-[#0B0F17]/5 border border-white/5 rounded px-2.5 py-1 text-[#4ADE9B] text-center max-w-full truncate">
                 SHA-256: {agreement.id.slice(4)}
               </div>
             </div>
           )}
 
-          <div className="bg-[#0f1826]/40 rounded-lg p-3 text-[10px] text-[#9DB0C6] leading-relaxed border border-white/3 flex flex-col gap-1">
-            <span className="font-bold text-[#9DB0C6]">Audit Trail Parameters:</span>
+          <div className="bg-[#0B0F17]/40 rounded-lg p-3 text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed border border-white/3 flex flex-col gap-1">
+            <span className="font-bold text-[rgba(232,234,230,0.72)]">Audit trail:</span>
             <span>IP Location: Sandton, RSA (Vite Showroom)</span>
             <span>Timestamp: {agreement.signedAt || "Pending Execution"}</span>
-            <span>POPI Act: Authorized via TrueCar DMS Gateway</span>
+            <span>POPI Act consent recorded</span>
           </div>
         </div>
       </div>
