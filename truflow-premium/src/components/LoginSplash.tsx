@@ -32,12 +32,10 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
     <div className="flex items-center justify-center min-h-screen bg-[#06080D] text-white p-4 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-80" />
       <div
-        className="relative w-full max-w-sm p-8 rounded-2xl border border-white/15"
+        className="relative w-full max-w-sm p-8 rounded-2xl border border-[rgba(232,234,230,0.14)]"
         style={{
-          background: 'linear-gradient(160deg, rgba(40,24,64,0.55), rgba(10,16,28,0.7))',
-          backdropFilter: 'blur(24px) saturate(1.45)',
-          WebkitBackdropFilter: 'blur(24px) saturate(1.45)',
-          boxShadow: '0 1px 0 rgba(255,255,255,0.1) inset, 0 24px 60px -20px rgba(0,0,0,0.85), 0 0 70px -18px rgba(168,85,247,0.45)',
+          background: '#0B0F17',
+          boxShadow: '0 1px 0 rgba(232,234,230,0.06) inset, 0 40px 90px -40px rgba(0,0,0,0.95)',
         }}
       >
         <div className="flex flex-col items-center justify-center mb-6 gap-3">
@@ -69,7 +67,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
             <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Keep me signed in on this device</span>
           </label>
           {error && <p className="text-xs text-[#FF6B6B] mb-4">{error}</p>}
-          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#4FE3DC] hover:bg-[#1258c4] disabled:opacity-60 on-fill font-bold text-sm">
+          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#4FE3DC] hover:bg-[#7FF0EA] disabled:opacity-60 on-fill font-bold text-sm">
             {busy ? 'Checking…' : 'Enter'}
           </button>
         </form>

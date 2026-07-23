@@ -72,6 +72,7 @@ import WebsiteChatWidget from "./components/WebsiteChatWidget";
 import InvoicePreview from "./components/InvoicePreview";
 import AgreementPreview from "./components/AgreementPreview";
 import DocumentsHub from "./components/DocumentsHub";
+import PwaInstallBanner from "./components/PwaInstallBanner";
 
 /* Split out of the initial bundle — none of these is needed to paint the
    dashboard, and together they were roughly a third of a 540KB single chunk
@@ -930,12 +931,28 @@ export default function App() {
           <div className="w-full flex items-center justify-center px-1">
             <img src={logo} alt="TruFlow Premium" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
-          <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[12px] text-[#67E8F9] hover:underline tracking-widest mt-2 ">true-cars.co.za</a>
-          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[12px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 ">TruSaas platform</a>
-          <div className="flex gap-2 mt-2">
-            <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="text-[12px] font-mono  px-2 py-1 rounded-lg bg-[#4FE3DC]/12 text-[#4FE3DC] border border-[#4FE3DC]/25 hover:bg-[#4FE3DC]/2">Showroom</a>
-            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[12px] font-mono  px-2 py-1 rounded-lg bg-[#22D3EE]/15 text-[#67E8F9] border border-[#22D3EE]/30 hover:bg-[#22D3EE]/25">TruSaas</a>
-          </div>
+          {/* The dealer's OWN showroom. This was hardcoded to true-cars.co.za,
+              so every dealership's sidebar linked to our consumer site instead
+              of to their website. */}
+          {(() => {
+            const mine = (state?.dealerships || []).find((d: any) => d.id === dealershipId)
+              || (state?.dealerships || [])[0];
+            const site = mine?.websiteUrl;
+            if (!site) return null;
+            const label = site.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            return (
+              <>
+                <a href={site} target="_blank" rel="noopener noreferrer"
+                   className="text-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] mt-2 transition-colors">{label}</a>
+                <div className="flex gap-2 mt-2">
+                  <a href={site} target="_blank" rel="noopener noreferrer"
+                     className="text-[12px] px-2.5 py-1 rounded-full bg-[#4FE3DC]/12 text-[#4FE3DC] border border-[#4FE3DC]/25 hover:bg-[#4FE3DC]/20 transition-colors">
+                    Your showroom
+                  </a>
+                </div>
+              </>
+            );
+          })()}
         </div>
 
          <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1 scrollbar-thin">
@@ -2964,6 +2981,7 @@ export default function App() {
       </main>
 
       {/* Side floating Copilot assistant chat widget */}
+      <PwaInstallBanner appName="TruFlow Premium" accent="#4D9BFF" dismissKey="truflow_premium_pwa_dismissed" />
       <ChatWidget />
       
       {/* Website Chat Widget Simulation */}

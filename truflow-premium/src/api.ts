@@ -3,8 +3,8 @@ import { Vehicle, Lead, Task, Invoice, Agreement, DealerDocument, User, Communic
 
 const DEFAULT_MOCK_STATE: DMSState = {
   dealerships: [
-    { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg' },
-    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape' }
+    { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrautosales.co.za' },
+    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://carsoncaledon.co.za' }
   ],
   documents: [],
   digitalProducts: [],

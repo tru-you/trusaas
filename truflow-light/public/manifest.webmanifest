@@ -1,0 +1,42 @@
+{
+  "id": "/",
+  "name": "TruFlow Lite \u2014 Dealer Operations",
+  "short_name": "TruFlow Lite",
+  "description": "Inventory, leads and deal jackets for the smaller yard.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "browser"
+  ],
+  "background_color": "#06080D",
+  "theme_color": "#4D9BFF",
+  "lang": "en-ZA",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

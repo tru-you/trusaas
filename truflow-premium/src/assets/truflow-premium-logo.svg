@@ -30,6 +30,6 @@
   </g>
 
   <text x="92" y="58" font-family="Archivo, Segoe UI, system-ui, sans-serif" font-size="38" font-weight="800" fill="#E8EEF6" letter-spacing="0.5">Tru<tspan fill="url(#tf-pre-glow)">Flow</tspan></text>
-  <rect x="318" y="34" width="112" height="28" rx="9" fill="rgba(168,85,247,0.14)" stroke="rgba(192,132,252,0.5)" stroke-width="1"/>
+  <rect x="318" y="34" width="112" height="28" rx="9" fill="rgba(77,155,255,0.14)" stroke="rgba(77,155,255,0.5)" stroke-width="1"/>
   <text x="374" y="53" text-anchor="middle" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="12" font-weight="700" fill="#7FF0EA" letter-spacing="1.5">PREMIUM</text>
 </svg>

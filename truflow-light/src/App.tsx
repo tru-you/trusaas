@@ -66,6 +66,7 @@ import WebsiteChatWidget from "./components/WebsiteChatWidget";
 import InvoicePreview from "./components/InvoicePreview";
 import AgreementPreview from "./components/AgreementPreview";
 import DocumentsHub from "./components/DocumentsHub";
+import PwaInstallBanner from "./components/PwaInstallBanner";
 import AmortizationCalc from "./components/AmortizationCalc";
 import LeadDetailModal from "./components/LeadDetailModal";
 import AccountingRecon from "./components/AccountingRecon";
@@ -2377,6 +2378,7 @@ export default function App() {
       </main>
 
       {/* Side floating Copilot assistant chat widget */}
+      <PwaInstallBanner appName="TruFlow Lite" accent="#4D9BFF" dismissKey="truflow_lite_pwa_dismissed" />
       <ChatWidget />
       
       {/* Website Chat Widget Simulation */}

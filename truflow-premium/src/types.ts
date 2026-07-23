@@ -4,6 +4,12 @@ export interface Dealership {
   id: string;
   name: string;
   location: string;
+  /** The dealer's own public showroom. The sidebar link was hardcoded to
+   *  true-cars.co.za, so every dealer got a link to our consumer site rather
+   *  than to their own website. */
+  websiteUrl?: string;
+  /** Slug used by the public stock feed (?dealer=). */
+  slug?: string;
 }
 
 export interface Vehicle {

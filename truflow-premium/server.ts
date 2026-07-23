@@ -535,8 +535,8 @@ const DEFAULT_MOCK_STATE = {
   // DEALER_SLUG_TO_ID below — that pairing is what keeps each dealer's stock
   // on their own website only.
   dealerships: [
-    { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg' },
-    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape' }
+    { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrautosales.co.za' },
+    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://carsoncaledon.co.za' }
   ],
   vehicles: [
     { 
@@ -667,6 +667,14 @@ function readState(): typeof DEFAULT_MOCK_STATE {
       // every hand-added car lands on the default dealer's website.
       if (!Array.isArray(parsed.dealerships) || !parsed.dealerships.length) {
         parsed.dealerships = DEFAULT_MOCK_STATE.dealerships;
+      } else {
+        // Backfill fields added after a dealership was first written — an
+        // existing state file keeps its dealerships, so new keys like the
+        // dealer's own websiteUrl would never appear without this.
+        parsed.dealerships = parsed.dealerships.map((d: any) => {
+          const seed = DEFAULT_MOCK_STATE.dealerships.find((x: any) => x.id === d.id);
+          return seed ? { ...seed, ...d, websiteUrl: d.websiteUrl || (seed as any).websiteUrl, slug: d.slug || (seed as any).slug } : d;
+        });
       }
       parsed.vehicles.forEach((v: any) => {
         if (!v.images) v.images = [];
