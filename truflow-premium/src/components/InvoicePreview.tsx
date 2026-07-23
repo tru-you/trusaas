@@ -86,7 +86,7 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
                   <div>{lead.email}</div>
                 </>
               ) : (
-                <div className="italic text-gray-400">Anonymous Walk-In Account</div>
+                <div className="italic text-gray-400">Walk-in</div>
               )}
             </div>
             <div>

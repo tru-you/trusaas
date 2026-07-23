@@ -645,7 +645,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                   <div className="bg-[#0B0F17]/40 border border-white/5 rounded-xl p-4 flex flex-col gap-3">
                     <div>
                       <h4 className="text-xs font-bold text-white tracking-normal">Log Refurbishment Task</h4>
-                      <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Adds directly to vehicle ledger overhead index.</p>
+                      <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Adds to this car's cost.</p>
                     </div>
 
                     <form onSubmit={handleAddReconSubmit} className="flex flex-col gap-2.5">
@@ -872,7 +872,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <div className="lg:col-span-6 card p-5 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-2">
               <h3 className="font-bold text-xs text-[rgba(232,234,230,0.72)] tracking-normal">2. Live Corporate Bank Feed</h3>
-              <span className="text-[12px] bg-emerald-500/10 text-[#4ADE9B] font-mono px-2 py-0.5 rounded border border-[#4ADE9B]/20 font-bold">FNB SANDTON FEED SECURE</span>
+              <span className="text-[12px] bg-emerald-500/10 text-[#4ADE9B] font-mono px-2 py-0.5 rounded border border-[#4ADE9B]/20 font-bold">Bank feed</span>
             </div>
 
             <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1">

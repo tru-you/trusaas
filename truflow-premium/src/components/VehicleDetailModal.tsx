@@ -800,7 +800,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   <div className="flex items-center gap-2">
                     <Share2 size={18} className="text-[#4FE3DC]" />
                     <div>
-                      <h4 className="text-xs font-semibold text-white tracking-normal">Multi-Portal Syndication Hub</h4>
+                      <h4 className="text-xs font-semibold text-white tracking-normal">Marketplace listings</h4>
                       <p className="text-[12px] text-[rgba(232,234,230,0.72)]">Distribute inventory to partner networks</p>
                     </div>
                   </div>
@@ -810,7 +810,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <div className="bg-black/30 border border-white/5 rounded-lg p-3 flex justify-between items-center">
                       <div className="flex flex-col">
                         <span className="text-white text-xs font-bold">AutoTrader SA</span>
-                        <span className="text-[rgba(232,234,230,0.72)] text-[13px]">Premium Listings Portal</span>
+                        <span className="text-[rgba(232,234,230,0.72)] text-[13px]">Premium listings</span>
                       </div>
                       <button
                         onClick={() => alert("Simulated push to AutoTrader successful.")}

@@ -118,7 +118,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
             <div className="p-1.5 rounded-lg bg-[#22d3ee]/15 text-[#67e8f9] border border-[#22d3ee]/20">
               <Award size={16} />
             </div>
-            <h3 className="font-serif text-lg font-semibold text-[#E8EAE6]">Commission Estimation Engine</h3>
+            <h3 className="font-serif text-lg font-semibold text-[#E8EAE6]">Commission estimate</h3>
           </div>
           <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-1">
             Real-time projection of sales representative commission pool based on finalized deal ledger margins.

@@ -928,8 +928,8 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Dashboard Overview</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Real-time dealer catalog and prospect tracking</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Overview</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Your stock and leads, live</p>
               </div>
               <button onClick={() => navigateTo("upload")} className="btn btn-primary">
                 + New Inventory
@@ -939,12 +939,12 @@ export default function App() {
             {/* Stats Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Active Floor Stock</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Cars in stock</div>
                 <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1"><Counter value={activeVehiclesCount} /></div>
                 <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Ready for viewing</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Unresolved CRM Leads</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Open leads</div>
                 <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1"><Counter value={unresolvedLeadsCount} /></div>
                 <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">High conversion rating</div>
               </div>
@@ -954,13 +954,13 @@ export default function App() {
                 <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Cleared this cycle</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Total Realized Revenue</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Revenue</div>
                 <div className="text-2xl font-serif font-semibold text-[#7FF0EA] mt-1"><Counter value={totalRevenue} prefix="R " /></div>
                 <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Cleared payments</div>
               </div>
             </div>
 
-            {/* End of Day (EOD) Summary Card */}
+            {/* End of day summary Card */}
             {(selectedRole === 'manager' || selectedRole === 'owner') && (
               <div className="card p-5 bg-gradient-to-r from-[#4FE3DC]/10 via-[#0a1420] to-[#4FE3DC]/5 border border-[#4FE3DC]/25 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg shadow-[#4FE3DC]/5">
                 <div className="flex items-center gap-4">
@@ -968,7 +968,7 @@ export default function App() {
                     <TrendingUp size={24} />
                   </div>
                   <div>
-                    <h3 className="font-sans text-base font-semibold tracking-tight text-[#E8EAE6]">One-Tap End of Day (EOD) Operations Summary</h3>
+                    <h3 className="font-sans text-base font-semibold tracking-tight text-[#E8EAE6]">End of day summary</h3>
                     <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 max-w-xl leading-relaxed">
                       Generate a detailed operational report including customer leads worked, vehicles sold, reconditioning layout, and gross yield margins for the past 24 hours.
                     </p>
@@ -1051,7 +1051,7 @@ export default function App() {
             {/* Recent Leads list */}
             <div className="card">
               <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Active CRM Prospect Leads</h3>
+                <h3 className="font-semibold text-sm">Leads</h3>
                 <button
                   onClick={() => navigateTo("leads")}
                   className="btn btn-secondary btn-sm"
@@ -1122,7 +1122,7 @@ export default function App() {
                 <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">+24% traffic growth</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Catalog Filter Clicks</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Filter views</div>
                 <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1">8,432</div>
                 <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">+18% high-intent actions</div>
               </div>
@@ -1174,7 +1174,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Inventory Database</h1>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Stock</h1>
                 <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">
                   Manage live pre-owned floor assets and pricing
                   {state.vehicles.some((v: any) => (v.images?.length || 0) > 0) && (
@@ -1683,8 +1683,8 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Lead CRM Pipeline</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate web-leads and showroom walk-in traffic</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Leads</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Enquiries from your website and walk-ins</p>
               </div>
               <div className="flex gap-2">
                 <button
@@ -1695,7 +1695,7 @@ export default function App() {
                       : "bg-[#0B0F17]/3 border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
                   }`}
                 >
-                  {filterOverdueOnly ? "Show All Leads" : "Flag Overdue Leads"}
+                  {filterOverdueOnly ? "Show All Leads" : "Show overdue"}
                 </button>
                 <button 
                   onClick={handleAutoAssign} 
@@ -1707,7 +1707,7 @@ export default function App() {
                   }`}
                 >
                   <Sparkles size={14} className={isAutoAssigning ? "animate-pulse" : ""} />
-                  {isAutoAssigning ? "AI Agent Working..." : "AI Auto-Assign"}
+                  {isAutoAssigning ? "AI Agent Working..." : "Auto-assign"}
                 </button>
                 <button onClick={() => setIsLeadModalOpen(true)} className="btn btn-primary">
                   + New Lead
@@ -1723,7 +1723,7 @@ export default function App() {
                   leadCrmTab === "kanban" ? "text-white border-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[#E8EAE6]"
                 }`}
               >
-                Interactive Kanban Board
+                Board
               </button>
               <button
                 onClick={() => setLeadCRMTab("list")}
@@ -1731,7 +1731,7 @@ export default function App() {
                   leadCrmTab === "list" ? "text-white border-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[#E8EAE6]"
                 }`}
               >
-                Detailed Grid View
+                List
               </button>
             </div>
 
@@ -1871,7 +1871,7 @@ export default function App() {
         {activeSection === "scoring" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Advanced AI Lead Scoring</h1>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Lead scoring</h1>
               <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate intent and prioritization indices</p>
             </div>
 
@@ -1898,18 +1898,18 @@ export default function App() {
                 <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Inactive page views</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Average Digital Index</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Average lead score</div>
                 <div className="text-2xl font-serif font-semibold text-[#4FE3DC] mt-1">
                   {Math.round(state.leads.reduce((sum, l) => sum + l.digitalScore, 0) / state.leads.length)}%
                 </div>
-                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Strong digital engagement</div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Very interested</div>
               </div>
             </div>
 
             {/* Matrix Card table */}
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Active Scoring Matrix</h3>
+                <h3 className="font-semibold text-sm">Lead scores</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[700px]">
@@ -1964,7 +1964,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Invoices & Billings</h1>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Invoices</h1>
                 <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Track accounts receivable and sales transactions</p>
               </div>
               <button onClick={() => setIsInvoiceModalOpen(true)} className="btn btn-primary">
@@ -1975,7 +1975,7 @@ export default function App() {
             {/* Invoices list */}
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Invoice Database Folder</h3>
+                <h3 className="font-semibold text-sm">Invoices</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[700px]">
@@ -2051,8 +2051,8 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Executed Deal Agreements</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Digital sign-off deed folder for secure contracting</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Signed agreements</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Signed documents</p>
               </div>
               <button onClick={() => setIsAgreementModalOpen(true)} className="btn btn-primary">
                 + Start New Contract
@@ -2061,7 +2061,7 @@ export default function App() {
 
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Executed Sale Contracts</h3>
+                <h3 className="font-semibold text-sm">Signed agreements</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[700px]">
@@ -2136,7 +2136,7 @@ export default function App() {
         {activeSection === "customer_form" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Customer Lead Capture</h1>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Add a customer</h1>
               <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Use this form for remote customer registration.</p>
             </div>
             <div className="max-w-lg">
@@ -2319,7 +2319,7 @@ export default function App() {
               })}
             </div>
 
-            {/* Commission Estimation Engine */}
+            {/* Commission estimate */}
             {state && (
               <CommissionEstimator 
                 users={state.users} 
@@ -2338,7 +2338,7 @@ export default function App() {
                   <thead>
                     <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
                       <th className="py-2.5 px-4 font-bold">Assigned Specialist</th>
-                      <th className="py-2.5 px-4 font-bold">Email Node</th>
+                      <th className="py-2.5 px-4 font-bold">Email</th>
                       <th className="py-2.5 px-4 font-bold">System Role</th>
                       <th className="py-2.5 px-4 font-bold">Contact Number</th>
                       <th className="py-2.5 px-4 font-bold">Access permissions</th>
@@ -2375,7 +2375,7 @@ export default function App() {
         {activeSection === "payment" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Dealer Installment Calculator</h1>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Repayment calculator</h1>
               <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Model lease structures & monthly amortization schedules</p>
             </div>
             <AmortizationCalc initialPrice={state.vehicles[0]?.retailPrice || 485000} />
@@ -2512,7 +2512,7 @@ export default function App() {
         {activeSection === "settings" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
             <div>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Dealer settings & integrations</h1>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Settings</h1>
               <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
                 {PRODUCT_NAME} — stock, CRM, media hub, full finance & website embeds
               </p>
@@ -2612,7 +2612,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">Dealer Website & Basic Portal</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Dealer website</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Full inventory showcase on your custom front-end portal www.trusaas.co.za.</span>
                   </div>
                 </div>
@@ -2662,7 +2662,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">SEO / AEO Engine</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Search optimisation</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Optimizes raw metadata, vehicle specifications, and pricing for Search and Answer Engines.</span>
                   </div>
                 </div>
@@ -2672,7 +2672,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">Portal Syndication & Sync API</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Marketplace syndication</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Real-time syndication endpoints for synchronizing stock with AutoTrader, Cars.co.za and WordPress.</span>
                   </div>
                 </div>
@@ -2723,7 +2723,7 @@ export default function App() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
           <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Log New Lead Entry</h3>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Add lead</h3>
               <button onClick={() => setIsLeadModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateLeadSubmit} className="flex flex-col gap-3">
@@ -2761,7 +2761,7 @@ export default function App() {
                   <option className="bg-[#0B0F17]" value="Website">Website Form</option>
                   <option className="bg-[#0B0F17]" value="Walk-in">Walk-in Showroom</option>
                   <option className="bg-[#0B0F17]" value="Facebook">Facebook Lead Gen</option>
-                  <option className="bg-[#0B0F17]" value="AutoTrader">AutoTrader Portal</option>
+                  <option className="bg-[#0B0F17]" value="AutoTrader">AutoTrader</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
@@ -2782,7 +2782,7 @@ export default function App() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
           <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Draft Outbound Invoice</h3>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">New invoice</h3>
               <button onClick={() => setIsInvoiceModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateInvoiceSubmit} className="flex flex-col gap-3">
@@ -2841,7 +2841,7 @@ export default function App() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
           <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Draft Sale Contract</h3>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">New agreement</h3>
               <button onClick={() => setIsAgreementModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateAgreementSubmit} className="flex flex-col gap-3">
@@ -2900,7 +2900,7 @@ export default function App() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
           <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Create Task Assignment</h3>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">New task</h3>
               <button onClick={() => setIsTaskModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateTaskSubmit} className="flex flex-col gap-3">
@@ -3101,7 +3101,7 @@ export default function App() {
                   <span className="w-2.5 h-2.5 rounded-full bg-[#4FE3DC] animate-ping" />
                   <span className="text-[13px] font-semibold tracking-widest  text-[#4FE3DC] font-mono">Operations Report</span>
                 </div>
-                <h3 className="font-sans text-xl font-semibold tracking-tight text-[#E8EAE6] mt-1">End of Day (EOD) Summary</h3>
+                <h3 className="font-sans text-xl font-semibold tracking-tight text-[#E8EAE6] mt-1">End of day summary</h3>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
               <button 
@@ -3142,14 +3142,14 @@ export default function App() {
                 <span className="font-mono font-bold text-[#E8EAE6]">R 1,515,000</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[rgba(232,234,230,0.72)] font-medium">Unresolved Pending Invoices</span>
+                <span className="text-[rgba(232,234,230,0.72)] font-medium">Unpaid invoices</span>
                 <span className="font-mono font-bold text-[#E8C468]">R {state.invoices.filter(i => i.status === 'Sent').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}</span>
               </div>
             </div>
 
             {/* Daily Sold Vehicles Details */}
             <div className="flex flex-col gap-2">
-              <span className="text-[12px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)] font-mono px-1">Dealership Units Dispatched Today</span>
+              <span className="text-[12px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)] font-mono px-1">Sold today</span>
               <div className="flex flex-col gap-2">
                 <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl px-3 py-2.5 flex justify-between items-center text-xs">
                   <div>

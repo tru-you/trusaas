@@ -473,7 +473,7 @@ export default function LeadDetailModal({
                       <Sparkles size={16} className="text-[#4FE3DC] animate-pulse" />
                       <div>
                         <span className="text-[13px] font-bold text-[#4FE3DC] tracking-normal font-mono block">TrueAI Smart Qualification</span>
-                        <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Central Behavioral Analysis Node</span>
+                        <span className="text-[12px] text-[rgba(232,234,230,0.72)]">What this customer did</span>
                       </div>
                     </div>
                     
@@ -603,7 +603,7 @@ export default function LeadDetailModal({
               <form onSubmit={handleDispatchComm} className="flex flex-col gap-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1">
-                    <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Template Dispatch</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Send template</label>
                     <select
                       value={commTemplate}
                       onChange={(e) => handleTemplateChange(e.target.value)}
@@ -617,13 +617,13 @@ export default function LeadDetailModal({
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Dispatch Node Channel</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Send by</label>
                     <select
                       value={commChannel}
                       onChange={(e) => setCommChannel(e.target.value as any)}
                       className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                     >
-                      <option className="bg-[#0B0F17]" value="email">Simulated Email Client</option>
+                      <option className="bg-[#0B0F17]" value="email">Email preview</option>
                       <option className="bg-[#0B0F17]" value="sms">SMS text network</option>
                       <option className="bg-[#0B0F17]" value="whatsapp">WhatsApp Business API</option>
                       <option className="bg-[#0B0F17]" value="call">Voice Call Log Records</option>
@@ -828,7 +828,7 @@ export default function LeadDetailModal({
                         <th className="py-2 font-bold tracking-normal text-[12px]">Date</th>
                         <th className="py-2 font-bold tracking-normal text-[12px]">Type</th>
                         <th className="py-2 font-bold tracking-normal text-[12px]">Subject discussion</th>
-                        <th className="py-2 font-bold tracking-normal text-[12px]">Dispatched by</th>
+                        <th className="py-2 font-bold tracking-normal text-[12px]">Sent by</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -870,7 +870,7 @@ export default function LeadDetailModal({
                       <thead>
                         <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
                           <th className="py-2 font-bold tracking-normal text-[12px]">Date Stamp</th>
-                          <th className="py-2 font-bold tracking-normal text-[12px]">Actor Node</th>
+                          <th className="py-2 font-bold tracking-normal text-[12px]">Who</th>
                           <th className="py-2 font-bold tracking-normal text-[12px]">System Action</th>
                           <th className="py-2 font-bold tracking-normal text-[12px]">Outcome</th>
                         </tr>
@@ -887,7 +887,7 @@ export default function LeadDetailModal({
                             <td className="py-2.5">{lead.lastContactedAt}</td>
                             <td className="py-2.5 font-mono">MARC_VAN_DER_MERWE</td>
                             <td className="py-2.5 font-bold text-[#E8EAE6]">Contact Completed</td>
-                            <td className="py-2.5">Outbound dispatch completed</td>
+                            <td className="py-2.5">Sent</td>
                           </tr>
                         )}
                       </tbody>
@@ -1023,8 +1023,8 @@ export default function LeadDetailModal({
                 <div className="card !bg-[#0B0F17]/1">
                   <div className="card-body p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                      <div className="text-[13px] font-bold text-[#4FE3DC] tracking-normal font-mono">F&I Pre-Approval Simulator</div>
-                      <span className="text-[12px] bg-[#4FE3DC]/15 text-[#4FE3DC] px-2 py-0.5 rounded font-bold tracking-normal">SECURE PORTAL</span>
+                      <div className="text-[13px] font-bold text-[#4FE3DC] tracking-normal font-mono">Finance estimate</div>
+                      <span className="text-[12px] bg-[#4FE3DC]/15 text-[#4FE3DC] px-2 py-0.5 rounded font-bold tracking-normal"></span>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3">
@@ -1184,7 +1184,7 @@ export default function LeadDetailModal({
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-gray-400">
                     <FileSignature size={48} className="text-[rgba(232,234,230,0.72)] mb-3 opacity-40" />
-                    <h3 className="text-xs font-bold text-[rgba(232,234,230,0.72)] tracking-normal mb-1">Contract Signature Desk</h3>
+                    <h3 className="text-xs font-bold text-[rgba(232,234,230,0.72)] tracking-normal mb-1">Signature</h3>
                     <p className="text-[13px] max-w-sm text-[rgba(232,234,230,0.72)] leading-relaxed">
                       Select or generate a contract package from the left panel to display interactive legal layouts, finance amortization grids, and the digital signature pad.
                     </p>

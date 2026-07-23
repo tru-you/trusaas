@@ -237,14 +237,14 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 <>
                   <div className="font-bold text-gray-900 mb-1.5">1. CREDIT ASSESSMENT DISCLOSURE:</div>
                   The applicant hereby requests Johannesburg Auto (Pty) Ltd to act as the finance & insurance (F&I) broker. The applicant explicitly authorizes soft and hard credit bureau enquiries (Experian, TransUnion, ITC).
-                  <div className="font-bold text-gray-900 mt-3 mb-1.5">2. POPI COMPLIANCE DEED:</div>
+                  <div className="font-bold text-gray-900 mt-3 mb-1.5">2. POPI Act:</div>
                   All personal credit logs, bank details, and identification files provided will be treated in strict accordance with the Protection of Personal Information (POPI) Act of South Africa.
                   <div className="font-bold text-gray-900 mt-3 mb-1.5">3. DECLARATION OF SOLVENCY:</div>
                   The applicant declares that they are not currently under debt review, administration, or declared insolvent under any South African jurisdiction.
                 </>
               ) : (
                 <>
-                  <div className="font-bold text-gray-900 mb-1.5">1. STANDARD DEED TERMS:</div>
+                  <div className="font-bold text-gray-900 mb-1.5">1. Standard terms:</div>
                   The purchaser executes this commitment with the understanding that the asset described above has been examined. The merchant provides legal warranty clearance for a structured limit of 6 months.
                   <div className="font-bold text-gray-900 mt-3 mb-1.5">2. RESIDUAL VOETSTOOTS STATUTE:</div>
                   The asset is transferred Voetstoots (As-Is) with standard factory warranties continuing where applicable. The purchaser acknowledges that they have personally inspected and approved the vehicle.
@@ -274,7 +274,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                       <img src={agreement.signature} alt="Client Signature" className="max-h-12 object-contain" />
                     )
                   ) : (
-                    <span className="text-amber-500 text-[12px]  font-semibold tracking-widest font-mono">Awaiting Digital Signature</span>
+                    <span className="text-amber-500 text-[12px]  font-semibold tracking-widest font-mono">Waiting for signature</span>
                   )}
                 </div>
                 <div className="font-semibold text-gray-900 mt-2">Signature of Purchaser</div>
@@ -291,7 +291,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 text-[#4FE3DC]">
               <FileSignature size={16} />
-              <h4 className="font-semibold text-xs tracking-normal">Deed Signing Hub</h4>
+              <h4 className="font-semibold text-xs tracking-normal">Signing</h4>
             </div>
             <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
               Verify legal terms, then capture the purchaser's binding signature below to finalize this transaction record.
@@ -375,7 +375,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 <Check size={20} />
               </div>
               <div className="text-center">
-                <h5 className="text-xs font-semibold text-white tracking-normal">Deed fully executed</h5>
+                <h5 className="text-xs font-semibold text-white tracking-normal">Signed</h5>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                   Digitally signed with unique hashing index. Document locked from modifications.
                 </p>
@@ -387,10 +387,10 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
           )}
 
           <div className="bg-[#0B0F17]/40 rounded-lg p-3 text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed border border-white/3 flex flex-col gap-1">
-            <span className="font-bold text-[rgba(232,234,230,0.72)]">Audit Trail Parameters:</span>
+            <span className="font-bold text-[rgba(232,234,230,0.72)]">Audit trail:</span>
             <span>IP Location: Sandton, RSA (Vite Showroom)</span>
             <span>Timestamp: {agreement.signedAt || "Pending Execution"}</span>
-            <span>POPI Act: Authorized via TrueCar DMS Gateway</span>
+            <span>POPI Act consent recorded</span>
           </div>
         </div>
       </div>
