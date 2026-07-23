@@ -123,34 +123,29 @@ export default function ImageEditor({
 
       // 1. Draw custom studio background if selected
       const currentBg = STUDIO_BACKGROUNDS.find(b => b.id === selectedBgId);
-      if (currentBg && currentBg.id !== 'none') {
-        // Create matching background gradient
-        if (currentBg.id === 'showroom_luxury') {
-          const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 50, canvas.width/2, canvas.height/2, canvas.width);
-          grad.addColorStop(0, '#374151');
-          grad.addColorStop(1, '#111827');
-          ctx.fillStyle = grad;
-        } else if (currentBg.id === 'studio_clean') {
+      // 'cutout' leaves the canvas transparent — the car drops onto whatever it
+      // is placed over. The two studios are plain neutral seamless fills, which
+      // is what real vehicle photography uses.
+      if (currentBg && currentBg.id !== 'none' && currentBg.id !== 'cutout') {
+        if (currentBg.id === 'studio_light') {
           const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          grad.addColorStop(0, '#f9fafb');
-          grad.addColorStop(0.7, '#e5e7eb');
-          grad.addColorStop(1, '#9ca3af');
+          grad.addColorStop(0, '#E8EAE6');
+          grad.addColorStop(0.75, '#C2C6C0');
+          grad.addColorStop(1, '#A6ABA4');
           ctx.fillStyle = grad;
-        } else if (currentBg.id === 'industrial_depot') {
-          ctx.fillStyle = '#1e293b';
-        } else if (currentBg.id === 'outdoor_sunset') {
+        } else { // studio_dark
           const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          grad.addColorStop(0, '#fca5a5');
-          grad.addColorStop(0.4, '#E8C468');
-          grad.addColorStop(1, '#93c5fd');
+          grad.addColorStop(0, '#1A1D22');
+          grad.addColorStop(0.8, '#0B0F17');
+          grad.addColorStop(1, '#06080D');
           ctx.fillStyle = grad;
         }
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw synthetic soft shadow under the vehicle contact pad
+        // A soft contact shadow so the car doesn't float on the seamless
         ctx.beginPath();
         ctx.ellipse(canvas.width / 2, canvas.height * 0.75, canvas.width * 0.38, canvas.height * 0.08, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
         ctx.fill();
       }
 
@@ -260,7 +255,7 @@ export default function ImageEditor({
 
           {/* Quick Backdrop state badge */}
           <span className="absolute bottom-3 right-3 bg-indigo-950/80 px-2 py-1 rounded text-[12px] font-bold tracking-wider text-indigo-400 border border-indigo-900 flex items-center gap-1 animate-pulse">
-            <Wand2 size={9} /> {selectedBgId === 'none' ? 'Original BG' : 'Studio Composite On'}
+            <Wand2 size={9} /> {selectedBgId === 'none' ? 'As shot' : selectedBgId === 'cutout' ? 'Cutout' : 'Studio backdrop'}
           </span>
         </div>
 

@@ -704,311 +704,39 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   };
 
   // Render SVG guide overlay path lines
+  /**
+   * A calm framing guide instead of a traced car silhouette.
+   *
+   * The old overlay drew a dashed car shape per body type over the live camera.
+   * It never lined up with the actual car — no outline can match every make,
+   * model and angle — so it just cluttered the viewfinder and fought the real
+   * vehicle. Photographers frame with brackets and a target zone, not a traced
+   * outline: fill the frame, keep it level, shoot. Universal, quiet, and it
+   * works for any vehicle.
+   */
   const renderGuideOverlay = () => {
-    switch (activeSlot.id) {
-      case 'front_3_4':
-        const isSUV = vehicle.vehicleType?.includes('SUV') || vehicle.vehicleType?.includes('Crossover');
-        const isBakkie = vehicle.vehicleType?.includes('Bakkie') || vehicle.vehicleType?.includes('Truck');
-        
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {isSUV ? (
-              <path d="M 10,70 L 15,50 L 30,42 L 35,22 L 75,22 L 85,42 L 95,50 L 92,72 C 92,72 62,78 50,78 C 38,78 10,70 10,70 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : isBakkie ? (
-              <path d="M 10,70 L 15,50 L 30,42 L 35,25 L 65,25 L 65,45 L 95,45 L 95,70 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : (
-              <path d="M 15,65 L 20,50 L 32,45 L 42,28 L 75,28 L 85,45 L 90,52 L 87,68 C 87,68 62,72 50,72 C 38,72 15,65 15,65 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            )}
-            <circle cx="30" cy={isSUV ? 70 : 65} r="5.5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="78" cy={isSUV ? 68 : 63} r="5.5" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        );
-      case 'side_driver':
-      case 'side_passenger':
-        const isSideSUV = vehicle.vehicleType?.includes('SUV') || vehicle.vehicleType?.includes('Crossover');
-        const isSideBakkie = vehicle.vehicleType?.includes('Bakkie') || vehicle.vehicleType?.includes('Truck');
-
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {isSideSUV ? (
-              <path d="M 5,72 L 8,50 L 25,40 L 30,22 L 80,22 L 90,35 L 95,50 L 95,72 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : isSideBakkie ? (
-              <path d="M 5,72 L 8,50 L 25,40 L 30,25 L 60,25 L 60,45 L 95,45 L 95,72 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : (
-              <path d="M 10,65 L 12,54 L 28,45 L 38,30 L 72,30 L 80,45 L 92,54 L 92,65 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            )}
-            <circle cx="25" cy={isSideSUV || isSideBakkie ? 70 : 64} r="6" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="75" cy={isSideSUV || isSideBakkie ? 70 : 64} r="6" fill="none" stroke="currentColor" strokeWidth="1" />
-            <text x="50" y="15" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">{activeSlot.id === 'side_driver' ? 'DRIVER' : 'PASSENGER'} SIDE</text>
-          </svg>
-        );
-      case 'rear_3_4':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M 85,65 L 80,50 L 68,45 L 58,28 L 25,28 L 15,45 L 10,52 L 13,68 C 13,68 38,72 50,72 C 62,72 85,65 85,65 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <circle cx="70" cy="65" r="5.5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="22" cy="63" r="5.5" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        );
-      case 'rear_profile':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="32" width="60" height="34" rx="4" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <circle cx="30" cy="65" r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="70" cy="65" r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        );
-      case 'barcode_scanner':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/85" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Holographic Barcode/VIN Box scan visualizer */}
-            <rect x="15" y="30" width="70" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M 12,25 L 12,15 L 25,15" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M 88,25 L 88,15 L 75,15" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M 12,75 L 12,85 L 25,85" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M 88,75 L 88,85 L 75,85" fill="none" stroke="currentColor" strokeWidth="2" />
-            
-            {/* Simulated barcode lines */}
-            <line x1="25" y1="38" x2="25" y2="62" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="30" y1="38" x2="30" y2="62" stroke="currentColor" strokeWidth="3" />
-            <line x1="35" y1="38" x2="35" y2="62" stroke="currentColor" strokeWidth="1" />
-            <line x1="42" y1="38" x2="42" y2="62" stroke="currentColor" strokeWidth="4" />
-            <line x1="48" y1="38" x2="48" y2="62" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="53" y1="38" x2="53" y2="62" stroke="currentColor" strokeWidth="2" />
-            <line x1="60" y1="38" x2="60" y2="62" stroke="currentColor" strokeWidth="3.5" />
-            <line x1="68" y1="38" x2="68" y2="62" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="75" y1="38" x2="75" y2="62" stroke="currentColor" strokeWidth="2.5" />
-
-            {/* Red Laser scan bar moving or pulsing */}
-            <line x1="15" y1="50" x2="85" y2="50" stroke="rgba(239, 68, 68, 0.85)" strokeWidth="2" className="animate-pulse" />
-            <text x="50" y="24" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">ALIGN BARCODE IN RED ZONE</text>
-          </svg>
-        );
-      case 'interior_seats':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="25" width="25" height="40" rx="3" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2,2" />
-            <rect x="55" y="25" width="25" height="40" rx="3" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2,2" />
-            <line x1="15" y1="65" x2="85" y2="65" stroke="currentColor" strokeWidth="0.8" />
-            <text x="50" y="20" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="sans-serif">ALIGN CABIN & SEATS</text>
-          </svg>
-        );
-      case 'service_book':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/70" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Outline booklet shape */}
-            <rect x="22" y="25" width="56" height="50" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="50" y1="25" x2="50" y2="75" stroke="currentColor" strokeWidth="1.5" />
-            
-            {/* Stamp circles inside book */}
-            <circle cx="36" cy="40" r="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
-            <circle cx="36" cy="60" r="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
-            <circle cx="64" cy="40" r="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
-            <circle cx="64" cy="60" r="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
-            
-            <text x="50" y="20" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">ALIGN SERVICE HISTORY PAGES</text>
-          </svg>
-        );
-      case 'video_360':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/75" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Spinning orbital design */}
-            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="0.5" />
-            
-            {/* Left and right spin indicators */}
-            <path d="M 12,50 L 8,45 L 8,55 Z" fill="currentColor" />
-            <path d="M 88,50 L 92,45 L 92,55 Z" fill="currentColor" />
-            
-            <text x="50" y="16" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">360° VIDEO WALKAROUND</text>
-            <text x="50" y="88" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="sans-serif">Hold stable while rotation completes</text>
-          </svg>
-        );
-      case 'license_and_disc':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/60" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Plate rectangle */}
-            <rect x="25" y="55" width="50" height="18" rx="2" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3,3" />
-            {/* Windshield License/Tax Disc Circle template */}
-            <circle cx="75" cy="32" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="75" cy="32" r="1" fill="currentColor" />
-            <line x1="75" y1="18" x2="75" y2="22" stroke="currentColor" strokeWidth="1" />
-            <text x="75" y="47" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">DISC ALIGN</text>
-          </svg>
-        );
-      case 'body_panels':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/50" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Angle lines for panel gaps */}
-            <line x1="40" y1="15" x2="40" y2="85" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-            <line x1="60" y1="15" x2="60" y2="85" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-            <text x="50" y="50" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="sans-serif">ALIGN PANEL GAP CENTER</text>
-          </svg>
-        );
-      case 'tyres_detail':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/65" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Vertical tyre outline template */}
-            <rect x="35" y="15" width="30" height="70" rx="6" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            {/* Tread pattern indicators */}
-            <line x1="38" y1="30" x2="62" y2="30" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <line x1="38" y1="50" x2="62" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <line x1="38" y1="70" x2="62" y2="70" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <text x="50" y="8" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">TYRE TREAD ZONE</text>
-          </svg>
-        );
-      case 'rims_condition':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/65" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Circle for curb rash check */}
-            <circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="1,1" />
-            <circle cx="50" cy="50" r="8" fill="none" stroke="currentColor" strokeWidth="1" />
-            {/* Radial spokes guides */}
-            <line x1="50" y1="18" x2="50" y2="82" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="18" y1="50" x2="82" y2="50" stroke="currentColor" strokeWidth="0.5" />
-            <text x="50" y="14" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">RIM CURB RASH EXAMINE</text>
-          </svg>
-        );
-      case 'vehicle_damage':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-red-400/60" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Target crosshair box for damages */}
-            <circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" strokeWidth="1.2" />
-            <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2,4" />
-            <line x1="10" y1="50" x2="90" y2="50" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2,4" />
-            <rect x="25" y="25" width="50" height="50" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="1,5" />
-            <text x="50" y="21" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">CENTER ON SCRATCH / DENT</text>
-          </svg>
-        );
-      case 'front_straight':
-        const isFrontSUV = vehicle.vehicleType?.includes('SUV') || vehicle.vehicleType?.includes('Crossover');
-        const isFrontBakkie = vehicle.vehicleType?.includes('Bakkie') || vehicle.vehicleType?.includes('Truck');
-
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {isFrontSUV || isFrontBakkie ? (
-              <path d="M 15,75 L 15,50 L 25,40 L 75,40 L 85,50 L 85,75 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : (
-              <path d="M 20,65 L 22,54 L 38,45 L 62,45 L 78,54 L 80,65 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            )}
-            <circle cx="30" cy={isFrontSUV || isFrontBakkie ? 74 : 64} r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="70" cy={isFrontSUV || isFrontBakkie ? 74 : 64} r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <text x="50" y="30" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">FRONT PROFILE</text>
-          </svg>
-        );
-      case 'rear_straight':
-        const isRearSUV = vehicle.vehicleType?.includes('SUV') || vehicle.vehicleType?.includes('Crossover');
-        const isRearBakkie = vehicle.vehicleType?.includes('Bakkie') || vehicle.vehicleType?.includes('Truck');
-
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {isRearSUV ? (
-              <rect x="15" y="25" width="70" height="50" rx="4" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : isRearBakkie ? (
-              <path d="M 15,75 L 15,45 L 85,45 L 85,75 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : (
-              <rect x="25" y="35" width="50" height="30" rx="3" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            )}
-            <circle cx="30" cy={isRearSUV || isRearBakkie ? 75 : 65} r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="70" cy={isRearSUV || isRearBakkie ? 75 : 65} r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <text x="50" y={isRearSUV ? 20 : 30} textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">REAR PROFILE</text>
-          </svg>
-        );
-      case 'roof_view':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/50" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="20" width="60" height="60" rx="10" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-            <text x="50" y="50" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">ROOF / SUNROOF VIEW</text>
-          </svg>
-        );
-      case 'wheels_all':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="50" cy="50" r="8" fill="none" stroke="currentColor" strokeWidth="1" />
-            <text x="50" y="15" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">WHEEL & TYRE CLOSE-UP</text>
-          </svg>
-        );
-      case 'badges_detail':
-      case 'lights_detail':
-      case 'mirrors_handles':
-      case 'floor_mats':
-      case 'mechanical_details':
-      case 'undercarriage':
-      case 'odometer_reading':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/60" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <line x1="50" y1="30" x2="50" y2="70" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="30" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="0.5" />
-            <text x="50" y="25" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">{activeSlot.name.toUpperCase()}</text>
-          </svg>
-        );
-      case 'seat_driver':
-      case 'seat_passenger':
-      case 'seats_rear':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="30" y="20" width="40" height="50" rx="5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3,3" />
-            <text x="50" y="15" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">{activeSlot.name.toUpperCase()}</text>
-          </svg>
-        );
-      case 'boot_bay':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="30" width="60" height="50" rx="2" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-            <text x="50" y="25" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">BOOT / CARGO AREA</text>
-          </svg>
-        );
-      case 'reg_papers':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/70" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="20" width="60" height="60" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="25" y1="35" x2="75" y2="35" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="25" y1="45" x2="75" y2="45" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="25" y1="55" x2="75" y2="55" stroke="currentColor" strokeWidth="0.5" />
-            <text x="50" y="15" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">REGISTRATION DOCUMENTS</text>
-          </svg>
-        );
-      case 'vin_plate':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/85" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="40" width="60" height="20" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <text x="50" y="35" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">VIN PLATE / STICKER</text>
-          </svg>
-        );
-      case 'recon_damage':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-red-400/60" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" strokeWidth="1.2" />
-            <rect x="25" y="25" width="50" height="50" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="1,5" />
-            <text x="50" y="21" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">RECON / DAMAGE DETAIL</text>
-          </svg>
-        );
-      case 'engine_bay':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="15" y="25" width="70" height="60" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="4,4" />
-            <text x="50" y="20" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">ENGINE BAY VIEW</text>
-          </svg>
-        );
-      case 'interior_dash':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/55" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <circle cx="28" cy="55" r="14" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <rect x="52" y="45" width="22" height="15" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <line x1="10" y1="58" x2="90" y2="58" stroke="currentColor" strokeWidth="0.8" strokeDasharray="3,3" />
-          </svg>
-        );
-      default:
-        // Generic box overlay
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/35" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="15" y="20" width="70" height="60" rx="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-          </svg>
-        );
-    }
+    const label = (activeSlot.name || activeSlot.id || '').toString();
+    return (
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {/* Corner brackets — frame the shot without drawing a car */}
+        <g stroke="#4FE3DC" strokeWidth="0.7" fill="none" opacity="0.55">
+          <path d="M 8,16 L 8,10 L 16,10" />
+          <path d="M 92,16 L 92,10 L 84,10" />
+          <path d="M 8,84 L 8,90 L 16,90" />
+          <path d="M 92,84 L 92,90 L 84,90" />
+        </g>
+        {/* A soft target zone: fill roughly this much of the frame with the car */}
+        <rect x="16" y="26" width="68" height="48" rx="2"
+              stroke="#4FE3DC" strokeWidth="0.5" strokeDasharray="1.5,2"
+              fill="none" opacity="0.35" />
+        {/* Level line — keep the horizon straight */}
+        <line x1="30" y1="50" x2="70" y2="50" stroke="#4FE3DC" strokeWidth="0.4" opacity="0.25" />
+        {label && (
+          <text x="50" y="20" textAnchor="middle" fill="#E8EAE6" fillOpacity="0.75"
+                fontSize="3" fontFamily="Inter, sans-serif">{label}</text>
+        )}
+      </svg>
+    );
   };
 
   // Determine lighting quality for prompt advice
@@ -1038,7 +766,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           <ChevronLeft size={20} />
         </button>
         <div className="text-center">
-          <p className="text-[13px]  font-bold tracking-widest text-indigo-400">Guide Overlay View</p>
+          <p className="text-[13px]  font-bold tracking-widest text-[#4FE3DC]">Guide Overlay View</p>
           <p className="text-[13px] text-neutral-300 font-semibold truncate max-w-[200px]">
             {vehicle.year} {vehicle.make} {vehicle.model}
           </p>
@@ -1050,13 +778,13 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
       <div className="bg-neutral-900 border-b border-neutral-850 px-4 py-2 shrink-0 animate-in slide-in-from-top-2 duration-300">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-1.5">
-            <Sparkles size={10} className="text-indigo-400" />
+            <Sparkles size={10} className="text-[#4FE3DC]" />
             <span className="text-[12px] font-semibold text-neutral-200  tracking-[0.15em]">Capture Workflow</span>
           </div>
           <div className="flex items-center gap-2">
              <div className="text-[12px] font-mono text-neutral-500 ">Lot Readiness:</div>
              <div className="px-1.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
-                <span className="text-[12px] font-bold text-indigo-400">{progressPercentage}%</span>
+                <span className="text-[12px] font-bold text-[#4FE3DC]">{progressPercentage}%</span>
              </div>
           </div>
         </div>
@@ -1091,7 +819,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                      status.completed 
                       ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)]' 
                       : isActive 
-                      ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400 shadow-[0_0_8px_rgba(6,182,212,0.2)]' 
+                      ? 'bg-indigo-500/20 border-indigo-500/40 text-[#4FE3DC] shadow-[0_0_8px_rgba(6,182,212,0.2)]' 
                       : 'bg-neutral-900 border-neutral-800 text-neutral-500'
                    }`}>
                       {status.completed ? (
@@ -1248,7 +976,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         {/* Quick Camera Source Helper overlay if webcam unavailable */}
         {!isCameraActive && !customFile && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded text-[12px] tracking-wide text-neutral-400 flex items-center gap-1">
-            <Eye size={10} className="text-indigo-400" /> Use alignment guides to frame your vehicle.
+            <Eye size={10} className="text-[#4FE3DC]" /> Use alignment guides to frame your vehicle.
           </div>
         )}
       </div>
@@ -1321,7 +1049,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               const firstSlotOfNewPhase = PHOTO_SLOTS.find(s => s.phase === newPhase);
               if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
             }}
-            className={`text-[13px] font-bold flex items-center gap-1 cursor-pointer ${phaseCompleted ? 'text-indigo-400 hover:text-indigo-300' : 'text-neutral-500'}`}
+            className={`text-[13px] font-bold flex items-center gap-1 cursor-pointer ${phaseCompleted ? 'text-[#4FE3DC] hover:text-indigo-300' : 'text-neutral-500'}`}
           >
             Next Phase <ChevronRight size={12} />
           </button>
@@ -1409,8 +1137,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             />
           </label>
 
-          <label className="flex-1 py-2 bg-indigo-950/40 border border-indigo-900/50 hover:bg-indigo-900/40 rounded-xl text-[12px] font-bold text-indigo-400 flex flex-col items-center justify-center gap-1 cursor-pointer text-center relative">
-            <Images size={13} className="text-indigo-400" />
+          <label className="flex-1 py-2 bg-indigo-950/40 border border-indigo-900/50 hover:bg-indigo-900/40 rounded-xl text-[12px] font-bold text-[#4FE3DC] flex flex-col items-center justify-center gap-1 cursor-pointer text-center relative">
+            <Images size={13} className="text-[#4FE3DC]" />
             <span>Bulk Roll</span>
             <input
               type="file"
@@ -1426,7 +1154,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             onClick={() => setAutoLevelOn(!autoLevelOn)}
             className={`flex-1 py-2 border rounded-xl text-[12px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${
               autoLevelOn
-                ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
+                ? 'bg-indigo-500/10 border-indigo-500/30 text-[#4FE3DC]'
                 : 'bg-neutral-900 border-neutral-800 text-neutral-400'
             }`}
           >
@@ -1436,7 +1164,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
         {/* Diagnostic Guide Tip box */}
         <div className="flex gap-2 bg-indigo-950/20 p-2.5 rounded-xl border border-indigo-950/30">
-          <Sparkles className="text-indigo-400 shrink-0" size={13} />
+          <Sparkles className="text-[#4FE3DC] shrink-0" size={13} />
           <p className="text-[12px] text-indigo-300 leading-normal">
             <strong>Lot Photographer Tip:</strong> Align the vehicle tires with guidelines. Use <strong>Bulk Roll</strong> to upload multiple photos at once.
           </p>
@@ -1450,7 +1178,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           {/* Header */}
           <div className="px-4 py-4 border-b border-neutral-850 bg-neutral-900 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <Images className="text-indigo-400" size={18} />
+              <Images className="text-[#4FE3DC]" size={18} />
               <div>
                 <h3 className="text-xs font-bold text-[#E8EAE6]">Bulk Camera Roll Importer</h3>
                 <p className="text-[12px] text-neutral-400">Streamline inventory lot photography bulk processing</p>
@@ -1476,7 +1204,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 <span className="font-semibold text-indigo-300 flex items-center gap-2">
                   {bulkProgress.status === 'syncing' ? (
                     <>
-                      <Loader2 size={13} className="animate-spin text-indigo-400" />
+                      <Loader2 size={13} className="animate-spin text-[#4FE3DC]" />
                       <span>Syncing bulk photos to Lot ({bulkProgress.current} / {bulkProgress.total})</span>
                     </>
                   ) : bulkProgress.status === 'done' ? (

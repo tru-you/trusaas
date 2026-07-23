@@ -1538,7 +1538,7 @@ export default function App() {
                 <button 
                   onClick={handleAutoAssign} 
                   disabled={isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-purple-500/10 ${
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-cyan-500/10 ${
                     isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)
                       ? "bg-[#0B0F17]/3 border-white/5 text-[rgba(232,234,230,0.72)] cursor-not-allowed"
                       : "bg-[#4FE3DC]/15 border-[#4FE3DC]/30 text-[#67e8f9] hover:bg-[#4FE3DC]/25 hover:border-[#4FE3DC]/50"

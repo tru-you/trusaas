@@ -45,7 +45,7 @@ export default function Login() {
     <div className="h-full w-full bg-black flex flex-col items-center justify-center p-8 relative overflow-hidden">
       {/* Background Glow effects */}
       <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-purple-600/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-cyan-600/10 blur-[100px] rounded-full pointer-events-none" />
 
       <div
         className="w-full max-w-sm z-10 flex flex-col items-center"
@@ -159,7 +159,7 @@ export default function Login() {
           <div className="flex items-center gap-3">
             <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
               <span className="text-[12px] text-neutral-600  tracking-tighter">Powered By</span>
-              <span className="text-[12px] font-bold text-violet-300 underline underline-offset-2">TruSaas</span>
+              <span className="text-[12px] font-bold text-cyan-300 underline underline-offset-2">TruSaas</span>
             </a>
             <div className="w-[1px] h-6 bg-neutral-800" />
             <div className="flex flex-col items-start">

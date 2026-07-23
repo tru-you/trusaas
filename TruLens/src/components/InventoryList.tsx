@@ -335,7 +335,7 @@ export default function InventoryList({
     <div id="inventory-list-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       
       {/* App Header */}
-      <div className="tl-glass p-4 border-b border-violet-500/20 flex items-center justify-between shrink-0">
+      <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
         <div className="flex items-center">
           <img src={trulensLogo} alt="TruLens" className="h-8 w-auto object-contain tl-float drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]" />
         </div>
@@ -374,13 +374,13 @@ export default function InventoryList({
       </div>
 
       {/* Tab Switcher — equal tabs so Settings is not mistaken for a camera FAB */}
-      <div className="flex bg-black/40 p-1.5 border-b border-violet-500/15 shrink-0 gap-1 backdrop-blur-md">
+      <div className="flex bg-black/40 p-1.5 border-b border-cyan-500/15 shrink-0 gap-1 backdrop-blur-md">
         <button
           type="button"
           onClick={() => setCurrentTab('catalog')}
           className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             currentTab === 'catalog'
-              ? 'tl-glass text-trulens-purple shadow-lg shadow-violet-600/20 border border-trulens-purple/40'
+              ? 'tl-glass text-trulens-purple shadow-lg shadow-cyan-600/20 border border-trulens-purple/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
           }`}
         >
@@ -629,15 +629,15 @@ export default function InventoryList({
         )}
 
         {deepLinkBanner && (
-          <div className="flex items-start justify-between gap-2 rounded-xl border border-violet-500/40 bg-violet-500/10 px-3 py-2">
+          <div className="flex items-start justify-between gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 py-2">
             <div className="min-w-0">
-              <p className="text-[12px] font-semibold tracking-normal text-violet-300">Opened from Flow</p>
+              <p className="text-[12px] font-semibold tracking-normal text-cyan-300">Opened from Flow</p>
               <p className="text-[13px] text-neutral-200 mt-0.5 font-mono truncate">{deepLinkBanner}</p>
             </div>
             <button
               type="button"
               onClick={() => { setDeepLinkBanner(null); setHighlightStock(null); setSearchTerm(''); }}
-              className="text-[12px] font-bold text-violet-300 hover:text-[#E8EAE6] shrink-0"
+              className="text-[12px] font-bold text-cyan-300 hover:text-[#E8EAE6] shrink-0"
             >
               Clear
             </button>
@@ -766,7 +766,7 @@ export default function InventoryList({
                         <h3 className="text-xs font-bold text-[#E8EAE6] flex items-center gap-1">
                           {vehicle.year} {vehicle.make} {vehicle.model}
                           {isHighlighted && (
-                            <span className="text-[12px] font-semibold tracking-normal text-violet-300 bg-violet-500/20 border border-violet-500/40 px-1.5 py-0.5 rounded">
+                            <span className="text-[12px] font-semibold tracking-normal text-cyan-300 bg-cyan-500/20 border border-cyan-500/40 px-1.5 py-0.5 rounded">
                               From Flow
                             </span>
                           )}
