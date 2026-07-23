@@ -125,7 +125,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
                 key={m.id}
                 className={`max-w-[85%] px-3 py-2 rounded-xl text-xs line-height-relaxed ${
                   m.sender === "user"
-                    ? "self-end bg-[#4FE3DC] text-white rounded-br-none"
+                    ? "self-end bg-[#4FE3DC] on-fill rounded-br-none"
                     : "self-start bg-[rgba(90,109,138,0.1)] border border-[rgba(90,109,138,0.15)] text-[#E8EAE6] rounded-bl-none"
                 }`}
               >
@@ -151,7 +151,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
                   <input required placeholder="Name" value={leadForm.name} onChange={(e) => setLeadForm({...leadForm, name: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-1.5 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
                   <input required type="tel" placeholder="Phone Number" value={leadForm.phone} onChange={(e) => setLeadForm({...leadForm, phone: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-1.5 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
                   <input type="email" placeholder="Email (Optional)" value={leadForm.email} onChange={(e) => setLeadForm({...leadForm, email: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-1.5 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
-                  <button type="submit" className="bg-[#4FE3DC] text-white font-bold py-1.5 rounded mt-1 cursor-pointer hover:bg-[#4FE3DC]/90 transition-colors">Send to Dealer</button>
+                  <button type="submit" className="bg-[#4FE3DC] on-fill font-bold py-1.5 rounded mt-1 cursor-pointer hover:bg-[#4FE3DC]/90 transition-colors">Send to Dealer</button>
                 </form>
               </div>
             )}

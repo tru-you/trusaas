@@ -511,7 +511,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
               <button
                 type="submit"
-                className="w-full py-2 bg-[#4FE3DC] text-white hover:bg-opacity-80 transition-all font-bold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer mt-2"
+                className="w-full py-2 bg-[#4FE3DC] on-fill hover:bg-opacity-80 transition-all font-bold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer mt-2"
               >
                 <Plus size={14} /> Commit Expense Entry
               </button>
@@ -738,7 +738,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                   </p>
                   
                   <div className="flex gap-2 items-center mt-1">
-                    <label className="px-3 py-1.5 bg-[#4FE3DC] hover:bg-opacity-80 text-white font-bold text-[12px] rounded-lg transition-all cursor-pointer ">
+                    <label className="px-3 py-1.5 bg-[#4FE3DC] hover:bg-opacity-80 on-fill font-bold text-[12px] rounded-lg transition-all cursor-pointer ">
                       Select Statement File
                       <input
                         type="file"

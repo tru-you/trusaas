@@ -731,9 +731,27 @@ app.put("/api/settings", (req, res) => {
   res.json(state.settings);
 });
 
-app.post("/api/state/reset", (req, res) => {
+/** Destroys EVERY dealership's data and restores the demo seed.
+ *
+ *  Harmless while state was ephemeral; since the Render disk landed this
+ *  permanently deletes real stock, leads, invoices and signed documents, with
+ *  no backup. It was reachable by any signed-in user, so one dealer could wipe
+ *  another's yard. Admin only, and it takes a typed confirmation. */
+app.post("/api/state/reset", (req: any, res) => {
+  if (req.auth?.role !== "admin") {
+    return res.status(403).json({
+      error: "Admin only",
+      message: "Resetting wipes every dealership on this instance.",
+    });
+  }
+  if (req.body?.confirm !== "RESET EVERYTHING") {
+    return res.status(400).json({
+      error: "Confirmation required",
+      message: 'Send { "confirm": "RESET EVERYTHING" } to proceed.',
+    });
+  }
   writeState(DEFAULT_MOCK_STATE);
-  res.json({ message: "Mock data reset completed successfully.", state: DEFAULT_MOCK_STATE });
+  res.json({ message: "All dealership data reset to the seed.", state: DEFAULT_MOCK_STATE });
 });
 
 // Inventory Feed (WordPress Plugin and external integrations)

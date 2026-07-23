@@ -99,7 +99,7 @@ export default function ChatWidget() {
                 key={m.id}
                 className={`max-w-[85%] px-3 py-2 rounded-xl text-xs line-height-relaxed ${
                   m.sender === "user"
-                    ? "self-end bg-[#4FE3DC] text-white rounded-br-none"
+                    ? "self-end bg-[#4FE3DC] on-fill rounded-br-none"
                     : "self-start bg-[rgba(90,109,138,0.1)] border border-[rgba(90,109,138,0.15)] text-[#E8EAE6] rounded-bl-none"
                 }`}
               >

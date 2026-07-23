@@ -351,13 +351,13 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setSignMode("draw")}
-                      className={`flex-1 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer ${signMode === "draw" ? "bg-[#4FE3DC] text-white" : "bg-white/5 text-[rgba(232,234,230,0.72)]"}`}
+                      className={`flex-1 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer ${signMode === "draw" ? "bg-[#4FE3DC] on-fill" : "bg-white/5 text-[rgba(232,234,230,0.72)]"}`}
                     >
                       Draw
                     </button>
                     <button
                       onClick={() => setSignMode("type")}
-                      className={`flex-1 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer ${signMode === "type" ? "bg-[#4FE3DC] text-white" : "bg-white/5 text-[rgba(232,234,230,0.72)]"}`}
+                      className={`flex-1 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer ${signMode === "type" ? "bg-[#4FE3DC] on-fill" : "bg-white/5 text-[rgba(232,234,230,0.72)]"}`}
                     >
                       Type name
                     </button>

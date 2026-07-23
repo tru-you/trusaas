@@ -304,7 +304,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 <button
                   onClick={() => setSignMode("draw")}
                   className={`flex-1 text-center py-1 text-[13px] font-bold rounded-md transition-all ${
-                    signMode === "draw" ? "bg-[#4FE3DC] text-white" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
+                    signMode === "draw" ? "bg-[#4FE3DC] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
                   }`}
                 >
                   Draw Signature
@@ -312,7 +312,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 <button
                   onClick={() => setSignMode("type")}
                   className={`flex-1 text-center py-1 text-[13px] font-bold rounded-md transition-all ${
-                    signMode === "type" ? "bg-[#4FE3DC] text-white" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
+                    signMode === "type" ? "bg-[#4FE3DC] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
                   }`}
                 >
                   Type E-Sign

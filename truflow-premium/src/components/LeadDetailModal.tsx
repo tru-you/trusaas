@@ -915,7 +915,7 @@ export default function LeadDetailModal({
                           setNewTaskTitle("Follow-up Call with " + lead.firstName);
                           setNewTaskPriority("High");
                         }}
-                        className="text-[13px] bg-[#4FE3DC] text-white px-2 py-1 rounded cursor-pointer hover:bg-opacity-80"
+                        className="text-[13px] bg-[#4FE3DC] on-fill px-2 py-1 rounded cursor-pointer hover:bg-opacity-80"
                       >
                         Apply
                       </button>

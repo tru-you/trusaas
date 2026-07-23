@@ -131,7 +131,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
             onClick={() => setModel('flat')}
             className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-[13px] font-bold tracking-normal transition-all cursor-pointer ${
               model === 'flat' 
-                ? 'bg-[#4FE3DC] text-white shadow-lg' 
+                ? 'bg-[#4FE3DC] on-fill shadow-lg' 
                 : 'text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]'
             }`}
           >
@@ -141,7 +141,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
             onClick={() => setModel('volume')}
             className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-[13px] font-bold tracking-normal transition-all cursor-pointer ${
               model === 'volume' 
-                ? 'bg-[#4FE3DC] text-white shadow-lg' 
+                ? 'bg-[#4FE3DC] on-fill shadow-lg' 
                 : 'text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]'
             }`}
           >
@@ -151,7 +151,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
             onClick={() => setModel('marginTier')}
             className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-[13px] font-bold tracking-normal transition-all cursor-pointer ${
               model === 'marginTier' 
-                ? 'bg-[#4FE3DC] text-white shadow-lg' 
+                ? 'bg-[#4FE3DC] on-fill shadow-lg' 
                 : 'text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]'
             }`}
           >

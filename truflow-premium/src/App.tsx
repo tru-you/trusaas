@@ -80,7 +80,7 @@ import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
 import WordPressIntegration from "./components/WordPressIntegration";
 import LoginSplash from "./components/LoginSplash";
-import { hasValidSession, clearSession, SESSION_EXPIRED_EVENT } from "./lib/session";
+import { hasValidSession, clearSession, getAccount, SESSION_EXPIRED_EVENT } from "./lib/session";
 import DemoBanner from "./components/DemoBanner";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
@@ -117,10 +117,6 @@ export default function App() {
   // dashboard that looked fine. The token also outlives the browser tab, which
   // is what "keep me signed in" needs.
   const [isLoggedIn, setIsLoggedIn] = useState(() => hasValidSession());
-
-  useEffect(() => {
-    console.log("isLoggedIn changed:", isLoggedIn);
-  }, [isLoggedIn]);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -297,17 +293,13 @@ export default function App() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadAllState = () => {
-    console.log("Loading DMS state from server...");
     setLoadError(null);
     fetchState()
       .then((data) => {
-        console.log("State loaded successfully:", data);
-        console.log(
-          "Vehicles with photos:",
-          data.vehicles
-            .filter((v: any) => (v.images?.length || 0) > 0)
-            .map((v: any) => `${v.stockNumber}:${v.images.length}`)
-        );
+        // Nothing is logged here on purpose. This used to print the entire
+        // /api/state payload to the browser console on every load and every
+        // 15s poll — every lead's name, phone, email and notes, every invoice —
+        // which put it in reach of anyone who opened DevTools on a yard machine.
         setState(data);
         if (data.vehicles.length > 0) {
           setNewLeadForm((prev) => ({ ...prev, vehicleId: data.vehicles[0].id }));
@@ -374,7 +366,7 @@ export default function App() {
         </div>
         <button 
           onClick={loadAllState}
-          className="px-4 py-2 bg-[#4FE3DC] text-white rounded text-xs font-bold hover:bg-opacity-80"
+          className="px-4 py-2 bg-[#4FE3DC] on-fill rounded text-xs font-bold hover:bg-opacity-80"
         >
           Retry Connection
         </button>
@@ -394,7 +386,7 @@ export default function App() {
         <button
           type="button"
           onClick={loadAllState}
-          className="mt-2 px-4 py-2 rounded-lg bg-[#4FE3DC] text-white text-xs font-bold"
+          className="mt-2 px-4 py-2 rounded-lg bg-[#4FE3DC] on-fill text-xs font-bold"
         >
           Retry load
         </button>
@@ -536,7 +528,14 @@ export default function App() {
 
   // Resets (data only — not the same as log out)
   const handleResetState = () => {
-    if (confirm("Reset current simulation data cache to baseline system defaults?")) {
+    // Typed confirmation, not an OK button. This deletes every dealership's
+    // stock, leads, invoices and signed documents, permanently.
+    const typed = prompt(
+      "This permanently deletes ALL data for EVERY dealership on this instance — " +
+      "stock, leads, invoices and signed documents. There is no backup.\n\n" +
+      "Type RESET EVERYTHING to confirm."
+    );
+    if (typed === "RESET EVERYTHING") {
       resetState().then((newState) => {
         setState(state);
         alert("Showroom cache cleared & baseline data re-seeded.");
@@ -838,19 +837,19 @@ export default function App() {
            <div className="flex bg-[#06080D]/80 border border-white/5 p-1 rounded-full text-[12px] font-bold">
              <button
                onClick={() => { setSelectedRole('salesperson'); if (['manager', 'settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'salesperson' ? "bg-[#4FE3DC] text-white shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
+               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'salesperson' ? "bg-[#4FE3DC] on-fill shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
              >
                Salesperson View
              </button>
              <button
                onClick={() => { setSelectedRole('manager'); if (['settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'manager' ? "bg-[#4FE3DC] text-white shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
+               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'manager' ? "bg-[#4FE3DC] on-fill shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
              >
                Manager View
              </button>
              <button
                onClick={() => setSelectedRole('owner')}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'owner' ? "bg-[#4FE3DC] text-white shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
+               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'owner' ? "bg-[#4FE3DC] on-fill shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
              >
                Dealer Owner
              </button>
@@ -900,19 +899,19 @@ export default function App() {
           <div className="flex bg-[#06080D]/80 border border-white/5 p-0.5 rounded-full text-[12px] font-bold justify-between">
             <button
               onClick={() => { setSelectedRole('salesperson'); if (['manager', 'settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'salesperson' ? "bg-[#4FE3DC] text-white shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
+              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'salesperson' ? "bg-[#4FE3DC] on-fill shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
             >
               Salesperson
             </button>
             <button
               onClick={() => { setSelectedRole('manager'); if (['settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'manager' ? "bg-[#4FE3DC] text-white shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
+              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'manager' ? "bg-[#4FE3DC] on-fill shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
             >
               Manager
             </button>
             <button
               onClick={() => setSelectedRole('owner')}
-              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'owner' ? "bg-[#4FE3DC] text-white shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
+              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'owner' ? "bg-[#4FE3DC] on-fill shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
             >
               Owner
             </button>
@@ -2676,14 +2675,24 @@ export default function App() {
                 <h3 className="font-semibold text-sm">System Actions</h3>
               </div>
               <div className="card-body p-4 flex flex-col gap-3">
-                <p className="text-xs text-[rgba(232,234,230,0.72)]">
-                  Trigger total showroom memory wipes or re-seed baseline parameters for demonstration purposes.
-                </p>
-                <div>
-                  <button onClick={handleResetState} className="btn btn-primary bg-red-900/40 text-red-400 hover:bg-red-900/60 border border-red-900/50 cursor-pointer">
-                    Clear database cache & Re-Seed Defaults
-                  </button>
-                </div>
+                {getAccount()?.role === "admin" ? (
+                  <>
+                    <p className="text-xs text-[rgba(232,234,230,0.72)]">
+                      Deletes all stock, leads, invoices and signed documents for
+                      <b className="text-[#E8EAE6]"> every dealership</b> on this instance and
+                      restores the seed data. There is no backup.
+                    </p>
+                    <div>
+                      <button onClick={handleResetState} className="btn bg-[#B86A6A]/15 text-[#C07676] hover:bg-[#B86A6A]/25 border border-[#B86A6A]/35 cursor-pointer">
+                        Reset all data
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-[rgba(232,234,230,0.55)]">
+                    No system actions are available on this account.
+                  </p>
+                )}
               </div>
             </div>
           </div>

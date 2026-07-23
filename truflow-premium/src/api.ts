@@ -163,7 +163,11 @@ async function updateState(mutator: (state: DMSState) => void): Promise<DMSState
 
 export async function resetState(): Promise<DMSState> {
   try {
-    const res = await authFetch("/api/state/reset", { method: "POST" });
+    const res = await authFetch("/api/state/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirm: "RESET EVERYTHING" }),
+    });
     if (res.ok) {
       const body = await res.json();
       const next = (body.state || DEFAULT_MOCK_STATE) as DMSState;

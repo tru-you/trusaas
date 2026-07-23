@@ -69,7 +69,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
             <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Keep me signed in on this device</span>
           </label>
           {error && <p className="text-xs text-[#FF6B6B] mb-4">{error}</p>}
-          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#4FE3DC] hover:bg-[#1258c4] disabled:opacity-60 text-white font-bold text-sm">
+          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#4FE3DC] hover:bg-[#1258c4] disabled:opacity-60 on-fill font-bold text-sm">
             {busy ? 'Checking…' : 'Enter'}
           </button>
         </form>

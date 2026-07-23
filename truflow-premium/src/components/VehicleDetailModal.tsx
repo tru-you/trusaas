@@ -241,7 +241,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               <button
                 onClick={() => setActiveTab("specs")}
                 className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === "specs" ? "bg-[#4FE3DC] text-white shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
+                  activeTab === "specs" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
                 <Grid size={11} /> Specs
@@ -249,7 +249,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               <button
                 onClick={() => setActiveTab("docs")}
                 className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === "docs" ? "bg-[#4FE3DC] text-white shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
+                  activeTab === "docs" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
                 <FileText size={11} /> Docs
@@ -257,7 +257,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               <button
                 onClick={() => setActiveTab("inspection")}
                 className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === "inspection" ? "bg-[#4FE3DC] text-white shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
+                  activeTab === "inspection" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
                 <Sparkles size={11} /> TrueAI
@@ -265,7 +265,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               <button
                 onClick={() => setActiveTab("recon")}
                 className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === "recon" ? "bg-[#4FE3DC] text-white shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
+                  activeTab === "recon" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
                 <Wrench size={11} /> Recon
@@ -274,7 +274,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 <button
                   onClick={() => setActiveTab("syndication")}
                   className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                    activeTab === "syndication" ? "bg-[#4FE3DC] text-white shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
+                    activeTab === "syndication" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                   }`}
                 >
                   <Share2 size={11} /> Syndicate
@@ -335,7 +335,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         <button
                           onClick={handleSaveTruPrice}
                           disabled={savingTruPrice}
-                          className="flex-1 py-1.5 bg-[#4FE3DC] hover:bg-opacity-90 disabled:opacity-60 text-white font-semibold  text-[12px] rounded-md cursor-pointer"
+                          className="flex-1 py-1.5 bg-[#4FE3DC] hover:bg-opacity-90 disabled:opacity-60 on-fill font-semibold  text-[12px] rounded-md cursor-pointer"
                         >
                           {savingTruPrice ? "Saving…" : "Save benchmark"}
                         </button>
@@ -377,7 +377,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
-                      className="flex-1 py-2 bg-[#4FE3DC] text-white hover:bg-opacity-80 transition-all font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="flex-1 py-2 bg-[#4FE3DC] on-fill hover:bg-opacity-80 transition-all font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       <Upload size={13} /> {uploading ? "Uploading..." : "Upload Photos"}
                     </button>
@@ -478,7 +478,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                     `📞 Contact us now to secure or book a test-drive. Finance options available!`
                                 );
                               }}
-                              className="w-full py-2 bg-[#4FE3DC] hover:bg-opacity-90 text-xs text-white font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              className="w-full py-2 bg-[#4FE3DC] hover:bg-opacity-90 text-xs on-fill font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
                             >
                               <FileText size={13} /> Build advert text
                             </button>
@@ -782,7 +782,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
                         <button
                           type="submit"
-                          className="w-full py-1.5 bg-[#4FE3DC] hover:bg-opacity-90 text-white font-bold text-[13px] rounded-md transition-all cursor-pointer flex items-center justify-center gap-1 "
+                          className="w-full py-1.5 bg-[#4FE3DC] hover:bg-opacity-90 on-fill font-bold text-[13px] rounded-md transition-all cursor-pointer flex items-center justify-center gap-1 "
                         >
                           <Plus size={11} /> Save & Log Prep Directive
                         </button>
@@ -851,7 +851,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   
                   <button
                     onClick={() => alert("1-Click Bulk Syndicate completed. Inventory synced to all selected platforms.")}
-                    className="w-full mt-2 py-2 bg-[#4FE3DC] hover:bg-opacity-90 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 tracking-normal"
+                    className="w-full mt-2 py-2 bg-[#4FE3DC] hover:bg-opacity-90 on-fill font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 tracking-normal"
                   >
                     <Send size={14} /> Syndicate to All Selected
                   </button>
