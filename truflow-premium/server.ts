@@ -311,6 +311,9 @@ app.post("/api/inventory", (req, res) => {
     // default dealer's website instead of theirs.
     dealershipId:
       req.body.dealershipId || DEALER_SLUG_TO_ID[req.body.dealerSlug] || undefined,
+    // Showroom tier. Left unset when not supplied so the website falls back to
+    // its own heuristic rather than defaulting everything into one category.
+    category: CATEGORY_VALUES.includes(req.body.category) ? req.body.category : undefined,
     truPrice: req.body.truPrice ? parseFloat(req.body.truPrice) : undefined
   };
 
@@ -1305,6 +1308,10 @@ const DEALER_SLUG_TO_ID: Record<string, string> = {
 };
 const DEFAULT_DEALERSHIP_ID = "d1";
 
+/** Showroom tiers a dealer can shelve a vehicle into. Anything else is
+ *  treated as unset, so a typo can't hide a car from every category page. */
+const CATEGORY_VALUES = ["used", "select", "performance"];
+
 /** Canonical public vehicle shape for HTML dealer websites + embed widget */
 function toPublicVehicle(v: any, source: string = "premium") {
   const images = Array.isArray(v.images) ? v.images.filter(Boolean) : [];
@@ -1321,6 +1328,10 @@ function toPublicVehicle(v: any, source: string = "premium") {
     make: v.make,
     model: v.model,
     trim: v.trim || "",
+    // Showroom tier, set by the dealer in the DMS. Absent (not "") when unset,
+    // so a site can tell "dealer hasn't chosen" from a deliberate choice and
+    // fall back to its own heuristic rather than silently mis-shelving a car.
+    category: CATEGORY_VALUES.includes(v.category) ? v.category : undefined,
     price: v.retailPrice ?? v.price ?? 0,
     // Real market-value benchmark when the dealer has set one; absent (not 0/null)
     // when unset, so consuming sites can tell "no data" apart from "at market".

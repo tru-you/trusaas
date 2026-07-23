@@ -257,7 +257,7 @@ export default function App() {
   const [newAgreementForm, setNewAgreementForm] = useState({ leadId: "", vehicleId: "", purchasePrice: 0, depositAmount: 50000, type: "Vehicle Sale" as any, status: "Pending Signature" as any });
   const [newTaskForm, setNewTaskForm] = useState({ title: "", leadId: "", vehicleId: "", assignedUserId: "u1", dueDate: new Date().toISOString().slice(0, 10), priority: "Normal" as any, status: "Pending" as any });
   const [newUserForm, setNewUserForm] = useState({ name: "", email: "", role: "salesperson" as any, phone: "" });
-  const [newVehicleForm, setNewVehicleForm] = useState({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel" as any, transmission: "Automatic" as any, bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: "d1" });
+  const [newVehicleForm, setNewVehicleForm] = useState({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel" as any, transmission: "Automatic" as any, bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: "d1", category: "" });
 
   const [vinInput, setVinInput] = useState("");
   const [vinDecoding, setVinDecoding] = useState(false);
@@ -1412,6 +1412,22 @@ export default function App() {
                       ))}
                     </select>
                     <p className="text-[9px] text-[#9DB0C6] mt-0.5">This stock will only appear on this dealer's own website and inventory.</p>
+                  </div>
+
+                  {/* Showroom tier — which category page this car lands on */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Showroom Category</label>
+                    <select
+                      value={newVehicleForm.category}
+                      onChange={(e) => setNewVehicleForm((p) => ({ ...p, category: e.target.value }))}
+                      className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                    >
+                      <option value="">Auto — decide from price &amp; model</option>
+                      <option value="used">Premium Used</option>
+                      <option value="select">Premium Select</option>
+                      <option value="performance">Premium Performance</option>
+                    </select>
+                    <p className="text-[9px] text-[#9DB0C6] mt-0.5">Leave on Auto and the website guesses from price and model name. Pick a tier to override that guess.</p>
                   </div>
 
                   {/* Specification grid panel */}

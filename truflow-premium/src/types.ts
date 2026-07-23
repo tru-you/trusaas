@@ -35,6 +35,11 @@ export interface Vehicle {
   natisDetails?: { verifiedAt: string; ownerMatch: string; theftCheck: string; financeLien: string; licenseExpiry: string };
   inspectionResults?: Record<string, 'Pass' | 'Attention'>;
   dealershipId?: string;
+  /** Showroom tier this vehicle is shelved under on the dealer website
+   *  (MKR's Premium Used / Select / Performance pages). Left unset means the
+   *  dealer hasn't chosen, and the site falls back to its own price/name
+   *  heuristic rather than the DMS silently picking one. */
+  category?: 'used' | 'select' | 'performance';
   /** TruPrice — an honest market-value benchmark for this vehicle, independent
    *  of retailPrice. Set manually or via the TrueAI Market Crawler's "Set as
    *  TruPrice" action. Public sites show "R below TruPrice" from the delta. */

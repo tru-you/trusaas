@@ -81,9 +81,13 @@ const MKR = (() => {
     else if (/coupe/.test(bodyRaw)) body = "coupe";
     const name = [v.model, v.trim].filter(Boolean).join(" ") || v.make || "Vehicle";
     const full = ((v.make || "") + " " + name).toLowerCase();
+    // Showroom tier: the dealer's choice in the DMS wins. Only guess from price
+    // and model name when they haven't set one — the guess mis-shelves cars
+    // (a R520k Corolla reads as "performance" on price alone).
+    const dmsCat = ["used", "select", "performance"].includes(v.category) ? v.category : "";
     const isPerf = /gti|amg|rs\b|m2|m3|m4|pro-2x|cooper s|performance|type r|st\b|gr\b|n line|r-line/.test(full) || price >= 500000;
     const isSelect = !isPerf && (price >= 250000 || /premium|executive|limited|exclusive|luxury|epic|wildtrak|legend/.test(full));
-    const cat = isPerf ? "performance" : isSelect ? "select" : "used";
+    const cat = dmsCat || (isPerf ? "performance" : isSelect ? "select" : "used");
     const tag = cat === "performance" ? "Premium Performance" : cat === "select" ? "Premium Select" : "Premium Used";
     // TruPrice: prefer the real benchmark the dealer set in the DMS (via TrueAI
     // Market Crawler or manual entry). Only synthesize a placeholder (4-9% above
