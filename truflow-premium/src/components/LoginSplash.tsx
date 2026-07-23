@@ -11,6 +11,19 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
   const [remember, setRemember] = useState(true);
   const [demoBusy, setDemoBusy] = useState(false);
 
+  // ?demo=1 opens the sandbox immediately — that's what the "Try it" links on
+  // tru-saas.com point at, so a visitor never meets a login wall first.
+  React.useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('demo')) return;
+    let cancelled = false;
+    setDemoBusy(true);
+    enterDemo()
+      .then(() => { if (!cancelled) onLogin(); })
+      .catch((err: any) => { if (!cancelled) setError(err?.message || 'Demo is unavailable right now.'); })
+      .finally(() => { if (!cancelled) setDemoBusy(false); });
+    return () => { cancelled = true; };
+  }, [onLogin]);
+
   // The code is checked by the server, which hands back a session token.
   // Nothing here can authorise anything on its own.
   const handleSubmit = async (e: React.FormEvent) => {

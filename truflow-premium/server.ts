@@ -605,8 +605,8 @@ const DEFAULT_MOCK_STATE = {
   // DEALER_SLUG_TO_ID below — that pairing is what keeps each dealer's stock
   // on their own website only.
   dealerships: [
-    { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrautosales.co.za' },
-    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://carsoncaledon.co.za' },
+    { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
+    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://carsoncaledon.netlify.app' },
     { id: 'demo', name: 'Demo Dealership', location: 'Sandbox', slug: 'demo', websiteUrl: 'https://tru-saas.com' }
   ],
   vehicles: [
