@@ -51,3 +51,6 @@ index.old-hub.backup.html
 # for named dealers. Kept out of the repo; they live locally only.
 Proposals/
 
+
+# Runtime auth store — hashed access codes, generated per instance. Never commit.
+**/auth.json
