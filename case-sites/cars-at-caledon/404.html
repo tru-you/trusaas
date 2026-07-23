@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Page not found — Cars on Caledon</title>
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#111318">
+<link rel="icon" type="image/jpeg" href="coc-badge.jpg">
+<link rel="apple-touch-icon" href="coc-badge.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Mulish:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:40px 22px;text-align:center;
+  font-family:"DM Sans",Mulish,system-ui,-apple-system,sans-serif;color:#fff;
+  background:linear-gradient(180deg,#111318,#1A1D24);
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(700px circle at 80% 12%,rgba(35,65,154,.32),transparent 62%),
+             radial-gradient(520px circle at 10% 88%,rgba(74,102,184,.14),transparent 60%);
+}
+.box{position:relative;max-width:560px;}
+img.logo{width:172px;height:auto;margin-bottom:32px;border-radius:12px;}
+.code{font-size:11px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.42);}
+h1{font-size:clamp(30px,7vw,48px);font-weight:900;letter-spacing:-.025em;line-height:1.1;margin:15px 0 0;}
+h1 em{font-style:normal;color:#4A66B8;}
+p{margin-top:15px;font-size:15px;line-height:1.7;color:rgba(255,255,255,.64);}
+.row{display:flex;flex-wrap:wrap;gap:11px;justify-content:center;margin-top:30px;}
+a.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:14px 24px;border-radius:100px;text-decoration:none;
+  font-size:13px;font-weight:800;
+  transition:transform .25s cubic-bezier(.34,1.4,.64,1);
+}
+a.btn:hover{transform:translateY(-2px);}
+.blue{background:linear-gradient(145deg,#4A66B8,#23419A);color:#fff;box-shadow:0 16px 36px -18px rgba(35,65,154,.9);}
+.wa{background:#25D366;color:#04220F;box-shadow:0 16px 36px -18px rgba(37,211,102,.9);}
+.ghost{border:1px solid rgba(255,255,255,.2);color:#fff;}
+.links{margin-top:30px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);
+  display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:center;}
+.links a{color:rgba(255,255,255,.6);font-size:12.5px;font-weight:700;text-decoration:none;}
+.links a:hover{color:#fff;}
+</style>
+</head>
+<body>
+  <div class="box">
+    <img class="logo" src="coc-badge.jpg" alt="Cars on Caledon" width="172" height="172">
+    <div class="code">Error 404</div>
+    <h1>That one has <em>already sold.</em></h1>
+    <p>Either the link is broken or the car has left the floor. The showroom is still open &mdash; let's get you back to what's actually in stock.</p>
+    <div class="row">
+      <a class="btn blue" href="index.html#showroom">Browse the showroom</a>
+      <a class="btn wa" href="https://wa.me/27618759389?text=Hi%20Cars%20on%20Caledon%2C%20I%20hit%20a%20broken%20link%20on%20your%20site%20%E2%80%94%20can%20you%20help%3F" target="_blank" rel="noopener">WhatsApp us</a>
+      <a class="btn ghost" href="index.html">Home</a>
+    </div>
+    <div class="links">
+      <a href="index.html#showroom">Showroom</a>
+      <a href="index.html#tradein">TruValue trade-in</a>
+      <a href="index.html#finance">Finance</a>
+      <a href="index.html#visit">Visit us</a>
+    </div>
+  </div>
+</body>
+</html>

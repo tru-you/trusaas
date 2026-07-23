@@ -19,6 +19,209 @@
   @keyframes cocRise{from{opacity:0;transform:translateY(24px);filter:blur(6px);}to{opacity:1;transform:none;filter:blur(0);}}
 }
 
+/* ===== KEYBOARD FOCUS =====
+   The page sets outline:none in several places, which left keyboard users with
+   no visible focus anywhere. :focus-visible only fires for keyboard/AT input,
+   so mouse users never see a ring. */
+:focus-visible{
+  outline:3px solid #6E9BFF;
+  outline-offset:2px;
+  border-radius:4px;
+}
+.hero :focus-visible,
+.search-panel :focus-visible,
+footer :focus-visible,
+.coc-reviews :focus-visible{outline-color:#9BB4F0;}
+/* skip link — first tab stop, off-screen until focused */
+.coc-skip{
+  position:absolute;left:12px;top:-64px;z-index:400;
+  background:#fff;color:#111318;font-weight:800;font-size:13px;
+  padding:12px 18px;border-radius:10px;text-decoration:none;
+  box-shadow:0 10px 30px -8px rgba(0,0,0,.5);
+  transition:top .2s ease;
+}
+.coc-skip:focus{top:12px;}
+
+/* ===== TRUTRADE · LIVE OFFER =====
+   Dark panel under the sell grid. Books a real TruLive video inspection —
+   the firm offer + OTP happen on the call, so this only gathers what the
+   dealer needs to run it. */
+.coc-trade{
+  margin-top:34px;border-radius:22px;padding:clamp(22px,4vw,36px);
+  background:
+    radial-gradient(110% 90% at 88% 8%,rgba(46,84,190,.4),transparent 60%),
+    linear-gradient(150deg,#0E1730 0%,#16244A 55%,#0B1226 100%);
+  border:1px solid rgba(255,255,255,.09);color:#fff;
+  box-shadow:0 30px 70px -30px rgba(10,16,40,.65);
+}
+.coc-trade .ct-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:#F0D28C;background:rgba(217,177,102,.12);border:1px solid rgba(217,177,102,.3);
+  border-radius:100px;padding:7px 14px;margin-bottom:14px;
+}
+.coc-trade .ct-badge i{width:6px;height:6px;border-radius:50%;background:#F0D28C;animation:cocPulse 1.8s ease-in-out infinite;}
+.coc-trade h3{font-size:clamp(19px,2.6vw,26px);letter-spacing:-.02em;line-height:1.15;margin-bottom:8px;}
+.coc-trade .ct-head p{font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.65);max-width:62ch;}
+.coc-trade .ct-head p b{color:#fff;}
+.ct-grid{display:grid;grid-template-columns:1.2fr 1fr .8fr;gap:22px;margin-top:24px;align-items:start;}
+@media(max-width:900px){.ct-grid{grid-template-columns:1fr;gap:18px;}}
+.ct-step{display:flex;gap:14px;}
+.ct-sn{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  display:grid;place-items:center;font-size:13px;font-weight:900;
+  background:rgba(110,155,255,.16);border:1px solid rgba(110,155,255,.35);color:#9BB4F0;
+}
+.ct-fields{flex:1;min-width:0;display:grid;gap:12px;}
+.ct-f label{display:block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:6px;}
+.ct-f input{
+  width:100%;padding:12px 14px;border-radius:11px;min-height:44px;
+  border:1.5px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+  font-family:var(--ff,inherit);font-size:14px;font-weight:600;color:#fff;outline:none;
+  transition:border-color .25s,background .25s;
+}
+.ct-f input::placeholder{color:rgba(255,255,255,.3);}
+.ct-f input:focus{border-color:#6E9BFF;background:rgba(255,255,255,.1);}
+.ct-f2{display:grid;grid-template-columns:1fr 1.2fr;gap:12px;}
+@media(max-width:480px){.ct-f2{grid-template-columns:1fr;}}
+.ct-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.ct-chips + .ct-chips{margin-top:8px;}
+.ct-chips button{
+  font-family:inherit;font-size:12px;font-weight:700;color:rgba(255,255,255,.7);
+  background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.13);
+  border-radius:100px;padding:9px 15px;cursor:pointer;min-height:38px;
+  transition:background .2s,border-color .2s,color .2s,transform .2s;
+}
+.ct-chips button:hover{border-color:rgba(110,155,255,.5);}
+.ct-chips button.on{
+  background:linear-gradient(135deg,#6E9BFF,#2E54BE);border-color:transparent;color:#fff;
+  box-shadow:0 6px 16px -6px rgba(46,84,190,.6);
+}
+.ct-cta .ct-book{width:100%;justify-content:center;min-height:48px;font-size:14px;}
+.ct-note{font-size:11px;line-height:1.55;color:rgba(255,255,255,.45);}
+.ct-note b{color:rgba(255,255,255,.7);}
+
+/* ===== DOUBLE-TAP CALL BUTTON =====
+   .coc-call: idle -> .armed (green sweep, "tap again to call") -> dial.
+   The sweep is a scaling ::before layer, so nothing here touches layout. */
+.coc-call{
+  position:relative;display:inline-flex;align-items:center;gap:8px;
+  font:inherit;font-weight:800;color:inherit;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);
+  border-radius:100px;padding:8px 16px;cursor:pointer;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s,transform .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.coc-call::before{
+  content:"";position:absolute;inset:0;border-radius:100px;
+  background:linear-gradient(145deg,#2FDC74,#1DA851);
+  transform:scaleX(0);transform-origin:left center;
+  transition:transform .45s cubic-bezier(.22,1,.36,1);
+}
+.coc-call svg{position:relative;width:15px;height:15px;flex-shrink:0;}
+.coc-call .cc-num,.coc-call .cc-arm{position:relative;white-space:nowrap;transition:opacity .3s,transform .3s;}
+.coc-call .cc-arm{
+  position:absolute;left:38px;right:16px;text-align:left;
+  opacity:0;transform:translateY(8px);font-size:12px;letter-spacing:.02em;
+}
+.coc-call .cc-ring{position:absolute;inset:-4px;border-radius:100px;pointer-events:none;}
+/* armed */
+.coc-call.armed{border-color:rgba(47,220,116,.7);box-shadow:0 6px 22px -6px rgba(37,211,102,.55);}
+.coc-call.armed::before{transform:scaleX(1);}
+.coc-call.armed svg{color:#fff;animation:ccWiggle .5s ease .15s 2;}
+.coc-call.armed .cc-num{opacity:0;transform:translateY(-8px);}
+.coc-call.armed .cc-arm{opacity:1;transform:none;color:#fff;}
+.coc-call.armed .cc-ring{
+  border:2px solid rgba(47,220,116,.6);
+  animation:ccRing 1.1s ease-out infinite;
+}
+.coc-call.dialing{transform:scale(.95);}
+@keyframes ccRing{0%{transform:scale(1);opacity:1;}100%{transform:scale(1.25);opacity:0;}}
+@keyframes ccWiggle{0%,100%{transform:rotate(0);}25%{transform:rotate(-14deg);}75%{transform:rotate(12deg);}}
+/* text variant — inline link look for hero-meta / visit / footer; the number
+   only exists in the armed state, so it's never scraped-at-a-glance either */
+.coc-call-text{
+  background:none;border:none;border-radius:0;padding:0;overflow:visible;
+  gap:6px;font:inherit;color:inherit;cursor:pointer;
+  border-bottom:1px dashed currentColor;
+}
+.coc-call-text::before{display:none;}
+.coc-call-text .cc-ring{display:none;}
+.coc-call-text .cc-arm{position:static;text-align:inherit;font-size:inherit;}
+.coc-call-text .cc-num{transition:none;}
+.coc-call-text.armed{border-bottom-color:#25D366;}
+.coc-call-text.armed .cc-num{display:none;}
+.coc-call-text .cc-arm{display:none;}
+.coc-call-text.armed .cc-arm{display:inline;opacity:1;transform:none;color:#25D366;font-weight:800;}
+
+/* the mobile-bar variant sits on a light bar, keep its idle look */
+.coc-mbar .coc-call{background:var(--paper-2,#EEF0F5);color:var(--coc-blue-deep);border:1px solid var(--line,rgba(17,19,24,.1));justify-content:center;border-radius:11px;}
+.coc-mbar .coc-call::before{border-radius:11px;}
+.coc-mbar .coc-call .cc-arm{text-align:center;left:12px;right:12px;}
+.coc-mbar .coc-call .cc-ring{border-radius:11px;}
+
+/* ===== TOPBAR TICKER (mobile) =====
+   The two-group topbar squashes below 720px. Hide the static groups and run a
+   seamless marquee instead — content is duplicated once, track slides -50%. */
+.tb-tick{display:none;}
+@media(max-width:720px){
+  .topbar .tl.tb-static{display:none;}
+  .topbar .wrap{gap:10px;}
+  .tb-tick{display:block;flex:1;min-width:0;overflow:hidden;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+  }
+  .tb-track{
+    display:inline-flex;align-items:center;gap:18px;white-space:nowrap;
+    animation:tbTick 26s linear infinite;will-change:transform;
+  }
+  .tb-track span{display:inline-flex;align-items:center;gap:5px;font-size:11px;}
+  .tb-track i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.35);flex-shrink:0;}
+  @keyframes tbTick{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  /* keep the call button compact next to the ticker */
+  .topbar .coc-call{padding:6px 12px;}
+  .topbar .coc-call .cc-num{font-size:11px;}
+}
+@media(prefers-reduced-motion:reduce){.tb-track{animation:none;}}
+
+/* ===== MOBILE HEADER FILL =====
+   Live status pill + WhatsApp tap between the logo and the burger. Desktop
+   already has the nav links there, so both stay hidden above 860px. */
+.nav-status,.nav-wa{display:none;}
+@media(max-width:860px){
+  .nav-status{
+    display:inline-flex;align-items:center;gap:7px;
+    margin-left:auto;margin-right:2px;
+    font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--coc-blue-deep);text-decoration:none;
+    background:rgba(35,65,154,.07);border:1px solid rgba(35,65,154,.16);
+    border-radius:100px;padding:8px 13px;white-space:nowrap;
+  }
+  .nav-status i{
+    width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0;
+    box-shadow:0 0 0 0 rgba(34,197,94,.55);
+    animation:cocStatusPulse 2s ease-out infinite;
+  }
+  .nav-status.closed i{background:#F59E0B;animation:none;}
+  .nav-status.closed{color:#8a6d1f;background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.25);}
+  @keyframes cocStatusPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55);}100%{box-shadow:0 0 0 9px rgba(34,197,94,0);}}
+  .nav-wa{
+    display:flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:50%;flex-shrink:0;
+    color:#fff;background:linear-gradient(145deg,#2FDC74,#1DA851);
+    box-shadow:0 6px 16px -6px rgba(37,211,102,.55);
+  }
+  .nav-wa svg{width:19px;height:19px;}
+  .nav-wa:active{transform:scale(.94);}
+}
+@media(max-width:420px){
+  .nav-status{font-size:9.5px;padding:7px 11px;letter-spacing:.05em;}
+}
+@media(max-width:350px){
+  .nav-status span{display:none;}          /* dot-only pill on the tightest screens */
+  .nav-status{padding:8px 9px;}
+}
+
 /* ===== CARD CLICKABILITY ===== */
 #invgrid .card{cursor:pointer;}
 
@@ -63,7 +266,11 @@
 }
 .coc-qv svg{width:14px;height:14px;color:var(--coc-blue-bright);}
 .card:hover .coc-qv{transform:none;}
-@media (hover:none){.coc-qv{display:none;}}
+/* Hide on ANY touch device. `hover:none` alone is not enough — Android Chrome,
+   Windows touch laptops and in-app webviews (Facebook/Instagram) often report
+   hover:hover, where a tap leaves a sticky :hover and the bar stays parked
+   across the vehicle image. pointer:coarse catches those. */
+@media (hover:none),(pointer:coarse){.coc-qv{display:none !important;}}
 
 /* ===== REVIEWS STRIP (own dark band) ===== */
 .coc-reviews{
@@ -126,6 +333,19 @@
   body.vd-lock .coc-mbar{display:none;}
   .fab-rail{bottom:84px !important;}
   .coc-ticker{display:none;}
+
+  /* The fixed bar overlays the end of the document — without this the footer's
+     copyright / "Powered by TruSaas" row is permanently hidden underneath it. */
+  footer{padding-bottom:calc(78px + env(safe-area-inset-bottom)) !important;}
+  /* 4 stacked columns at 40px gaps makes the mobile footer ~700px tall */
+  footer .f-grid{gap:26px !important;}
+
+  /* Lift the TruAfford widget clear of the sticky bottom bar.
+     Bar is ~66px + the iOS home-indicator inset; +14px breathing room.
+     TruAfford reads this var for its own `bottom`. */
+  :root{--ta-offset-bottom:calc(80px + env(safe-area-inset-bottom));}
+  /* while the vehicle-detail modal is open the bar is hidden, so drop back down */
+  body.vd-lock{--ta-offset-bottom:20px;}
 }
 
 /* ===== TRUAFFORD — Caledon colour match (overrides widget's default purple) ===== */
@@ -146,12 +366,45 @@
   box-shadow:0 18px 40px -10px rgba(46,84,190,.45),0 0 32px -6px rgba(110,155,255,.32),inset 0 1px 0 rgba(255,255,255,.14) !important;
 }
 
-/* Old basic chat button hidden — TruChat widget is the single chat entry */
-#fabBot{display:none !important;}
-
 /* ===== WIDGET STACKING — TruChat fab bottom-right, rail above it ===== */
 .fab-rail{bottom:108px !important;}
 @media(max-width:720px){
   .fab-rail{display:none !important;}
   #tc-fab{bottom:86px !important;}
+}
+
+
+/* ===== LIVE TRADING-HOURS PILL (coc-hours.js) ===== */
+.coc-status{
+  display:inline-flex!important;align-items:center;gap:7px;
+  padding:3px 10px;border-radius:100px;
+  font-size:10.5px;font-weight:600;letter-spacing:.06em;
+  border:1px solid transparent;white-space:nowrap;
+}
+.coc-status i{width:6px;height:6px;border-radius:50%;flex-shrink:0;position:relative;}
+.coc-status.open{background:rgba(37,211,102,.14);border-color:rgba(37,211,102,.34);color:#7BEBA6;}
+.coc-status.open i{background:#25D366;}
+.coc-status.open i::after{
+  content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid #25D366;
+  animation:cocRipple 2.2s ease-out infinite;
+}
+.coc-status.shut{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:rgba(255,255,255,.62);}
+.coc-status.shut i{background:rgba(255,255,255,.4);}
+@keyframes cocRipple{0%{transform:scale(.6);opacity:.9;}100%{transform:scale(1.9);opacity:0;}}
+@media (prefers-reduced-motion:reduce){.coc-status.open i::after{animation:none;}}
+
+
+/* ============================================================
+   TOUCH TARGETS — 44px minimum hit area on phones. Inline links
+   inside prose keep their natural flow, and card titles are left
+   alone because the whole card is already tappable.
+   ============================================================ */
+@media (pointer:coarse), (max-width:760px){
+  nav a, .nav-links a, .m-menu a, header a, footer a,
+  .btn, button, .chip, .fab-btn, [role="button"]{
+    min-height:44px;
+    display:inline-flex;
+    align-items:center;
+  }
+  p a, li a, .lede a, .sec-lede a, .card-body h3 a{min-height:0;display:inline;}
 }

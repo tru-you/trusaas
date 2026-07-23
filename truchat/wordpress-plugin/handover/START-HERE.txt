@@ -1,0 +1,48 @@
+TruChat (Ray) - Your Car Guy
+============================
+
+INSTALL (5 minutes):
+
+  1. In WordPress:  Plugins  ->  Add New  ->  Upload Plugin
+  2. Choose the file:  UPLOAD-THIS-TO-WORDPRESS-truchat.zip
+  3. Install Now  ->  Activate
+  4. Go to  Settings -> TruChat  and paste the Claude API key
+     (Paul is sending the key separately.)
+
+  *** IMPORTANT: do NOT unzip UPLOAD-THIS-TO-WORDPRESS-truchat.zip ***
+  WordPress needs the .zip file itself. The PHP files are inside it -
+  WordPress unpacks them for you.
+
+  The chat bubble stays hidden on the site until the API key is saved,
+  so nothing half-working is ever shown to customers.
+
+
+WHAT'S IN THIS FOLDER:
+
+  UPLOAD-THIS-TO-WORDPRESS-truchat.zip   The plugin. Upload as-is.
+  HANDOVER.md                            Full install guide  <-- READ THIS FIRST
+  README.md                              Technical reference
+  portal.html                            Optional leads inbox for Ray's phone
+
+
+TWO THINGS THAT COMMONLY TRIP PEOPLE UP:
+
+  1. EMAIL - please install an SMTP plugin (e.g. WP Mail SMTP) and set the
+     "Send from" address to one on the yourcarguy.co.za domain. Shared hosting
+     usually drops WordPress mail otherwise. If the emails are the only thing
+     not working, this is why - it is not a plugin fault.
+
+  2. Ignore any older "WORDPRESS.md" with manual <script> tags. That was the
+     previous version. This plugin replaces it entirely.
+
+
+REQUIREMENTS:
+
+  - WordPress 5.6+ and PHP 7.4+
+  - Server must allow outbound HTTPS to api.anthropic.com
+  - Pretty permalinks (Settings -> Permalinks -> anything except "Plain")
+    Only needed for the optional phone portal.
+
+
+Questions:  Paul de Beer  -  paulgordondebeer@gmail.com
+Built by TruSaaS.

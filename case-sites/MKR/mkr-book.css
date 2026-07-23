@@ -1,0 +1,67 @@
+/* MKR Booking — shared calendar for viewings, live video walkarounds and
+   virtual trade-in sessions. Extends the existing .vd-booking* styles. */
+
+.mkr-bk-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px;}
+.mkr-bk-mode{
+  padding:9px 6px;border-radius:11px;cursor:pointer;text-align:center;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);
+  font-size:10.5px;font-weight:800;letter-spacing:.03em;color:rgba(255,255,255,.6);
+  transition:border-color .25s,background .25s,color .25s;
+}
+.mkr-bk-mode:hover{background:rgba(255,255,255,.09);color:#fff;}
+.mkr-bk-mode.on{border-color:var(--blue-bright,#4D8DFF);background:rgba(11,91,215,.22);color:#fff;}
+
+.mkr-bk-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:6px 0 4px;}
+.mkr-bk-fields .full{grid-column:1/-1;}
+.mkr-bk-fields input{
+  width:100%;padding:11px 13px;border-radius:11px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
+  color:#fff;font-family:inherit;font-size:13.5px;
+}
+.mkr-bk-fields input::placeholder{color:rgba(255,255,255,.32);}
+.mkr-bk-fields input:focus{outline:none;border-color:var(--blue-bright,#4D8DFF);background:rgba(255,255,255,.09);}
+.mkr-bk-fields input.err{border-color:#EF4444;}
+
+.mkr-bk-when{
+  display:flex;align-items:center;gap:9px;margin:14px 0 2px;padding:11px 13px;
+  border-radius:12px;background:rgba(11,91,215,.14);border:1px solid rgba(77,141,255,.28);
+  font-size:12.5px;font-weight:700;
+}
+.mkr-bk-when svg{width:15px;height:15px;flex-shrink:0;fill:none;stroke:var(--blue-bright,#4D8DFF);stroke-width:2;}
+.mkr-bk-when b{font-weight:900;}
+
+/* confirmation state */
+.mkr-bk-done{text-align:center;padding:12px 4px 4px;}
+.mkr-bk-tick{
+  width:56px;height:56px;margin:0 auto 16px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.4);
+}
+.mkr-bk-tick svg{width:26px;height:26px;fill:none;stroke:#22C55E;stroke-width:2.6;}
+.mkr-bk-done h3{font-family:var(--serif,Fraunces),Georgia,serif;font-size:21px;font-weight:600;}
+.mkr-bk-done .slot{
+  margin:14px 0;padding:14px;border-radius:13px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  font-size:15px;font-weight:800;
+}
+.mkr-bk-done .slot span{display:block;margin-top:4px;font-size:12px;font-weight:600;color:rgba(255,255,255,.5);}
+.mkr-bk-done p{font-size:12.5px;line-height:1.65;color:rgba(255,255,255,.55);}
+.mkr-bk-acts{display:grid;gap:9px;margin-top:16px;}
+.mkr-bk-acts a,.mkr-bk-acts button{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 18px;border-radius:100px;cursor:pointer;text-decoration:none;
+  font-family:inherit;font-size:12.5px;font-weight:800;letter-spacing:.02em;
+  border:1px solid transparent;transition:transform .25s cubic-bezier(.34,1.4,.64,1),background .25s;
+}
+.mkr-bk-acts a:hover,.mkr-bk-acts button:hover{transform:translateY(-2px);}
+.mkr-bk-acts .wa{background:#25D366;color:#04220F;}
+.mkr-bk-acts .ics{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);color:#fff;}
+.mkr-bk-acts svg{width:15px;height:15px;}
+
+@media (max-width:520px){
+  .mkr-bk-modes{grid-template-columns:1fr;}
+  .mkr-bk-fields{grid-template-columns:1fr;}
+}
+@media (prefers-reduced-motion:reduce){
+  .mkr-bk-mode,.mkr-bk-acts a,.mkr-bk-acts button{transition:none!important;}
+}

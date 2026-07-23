@@ -278,6 +278,25 @@ body.vd-lock{overflow:hidden;}
 .vd-slot.on{border-color:var(--vd-blue);background:var(--vd-blue);color:#fff;}
 .vd-slot .day{font-size:10px;color:rgba(255,255,255,.35);margin-bottom:2px;}
 .vd-slot.on .day{color:rgba(255,255,255,.75);}
+.vd-trade-opt{
+  display:flex;align-items:flex-start;gap:10px;margin:14px 0;
+  padding:12px 14px;border-radius:12px;cursor:pointer;
+  background:rgba(217,177,102,.08);border:1px solid rgba(217,177,102,.28);
+  font-size:12px;line-height:1.5;color:rgba(255,255,255,.8);
+  transition:background .25s,border-color .25s;
+}
+.vd-trade-opt:hover{background:rgba(217,177,102,.13);}
+.vd-trade-opt b{color:var(--vd-gold-light);}
+.vd-trade-opt input{
+  appearance:none;width:18px;height:18px;flex-shrink:0;margin-top:1px;
+  border:2px solid rgba(217,177,102,.55);border-radius:5px;cursor:pointer;position:relative;
+  transition:background .2s,border-color .2s;
+}
+.vd-trade-opt input:checked{background:var(--vd-gold);border-color:var(--vd-gold);}
+.vd-trade-opt input:checked::after{
+  content:"";position:absolute;inset:2px 4px 4px 4px;
+  border:solid #141a2c;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);
+}
 .vd-booking-confirm{width:100%;padding:13px;border-radius:12px;font-family:var(--vd-ff);font-weight:800;font-size:13.5px;background:linear-gradient(135deg,var(--vd-blue-bright),var(--vd-blue));color:#fff;border:none;cursor:pointer;transition:transform .3s var(--vd-spring),box-shadow .3s;}
 .vd-booking-confirm:hover{transform:translateY(-2px);box-shadow:0 8px 20px -6px rgba(46,84,190,.6);}
 .vd-booking-note{font-size:10.5px;color:rgba(255,255,255,.35);margin-top:12px;text-align:center;line-height:1.5;}

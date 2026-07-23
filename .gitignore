@@ -32,3 +32,18 @@ data/local-inventory.json
 # Local AI tooling
 .claude/
 
+# Deploy artifacts — rebuilt from the case-site source on every release,
+# so committing them just bloats the repo with duplicate copies of the sites.
+case-sites/_deploy/
+case-sites/*-DEPLOY.zip
+**/*.zip
+
+# Archive masters — full-resolution splash video / artwork sources. Kept
+# locally; the sites ship the compressed splash-*.mp4 / *-small.mp4 variants.
+case-sites/_masters/
+**/SPLASH VIDEO.mp4
+
+# Editor backups / stray downloads at the repo root
+*.backup.html
+index.old-hub.backup.html
+

@@ -118,18 +118,27 @@
 @media(max-width:720px){
   .mkr-mbar{
     position:fixed;left:0;right:0;bottom:0;z-index:230;
-    display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px;
+    display:grid;grid-template-columns:1fr 1.3fr 1fr 1fr;gap:7px;
     padding:10px 12px calc(10px + env(safe-area-inset-bottom));
     background:rgba(8,18,34,.92);
     border-top:1px solid rgba(255,255,255,.1);
     backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   }
-  .mkr-mbar a{
+  .mkr-mbar a,.mkr-mbar .mb-saved{
     display:flex;align-items:center;justify-content:center;gap:6px;
     font-size:12px;font-weight:800;border-radius:11px;padding:12px 8px;
     text-decoration:none;letter-spacing:.02em;
   }
-  .mkr-mbar a svg{width:15px;height:15px;flex-shrink:0;}
+  .mkr-mbar a svg,.mkr-mbar .mb-saved svg{width:15px;height:15px;flex-shrink:0;}
+  .mkr-mbar .mb-saved{
+    background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12);
+    font-family:inherit;cursor:pointer;
+  }
+  /* at 375px the four labels are what force a second row — drop to icons only */
+  @media(max-width:420px){
+    .mkr-mbar{font-size:0;}
+    .mkr-mbar a,.mkr-mbar .mb-saved{font-size:10.5px;flex-direction:column;gap:3px;padding:9px 4px;}
+  }
   .mkr-mbar .mb-call{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12);}
   .mkr-mbar .mb-wa{background:#22C55E;color:#fff;}
   .mkr-mbar .mb-stock{background:linear-gradient(135deg,var(--blue,#0B5BD7),var(--blue-deep,#0846A8));color:#fff;}
@@ -145,5 +154,21 @@
   margin:6px 0 2px;
 }
 .tp-tag svg{width:10px;height:10px;flex-shrink:0;}
-.tp-tag.win{background:rgba(34,197,94,.12);color:#16A34A;}
-.tp-tag.fair{background:rgba(122,132,148,.12);color:var(--grey-dark,#3D4658);}
+.tp-tag.win{background:linear-gradient(135deg,rgba(200,162,75,.2),rgba(200,162,75,.07));color:#7A5C14;border:1px solid rgba(200,162,75,.42);}
+.tp-tag.fair{background:rgba(10,22,38,.045);color:var(--grey-dark,#3D4658);border:1px solid var(--line,rgba(10,22,38,.07));}
+
+
+/* ============================================================
+   TOUCH TARGETS — 44px minimum hit area on phones. Inline links
+   inside prose keep their natural flow, and card titles are left
+   alone because the whole card is already tappable.
+   ============================================================ */
+@media (pointer:coarse), (max-width:760px){
+  nav a, .nav-links a, .m-menu a, header a, footer a,
+  .btn, button, .chip, .fab-btn, [role="button"]{
+    min-height:44px;
+    display:inline-flex;
+    align-items:center;
+  }
+  p a, li a, .lede a, .sec-lede a, .card-body h3 a{min-height:0;display:inline;}
+}

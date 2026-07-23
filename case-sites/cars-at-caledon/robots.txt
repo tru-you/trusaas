@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://carsoncaledon.co.za/sitemap.xml
