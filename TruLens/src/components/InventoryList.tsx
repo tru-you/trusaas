@@ -5,7 +5,7 @@ import {
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
   FileText, Settings, Camera, LogOut
 } from 'lucide-react';
-import trulensLogo from '../assets/images/trulens-logo.svg';
+import trulensLogo from '../assets/images/trulens-wordmark.png';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -337,7 +337,7 @@ export default function InventoryList({
       {/* App Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
         <div className="flex items-center">
-          <img src={trulensLogo} alt="TruLens" className="h-8 w-auto object-contain tl-float drop-shadow-[0_0_10px_rgba(79,227,220,0.30)]" />
+          <img src={trulensLogo} alt="TruLens" className="h-8 w-auto object-contain" />
         </div>
 
         {/* Flow DMS, sync & log out */}
