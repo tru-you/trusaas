@@ -2,18 +2,29 @@ import logo from "../assets/truflow-logo.png";
 import React, { useState } from 'react';
 import { Lock, ExternalLink } from 'lucide-react';
 import { TRUE_CARS_URL, TRUESAAS_URL } from '../lib/ecosystem';
+import { login } from '../lib/session';
 
 export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [remember, setRemember] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // The code is checked by the server, which hands back a session token.
+  // Nothing here can authorise anything on its own.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.trim() === '2026') {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      await login(password, remember);
       onLogin();
-    } else {
-      setError(true);
+    } catch (err: any) {
+      setError(err?.message || 'Sign-in failed. Try again.');
       setPassword('');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -31,24 +42,35 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
       >
         <div className="flex flex-col items-center justify-center mb-6 gap-3">
           <img src={logo} alt="TruFlow Premium" className="h-14 w-auto max-w-full object-contain logo-float" />
-          <p className="text-[10px] text-[#9DB0C6]">Enter password to open the DMS</p>
+          <p className="text-[10px] text-[#9DB0C6]">Enter your dealership access code</p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="relative mb-4">
             <input
               type="password"
-              placeholder="Password (demo: 2026)"
+              placeholder="Access code"
               autoFocus
+              disabled={busy}
+              autoComplete="off"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-[#070d15] border border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#1466E0] transition-colors"
             />
             <Lock className="absolute right-3 top-3.5 w-4 h-4 text-[#9DB0C6]" />
           </div>
-          {error && <p className="text-xs text-[#F0555A] mb-4">Invalid password.</p>}
-          <button type="submit" className="w-full py-3 rounded-xl bg-[#1466E0] hover:bg-[#1258c4] text-white font-bold text-sm">
-            Enter
+          <label className="flex items-center gap-2 mb-4 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="w-3.5 h-3.5 accent-[#1466E0]"
+            />
+            <span className="text-[10px] text-[#9DB0C6]">Keep me signed in on this device</span>
+          </label>
+          {error && <p className="text-xs text-[#F0555A] mb-4">{error}</p>}
+          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#1466E0] hover:bg-[#1258c4] disabled:opacity-60 text-white font-bold text-sm">
+            {busy ? 'Checking…' : 'Enter'}
           </button>
         </form>
 

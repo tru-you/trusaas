@@ -31,8 +31,6 @@ export interface Vehicle {
   extrasPhotos?: string[];
   lastPhotoSync?: string;
   reconTasks?: { id: string; name: string; cost: number; status: 'Pending' | 'In Progress' | 'Completed'; dateAdded: string; category?: string; photo?: string }[];
-  natisStatus?: 'VERIFIED' | 'NONE';
-  natisDetails?: { verifiedAt: string; ownerMatch: string; theftCheck: string; financeLien: string; licenseExpiry: string };
   inspectionResults?: Record<string, 'Pass' | 'Attention'>;
   dealershipId?: string;
   /** Showroom tier this vehicle is shelved under on the dealer website
@@ -41,8 +39,9 @@ export interface Vehicle {
    *  heuristic rather than the DMS silently picking one. */
   category?: 'used' | 'select' | 'performance';
   /** TruPrice — an honest market-value benchmark for this vehicle, independent
-   *  of retailPrice. Set manually or via the TrueAI Market Crawler's "Set as
-   *  TruPrice" action. Public sites show "R below TruPrice" from the delta. */
+   *  of retailPrice, set by the dealer from their own trade knowledge.
+   *  Public sites show "R below TruPrice" from the delta, so it is only worth
+   *  anything if a person stands behind the number. */
   truPrice?: number;
 }
 
