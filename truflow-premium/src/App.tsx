@@ -211,6 +211,35 @@ function ageBand(days: number) {
   return AGE_BANDS.find((b) => days >= b.min && days <= b.max) || AGE_BANDS[0];
 }
 
+
+/** A flat segmented filter — replaces the row of rounded <select> boxes, which
+ *  hid their options behind a click and gave no sense of what was set. Here the
+ *  choices are visible and the active one reads in the accent. */
+function Segmented<T extends string>({ value, onChange, options }: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+}) {
+  return (
+    <div className="inline-flex items-center rounded-lg border border-white/10 bg-[#0B0F17] p-0.5 gap-0.5">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          className={`px-2.5 py-1 rounded-md text-[12px] font-medium transition-colors cursor-pointer ${
+            value === o.value
+              ? "bg-[#4FE3DC]/15 text-[#4FE3DC]"
+              : "text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6]"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
@@ -262,7 +291,15 @@ export default function App() {
   const [selectedDetailVehicle, setSelectedDetailVehicle] = useState<Vehicle | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leadDetailId, setLeadDetailId] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'salesperson' | 'manager' | 'owner'>('owner');
+  // The view follows the logged-in account. This was a "simulated role
+  // selector" pill that let anyone flip to Dealer Owner regardless of their
+  // real login — a permissions hole now that seats are live. principal/admin
+  // see the owner view; managers and salespeople see their own.
+  const account = getAccount();
+  const accountRole: 'salesperson' | 'manager' | 'owner' =
+    account?.role === 'admin' || account?.role === 'principal' ? 'owner'
+    : account?.role === 'manager' ? 'manager' : 'salesperson';
+  const selectedRole = accountRole;
   const [showEODReport, setShowEODReport] = useState(false);
 
   // Filters & Searches
@@ -951,33 +988,17 @@ export default function App() {
       <main className="flex-1 md:ml-[240px] min-h-screen px-4 py-6 md:px-8 md:py-8 z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
         {/* Top Profile Bar - Hidden on mobile */}
         <div className="hidden md:flex justify-between items-center gap-4 border-b border-white/5 pb-4">
-           {/* Elegant Simulated Role Selector Pill */}
-           <div className="flex bg-[#06080D]/80 border border-white/5 p-1 rounded-full text-[12px] font-bold">
-             <button
-               onClick={() => { setSelectedRole('salesperson'); if (['manager', 'settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'salesperson' ? "bg-[#4FE3DC] on-fill shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
-             >
-               Salesperson View
-             </button>
-             <button
-               onClick={() => { setSelectedRole('manager'); if (['settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'manager' ? "bg-[#4FE3DC] on-fill shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
-             >
-               Manager View
-             </button>
-             <button
-               onClick={() => setSelectedRole('owner')}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'owner' ? "bg-[#4FE3DC] on-fill shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
-             >
-               Dealer Owner
-             </button>
+           {/* The dealership, at a glance. Role comes from the login, not a toggle. */}
+           <div>
+             <h2 className="text-[15px] font-semibold text-[#E8EAE6]">{account?.label || 'TruFlow'}</h2>
+             <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Signed in</span>
            </div>
 
            <div className="flex items-center gap-2">
              <div className="flex items-center gap-3 bg-[#0B0F17] border border-white/5 rounded-full pl-3 pr-3 py-1.5">
                <div className="flex flex-col items-end">
-                 <span className="text-[13px] font-bold text-[#E8EAE6]">Marc van der Merwe</span>
-                 <span className="text-[12px] text-[#4FE3DC] font-semibold  font-mono tracking-wider">{selectedRole}</span>
+                 <span className="text-[13px] font-bold text-[#E8EAE6]">{account?.label || 'Signed in'}</span>
+                 <span className="text-[12px] text-[#4FE3DC] font-semibold">{selectedRole === 'owner' ? 'Owner' : selectedRole === 'manager' ? 'Manager' : 'Salesperson'}</span>
                </div>
              </div>
              <button
@@ -1010,28 +1031,6 @@ export default function App() {
             >
               <LogOut size={14} />
               Out
-            </button>
-          </div>
-          
-          {/* Mobile role pill bar */}
-          <div className="flex bg-[#06080D]/80 border border-white/5 p-0.5 rounded-full text-[12px] font-bold justify-between">
-            <button
-              onClick={() => { setSelectedRole('salesperson'); if (['manager', 'settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'salesperson' ? "bg-[#4FE3DC] on-fill shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
-            >
-              Salesperson
-            </button>
-            <button
-              onClick={() => { setSelectedRole('manager'); if (['settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'manager' ? "bg-[#4FE3DC] on-fill shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
-            >
-              Manager
-            </button>
-            <button
-              onClick={() => setSelectedRole('owner')}
-              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'owner' ? "bg-[#4FE3DC] on-fill shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
-            >
-              Owner
             </button>
           </div>
         </div>
@@ -1324,38 +1323,36 @@ export default function App() {
                     className="w-full md:w-56 bg-[#0B0F17]/4 border border-white/5 rounded-lg pl-9 pr-3 py-2 text-xs text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]"
                   />
                 </div>
-                <select
+                <Segmented
                   value={inventoryStatusFilter}
-                  onChange={(e) => setInventoryStatusFilter(e.target.value)}
-                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
-                >
-                  <option className="bg-[#0B0F17]" value="ALL">All Statuses</option>
-                  <option className="bg-[#0B0F17]" value="INVENTORY">Active Stock</option>
-                  <option className="bg-[#0B0F17]" value="PENDING">Pending Deal</option>
-                  <option className="bg-[#0B0F17]" value="SOLD">Sold</option>
-                </select>
-                <select
+                  onChange={setInventoryStatusFilter}
+                  options={[
+                    { value: "ALL", label: "All" },
+                    { value: "INVENTORY", label: "In stock" },
+                    { value: "PENDING", label: "Pending" },
+                    { value: "SOLD", label: "Sold" },
+                  ]}
+                />
+                <Segmented
                   value={inventoryPhotoFilter}
-                  onChange={(e) => setInventoryPhotoFilter(e.target.value as any)}
-                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
-                  title="Filter by TruLens gallery readiness"
-                >
-                  <option className="bg-[#0B0F17]" value="ALL">All photos</option>
-                  <option className="bg-[#0B0F17]" value="NEEDS">Needs shoot</option>
-                  <option className="bg-[#0B0F17]" value="PARTIAL">Partial gallery</option>
-                  <option className="bg-[#0B0F17]" value="READY">Web-ready</option>
-                </select>
-                <select
+                  onChange={setInventoryPhotoFilter}
+                  options={[
+                    { value: "ALL", label: "All photos" },
+                    { value: "NEEDS", label: "Needs shoot" },
+                    { value: "PARTIAL", label: "Partial" },
+                    { value: "READY", label: "Web-ready" },
+                  ]}
+                />
+                <Segmented
                   value={inventoryAgeFilter}
-                  onChange={(e) => setInventoryAgeFilter(e.target.value as any)}
-                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
-                  title="Aging stock filter"
-                >
-                  <option className="bg-[#0B0F17]" value="ALL">Any age</option>
-                  <option className="bg-[#0B0F17]" value="30">30+ days</option>
-                  <option className="bg-[#0B0F17]" value="60">60+ days</option>
-                  <option className="bg-[#0B0F17]" value="90">90+ days</option>
-                </select>
+                  onChange={setInventoryAgeFilter}
+                  options={[
+                    { value: "ALL", label: "Any age" },
+                    { value: "30", label: "30+" },
+                    { value: "60", label: "60+" },
+                    { value: "90", label: "90+" },
+                  ]}
+                />
               </div>
             </div>
 
