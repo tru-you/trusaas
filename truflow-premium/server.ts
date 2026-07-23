@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
@@ -64,6 +65,240 @@ const DATA_FILE = path.join(DATA_DIR, "data.json");
 // Repo-shipped seed. Used once, only when the disk is still empty — never
 // written back to, so a redeploy can't clobber the dealer's real stock.
 const SEED_FILE = path.join(process.cwd(), "data.json");
+const AUTH_FILE = path.join(DATA_DIR, "auth.json");
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTH — per-dealer access codes, verified server-side.
+//
+// Replaces the old client-side `password === "2026"` check, which was cosmetic:
+// the code shipped in the browser bundle and every /api route was open anyway.
+// Codes are stored salted+hashed; the plaintext is shown once at creation and
+// never recoverable. Tokens are HMAC-signed, so they survive a restart without
+// a session store.
+// ─────────────────────────────────────────────────────────────────────────────
+
+type AuthAccount = {
+  id: string;
+  label: string;
+  /** Which dealership this code sees. Omitted for the master admin. */
+  dealershipId?: string;
+  role: "dealer" | "admin";
+  salt: string;
+  hash: string;
+  createdAt: string;
+  rotatedAt?: string;
+};
+type AuthStore = { secret: string; accounts: AuthAccount[] };
+
+const TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // one working day
+
+function hashCode(code: string, salt: string): string {
+  return crypto.scryptSync(code.trim(), salt, 32).toString("hex");
+}
+
+/** Human-friendly random code — no look-alike characters (0/O, 1/I/l). */
+function generateCode(): string {
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.randomBytes(9);
+  let out = "";
+  for (let i = 0; i < 9; i++) {
+    if (i === 3 || i === 6) out += "-";
+    out += alphabet[bytes[i] % alphabet.length];
+  }
+  return out; // e.g. K7P-QM4-XT9
+}
+
+function makeAccount(label: string, role: AuthAccount["role"], dealershipId?: string) {
+  const code = generateCode();
+  const salt = crypto.randomBytes(16).toString("hex");
+  const account: AuthAccount = {
+    id: "acc_" + crypto.randomBytes(6).toString("hex"),
+    label,
+    dealershipId,
+    role,
+    salt,
+    hash: hashCode(code, salt),
+    createdAt: new Date().toISOString(),
+  };
+  return { account, code };
+}
+
+function readAuth(): AuthStore {
+  try {
+    if (fs.existsSync(AUTH_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(AUTH_FILE, "utf-8"));
+      if (parsed?.secret && Array.isArray(parsed.accounts)) return parsed;
+    }
+  } catch (err) {
+    console.error("Error reading auth file:", err);
+  }
+  return { secret: "", accounts: [] };
+}
+
+function writeAuth(store: AuthStore) {
+  fs.writeFileSync(AUTH_FILE, JSON.stringify(store, null, 2), "utf-8");
+}
+
+/** First boot on a fresh disk: mint a secret and one code per dealership.
+ *  Codes are printed to the service log exactly once — grab them from Render's
+ *  log viewer. They cannot be read back afterwards, only rotated. */
+function ensureAuthStore(): AuthStore {
+  const store = readAuth();
+  if (store.secret && store.accounts.length) return store;
+
+  store.secret = store.secret || crypto.randomBytes(32).toString("hex");
+  const issued: string[] = [];
+
+  if (!store.accounts.some((a) => a.role === "admin")) {
+    const { account, code } = makeAccount("Master admin (TruSaaS)", "admin");
+    store.accounts.push(account);
+    issued.push(`  ${account.label.padEnd(32)} ${code}`);
+  }
+  for (const d of readState().dealerships || []) {
+    if (store.accounts.some((a) => a.dealershipId === d.id)) continue;
+    const { account, code } = makeAccount(d.name, "dealer", d.id);
+    store.accounts.push(account);
+    issued.push(`  ${account.label.padEnd(32)} ${code}`);
+  }
+
+  writeAuth(store);
+  if (issued.length) {
+    console.log("\n" + "=".repeat(64));
+    console.log(" TruFlow Premium — ACCESS CODES ISSUED (shown once, save them now)");
+    console.log("=".repeat(64));
+    console.log(issued.join("\n"));
+    console.log("=".repeat(64) + "\n");
+  }
+  return store;
+}
+
+function signToken(account: AuthAccount): string {
+  const store = ensureAuthStore();
+  const payload = Buffer.from(
+    JSON.stringify({
+      sub: account.id,
+      dealershipId: account.dealershipId,
+      role: account.role,
+      label: account.label,
+      exp: Date.now() + TOKEN_TTL_MS,
+    })
+  ).toString("base64url");
+  const sig = crypto.createHmac("sha256", store.secret).update(payload).digest("base64url");
+  return `${payload}.${sig}`;
+}
+
+function verifyToken(token: string): any | null {
+  try {
+    const store = ensureAuthStore();
+    const [payload, sig] = String(token).split(".");
+    if (!payload || !sig) return null;
+    const expected = crypto.createHmac("sha256", store.secret).update(payload).digest("base64url");
+    // Constant-time compare — a fast-fail string compare leaks the signature.
+    const a = Buffer.from(sig);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    const claims = JSON.parse(Buffer.from(payload, "base64url").toString("utf-8"));
+    if (!claims.exp || claims.exp < Date.now()) return null;
+    return claims;
+  } catch {
+    return null;
+  }
+}
+
+/** Routes that must stay reachable without a token.
+ *  The public feeds are what every dealer website reads — locking those would
+ *  take the showrooms offline. They expose published stock only, never leads. */
+function isPublicPath(p: string): boolean {
+  return (
+    p === "/api/health" ||
+    p === "/api/auth/login" ||
+    p.startsWith("/api/public/") ||
+    p.startsWith("/api/feed/") ||
+    p.startsWith("/api/widget/") ||
+    p === "/api/integration/webhook-lead"
+  );
+}
+
+// TruLens pushes captures server-to-server and has no user session. Until a
+// shared key is configured on both services this stays open, so an unset key
+// can't silently break a dealer's photo export mid-capture.
+const SYNC_SERVICE_KEY = process.env.TRUFLOW_SYNC_KEY || "";
+
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.path.startsWith("/api/") || isPublicPath(req.path)) return next();
+
+  if (req.path === "/api/sync/push-photos") {
+    if (!SYNC_SERVICE_KEY) return next();
+    if (req.headers["x-tru-sync-key"] === SYNC_SERVICE_KEY) return next();
+  }
+
+  const header = String(req.headers.authorization || "");
+  const claims = header.startsWith("Bearer ") ? verifyToken(header.slice(7)) : null;
+  if (!claims) {
+    return res.status(401).json({ error: "Unauthorized", message: "Sign in to continue." });
+  }
+  req.auth = claims;
+  next();
+}
+
+app.use(requireAuth);
+
+/** Restrict a list to the caller's dealership. Admins see everything.
+ *  Untagged rows belong to the default dealership, matching the public feed. */
+function scopeToDealer<T extends { dealershipId?: string }>(rows: T[], auth: any): T[] {
+  if (!auth || auth.role === "admin") return rows;
+  return (rows || []).filter(
+    (r) => (r.dealershipId || DEFAULT_DEALERSHIP_ID) === auth.dealershipId
+  );
+}
+
+app.post("/api/auth/login", (req, res) => {
+  const code = String(req.body?.code || "").trim();
+  const store = ensureAuthStore();
+  const match = store.accounts.find((a) => hashCode(code, a.salt) === a.hash);
+  if (!code || !match) {
+    return res.status(401).json({ error: "Invalid code" });
+  }
+  res.json({
+    token: signToken(match),
+    account: { label: match.label, role: match.role, dealershipId: match.dealershipId },
+  });
+});
+
+app.get("/api/auth/me", (req: any, res) => {
+  res.json({ account: req.auth || null });
+});
+
+/** Issue a fresh code for a dealership, or rotate an existing one. Admin only.
+ *  The new code is returned once in the response and never again. */
+app.post("/api/auth/codes/rotate", (req: any, res) => {
+  if (req.auth?.role !== "admin") {
+    return res.status(403).json({ error: "Admin only" });
+  }
+  const { dealershipId, label } = req.body || {};
+  const store = ensureAuthStore();
+  const dealership = (readState().dealerships || []).find((d: any) => d.id === dealershipId);
+  if (!dealership) return res.status(404).json({ error: "Unknown dealership" });
+
+  const { account, code } = makeAccount(label || dealership.name, "dealer", dealershipId);
+  store.accounts = store.accounts.filter((a) => a.dealershipId !== dealershipId);
+  account.rotatedAt = new Date().toISOString();
+  store.accounts.push(account);
+  writeAuth(store);
+
+  res.json({ code, account: { label: account.label, dealershipId, role: account.role } });
+});
+
+app.get("/api/auth/codes", (req: any, res) => {
+  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+  // Codes themselves are unrecoverable — this lists who has one.
+  res.json({
+    accounts: ensureAuthStore().accounts.map((a) => ({
+      id: a.id, label: a.label, role: a.role,
+      dealershipId: a.dealershipId, createdAt: a.createdAt, rotatedAt: a.rotatedAt,
+    })),
+  });
+});
 
 // Default high-fidelity seed data
 const DEFAULT_MOCK_STATE = {
@@ -229,11 +464,35 @@ if (!fs.existsSync(DATA_FILE)) {
   writeState(DEFAULT_MOCK_STATE);
 }
 
+// Mint access codes on first boot. Must run at startup, not lazily on first
+// request — the codes are printed to the log and you need them to sign in.
+ensureAuthStore();
+if (!SYNC_SERVICE_KEY) {
+  console.warn(
+    "[auth] TRUFLOW_SYNC_KEY is not set — /api/sync/push-photos accepts " +
+    "unauthenticated pushes. Set the same value here and on TruLens to close it."
+  );
+}
+
 // --- REST API ENDPOINTS ---
 
 // Core state endpoints
-app.get("/api/state", (req, res) => {
-  res.json(readState());
+app.get("/api/state", (req: any, res) => {
+  // The whole DMS in one payload — scope every collection, or a dealer would
+  // read every other dealer's leads straight out of the bootstrap call.
+  const s = readState();
+  res.json({
+    ...s,
+    vehicles: scopeToDealer(s.vehicles, req.auth),
+    leads: scopeToDealer(s.leads, req.auth),
+    tasks: scopeToDealer(s.tasks, req.auth),
+    invoices: scopeToDealer(s.invoices, req.auth),
+    agreements: scopeToDealer(s.agreements, req.auth),
+    documents: scopeToDealer(s.documents || [], req.auth),
+    expenses: scopeToDealer(s.expenses || [], req.auth),
+    communications: scopeToDealer(s.communications, req.auth),
+    users: scopeToDealer(s.users, req.auth),
+  });
 });
 
 app.put("/api/settings", (req, res) => {
@@ -277,9 +536,9 @@ app.get("/api/inventory", (req, res) => {
 });
 
 // All inventory including SOLD
-app.get("/api/all-vehicles", (req, res) => {
+app.get("/api/all-vehicles", (req: any, res) => {
   const state = readState();
-  res.json(state.vehicles);
+  res.json(scopeToDealer(state.vehicles, req.auth));
 });
 
 // Mobile App Upload / Web Upload API
@@ -354,16 +613,23 @@ app.delete("/api/inventory/:id", (req, res) => {
 });
 
 // Leads CRM API
-app.get("/api/leads", (req, res) => {
+app.get("/api/leads", (req: any, res) => {
   const state = readState();
-  res.json(state.leads);
+  res.json(scopeToDealer(state.leads, req.auth));
 });
 
 // WordPress / External Site Form submissions hit this route!
-app.post("/api/leads", (req, res) => {
+app.post("/api/leads", (req: any, res) => {
   const state = readState();
   const newLead = {
     id: "l_" + Date.now(),
+    // Tag the lead to a dealer, or it defaults to the pilot dealership and one
+    // yard ends up working another yard's customers. A signed-in dealer can
+    // only ever create leads for themselves.
+    dealershipId:
+      req.auth?.role === "admin"
+        ? req.body.dealershipId || DEALER_SLUG_TO_ID[req.body.dealerSlug] || undefined
+        : req.auth?.dealershipId,
     firstName: req.body.firstName || "Anonymous",
     lastName: req.body.lastName || "Lead",
     phone: req.body.phone || "N/A",
@@ -414,9 +680,9 @@ app.delete("/api/leads/:id", (req, res) => {
 });
 
 // Tasks Directives API
-app.get("/api/tasks", (req, res) => {
+app.get("/api/tasks", (req: any, res) => {
   const state = readState();
-  res.json(state.tasks);
+  res.json(scopeToDealer(state.tasks, req.auth));
 });
 
 app.post("/api/tasks", (req, res) => {
@@ -454,9 +720,9 @@ app.put("/api/tasks/:id", (req, res) => {
 });
 
 // Invoices Accounting API
-app.get("/api/invoices", (req, res) => {
+app.get("/api/invoices", (req: any, res) => {
   const state = readState();
-  res.json(state.invoices);
+  res.json(scopeToDealer(state.invoices, req.auth));
 });
 
 app.post("/api/invoices", (req, res) => {
@@ -492,9 +758,9 @@ app.put("/api/invoices/:id/pay", (req, res) => {
 });
 
 // Document Agreements API
-app.get("/api/agreements", (req, res) => {
+app.get("/api/agreements", (req: any, res) => {
   const state = readState();
-  res.json(state.agreements);
+  res.json(scopeToDealer(state.agreements, req.auth));
 });
 
 app.post("/api/agreements", (req, res) => {
@@ -533,9 +799,9 @@ app.put("/api/agreements/:id", (req, res) => {
 
 // Dealer Documents API — dealership uploads its own files (any doc type/template)
 // and captures a signature on them. No fixed template: whatever the dealer needs.
-app.get("/api/documents", (req, res) => {
+app.get("/api/documents", (req: any, res) => {
   const state = readState();
-  res.json(state.documents || []);
+  res.json(scopeToDealer(state.documents || [], req.auth));
 });
 
 app.post("/api/documents", (req, res) => {
@@ -590,9 +856,9 @@ app.delete("/api/documents/:id", (req, res) => {
 });
 
 // Accounting Expenses API
-app.get("/api/expenses", (req, res) => {
+app.get("/api/expenses", (req: any, res) => {
   const state = readState();
-  res.json(state.expenses || []);
+  res.json(scopeToDealer(state.expenses || [], req.auth));
 });
 
 app.post("/api/expenses", (req, res) => {
@@ -627,9 +893,9 @@ app.put("/api/expenses/:id/reconcile", (req, res) => {
 });
 
 // Users Roster API
-app.get("/api/users", (req, res) => {
+app.get("/api/users", (req: any, res) => {
   const state = readState();
-  res.json(state.users);
+  res.json(scopeToDealer(state.users, req.auth));
 });
 
 app.post("/api/users", (req, res) => {
@@ -649,9 +915,9 @@ app.post("/api/users", (req, res) => {
 });
 
 // Dispatch / Communications logging API
-app.get("/api/communications", (req, res) => {
+app.get("/api/communications", (req: any, res) => {
   const state = readState();
-  res.json(state.communications);
+  res.json(scopeToDealer(state.communications, req.auth));
 });
 
 app.post("/api/communications", (req, res) => {
@@ -1592,7 +1858,7 @@ app.get("/api/widget/inventory.js", (req, res) => {
 
 // --- HTML / WORDPRESS INTEGRATION API ENDPOINTS ---
 app.post("/api/integration/webhook-lead", (req, res) => {
-  const { firstName, lastName, phone, email, notes, vehicleId } = req.body;
+  const { firstName, lastName, phone, email, notes, vehicleId, dealershipId, dealerSlug } = req.body;
   if (!firstName || !phone) {
     return res.status(400).json({ error: "Missing required fields: firstName and phone are mandatory." });
   }
@@ -1601,6 +1867,9 @@ app.post("/api/integration/webhook-lead", (req, res) => {
     const state = readState();
     const newLead = {
       id: "lead_" + Date.now(),
+      // Which dealer's website sent this. Unset means it lands with the pilot
+      // dealership, so every site posting here must identify itself.
+      dealershipId: dealershipId || DEALER_SLUG_TO_ID[dealerSlug] || undefined,
       firstName,
       lastName: lastName || "",
       phone,

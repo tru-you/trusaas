@@ -1,3 +1,4 @@
+import { authFetch } from "./lib/session";
 import { Vehicle, Lead, Task, Invoice, Agreement, DealerDocument, User, Communication, Expense, DMSState } from "./types";
 
 const DEFAULT_MOCK_STATE: DMSState = {
@@ -120,7 +121,7 @@ const DEFAULT_MOCK_STATE: DMSState = {
  */
 export async function fetchState(): Promise<DMSState> {
   try {
-    const res = await fetch("/api/state", { cache: "no-store" });
+    const res = await authFetch("/api/state", { cache: "no-store" });
     if (res.ok) {
       const data = (await res.json()) as DMSState;
       // Keep a browser cache for offline fallback only
@@ -162,7 +163,7 @@ async function updateState(mutator: (state: DMSState) => void): Promise<DMSState
 
 export async function resetState(): Promise<DMSState> {
   try {
-    const res = await fetch("/api/state/reset", { method: "POST" });
+    const res = await authFetch("/api/state/reset", { method: "POST" });
     if (res.ok) {
       const body = await res.json();
       const next = (body.state || DEFAULT_MOCK_STATE) as DMSState;
@@ -178,7 +179,7 @@ export async function resetState(): Promise<DMSState> {
 
 /** Force reload from server (call after TruLens export). */
 export async function refreshFromServer(): Promise<DMSState> {
-  const res = await fetch("/api/state", { cache: "no-store" });
+  const res = await authFetch("/api/state", { cache: "no-store" });
   if (!res.ok) throw new Error(`DMS server refresh failed (${res.status})`);
   const data = (await res.json()) as DMSState;
   try {
@@ -199,7 +200,7 @@ export async function createVehicle(vehicle: Partial<Vehicle>): Promise<Vehicle>
   // wiped by the very next fetchState() (server truth wins), so vehicles
   // added via this form never actually survived a refresh.
   try {
-    const res = await fetch("/api/inventory", {
+    const res = await authFetch("/api/inventory", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(vehicle),
@@ -220,7 +221,7 @@ export async function createVehicle(vehicle: Partial<Vehicle>): Promise<Vehicle>
 export async function updateVehicle(id: string, updates: Partial<Vehicle>): Promise<Vehicle> {
   // Persist to server so TruLens-exported photos and edits stay in sync
   try {
-    const res = await fetch(`/api/inventory/${id}`, {
+    const res = await authFetch(`/api/inventory/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
@@ -338,7 +339,7 @@ export async function uploadDocument(doc: {
   vehicleId?: string;
   dealershipId?: string;
 }): Promise<DealerDocument> {
-  const res = await fetch("/api/documents", {
+  const res = await authFetch("/api/documents", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(doc),
@@ -350,7 +351,7 @@ export async function uploadDocument(doc: {
 
 /** Capture a signature on an uploaded document. */
 export async function signDocument(id: string, signature: string, signedBy: string): Promise<DealerDocument> {
-  const res = await fetch(`/api/documents/${id}/sign`, {
+  const res = await authFetch(`/api/documents/${id}/sign`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ signature, signedBy }),
@@ -361,7 +362,7 @@ export async function signDocument(id: string, signature: string, signedBy: stri
 }
 
 export async function deleteDocument(id: string): Promise<void> {
-  const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
+  const res = await authFetch(`/api/documents/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`Document delete failed (${res.status})`);
 }
 
