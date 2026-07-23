@@ -44,7 +44,7 @@ function scoreForSlots(vehicle: Vehicle, slots: PhotoSlot[]): number | null {
 }
 
 function gradeFor(score: number | null) {
-  if (score === null) return { grade: '—', label: 'Not captured', color: '#94A3B8', bg: 'rgba(148,163,184,0.10)', sales: 'Incomplete' };
+  if (score === null) return { grade: '—', label: 'Not captured', color: 'rgba(232,234,230,0.55)', bg: 'rgba(148,163,184,0.10)', sales: 'Incomplete' };
   if (score >= 90) return { grade: 'A',  label: 'Excellent', color: '#22C55E', bg: 'rgba(34,197,94,0.14)', sales: 'List with confidence' };
   if (score >= 80) return { grade: 'A-', label: 'Very good', color: '#22C55E', bg: 'rgba(34,197,94,0.12)', sales: 'List with confidence' };
   if (score >= 70) return { grade: 'B',  label: 'Good', color: '#EAB308', bg: 'rgba(234,179,8,0.14)', sales: 'List after light polish' };
@@ -57,8 +57,8 @@ function severityMeta(sev: number) {
   if (sev >= 5) return { label: 'Critical', color: '#DC2626', bg: '#FEE2E2' };
   if (sev >= 4) return { label: 'Major', color: '#EA580C', bg: '#FFEDD5' };
   if (sev >= 3) return { label: 'Moderate', color: '#CA8A04', bg: '#FEF9C3' };
-  if (sev >= 2) return { label: 'Minor', color: '#64748B', bg: '#F1F5F9' };
-  return { label: 'Cosmetic', color: '#94A3B8', bg: '#F8FAFC' };
+  if (sev >= 2) return { label: 'Minor', color: 'rgba(232,234,230,0.45)', bg: '#F1F5F9' };
+  return { label: 'Cosmetic', color: 'rgba(232,234,230,0.55)', bg: '#F8FAFC' };
 }
 
 /** TruInspect: overall condition out of 5 from accumulated damage findings */
@@ -277,12 +277,12 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100">
       <div className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-white/10 no-print">
         <div className="max-w-5xl mx-auto px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm font-medium">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-[#E8EAE6] text-sm font-medium">
             <ArrowLeft size={16} /> Back
           </button>
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className={`text-[9px] font-bold px-2 py-1 rounded-full border ${
+              className={`text-[12px] font-bold px-2 py-1 rounded-full border ${
                 condition.stars >= 3.5
                   ? 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
                   : condition.stars >= 2.5
@@ -292,18 +292,18 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             >
               Condition {condition.stars.toFixed(1)}/5
             </span>
-            <button onClick={handleCopyWa} className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[10px] font-bold text-emerald-300">
+            <button onClick={handleCopyWa} className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[13px] font-bold text-emerald-300">
               {waCopied ? <Check size={12} /> : <MessageCircle size={12} />} WhatsApp blurb
             </button>
-            <button onClick={exportHtml} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200">
+            <button onClick={exportHtml} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <FileText size={12} /> HTML
             </button>
-            <button onClick={() => window.print()} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200">
+            <button onClick={() => window.print()} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white"
-              style={{ background: 'linear-gradient(120deg, #22d3ee, #3B82F6)' }}>
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
+              style={{ background: 'linear-gradient(120deg, #4FE3DC, #4D9BFF)' }}>
               <Download size={12} /> {generating === 'full' ? '…' : 'Inspection PDF'}
             </button>
           </div>
@@ -313,10 +313,10 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       {/* Hidden-on-screen sales pack used only for PDF (also shown in print if user wants) */}
       <div className="max-w-5xl mx-auto p-3 space-y-4">
         {/* On-screen inspection summary card */}
-        <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[11px]">
+        <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[13px]">
           <div className="flex justify-between gap-2">
             <div>
-              <div className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Inspection status</div>
+              <div className="text-[12px] tracking-normal text-slate-500 font-bold">Inspection status</div>
               <div className="font-bold text-sm text-cyan-300">{condition.label}</div>
               <div className="text-slate-400 mt-1">
                 Photos {readiness.requiredTaken}/{readiness.requiredTotal}
@@ -325,7 +325,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 {` · ${checklistFlags.length} checklist flag${checklistFlags.length === 1 ? '' : 's'}`}
               </div>
             </div>
-            <div className="text-right text-slate-500 text-[10px] max-w-[200px]">
+            <div className="text-right text-slate-500 text-[13px] max-w-[200px]">
               Export the report as PDF or standalone HTML when capture and checklist are complete.
             </div>
           </div>
@@ -334,13 +334,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         <div ref={reportRef} className="tl-report">
           <style>{`
             .tl-report {
-              width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0F172A;
+              width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0B0F17;
               font-family: Inter, system-ui, sans-serif; border-radius: 12px; overflow: hidden;
             }
-            .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0F172A 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; }
+            .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; }
             .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; }
             .tl-report .brand { display:flex; align-items:center; gap:12px; }
-            .tl-report .brand .mark { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#22d3ee,#3B82F6); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; }
+            .tl-report .brand .mark { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#4FE3DC,#4D9BFF); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; }
             .tl-report .brand .txt { font-weight:800; font-size:20px; }
             .tl-report .brand .txt em { font-style:normal; color:#93C5FD; }
             .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; }
@@ -350,27 +350,27 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; }
             .tl-report .score-ring { width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
             .tl-report .vehicle-facts { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
-            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
+            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; text-transform:; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
             .tl-report .vehicle-facts .v { font-weight:700; font-size:13px; margin-top:2px; }
             .tl-report section { padding: 12mm 16mm; }
             .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
             .tl-report .grades { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
-            .tl-report .grade { border:1px solid #E2E8F0; border-radius:12px; padding:12px 8px; text-align:center; }
+            .tl-report .grade { border:1px solid #E8EAE6; border-radius:12px; padding:12px 8px; text-align:center; }
             .tl-report .grade .v { font-weight:800; font-size:22px; }
             .tl-report .grade .n { font-size:10px; color:#475569; margin-top:6px; font-weight:600; }
             .tl-report .finding { background:#FEF3C7; border-left:4px solid #F59E0B; border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; }
-            .tl-report .finding .h { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#B45309; font-family:ui-monospace,monospace; }
+            .tl-report .finding .h { font-size:10px; letter-spacing:.1em; text-transform:; color:#B45309; font-family:ui-monospace,monospace; }
             .tl-report .finding .l { font-size:12.5px; color:#78350F; margin-top:4px; font-weight:500; }
             .tl-report .no-issues { background:#DCFCE7; border-left:4px solid #22C55E; border-radius:0 10px 10px 0; padding:12px 14px; color:#166534; font-weight:600; font-size:13px; }
             .tl-report .damage-grid, .tl-report .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
             .tl-report .photo-grid { grid-template-columns:repeat(3,1fr); }
-            .tl-report .damage-card, .tl-report .photo-tile { border:1px solid #E2E8F0; border-radius:12px; overflow:hidden; }
+            .tl-report .damage-card, .tl-report .photo-tile { border:1px solid #E8EAE6; border-radius:12px; overflow:hidden; }
             .tl-report .damage-card img, .tl-report .photo-tile img { width:100%; height:auto; max-height:150px; object-fit:cover; display:block; }
             .tl-report .cap { padding:8px 10px; font-size:11px; }
             .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; }
-            .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E2E8F0; padding:7px 6px; text-align:left; }
-            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#94A3B8; }
-            .tl-report .foot { border-top:1px solid #E2E8F0; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; text-transform:uppercase; letter-spacing:.08em; font-family:ui-monospace,monospace; }
+            .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; }
+            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:; color:rgba(232,234,230,0.55); }
+            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:rgba(232,234,230,0.45); text-transform:; letter-spacing:.08em; font-family:ui-monospace,monospace; }
             @media print {
               .no-print { display:none !important; }
               .tl-sales { break-after: page; }
@@ -382,8 +382,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <div className="cover-head">
               <div className="brand">
                 <div className="txt" style={{ fontSize: 26 }}>
-                  <span style={{ color:'#E2E8F0' }}>Tru</span><em style={{ color:'#22d3ee' }}>Inspect</em>
-                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'rgba(248,250,252,.85)', marginTop:2 }}>
+                  <span style={{ color:'#E8EAE6' }}>Tru</span><em style={{ color:'#4FE3DC' }}>Inspect</em>
+                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', textTransform:'', color:'rgba(248,250,252,.85)', marginTop:2 }}>
                     Vehicle Inspection Report
                   </div>
                   <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
@@ -407,7 +407,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', opacity:.55 }}>Overall condition</div>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'', opacity:.55 }}>Overall condition</div>
                   <div style={{ fontWeight:800, fontSize:20, color: overallGrade.color, marginTop:4 }}>{overallGrade.grade} · {overallGrade.label}</div>
                   <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{overallGrade.sales}</div>
                   <div style={{ fontSize:11, opacity:.65, marginTop:6 }}>
@@ -434,7 +434,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   <div className="grade" key={p.id} style={{ background: g.bg, borderColor: g.color + '40' }}>
                     <div className="v" style={{ color: g.color }}>{g.grade}</div>
                     <div className="n"><Icon size={11} style={{display:'inline',verticalAlign:'-2px',marginRight:4,color:g.color}}/>{p.name}</div>
-                    <div style={{ fontSize:10, color:'#94A3B8', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
+                    <div style={{ fontSize:10, color:'rgba(232,234,230,0.55)', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
                   </div>
                 );
               })}
@@ -465,13 +465,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
           <section>
             <h2><AlertTriangle size={16} /> AI damage findings</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, padding:'10px 14px', background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius:12 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, padding:'10px 14px', background:'#F8FAFC', border:'1px solid #E8EAE6', borderRadius:12 }}>
               <div style={{ fontWeight:800, fontSize:24, color: condition.stars >= 3.5 ? '#16A34A' : condition.stars >= 2.5 ? '#CA8A04' : '#DC2626' }}>
-                {condition.stars.toFixed(1)}<span style={{ fontSize:12, color:'#94A3B8' }}>/5</span>
+                {condition.stars.toFixed(1)}<span style={{ fontSize:12, color:'rgba(232,234,230,0.55)' }}>/5</span>
               </div>
               <div>
                 <div style={{ fontWeight:700, fontSize:13 }}>Condition score</div>
-                <div style={{ fontSize:11.5, color:'#64748B' }}>{condition.label} · {condition.findings.length} finding{condition.findings.length === 1 ? '' : 's'} across {Object.keys(vehicle.damageFindings || {}).length} inspected photos</div>
+                <div style={{ fontSize:11.5, color:'rgba(232,234,230,0.45)' }}>{condition.label} · {condition.findings.length} finding{condition.findings.length === 1 ? '' : 's'} across {Object.keys(vehicle.damageFindings || {}).length} inspected photos</div>
               </div>
             </div>
             {condition.findings.length === 0 ? (
@@ -487,14 +487,14 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                     </div>
                     <div className="l" style={{ color:'#334155' }}>
                       {f.note}
-                      <span style={{ color:'#94A3B8' }}> — {slot?.name || f.slotId}, confidence {(f.confidence * 100).toFixed(0)}%</span>
+                      <span style={{ color:'rgba(232,234,230,0.55)' }}> — {slot?.name || f.slotId}, confidence {(f.confidence * 100).toFixed(0)}%</span>
                     </div>
                   </div>
                 );
               })
             )}
             {allFindings.bySlot.length > 0 && (
-              <div style={{ marginTop:10, fontSize:11, color:'#64748B' }}>
+              <div style={{ marginTop:10, fontSize:11, color:'rgba(232,234,230,0.45)' }}>
                 Photo-quality notes: {allFindings.bySlot.map(({ slotName, issues }) => `${slotName}: ${issues.join(', ')}`).join(' · ')}
               </div>
             )}
@@ -503,7 +503,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <section>
             <h2><ClipboardList size={16} /> Inspector checklist</h2>
             {checklistAnswered.length === 0 ? (
-              <div style={{ fontSize:12, color:'#94A3B8', fontStyle:'italic' }}>
+              <div style={{ fontSize:12, color:'rgba(232,234,230,0.55)', fontStyle:'italic' }}>
                 Checklist not completed for this inspection.
               </div>
             ) : (
@@ -525,11 +525,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   <tbody>
                     {checklistAnswered.map(({ section: sec, item, answer, note, flagged }) => (
                       <tr key={item.id} style={flagged ? { background:'#FFFBEB' } : undefined}>
-                        <td><span style={{ color:'#94A3B8', fontSize:9, textTransform:'uppercase', letterSpacing:'.08em' }}>{sec}</span><br/>{item.q}</td>
+                        <td><span style={{ color:'rgba(232,234,230,0.55)', fontSize:9, textTransform:'', letterSpacing:'.08em' }}>{sec}</span><br/>{item.q}</td>
                         <td style={{ fontWeight:700, color: flagged ? '#B45309' : '#16A34A' }}>
                           {answer === 'na' ? 'N/A' : answer === 'yes' ? 'Yes' : 'No'}
                         </td>
-                        <td style={{ color:'#64748B' }}>{note || '—'}</td>
+                        <td style={{ color:'rgba(232,234,230,0.45)' }}>{note || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -547,7 +547,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                     <img src={src} alt={slot.name} />
                     <div className="cap">
                       <b>{slot.name}</b>
-                      <div style={{ color:'#64748B', marginTop:3 }}>
+                      <div style={{ color:'rgba(232,234,230,0.45)', marginTop:3 }}>
                         {Array.isArray(quality?.aiAnalysis?.detectedIssues)
                           ? quality!.aiAnalysis!.detectedIssues![0]
                           : 'Documented area'}
@@ -575,13 +575,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <h2><Award size={16} /> Inspection summary</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'#94A3B8' }}>Inspected by</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Inspected by</div>
                 <div style={{ fontWeight:700, marginTop:4 }}>{dealerName}</div>
-                {dealerBranch ? <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{dealerBranch}</div> : null}
+                {dealerBranch ? <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>{dealerBranch}</div> : null}
                 {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'#94A3B8' }}>Scope covered</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Scope covered</div>
                 <div style={{ fontSize:12, color:'#334155', marginTop:4 }}>
                   Photos captured: {Object.keys(vehicle.photos || {}).length}
                 </div>
@@ -596,7 +596,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           </section>
 
           <div className="foot" style={{ alignItems:'center' }}>
-            <div>Prepared by <b style={{color:'#06b6d4'}}>{dealerName}</b> · powered by <b>TruInspect</b></div>
+            <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruInspect</b></div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
               <img src={trusaasLogoDark} alt="TruSaaS" style={{ height:16, width:'auto' }} />
               <span>{reportId}</span>

@@ -436,7 +436,7 @@ export default function App() {
           {activeView === 'inventory' && (
             <>
               {loadError && (
-                <div className="absolute top-2 left-2 right-2 z-50 mx-auto max-w-sm rounded-lg border border-red-500/40 bg-red-950/90 px-3 py-2 text-[10px] text-red-200 shadow-lg">
+                <div className="absolute top-2 left-2 right-2 z-50 mx-auto max-w-sm rounded-lg border border-red-500/40 bg-red-950/90 px-3 py-2 text-[13px] text-red-200 shadow-lg">
                   <strong className="block mb-0.5">Load error</strong>
                   {loadError}
                   <button

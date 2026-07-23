@@ -111,7 +111,6 @@ export default function App() {
   );
 
   useEffect(() => {
-    console.log("isLoggedIn changed:", isLoggedIn);
   }, [isLoggedIn]);
 
   useEffect(() => {
@@ -261,11 +260,9 @@ export default function App() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadAllState = () => {
-    console.log("Loading state...");
     setLoadError(null);
     fetchState()
       .then((data) => {
-        console.log("State loaded successfully:", data);
         setState(data);
         if (data.vehicles.length > 0) {
           setNewLeadForm((prev) => ({ ...prev, vehicleId: data.vehicles[0].id }));
@@ -304,13 +301,13 @@ export default function App() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-[#E8EEF6] font-sans">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-[#E8EAE6] font-sans">
         <div className="text-red-500 mb-4 font-mono text-sm border border-red-500/20 bg-red-500/10 p-4 rounded-lg">
           Connection Error: {loadError}
         </div>
         <button 
           onClick={loadAllState}
-          className="px-4 py-2 bg-[#1466E0] text-white rounded text-xs font-bold hover:bg-opacity-80"
+          className="px-4 py-2 bg-[#4FE3DC] text-[#E8EAE6] rounded text-xs font-bold hover:bg-opacity-80"
         >
           Retry Connection
         </button>
@@ -320,17 +317,17 @@ export default function App() {
 
   if (!state) {
     return (
-      <div className="min-h-screen bg-[#070d15] flex flex-col items-center justify-center p-6 text-[#E8EEF6] font-sans gap-3">
-        <div className="w-12 h-12 rounded-full border-4 border-t-[#1466E0] border-[#15C7C0]/10 animate-spin" />
+      <div className="min-h-screen bg-[#06080D] flex flex-col items-center justify-center p-6 text-[#E8EAE6] font-sans gap-3">
+        <div className="w-12 h-12 rounded-full border-4 border-t-[#4FE3DC] border-[#4FE3DC]/10 animate-spin" />
         <div className="font-bold text-sm tracking-wide">Starting TruFlow Lite…</div>
-        <div className="text-xs text-[#9DB0C6] text-center max-w-xs">
-          Loading floor data from <span className="font-mono text-[#15C7C0]">localhost:3002</span>.
+        <div className="text-xs text-[rgba(232,234,230,0.72)] text-center max-w-xs">
+          Loading floor data from <span className="font-mono text-[#4FE3DC]">localhost:3002</span>.
           If this hangs, restart the server (`npm run dev` in truflow-light).
         </div>
         <button
           type="button"
           onClick={loadAllState}
-          className="mt-2 px-4 py-2 rounded-lg bg-[#1466E0] text-white text-xs font-bold"
+          className="mt-2 px-4 py-2 rounded-lg bg-[#4FE3DC] text-[#E8EAE6] text-xs font-bold"
         >
           Retry load
         </button>
@@ -651,7 +648,7 @@ export default function App() {
     !isLoggedIn ? (
       <LoginSplash onLogin={handleLogin} />
     ) : (
-      <div className="min-h-screen bg-[#070d15] text-[#E8EEF6] flex relative select-none perspective-scene">
+      <div className="min-h-screen bg-[#06080D] text-[#E8EAE6] flex relative select-none perspective-scene">
         <DemoBanner productName={PRODUCT_NAME} />
         {/* Scroll indicator */}
         <div className="scroll-progress transition-transform" />
@@ -669,18 +666,18 @@ export default function App() {
           <div className="w-full flex items-center justify-center px-1">
             <img src={logo} alt="TruFlow Lite" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
-          <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#15C7C0] hover:underline tracking-widest mt-2 uppercase">true-cars.co.za</a>
-          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 uppercase">TruSaas platform</a>
+          <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[12px] text-[#4FE3DC] hover:underline tracking-widest mt-2 ">true-cars.co.za</a>
+          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[12px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 ">TruSaas platform</a>
           <div className="flex gap-2 mt-2">
-            <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#15C7C0]/12 text-[#15C7C0] border border-[#15C7C0]/25 hover:bg-[#15C7C0]/2">Showroom</a>
-            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono uppercase px-2 py-1 rounded-lg bg-[#22D3EE]/15 text-[#67E8F9] border border-[#22D3EE]/30 hover:bg-[#22D3EE]/25">TruSaas</a>
+            <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="text-[12px] font-mono  px-2 py-1 rounded-lg bg-[#4FE3DC]/12 text-[#4FE3DC] border border-[#4FE3DC]/25 hover:bg-[#4FE3DC]/2">Showroom</a>
+            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[12px] font-mono  px-2 py-1 rounded-lg bg-[#22D3EE]/15 text-[#67E8F9] border border-[#22D3EE]/30 hover:bg-[#22D3EE]/25">TruSaas</a>
           </div>
         </div>
 
          <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1 scrollbar-thin">
           {filteredNavigation.map((group) => (
             <div key={group.category} className="flex flex-col gap-1">
-              <span className="font-mono text-[9px] text-[#9DB0C6] tracking-widest uppercase font-extrabold pl-2.5 mb-1 block">
+              <span className="font-mono text-[12px] text-[rgba(232,234,230,0.72)] tracking-widest  font-semibold pl-2.5 mb-1 block">
                 {group.category}
               </span>
               {group.items.map((n) => {
@@ -693,14 +690,14 @@ export default function App() {
                     onClick={() => navigateTo(n.id)}
                     className={`glass-nav-item flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-left relative cursor-pointer border ${
                       active
-                        ? "is-active bg-gradient-to-r from-[#1466E0]/20 to-[#15C7C0]/10 text-white border-[#1466E0]/35"
-                        : "text-[#9DB0C6] hover:text-[#E8EEF6] hover:bg-white/[0.04] border-transparent"
+                        ? "is-active bg-gradient-to-r from-[#4FE3DC]/20 to-[#4FE3DC]/10 text-[#E8EAE6] border-[#4FE3DC]/35"
+                        : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/[0.04] border-transparent"
                     }`}
                   >
                     {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/5 rounded-r bg-[#15C7C0]" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/5 rounded-r bg-[#4FE3DC]" />
                     )}
-                    <Icon size={14} className={active ? "text-[#15C7C0]" : "text-[#9DB0C6]"} />
+                    <Icon size={14} className={active ? "text-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)]"} />
                     {n.label}
                   </button>
                 );
@@ -713,7 +710,7 @@ export default function App() {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-red-300 bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 hover:text-red-200 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold tracking-normal text-red-300 bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 hover:text-red-200 transition-all cursor-pointer"
             title="Sign out of TruFlow"
           >
             <LogOut size={14} />
@@ -727,38 +724,38 @@ export default function App() {
         {/* Top Profile Bar - Hidden on mobile */}
         <div className="hidden md:flex justify-between items-center gap-4 border-b border-white/5 pb-4">
            {/* Elegant Simulated Role Selector Pill */}
-           <div className="flex bg-[#070d15]/80 border border-white/5 p-1 rounded-full text-[9px] font-bold">
+           <div className="flex bg-[#06080D]/80 border border-white/5 p-1 rounded-full text-[12px] font-bold">
              <button
                onClick={() => { setSelectedRole('salesperson'); if (['manager', 'settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer uppercase ${selectedRole === 'salesperson' ? "bg-[#1466E0] text-white shadow-md font-extrabold" : "text-[#9DB0C6] hover:text-[#E8EEF6]"}`}
+               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'salesperson' ? "bg-[#4FE3DC] text-[#E8EAE6] shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
              >
                Salesperson View
              </button>
              <button
                onClick={() => { setSelectedRole('manager'); if (['settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer uppercase ${selectedRole === 'manager' ? "bg-[#1466E0] text-white shadow-md font-extrabold" : "text-[#9DB0C6] hover:text-[#E8EEF6]"}`}
+               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'manager' ? "bg-[#4FE3DC] text-[#E8EAE6] shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
              >
                Manager View
              </button>
              <button
                onClick={() => setSelectedRole('owner')}
-               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer uppercase ${selectedRole === 'owner' ? "bg-[#1466E0] text-white shadow-md font-extrabold" : "text-[#9DB0C6] hover:text-[#E8EEF6]"}`}
+               className={`px-3.5 py-1 rounded-full transition-all cursor-pointer  ${selectedRole === 'owner' ? "bg-[#4FE3DC] text-[#E8EAE6] shadow-md font-semibold" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"}`}
              >
                Dealer Owner
              </button>
            </div>
 
            <div className="flex items-center gap-2">
-             <div className="flex items-center gap-3 bg-[#0f1826] border border-white/5 rounded-full pl-3 pr-3 py-1.5">
+             <div className="flex items-center gap-3 bg-[#0B0F17] border border-white/5 rounded-full pl-3 pr-3 py-1.5">
                <div className="flex flex-col items-end">
-                 <span className="text-[10px] font-bold text-[#E8EEF6]">Marc van der Merwe</span>
-                 <span className="text-[8px] text-[#15C7C0] font-black uppercase font-mono tracking-wider">{selectedRole}</span>
+                 <span className="text-[13px] font-bold text-[#E8EAE6]">Marc van der Merwe</span>
+                 <span className="text-[12px] text-[#4FE3DC] font-semibold  font-mono tracking-wider">{selectedRole}</span>
                </div>
              </div>
              <button
                type="button"
                onClick={handleLogout}
-               className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 text-[10px] font-bold uppercase tracking-wider"
+               className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 text-[13px] font-bold tracking-normal"
                title="Log out"
              >
                <LogOut size={14} />
@@ -772,7 +769,7 @@ export default function App() {
           <div className="flex justify-between items-center">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="text-[#E8EEF6] p-2 hover:bg-white/5 rounded-lg cursor-pointer"
+              className="text-[#E8EAE6] p-2 hover:bg-white/5 rounded-lg cursor-pointer"
             >
               <Menu size={20} />
             </button>
@@ -780,7 +777,7 @@ export default function App() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-1 h-8 px-2.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 cursor-pointer text-[9px] font-bold uppercase"
+              className="flex items-center gap-1 h-8 px-2.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 cursor-pointer text-[12px] font-bold "
               title="Log out"
             >
               <LogOut size={14} />
@@ -789,22 +786,22 @@ export default function App() {
           </div>
           
           {/* Mobile role pill bar */}
-          <div className="flex bg-[#070d15]/80 border border-white/5 p-0.5 rounded-full text-[8px] font-bold justify-between">
+          <div className="flex bg-[#06080D]/80 border border-white/5 p-0.5 rounded-full text-[12px] font-bold justify-between">
             <button
               onClick={() => { setSelectedRole('salesperson'); if (['manager', 'settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-              className={`flex-1 text-center py-1 rounded-full transition-all uppercase ${selectedRole === 'salesperson' ? "bg-[#1466E0] text-white shadow-sm" : "text-[#9DB0C6]"}`}
+              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'salesperson' ? "bg-[#4FE3DC] text-[#E8EAE6] shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
             >
               Salesperson
             </button>
             <button
               onClick={() => { setSelectedRole('manager'); if (['settings', 'integration', 'accounting_recon'].includes(activeSection)) setActiveSection('dashboard'); }}
-              className={`flex-1 text-center py-1 rounded-full transition-all uppercase ${selectedRole === 'manager' ? "bg-[#1466E0] text-white shadow-sm" : "text-[#9DB0C6]"}`}
+              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'manager' ? "bg-[#4FE3DC] text-[#E8EAE6] shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
             >
               Manager
             </button>
             <button
               onClick={() => setSelectedRole('owner')}
-              className={`flex-1 text-center py-1 rounded-full transition-all uppercase ${selectedRole === 'owner' ? "bg-[#1466E0] text-white shadow-sm" : "text-[#9DB0C6]"}`}
+              className={`flex-1 text-center py-1 rounded-full transition-all  ${selectedRole === 'owner' ? "bg-[#4FE3DC] text-[#E8EAE6] shadow-sm" : "text-[rgba(232,234,230,0.72)]"}`}
             >
               Owner
             </button>
@@ -816,8 +813,8 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Dashboard Overview</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5">Real-time dealer catalog and prospect tracking</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Dashboard Overview</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Real-time dealer catalog and prospect tracking</p>
               </div>
               <button onClick={() => navigateTo("upload")} className="btn btn-primary">
                 + New Inventory
@@ -827,44 +824,44 @@ export default function App() {
             {/* Stats Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Active Floor Stock</div>
-                <div className="text-2xl font-serif font-black text-[#E8EEF6] mt-1"><Counter value={activeVehiclesCount} /></div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">Ready for viewing</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Active Floor Stock</div>
+                <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1"><Counter value={activeVehiclesCount} /></div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Ready for viewing</div>
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Unresolved CRM Leads</div>
-                <div className="text-2xl font-serif font-black text-[#E8EEF6] mt-1"><Counter value={unresolvedLeadsCount} /></div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">High conversion rating</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Unresolved CRM Leads</div>
+                <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1"><Counter value={unresolvedLeadsCount} /></div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">High conversion rating</div>
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Units Sold</div>
-                <div className="text-2xl font-serif font-black text-[#E8EEF6] mt-1"><Counter value={soldUnitsCount} /></div>
-                <div className="text-[10px] text-[#9DB0C6] font-semibold mt-1">Cleared this cycle</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Units Sold</div>
+                <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1"><Counter value={soldUnitsCount} /></div>
+                <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Cleared this cycle</div>
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Total Realized Revenue</div>
-                <div className="text-2xl font-serif font-black text-[#4D9BFF] mt-1"><Counter value={totalRevenue} prefix="R " /></div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">Cleared payments</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Total Realized Revenue</div>
+                <div className="text-2xl font-serif font-semibold text-[#7FF0EA] mt-1"><Counter value={totalRevenue} prefix="R " /></div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Cleared payments</div>
               </motion.div>
             </div>
 
             {/* End of Day (EOD) Summary Card */}
             {(selectedRole === 'manager' || selectedRole === 'owner') && (
-              <div className="card p-5 bg-gradient-to-r from-[#1466E0]/10 via-[#0a1420] to-[#15C7C0]/5 border border-[#1466E0]/25 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg shadow-[#1466E0]/5">
+              <div className="card p-5 bg-gradient-to-r from-[#4FE3DC]/10 via-[#0a1420] to-[#4FE3DC]/5 border border-[#4FE3DC]/25 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg shadow-[#4FE3DC]/5">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-gradient-to-tr from-[#15C7C0]/10 to-[#1466E0]/15 border border-[#15C7C0]/25 text-[#15C7C0]">
+                  <div className="p-3 rounded-xl bg-gradient-to-tr from-[#4FE3DC]/10 to-[#4FE3DC]/15 border border-[#4FE3DC]/25 text-[#4FE3DC]">
                     <TrendingUp size={24} />
                   </div>
                   <div>
-                    <h3 className="font-sans text-base font-black tracking-tight text-[#E8EEF6]">One-Tap End of Day (EOD) Operations Summary</h3>
-                    <p className="text-xs text-[#9DB0C6] mt-0.5 max-w-xl leading-relaxed">
+                    <h3 className="font-sans text-base font-semibold tracking-tight text-[#E8EAE6]">One-Tap End of Day (EOD) Operations Summary</h3>
+                    <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 max-w-xl leading-relaxed">
                       Generate a detailed operational report including customer leads worked, vehicles sold, reconditioning layout, and gross yield margins for the past 24 hours.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowEODReport(true)}
-                  className="px-5 py-2.5 bg-gradient-to-r from-[#15C7C0]/85 to-[#1466E0] hover:from-[#15C7C0] hover:to-[#1466E0] text-white rounded-xl text-xs font-bold shadow-lg shadow-[#15C7C0]/10 hover:shadow-[#15C7C0]/25 cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
+                  className="px-5 py-2.5 bg-gradient-to-r from-[#4FE3DC]/85 to-[#4FE3DC] hover:from-[#4FE3DC] hover:to-[#4FE3DC] text-[#E8EAE6] rounded-xl text-xs font-bold shadow-lg shadow-[#4FE3DC]/10 hover:shadow-[#4FE3DC]/25 cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
                 >
                   <Sparkles size={14} className="animate-pulse" />
                   Compile EOD Summary
@@ -875,27 +872,27 @@ export default function App() {
             {/* Daily Analytics */}
             <div className="card p-6">
               <div className="flex items-center justify-between mb-4 gap-2">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Website analytics</div>
-                <span className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Website analytics</div>
+                <span className="text-[12px] font-semibold tracking-normal px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
                   Sample / demo data
                 </span>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                 <div className="bg-[#0f1826]/5 rounded-lg p-3">
-                   <div className="text-[10px] text-[#9DB0C6]">Visits</div>
-                   <div className="text-lg font-bold text-white">{mockDailySummary.visits}</div>
+                 <div className="bg-[#0B0F17]/5 rounded-lg p-3">
+                   <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Visits</div>
+                   <div className="text-lg font-bold text-[#E8EAE6]">{mockDailySummary.visits}</div>
                  </div>
-                 <div className="bg-[#0f1826]/5 rounded-lg p-3">
-                   <div className="text-[10px] text-[#9DB0C6]">Unique Visitors</div>
-                   <div className="text-lg font-bold text-white">{mockDailySummary.uniqueVisitors}</div>
+                 <div className="bg-[#0B0F17]/5 rounded-lg p-3">
+                   <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Unique Visitors</div>
+                   <div className="text-lg font-bold text-[#E8EAE6]">{mockDailySummary.uniqueVisitors}</div>
                  </div>
-                 <div className="bg-[#0f1826]/5 rounded-lg p-3">
-                   <div className="text-[10px] text-[#9DB0C6]">Avg Duration</div>
-                   <div className="text-lg font-bold text-white">{mockDailySummary.avgVisitDuration}</div>
+                 <div className="bg-[#0B0F17]/5 rounded-lg p-3">
+                   <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Avg Duration</div>
+                   <div className="text-lg font-bold text-[#E8EAE6]">{mockDailySummary.avgVisitDuration}</div>
                  </div>
-                 <div className="bg-[#0f1826]/5 rounded-lg p-3">
-                   <div className="text-[10px] text-[#9DB0C6]">Bounce Rate</div>
-                   <div className="text-lg font-bold text-white">{mockDailySummary.bounceRate}</div>
+                 <div className="bg-[#0B0F17]/5 rounded-lg p-3">
+                   <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Bounce Rate</div>
+                   <div className="text-lg font-bold text-[#E8EAE6]">{mockDailySummary.bounceRate}</div>
                  </div>
               </div>
             </div>
@@ -922,15 +919,15 @@ export default function App() {
                       {v.images && v.images.length > 0 ? (
                         <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-tr from-[#1466E0] to-[#15C7C0] flex items-center justify-center text-white font-black text-lg">
+                        <div className="w-full h-full bg-gradient-to-tr from-[#4FE3DC] to-[#4FE3DC] flex items-center justify-center text-[#E8EAE6] font-semibold text-lg">
                           {v.make.slice(0, 2).toUpperCase()}
                         </div>
                       )}
                     </div>
-                    <h4 className="font-bold text-xs text-[#E8EEF6] truncate">{v.year} {v.make} {v.model}</h4>
-                    <p className="text-[10px] text-[#9DB0C6] truncate mt-0.5">{v.transmission} / {v.fuelType}</p>
-                    <div className="text-sm font-bold text-[#4D9BFF] mt-1.5">{formatZAR(v.retailPrice)}</div>
-                    <div className="text-[9px] text-[#9DB0C6] mt-2 font-mono">Stock Ref: {v.stockNumber}</div>
+                    <h4 className="font-bold text-xs text-[#E8EAE6] truncate">{v.year} {v.make} {v.model}</h4>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] truncate mt-0.5">{v.transmission} / {v.fuelType}</p>
+                    <div className="text-sm font-bold text-[#7FF0EA] mt-1.5">{formatZAR(v.retailPrice)}</div>
+                    <div className="text-[12px] text-[rgba(232,234,230,0.72)] mt-2 font-mono">Stock Ref: {v.stockNumber}</div>
                   </div>
                 ))}
               </div>
@@ -950,7 +947,7 @@ export default function App() {
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[600px]">
                   <thead>
-                    <tr className="border-b border-white/10 text-[#9DB0C6] uppercase tracking-wider text-[10px] bg-[#0f1826]/5">
+                    <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[#0B0F17]/5">
                       <th className="py-3 px-4 font-bold">Prospect</th>
                       <th className="py-3 px-4 font-bold">Model Focus</th>
                       <th className="py-3 px-4 font-bold">Channel</th>
@@ -961,27 +958,27 @@ export default function App() {
                   </thead>
                   <tbody>
                     {state.leads.slice(0, 5).map((l) => (
-                      <tr key={l.id} className="border-b border-white/3 hover:bg-[#0f1826]/1">
-                        <td className="py-3 px-4 font-black text-[#E8EEF6]">
+                      <tr key={l.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
+                        <td className="py-3 px-4 font-semibold text-[#E8EAE6]">
                           {l.firstName} {l.lastName}
-                          <span className="block text-[10px] font-normal text-[#9DB0C6] mt-0.5">{l.phone}</span>
+                          <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{l.phone}</span>
                         </td>
                         <td className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
                         <td className="py-3 px-4">
-                          <span className="px-1.5 py-0.5 bg-[#1466E0]/15 text-[#4D9BFF] rounded text-[9px] font-bold uppercase tracking-wider">
+                          <span className="px-1.5 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[12px] font-bold tracking-normal">
                             {l.source}
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-1.5 py-0.5 bg-[#35C46B]/10 text-[#35C46B] rounded text-[9px] font-bold uppercase tracking-wider">
+                          <span className="px-1.5 py-0.5 bg-[#4ADE9B]/10 text-[#4ADE9B] rounded text-[12px] font-bold tracking-normal">
                             {l.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-[#9DB0C6]">{getUserLabel(l.assignedUserId)}</td>
+                        <td className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setLeadDetailId(l.id)}
-                            className="px-4 py-1.5 bg-[#1466E0] hover:bg-[#1466E0]/90 text-white transition-all font-bold rounded-lg text-[10px] cursor-pointer shadow-lg shadow-[#1466E0]/20 active:scale-95"
+                            className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-[#E8EAE6] transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[#4FE3DC]/20 active:scale-95"
                           >
                             Review File
                           </button>
@@ -999,32 +996,32 @@ export default function App() {
         {activeSection === "analytics" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
-              <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Traffic Analytics</h1>
-              <p className="text-xs text-[#9DB0C6] mt-0.5">Showroom visitors & conversion metrics</p>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Traffic Analytics</h1>
+              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Showroom visitors & conversion metrics</p>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Monthly Page Views</div>
-                <div className="text-2xl font-serif font-black text-[#E8EEF6] mt-1">12,847</div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">+24% traffic growth</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Monthly Page Views</div>
+                <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1">12,847</div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">+24% traffic growth</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Catalog Filter Clicks</div>
-                <div className="text-2xl font-serif font-black text-[#E8EEF6] mt-1">8,432</div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">+18% high-intent actions</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Catalog Filter Clicks</div>
+                <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1">8,432</div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">+18% high-intent actions</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Lead Conversion Rate</div>
-                <div className="text-2xl font-serif font-black text-[#E8EEF6] mt-1">
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Lead Conversion Rate</div>
+                <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1">
                   {Math.round((state.leads.length / 8432) * 1000) / 10}%
                 </div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">Standard industry index</div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Standard industry index</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Average View Time</div>
-                <div className="text-2xl font-serif font-black text-[#E8EEF6] mt-1">2m 14s</div>
-                <div className="text-[10px] text-[#9DB0C6] font-semibold mt-1">Normal retention</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Average View Time</div>
+                <div className="text-2xl font-serif font-semibold text-[#E8EAE6] mt-1">2m 14s</div>
+                <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Normal retention</div>
               </div>
             </div>
 
@@ -1034,20 +1031,20 @@ export default function App() {
                 <h3 className="font-semibold text-sm">Weekly Traffic Activity Overview</h3>
               </div>
               <div className="card-body p-4 flex flex-col gap-2">
-                <div className="flex items-end justify-around h-44 bg-[#0f1826]/1 border border-white/5 rounded-xl p-4 gap-2">
+                <div className="flex items-end justify-around h-44 bg-[#0B0F17]/1 border border-white/5 rounded-xl p-4 gap-2">
                   {[1240, 1940, 1590, 2470, 2120, 3010, 2650].map((val, idx) => {
                     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
                     const percent = (val / 3010) * 100;
                     return (
                       <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
-                        <span className="text-[8px] text-[#15C7C0] font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[12px] text-[#4FE3DC] font-mono opacity-0 group-hover:opacity-100 transition-opacity">
                           {val}
                         </span>
                         <div
                           style={{ height: `${percent * 0.8}px` }}
-                          className="w-full bg-gradient-to-t from-[#1466E0] to-[#15C7C0] rounded-t-sm opacity-70 group-hover:opacity-100 transition-all duration-200"
+                          className="w-full bg-gradient-to-t from-[#4FE3DC] to-[#4FE3DC] rounded-t-sm opacity-70 group-hover:opacity-100 transition-all duration-200"
                         />
-                        <span className="text-[9px] text-[#9DB0C6] mt-1">{days[idx]}</span>
+                        <span className="text-[12px] text-[rgba(232,234,230,0.72)] mt-1">{days[idx]}</span>
                       </div>
                     );
                   })}
@@ -1062,52 +1059,52 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Inventory Database</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5">Manage live pre-owned floor assets and pricing</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Inventory Database</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Manage live pre-owned floor assets and pricing</p>
               </div>
 
               <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
                 <div className="relative flex-1 md:flex-none">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9DB0C6]" />
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(232,234,230,0.72)]" />
                   <input
                     type="text"
                     value={inventorySearch}
                     onChange={(e) => setInventorySearch(e.target.value)}
                     placeholder="Search model, make, VIN..."
-                    className="w-full md:w-56 bg-[#0f1826]/4 border border-white/5 rounded-lg pl-9 pr-3 py-2 text-xs text-[#E8EEF6] placeholder-[#5F7590] outline-none focus:border-[#1466E0]"
+                    className="w-full md:w-56 bg-[#0B0F17]/4 border border-white/5 rounded-lg pl-9 pr-3 py-2 text-xs text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]"
                   />
                 </div>
                 <select
                   value={inventoryStatusFilter}
                   onChange={(e) => setInventoryStatusFilter(e.target.value)}
-                  className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                 >
-                  <option className="bg-[#0f1826]" value="ALL">All Statuses</option>
-                  <option className="bg-[#0f1826]" value="INVENTORY">Active Stock</option>
-                  <option className="bg-[#0f1826]" value="PENDING">Pending Deal</option>
-                  <option className="bg-[#0f1826]" value="SOLD">Sold</option>
+                  <option className="bg-[#0B0F17]" value="ALL">All Statuses</option>
+                  <option className="bg-[#0B0F17]" value="INVENTORY">Active Stock</option>
+                  <option className="bg-[#0B0F17]" value="PENDING">Pending Deal</option>
+                  <option className="bg-[#0B0F17]" value="SOLD">Sold</option>
                 </select>
                 <select
                   value={inventoryPhotoFilter}
                   onChange={(e) => setInventoryPhotoFilter(e.target.value as any)}
-                  className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                   title="Filter by TruLens gallery readiness"
                 >
-                  <option className="bg-[#0f1826]" value="ALL">All photos</option>
-                  <option className="bg-[#0f1826]" value="NEEDS">Needs shoot</option>
-                  <option className="bg-[#0f1826]" value="PARTIAL">Partial gallery</option>
-                  <option className="bg-[#0f1826]" value="READY">Web-ready</option>
+                  <option className="bg-[#0B0F17]" value="ALL">All photos</option>
+                  <option className="bg-[#0B0F17]" value="NEEDS">Needs shoot</option>
+                  <option className="bg-[#0B0F17]" value="PARTIAL">Partial gallery</option>
+                  <option className="bg-[#0B0F17]" value="READY">Web-ready</option>
                 </select>
                 <select
                   value={inventoryAgeFilter}
                   onChange={(e) => setInventoryAgeFilter(e.target.value as any)}
-                  className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                   title="Aging stock filter"
                 >
-                  <option className="bg-[#0f1826]" value="ALL">Any age</option>
-                  <option className="bg-[#0f1826]" value="30">30+ days</option>
-                  <option className="bg-[#0f1826]" value="60">60+ days</option>
-                  <option className="bg-[#0f1826]" value="90">90+ days</option>
+                  <option className="bg-[#0B0F17]" value="ALL">Any age</option>
+                  <option className="bg-[#0B0F17]" value="30">30+ days</option>
+                  <option className="bg-[#0B0F17]" value="60">60+ days</option>
+                  <option className="bg-[#0B0F17]" value="90">90+ days</option>
                 </select>
               </div>
             </div>
@@ -1135,7 +1132,7 @@ export default function App() {
                   const readiness = computeDmsGalleryReadiness(v as any);
                   const days = Number(v.daysInInventory) || 0;
                   const ageTone =
-                    days >= 90 ? "text-[#F0555A]" : days >= 60 ? "text-[#E7B24B]" : days >= 30 ? "text-[#4D9BFF]" : "text-[#E8EEF6]";
+                    days >= 90 ? "text-[#FF6B6B]" : days >= 60 ? "text-[#E8C468]" : days >= 30 ? "text-[#7FF0EA]" : "text-[#E8EAE6]";
                   return (
                     <div
                       key={v.id}
@@ -1146,17 +1143,17 @@ export default function App() {
                         {v.images && v.images.length > 0 ? (
                           <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                         ) : (
-                          <div className="w-14 h-14 bg-gradient-to-tr from-[#1466E0] to-[#15C7C0] rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg">
+                          <div className="w-14 h-14 bg-gradient-to-tr from-[#4FE3DC] to-[#4FE3DC] rounded-xl flex items-center justify-center text-[#E8EAE6] font-semibold text-xl shadow-lg">
                             {(v.make || "??").slice(0, 2).toUpperCase()}
                           </div>
                         )}
-                        <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[8px] font-bold font-mono tracking-wider uppercase ${
-                          v.status === "INVENTORY" ? "bg-[#35C46B]/15 text-[#35C46B]" : v.status === "PENDING" ? "bg-[#E7B24B]/15 text-[#E7B24B]" : "bg-[#F0555A]/15 text-[#F0555A]"
+                        <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[12px] font-bold font-mono tracking-wider  ${
+                          v.status === "INVENTORY" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : v.status === "PENDING" ? "bg-[#E8C468]/15 text-[#E8C468]" : "bg-[#FF6B6B]/15 text-[#FF6B6B]"
                         }`}>
                           {v.status === "INVENTORY" ? "Showroom Floor" : v.status === "PENDING" ? "Sale Pending" : "Delivered"}
                         </span>
                         <span
-                          className="absolute top-3 left-3 px-2 py-0.5 rounded text-[8px] font-bold border max-w-[70%] truncate"
+                          className="absolute top-3 left-3 px-2 py-0.5 rounded text-[12px] font-bold border max-w-[70%] truncate"
                           style={{ color: readiness.color, borderColor: readiness.color + "55", background: readiness.color + "22" }}
                           title={(readiness.reasons || []).join(" · ")}
                         >
@@ -1166,11 +1163,11 @@ export default function App() {
 
                       <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                         <div>
-                          <h4 className="font-black text-sm text-[#E8EEF6] truncate">{v.year || ""} {v.make || "Vehicle"} {v.model || ""}</h4>
-                          <p className="text-[10px] text-[#9DB0C6] mt-0.5">
+                          <h4 className="font-semibold text-sm text-[#E8EAE6] truncate">{v.year || ""} {v.make || "Vehicle"} {v.model || ""}</h4>
+                          <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                             {v.trim || "Standard Specs"} · <span className="font-mono">{v.stockNumber || "—"}</span>
                           </p>
-                          <div className="text-[10px] text-[#9DB0C6] flex flex-wrap gap-x-2 gap-y-1 mt-2">
+                          <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-wrap gap-x-2 gap-y-1 mt-2">
                             <span>{Number(v.mileage || 0).toLocaleString()} km</span>
                             <span>•</span>
                             <span>{v.transmission || "—"}</span>
@@ -1179,7 +1176,7 @@ export default function App() {
                             {readiness.photoCount > 0 && (
                               <>
                                 <span>•</span>
-                                <span className="text-[#15C7C0]">{readiness.photoCount} photos</span>
+                                <span className="text-[#4FE3DC]">{readiness.photoCount} photos</span>
                               </>
                             )}
                           </div>
@@ -1187,11 +1184,11 @@ export default function App() {
 
                         <div className="border-t border-white/5 pt-3 mt-1 flex justify-between items-center">
                           <div>
-                            <div className="text-[9px] text-[#9DB0C6] uppercase font-mono tracking-wider">Retail Valuation</div>
-                            <div className="text-base font-black text-[#4D9BFF] font-mono mt-0.5">{formatZAR(Number(v.retailPrice) || 0)}</div>
+                            <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Retail Valuation</div>
+                            <div className="text-base font-semibold text-[#7FF0EA] font-mono mt-0.5">{formatZAR(Number(v.retailPrice) || 0)}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-[9px] text-[#9DB0C6] uppercase font-mono tracking-wider">Days in stock</div>
+                            <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Days in stock</div>
                             <div className={`text-xs font-bold mt-0.5 ${ageTone}`}>{days} Days{days >= 60 ? " · age" : ""}</div>
                           </div>
                         </div>
@@ -1199,21 +1196,21 @@ export default function App() {
                         <div className="flex gap-1.5 pt-1" onClick={(e) => e.stopPropagation()}>
                           <button
                             type="button"
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-[#1466E0]/20 text-[#4D9BFF] border border-[#1466E0]/30 hover:bg-[#1466E0]/30"
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[12px] font-semibold tracking-normal bg-[#4FE3DC]/20 text-[#7FF0EA] border border-[#4FE3DC]/30 hover:bg-[#4FE3DC]/30"
                             onClick={() => openTruLens(v.stockNumber)}
                           >
                             <Camera size={11} /> Shoot
                           </button>
                           <button
                             type="button"
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25"
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[12px] font-semibold tracking-normal bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25"
                             onClick={() => openStockWhatsApp(v)}
                           >
                             <MessageCircle size={11} /> WhatsApp
                           </button>
                           <button
                             type="button"
-                            className="px-2 py-1.5 rounded-lg text-[9px] font-bold bg-white/5 text-[#9DB0C6] border border-white/10 hover:text-white"
+                            className="px-2 py-1.5 rounded-lg text-[12px] font-bold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[#E8EAE6]"
                             onClick={async () => {
                               try {
                                 await copyStockBlurb(v);
@@ -1238,8 +1235,8 @@ export default function App() {
         {activeSection === "workflow" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
-              <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Reconditioning & Delivery Pipeline</h1>
-              <p className="text-xs text-[#9DB0C6] mt-0.5">Control prep workflows for pre-owned stock</p>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Reconditioning & Delivery Pipeline</h1>
+              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Control prep workflows for pre-owned stock</p>
             </div>
 
             {/* Stages Grid columns */}
@@ -1247,12 +1244,12 @@ export default function App() {
               {["INVENTORY", "PENDING", "SOLD"].map((stage) => {
                 const filtered = state.vehicles.filter((v) => v.status === stage);
                 return (
-                  <div key={stage} className="card bg-[#0f1826]/2 flex flex-col h-full min-h-[500px]">
-                    <div className="card-header border-b border-white/5 px-4 py-3 flex justify-between items-center bg-[#0f1826]/1">
-                      <span className="font-bold text-xs uppercase text-[#E8EEF6]">
+                  <div key={stage} className="card bg-[#0B0F17]/2 flex flex-col h-full min-h-[500px]">
+                    <div className="card-header border-b border-white/5 px-4 py-3 flex justify-between items-center bg-[#0B0F17]/1">
+                      <span className="font-bold text-xs  text-[#E8EAE6]">
                         {stage === "INVENTORY" ? "Floor Inventory" : stage === "PENDING" ? "Processing Sale" : "Delivered"}
                       </span>
-                      <span className="px-2 py-0.5 bg-[#0f1826]/5 rounded-full text-[#9DB0C6] text-[10px] font-bold">
+                      <span className="px-2 py-0.5 bg-[#0B0F17]/5 rounded-full text-[rgba(232,234,230,0.72)] text-[13px] font-bold">
                         {filtered.length}
                       </span>
                     </div>
@@ -1261,19 +1258,19 @@ export default function App() {
                       {filtered.map((v) => (
                         <div key={v.id} className="pipeline-card p-3 flex flex-col justify-between gap-3 shadow-md">
                           <div>
-                            <div className="font-bold text-xs text-[#E8EEF6] truncate">{v.year} {v.make} {v.model}</div>
-                            <p className="text-[10px] text-[#9DB0C6] mt-0.5">Ref: {v.stockNumber} / {v.mileage.toLocaleString()} km</p>
-                            <p className="text-xs font-bold text-[#4D9BFF] mt-1.5">{formatZAR(v.retailPrice)}</p>
+                            <div className="font-bold text-xs text-[#E8EAE6] truncate">{v.year} {v.make} {v.model}</div>
+                            <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Ref: {v.stockNumber} / {v.mileage.toLocaleString()} km</p>
+                            <p className="text-xs font-bold text-[#7FF0EA] mt-1.5">{formatZAR(v.retailPrice)}</p>
                           </div>
 
                           <div className="flex justify-between items-center border-t border-white/3 pt-2.5">
-                            <span className="text-[9px] text-[#9DB0C6]">Age: {v.daysInInventory}d</span>
+                            <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Age: {v.daysInInventory}d</span>
                             
                             <div className="flex gap-1">
                               {stage !== "INVENTORY" && (
                                 <button
                                   onClick={() => moveVehicle(v.id, v.status, "PREV")}
-                                  className="px-2 py-1 bg-[#0f1826]/5 border border-white/5 rounded text-[9px] font-bold hover:bg-white/10 transition-all cursor-pointer"
+                                  className="px-2 py-1 bg-[#0B0F17]/5 border border-white/5 rounded text-[12px] font-bold hover:bg-white/10 transition-all cursor-pointer"
                                 >
                                   &larr; Prev
                                 </button>
@@ -1281,7 +1278,7 @@ export default function App() {
                               {stage !== "SOLD" && (
                                 <button
                                   onClick={() => moveVehicle(v.id, v.status, "NEXT")}
-                                  className="px-2 py-1 bg-[#1466E0]/15 border border-[#1466E0]/20 text-[#4D9BFF] rounded text-[9px] font-bold hover:bg-[#1466E0]/25 transition-all cursor-pointer"
+                                  className="px-2 py-1 bg-[#4FE3DC]/15 border border-[#4FE3DC]/20 text-[#7FF0EA] rounded text-[12px] font-bold hover:bg-[#4FE3DC]/25 transition-all cursor-pointer"
                                 >
                                   Next &rarr;
                                 </button>
@@ -1303,9 +1300,9 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Add vehicle</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5">
-                  Metadata only. <b className="text-[#E8EEF6]">Photos only in TruLens</b> → Export to DMS.
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Add vehicle</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">
+                  Metadata only. <b className="text-[#E8EAE6]">Photos only in TruLens</b> → Export to DMS.
                 </p>
               </div>
               <div className="flex gap-2">
@@ -1321,7 +1318,7 @@ export default function App() {
                   onClick={loadAllState} 
                   className="btn btn-secondary flex items-center gap-2 border border-white/10 hover:bg-white/5 px-3 py-1.5 rounded-lg text-xs"
                 >
-                  <RefreshCw size={12} className="text-[#15C7C0]" />
+                  <RefreshCw size={12} className="text-[#4FE3DC]" />
                   Pull gallery
                 </button>
               </div>
@@ -1332,102 +1329,102 @@ export default function App() {
                 <form onSubmit={handlePublishVehicle} className="flex flex-col gap-4">
                   {/* Dealership — which dealer site this stock belongs to */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Dealership</label>
+                    <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Dealership</label>
                     <select
                       value={newVehicleForm.dealershipId}
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, dealershipId: e.target.value }))}
-                      className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                      className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
                     >
                       {DEALERSHIPS.map((d) => (
                         <option key={d.id} value={d.id}>{d.name}</option>
                       ))}
                     </select>
-                    <p className="text-[9px] text-[#9DB0C6] mt-0.5">This stock will only appear on this dealer's own website and inventory.</p>
+                    <p className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5">This stock will only appear on this dealer's own website and inventory.</p>
                   </div>
 
                   {/* Specification grid panel */}
-                  <div className="bg-[#15C7C0]/5 border border-[#15C7C0]/15 rounded-xl p-4 flex flex-col gap-3">
-                    <span className="text-[10px] font-bold font-mono tracking-wider uppercase text-[#15C7C0]">Showroom Vehicle Specifications</span>
+                  <div className="bg-[#4FE3DC]/5 border border-[#4FE3DC]/15 rounded-xl p-4 flex flex-col gap-3">
+                    <span className="text-[13px] font-bold font-mono tracking-wider  text-[#4FE3DC]">Showroom Vehicle Specifications</span>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Year</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Year</label>
                         <input
                           type="number"
                           value={newVehicleForm.year}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, year: parseInt(e.target.value) || 2026 }))}
-                          className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Make</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Make</label>
                         <input
                           type="text"
                           value={newVehicleForm.make}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, make: e.target.value }))}
-                          className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Model</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Model</label>
                         <input
                           type="text"
                           value={newVehicleForm.model}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, model: e.target.value }))}
-                          className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Trim Level</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Trim Level</label>
                         <input
                           type="text"
                           value={newVehicleForm.trim}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, trim: e.target.value }))}
-                          className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Engine</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Engine</label>
                         <input
                           type="text"
                           value={newVehicleForm.engine}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, engine: e.target.value }))}
-                          className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Transmission</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Transmission</label>
                         <select
                           value={newVehicleForm.transmission}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, transmission: e.target.value as any }))}
-                          className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                         >
-                          <option className="bg-[#0f1826]" value="Automatic">Automatic</option>
-                          <option className="bg-[#0f1826]" value="Manual">Manual</option>
+                          <option className="bg-[#0B0F17]" value="Automatic">Automatic</option>
+                          <option className="bg-[#0B0F17]" value="Manual">Manual</option>
                         </select>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Fuel Type</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Fuel Type</label>
                         <select
                           value={newVehicleForm.fuelType}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, fuelType: e.target.value as any }))}
-                          className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none font-sans"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
                         >
-                          <option className="bg-[#0f1826]" value="Diesel">Diesel</option>
-                          <option className="bg-[#0f1826]" value="Petrol">Petrol</option>
-                          <option className="bg-[#0f1826]" value="Hybrid">Hybrid</option>
-                          <option className="bg-[#0f1826]" value="Electric">Electric</option>
+                          <option className="bg-[#0B0F17]" value="Diesel">Diesel</option>
+                          <option className="bg-[#0B0F17]" value="Petrol">Petrol</option>
+                          <option className="bg-[#0B0F17]" value="Hybrid">Hybrid</option>
+                          <option className="bg-[#0B0F17]" value="Electric">Electric</option>
                         </select>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] uppercase font-bold">Body Type</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Body Type</label>
                         <input
                           type="text"
                           value={newVehicleForm.bodyType}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, bodyType: e.target.value }))}
-                          className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
                         />
                       </div>
                     </div>
@@ -1436,68 +1433,68 @@ export default function App() {
                   {/* Retail specs */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-[#9DB0C6] uppercase font-semibold">Retail Price (ZAR)</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Retail Price (ZAR)</label>
                       <input
                         type="number"
                         value={newVehicleForm.retailPrice}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, retailPrice: parseFloat(e.target.value) || 0 }))}
-                        className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none"
+                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-[#9DB0C6] uppercase font-semibold">Cost Price (ZAR)</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Cost Price (ZAR)</label>
                       <input
                         type="number"
                         value={newVehicleForm.costPrice}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, costPrice: parseFloat(e.target.value) || 0 }))}
-                        className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none"
+                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-[#9DB0C6] uppercase font-semibold">Mileage (km)</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Mileage (km)</label>
                       <input
                         type="number"
                         value={newVehicleForm.mileage}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, mileage: parseInt(e.target.value) || 0 }))}
-                        className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none"
+                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-[#9DB0C6] uppercase font-semibold">Stock Number</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Stock Number</label>
                       <input
                         type="text"
                         value={newVehicleForm.stockNumber}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, stockNumber: e.target.value }))}
-                        className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none font-mono"
+                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none font-mono"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-[#15C7C0]/8 border border-[#15C7C0]/25 rounded-xl p-4 flex flex-col gap-2">
-                    <span className="text-[10px] font-bold font-mono tracking-wider uppercase text-[#15C7C0] flex items-center gap-1.5">
+                  <div className="bg-[#4FE3DC]/8 border border-[#4FE3DC]/25 rounded-xl p-4 flex flex-col gap-2">
+                    <span className="text-[13px] font-bold font-mono tracking-wider  text-[#4FE3DC] flex items-center gap-1.5">
                       <Camera size={12} /> Photos live in TruLens only
                     </span>
-                    <p className="text-[11px] text-[#9DB0C6] leading-relaxed">
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
                       After save, open TruLens for stock{" "}
-                      <span className="font-mono text-[#15C7C0]">{newVehicleForm.stockNumber}</span>, shoot guided slots, then{" "}
-                      <b className="text-[#E8EEF6]">Export to DMS</b>.
+                      <span className="font-mono text-[#4FE3DC]">{newVehicleForm.stockNumber}</span>, shoot guided slots, then{" "}
+                      <b className="text-[#E8EAE6]">Export to DMS</b>.
                     </p>
                     <button
                       type="button"
                       onClick={() => openTruLens(newVehicleForm.stockNumber)}
-                      className="self-start mt-1 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#15C7C0]/15 text-[#15C7C0] border border-[#15C7C0]/30 hover:bg-[#15C7C0]/25"
+                      className="self-start mt-1 text-[13px] font-bold tracking-normal px-3 py-1.5 rounded-lg bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30 hover:bg-[#4FE3DC]/25"
                     >
                       Open TruLens for this stock #
                     </button>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-[#9DB0C6] uppercase font-semibold">Description</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Description</label>
                     <textarea
                       rows={3}
                       value={newVehicleForm.description}
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, description: e.target.value }))}
-                      className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] outline-none font-sans"
+                      className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none font-sans"
                     ></textarea>
                   </div>
 
@@ -1524,16 +1521,16 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Lead CRM Pipeline</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Evaluate web-leads and showroom walk-in traffic</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Lead CRM Pipeline</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate web-leads and showroom walk-in traffic</p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => setFilterOverdueOnly(!filterOverdueOnly)}
                   className={`px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer active:scale-95 transition-all ${
                     filterOverdueOnly
-                      ? "bg-[#F0555A]/15 border-[#F0555A]/30 text-[#F0555A]"
-                      : "bg-[#0f1826]/3 border-white/5 text-[#9DB0C6] hover:text-[#E8EEF6]"
+                      ? "bg-[#FF6B6B]/15 border-[#FF6B6B]/30 text-[#FF6B6B]"
+                      : "bg-[#0B0F17]/3 border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
                   }`}
                 >
                   {filterOverdueOnly ? "Show All Leads" : "Flag Overdue Leads"}
@@ -1543,8 +1540,8 @@ export default function App() {
                   disabled={isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)}
                   className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-purple-500/10 ${
                     isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)
-                      ? "bg-[#0f1826]/3 border-white/5 text-[#9DB0C6] cursor-not-allowed"
-                      : "bg-[#22d3ee]/15 border-[#22d3ee]/30 text-[#67e8f9] hover:bg-[#22d3ee]/25 hover:border-[#22d3ee]/50"
+                      ? "bg-[#0B0F17]/3 border-white/5 text-[rgba(232,234,230,0.72)] cursor-not-allowed"
+                      : "bg-[#4FE3DC]/15 border-[#4FE3DC]/30 text-[#67e8f9] hover:bg-[#4FE3DC]/25 hover:border-[#4FE3DC]/50"
                   }`}
                 >
                   <Sparkles size={14} className={isAutoAssigning ? "animate-pulse" : ""} />
@@ -1561,7 +1558,7 @@ export default function App() {
               <button
                 onClick={() => setLeadCRMTab("kanban")}
                 className={`text-xs font-bold transition-all border-b-2 pb-1.5 cursor-pointer ${
-                  leadCrmTab === "kanban" ? "text-white border-[#15C7C0]" : "text-[#9DB0C6] border-transparent hover:text-[#E8EEF6]"
+                  leadCrmTab === "kanban" ? "text-[#E8EAE6] border-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[#E8EAE6]"
                 }`}
               >
                 Interactive Kanban Board
@@ -1569,7 +1566,7 @@ export default function App() {
               <button
                 onClick={() => setLeadCRMTab("list")}
                 className={`text-xs font-bold transition-all border-b-2 pb-1.5 cursor-pointer ${
-                  leadCrmTab === "list" ? "text-white border-[#15C7C0]" : "text-[#9DB0C6] border-transparent hover:text-[#E8EEF6]"
+                  leadCrmTab === "list" ? "text-[#E8EAE6] border-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[#E8EAE6]"
                 }`}
               >
                 Detailed Grid View
@@ -1586,10 +1583,10 @@ export default function App() {
                   });
 
                   return (
-                    <div key={stage} className="flex-1 min-w-[220px] max-w-[280px] bg-[#0f1826]/2 rounded-xl p-3 flex flex-col gap-3 min-h-[460px] border border-white/5">
+                    <div key={stage} className="flex-1 min-w-[220px] max-w-[280px] bg-[#0B0F17]/2 rounded-xl p-3 flex flex-col gap-3 min-h-[460px] border border-white/5">
                       <div className="flex justify-between items-center border-b border-white/5 pb-1">
-                        <span className="text-[10px] font-bold text-[#9DB0C6] uppercase font-mono tracking-wider">{stage}</span>
-                        <span className="px-2 py-0.5 bg-[#0f1826]/5 rounded-full text-[9px] font-bold text-[#9DB0C6]">{filteredLeads.length}</span>
+                        <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">{stage}</span>
+                        <span className="px-2 py-0.5 bg-[#0B0F17]/5 rounded-full text-[12px] font-bold text-[rgba(232,234,230,0.72)]">{filteredLeads.length}</span>
                       </div>
                       <div className="flex-1 flex flex-col gap-2.5">
                         {filteredLeads.map((l) => (
@@ -1599,27 +1596,27 @@ export default function App() {
                             className="pipeline-card p-3 flex flex-col gap-1 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-98"
                           >
                             <div className="flex justify-between items-start">
-                              <div className="font-bold text-xs text-[#E8EEF6]">{l.firstName} {l.lastName}</div>
+                              <div className="font-bold text-xs text-[#E8EAE6]">{l.firstName} {l.lastName}</div>
                               {l.digitalScore >= 80 ? (
-                                <span className="bg-[#F0555A]/15 text-[#F0555A] text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider border border-[#F0555A]/20">Hot</span>
+                                <span className="bg-[#FF6B6B]/15 text-[#FF6B6B] text-[12px] px-1.5 py-0.5 rounded font-semibold tracking-normal border border-[#FF6B6B]/20">Hot</span>
                               ) : l.digitalScore >= 50 ? (
-                                <span className="bg-[#C9A24B]/15 text-[#C9A24B] text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider border border-[#C9A24B]/20">Warm</span>
+                                <span className="bg-[#4FE3DC]/15 text-[#4FE3DC] text-[12px] px-1.5 py-0.5 rounded font-semibold tracking-normal border border-[#4FE3DC]/20">Warm</span>
                               ) : (
-                                <span className="bg-[#9DB0C6]/15 text-[#9DB0C6] text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider border border-[#9DB0C6]/20">Cold</span>
+                                <span className="bg-[rgba(232,234,230,0.72)]/15 text-[rgba(232,234,230,0.72)] text-[12px] px-1.5 py-0.5 rounded font-semibold tracking-normal border border-[rgba(232,234,230,0.72)]/20">Cold</span>
                               )}
                             </div>
-                            <div className="text-[10px] text-[#9DB0C6] truncate">{getVehicleLabel(l.vehicleId)}</div>
-                            <div className="text-[9px] text-[#9DB0C6] mt-1 font-mono">Origin: {l.source}</div>
+                            <div className="text-[13px] text-[rgba(232,234,230,0.72)] truncate">{getVehicleLabel(l.vehicleId)}</div>
+                            <div className="text-[12px] text-[rgba(232,234,230,0.72)] mt-1 font-mono">Origin: {l.source}</div>
                             
                             <div className="flex justify-between items-center border-t border-white/3 pt-2 mt-2 gap-2">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] text-[#15C7C0] font-bold">Intent: {l.digitalScore}%</span>
+                                <span className="text-[13px] text-[#4FE3DC] font-bold">Intent: {l.digitalScore}%</span>
                               </div>
                               <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                 {l.phone && (
                                   <button
                                     type="button"
-                                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"
+                                    className="text-[12px] font-bold px-1.5 py-0.5 rounded bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"
                                     title="WhatsApp this lead"
                                     onClick={() => {
                                       const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, "27");
@@ -1631,7 +1628,7 @@ export default function App() {
                                     WA
                                   </button>
                                 )}
-                                <span className={`w-1.5 h-1.5 rounded-full ${l.lastContactedAt ? "bg-[#35C46B] shadow-[0_0_6px_#35C46B]" : "bg-[#F0555A] shadow-[0_0_6px_#F0555A]"}`}></span>
+                                <span className={`w-1.5 h-1.5 rounded-full ${l.lastContactedAt ? "bg-[#4ADE9B] shadow-[0_0_6px_#4ADE9B]" : "bg-[#FF6B6B] shadow-[0_0_6px_#FF6B6B]"}`}></span>
                               </div>
                             </div>
                           </div>
@@ -1646,7 +1643,7 @@ export default function App() {
                 <div className="card-body p-0 overflow-x-auto">
                   <table className="w-full text-xs text-left border-collapse min-w-[700px]">
                     <thead>
-                      <tr className="border-b border-white/5 text-[#9DB0C6] uppercase tracking-wider text-[9px] bg-[#0f1826]/1">
+                      <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
                         <th className="py-2.5 px-4 font-bold">Customer Name</th>
                         <th className="py-2.5 px-4 font-bold">Focus Asset</th>
                         <th className="py-2.5 px-4 font-bold">Origin</th>
@@ -1659,23 +1656,23 @@ export default function App() {
                       {state.leads
                         .filter((l) => !filterOverdueOnly || (l.status === "New" || !l.lastContactedAt))
                         .map((l) => (
-                          <tr key={l.id} className="border-b border-white/3 hover:bg-[#0f1826]/1">
-                            <td className="py-3 px-4 font-black text-[#E8EEF6]">
+                          <tr key={l.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
+                            <td className="py-3 px-4 font-semibold text-[#E8EAE6]">
                               {l.firstName} {l.lastName}
-                              <span className="block text-[10px] font-normal text-[#9DB0C6] mt-0.5">{l.phone} / {l.email}</span>
+                              <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{l.phone} / {l.email}</span>
                             </td>
                             <td className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
                             <td className="py-3 px-4">
-                              <span className="px-1.5 py-0.5 bg-[#1466E0]/15 text-[#4D9BFF] rounded text-[9px] font-bold uppercase tracking-wider">
+                              <span className="px-1.5 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[12px] font-bold tracking-normal">
                                 {l.source}
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              <span className="px-1.5 py-0.5 bg-[#35C46B]/10 text-[#35C46B] rounded text-[9px] font-bold uppercase tracking-wider">
+                              <span className="px-1.5 py-0.5 bg-[#4ADE9B]/10 text-[#4ADE9B] rounded text-[12px] font-bold tracking-normal">
                                 {l.status}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-[#9DB0C6]">{getUserLabel(l.assignedUserId)}</td>
+                            <td className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
                             <td className="py-3 px-4 text-right flex justify-end gap-1.5">
                               {l.phone && (
                                 <button
@@ -1686,14 +1683,14 @@ export default function App() {
                                     const text = `Hi ${l.firstName}, following up from the dealership re ${interest}. When works for a chat?`;
                                     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
                                   }}
-                                  className="px-2.5 py-1.5 bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[10px] font-bold"
+                                  className="px-2.5 py-1.5 bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-bold"
                                 >
                                   WhatsApp
                                 </button>
                               )}
                               <button
                                 onClick={() => setLeadDetailId(l.id)}
-                                className="px-4 py-1.5 bg-[#1466E0] hover:bg-[#1466E0]/90 text-white rounded-lg text-[10px] font-bold cursor-pointer transition-all shadow-md active:scale-95"
+                                className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer transition-all shadow-md active:scale-95"
                               >
                                 Review Profile
                               </button>
@@ -1712,38 +1709,38 @@ export default function App() {
         {activeSection === "scoring" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
-              <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Advanced AI Lead Scoring</h1>
-              <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Evaluate intent and prioritization indices</p>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Advanced AI Lead Scoring</h1>
+              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate intent and prioritization indices</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               <div className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Hot Targets</div>
-                <div className="text-2xl font-serif font-black text-[#F0555A] mt-1">
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Hot Targets</div>
+                <div className="text-2xl font-serif font-semibold text-[#FF6B6B] mt-1">
                   {state.leads.filter((l) => l.digitalScore >= 75).length}
                 </div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">High purchase velocity</div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">High purchase velocity</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Warm prospects</div>
-                <div className="text-2xl font-serif font-black text-[#E7B24B] mt-1">
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Warm prospects</div>
+                <div className="text-2xl font-serif font-semibold text-[#E8C468] mt-1">
                   {state.leads.filter((l) => l.digitalScore >= 50 && l.digitalScore < 75).length}
                 </div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">Nurturing schedule</div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Nurturing schedule</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Cold prospects</div>
-                <div className="text-2xl font-serif font-black text-[#9DB0C6] mt-1">
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Cold prospects</div>
+                <div className="text-2xl font-serif font-semibold text-[rgba(232,234,230,0.72)] mt-1">
                   {state.leads.filter((l) => l.digitalScore < 50).length}
                 </div>
-                <div className="text-[10px] text-[#9DB0C6] font-semibold mt-1">Inactive page views</div>
+                <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Inactive page views</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[10px] font-bold text-[#9DB0C6] uppercase tracking-wider font-mono">Average Digital Index</div>
-                <div className="text-2xl font-serif font-black text-[#15C7C0] mt-1">
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Average Digital Index</div>
+                <div className="text-2xl font-serif font-semibold text-[#4FE3DC] mt-1">
                   {Math.round(state.leads.reduce((sum, l) => sum + l.digitalScore, 0) / state.leads.length)}%
                 </div>
-                <div className="text-[10px] text-[#35C46B] font-semibold mt-1">Strong digital engagement</div>
+                <div className="text-[13px] text-[#4ADE9B] font-semibold mt-1">Strong digital engagement</div>
               </div>
             </div>
 
@@ -1755,7 +1752,7 @@ export default function App() {
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[#9DB0C6] uppercase tracking-wider text-[9px] bg-[#0f1826]/1">
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
                       <th className="py-2.5 px-4 font-bold">Prospect</th>
                       <th className="py-2.5 px-4 font-bold">Intent Score</th>
                       <th className="py-2.5 px-4 font-bold">Rating Level</th>
@@ -1769,22 +1766,22 @@ export default function App() {
                       const hot = l.digitalScore >= 75;
                       const warm = l.digitalScore >= 50 && l.digitalScore < 75;
                       return (
-                        <tr key={l.id} className="border-b border-white/3 hover:bg-[#0f1826]/1">
-                          <td className="py-3 px-4 font-black text-[#E8EEF6]">{l.firstName} {l.lastName}</td>
-                          <td className="py-3 px-4 font-mono font-bold text-[#15C7C0] text-sm">{l.digitalScore}%</td>
+                        <tr key={l.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
+                          <td className="py-3 px-4 font-semibold text-[#E8EAE6]">{l.firstName} {l.lastName}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-[#4FE3DC] text-sm">{l.digitalScore}%</td>
                           <td className="py-3 px-4">
-                            <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                              hot ? "bg-[#F0555A]/15 text-[#F0555A]" : warm ? "bg-[#E7B24B]/15 text-[#E7B24B]" : "bg-[#1466E0]/15 text-[#4D9BFF]"
+                            <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                              hot ? "bg-[#FF6B6B]/15 text-[#FF6B6B]" : warm ? "bg-[#E8C468]/15 text-[#E8C468]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                             }`}>
                               {hot ? "Hot Target" : warm ? "Warm Prospect" : "Cold Prospect"}
                             </span>
                           </td>
                           <td className="py-3 px-4">{l.source}</td>
-                          <td className="py-3 px-4 font-semibold text-[#9DB0C6]">{getVehicleLabel(l.vehicleId)}</td>
+                          <td className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getVehicleLabel(l.vehicleId)}</td>
                           <td className="py-3 px-4 text-right">
                             <button
                               onClick={() => setLeadDetailId(l.id)}
-                              className="px-4 py-1.5 bg-[#1466E0] hover:bg-[#1466E0]/90 text-white transition-all font-bold rounded-lg text-[10px] cursor-pointer shadow-lg shadow-[#1466E0]/20 active:scale-95"
+                              className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-[#E8EAE6] transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[#4FE3DC]/20 active:scale-95"
                             >
                               Analyze Intent
                             </button>
@@ -1815,8 +1812,8 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Invoices & Billings</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Track accounts receivable and sales transactions</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Invoices & Billings</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Track accounts receivable and sales transactions</p>
               </div>
               <button onClick={() => setIsInvoiceModalOpen(true)} className="btn btn-primary">
                 + Draft Invoice
@@ -1831,7 +1828,7 @@ export default function App() {
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[#9DB0C6] uppercase tracking-wider text-[9px] bg-[#0f1826]/1">
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
                       <th className="py-2.5 px-4 font-bold">Reference No</th>
                       <th className="py-2.5 px-4 font-bold">Prospect Bill To</th>
                       <th className="py-2.5 px-4 font-bold">Associated stock</th>
@@ -1843,17 +1840,17 @@ export default function App() {
                   </thead>
                   <tbody>
                     {state.invoices.map((inv) => (
-                      <tr key={inv.id} className="border-b border-white/3 hover:bg-[#0f1826]/1">
-                        <td className="py-3 px-4 font-mono font-bold text-[#E8EEF6]">{inv.invoiceNumber}</td>
+                      <tr key={inv.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
+                        <td className="py-3 px-4 font-mono font-bold text-[#E8EAE6]">{inv.invoiceNumber}</td>
                         <td className="py-3 px-4 font-semibold">{getLeadLabel(inv.leadId)}</td>
                         <td className="py-3 px-4">{getVehicleLabel(inv.vehicleId)}</td>
-                        <td className="py-3 px-4 font-mono font-bold text-[#4D9BFF]">
+                        <td className="py-3 px-4 font-mono font-bold text-[#7FF0EA]">
                           {formatZAR(inv.amount + (inv.additionalCharges || 0))}
-                          {inv.additionalCharges ? <span className="text-[9px] text-[#9DB0C6] block">{inv.chargeDescription}</span> : null}
+                          {inv.additionalCharges ? <span className="text-[12px] text-[rgba(232,234,230,0.72)] block">{inv.chargeDescription}</span> : null}
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                            inv.status === "Paid" ? "bg-[#35C46B]/15 text-[#35C46B]" : "bg-[#1466E0]/15 text-[#4D9BFF]"
+                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                            inv.status === "Paid" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                           }`}>
                             {inv.status}
                           </span>
@@ -1862,7 +1859,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right flex justify-end gap-1.5">
                           <button
                             onClick={() => setActiveInvoiceId(inv.id)}
-                            className="px-4 py-1.5 bg-[#1466E0] hover:bg-[#1466E0]/90 text-white rounded-lg text-[10px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                            className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
                           >
                             View Record
                           </button>
@@ -1873,7 +1870,7 @@ export default function App() {
                                 alert("Invoice cleared!");
                                 loadAllState();
                               }}
-                              className="px-4 py-1.5 bg-[#35C46B] hover:bg-[#35C46B]/90 text-white rounded-lg text-[10px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                              className="px-4 py-1.5 bg-[#4ADE9B] hover:bg-[#4ADE9B]/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
                             >
                               Finalize Payment
                             </button>
@@ -1902,8 +1899,8 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Executed Deal Agreements</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Digital sign-off deed folder for secure contracting</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Executed Deal Agreements</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Digital sign-off deed folder for secure contracting</p>
               </div>
               <button onClick={() => setIsAgreementModalOpen(true)} className="btn btn-primary">
                 + Start New Contract
@@ -1917,7 +1914,7 @@ export default function App() {
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[#9DB0C6] uppercase tracking-wider text-[9px] bg-[#0f1826]/1">
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
                       <th className="py-2.5 px-4 font-bold">Agreement ID</th>
                       <th className="py-2.5 px-4 font-bold">Contract classification</th>
                       <th className="py-2.5 px-4 font-bold">Customer account</th>
@@ -1929,15 +1926,15 @@ export default function App() {
                   </thead>
                   <tbody>
                     {state.agreements.map((agr) => (
-                      <tr key={agr.id} className="border-b border-white/3 hover:bg-[#0f1826]/1">
-                        <td className="py-3 px-4 font-mono font-bold text-[#E8EEF6]">{agr.agreementNumber}</td>
+                      <tr key={agr.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
+                        <td className="py-3 px-4 font-mono font-bold text-[#E8EAE6]">{agr.agreementNumber}</td>
                         <td className="py-3 px-4 font-semibold">{agr.type}</td>
                         <td className="py-3 px-4">{getLeadLabel(agr.leadId)}</td>
                         <td className="py-3 px-4">{getVehicleLabel(agr.vehicleId)}</td>
-                        <td className="py-3 px-4 font-mono font-bold text-[#4D9BFF]">{formatZAR(agr.purchasePrice)}</td>
+                        <td className="py-3 px-4 font-mono font-bold text-[#7FF0EA]">{formatZAR(agr.purchasePrice)}</td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                            agr.status === "Signed" || agr.status === "Completed" ? "bg-[#35C46B]/15 text-[#35C46B]" : "bg-[#E7B24B]/15 text-[#E7B24B]"
+                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                            agr.status === "Signed" || agr.status === "Completed" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : "bg-[#E8C468]/15 text-[#E8C468]"
                           }`}>
                             {agr.status}
                           </span>
@@ -1945,7 +1942,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setActiveAgreementId(agr.id)}
-                            className="px-3 py-1.5 bg-[#1466E0] hover:bg-[#1466E0]/90 text-white rounded text-[10px] font-bold cursor-pointer active:scale-95 transition-all shadow-md shadow-[#1466E0]/20"
+                            className="px-3 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-[#E8EAE6] rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all shadow-md shadow-[#4FE3DC]/20"
                           >
                             Open Contract Terms
                           </button>
@@ -1985,8 +1982,8 @@ export default function App() {
         {activeSection === "customer_form" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
-              <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Customer Lead Capture</h1>
-              <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Use this form for remote customer registration.</p>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Customer Lead Capture</h1>
+              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Use this form for remote customer registration.</p>
             </div>
             <div className="max-w-lg">
               <CustomerLeadForm dealershipId={dealershipId || "d1"} vehicles={filteredVehicles} onSuccess={() => alert("Lead Captured!")} />
@@ -1999,8 +1996,8 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Showroom Tasks</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Configure daily operational checklists & reconditioning items</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Showroom Tasks</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Configure daily operational checklists & reconditioning items</p>
               </div>
               <button onClick={() => setIsTaskModalOpen(true)} className="btn btn-primary">
                 + Log Directive Task
@@ -2015,7 +2012,7 @@ export default function App() {
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[#9DB0C6] uppercase tracking-wider text-[9px] bg-[#0f1826]/1">
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
                       <th className="py-2.5 px-4 font-bold">Showroom Directive</th>
                       <th className="py-2.5 px-4 font-bold">Priority</th>
                       <th className="py-2.5 px-4 font-bold">Assigned Specialist</th>
@@ -2026,25 +2023,25 @@ export default function App() {
                   </thead>
                   <tbody>
                     {state.tasks.map((t) => (
-                      <tr key={t.id} className="border-b border-white/3 hover:bg-[#0f1826]/1">
+                      <tr key={t.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
                         <td className="py-3 px-4">
-                          <span className="font-black text-[#E8EEF6] block">{t.title}</span>
-                          <span className="text-[10px] text-[#9DB0C6] block mt-0.5">
+                          <span className="font-semibold text-[#E8EAE6] block">{t.title}</span>
+                          <span className="text-[13px] text-[rgba(232,234,230,0.72)] block mt-0.5">
                             Focus: {getVehicleLabel(t.vehicleId || "")} / Lead: {getLeadLabel(t.leadId || "")}
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                            t.priority === "Urgent" ? "bg-[#F0555A]/15 text-[#F0555A]" : t.priority === "High" ? "bg-[#E7B24B]/15 text-[#E7B24B]" : "bg-[#1466E0]/15 text-[#4D9BFF]"
+                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                            t.priority === "Urgent" ? "bg-[#FF6B6B]/15 text-[#FF6B6B]" : t.priority === "High" ? "bg-[#E8C468]/15 text-[#E8C468]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                           }`}>
                             {t.priority}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-[#9DB0C6]">{getUserLabel(t.assignedUserId)}</td>
+                        <td className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getUserLabel(t.assignedUserId)}</td>
                         <td className="py-3 px-4">{t.dueDate}</td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                            t.status === "Completed" ? "bg-[#35C46B]/15 text-[#35C46B]" : "bg-[#1466E0]/15 text-[#4D9BFF]"
+                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                            t.status === "Completed" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                           }`}>
                             {t.status}
                           </span>
@@ -2056,12 +2053,12 @@ export default function App() {
                                 await updateTask(t.id, { status: "Completed" });
                                 loadAllState();
                               }}
-                              className="px-2.5 py-1.5 bg-[#35C46B]/10 hover:bg-[#35C46B]/20 text-[#35C46B] rounded text-[10px] font-bold cursor-pointer active:scale-95 transition-all"
+                              className="px-2.5 py-1.5 bg-[#4ADE9B]/10 hover:bg-[#4ADE9B]/20 text-[#4ADE9B] rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all"
                             >
                               Resolve
                             </button>
                           ) : (
-                            <span className="text-[#35C46B] font-bold text-xs">Resolved</span>
+                            <span className="text-[#4ADE9B] font-bold text-xs">Resolved</span>
                           )}
                         </td>
                       </tr>
@@ -2078,8 +2075,8 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Team & Performance</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Salesperson catalog metrics & access configurations</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Team & Performance</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Salesperson catalog metrics & access configurations</p>
               </div>
               <button onClick={() => setIsUserModalOpen(true)} className="btn btn-primary">
                 + Register User
@@ -2094,27 +2091,27 @@ export default function App() {
                 return (
                   <div key={u.id} className="card p-4 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#1466E0] to-[#15C7C0] flex items-center justify-center font-bold text-xs text-white">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#4FE3DC] to-[#4FE3DC] flex items-center justify-center font-bold text-xs text-[#E8EAE6]">
                         {u.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-bold text-xs text-[#E8EEF6]">{u.name}</div>
-                        <div className="text-[10px] text-[#9DB0C6] uppercase font-mono tracking-wider">{u.role}</div>
+                        <div className="font-bold text-xs text-[#E8EAE6]">{u.name}</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">{u.role}</div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-center mt-1">
-                      <div className="bg-[#0f1826]/2 border border-white/5 rounded p-1.5">
-                        <div className="text-sm font-black text-white">{leadsAssigned}</div>
-                        <div className="text-[8px] text-[#9DB0C6] uppercase font-bold tracking-wider mt-0.5">Leads</div>
+                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-1.5">
+                        <div className="text-sm font-semibold text-[#E8EAE6]">{leadsAssigned}</div>
+                        <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Leads</div>
                       </div>
-                      <div className="bg-[#0f1826]/2 border border-white/5 rounded p-1.5">
-                        <div className="text-sm font-black text-white">{dealsCompleted}</div>
-                        <div className="text-[8px] text-[#9DB0C6] uppercase font-bold tracking-wider mt-0.5">Sales</div>
+                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-1.5">
+                        <div className="text-sm font-semibold text-[#E8EAE6]">{dealsCompleted}</div>
+                        <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Sales</div>
                       </div>
-                      <div className="bg-[#0f1826]/2 border border-white/5 rounded p-1.5">
-                        <div className="text-sm font-black text-white">{u.isActive ? "Online" : "Away"}</div>
-                        <div className="text-[8px] text-[#9DB0C6] uppercase font-bold tracking-wider mt-0.5">Status</div>
+                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-1.5">
+                        <div className="text-sm font-semibold text-[#E8EAE6]">{u.isActive ? "Online" : "Away"}</div>
+                        <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Status</div>
                       </div>
                     </div>
                   </div>
@@ -2139,7 +2136,7 @@ export default function App() {
               <div className="card-body p-0 overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[600px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[#9DB0C6] uppercase tracking-wider text-[9px] bg-[#0f1826]/1">
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
                       <th className="py-2.5 px-4 font-bold">Assigned Specialist</th>
                       <th className="py-2.5 px-4 font-bold">Email Node</th>
                       <th className="py-2.5 px-4 font-bold">System Role</th>
@@ -2149,19 +2146,19 @@ export default function App() {
                   </thead>
                   <tbody>
                     {state.users.map((u) => (
-                      <tr key={u.id} className="border-b border-white/3 hover:bg-[#0f1826]/1">
-                        <td className="py-3 px-4 font-black text-[#E8EEF6]">{u.name}</td>
+                      <tr key={u.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
+                        <td className="py-3 px-4 font-semibold text-[#E8EAE6]">{u.name}</td>
                         <td className="py-3 px-4 font-semibold">{u.email}</td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                            u.role === "admin" ? "bg-[#F0555A]/15 text-[#F0555A]" : "bg-[#1466E0]/15 text-[#4D9BFF]"
+                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                            u.role === "admin" ? "bg-[#FF6B6B]/15 text-[#FF6B6B]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                           }`}>
                             {u.role}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-[#9DB0C6]">{u.phone}</td>
+                        <td className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{u.phone}</td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 bg-[#35C46B]/15 text-[#35C46B] rounded text-[8px] font-bold uppercase tracking-wider">
+                          <span className="px-2 py-0.5 bg-[#4ADE9B]/15 text-[#4ADE9B] rounded text-[12px] font-bold tracking-normal">
                             {u.isActive ? "Authorized Profile" : "Archived"}
                           </span>
                         </td>
@@ -2178,8 +2175,8 @@ export default function App() {
         {activeSection === "payment" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
-              <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Dealer Installment Calculator</h1>
-              <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Model lease structures & monthly amortization schedules</p>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Dealer Installment Calculator</h1>
+              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Model lease structures & monthly amortization schedules</p>
             </div>
             <AmortizationCalc initialPrice={state.vehicles[0]?.retailPrice || 485000} />
           </div>
@@ -2194,51 +2191,51 @@ export default function App() {
         {activeSection === "settings" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
             <div>
-              <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Lite settings & integrations</h1>
-              <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Lite settings & integrations</h1>
+              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
                 {PRODUCT_NAME} — stock, leads, tasks & light costs. Photos via TruLens. Premium adds media hub & full recon.
               </p>
             </div>
 
-            <div className="card border-[#1466E0]/30">
+            <div className="card border-[#4FE3DC]/30">
               <div className="card-header border-b border-white/5 px-5 py-3">
-                <h3 className="font-bold text-sm text-white flex items-center gap-2">
-                  <Code size={14} className="text-[#4D9BFF]" /> TruLens & website wiring
+                <h3 className="font-bold text-sm text-[#E8EAE6] flex items-center gap-2">
+                  <Code size={14} className="text-[#7FF0EA]" /> TruLens & website wiring
                 </h3>
               </div>
               <div className="card-body p-5 flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <label className="flex flex-col gap-1">
-                    <span className="text-[9px] uppercase font-bold text-[#9DB0C6] tracking-wider">TruLens URL</span>
+                    <span className="text-[12px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">TruLens URL</span>
                     <input
                       value={trulensUrlInput}
                       onChange={(e) => setTrulensUrlInput(e.target.value)}
                       placeholder="http://localhost:3000 or https://… tunnel"
-                      className="bg-[#0f1826] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] font-mono"
+                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-mono"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
-                    <span className="text-[9px] uppercase font-bold text-[#9DB0C6] tracking-wider">Dealer slug (public stock)</span>
+                    <span className="text-[12px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">Dealer slug (public stock)</span>
                     <input
                       value={dealerSlugInput}
                       onChange={(e) => setDealerSlugInput(e.target.value)}
                       placeholder="mkr-autosales"
-                      className="bg-[#0f1826] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] font-mono"
+                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-mono"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
-                    <span className="text-[9px] uppercase font-bold text-[#9DB0C6] tracking-wider">Sales WhatsApp</span>
+                    <span className="text-[12px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">Sales WhatsApp</span>
                     <input
                       value={waNumberInput}
                       onChange={(e) => setWaNumberInput(e.target.value)}
                       placeholder="2766… (country code, no +)"
-                      className="bg-[#0f1826] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] font-mono"
+                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-mono"
                     />
                   </label>
                 </div>
-                <p className="text-[10px] text-[#9DB0C6] leading-relaxed">
-                  Phone demo: TruLens needs <b className="text-[#E8EEF6]">HTTPS</b> for camera + PWA. See{" "}
-                  <span className="font-mono text-[#4D9BFF]">PRODUCTION.md</span> in the TruSaaS folder.
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
+                  Phone demo: TruLens needs <b className="text-[#E8EAE6]">HTTPS</b> for camera + PWA. See{" "}
+                  <span className="font-mono text-[#7FF0EA]">PRODUCTION.md</span> in the TruSaaS folder.
                 </p>
                 <button
                   type="button"
@@ -2253,13 +2250,13 @@ export default function App() {
                   Save integration settings
                 </button>
                 <div>
-                  <div className="text-[9px] uppercase font-bold text-[#9DB0C6] tracking-wider mb-1">Website stock widget</div>
-                  <pre className="text-[10px] bg-black/50 border border-white/10 rounded-xl p-3 overflow-x-auto text-[#9DB0C6] font-mono whitespace-pre-wrap">
+                  <div className="text-[12px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider mb-1">Website stock widget</div>
+                  <pre className="text-[13px] bg-black/50 border border-white/10 rounded-xl p-3 overflow-x-auto text-[rgba(232,234,230,0.72)] font-mono whitespace-pre-wrap">
                     {stockWidgetSnippet(window.location.origin)}
                   </pre>
                   <button
                     type="button"
-                    className="mt-2 text-[10px] font-bold text-[#4D9BFF] hover:underline"
+                    className="mt-2 text-[13px] font-bold text-[#7FF0EA] hover:underline"
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(stockWidgetSnippet(window.location.origin));
@@ -2274,87 +2271,87 @@ export default function App() {
               </div>
             </div>
             
-            <div className="card border-[#15C7C0]/30 bg-gradient-to-br from-[#0a1420] via-[#0d1c2e] to-[#070e18]">
+            <div className="card border-[#4FE3DC]/30 bg-gradient-to-br from-[#0a1420] via-[#0d1c2e] to-[#070e18]">
               <div className="card-header border-b border-white/5 px-6 py-4 flex justify-between items-center">
                 <div>
-                  <h3 className="font-bold text-base text-white flex items-center gap-2">
-                    <Sparkles size={16} className="text-[#15C7C0] animate-pulse" />
+                  <h3 className="font-bold text-base text-[#E8EAE6] flex items-center gap-2">
+                    <Sparkles size={16} className="text-[#4FE3DC] animate-pulse" />
                     TruFlow Lite
                   </h3>
-                  <p className="text-[10px] text-[#9DB0C6] mt-0.5">Focused floor tools — not full Premium</p>
+                  <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Focused floor tools — not full Premium</p>
                 </div>
-                <span className="px-3 py-1 bg-[#4D9BFF]/15 text-[#4D9BFF] border border-[#4D9BFF]/30 rounded-full text-[9px] font-black tracking-widest uppercase">
+                <span className="px-3 py-1 bg-[#7FF0EA]/15 text-[#7FF0EA] border border-[#7FF0EA]/30 rounded-full text-[12px] font-semibold tracking-widest ">
                   Lite
                 </span>
               </div>
               <div className="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 bg-[#0f1826]/2 border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[#15C7C0]/10 text-[#15C7C0] border border-[#15C7C0]/20">
+                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4">
+                  <div className="p-2 rounded-lg bg-[#4FE3DC]/10 text-[#4FE3DC] border border-[#4FE3DC]/20">
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EEF6] block">Stock + website feed</span>
-                    <span className="text-[10px] text-[#9DB0C6] mt-0.5 block">Inventory, pricing, public stock API for your dealer site.</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Stock + website feed</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Inventory, pricing, public stock API for your dealer site.</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0f1826]/2 border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[#15C7C0]/10 text-[#15C7C0] border border-[#15C7C0]/20">
+                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4">
+                  <div className="p-2 rounded-lg bg-[#4FE3DC]/10 text-[#4FE3DC] border border-[#4FE3DC]/20">
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EEF6] block">Leads & tasks</span>
-                    <span className="text-[10px] text-[#9DB0C6] mt-0.5 block">CRM pipeline and floor tasks — light ops desk.</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Leads & tasks</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">CRM pipeline and floor tasks — light ops desk.</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0f1826]/2 border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[#15C7C0]/10 text-[#15C7C0] border border-[#15C7C0]/20">
+                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4">
+                  <div className="p-2 rounded-lg bg-[#4FE3DC]/10 text-[#4FE3DC] border border-[#4FE3DC]/20">
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EEF6] block">TruLens photo pipeline</span>
-                    <span className="text-[10px] text-[#9DB0C6] mt-0.5 block">Guided shoot + VIR in TruLens; export into Lite stock.</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">TruLens photo pipeline</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Guided shoot + VIR in TruLens; export into Lite stock.</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0f1826]/2 border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[#15C7C0]/10 text-[#15C7C0] border border-[#15C7C0]/20">
+                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4">
+                  <div className="p-2 rounded-lg bg-[#4FE3DC]/10 text-[#4FE3DC] border border-[#4FE3DC]/20">
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EEF6] block">Light costs & margin</span>
-                    <span className="text-[10px] text-[#9DB0C6] mt-0.5 block">Recon costs on units — not full Premium ledger / multi-portal.</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Light costs & margin</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Recon costs on units — not full Premium ledger / multi-portal.</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0f1826]/2 border border-white/5 rounded-xl p-4 opacity-50">
-                  <div className="p-2 rounded-lg bg-white/5 text-[#9DB0C6] border border-white/10">
+                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4 opacity-50">
+                  <div className="p-2 rounded-lg bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10">
                     <X size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EEF6] block">Not in Lite: Media hub</span>
-                    <span className="text-[10px] text-[#9DB0C6] mt-0.5 block">Premium-only stock media & web readiness board.</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Not in Lite: Media hub</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Premium-only stock media & web readiness board.</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0f1826]/2 border border-white/5 rounded-xl p-4 opacity-50">
-                  <div className="p-2 rounded-lg bg-white/5 text-[#9DB0C6] border border-white/10">
+                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4 opacity-50">
+                  <div className="p-2 rounded-lg bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10">
                     <X size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EEF6] block">Not in Lite: Full recon suite</span>
-                    <span className="text-[10px] text-[#9DB0C6] mt-0.5 block">Deep accounting & multi-portal syndication → Premium.</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Not in Lite: Full recon suite</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Deep accounting & multi-portal syndication → Premium.</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0f1826]/2 border border-white/5 rounded-xl p-4 md:col-span-2 opacity-50">
-                  <div className="p-2 rounded-lg bg-white/5 text-[#9DB0C6] border border-white/10">
+                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4 md:col-span-2 opacity-50">
+                  <div className="p-2 rounded-lg bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10">
                     <X size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EEF6] block">Not in Lite: Portal syndication</span>
-                    <span className="text-[10px] text-[#9DB0C6] mt-0.5 block">AutoTrader / Cars.co.za multi-portal sync is Premium. Lite still has public stock API for your own site.</span>
+                    <span className="font-bold text-sm text-[#E8EAE6] block">Not in Lite: Portal syndication</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">AutoTrader / Cars.co.za multi-portal sync is Premium. Lite still has public stock API for your own site.</span>
                   </div>
                 </div>
               </div>
@@ -2365,7 +2362,7 @@ export default function App() {
                 <h3 className="font-semibold text-sm">System Actions</h3>
               </div>
               <div className="card-body p-4 flex flex-col gap-3">
-                <p className="text-xs text-[#9DB0C6]">
+                <p className="text-xs text-[rgba(232,234,230,0.72)]">
                   Trigger total showroom memory wipes or re-seed baseline parameters for demonstration purposes.
                 </p>
                 <div>
@@ -2392,52 +2389,52 @@ export default function App() {
       {/* Log Lead Modal */}
       {isLeadModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[#0f1826] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-black tracking-tight text-[#E8EEF6]">Log New Lead Entry</h3>
-              <button onClick={() => setIsLeadModalOpen(false)} className="text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer"><X size={16} /></button>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Log New Lead Entry</h3>
+              <button onClick={() => setIsLeadModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateLeadSubmit} className="flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">First Name</label>
-                  <input type="text" required value={newLeadForm.firstName} onChange={(e) => setNewLeadForm((p) => ({ ...p, firstName: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">First Name</label>
+                  <input type="text" required value={newLeadForm.firstName} onChange={(e) => setNewLeadForm((p) => ({ ...p, firstName: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Last Name</label>
-                  <input type="text" required value={newLeadForm.lastName} onChange={(e) => setNewLeadForm((p) => ({ ...p, lastName: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Last Name</label>
+                  <input type="text" required value={newLeadForm.lastName} onChange={(e) => setNewLeadForm((p) => ({ ...p, lastName: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Phone</label>
-                  <input type="text" required value={newLeadForm.phone} onChange={(e) => setNewLeadForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Phone</label>
+                  <input type="text" required value={newLeadForm.phone} onChange={(e) => setNewLeadForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Email</label>
-                  <input type="email" required value={newLeadForm.email} onChange={(e) => setNewLeadForm((p) => ({ ...p, email: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Email</label>
+                  <input type="email" required value={newLeadForm.email} onChange={(e) => setNewLeadForm((p) => ({ ...p, email: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Select vehicle</label>
-                <select value={newLeadForm.vehicleId} onChange={(e) => setNewLeadForm((p) => ({ ...p, vehicleId: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Select vehicle</label>
+                <select value={newLeadForm.vehicleId} onChange={(e) => setNewLeadForm((p) => ({ ...p, vehicleId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
                   {state.vehicles.map((v) => (
-                    <option key={v.id} className="bg-[#0f1826]" value={v.id}>{v.year} {v.make} {v.model}</option>
+                    <option key={v.id} className="bg-[#0B0F17]" value={v.id}>{v.year} {v.make} {v.model}</option>
                   ))}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Ad Source</label>
-                <select value={newLeadForm.source} onChange={(e) => setNewLeadForm((p) => ({ ...p, source: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
-                  <option className="bg-[#0f1826]" value="Website">Website Form</option>
-                  <option className="bg-[#0f1826]" value="Walk-in">Walk-in Showroom</option>
-                  <option className="bg-[#0f1826]" value="Facebook">Facebook Lead Gen</option>
-                  <option className="bg-[#0f1826]" value="AutoTrader">AutoTrader Portal</option>
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Ad Source</label>
+                <select value={newLeadForm.source} onChange={(e) => setNewLeadForm((p) => ({ ...p, source: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <option className="bg-[#0B0F17]" value="Website">Website Form</option>
+                  <option className="bg-[#0B0F17]" value="Walk-in">Walk-in Showroom</option>
+                  <option className="bg-[#0B0F17]" value="Facebook">Facebook Lead Gen</option>
+                  <option className="bg-[#0B0F17]" value="AutoTrader">AutoTrader Portal</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Initial Requirement notes</label>
-                <textarea rows={2} value={newLeadForm.notes} onChange={(e) => setNewLeadForm((p) => ({ ...p, notes: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6] font-sans"></textarea>
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Initial Requirement notes</label>
+                <textarea rows={2} value={newLeadForm.notes} onChange={(e) => setNewLeadForm((p) => ({ ...p, notes: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-sans"></textarea>
               </div>
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" onClick={() => setIsLeadModalOpen(false)} className="btn btn-secondary">Cancel</button>
@@ -2451,51 +2448,51 @@ export default function App() {
       {/* Invoice Modal */}
       {isInvoiceModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[#0f1826] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-black tracking-tight text-[#E8EEF6]">Draft Outbound Invoice</h3>
-              <button onClick={() => setIsInvoiceModalOpen(false)} className="text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer"><X size={16} /></button>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Draft Outbound Invoice</h3>
+              <button onClick={() => setIsInvoiceModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateInvoiceSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Link to Lead Account</label>
-                <select value={newInvoiceForm.leadId} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Link to Lead Account</label>
+                <select value={newInvoiceForm.leadId} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
                   {state.leads.map((l) => (
-                    <option key={l.id} className="bg-[#0f1826]" value={l.id}>{l.firstName} {l.lastName}</option>
+                    <option key={l.id} className="bg-[#0B0F17]" value={l.id}>{l.firstName} {l.lastName}</option>
                   ))}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Acquired Inventory</label>
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Acquired Inventory</label>
                 <select
                   value={newInvoiceForm.vehicleId}
                   onChange={(e) => {
                     const matchedVeh = state.vehicles.find((v) => v.id === e.target.value);
                     setNewInvoiceForm((p) => ({ ...p, vehicleId: e.target.value, amount: matchedVeh?.retailPrice || 0 }));
                   }}
-                  className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans"
+                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans"
                 >
                   {state.vehicles.map((v) => (
-                    <option key={v.id} className="bg-[#0f1826]" value={v.id}>{v.year} {v.make} {v.model}</option>
+                    <option key={v.id} className="bg-[#0B0F17]" value={v.id}>{v.year} {v.make} {v.model}</option>
                   ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Amount (ZAR)</label>
-                  <input type="number" required value={newInvoiceForm.amount} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, amount: parseFloat(e.target.value) || 0 }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Amount (ZAR)</label>
+                  <input type="number" required value={newInvoiceForm.amount} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, amount: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Due Date</label>
-                  <input type="date" required value={newInvoiceForm.dueDate} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] font-sans" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Due Date</label>
+                  <input type="date" required value={newInvoiceForm.dueDate} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] font-sans" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Finance Category</label>
-                <select value={newInvoiceForm.paymentMethod} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, paymentMethod: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
-                  <option className="bg-[#0f1826]" value="Bank Transfer">Direct EFT / Bank Transfer</option>
-                  <option className="bg-[#0f1826]" value="Dealer Finance">Dealer Arranged Finance</option>
-                  <option className="bg-[#0f1826]" value="Cash">Cash Payment</option>
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Finance Category</label>
+                <select value={newInvoiceForm.paymentMethod} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, paymentMethod: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <option className="bg-[#0B0F17]" value="Bank Transfer">Direct EFT / Bank Transfer</option>
+                  <option className="bg-[#0B0F17]" value="Dealer Finance">Dealer Arranged Finance</option>
+                  <option className="bg-[#0B0F17]" value="Cash">Cash Payment</option>
                 </select>
               </div>
               <div className="flex justify-end gap-2 mt-2">
@@ -2510,51 +2507,51 @@ export default function App() {
       {/* Agreement Modal */}
       {isAgreementModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[#0f1826] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-black tracking-tight text-[#E8EEF6]">Draft Sale Contract</h3>
-              <button onClick={() => setIsAgreementModalOpen(false)} className="text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer"><X size={16} /></button>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Draft Sale Contract</h3>
+              <button onClick={() => setIsAgreementModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateAgreementSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Party Purchaser</label>
-                <select value={newAgreementForm.leadId} onChange={(e) => setNewAgreementForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Party Purchaser</label>
+                <select value={newAgreementForm.leadId} onChange={(e) => setNewAgreementForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
                   {state.leads.map((l) => (
-                    <option key={l.id} className="bg-[#0f1826]" value={l.id}>{l.firstName} {l.lastName}</option>
+                    <option key={l.id} className="bg-[#0B0F17]" value={l.id}>{l.firstName} {l.lastName}</option>
                   ))}
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Subject Vehicle</label>
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Subject Vehicle</label>
                 <select
                   value={newAgreementForm.vehicleId}
                   onChange={(e) => {
                     const matchedVeh = state.vehicles.find((v) => v.id === e.target.value);
                     setNewAgreementForm((p) => ({ ...p, vehicleId: e.target.value, purchasePrice: matchedVeh?.retailPrice || 0 }));
                   }}
-                  className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans"
+                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans"
                 >
                   {state.vehicles.map((v) => (
-                    <option key={v.id} className="bg-[#0f1826]" value={v.id}>{v.year} {v.make} {v.model}</option>
+                    <option key={v.id} className="bg-[#0B0F17]" value={v.id}>{v.year} {v.make} {v.model}</option>
                   ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Negotiated Price</label>
-                  <input type="number" required value={newAgreementForm.purchasePrice} onChange={(e) => setNewAgreementForm((p) => ({ ...p, purchasePrice: parseFloat(e.target.value) || 0 }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Negotiated Price</label>
+                  <input type="number" required value={newAgreementForm.purchasePrice} onChange={(e) => setNewAgreementForm((p) => ({ ...p, purchasePrice: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Deposit amount</label>
-                  <input type="number" required value={newAgreementForm.depositAmount} onChange={(e) => setNewAgreementForm((p) => ({ ...p, depositAmount: parseFloat(e.target.value) || 0 }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Deposit amount</label>
+                  <input type="number" required value={newAgreementForm.depositAmount} onChange={(e) => setNewAgreementForm((p) => ({ ...p, depositAmount: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Contract Class</label>
-                <select value={newAgreementForm.type} onChange={(e) => setNewAgreementForm((p) => ({ ...p, type: e.target.value as any }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
-                  <option className="bg-[#0f1826]" value="Vehicle Sale">Vehicle Purchase Deed</option>
-                  <option className="bg-[#0f1826]" value="Deposit Hold">Securing Holding Deposit</option>
-                  <option className="bg-[#0f1826]" value="Trade-In Transfer">Trade-In Exchange Agreement</option>
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Contract Class</label>
+                <select value={newAgreementForm.type} onChange={(e) => setNewAgreementForm((p) => ({ ...p, type: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <option className="bg-[#0B0F17]" value="Vehicle Sale">Vehicle Purchase Deed</option>
+                  <option className="bg-[#0B0F17]" value="Deposit Hold">Securing Holding Deposit</option>
+                  <option className="bg-[#0B0F17]" value="Trade-In Transfer">Trade-In Exchange Agreement</option>
                 </select>
               </div>
               <div className="flex justify-end gap-2 mt-2">
@@ -2569,66 +2566,66 @@ export default function App() {
       {/* Task Modal */}
       {isTaskModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[#0f1826] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-black tracking-tight text-[#E8EEF6]">Create Task Assignment</h3>
-              <button onClick={() => setIsTaskModalOpen(false)} className="text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer"><X size={16} /></button>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Create Task Assignment</h3>
+              <button onClick={() => setIsTaskModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateTaskSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Task description header</label>
-                <input type="text" required placeholder="e.g. Call client back with rates" value={newTaskForm.title} onChange={(e) => setNewTaskForm((p) => ({ ...p, title: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6]" />
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Task description header</label>
+                <input type="text" required placeholder="e.g. Call client back with rates" value={newTaskForm.title} onChange={(e) => setNewTaskForm((p) => ({ ...p, title: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6]" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Associate Lead</label>
-                  <select value={newTaskForm.leadId} onChange={(e) => setNewTaskForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
-                    <option className="bg-[#0f1826]" value="">None</option>
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Associate Lead</label>
+                  <select value={newTaskForm.leadId} onChange={(e) => setNewTaskForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                    <option className="bg-[#0B0F17]" value="">None</option>
                     {state.leads.map((l) => (
-                      <option key={l.id} className="bg-[#0f1826]" value={l.id}>{l.firstName} {l.lastName}</option>
+                      <option key={l.id} className="bg-[#0B0F17]" value={l.id}>{l.firstName} {l.lastName}</option>
                     ))}
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Associate Stock</label>
-                  <select value={newTaskForm.vehicleId} onChange={(e) => setNewTaskForm((p) => ({ ...p, vehicleId: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
-                    <option className="bg-[#0f1826]" value="">None</option>
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Associate Stock</label>
+                  <select value={newTaskForm.vehicleId} onChange={(e) => setNewTaskForm((p) => ({ ...p, vehicleId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                    <option className="bg-[#0B0F17]" value="">None</option>
                     {state.vehicles.map((v) => (
-                      <option key={v.id} className="bg-[#0f1826]" value={v.id}>{v.year} {v.make} {v.model}</option>
+                      <option key={v.id} className="bg-[#0B0F17]" value={v.id}>{v.year} {v.make} {v.model}</option>
                     ))}
                   </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Assign to Rep</label>
-                  <select value={newTaskForm.assignedUserId} onChange={(e) => setNewTaskForm((p) => ({ ...p, assignedUserId: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Assign to Rep</label>
+                  <select value={newTaskForm.assignedUserId} onChange={(e) => setNewTaskForm((p) => ({ ...p, assignedUserId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
                     {state.users.map((u) => (
-                      <option key={u.id} className="bg-[#0f1826]" value={u.id}>{u.name}</option>
+                      <option key={u.id} className="bg-[#0B0F17]" value={u.id}>{u.name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Due Date Target</label>
-                  <input type="date" required value={newTaskForm.dueDate} onChange={(e) => setNewTaskForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6] font-sans" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Due Date Target</label>
+                  <input type="date" required value={newTaskForm.dueDate} onChange={(e) => setNewTaskForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] font-sans" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Priority Rating</label>
-                  <select value={newTaskForm.priority} onChange={(e) => setNewTaskForm((p) => ({ ...p, priority: e.target.value as any }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
-                    <option className="bg-[#0f1826]" value="Normal">Normal</option>
-                    <option className="bg-[#0f1826]" value="High">High</option>
-                    <option className="bg-[#0f1826]" value="Urgent">Urgent</option>
-                    <option className="bg-[#0f1826]" value="Low">Low</option>
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Priority Rating</label>
+                  <select value={newTaskForm.priority} onChange={(e) => setNewTaskForm((p) => ({ ...p, priority: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                    <option className="bg-[#0B0F17]" value="Normal">Normal</option>
+                    <option className="bg-[#0B0F17]" value="High">High</option>
+                    <option className="bg-[#0B0F17]" value="Urgent">Urgent</option>
+                    <option className="bg-[#0B0F17]" value="Low">Low</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Current State</label>
-                  <select value={newTaskForm.status} onChange={(e) => setNewTaskForm((p) => ({ ...p, status: e.target.value as any }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
-                    <option className="bg-[#0f1826]" value="Pending">Pending Assignment</option>
-                    <option className="bg-[#0f1826]" value="In Progress">In Progress</option>
-                    <option className="bg-[#0f1826]" value="Completed">Completed</option>
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Current State</label>
+                  <select value={newTaskForm.status} onChange={(e) => setNewTaskForm((p) => ({ ...p, status: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                    <option className="bg-[#0B0F17]" value="Pending">Pending Assignment</option>
+                    <option className="bg-[#0B0F17]" value="In Progress">In Progress</option>
+                    <option className="bg-[#0B0F17]" value="Completed">Completed</option>
                   </select>
                 </div>
               </div>
@@ -2644,32 +2641,32 @@ export default function App() {
       {/* User Modal */}
       {isUserModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[#0f1826] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[#0B0F17] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-black tracking-tight text-[#E8EEF6]">Register User Account</h3>
-              <button onClick={() => setIsUserModalOpen(false)} className="text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer"><X size={16} /></button>
+              <h3 className="font-sans text-lg font-semibold tracking-tight text-[#E8EAE6]">Register User Account</h3>
+              <button onClick={() => setIsUserModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateUserSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Full Name</label>
-                <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6]" />
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Full Name</label>
+                <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6]" />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">E-mail Address</label>
-                <input type="email" required placeholder="aiden@true-cars.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6]" />
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">E-mail Address</label>
+                <input type="email" required placeholder="aiden@true-cars.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6]" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Account Role</label>
-                  <select value={newUserForm.role} onChange={(e) => setNewUserForm((p) => ({ ...p, role: e.target.value as any }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
-                    <option className="bg-[#0f1826]" value="salesperson">Salesperson</option>
-                    <option className="bg-[#0f1826]" value="manager">Manager</option>
-                    <option className="bg-[#0f1826]" value="admin">System Administrator</option>
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Account Role</label>
+                  <select value={newUserForm.role} onChange={(e) => setNewUserForm((p) => ({ ...p, role: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                    <option className="bg-[#0B0F17]" value="salesperson">Salesperson</option>
+                    <option className="bg-[#0B0F17]" value="manager">Manager</option>
+                    <option className="bg-[#0B0F17]" value="admin">System Administrator</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Contact Number</label>
-                  <input type="text" required placeholder="082 111 2222" value={newUserForm.phone} onChange={(e) => setNewUserForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Contact Number</label>
+                  <input type="text" required placeholder="082 111 2222" value={newUserForm.phone} onChange={(e) => setNewUserForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-2">
@@ -2707,21 +2704,21 @@ export default function App() {
       {/* EOD REPORT MODAL */}
       {showEODReport && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[220] flex items-center justify-center p-4">
-          <div className="bg-[#070d15] border border-[#1466E0]/30 rounded-2xl w-full max-w-[620px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-150 p-6 flex flex-col gap-6">
+          <div className="bg-[#06080D] border border-[#4FE3DC]/30 rounded-2xl w-full max-w-[620px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-150 p-6 flex flex-col gap-6">
             
             {/* Modal Header */}
             <div className="flex justify-between items-start border-b border-white/5 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#15C7C0] animate-ping" />
-                  <span className="text-[10px] font-black tracking-widest uppercase text-[#15C7C0] font-mono">Operations Report</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#4FE3DC] animate-ping" />
+                  <span className="text-[13px] font-semibold tracking-widest  text-[#4FE3DC] font-mono">Operations Report</span>
                 </div>
-                <h3 className="font-sans text-xl font-black tracking-tight text-[#E8EEF6] mt-1">End of Day (EOD) Summary</h3>
-                <p className="text-[10px] text-[#9DB0C6] mt-0.5">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <h3 className="font-sans text-xl font-semibold tracking-tight text-[#E8EAE6] mt-1">End of Day (EOD) Summary</h3>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
               <button 
                 onClick={() => setShowEODReport(false)} 
-                className="p-1.5 rounded-lg bg-[#0f1826]/2 border border-white/5 text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer transition-colors"
+                className="p-1.5 rounded-lg bg-[#0B0F17]/2 border border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer transition-colors"
               >
                 <X size={16} />
               </button>
@@ -2729,66 +2726,66 @@ export default function App() {
 
             {/* Daily Summary Metrics Block */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-[#0f1826]/2 border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[9px] font-bold text-[#9DB0C6] uppercase font-mono">Leads Worked</span>
-                <span className="text-lg font-black text-white">12 Leads</span>
-                <span className="text-[9px] text-[#35C46B]">Active response</span>
+              <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
+                <span className="text-[12px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Leads Worked</span>
+                <span className="text-lg font-semibold text-[#E8EAE6]">12 Leads</span>
+                <span className="text-[12px] text-[#4ADE9B]">Active response</span>
               </div>
-              <div className="bg-[#0f1826]/2 border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[9px] font-bold text-[#9DB0C6] uppercase font-mono">Cars Moved Today</span>
-                <span className="text-lg font-black text-white">3 Units</span>
-                <span className="text-[9px] text-[#35C46B]">Closed Won status</span>
+              <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
+                <span className="text-[12px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Cars Moved Today</span>
+                <span className="text-lg font-semibold text-[#E8EAE6]">3 Units</span>
+                <span className="text-[12px] text-[#4ADE9B]">Closed Won status</span>
               </div>
-              <div className="bg-[#1466E0]/10 border border-[#1466E0]/20 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[9px] font-bold text-[#4D9BFF] uppercase font-mono">EOD Net Profit</span>
-                <span className="text-lg font-black text-[#15C7C0]">R 185,000</span>
-                <span className="text-[9px] text-[#22d3ee]">11.4% avg margin</span>
+              <div className="bg-[#4FE3DC]/10 border border-[#4FE3DC]/20 rounded-xl p-3 flex flex-col gap-0.5">
+                <span className="text-[12px] font-bold text-[#7FF0EA]  font-mono">EOD Net Profit</span>
+                <span className="text-lg font-semibold text-[#4FE3DC]">R 185,000</span>
+                <span className="text-[12px] text-[#4FE3DC]">11.4% avg margin</span>
               </div>
             </div>
 
             {/* Financial and Recon Outlay Details */}
-            <div className="bg-[#070d15] rounded-xl border border-white/5 p-4 flex flex-col gap-3">
+            <div className="bg-[#06080D] rounded-xl border border-white/5 p-4 flex flex-col gap-3">
               <div className="flex justify-between items-center text-xs border-b border-white/3 pb-2.5">
-                <span className="text-[#9DB0C6] font-medium">Reconditioning Expenditures</span>
-                <span className="font-mono font-bold text-[#F0555A]">- R 18,500</span>
+                <span className="text-[rgba(232,234,230,0.72)] font-medium">Reconditioning Expenditures</span>
+                <span className="font-mono font-bold text-[#FF6B6B]">- R 18,500</span>
               </div>
               <div className="flex justify-between items-center text-xs border-b border-white/3 pb-2.5">
-                <span className="text-[#9DB0C6] font-medium">Gross Dealership Revenue</span>
-                <span className="font-mono font-bold text-[#E8EEF6]">R 1,515,000</span>
+                <span className="text-[rgba(232,234,230,0.72)] font-medium">Gross Dealership Revenue</span>
+                <span className="font-mono font-bold text-[#E8EAE6]">R 1,515,000</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#9DB0C6] font-medium">Unresolved Pending Invoices</span>
-                <span className="font-mono font-bold text-[#E7B24B]">R {state.invoices.filter(i => i.status === 'Sent').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}</span>
+                <span className="text-[rgba(232,234,230,0.72)] font-medium">Unresolved Pending Invoices</span>
+                <span className="font-mono font-bold text-[#E8C468]">R {state.invoices.filter(i => i.status === 'Sent').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}</span>
               </div>
             </div>
 
             {/* Daily Sold Vehicles Details */}
             <div className="flex flex-col gap-2">
-              <span className="text-[9px] font-black uppercase tracking-wider text-[#9DB0C6] font-mono px-1">Dealership Units Dispatched Today</span>
+              <span className="text-[12px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)] font-mono px-1">Dealership Units Dispatched Today</span>
               <div className="flex flex-col gap-2">
-                <div className="bg-[#0f1826]/2 border border-white/5 rounded-xl px-3 py-2.5 flex justify-between items-center text-xs">
+                <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl px-3 py-2.5 flex justify-between items-center text-xs">
                   <div>
-                    <span className="font-bold text-[#E8EEF6] block">Toyota Hilux 2.8 GD-6 Legend</span>
-                    <span className="text-[9px] text-[#9DB0C6] mt-0.5 block font-mono">Stock ID: CT-5112 | Closed by Aiden Fourie</span>
+                    <span className="font-bold text-[#E8EAE6] block">Toyota Hilux 2.8 GD-6 Legend</span>
+                    <span className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: CT-5112 | Closed by Aiden Fourie</span>
                   </div>
-                  <span className="font-mono font-black text-[#15C7C0]">R 115,000 profit</span>
+                  <span className="font-mono font-semibold text-[#4FE3DC]">R 115,000 profit</span>
                 </div>
-                <div className="bg-[#0f1826]/2 border border-white/5 rounded-xl px-3 py-2.5 flex justify-between items-center text-xs">
+                <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl px-3 py-2.5 flex justify-between items-center text-xs">
                   <div>
-                    <span className="font-bold text-[#E8EEF6] block">Volkswagen Golf 8 GTI</span>
-                    <span className="text-[9px] text-[#9DB0C6] mt-0.5 block font-mono">Stock ID: JHB-8319 | Closed by Sipho Dlamini</span>
+                    <span className="font-bold text-[#E8EAE6] block">Volkswagen Golf 8 GTI</span>
+                    <span className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: JHB-8319 | Closed by Sipho Dlamini</span>
                   </div>
-                  <span className="font-mono font-black text-[#15C7C0]">R 70,000 profit</span>
+                  <span className="font-mono font-semibold text-[#4FE3DC]">R 70,000 profit</span>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end gap-2.5 border-t border-[#1466E0]/20 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-2.5 border-t border-[#4FE3DC]/20 pt-4">
               <button 
                 type="button" 
                 onClick={() => setShowEODReport(false)} 
-                className="px-4 py-2 bg-[#0f1826]/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer active:scale-95 transition-all text-center"
+                className="px-4 py-2 bg-[#0B0F17]/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer active:scale-95 transition-all text-center"
               >
                 Close Report
               </button>
@@ -2799,7 +2796,7 @@ export default function App() {
                   addNotification("EOD Summary Dispatched", "The compiled daily operations summary has been securely emailed to dealers@real-cars.co.za and all stakeholders.", "info");
                   setShowEODReport(false);
                 }} 
-                className="px-4 py-2 bg-gradient-to-r from-[#1466E0]/15 to-[#1466E0]/30 border border-[#1466E0]/45 text-[#4D9BFF] hover:bg-[#1466E0]/40 rounded-xl text-xs font-bold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+                className="px-4 py-2 bg-gradient-to-r from-[#4FE3DC]/15 to-[#4FE3DC]/30 border border-[#4FE3DC]/45 text-[#7FF0EA] hover:bg-[#4FE3DC]/40 rounded-xl text-xs font-bold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
               >
                 📧 Email to Stakeholders
               </button>
@@ -2807,7 +2804,7 @@ export default function App() {
               <button 
                 type="button" 
                 onClick={handleExportCSV} 
-                className="px-4 py-2 bg-[#15C7C0] text-[#070d15] font-extrabold rounded-xl text-xs shadow-lg hover:bg-[#15C7C0]/90 cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+                className="px-4 py-2 bg-[#4FE3DC] text-[#06080D] font-semibold rounded-xl text-xs shadow-lg hover:bg-[#4FE3DC]/90 cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
               >
                 ⬇️ Export Spreadsheet (CSV)
               </button>
@@ -2825,25 +2822,25 @@ export default function App() {
             className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-xl animate-in slide-in-from-right-10 duration-500 flex flex-col gap-1.5 transition-all ${
               notif.type === 'warning' 
                 ? 'bg-[#F59E0B]/20 border-[#F59E0B]/30 text-[#FBBF24]' 
-                : 'bg-[#1466E0]/20 border-[#1466E0]/30 text-[#60A5FA]'
+                : 'bg-[#4FE3DC]/20 border-[#4FE3DC]/30 text-[#60A5FA]'
             }`}
           >
             <div className="flex justify-between items-start gap-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={14} className={notif.type === 'warning' ? "animate-pulse" : ""} />
-                <span className="text-[10px] font-black uppercase tracking-[0.15em]">{notif.title}</span>
+                <span className="text-[13px] font-semibold  tracking-[0.15em]">{notif.title}</span>
               </div>
               <button 
                 onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))}
-                className="text-white/30 hover:text-[#E8EEF6] transition-colors"
+                className="text-[#E8EAE6]/30 hover:text-[#E8EAE6] transition-colors"
               >
                 <X size={14} />
               </button>
             </div>
-            <div className="text-xs font-medium leading-relaxed text-white/90 pr-2">
+            <div className="text-xs font-medium leading-relaxed text-[#E8EAE6]/90 pr-2">
               {notif.message}
             </div>
-            <div className="h-0.5 bg-[#0f1826]/10 rounded-full overflow-hidden mt-1">
+            <div className="h-0.5 bg-[#0B0F17]/10 rounded-full overflow-hidden mt-1">
               <div className="h-full bg-current animate-progress-shrink origin-left" />
             </div>
           </div>

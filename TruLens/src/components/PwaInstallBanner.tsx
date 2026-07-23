@@ -93,16 +93,16 @@ export default function PwaInstallBanner() {
             <Smartphone size={16} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-black text-[#E8EAE6] tracking-wide uppercase">
+            <p className="text-[13px] font-semibold text-[#E8EAE6] tracking-wide ">
               Install TruLens
             </p>
-            <p className="text-[10px] text-neutral-400 leading-snug mt-0.5">
+            <p className="text-[13px] text-neutral-400 leading-snug mt-0.5">
               {isIosSafari()
                 ? 'Add to Home Screen for a full-screen yard app (no browser chrome).'
                 : 'Install on this phone for one-tap access on the yard — works offline for the app shell.'}
             </p>
             {iosHelp && (
-              <ol className="mt-2 text-[10px] text-neutral-300 space-y-1 list-decimal list-inside">
+              <ol className="mt-2 text-[13px] text-neutral-300 space-y-1 list-decimal list-inside">
                 <li className="flex items-start gap-1">
                   <span>
                     Tap <Share size={10} className="inline text-sky-400" /> <b>Share</b>
@@ -120,7 +120,7 @@ export default function PwaInstallBanner() {
               <button
                 type="button"
                 onClick={handleInstall}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[10px] font-black uppercase tracking-wider"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[13px] font-semibold tracking-normal"
               >
                 <Download size={12} />
                 {deferred ? 'Install app' : isIosSafari() ? (iosHelp ? 'Got it' : 'How to install') : 'Install'}
@@ -128,7 +128,7 @@ export default function PwaInstallBanner() {
               <button
                 type="button"
                 onClick={dismiss}
-                className="px-3 py-2 rounded-xl border border-neutral-700 text-neutral-400 text-[10px] font-bold"
+                className="px-3 py-2 rounded-xl border border-neutral-700 text-neutral-400 text-[13px] font-bold"
                 aria-label="Dismiss"
               >
                 <X size={14} />

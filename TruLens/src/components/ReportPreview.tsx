@@ -233,68 +233,68 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           </button>
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="text-[9px] font-bold px-2 py-1 rounded-full border"
+              className="text-[12px] font-bold px-2 py-1 rounded-full border"
               style={{ color: readiness.color, borderColor: readiness.color + '55', background: readiness.color + '18' }}
             >
               {readiness.label}
             </span>
-            <button onClick={handleCopyWa} className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[10px] font-bold text-emerald-300">
+            <button onClick={handleCopyWa} className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[13px] font-bold text-emerald-300">
               {waCopied ? <Check size={12} /> : <MessageCircle size={12} />} WhatsApp blurb
             </button>
             <button
               type="button"
               onClick={handleTogglePublish}
               disabled={publishBusy}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-600/20 border border-sky-500/30 rounded-lg text-[10px] font-bold text-sky-300 disabled:opacity-50"
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-600/20 border border-sky-500/30 rounded-lg text-[13px] font-bold text-sky-300 disabled:opacity-50"
             >
               {publishBusy ? '…' : vehicle.showOnWebsite ? 'Unpublish web' : 'Publish to web'}
             </button>
             <button onClick={handleExportWeb3d} disabled={web3dBusy}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-[10px] font-bold text-cyan-300 disabled:opacity-50">
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-[13px] font-bold text-cyan-300 disabled:opacity-50">
               <Box size={12} /> {web3dBusy ? 'Building 3D…' : 'Export web 3D'}
             </button>
             {embedUrl && (
               <button
                 type="button"
                 onClick={() => window.open(embedUrl, '_blank')}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200"
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200"
               >
                 Open 3D viewer
               </button>
             )}
             <button onClick={() => runPdf('sales')} disabled={!!generating}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200">
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Share2 size={12} /> {generating === 'sales' ? '…' : 'Sales PDF'}
             </button>
-            <button onClick={() => window.print()} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold text-slate-200">
+            <button onClick={() => window.print()} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-[#E8EAE6]"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
               style={{ background: 'linear-gradient(120deg, #4FE3DC, #4FE3DC)' }}>
               <Download size={12} /> {generating === 'full' ? '…' : 'Full VIR PDF'}
             </button>
           </div>
         </div>
         {web3dMsg && (
-          <div className="text-center text-[10px] text-cyan-300/90 pb-2 no-print">{web3dMsg}</div>
+          <div className="text-center text-[13px] text-cyan-300/90 pb-2 no-print">{web3dMsg}</div>
         )}
       </div>
 
       {/* Hidden-on-screen sales pack used only for PDF (also shown in print if user wants) */}
       <div className="max-w-5xl mx-auto p-3 space-y-4">
         {/* On-screen readiness card */}
-        <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[11px]">
+        <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[13px]">
           <div className="flex justify-between gap-2">
             <div>
-              <div className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Web readiness</div>
+              <div className="text-[12px] tracking-normal text-slate-500 font-bold">Web readiness</div>
               <div className="font-bold text-sm" style={{ color: readiness.color }}>{readiness.label}</div>
               <div className="text-slate-400 mt-1">
                 Required {readiness.requiredTaken}/{readiness.requiredTotal}
                 {readiness.overallScore != null ? ` · VIR ${readiness.overallScore}/100` : ''}
               </div>
             </div>
-            <div className="text-right text-slate-500 text-[10px] max-w-[200px]">
+            <div className="text-right text-slate-500 text-[13px] max-w-[200px]">
               {readiness.reasons.length ? readiness.reasons.join(' · ') : 'Meets publish rules for website + DMS.'}
             </div>
           </div>
@@ -309,17 +309,17 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-sales h1 { font-size:22px; font-weight:800; margin:0 0 4px; letter-spacing:-.02em; }
             .tl-sales .muted { color:rgba(232,234,230,0.45); font-size:12px; }
             .tl-sales .price { font-size:26px; font-weight:900; color:#0B5BD7; margin:10px 0; }
-            .tl-sales .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+            .tl-sales .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:; }
             .tl-sales .hero { width:100%; border-radius:12px; object-fit:cover; aspect-ratio:16/10; background:#F1F5F9; }
             .tl-sales .box { border:1px solid #E8EAE6; border-radius:12px; padding:12px; }
-            .tl-sales .k { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:rgba(232,234,230,0.55); font-weight:700; }
+            .tl-sales .k { font-size:9px; letter-spacing:.12em; text-transform:; color:rgba(232,234,230,0.55); font-weight:700; }
             .tl-sales .v { font-size:13px; font-weight:700; margin-top:3px; }
             .tl-sales .foot { border-top:1px solid #E8EAE6; padding:12px 22px; font-size:10px; color:rgba(232,234,230,0.55); display:flex; justify-content:space-between; }
           `}</style>
           <div className="band">
             <div style={{ display:'flex', justifyContent:'space-between', gap:12 }}>
               <div>
-                <div style={{ fontSize:10, letterSpacing:'.16em', textTransform:'uppercase', opacity:.7 }}>
+                <div style={{ fontSize:10, letterSpacing:'.16em', textTransform:'', opacity:.7 }}>
                   {dealerName}{dealerBranch ? ` · ${dealerBranch}` : ''} · Sales pack
                 </div>
                 <div style={{ fontSize:18, fontWeight:800, marginTop:4 }}>{vehicle.year} {vehicle.make} {vehicle.model}</div>
@@ -396,7 +396,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; }
             .tl-report .score-ring { width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
             .tl-report .vehicle-facts { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
-            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
+            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; text-transform:; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
             .tl-report .vehicle-facts .v { font-weight:700; font-size:13px; margin-top:2px; }
             .tl-report section { padding: 12mm 16mm; }
             .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
@@ -405,7 +405,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .grade .v { font-weight:800; font-size:22px; }
             .tl-report .grade .n { font-size:10px; color:#475569; margin-top:6px; font-weight:600; }
             .tl-report .finding { background:#FEF3C7; border-left:4px solid #F59E0B; border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; }
-            .tl-report .finding .h { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#B45309; font-family:ui-monospace,monospace; }
+            .tl-report .finding .h { font-size:10px; letter-spacing:.1em; text-transform:; color:#B45309; font-family:ui-monospace,monospace; }
             .tl-report .finding .l { font-size:12.5px; color:#78350F; margin-top:4px; font-weight:500; }
             .tl-report .no-issues { background:#DCFCE7; border-left:4px solid #4ADE9B; border-radius:0 10px 10px 0; padding:12px 14px; color:#166534; font-weight:600; font-size:13px; }
             .tl-report .damage-grid, .tl-report .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -415,8 +415,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .cap { padding:8px 10px; font-size:11px; }
             .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; }
             .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; }
-            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:rgba(232,234,230,0.55); }
-            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:rgba(232,234,230,0.45); text-transform:uppercase; letter-spacing:.08em; font-family:ui-monospace,monospace; }
+            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:; color:rgba(232,234,230,0.55); }
+            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:rgba(232,234,230,0.45); text-transform:; letter-spacing:.08em; font-family:ui-monospace,monospace; }
             @media print {
               .no-print { display:none !important; }
               .tl-sales { break-after: page; }
@@ -429,7 +429,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="brand">
                 <div className="txt">
                   <img src={trulensLockup} alt="TruLens" style={{ height:30, width:'auto', display:'block', marginBottom:4 }} />
-                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'rgba(248,250,252,.85)' }}>
+                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', textTransform:'', color:'rgba(248,250,252,.85)' }}>
                     Full Vehicle Inspection Report
                   </div>
                   <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
@@ -454,7 +454,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'uppercase', opacity:.55 }}>Overall condition</div>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'', opacity:.55 }}>Overall condition</div>
                   <div style={{ fontWeight:800, fontSize:20, color: overallGrade.color, marginTop:4 }}>{overallGrade.grade} · {overallGrade.label}</div>
                   <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{overallGrade.sales}</div>
                   <div style={{ fontSize:11, opacity:.65, marginTop:6 }}>
@@ -561,13 +561,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <h2><Award size={16} /> Dealer & digital readiness</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'rgba(232,234,230,0.55)' }}>Dealership</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Dealership</div>
                 <div style={{ fontWeight:700, marginTop:4 }}>{dealerName}</div>
                 {dealerBranch ? <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>{dealerBranch}</div> : null}
                 {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'rgba(232,234,230,0.55)' }}>Digital assets</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Digital assets</div>
                 <div style={{ fontWeight:700, marginTop:4, color: readiness.color }}>{readiness.label}</div>
                 <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:4 }}>
                   Website: {vehicle.showOnWebsite ? 'Published' : 'Not published'}

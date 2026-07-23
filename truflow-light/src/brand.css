@@ -1,0 +1,86 @@
+/* ============================================================================
+   TruSaaS brand tokens — CANONICAL SOURCE
+   ----------------------------------------------------------------------------
+   Lifted from the holding site (tru-saas.com) so the apps look like they came
+   from the same company. Each app keeps a verbatim copy at src/brand.css
+   because they build independently; edit THIS file and copy it across.
+
+   The system in one line: near-black, one cyan accent, warm off-white at three
+   opacities, Inter at generous sizes in mid weights, no uppercase.
+   ========================================================================== */
+
+:root {
+  /* Surfaces ---------------------------------------------------------------
+     Two only. Anything that needs to sit "above" ink-2 uses --glass, not a
+     third background colour. */
+  --ink:        #06080D;
+  --ink-2:      #0B0F17;
+  --glass:      rgba(232, 234, 230, 0.055);
+  --glass-line: rgba(232, 234, 230, 0.14);
+
+  /* Text — one colour at four opacities. Not four different greys. */
+  --white:      #E8EAE6;
+  --white-dim:  rgba(232, 234, 230, 0.72);
+  --muted:      rgba(232, 234, 230, 0.55);
+  --faint:      rgba(232, 234, 230, 0.32);
+
+  /* Accent — exactly one. Cyan carries every interactive and "live" state.
+     On a cyan fill the text is --ink, never white: cyan/white fails contrast. */
+  --cyan:       #4FE3DC;
+  --cyan-bright:#7FF0EA;
+  --cyan-soft:  rgba(79, 227, 220, 0.35);
+  --cyan-faint: rgba(79, 227, 220, 0.08);
+
+
+  /* Second accent — the blue from the logo. Cyan carries interactive and live
+     states; blue is for iconography and quiet emphasis, so the two never
+     compete for the same job. */
+  --blue:       #4D9BFF;
+  --blue-deep:  #1466E0;
+  --blue-faint: rgba(77, 155, 255, 0.10);
+
+  /* Status without a traffic-light palette. Good/live reads cyan, warnings
+     de-emphasise to muted text rather than shouting in yellow, and one dusty
+     red is kept purely for destructive actions and genuine errors. */
+  --success:    #4FE3DC;
+  --warning:    rgba(232, 234, 230, 0.55);
+  --danger:     #B86A6A;
+
+  /* Type */
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Type scale. The floor is 12px — the apps had 197 instances of 8–10px text,
+     which is the single biggest reason they read as cheap. */
+  --t-micro: 12px;   /* labels, meta — the smallest allowed */
+  --t-small: 13px;
+  --t-body:  15px;
+  --t-lead:  17px;
+  --t-h3:    20px;
+  --t-h2:    28px;
+  --t-h1:    38px;
+
+  /* Weights. 600 is the heaviest in normal use; 900 was used 66 times and made
+     everything shout at once. */
+  --w-regular:  400;
+  --w-medium:   500;
+  --w-semibold: 600;
+
+  /* Headings tighten as they grow — this is most of what makes large type look
+     designed rather than merely big. */
+  --track-h1: -0.022em;
+  --track-h2: -0.015em;
+  --track-h3: -0.01em;
+
+  /* Depth — restrained. A lit top hairline and a soft shadow is the whole
+     vocabulary; the cyan glow is reserved for genuinely live elements. */
+  --shadow-card:  0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
+  --shadow-lift:  0 1px 0 rgba(232,234,230,0.09) inset, 0 26px 50px -28px rgba(0,0,0,0.9);
+  --shadow-modal: 0 40px 90px -40px rgba(0,0,0,0.95);
+  --glow-cyan:    0 0 8px var(--cyan);
+
+  /* Radius */
+  --r-sm:   8px;
+  --r-card: 18px;
+  --r-pill: 100px;
+}
