@@ -7,7 +7,7 @@ import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
-import trulensLockup from '../assets/images/trulens-lockup.png';
+import trulensLockup from '../assets/images/trulens-logo.svg';
 import trusaasLogo from '../assets/images/trusaas-lockup.png';
 import trusaasLogoDark from '../assets/images/trusaas-lockup-dark.png';
 
