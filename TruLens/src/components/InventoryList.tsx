@@ -337,7 +337,16 @@ export default function InventoryList({
       {/* App Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
         <div className="flex items-center">
-          <img src={trulensLogo} alt="TruLens" className="h-8 w-auto object-contain" />
+          <img
+            src={trulensLogo}
+            alt="TruLens"
+            /* The supplied wordmark is the light-background variant: its "Tru" is
+               dark graphite chrome, which goes muddy on #06080D and reads grey.
+               Lifting brightness makes the chrome read as silver on dark, matching
+               the TruSaas wordmark the holding site uses. Remove this once a
+               proper light-chrome TruLens wordmark exists. */
+            className="h-8 w-auto object-contain [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
+          />
         </div>
 
         {/* Flow DMS, sync & log out */}

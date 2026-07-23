@@ -59,7 +59,7 @@ export default function Login() {
           <img 
             src={trulensLogo} 
             alt="TruLens Logo" 
-            className="w-48 object-contain mx-auto"
+            className="w-48 object-contain mx-auto [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
           />
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 whitespace-nowrap">
             <span className="text-[13px] font-semibold text-indigo-400  tracking-[0.3em] font-sans">Vision for Growth</span>
