@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Lead, Vehicle, User, Communication, Task, Agreement } from "../types";
-import { updateLead, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement, askAI } from "../api";
+import { getAccount } from "../lib/session";
+import { updateLead, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
 import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature } from "lucide-react";
 import AgreementPreview from "./AgreementPreview";
 
@@ -27,6 +28,34 @@ export default function LeadDetailModal({
   documentsPanel,
 }: LeadDetailModalProps) {
   const [lead, setLead] = useState<Lead | null>(null);
+  // Who is logged in — communications used to be stamped "Marc van der Merwe"
+  // regardless of who sent them.
+  const currentUserName = getAccount()?.label || "";
+
+  /** Starting points the salesperson edits before sending. These replaced
+   *  "Auto-Draft with TrueAI" buttons that called a stub returning the literal
+   *  string "This is a mock AI response in the Lite version." — which went
+   *  straight into the message body, ready to send to a customer. */
+  const templates = {
+    email: () =>
+      `Hi ${lead.firstName},
+
+` +
+      `Thanks for your interest in the ${vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : "vehicle"}. ` +
+      `It's still available and I'd be glad to answer any questions or arrange a time for you to come and see it.
+
+` +
+      `When would suit you?
+
+` +
+      `${currentUserName || ""}`.trim(),
+    sms: () =>
+      `Hi ${lead.firstName}, it's ${currentUserName || "the dealership"} — the ` +
+      `${vehicle?.model || "car"} you asked about is still available. Want to come take a look?`.slice(0, 160),
+    whatsapp: () =>
+      `Hi ${lead.firstName} 👋 The ${vehicle ? `${vehicle.make} ${vehicle.model}` : "vehicle"} ` +
+      `you enquired about is still available. Happy to send more photos or book you a viewing — what works for you?`,
+  };
   const [activeTab, setActiveTab] = useState<"overview" | "journey" | "comm" | "history" | "tasks" | "finance">("overview");
   const tasks = allTasks.filter((t) => t.leadId === leadId);
 
@@ -133,6 +162,18 @@ export default function LeadDetailModal({
     }
   };
 
+  /**
+   * Hand the message off to the app that can actually send it, then log it.
+   *
+   * Every channel here used to claim "Dispatched successfully over server
+   * gateways!" while sending nothing — and WhatsApp went further, inventing a
+   * customer reply 1.5 seconds later. A salesperson would see a sent message
+   * and a response, and stop chasing a lead who had never heard from them.
+   *
+   * There is no send integration, so we don't pretend there is: WhatsApp opens
+   * wa.me, email opens the mail client, SMS opens the messaging app. Logging
+   * happens either way, so the history reflects what was composed.
+   */
   const handleDispatchComm = async (e: React.FormEvent) => {
     e.preventDefault();
     let subject = "";
@@ -142,10 +183,10 @@ export default function LeadDetailModal({
       subject = emailSubject || "Dealer Update Notification";
       content = emailBody;
     } else if (commChannel === "sms") {
-      subject = "Outbound SMS Text";
+      subject = "Outbound SMS";
       content = smsBody;
     } else if (commChannel === "whatsapp") {
-      subject = "WhatsApp Business Session";
+      subject = "WhatsApp message";
       content = whatsappBody;
     } else if (commChannel === "call") {
       subject = `Voice Call — [${callOutcome}]`;
@@ -153,37 +194,29 @@ export default function LeadDetailModal({
     }
 
     if (!content) {
-      alert("Please compose message content before dispatching.");
+      alert("Please write the message first.");
       return;
     }
 
+    const digits = (lead.phone || "").replace(/[^0-9]/g, "").replace(/^0/, "27");
+
     try {
+      // A call is logged after the fact — there's nothing to hand off.
+      if (commChannel !== "call") {
+        let handoff = "";
+        if (commChannel === "whatsapp") {
+          handoff = `https://wa.me/${digits}?text=${encodeURIComponent(content)}`;
+        } else if (commChannel === "email") {
+          handoff = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(content)}`;
+        } else {
+          handoff = `sms:${lead.phone}?body=${encodeURIComponent(content)}`;
+        }
+        window.open(handoff, "_blank");
+      }
+
       if (commChannel === "whatsapp") {
-        setWhatsappHistory((prev) => [
-          ...prev,
-          { sender: "agent", text: content, time: "Just now" }
-        ]);
+        setWhatsappHistory((prev) => [...prev, { sender: "agent", text: content, time: "Just now" }]);
         setWhatsappBody("");
-        
-        // Mock a friendly customer reply for the simulation
-        setTimeout(() => {
-          setWhatsappHistory((prev) => [
-            ...prev,
-            { sender: "customer", text: "Got it! Thanks. I will review and let you know shortly.", time: "Just now" }
-          ]);
-        }, 1500);
-
-        await createCommunication({
-          leadId: lead.id,
-          type: "whatsapp",
-          subject,
-          content,
-          sentBy: "Marc van der Merwe",
-        });
-
-        alert("WhatsApp message dispatched and logged successfully!");
-        onRefresh();
-        return;
       }
 
       await createCommunication({
@@ -191,14 +224,13 @@ export default function LeadDetailModal({
         type: commChannel,
         subject,
         content,
-        sentBy: "Marc van der Merwe",
+        sentBy: currentUserName || "Dealer",
       });
 
-      alert(`Dispatched successfully over ${commChannel} server gateways!`);
       onRefresh();
-      onClose();
+      if (commChannel !== "whatsapp") onClose();
     } catch (err) {
-      alert("Communication server is offline.");
+      alert("Could not log that message. It may not have been recorded.");
     }
   };
 
@@ -617,20 +649,10 @@ export default function LeadDetailModal({
                         <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Email Body</label>
                         <button
                           type="button"
-                          onClick={async () => {
-                            setGeneratingEmail(true);
-                            try {
-                              const res = await askAI(`Draft a professional follow-up email from a car dealership to ${lead.firstName} about their interest in the ${vehicle ? vehicle.make + ' ' + vehicle.model : 'vehicle'}. Keep it concise, friendly, and under 3 paragraphs.`);
-                              setEmailBody(res);
-                            } catch (e) {
-                              alert("Failed to generate email.");
-                            } finally {
-                              setGeneratingEmail(false);
-                            }
-                          }}
+                          onClick={() => setEmailBody(templates.email())}
                           className="flex items-center gap-1 text-[9px] font-bold text-[#15C7C0] hover:text-[#E8EEF6] transition-colors cursor-pointer"
                         >
-                          {generatingEmail ? "Generating..." : <><Wand2 size={10} /> Auto-Draft with TrueAI</>}
+                          <><Wand2 size={10} /> Use template</>
                         </button>
                       </div>
                       <textarea
@@ -650,15 +672,10 @@ export default function LeadDetailModal({
                       <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">SMS Body (160 characters max)</label>
                       <button
                         type="button"
-                        onClick={async () => {
-                          try {
-                            const res = await askAI(`Draft a short, punchy SMS (under 160 chars) to ${lead.firstName} about the ${vehicle?.model || 'car'}. Call to action to visit showroom.`);
-                            setSmsBody(res.substring(0, 160));
-                          } catch (e) {}
-                        }}
+                        onClick={() => setSmsBody(templates.sms())}
                         className="flex items-center gap-1 text-[9px] font-bold text-[#15C7C0] hover:text-[#E8EEF6] transition-colors cursor-pointer"
                       >
-                        <Wand2 size={10} /> Auto-Draft SMS
+                        <Wand2 size={10} /> Use template
                       </button>
                     </div>
                     <textarea
@@ -681,23 +698,10 @@ export default function LeadDetailModal({
                         <div className="flex gap-1.5">
                           <button
                             type="button"
-                            disabled={aiGeneratingReply}
-                            onClick={async () => {
-                              setAiGeneratingReply(true);
-                              try {
-                                const lastCustomerMsg = whatsappHistory.filter(m => m.sender === "customer").pop()?.text || "";
-                                const prompt = `The customer last said: "${lastCustomerMsg}". Draft a direct, helpful WhatsApp reply from the dealership sales agent. Keep it warm, professional, with an emoji, and under 2-3 sentences. Context vehicle is ${vehicle ? vehicle.make + ' ' + vehicle.model : 'the vehicle they enquired about'}.`;
-                                const res = await askAI(prompt);
-                                setWhatsappBody(res);
-                              } catch (e) {
-                                alert("Failed to suggest AI reply.");
-                              } finally {
-                                setAiGeneratingReply(false);
-                              }
-                            }}
+                            onClick={() => setWhatsappBody(templates.whatsapp())}
                             className="flex items-center gap-1 text-[9px] font-bold text-[#15C7C0] bg-[#15C7C0]/10 border border-[#15C7C0]/20 px-2 py-1 rounded-lg hover:bg-[#15C7C0]/20 transition-all cursor-pointer"
                           >
-                            <Sparkles size={10} /> {aiGeneratingReply ? "Thinking..." : "AI Auto-Reply Suggest"}
+                            <Sparkles size={10} /> Use template
                           </button>
                         </div>
                       </div>

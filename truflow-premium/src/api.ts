@@ -442,12 +442,30 @@ export async function generateDocument(type: string, id: string): Promise<Blob> 
   return new Blob(["Mock PDF Content"], { type: "application/pdf" });
 }
 
-export async function decodeVin(vin: string) {
-  return { make: "MockMake", model: "MockModel", year: 2026, engine: "MockEngine" };
+/** No VIN decoder is wired up. Returning invented make/model would put wrong
+ *  details on a real vehicle record, so this reports that it's unavailable. */
+export async function decodeVin(_vin: string): Promise<never> {
+  throw new Error("VIN decoding isn't available yet — enter the details manually.");
 }
 
+/**
+ * The dealership co-pilot. This used to return the literal string
+ * "This is a mock AI response in the Lite version." — which the compose
+ * screens dropped straight into a message body, ready to send to a customer.
+ * The server has had a real Gemini-backed endpoint all along; nothing called it.
+ */
 export async function askAI(question: string): Promise<string> {
-  return "This is a mock AI response in the Lite version.";
+  const res = await authFetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: question }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    // Say it's unavailable rather than returning text that reads like an answer.
+    throw new Error(data?.error || "The assistant is unavailable right now.");
+  }
+  return data.text || "";
 }
 
 export async function createCommunication(comm: Omit<Communication, "id" | "sentAt">): Promise<Communication> {
@@ -491,7 +509,7 @@ export async function uploadImage(file: File): Promise<string> {
 }
 
 export async function askCRM(query: string): Promise<string> {
-  return "Mock AI CRM response.";
+  return askAI(query);
 }
 
 export async function reconcileExpense(id: string, reconciled: boolean): Promise<Expense> {

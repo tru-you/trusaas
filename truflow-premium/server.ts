@@ -1279,16 +1279,26 @@ Response MUST be a valid JSON array of objects with keys "leadId", "assignedUser
 });
 
 // --- AI SECURITY CO-PILOT CHATBOT ENDPOINT ---
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", async (req: any, res) => {
   const { query } = req.body;
   if (!query) {
     return res.status(400).json({ error: "Missing query" });
   }
 
   try {
-    const state = readState();
+    const raw = readState();
+    // Scope before building the prompt. This read the whole instance, so the
+    // co-pilot answered one dealer using another dealer's stock and leads —
+    // and shipped every dealership's customer names, phones and email
+    // addresses to Google on each question.
+    const state = {
+      ...raw,
+      vehicles: scopeToDealer(raw.vehicles, req.auth),
+      leads: scopeToDealer(raw.leads, req.auth),
+      tasks: scopeToDealer(raw.tasks, req.auth),
+      invoices: scopeToDealer(raw.invoices, req.auth),
+    };
 
-    // Serialize current state as context for Gemini so it can answer live questions
     const activeVehicles = state.vehicles.filter(v => v.status === "INVENTORY");
     const pendingVehicles = state.vehicles.filter(v => v.status === "PENDING");
     const soldVehicles = state.vehicles.filter(v => v.status === "SOLD");
