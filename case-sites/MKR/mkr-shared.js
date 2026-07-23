@@ -107,8 +107,52 @@ const MKR = (() => {
       truPrice,
       tag,
       vir: v.vir || "4.5",
-      img: v.heroImage || (Array.isArray(v.images) && v.images[0]) || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=80"
+      img: v.heroImage || (Array.isArray(v.images) && v.images[0]) || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=80",
+      // Identity + status straight from the DMS. stock is the stable key the
+      // shortlist uses (a price change must not orphan a saved car), and the
+      // status fields drive the card ribbons — no ribbon shows without them.
+      stock: v.stockNumber || v.stockNo || v.stock || v.id || "",
+      prevPrice: Number(v.previousPrice || v.priceWas || v.oldPrice) || 0,
+      daysInStock: v.daysInStock != null ? Number(v.daysInStock) : daysSince(v.dateAdded || v.dateInStock || v.createdAt),
+      reserved: !!(v.reserved || /reserved|pending|sold\s*pending/i.test(String(v.status || v.availability || ""))),
+      // Media the DMS may attach. Field names vary by feed, so accept the
+      // common spellings; mkr-media.js falls back gracefully when empty.
+      images: Array.isArray(v.images) ? v.images : (v.heroImage ? [v.heroImage] : []),
+      spin: v.spin || v.spinImages || v.images360 || v.spin360 || v.threeSixty || [],
+      video: v.video || v.videoUrl || v.walkaroundVideo || v.videoWalkaround || "",
+      videoPoster: v.videoPoster || v.heroImage || ""
     };
+  }
+
+  /** Whole days since an ISO date the DMS supplied. null when it sent nothing —
+   *  callers must treat null as "unknown", never as "new". */
+  function daysSince(d) {
+    if (!d) return null;
+    var t = Date.parse(d);
+    if (isNaN(t)) return null;
+    return Math.floor((Date.now() - t) / 86400000);
+  }
+
+  /** Card status ribbon, driven only by real DMS values. Returns null when the
+   *  feed hasn't told us anything — better no ribbon than an invented one. */
+  function statusOf(c) {
+    if (!c) return null;
+    if (c.reserved) return { cls: "reserved", txt: "Reserved" };
+    if (c.prevPrice && c.price && c.prevPrice > c.price) return { cls: "reduced", txt: "Price reduced" };
+    if (c.daysInStock != null && c.daysInStock <= 14) return { cls: "arrived", txt: "Just arrived" };
+    return null;
+  }
+
+  /** Data attributes every card carries so the polish/elite layers can read
+   *  real values off the DOM instead of guessing from the price. */
+  function dataAttrs(c) {
+    var s = statusOf(c);
+    return [
+      c.stock ? 'data-stock="' + String(c.stock).replace(/"/g, "&quot;") + '"' : "",
+      s ? 'data-status="' + s.cls + '" data-status-label="' + s.txt + '"' : "",
+      c.daysInStock != null ? 'data-days="' + c.daysInStock + '"' : "",
+      c.prevPrice ? 'data-prev="' + c.prevPrice + '"' : ""
+    ].filter(Boolean).join(" ");
   }
 
   function badgeClass(cat) {
@@ -125,10 +169,10 @@ const MKR = (() => {
     }
     gridEl.innerHTML = list.map((c, i) => {
       const wa = encodeURIComponent(`Hi MKR, I'm interested in the ${c.y} ${c.make} ${c.name} (${fmtR(c.price)}) — ${c.tag}. Is it still available?`);
-      return `<article class="card rv d${(i % 3) + 1}">
+      return `<article class="card rv d${(i % 3) + 1}" ${dataAttrs(c)}>
         <div class="card-shine" aria-hidden="true"></div>
         <div class="ph">
-          <div class="im" style="background-image:linear-gradient(180deg,transparent 50%,rgba(10,22,38,.4)),url('${c.img || ""}')"></div>
+          <img class="im" src="${c.img || ""}" alt="${c.y} ${c.make} ${c.name}" loading="lazy" decoding="async" width="800" height="500">
           <span class="badge ${badgeClass(c.cat)}">${c.tag || "Featured"}</span>
           <span class="vir">VIR ★ ${c.vir || "4.5"}</span>
         </div>
@@ -242,7 +286,9 @@ const MKR = (() => {
 
     if (!fine) return;
 
-    document.querySelectorAll(".btn, .fab-btn").forEach(el => {
+    // Magnetic pull is reserved for the floating rail. Applying it to every
+    // button as well made the whole page feel restless.
+    document.querySelectorAll(".fab-btn").forEach(el => {
       el.addEventListener("pointermove", e => {
         const r = el.getBoundingClientRect();
         const x = e.clientX - r.left - r.width / 2;
@@ -368,5 +414,5 @@ const MKR = (() => {
     });
   }
 
-  return { WA, MOCK, fmtR, monthly, priceDelta, tpTag, mapApi, renderCards, loadStock, observeAll, initChrome, initChat };
+  return { WA, MOCK, fmtR, monthly, priceDelta, tpTag, mapApi, renderCards, loadStock, observeAll, initChrome, initChat, statusOf, dataAttrs, daysSince };
 })();

@@ -109,8 +109,8 @@
 .vd-tp-verdict{font-family:var(--ff);font-weight:800;font-size:13px;color:var(--ok);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
 .vd-tp-verdict svg{width:14px;height:14px;}
 .vd-tp-bar{height:6px;border-radius:100px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;}
-.vd-tp-bar i{position:absolute;top:0;bottom:0;left:0;border-radius:100px;background:linear-gradient(90deg,var(--ok),var(--blue));}
-.vd-tp-marker{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--ok);box-shadow:0 2px 8px rgba(0,0,0,.4);transform:translateX(-50%);}
+.vd-tp-bar i{position:absolute;top:0;bottom:0;left:0;border-radius:100px;background:linear-gradient(90deg,var(--gold-light,#E2C46F),var(--blue));}
+.vd-tp-marker{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--gold,#C8A24B);box-shadow:0 2px 8px rgba(0,0,0,.4);transform:translateX(-50%);}
 .vd-tp-labels{display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.35);margin-top:5px;font-family:var(--mono);letter-spacing:.02em;}
 
 /* ===== BOOKING MODAL ===== */

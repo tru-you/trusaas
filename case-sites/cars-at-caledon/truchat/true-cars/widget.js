@@ -63,7 +63,7 @@
     var style = document.createElement("style");
     style.id = "truchat-widget-chrome";
     style.textContent = [
-      "#tc-widget-root{all:initial;font-family:Inter,system-ui,sans-serif}",
+      "#tc-widget-root{all:initial;font-family:'DM Sans',Mulish,system-ui,-apple-system,sans-serif}",
       "#tc-widget-root *{box-sizing:border-box}",
       "@media(prefers-reduced-motion:reduce){#tc-fab,#tc-panel,#tc-fab .tc-ring,#tc-fab .tc-ring2{animation:none!important}}",
 
@@ -160,13 +160,9 @@
     ].join("");
     document.head.appendChild(style);
 
-    if (!document.getElementById("truchat-font")) {
-      var link = document.createElement("link");
-      link.id = "truchat-font";
-      link.rel = "stylesheet";
-      link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap";
-      document.head.appendChild(link);
-    }
+    // No webfont request for the widget. Pulling a whole Inter family (5 weights)
+    // from a third party just to style a chat bubble cost a render-blocking
+    // request on every page load; the host page's own sans is already loaded.
 
     var root = document.createElement("div");
     root.id = "tc-widget-root";

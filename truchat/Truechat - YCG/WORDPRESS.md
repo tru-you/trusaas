@@ -1,3 +1,9 @@
+> ⚠️ **SUPERSEDED.** This manual script-tag install is the old (keyword-bot)
+> approach. TruChat now ships as a WordPress **plugin** with an LLM brain, live
+> leads storage and email confirmations. Install that instead:
+> **`../wordpress-plugin/`** → see `../wordpress-plugin/README.md`.
+> This file is kept for reference only.
+
 # Your Car Guy — TruChat on WordPress  
 **Site:** https://yourcarguy.co.za  
 **Ship:** AI chatbot + floating widget + leads portal  

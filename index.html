@@ -146,6 +146,11 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
 @media(max-width:960px){.cases-grid{grid-template-columns:1fr;}}
 .case{padding:28px;border-radius:18px;border:1px solid var(--glass-line);background:var(--glass);backdrop-filter:blur(12px);transition:all .3s;}
 .case:hover{border-color:var(--cyan-soft);transform:translateY(-2px);}
+.case-preview{position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;border:1px solid var(--glass-line);background:#0A0D14;margin-bottom:18px;box-shadow:inset 0 1px 0 rgba(232,234,230,.05);}
+.case-preview iframe{position:absolute;top:0;left:0;width:1280px;height:800px;border:0;transform-origin:top left;pointer-events:none;background:#fff;transition:transform .4s ease;}
+.case-preview::after{content:'OPEN LIVE ↗';position:absolute;top:10px;right:10px;padding:5px 10px;border-radius:100px;background:rgba(6,8,13,.75);backdrop-filter:blur(8px);border:1px solid var(--glass-line);font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--cyan);opacity:0;transition:opacity .3s;pointer-events:none;}
+.case:hover .case-preview::after{opacity:1;}
+.case:hover .case-preview iframe{filter:brightness(1.05);}
 .case-region{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;}
 .case h3{font-size:22px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em;}
 .case .role{font-size:13px;color:var(--muted);margin-bottom:16px;font-family:var(--mono);letter-spacing:.05em;}
@@ -351,10 +356,48 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
 @keyframes streamFly{from{transform:translateY(-20px);opacity:0;}10%{opacity:1;}90%{opacity:1;}to{transform:translateY(100vh);opacity:0;}}
 
 .splash-stage{position:relative;transform-style:preserve-3d;text-align:center;z-index:2;}
-.splash-line{display:flex;justify-content:center;gap:.02em;line-height:.9;font-family:var(--sans);font-weight:700;letter-spacing:-.02em;perspective:1200px;}
-.splash-line .l{display:inline-block;opacity:0;transform:translateZ(-300px) rotateY(60deg);}
-.splash-line.f{font-size:clamp(48px,10vw,120px);background:linear-gradient(180deg,#F4F6F0 0%,#B8BDC5 40%,#6B7280 60%,#2A303A 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 20px 40px rgba(0,0,0,.5);margin-bottom:.05em;}
-.splash-line.a{font-size:clamp(28px,5.5vw,66px);background:linear-gradient(180deg,#7FF0EA 0%,#4FE3DC 45%,#1FB5AD 100%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.06em;filter:drop-shadow(0 0 24px rgba(79,227,220,.4));}
+.splash-line{display:flex;justify-content:center;gap:.02em;line-height:.9;font-family:var(--sans);font-weight:800;letter-spacing:-.025em;perspective:1400px;transform-style:preserve-3d;}
+.splash-line .l{display:inline-block;opacity:0;transform:translateZ(-400px) rotateY(70deg);transform-style:preserve-3d;position:relative;}
+
+/* FUTURE — chrome extruded */
+.splash-line.f{font-size:clamp(56px,11vw,140px);margin-bottom:.02em;color:#F4F6F0;
+  text-shadow:
+    0 1px 0 #C9CDD5,
+    0 2px 0 #B1B6BF,
+    0 3px 0 #9AA0AB,
+    0 4px 0 #848A96,
+    0 5px 0 #6E7480,
+    0 6px 0 #5B606C,
+    0 7px 0 #4A4F5A,
+    0 8px 0 #3B4049,
+    0 9px 0 #2D323A,
+    0 10px 0 #22262C,
+    0 11px 0 #1A1D22,
+    0 12px 12px rgba(0,0,0,.45),
+    0 20px 40px rgba(0,0,0,.6),
+    0 0 60px rgba(255,255,255,.08);
+  background:linear-gradient(180deg,#FFFFFF 0%,#E4E7EB 30%,#B0B5BD 55%,#6E7480 78%,#3B4049 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+/* AUTOMOTIVE — cyan glass extruded + neon glow */
+.splash-line.a{font-size:clamp(32px,6vw,76px);letter-spacing:.04em;color:#7FF0EA;
+  text-shadow:
+    0 1px 0 #4FE3DC,
+    0 2px 0 #3FCFC8,
+    0 3px 0 #2FBAB3,
+    0 4px 0 #22A29C,
+    0 5px 0 #178A85,
+    0 6px 0 #0F726E,
+    0 7px 0 #0A5C58,
+    0 8px 0 #074845,
+    0 9px 12px rgba(79,227,220,.5),
+    0 0 24px rgba(79,227,220,.8),
+    0 0 60px rgba(79,227,220,.5),
+    0 0 100px rgba(79,227,220,.3);
+  background:linear-gradient(180deg,#DFFAF8 0%,#9FF1EC 30%,#4FE3DC 60%,#1FB5AD 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
 .splash-tag{margin-top:36px;font-family:var(--mono);font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--muted);opacity:0;display:flex;align-items:center;justify-content:center;gap:14px;}
 .splash-tag::before,.splash-tag::after{content:'';width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--cyan));}
 .splash-tag::after{background:linear-gradient(-90deg,transparent,var(--cyan));}
@@ -455,7 +498,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
 <div class="cur-ring" id="cur-ring"></div>
 
 <nav class="nav">
-  <a href="/" class="nav-brand"><img class="wm" src="assets/brand/trusaas-wordmark.png" alt="TruSaas · Future Automotive"/></a>
+  <a href="/" class="nav-brand"><img class="wm" src="assets/brand/trusaas-wordmark.png?v=3" alt="TruSaas · Future Automotive"/></a>
   <div class="nav-links">
     <a href="#stack">Modules</a>
     <a href="#cases">Case studies</a>
@@ -480,7 +523,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
     <div class="hero-glyphs">
       <span style="top:12%;left:8%;">TruLens</span>
       <span style="top:22%;left:78%;">Tru3D</span>
-      <span style="top:38%;left:14%;">TruVIR</span>
+      <span style="top:38%;left:14%;">TruInspect</span>
       <span style="top:52%;left:72%;">TruFlow</span>
       <span style="top:68%;left:20%;">TruSync</span>
       <span style="top:78%;left:66%;">TruChat</span>
@@ -574,8 +617,8 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
         <div class="mc-head"><span class="mc-layer">Capture</span><span class="mc-live"><span class="dot"></span>LIVE</span></div>
         <h3 class="mc-name">TruLens</h3>
         <p class="mc-outcome">Photograph any vehicle in 90 seconds — guided capture, auto-cropped, dealer-branded, ready for the web before the customer's out the door.</p>
-        <ul class="mc-meta"><li>Mobile-first, any phone</li><li>Feeds Tru3D + TruVIR + Showroom</li><li>Works offline, syncs later</li></ul>
-        <div class="mc-foot"><a class="mc-link" href="https://true-cars.co.za/vehicle.html" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
+        <ul class="mc-meta"><li>Mobile-first, any phone</li><li>Feeds Tru3D + TruInspect + Showroom</li><li>Works offline, syncs later</li></ul>
+        <div class="mc-foot"><a class="mc-link" href="https://lens.tru-saas.com" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
       </article>
 
       <article class="module-card reveal">
@@ -588,10 +631,10 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
 
       <article class="module-card reveal">
         <div class="mc-head"><span class="mc-layer">Condition</span><span class="mc-live"><span class="dot"></span>LIVE</span></div>
-        <h3 class="mc-name">TruVIR</h3>
+        <h3 class="mc-name">TruInspect</h3>
         <p class="mc-outcome">Virtual inspection report a buyer actually trusts — panel-by-panel, tyre depth, service history, all signed off before it hits the ad.</p>
         <ul class="mc-meta"><li>Basic (manual) &amp; AI (auto-graded) tiers</li><li>PDF export, buyer-shareable link</li><li>Doubles as trade-in appraisal</li></ul>
-        <div class="mc-foot"><a class="mc-link" href="https://true-cars.co.za/vir-report.html" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
+        <div class="mc-foot"><a class="mc-link" href="https://inspect.tru-saas.com" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
       </article>
 
     </div>
@@ -610,7 +653,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
         <h3 class="mc-name">TruFlow Lite</h3>
         <p class="mc-outcome">Inventory, leads and deal-jackets in one place. Built for the 20-to-80-unit lot that outgrew spreadsheets but doesn't want an enterprise DMS.</p>
         <ul class="mc-meta"><li>Setup in a day, not a quarter</li><li>Any device, any browser</li><li>Upgrade path to Premium, no migration</li></ul>
-        <div class="mc-foot"><a class="mc-link" href="https://true-cars.co.za/portal.html" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
+        <div class="mc-foot"><a class="mc-link" href="https://flow.tru-saas.com" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
       </article>
 
       <article class="module-card reveal">
@@ -618,7 +661,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
         <h3 class="mc-name">TruFlow Premium</h3>
         <p class="mc-outcome">The full DMS: F&amp;I workflows, multi-branch, reporting, roles &amp; permissions, audit trail. Everything the 80+ unit dealer needs to scale without hiring ops.</p>
         <ul class="mc-meta"><li>Multi-branch, multi-brand</li><li>Deep reporting + audit trail</li><li>Connects to your local F&amp;I partners</li></ul>
-        <div class="mc-foot"><a class="mc-link" href="https://true-cars.co.za/portal.html" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
+        <div class="mc-foot"><a class="mc-link" href="https://premium.tru-saas.com" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
       </article>
 
       <article class="module-card reveal">
@@ -712,7 +755,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
       </div>
       <div class="scene-stage">
         <div class="dms">
-          <div class="dms-bar"><span></span><span></span><span></span><div class="url">trusaas-premium.onrender.com / dashboard</div></div>
+          <div class="dms-bar"><span></span><span></span><span></span><div class="url">premium.tru-saas.com / dashboard</div></div>
           <div class="dms-body">
             <div class="dms-side">
               <div class="brand">TRUFLOW PREMIUM</div>
@@ -867,30 +910,39 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
   <div class="cases-grid">
 
     <article class="case reveal">
+      <a href="case-sites/cars-at-caledon/cars-on-caledon.html" target="_blank" rel="noopener" class="case-preview" aria-label="Open Cars at Caledon live site">
+        <iframe src="case-sites/cars-at-caledon/cars-on-caledon.html" scrolling="no" loading="lazy" tabindex="-1" title="Cars at Caledon preview"></iframe>
+      </a>
       <div class="case-region">Southern Cape · ZA</div>
       <h3>Cars at Caledon</h3>
       <div class="role">Rural specialist · 40–60 units</div>
       <p>Country dealer competing with city listings. TruShowroom + TruFlow Lite gave them a store buyers could scroll from Cape Town — first month, three buyers drove out to fetch cars they'd only seen in Tru3D.</p>
       <div class="case-modules"><span>TruShowroom</span><span>TruFlow Lite</span><span>TruChat</span></div>
-      <a class="case-cta" href="Current Projects/Cars at caledon/cars-on-caledon.html" target="_blank">Open live site →</a>
+      <a class="case-cta" href="case-sites/cars-at-caledon/cars-on-caledon.html" target="_blank" rel="noopener">Open live site →</a>
     </article>
 
     <article class="case reveal">
+      <a href="case-sites/MKR/index.html" target="_blank" rel="noopener" class="case-preview" aria-label="Open MKR Auto Sales live site">
+        <iframe src="case-sites/MKR/index.html" scrolling="no" loading="lazy" tabindex="-1" title="MKR Auto Sales preview"></iframe>
+      </a>
       <div class="case-region">Highveld · ZA</div>
       <h3>MKR Auto Sales</h3>
       <div class="role">Premium selection · 80+ units</div>
       <p>Small team, ambitious inventory. TruFlow Premium runs the whole floor, TruSync pushes to every marketplace, TruChat qualifies overnight leads before the sales manager's coffee.</p>
       <div class="case-modules"><span>TruFlow Premium</span><span>TruSync</span><span>TruChat</span><span>Tru3D</span></div>
-      <a class="case-cta" href="Current Projects/MKR/index.html" target="_blank">Open live site →</a>
+      <a class="case-cta" href="case-sites/MKR/index.html" target="_blank" rel="noopener">Open live site →</a>
     </article>
 
     <article class="case reveal">
+      <a href="case-sites/your-car-guy/YCG CB.html" target="_blank" rel="noopener" class="case-preview" aria-label="Open Your Car Guy live site">
+        <iframe src="case-sites/your-car-guy/YCG CB.html" scrolling="no" loading="lazy" tabindex="-1" title="Your Car Guy preview"></iframe>
+      </a>
       <div class="case-region">Metro · ZA</div>
       <h3>Your Car Guy</h3>
       <div class="role">Chatbot-first dealer · 30 units</div>
       <p>Owner-operator who lives on WhatsApp. TruShowroom + TruChat + analytics — buyers land, chat, book, done. Almost every deal starts in the AI thread before a human touches it.</p>
       <div class="case-modules"><span>TruShowroom</span><span>TruChat</span><span>Analytics</span></div>
-      <a class="case-cta" href="Current Projects/Your car guy/YCG CB.html" target="_blank">Open live site →</a>
+      <a class="case-cta" href="case-sites/your-car-guy/YCG CB.html" target="_blank" rel="noopener">Open live site →</a>
     </article>
 
   </div>
@@ -914,7 +966,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-brand">
-      <img class="wm" src="assets/brand/trusaas-wordmark.png" alt="TruSaas · Future Automotive"/>
+      <img class="wm" src="assets/brand/trusaas-wordmark.png?v=3" alt="TruSaas · Future Automotive"/>
       <p>The operating system for the modern independent dealer. Built in Cape Town. Deployed anywhere.</p>
     </div>
     <div>
@@ -1073,6 +1125,18 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
     glyphs.forEach((g,i)=>{const d=(i%3+1)*8;g.style.setProperty('--px',(x*d)+'px');g.style.setProperty('--py',(y*d)+'px');g.style.translate=`${x*d}px ${y*d}px`;});
     scene.style.setProperty('--sx',(x*10)+'px');
   });
+})();
+
+/* ── CASE PREVIEW IFRAME SCALER ──────────────────── */
+(function(){
+  const fit=()=>{
+    document.querySelectorAll('.case-preview').forEach(w=>{
+      const iframe=w.querySelector('iframe');if(!iframe)return;
+      const s=w.clientWidth/1280;
+      iframe.style.transform=`scale(${s})`;
+    });
+  };
+  addEventListener('load',fit);addEventListener('resize',fit);setTimeout(fit,400);
 })();
 
 /* ── TRUCHAT WIDGET ──────────────────────────────── */

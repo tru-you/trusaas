@@ -34,7 +34,7 @@ window.openVehicleDetail = function(car){
   var tpVerdict = !tpDelta.below
     ? "Fair market price"
     : (tpDelta.pct >= 8 ? "Great deal — " : "Good price — ") + _fmtR(tpDelta.amount) + " below TruPrice";
-  var tpColor = tpDelta.below ? "var(--ok)" : "var(--grey,#7A8494)";
+  var tpColor = tpDelta.below ? "var(--gold-light,#E2C46F)" : "var(--grey,#7A8494)";
   var mockPanels = 12, mockFindings = MOCK_DMG.length, mockRepairCost = "R "+((Math.floor((car.price%89)/89*8)+4)*100);
 
   var vdContent = document.getElementById("vdContent");

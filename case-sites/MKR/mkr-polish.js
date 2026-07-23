@@ -21,22 +21,16 @@ function decorate(){
   var grid = document.getElementById("invgrid");
   if(!grid) return;
   var cards = grid.querySelectorAll(".card:not([data-mkr-deco])");
-  var hasArrived = !!grid.querySelector(".mkr-ribbon.arrived");
   cards.forEach(function(card, i){
     card.setAttribute("data-mkr-deco","1");
     var ph = card.querySelector(".ph");
     if(!ph) return;
 
-    // deterministic status from price — stable across re-renders
-    var p = priceOf(card);
-    var h = p % 97;
-    var status = null;
-    if(h < 20) status = {cls:"arrived", txt:"Just arrived"};
-    else if(h < 33) status = {cls:"reduced", txt:"Price reduced"};
-    else if(h < 40) status = {cls:"reserved", txt:"Reserved"};
-    if(!status && !hasArrived && i === 0) status = {cls:"arrived", txt:"Just arrived"};
-    if(status){
-      if(status.cls === "arrived") hasArrived = true;
+    // Status comes from the DMS via data-status (set in MKR.dataAttrs). No data,
+    // no ribbon — labelling a car "Reserved" when it isn't is worse than silence.
+    var cls = card.getAttribute("data-status");
+    var status = cls ? {cls:cls, txt:card.getAttribute("data-status-label") || ""} : null;
+    if(status && status.txt){
       var r = document.createElement("span");
       r.className = "mkr-ribbon " + status.cls;
       r.innerHTML = "<i></i>" + status.txt;

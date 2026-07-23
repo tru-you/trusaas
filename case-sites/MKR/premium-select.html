@@ -12,6 +12,13 @@
 <meta property="og:title" content="Premium Select — MKR Auto Sales">
 <meta property="og:description" content="Polished, low-km daily drivers and family cars — VIR-minded, finance-ready, free delivery SA-wide.">
 <meta property="og:image" content="mkr-badge.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://mkrautosales.co.za/premium-select.html">
+<meta property="og:url" content="https://mkrautosales.co.za/premium-select.html">
+<meta property="og:site_name" content="MKR Auto Sales">
+<meta property="og:locale" content="en_ZA">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -259,16 +266,35 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 
 body.modal-open{overflow:hidden;}
 </style>
-<link rel="stylesheet" href="vd-upgrade.css">
-<link rel="stylesheet" href="mkr-polish.css">
-<link rel="stylesheet" href="mkr-splash.css">
+<link rel="stylesheet" href="vd-upgrade.css?v=20260723t">
+<link rel="stylesheet" href="mkr-polish.css?v=20260723t">
+<link rel="stylesheet" href="mkr-elite.css?v=20260723t">
+<link rel="stylesheet" href="mkr-book.css?v=20260723t">
+<link rel="stylesheet" href="mkr-media.css?v=20260723t">
+<link rel="stylesheet" href="mkr-glass.css?v=20260723t">
+<link rel="stylesheet" href="mkr-splash.css?v=20260723t">
+<style>
+.topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:38px;gap:12px;}
+.topbar{font-size:11px;letter-spacing:.03em;}
+@media(max-width:640px){.topbar .hide-sm{display:none;}}
+</style>
 </head>
 <body>
 
 <!-- SPLASH (video intro, once per session) -->
-<script src="mkr-splash.js"></script>
+<script src="mkr-splash.js?v=20260723t"></script>
 
 <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="wrap">
+    <span>495 Cape Road, Westering &middot; Gqeberha</span>
+    <span class="hide-sm">Mon&ndash;Fri 08:00&ndash;17:30 &middot; Sat 08:00&ndash;14:00</span>
+    <a href="tel:+27662912809">+27 66 291 2809</a>
+  </div>
+</div>
+
 
 <!-- HEADER -->
 <header class="site-header" id="siteHeader">
@@ -380,11 +406,6 @@ body.modal-open{overflow:hidden;}
 
 <!-- FAB RAIL -->
 <div class="fab-rail" id="fabRail" aria-label="Quick actions">
-  <button type="button" class="fab-btn fab-bot" id="fabBot" aria-label="Chat with MKR">
-    <span class="ring" aria-hidden="true"></span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>
-    <span class="fab-label">Chat &middot; leads</span>
-  </button>
   <a class="fab-btn" href="https://wa.me/27662912809?text=Hi%20MKR%2C%20I%27d%20like%20to%20book%20a%20test%20drive" target="_blank" rel="noopener" aria-label="Test drive">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.6A2.5 2.5 0 0 1 7 6.7h10a2.5 2.5 0 0 1 2.4 1.7L21 13v5a1 1 0 0 1-1 1h-1.2a1 1 0 0 1-1-1v-1H6.2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3.5 13h17"/><circle cx="7.2" cy="16" r="1.1"/><circle cx="16.8" cy="16" r="1.1"/></svg>
     <span class="fab-label">Book a test drive</span>
@@ -395,9 +416,14 @@ body.modal-open{overflow:hidden;}
   </a>
 </div>
 
-<script src="mkr-shared.js"></script>
-<script src="vd-upgrade.js"></script>
-<script src="mkr-polish.js" defer></script>
+<script src="mkr-shared.js?v=20260723t"></script>
+<script src="vd-upgrade.js?v=20260723t"></script>
+<script src="mkr-polish.js?v=20260723t" defer></script>
+<script src="mkr-elite.js?v=20260723t" defer></script>
+<script src="mkr-book.js?v=20260723t" defer></script>
+<script src="mkr-dock.js?v=20260723t" defer></script>
+<script src="mkr-media.js?v=20260723t" defer></script>
+<script src="mkr-glass.js?v=20260723t" defer></script>
 <script>
 const WA="27662912809";
 const CAT="select";
@@ -474,7 +500,7 @@ if(container){for(let i=0;i<18;i++){const p=document.createElement("div");p.clas
 <script src="truchat/shared/chat-core.js"></script>
 <script src="truchat/mkr/config.js"></script>
 <script>if(window.MKR_TRUCHAT_CONFIG){window.TRUECARS_TRUCHAT_CONFIG=window.MKR_TRUCHAT_CONFIG;}</script>
-<script src="truchat/true-cars/widget.js" data-bottom="24px" data-position="right" data-z="999990" defer></script>
-<script src="tru-afford.js" data-dealer="MKR Auto Sales" data-wa="27662912809" data-brand="trusaas" data-position="left" data-bottom="20px" data-z="999990" defer></script>
+<script src="truchat/true-cars/widget.js?v=5" data-bottom="24px" data-position="right" data-z="999990" defer></script>
+<script src="tru-afford.js?v=20260723t" data-dealer="MKR Auto Sales" data-wa="27662912809" data-brand="trusaas" data-position="left" data-bottom="20px" data-z="999990" defer></script>
 </body>
 </html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Ray — Leads · Your Car Guy</title>
+<style>
+  :root{--red:#e30613;--bg:#0a0b10;--card:#12141c;--line:rgba(255,255,255,.1);--muted:#94a3b8;--txt:#f8fafc;--green:#34d399}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(10,11,16,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  header .dot{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,var(--red),#9b0410);display:grid;place-items:center;font-weight:800;font-size:15px}
+  header h1{font-size:15px;margin:0;font-weight:700;letter-spacing:-.01em}
+  header .sub{font-size:11px;color:var(--muted)}
+  header .grow{flex:1}
+  button{font-family:inherit;cursor:pointer;border:none}
+  .btn{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600}
+  .btn:hover{background:rgba(255,255,255,.14)}
+  .wrap{max-width:820px;margin:0 auto;padding:16px}
+  .gate{max-width:360px;margin:14vh auto;padding:26px;background:var(--card);border:1px solid var(--line);border-radius:18px;text-align:center}
+  .gate h2{margin:0 0 6px;font-size:18px}
+  .gate p{color:var(--muted);font-size:13px;margin:0 0 18px}
+  .gate input{width:100%;padding:12px 14px;margin:6px 0;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.4);color:var(--txt);font-size:14px;outline:none}
+  .gate input:focus{border-color:rgba(227,6,19,.55)}
+  .gate .go{width:100%;margin-top:12px;background:linear-gradient(145deg,var(--red),#9b0410);color:#fff;padding:13px;border-radius:12px;font-weight:800}
+  .gate .err{color:#fca5a5;font-size:12px;min-height:16px;margin-top:8px}
+  .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .toolbar input[type=search]{flex:1;min-width:140px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.4);color:var(--txt);font-size:13px;outline:none}
+  .chip{font-size:12px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--txt)}
+  .chip.on{background:rgba(227,6,19,.22);border-color:var(--red)}
+  .count{font-size:12px;color:var(--muted)}
+  .lead{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 15px;margin-bottom:11px}
+  .lead.new{border-color:rgba(52,211,153,.4)}
+  .lead .top{display:flex;align-items:baseline;gap:8px}
+  .lead .name{font-weight:700;font-size:15px}
+  .lead .when{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+  .lead .badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border-radius:999px}
+  .badge.new{background:rgba(52,211,153,.18);color:var(--green)}
+  .badge.contacted{background:rgba(255,255,255,.08);color:var(--muted)}
+  .badge.closed{background:rgba(148,163,184,.15);color:var(--muted)}
+  .lead .row{font-size:13px;margin-top:8px;color:#cbd5e1}
+  .lead .row b{color:#fff;font-weight:600}
+  .lead .sum{font-size:12px;color:var(--muted);margin-top:8px;white-space:pre-wrap;max-height:76px;overflow:auto;border-left:2px solid var(--line);padding-left:10px}
+  .lead .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .lead .acts a,.lead .acts button{font-size:12px;font-weight:700;text-decoration:none;padding:8px 12px;border-radius:10px}
+  .wa{background:linear-gradient(145deg,#34d399,#059669);color:#042f1a}
+  .call{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--txt)}
+  .mail{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--txt)}
+  .done{background:rgba(227,6,19,.16);border:1px solid rgba(227,6,19,.4);color:#fecaca}
+  .empty{text-align:center;color:var(--muted);padding:50px 0}
+  a{color:#fca5a5}
+</style>
+</head>
+<body>
+<div id="gate" class="gate">
+  <h2>🔑 Ray — Leads</h2>
+  <p>Enter your site address and portal PIN. Saved on this device only.</p>
+  <input id="site" type="url" placeholder="https://yourcarguy.co.za" autocomplete="off" />
+  <input id="pin" type="password" placeholder="Portal PIN" autocomplete="off" />
+  <button class="go" id="enter">Open leads</button>
+  <div class="err" id="err"></div>
+</div>
+
+<div id="app" style="display:none">
+  <header>
+    <div class="dot">R</div>
+    <div>
+      <h1>Ray — Leads</h1>
+      <div class="sub" id="sub">Your Car Guy</div>
+    </div>
+    <div class="grow"></div>
+    <button class="btn" id="refresh">↻</button>
+    <button class="btn" id="csv">CSV</button>
+    <button class="btn" id="logout">Exit</button>
+  </header>
+  <div class="wrap">
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Search name, phone, car…" />
+      <button class="chip on" data-f="all">All</button>
+      <button class="chip" data-f="new">New</button>
+      <button class="chip" data-f="contacted">Contacted</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var LS = "truchat_portal_v1";
+  var state = { site: "", pin: "", leads: [], filter: "all", q: "" };
+  var $ = function (id) { return document.getElementById(id); };
+
+  function saved() { try { return JSON.parse(localStorage.getItem(LS) || "{}"); } catch (e) { return {}; } }
+  function save() { localStorage.setItem(LS, JSON.stringify({ site: state.site, pin: state.pin })); }
+
+  function api(path) {
+    return state.site.replace(/\/+$/, "") + "/wp-json/truchat/v1" + path;
+  }
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
+  function digits(s) { return String(s || "").replace(/\D/g, ""); }
+  function when(iso) {
+    var d = new Date(String(iso).replace(" ", "T"));
+    if (isNaN(d)) return iso || "";
+    return d.toLocaleString("en-ZA", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function applyBranding(b) {
+    if (!b) return;
+    if (b.color) document.documentElement.style.setProperty("--red", b.color);
+    if (b.dealer) {
+      $("sub").textContent = b.dealer;
+      document.title = "Leads · " + b.dealer;
+    }
+    if (b.logo) {
+      var dot = document.querySelector("header .dot");
+      if (dot) dot.innerHTML = '<img src="' + b.logo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block" />';
+    }
+  }
+
+  function load() {
+    return fetch(api("/leads?pin=" + encodeURIComponent(state.pin)))
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) { state.leads = j.leads || []; applyBranding(j.branding); });
+  }
+
+  function setStatus(id, status) {
+    var fd = new URLSearchParams(); fd.set("pin", state.pin); fd.set("status", status);
+    return fetch(api("/leads/" + id), { method: "POST", body: fd })
+      .then(function () {
+        var l = state.leads.filter(function (x) { return x.id == id; })[0];
+        if (l) l.status = status;
+        render();
+      });
+  }
+
+  function render() {
+    var q = state.q.toLowerCase();
+    var rows = state.leads.filter(function (l) {
+      if (state.filter !== "all" && l.status !== state.filter) return false;
+      if (!q) return true;
+      return (l.name + " " + l.phone + " " + l.email + " " + l.interest + " " + l.appointment).toLowerCase().indexOf(q) > -1;
+    });
+    $("count").textContent = rows.length + " lead" + (rows.length === 1 ? "" : "s");
+    if (!rows.length) { $("list").innerHTML = '<div class="empty">No leads to show.</div>'; return; }
+    $("list").innerHTML = rows.map(function (l) {
+      var wa = digits(l.phone), st = l.status || "new";
+      var line = l.appointment || l.interest || "";
+      return '<div class="lead ' + esc(st) + '">' +
+        '<div class="top"><span class="name">' + esc(l.name || "Unknown") + '</span>' +
+        '<span class="badge ' + esc(st) + '">' + esc(st) + '</span>' +
+        '<span class="when">' + esc(when(l.created_at)) + '</span></div>' +
+        (l.phone ? '<div class="row">📞 <b>' + esc(l.phone) + '</b></div>' : '') +
+        (l.email ? '<div class="row">✉️ ' + esc(l.email) + '</div>' : '') +
+        (line ? '<div class="row">⭐ ' + esc(line) + '</div>' : '') +
+        (l.tradein ? '<div class="row">🔄 ' + esc(l.tradein) + '</div>' : '') +
+        (l.finance == 1 ? '<div class="row">💰 Finance interest</div>' : '') +
+        (l.summary ? '<div class="sum">' + esc(l.summary) + '</div>' : '') +
+        '<div class="acts">' +
+          (wa ? '<a class="wa" href="https://wa.me/' + esc(wa) + '" target="_blank">WhatsApp</a>' : '') +
+          (l.phone ? '<a class="call" href="tel:' + esc(l.phone) + '">Call</a>' : '') +
+          (l.email ? '<a class="mail" href="mailto:' + esc(l.email) + '">Email</a>' : '') +
+          (st === "new" ? '<button class="done" data-done="' + esc(l.id) + '">Mark contacted</button>' : '') +
+        '</div></div>';
+    }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll("[data-done]"), function (b) {
+      b.onclick = function () { setStatus(b.getAttribute("data-done"), "contacted"); };
+    });
+  }
+
+  function csv() {
+    var head = ["created_at", "name", "phone", "email", "interest", "appointment", "tradein", "finance", "status"];
+    var lines = [head.join(",")].concat(state.leads.map(function (l) {
+      return head.map(function (k) { return '"' + String(l[k] == null ? "" : l[k]).replace(/"/g, '""') + '"'; }).join(",");
+    }));
+    var blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "ycg-leads.csv"; a.click();
+  }
+
+  function enter() {
+    state.site = $("site").value.trim();
+    state.pin = $("pin").value.trim();
+    if (!state.site || !state.pin) { $("err").textContent = "Site address and PIN required."; return; }
+    $("err").textContent = "Checking…";
+    load().then(function () {
+      save();
+      $("gate").style.display = "none";
+      $("app").style.display = "block";
+      render();
+    }).catch(function () { $("err").textContent = "Couldn't connect — check the address and PIN."; });
+  }
+
+  // Wire up
+  $("enter").onclick = enter;
+  $("pin").addEventListener("keydown", function (e) { if (e.key === "Enter") enter(); });
+  $("refresh").onclick = function () { load().then(render); };
+  $("csv").onclick = csv;
+  $("logout").onclick = function () { localStorage.removeItem(LS); location.reload(); };
+  $("q").addEventListener("input", function () { state.q = this.value; render(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (c) {
+    c.onclick = function () {
+      document.querySelectorAll(".chip").forEach(function (x) { x.classList.remove("on"); });
+      c.classList.add("on"); state.filter = c.getAttribute("data-f"); render();
+    };
+  });
+
+  // Auto-login if saved
+  var s = saved();
+  if (s.site && s.pin) {
+    state.site = s.site; state.pin = s.pin;
+    $("site").value = s.site; $("pin").value = s.pin;
+    load().then(function () {
+      $("gate").style.display = "none"; $("app").style.display = "block"; render();
+    }).catch(function () { /* show gate */ });
+  }
+})();
+</script>
+</body>
+</html>

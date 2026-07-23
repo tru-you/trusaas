@@ -85,9 +85,11 @@
     "--ta-ease:cubic-bezier(.22,1,.36,1);--ta-spring:cubic-bezier(.34,1.4,.64,1);",
     "font-family:Inter,system-ui,-apple-system,sans-serif;box-sizing:border-box}",
     "#" + ID + "-root *,#" + ID + "-root *::before,#" + ID + "-root *::after{box-sizing:border-box}",
-    "#" + ID + "-root{position:fixed;z-index:" + cfg.z + ";bottom:" + cfg.offsetBottom + ";",
+    // Host pages can lift the widget clear of their own sticky bottom bars by
+    // setting --ta-offset-bottom (see coc-polish.css mobile bar).
+    "#" + ID + "-root{position:fixed;z-index:" + cfg.z + ";bottom:var(--ta-offset-bottom," + cfg.offsetBottom + ");",
     cfg.position === "left" ? "left:16px;right:auto;" : "right:16px;left:auto;",
-    "display:flex;flex-direction:column;align-items:flex-end;gap:10px;max-width:min(400px,calc(100vw - 24px));pointer-events:none}",
+    "display:flex;flex-direction:column;align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + ";gap:10px;max-width:min(400px,calc(100vw - 24px));pointer-events:none}",
     "#" + ID + "-root button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}",
     "#" + ID + "-root .ta-launcher{",
     "pointer-events:auto;display:flex;align-items:center;gap:8px;padding:7px 12px 7px 7px;",
@@ -202,7 +204,7 @@
     "#" + ID + "-root .ta-foot{padding:10px 14px 12px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;",
     "font-size:10px;color:var(--ta-muted);text-align:center}",
     "#" + ID + "-root .ta-foot b{color:var(--ta-signal-bright)}",
-    "@media (max-width:420px){#" + ID + "-root{right:12px;left:12px;align-items:flex-end}",
+    "@media (max-width:420px){#" + ID + "-root{right:12px;left:12px;align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}",
     "#" + ID + "-root .ta-launcher{max-width:196px;width:auto;justify-content:flex-start}",
     "#" + ID + "-root .ta-panel{width:100%;max-height:min(76vh,600px)}}",
     "@media (prefers-reduced-motion:reduce){#" + ID + "-root *{animation:none!important;transition-duration:.01ms!important}}"

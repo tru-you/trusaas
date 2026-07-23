@@ -3,8 +3,30 @@
 (function(){
 var WA = "27618759389";
 var DEALER = "Cars on Caledon";
+var VD_LAST_FOCUS = null;   // element that opened the dialog; focus returns here
+
+/* Keep Tab inside the dialog while it is open. Without this the tab order
+   continues into the page behind the overlay, which is invisible to the user. */
+function vdTrapFocus(e){
+  if(e.key !== "Tab") return;
+  var ov = document.getElementById("vdOverlay");
+  if(!ov || !ov.classList.contains("open")) return;
+  var f = ov.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])');
+  if(!f.length) return;
+  var first = f[0], last = f[f.length - 1];
+  if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  else if(!ov.contains(document.activeElement)){ e.preventDefault(); first.focus(); }
+}
+document.addEventListener("keydown", vdTrapFocus, true);
 
 function fmtR(n){return "R"+Number(n||0).toLocaleString("en-ZA").replace(/,/g," ");}
+/* A DMS unit may have no photos yet — never paint url('') (broken/blank).
+   Falls back to the same branded navy panel the grid cards use. */
+function phStyle(img, overlay){
+  if(img) return "background-image:"+(overlay?overlay+",":"")+"url('"+img+"')";
+  return "background:radial-gradient(100% 80% at 26% 14%,rgba(46,84,190,.45),transparent 62%),linear-gradient(150deg,#0B1020 0%,#12203F 50%,#0A0F1C 100%)";
+}
 function monthly(p,d,t){d=(d==null?.1:d);t=t||72;var r=.1175/12;return Math.round(p*(1-d)*r/(1-Math.pow(1+r,-t)));}
 
 var MOCK_DMG = [
@@ -70,12 +92,12 @@ window.openVehicleDetail = function(car){
     '<div>'
     +'<div class="vd-gallery">'
     +'<div class="vd-hero-img">'
-    +'<div class="im" style="background-image:linear-gradient(180deg,transparent 60%,rgba(10,16,32,.35)),url(\''+car.img+'\')"></div>'
+    +'<div class="im" style="'+phStyle(car.img,"linear-gradient(180deg,transparent 60%,rgba(10,16,32,.35))")+'"></div>'
     +'<div class="vd-vir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.3 7.2 16.9l.9-5.4L4.2 7.7l5.4-.8z"/></svg>VIR Inspected</div>'
     +'<div class="vd-cat" style="'+catClass+'">'+(car.tag||"Featured")+'</div>'
     +'</div>'
     +'<div class="vd-thumbs">'
-    +'<div class="vd-thumb on"><div class="im" style="background-image:url(\''+car.img+'\')"></div></div>'
+    +'<div class="vd-thumb on"><div class="im" style="'+phStyle(car.img)+'"></div></div>'
     +'<div class="vd-thumb"><div class="im" style="background:linear-gradient(135deg,#16244A,#0E1730)"></div></div>'
     +'<div class="vd-thumb"><div class="im" style="background:linear-gradient(135deg,#0E1730,#16244A)"></div></div>'
     +'</div></div>'
@@ -91,7 +113,7 @@ window.openVehicleDetail = function(car){
     +'</div></div>'
     +'<div class="vd-stage" id="vdStage">'
     +'<div class="vd-tt-disc"></div><div class="vd-tt-ring"></div>'
-    +'<div class="vd-stage-car"><div class="im im-a" style="background-image:url(\''+car.img+'\')"></div><div class="im im-b" style="background-image:url(\''+car.img+'\')"></div></div>'
+    +'<div class="vd-stage-car"><div class="im im-a" style="'+phStyle(car.img)+'"></div><div class="im im-b" style="'+phStyle(car.img)+'"></div></div>'
     +'<button class="vd-tag-toggle" id="vdTagToggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg><span class="tt-off">Show tags</span><span class="tt-on" style="display:none">Hide tags</span></button>'
     +'<div class="vd-tag-pin warn" style="top:42%;left:22%" data-idx="0">!</div>'
     +'<div class="vd-tag-pin warn" style="top:55%;left:78%" data-idx="1">!</div>'
@@ -194,8 +216,28 @@ window.openVehicleDetail = function(car){
 
   ov.classList.add("open");
   ov.setAttribute("aria-hidden","false");
+  ov.setAttribute("aria-modal","true");
   document.body.classList.add("vd-lock");
   ov.scrollTop = 0;
+
+  // Remember what opened the dialog so focus can be handed back on close,
+  // then move focus in — otherwise keyboard users tab behind the overlay.
+  VD_LAST_FOCUS = document.activeElement;
+  // The overlay transitions visibility over .35s, and focus() is a no-op while
+  // the element is still visibility:hidden — so wait for the transition to land.
+  var closeBtn = ov.querySelector("#vdClose");
+  if(closeBtn){
+    var focused = false;
+    var takeFocus = function(){
+      if(focused) return;
+      if(getComputedStyle(ov).visibility === "hidden") return;
+      focused = true;
+      ov.removeEventListener("transitionend", takeFocus);
+      closeBtn.focus();
+    };
+    ov.addEventListener("transitionend", takeFocus);
+    setTimeout(takeFocus, 420);   // fallback if transitionend never fires
+  }
 
   // finance calc
   var vdDep = document.getElementById("vdDep"), vdTerm = document.getElementById("vdTerm");
@@ -288,7 +330,13 @@ window.closeVehicleDetail = function(){
   if(!ov) return;
   ov.classList.remove("open");
   ov.setAttribute("aria-hidden","true");
+  ov.removeAttribute("aria-modal");
   document.body.classList.remove("vd-lock");
+  // hand focus back to whatever opened it
+  if(VD_LAST_FOCUS && document.contains(VD_LAST_FOCUS)){
+    try{ VD_LAST_FOCUS.focus(); }catch(e){}
+  }
+  VD_LAST_FOCUS = null;
 };
 
 window.openCocBooking = function(car){
@@ -305,12 +353,15 @@ window.openCocBooking = function(car){
   bg.innerHTML='<div class="vd-booking">'
     +'<div class="vd-booking-head"><div style="display:flex;align-items:center;gap:10px"><img src="coc-mark.svg" alt=""><h3>Book a live video viewing</h3></div><span class="vd-booking-close" id="vdBookingClose">&times;</span></div>'
     +'<div class="sub">We\'ll walk this car live on video — cold start, engine bay, underbody — you direct the camera.</div>'
-    +'<div class="vd-booking-car"><div class="bk-img" style="background-image:url(\''+car.img+'\')"></div><div><div class="bk-name">'+car.yr+' '+car.make+' '+car.name+'</div><div class="bk-price">'+fmtR(car.price)+'</div></div></div>'
+    +'<div class="vd-booking-car"><div class="bk-img" style="'+phStyle(car.img)+'"></div><div><div class="bk-name">'+car.yr+' '+car.make+' '+car.name+'</div><div class="bk-price">'+fmtR(car.price)+'</div></div></div>'
     +'<div class="vd-slot-label">Select a day</div><div class="vd-slot-grid" id="vdDayGrid">'
     +slots.map(function(s,i){return '<div class="vd-slot'+(i===0?" on":"")+'" data-day="'+i+'"><div class="day">'+s.label.split(" ")[0]+'</div>'+s.label.split(" ")[1]+'</div>';}).join("")
     +'</div><div class="vd-slot-label">Select a time</div><div class="vd-slot-grid" id="vdTimeGrid">'
     +slots[0].times.map(function(t,i){return '<div class="vd-slot'+(i===0?" on":"")+'" data-time="'+t+'">'+t+'</div>';}).join("")
-    +'</div><button class="vd-booking-confirm" id="vdBookConfirm">Confirm &amp; WhatsApp</button>'
+    +'</div>'
+    +'<label class="vd-trade-opt" for="vdTradeChk"><input type="checkbox" id="vdTradeChk">'
+    +'<span><b>I have a trade-in</b> — inspect it on the same TruLive call and make me a firm offer. Offer to Purchase sent in the chat.</span></label>'
+    +'<button class="vd-booking-confirm" id="vdBookConfirm">Confirm &amp; WhatsApp</button>'
     +'<div class="vd-booking-note">You\'ll be connected to our team on WhatsApp to confirm the viewing. No charge, no obligation.</div>'
     +'</div>';
   bg.classList.add("open");
@@ -328,7 +379,10 @@ window.openCocBooking = function(car){
   bg.querySelector("#vdBookConfirm").addEventListener("click",function(){
     var dayEl=dayGrid.querySelector(".vd-slot.on"), timeEl=timeGrid.querySelector(".vd-slot.on");
     var dayTxt=dayEl?dayEl.textContent.trim():"", timeTxt=timeEl?(timeEl.dataset.time||timeEl.textContent.trim()):"";
-    var msg=encodeURIComponent("Hi "+DEALER+", I'd like to book a live video viewing of the "+car.yr+" "+car.make+" "+car.name+" ("+fmtR(car.price)+") on "+dayTxt+" at "+timeTxt+". Please confirm.");
+    var trade=bg.querySelector("#vdTradeChk");
+    var msg=encodeURIComponent("Hi "+DEALER+", I'd like to book a live video viewing of the "+car.yr+" "+car.make+" "+car.name+" ("+fmtR(car.price)+") on "+dayTxt+" at "+timeTxt+"."
+      +(trade&&trade.checked?" I also have a trade-in — please inspect it on the same TruLive call and send me a firm offer with an Offer to Purchase.":"")
+      +" Please confirm.");
     window.open("https://wa.me/"+WA+"?text="+msg,"_blank");
     bg.classList.remove("open");
   });
@@ -346,7 +400,7 @@ document.addEventListener("DOMContentLoaded",function(){
       if(l[+btn.getAttribute("data-vd")]) openVehicleDetail(l[+btn.getAttribute("data-vd")]);
       return;
     }
-    if(e.target.closest("a")||e.target.closest(".cta-row")) return;
+    if(e.target.closest("a")||e.target.closest(".cta-row")||e.target.closest(".fav-btn")) return;
     var card=e.target.closest(".card");
     if(!card) return;
     var idx=+card.getAttribute("data-idx");
