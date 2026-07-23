@@ -76,6 +76,7 @@ import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
 import WordPressIntegration from "./components/WordPressIntegration";
 import LoginSplash from "./components/LoginSplash";
+import { hasValidSession, clearSession } from "./lib/session";
 import DemoBanner from "./components/DemoBanner";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
@@ -107,10 +108,11 @@ export default function App() {
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [currentUserId, setCurrentUserId] = useState("u1");
-  const AUTH_SESSION_KEY = "truflow_premium_session";
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    () => typeof sessionStorage !== "undefined" && sessionStorage.getItem(AUTH_SESSION_KEY) === "1"
-  );
+  // Driven by the signed token, not a sessionStorage flag — a flag said "logged
+  // in" while the token was gone or expired, and every API call 401'd behind a
+  // dashboard that looked fine. The token also outlives the browser tab, which
+  // is what "keep me signed in" needs.
+  const [isLoggedIn, setIsLoggedIn] = useState(() => hasValidSession());
 
   useEffect(() => {
     console.log("isLoggedIn changed:", isLoggedIn);
@@ -321,14 +323,9 @@ export default function App() {
 
   if (!isLoggedIn) {
     return (
-      <LoginSplash
-        onLogin={() => {
-          try {
-            sessionStorage.setItem(AUTH_SESSION_KEY, "1");
-          } catch { /* ignore */ }
-          setIsLoggedIn(true);
-        }}
-      />
+      // setIsLoggedIn inline, not handleLogin — this early return runs before
+      // handleLogin is initialised further down the component body.
+      <LoginSplash onLogin={() => setIsLoggedIn(true)} />
     );
   }
 
@@ -512,20 +509,18 @@ export default function App() {
     }
   };
 
-  /** Sign out → password splash. Does not wipe inventory. */
+  /** Sign out → access-code splash. Does not wipe inventory.
+   *  Discards the token too, otherwise "sign out" left a working session
+   *  sitting in storage for the next person on a shared yard device. */
   const handleLogout = () => {
-    try {
-      sessionStorage.removeItem(AUTH_SESSION_KEY);
-    } catch { /* ignore */ }
+    clearSession();
     setSidebarOpen(false);
     setActiveSection("dashboard");
     setIsLoggedIn(false);
   };
 
+  /** LoginSplash has already exchanged the code for a token by this point. */
   const handleLogin = () => {
-    try {
-      sessionStorage.setItem(AUTH_SESSION_KEY, "1");
-    } catch { /* ignore */ }
     setIsLoggedIn(true);
   };
 

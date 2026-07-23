@@ -16,6 +16,19 @@ export type Account = {
   dealershipId?: string;
 };
 
+/** Is there a usable session? Reads the token's own expiry so a stale one
+ *  sends you to the login screen instead of a dashboard that 401s on load. */
+export function hasValidSession(): boolean {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const claims = JSON.parse(atob(token.split(".")[0].replace(/-/g, "+").replace(/_/g, "/")));
+    return !!claims.exp && claims.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
+
 export function getToken(): string {
   try {
     return localStorage.getItem(TOKEN_KEY) || "";
@@ -44,11 +57,11 @@ export function clearSession() {
 
 /** Exchange an access code for a session token. Throws with a readable
  *  message on a bad code so the login screen can show it as-is. */
-export async function login(code: string): Promise<Account> {
+export async function login(code: string, remember = true): Promise<Account> {
   const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({ code, remember }),
   });
   if (!res.ok) {
     throw new Error(res.status === 401 ? "That code isn't recognised." : "Sign-in failed. Try again.");

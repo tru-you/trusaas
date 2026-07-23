@@ -91,6 +91,9 @@ type AuthAccount = {
 type AuthStore = { secret: string; accounts: AuthAccount[] };
 
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // one working day
+// "Keep me signed in" — a yard tablet or Lance's laptop shouldn't ask for the
+// code every morning. Still bounded, so a lost device stops working eventually.
+const TOKEN_TTL_REMEMBER_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 function hashCode(code: string, salt: string): string {
   return crypto.scryptSync(code.trim(), salt, 32).toString("hex");
@@ -108,8 +111,25 @@ function generateCode(): string {
   return out; // e.g. K7P-QM4-XT9
 }
 
-function makeAccount(label: string, role: AuthAccount["role"], dealershipId?: string) {
-  const code = generateCode();
+/** A code you set yourself, if you'd rather not read a random one out of the
+ *  service log. Read once at first boot from the environment:
+ *    ADMIN_ACCESS_CODE       — master admin
+ *    DEALER_CODE_D1 / _D2    — per dealership, id uppercased
+ *  Unset means a random code is generated and printed instead. Changing the
+ *  variable later does nothing; rotate the code through the API. */
+function codeFromEnv(role: AuthAccount["role"], dealershipId?: string): string {
+  const raw =
+    role === "admin"
+      ? process.env.ADMIN_ACCESS_CODE
+      : dealershipId && process.env[`DEALER_CODE_${dealershipId.toUpperCase()}`];
+  const code = String(raw || "").trim();
+  // Too short to be worth having — fall back to a generated one rather than
+  // quietly accepting something guessable.
+  return code.length >= 6 ? code : "";
+}
+
+function makeAccount(label: string, role: AuthAccount["role"], dealershipId?: string, preset?: string) {
+  const code = preset || generateCode();
   const salt = crypto.randomBytes(16).toString("hex");
   const account: AuthAccount = {
     id: "acc_" + crypto.randomBytes(6).toString("hex"),
@@ -149,16 +169,20 @@ function ensureAuthStore(): AuthStore {
   store.secret = store.secret || crypto.randomBytes(32).toString("hex");
   const issued: string[] = [];
 
+  const note = (preset: string) => (preset ? "(set from environment)" : "");
+
   if (!store.accounts.some((a) => a.role === "admin")) {
-    const { account, code } = makeAccount("Master admin (TruSaaS)", "admin");
+    const preset = codeFromEnv("admin");
+    const { account, code } = makeAccount("Master admin (TruSaaS)", "admin", undefined, preset);
     store.accounts.push(account);
-    issued.push(`  ${account.label.padEnd(32)} ${code}`);
+    issued.push(`  ${account.label.padEnd(32)} ${preset ? "*".repeat(code.length) : code} ${note(preset)}`);
   }
   for (const d of readState().dealerships || []) {
     if (store.accounts.some((a) => a.dealershipId === d.id)) continue;
-    const { account, code } = makeAccount(d.name, "dealer", d.id);
+    const preset = codeFromEnv("dealer", d.id);
+    const { account, code } = makeAccount(d.name, "dealer", d.id, preset);
     store.accounts.push(account);
-    issued.push(`  ${account.label.padEnd(32)} ${code}`);
+    issued.push(`  ${account.label.padEnd(32)} ${preset ? "*".repeat(code.length) : code} ${note(preset)}`);
   }
 
   writeAuth(store);
@@ -172,7 +196,7 @@ function ensureAuthStore(): AuthStore {
   return store;
 }
 
-function signToken(account: AuthAccount): string {
+function signToken(account: AuthAccount, remember = false): string {
   const store = ensureAuthStore();
   const payload = Buffer.from(
     JSON.stringify({
@@ -180,7 +204,7 @@ function signToken(account: AuthAccount): string {
       dealershipId: account.dealershipId,
       role: account.role,
       label: account.label,
-      exp: Date.now() + TOKEN_TTL_MS,
+      exp: Date.now() + (remember ? TOKEN_TTL_REMEMBER_MS : TOKEN_TTL_MS),
     })
   ).toString("base64url");
   const sig = crypto.createHmac("sha256", store.secret).update(payload).digest("base64url");
@@ -254,13 +278,15 @@ function scopeToDealer<T extends { dealershipId?: string }>(rows: T[], auth: any
 
 app.post("/api/auth/login", (req, res) => {
   const code = String(req.body?.code || "").trim();
+  const remember = req.body?.remember !== false; // default on — yard devices
   const store = ensureAuthStore();
   const match = store.accounts.find((a) => hashCode(code, a.salt) === a.hash);
   if (!code || !match) {
     return res.status(401).json({ error: "Invalid code" });
   }
   res.json({
-    token: signToken(match),
+    token: signToken(match, remember),
+    expiresInDays: remember ? 30 : 0.5,
     account: { label: match.label, role: match.role, dealershipId: match.dealershipId },
   });
 });
@@ -275,12 +301,18 @@ app.post("/api/auth/codes/rotate", (req: any, res) => {
   if (req.auth?.role !== "admin") {
     return res.status(403).json({ error: "Admin only" });
   }
-  const { dealershipId, label } = req.body || {};
+  const { dealershipId, label, code: chosen } = req.body || {};
   const store = ensureAuthStore();
   const dealership = (readState().dealerships || []).find((d: any) => d.id === dealershipId);
   if (!dealership) return res.status(404).json({ error: "Unknown dealership" });
 
-  const { account, code } = makeAccount(label || dealership.name, "dealer", dealershipId);
+  // Setting your own code is allowed, within reason — a four-character code on
+  // an endpoint anyone can POST to is not a code.
+  const preset = String(chosen || "").trim();
+  if (preset && preset.length < 6) {
+    return res.status(400).json({ error: "Code must be at least 6 characters." });
+  }
+  const { account, code } = makeAccount(label || dealership.name, "dealer", dealershipId, preset);
   store.accounts = store.accounts.filter((a) => a.dealershipId !== dealershipId);
   account.rotatedAt = new Date().toISOString();
   store.accounts.push(account);

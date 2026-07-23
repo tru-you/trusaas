@@ -8,6 +8,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [remember, setRemember] = useState(true);
 
   // The code is checked by the server, which hands back a session token.
   // Nothing here can authorise anything on its own.
@@ -17,7 +18,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
     setBusy(true);
     setError('');
     try {
-      await login(password);
+      await login(password, remember);
       onLogin();
     } catch (err: any) {
       setError(err?.message || 'Sign-in failed. Try again.');
@@ -58,6 +59,15 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
             />
             <Lock className="absolute right-3 top-3.5 w-4 h-4 text-[#9DB0C6]" />
           </div>
+          <label className="flex items-center gap-2 mb-4 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="w-3.5 h-3.5 accent-[#1466E0]"
+            />
+            <span className="text-[10px] text-[#9DB0C6]">Keep me signed in on this device</span>
+          </label>
           {error && <p className="text-xs text-[#F0555A] mb-4">{error}</p>}
           <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#1466E0] hover:bg-[#1258c4] disabled:opacity-60 text-white font-bold text-sm">
             {busy ? 'Checking…' : 'Enter'}
