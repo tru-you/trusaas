@@ -31,11 +31,20 @@
   --cyan-soft:  rgba(79, 227, 220, 0.35);
   --cyan-faint: rgba(79, 227, 220, 0.08);
 
-  /* Status. Deliberately desaturated so they read as information rather than
-     competing with the accent. */
-  --success:    #4ADE9B;
-  --warning:    #E8C468;
-  --danger:     #FF6B6B;
+
+  /* Second accent — the blue from the logo. Cyan carries interactive and live
+     states; blue is for iconography and quiet emphasis, so the two never
+     compete for the same job. */
+  --blue:       #4D9BFF;
+  --blue-deep:  #1466E0;
+  --blue-faint: rgba(77, 155, 255, 0.10);
+
+  /* Status without a traffic-light palette. Good/live reads cyan, warnings
+     de-emphasise to muted text rather than shouting in yellow, and one dusty
+     red is kept purely for destructive actions and genuine errors. */
+  --success:    #4FE3DC;
+  --warning:    rgba(232, 234, 230, 0.55);
+  --danger:     #B86A6A;
 
   /* Type */
   --sans: 'Inter', system-ui, -apple-system, sans-serif;

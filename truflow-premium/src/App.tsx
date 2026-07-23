@@ -800,14 +800,14 @@ export default function App() {
                     onClick={() => navigateTo(n.id)}
                     className={`glass-nav-item flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-left relative cursor-pointer border ${
                       active
-                        ? "is-active bg-gradient-to-r from-[#22D3EE]/20 to-[#4FE3DC]/15 text-white border-[#22D3EE]/35"
+                        ? "is-active bg-[#4FE3DC]/10 text-[#E8EAE6] border-[#4FE3DC]/30"
                         : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/[0.04] border-transparent"
                     }`}
                   >
                     {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/5 rounded-r bg-[#67E8F9]" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/5 rounded-r bg-[#4FE3DC]" />
                     )}
-                    <Icon size={14} className={active ? "text-[#67E8F9]" : "text-[rgba(232,234,230,0.72)]"} />
+                    <Icon size={15} className={active ? "text-[#4FE3DC]" : "text-[#4D9BFF]"} />
                     {n.label}
                   </button>
                 );
