@@ -304,6 +304,14 @@ function scopeToDealer<T extends { dealershipId?: string }>(rows: T[], auth: any
   );
 }
 
+/** The dealership a newly created record belongs to. Taken from the session so
+ *  it can't be spoofed, and so nothing is ever written untagged — untagged
+ *  falls to the default dealership, which means it silently belongs to the
+ *  pilot dealer and vanishes from the list of whoever actually created it. */
+function ownerDealership(req: any): string | undefined {
+  return req.auth?.role === "admin" ? req.body?.dealershipId : req.auth?.dealershipId;
+}
+
 app.post("/api/auth/login", (req, res) => {
   const code = String(req.body?.code || "").trim();
   const remember = req.body?.remember !== false; // default on — yard devices
@@ -906,7 +914,7 @@ app.get("/api/tasks", (req: any, res) => {
   res.json(scopeToDealer(state.tasks, req.auth));
 });
 
-app.post("/api/tasks", (req, res) => {
+app.post("/api/tasks", (req: any, res) => {
   const state = readState();
   const newTask = {
     id: "t_" + Date.now(),
@@ -916,7 +924,8 @@ app.post("/api/tasks", (req, res) => {
     assignedUserId: req.body.assignedUserId || "u1",
     dueDate: req.body.dueDate || new Date().toISOString().slice(0, 10),
     priority: req.body.priority || "Normal",
-    status: req.body.status || "Pending"
+    status: req.body.status || "Pending",
+    dealershipId: ownerDealership(req),
   };
 
   state.tasks.unshift(newTask);
@@ -946,7 +955,7 @@ app.get("/api/invoices", (req: any, res) => {
   res.json(scopeToDealer(state.invoices, req.auth));
 });
 
-app.post("/api/invoices", (req, res) => {
+app.post("/api/invoices", (req: any, res) => {
   const state = readState();
   const newInvoice = {
     id: "inv_" + Date.now(),
@@ -958,7 +967,8 @@ app.post("/api/invoices", (req, res) => {
     chargeDescription: req.body.chargeDescription || "",
     paymentMethod: req.body.paymentMethod || "Bank Transfer",
     status: req.body.status || "Sent",
-    dueDate: req.body.dueDate || new Date().toISOString().slice(0, 10)
+    dueDate: req.body.dueDate || new Date().toISOString().slice(0, 10),
+    dealershipId: ownerDealership(req),
   };
 
   state.invoices.unshift(newInvoice);
@@ -984,7 +994,7 @@ app.get("/api/agreements", (req: any, res) => {
   res.json(scopeToDealer(state.agreements, req.auth));
 });
 
-app.post("/api/agreements", (req, res) => {
+app.post("/api/agreements", (req: any, res) => {
   const state = readState();
   const newAgreement = {
     id: "agr_" + Date.now(),
@@ -994,7 +1004,8 @@ app.post("/api/agreements", (req, res) => {
     purchasePrice: parseFloat(req.body.purchasePrice) || 0,
     depositAmount: parseFloat(req.body.depositAmount) || 0,
     type: req.body.type || "Vehicle Sale",
-    status: req.body.status || "Pending Signature"
+    status: req.body.status || "Pending Signature",
+    dealershipId: ownerDealership(req),
   };
 
   state.agreements.unshift(newAgreement);
@@ -1025,9 +1036,14 @@ app.get("/api/documents", (req: any, res) => {
   res.json(scopeToDealer(state.documents || [], req.auth));
 });
 
-app.post("/api/documents", (req, res) => {
+app.post("/api/documents", (req: any, res) => {
   const state = readState();
-  const { fileName, mimeType, fileData, leadId, vehicleId, dealershipId } = req.body || {};
+  const { fileName, mimeType, fileData, leadId, vehicleId } = req.body || {};
+  // Take the dealership from the session, not the request. Untagged documents
+  // fall to the default dealership, so a dealer's own uploads disappeared from
+  // their list the moment scoping was switched on.
+  const dealershipId =
+    req.auth?.role === "admin" ? req.body?.dealershipId : req.auth?.dealershipId;
   if (!fileName || !fileData) {
     return res.status(400).json({ error: "fileName and fileData are required" });
   }
@@ -1040,7 +1056,7 @@ app.post("/api/documents", (req, res) => {
     uploadedAt: new Date().toISOString(),
     leadId: leadId || undefined,
     vehicleId: vehicleId || undefined,
-    dealershipId: dealershipId || undefined,
+    dealershipId,
   };
   if (!state.documents) state.documents = [];
   state.documents.unshift(newDoc);
@@ -1082,7 +1098,7 @@ app.get("/api/expenses", (req: any, res) => {
   res.json(scopeToDealer(state.expenses || [], req.auth));
 });
 
-app.post("/api/expenses", (req, res) => {
+app.post("/api/expenses", (req: any, res) => {
   const state = readState();
   const newExpense = {
     id: "exp_" + Date.now(),
@@ -1091,7 +1107,8 @@ app.post("/api/expenses", (req, res) => {
     date: req.body.date || new Date().toISOString().slice(0, 10),
     category: req.body.category || "Operations",
     referenceId: req.body.referenceId || "",
-    reconciled: req.body.reconciled || false
+    reconciled: req.body.reconciled || false,
+    dealershipId: ownerDealership(req),
   };
 
   if (!state.expenses) state.expenses = [];
@@ -1135,7 +1152,7 @@ app.get("/api/communications", (req: any, res) => {
   res.json(scopeToDealer(state.communications, req.auth));
 });
 
-app.post("/api/communications", (req, res) => {
+app.post("/api/communications", (req: any, res) => {
   const state = readState();
   const newComm = {
     id: "c_" + Date.now(),
@@ -1144,7 +1161,8 @@ app.post("/api/communications", (req, res) => {
     subject: req.body.subject || "Follow-up discussion",
     content: req.body.content || "",
     sentBy: req.body.sentBy || "Marc van der Merwe",
-    sentAt: new Date().toISOString().slice(0, 10)
+    sentAt: new Date().toISOString().slice(0, 10),
+    dealershipId: ownerDealership(req),
   };
 
   state.communications.unshift(newComm);

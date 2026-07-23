@@ -415,7 +415,6 @@ export default function App() {
       items: [
         { id: "leads", label: "Lead CRM", icon: Users },
         { id: "tasks", label: "Tasks", icon: CheckSquare },
-        { id: "documents", label: "Documents", icon: FileText },
         { id: "accounting_recon", label: "Finance & Recon", icon: Receipt },
       ]
     },
@@ -474,7 +473,7 @@ export default function App() {
     loadAllState();
   };
 
-  const handleUploadDocument = async (doc: { fileName: string; mimeType: string; fileData: string }) => {
+  const handleUploadDocument = async (doc: { fileName: string; mimeType: string; fileData: string; leadId?: string; vehicleId?: string }) => {
     await uploadDocument({ ...doc, dealershipId });
     loadAllState();
   };
@@ -1934,16 +1933,6 @@ export default function App() {
         )}
 
         {/* INVOICES SECTION */}
-        {activeSection === "documents" && (
-          <DocumentsHub
-            documents={filteredDocuments}
-            getLeadLabel={getLeadLabel}
-            getVehicleLabel={getVehicleLabel}
-            onUpload={handleUploadDocument}
-            onSign={handleSignDocument}
-            onDelete={handleDeleteDocument}
-          />
-        )}
 
         {activeSection === "invoices" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
@@ -3023,6 +3012,18 @@ export default function App() {
           allTasks={state.tasks}
           onClose={() => setLeadDetailId(null)}
           onRefresh={loadAllState}
+          documentsPanel={
+            <DocumentsHub
+              embedded
+              leadId={leadDetailId}
+              documents={filteredDocuments.filter((d) => d.leadId === leadDetailId)}
+              getLeadLabel={getLeadLabel}
+              getVehicleLabel={getVehicleLabel}
+              onUpload={handleUploadDocument}
+              onSign={handleSignDocument}
+              onDelete={handleDeleteDocument}
+            />
+          }
         />
       )}
 
@@ -3033,6 +3034,18 @@ export default function App() {
           onClose={() => setSelectedDetailVehicle(null)}
           onUpdateVehicle={handleUpdateVehicle}
           settings={state.settings}
+          documentsPanel={
+            <DocumentsHub
+              embedded
+              vehicleId={selectedDetailVehicle.id}
+              documents={filteredDocuments.filter((d) => d.vehicleId === selectedDetailVehicle.id)}
+              getLeadLabel={getLeadLabel}
+              getVehicleLabel={getVehicleLabel}
+              onUpload={handleUploadDocument}
+              onSign={handleSignDocument}
+              onDelete={handleDeleteDocument}
+            />
+          }
         />
       )}
 

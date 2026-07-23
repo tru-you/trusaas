@@ -12,6 +12,8 @@ interface LeadDetailModalProps {
   allTasks: Task[];
   onClose: () => void;
   onRefresh: () => void;
+  /** Documents filed against this lead — the buyer's side of the paperwork. */
+  documentsPanel?: React.ReactNode;
 }
 
 export default function LeadDetailModal({
@@ -22,6 +24,7 @@ export default function LeadDetailModal({
   allTasks,
   onClose,
   onRefresh,
+  documentsPanel,
 }: LeadDetailModalProps) {
   const [lead, setLead] = useState<Lead | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "journey" | "comm" | "history" | "tasks" | "finance">("overview");
@@ -992,7 +995,22 @@ export default function LeadDetailModal({
           )}
 
           {activeTab === "finance" && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 animate-in fade-in duration-150">
+            <div className="flex flex-col gap-5 animate-in fade-in duration-150">
+
+              {/* This buyer's paperwork. Same upload + e-sign flow the standalone
+                  Documents screen used, now filed against the lead it belongs to. */}
+              {documentsPanel && (
+                <div className="card !bg-[#0f1826]/1">
+                  <div className="card-body p-4 flex flex-col gap-2">
+                    <div className="text-[10px] font-bold text-[#C9A24B] uppercase tracking-wider font-mono border-b border-white/5 pb-2">
+                      Documents for this buyer
+                    </div>
+                    {documentsPanel}
+                  </div>
+                </div>
+              )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
               
               {/* LEFT COLUMN: CONTROLS & SELECTION (5 COLS) */}
               <div className="lg:col-span-5 flex flex-col gap-4">
@@ -1170,6 +1188,7 @@ export default function LeadDetailModal({
                 )}
               </div>
 
+            </div>
             </div>
           )}
         </div>

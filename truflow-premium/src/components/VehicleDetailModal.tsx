@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 
 interface VehicleDetailModalProps {
+  /** Documents filed against this vehicle, rendered as its own tab. */
+  documentsPanel?: React.ReactNode;
   vehicle: Vehicle;
   isOpen: boolean;
   onClose: () => void;
@@ -37,14 +39,14 @@ interface VehicleDetailModalProps {
   settings?: any;
 }
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, settings }: VehicleDetailModalProps) {
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, settings, documentsPanel}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showMobileSimulator, setShowMobileSimulator] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Elite DMS States
-  const [activeTab, setActiveTab] = useState<"specs" | "inspection" | "recon" | "syndication">("specs");
+  const [activeTab, setActiveTab] = useState<"specs" | "inspection" | "recon" | "syndication" | "docs">("specs");
   const [newReconName, setNewReconName] = useState("");
   const [newReconCost, setNewReconCost] = useState("");
 
@@ -292,6 +294,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 <Grid size={11} /> Specs
               </button>
               <button
+                onClick={() => setActiveTab("docs")}
+                className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                  activeTab === "docs" ? "bg-[#1466E0] text-white shadow-md" : "text-[#9DB0C6] hover:text-[#9DB0C6]"
+                }`}
+              >
+                <FileText size={11} /> Docs
+              </button>
+              <button
                 onClick={() => setActiveTab("inspection")}
                 className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
                   activeTab === "inspection" ? "bg-[#1466E0] text-white shadow-md" : "text-[#9DB0C6] hover:text-[#9DB0C6]"
@@ -438,6 +448,12 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     className="hidden"
                   />
                 </div>
+              </div>
+            )}
+
+            {activeTab === "docs" && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                {documentsPanel}
               </div>
             )}
 

@@ -9,9 +9,23 @@ interface DocumentsHubProps {
   documents: DealerDocument[];
   getLeadLabel?: (id: string) => string;
   getVehicleLabel?: (id: string) => string;
-  onUpload: (file: { fileName: string; mimeType: string; fileData: string }) => Promise<void>;
+  onUpload: (file: {
+    fileName: string;
+    mimeType: string;
+    fileData: string;
+    leadId?: string;
+    vehicleId?: string;
+  }) => Promise<void>;
   onSign: (id: string, signature: string, signedBy: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  /** Attach anything uploaded here to this vehicle and/or lead. Set when the
+   *  hub is embedded in a record, so a signed OTP files itself against the car
+   *  and the buyer instead of landing in an undifferentiated pile. */
+  vehicleId?: string;
+  leadId?: string;
+  /** Embedded in a record rather than shown as its own screen: drops the page
+   *  heading and tightens the spacing. */
+  embedded?: boolean;
 }
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15MB — data URLs bloat data.json fast
@@ -31,7 +45,7 @@ function formatDate(iso?: string) {
   }
 }
 
-export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel, onUpload, onSign, onDelete }: DocumentsHubProps) {
+export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel, onUpload, onSign, onDelete, vehicleId, leadId, embedded }: DocumentsHubProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -56,7 +70,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
         reader.onerror = () => reject(reader.error);
         reader.readAsDataURL(file);
       });
-      await onUpload({ fileName: file.name, mimeType: file.type || "application/octet-stream", fileData });
+      await onUpload({ fileName: file.name, mimeType: file.type || "application/octet-stream", fileData, vehicleId, leadId });
     } catch (err) {
       console.error(err);
       alert("Could not upload that file. Please try again.");
@@ -166,15 +180,22 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+    <div className={`flex flex-col ${embedded ? "gap-3" : "gap-6"} animate-in fade-in duration-200`}>
       <div className="flex justify-between items-center gap-4 flex-wrap">
-        <div>
-          <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Documents</h1>
-          <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">
-            Upload any document your dealership needs — agreements, disclosures, RICA forms, your own templates —
-            then capture a signature on it.
+        {embedded ? (
+          <p className="text-[10px] text-[#9DB0C6] max-w-[300px] leading-relaxed">
+            Anything uploaded here files itself against this record — offers, disclosures,
+            signed agreements — and can be signed in place.
           </p>
-        </div>
+        ) : (
+          <div>
+            <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Documents</h1>
+            <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">
+              Upload any document your dealership needs — agreements, disclosures, RICA forms, your own templates —
+              then capture a signature on it.
+            </p>
+          </div>
+        )}
         <label className={`btn btn-primary flex items-center gap-2 cursor-pointer ${uploading ? "opacity-60 pointer-events-none" : ""}`}>
           <Upload size={14} />
           {uploading ? "Uploading…" : "Upload document"}
@@ -192,9 +213,11 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
       </div>
 
       <div className="card">
-        <div className="card-header border-b border-white/5 px-4 py-3">
-          <h3 className="font-semibold text-sm">Uploaded Documents</h3>
-        </div>
+        {!embedded && (
+          <div className="card-header border-b border-white/5 px-4 py-3">
+            <h3 className="font-semibold text-sm">Uploaded Documents</h3>
+          </div>
+        )}
         <div className="card-body p-0 overflow-x-auto">
           {documents.length === 0 ? (
             <div className="py-10 px-4 text-center text-xs text-[#9DB0C6]">
