@@ -76,12 +76,16 @@ export async function login(code: string, remember = true): Promise<Account> {
   return data.account as Account;
 }
 
+/** Fired when the server rejects our token, so the app can show the login
+ *  screen. Deliberately not a page reload: a background poll that 401s would
+ *  reload, mount, poll, 401 and reload again — the screen just flashes. */
+export const SESSION_EXPIRED_EVENT = "truflow:session-expired";
+
 /**
  * fetch() with the session token attached.
  *
- * A 401 means the token expired or was revoked, so the session is cleared and
- * the page reloads to the login screen rather than leaving the UI in a broken
- * half-loaded state.
+ * A 401 means the token expired or was revoked. The session is cleared and an
+ * event is raised; React unmounts to the login screen on its own.
  */
 export async function authFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
   const token = getToken();
@@ -90,9 +94,11 @@ export async function authFetch(input: RequestInfo | URL, init: RequestInit = {}
 
   const res = await fetch(input, { ...init, headers });
 
-  if (res.status === 401) {
+  if (res.status === 401 && getToken()) {
     clearSession();
-    if (typeof window !== "undefined") window.location.reload();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+    }
   }
   return res;
 }

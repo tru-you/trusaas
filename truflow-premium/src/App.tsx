@@ -80,7 +80,7 @@ import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
 import WordPressIntegration from "./components/WordPressIntegration";
 import LoginSplash from "./components/LoginSplash";
-import { hasValidSession, clearSession } from "./lib/session";
+import { hasValidSession, clearSession, SESSION_EXPIRED_EVENT } from "./lib/session";
 import DemoBanner from "./components/DemoBanner";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
@@ -128,7 +128,18 @@ export default function App() {
   }, [isLoggedIn]);
 
   useEffect(() => {
-    if (isLoggedIn) refreshSeats();
+    // Calls the API directly rather than refreshSeats(): that is a const
+    // declared further down, past the `if (!state)` early return, so on the
+    // loading render it is still in the temporal dead zone and this effect
+    // crashed the whole app with "Cannot access 'refreshSeats' before
+    // initialization".
+    if (!isLoggedIn) return;
+    fetchSeats()
+      .then((data) => {
+        setSeats(data.seats);
+        setActiveSeats(data.activeSeats);
+      })
+      .catch(() => setSeats([]));
   }, [isLoggedIn]);
 
   // --- Derived State ---
@@ -317,6 +328,10 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Everything below hits authenticated endpoints. Running it while signed
+    // out produced a 401 on a 15s timer, which used to reload the page — so the
+    // login screen mounted, polled, 401'd and reloaded, over and over.
+    if (!isLoggedIn) return;
     loadAllState();
     // When you come back to this tab after exporting from TruLens, reload photos
     const onFocus = () => {
@@ -334,6 +349,13 @@ export default function App() {
       window.removeEventListener("focus", onFocus);
       window.clearInterval(poll);
     };
+  }, [isLoggedIn]);
+
+  // Token rejected by the server — drop to the login screen without reloading.
+  useEffect(() => {
+    const onExpired = () => setIsLoggedIn(false);
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
   }, []);
 
   if (!isLoggedIn) {
