@@ -168,7 +168,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
           <p style="color:#666;font-size:12px;margin:0 0 24px">Uploaded ${formatDate(doc.uploadedAt)}</p>
           ${previewHtml}
           <div style="margin-top:24px;border-top:1px solid #ddd;padding-top:16px">
-            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Signature</div>
+            <div style="font-size:11px;color:#666;text-transform:;letter-spacing:.05em;margin-bottom:6px">Signature</div>
             ${sigHtml}
             ${doc.signedBy ? `<div style="font-size:12px;color:#333;margin-top:8px">Signed by ${doc.signedBy} on ${formatDate(doc.signedAt)}</div>` : ""}
           </div>
@@ -183,14 +183,14 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
     <div className={`flex flex-col ${embedded ? "gap-3" : "gap-6"} animate-in fade-in duration-200`}>
       <div className="flex justify-between items-center gap-4 flex-wrap">
         {embedded ? (
-          <p className="text-[10px] text-[#9DB0C6] max-w-[300px] leading-relaxed">
+          <p className="text-[13px] text-[rgba(232,234,230,0.72)] max-w-[300px] leading-relaxed">
             Anything uploaded here files itself against this record — offers, disclosures,
             signed agreements — and can be signed in place.
           </p>
         ) : (
           <div>
-            <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Documents</h1>
-            <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">
+            <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Documents</h1>
+            <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
               Upload any document your dealership needs — agreements, disclosures, RICA forms, your own templates —
               then capture a signature on it.
             </p>
@@ -220,13 +220,13 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
         )}
         <div className="card-body p-0 overflow-x-auto">
           {documents.length === 0 ? (
-            <div className="py-10 px-4 text-center text-xs text-[#9DB0C6]">
+            <div className="py-10 px-4 text-center text-xs text-[rgba(232,234,230,0.72)]">
               No documents uploaded yet. Tap <b>Upload document</b> to add the first one.
             </div>
           ) : (
             <table className="w-full text-xs text-left border-collapse min-w-[700px]">
               <thead>
-                <tr className="border-b border-white/5 text-[#9DB0C6] uppercase tracking-wider text-[9px] bg-[#0f1826]/1">
+                <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
                   <th className="py-2.5 px-4 font-bold">File</th>
                   <th className="py-2.5 px-4 font-bold">Linked to</th>
                   <th className="py-2.5 px-4 font-bold">Uploaded</th>
@@ -242,15 +242,15 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                     doc.vehicleId && getVehicleLabel ? getVehicleLabel(doc.vehicleId) : null,
                   ].filter(Boolean).join(" · ") || "—";
                   return (
-                    <tr key={doc.id} className="border-b border-white/3 hover:bg-[#0f1826]/1">
-                      <td className="py-3 px-4 font-semibold text-[#E8EEF6] flex items-center gap-2">
-                        <Icon size={14} className="text-[#9DB0C6] shrink-0" /> {doc.fileName}
+                    <tr key={doc.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
+                      <td className="py-3 px-4 font-semibold text-[#E8EAE6] flex items-center gap-2">
+                        <Icon size={14} className="text-[rgba(232,234,230,0.72)] shrink-0" /> {doc.fileName}
                       </td>
                       <td className="py-3 px-4">{linked}</td>
-                      <td className="py-3 px-4 font-mono text-[10px]">{formatDate(doc.uploadedAt)}</td>
+                      <td className="py-3 px-4 font-mono text-[13px]">{formatDate(doc.uploadedAt)}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
-                          doc.status === "Signed" ? "bg-[#35C46B]/15 text-[#35C46B]" : "bg-[#F5A623]/15 text-[#F5A623]"
+                        <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                          doc.status === "Signed" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : "bg-[#F5A623]/15 text-[#F5A623]"
                         }`}>
                           {doc.status}
                         </span>
@@ -258,7 +258,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                       <td className="py-3 px-4 text-right flex justify-end gap-1.5">
                         <button
                           onClick={() => { setActiveDocId(doc.id); setTypedName(""); }}
-                          className="px-4 py-1.5 bg-[#1466E0] hover:bg-[#1466E0]/90 text-white rounded-lg text-[10px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                          className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
                         >
                           {doc.status === "Signed" ? "View" : "View & Sign"}
                         </button>
@@ -269,7 +269,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                               if (activeDocId === doc.id) setActiveDocId(null);
                             }
                           }}
-                          className="p-1.5 text-[#9DB0C6] hover:text-red-400 rounded hover:bg-white/5 cursor-pointer"
+                          className="p-1.5 text-[rgba(232,234,230,0.72)] hover:text-red-400 rounded hover:bg-white/5 cursor-pointer"
                           title="Delete document"
                         >
                           <Trash2 size={13} />
@@ -288,20 +288,20 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
         <div className="card">
           <div className="card-header border-b border-white/5 px-4 py-3 flex justify-between items-center">
             <h3 className="font-semibold text-sm flex items-center gap-2">
-              <FileText size={14} className="text-[#9DB0C6]" /> {activeDoc.fileName}
+              <FileText size={14} className="text-[rgba(232,234,230,0.72)]" /> {activeDoc.fileName}
             </h3>
             <div className="flex items-center gap-2">
-              <button onClick={() => handlePrint(activeDoc)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-[#E8EEF6] cursor-pointer">
+              <button onClick={() => handlePrint(activeDoc)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-[13px] font-bold text-[#E8EAE6] cursor-pointer">
                 <Printer size={12} /> Print
               </button>
               <a
                 href={activeDoc.fileData}
                 download={activeDoc.fileName}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-[#E8EEF6] cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-[13px] font-bold text-[#E8EAE6] cursor-pointer"
               >
                 <Download size={12} /> Download
               </a>
-              <button onClick={() => setActiveDocId(null)} className="p-1.5 text-[#9DB0C6] hover:text-white rounded hover:bg-white/5 cursor-pointer">
+              <button onClick={() => setActiveDocId(null)} className="p-1.5 text-[rgba(232,234,230,0.72)] hover:text-white rounded hover:bg-white/5 cursor-pointer">
                 <X size={14} />
               </button>
             </div>
@@ -325,8 +325,8 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
             {/* Sign / Signed */}
             <div className="flex flex-col gap-3">
               {activeDoc.status === "Signed" ? (
-                <div className="rounded-lg border border-[#35C46B]/30 bg-[#35C46B]/10 p-4 flex flex-col gap-3">
-                  <div className="flex items-center gap-2 text-[#35C46B] font-bold text-xs uppercase tracking-wider">
+                <div className="rounded-lg border border-[#4ADE9B]/30 bg-[#4ADE9B]/10 p-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-[#4ADE9B] font-bold text-xs tracking-normal">
                     <Check size={14} /> Signed
                   </div>
                   <div className="bg-white rounded-lg p-3 flex items-center justify-center min-h-[80px]">
@@ -338,26 +338,26 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                       <img src={activeDoc.signature} alt="Signature" className="max-h-16 object-contain" />
                     )}
                   </div>
-                  <p className="text-[11px] text-[#9DB0C6]">
-                    Signed by <b className="text-[#E8EEF6]">{activeDoc.signedBy}</b> on {formatDate(activeDoc.signedAt)}
+                  <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                    Signed by <b className="text-[#E8EAE6]">{activeDoc.signedBy}</b> on {formatDate(activeDoc.signedAt)}
                   </p>
                 </div>
               ) : (
-                <div className="rounded-lg border border-white/10 bg-[#0f1826]/40 p-4 flex flex-col gap-3">
-                  <div className="flex items-center gap-2 text-[#F5A623] font-bold text-xs uppercase tracking-wider">
+                <div className="rounded-lg border border-white/10 bg-[#0B0F17]/40 p-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-[#F5A623] font-bold text-xs tracking-normal">
                     <PenLine size={14} /> Capture signature
                   </div>
 
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setSignMode("draw")}
-                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer ${signMode === "draw" ? "bg-[#1466E0] text-white" : "bg-white/5 text-[#9DB0C6]"}`}
+                      className={`flex-1 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer ${signMode === "draw" ? "bg-[#4FE3DC] text-white" : "bg-white/5 text-[rgba(232,234,230,0.72)]"}`}
                     >
                       Draw
                     </button>
                     <button
                       onClick={() => setSignMode("type")}
-                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer ${signMode === "type" ? "bg-[#1466E0] text-white" : "bg-white/5 text-[#9DB0C6]"}`}
+                      className={`flex-1 py-1.5 rounded-lg text-[13px] font-bold cursor-pointer ${signMode === "type" ? "bg-[#4FE3DC] text-white" : "bg-white/5 text-[rgba(232,234,230,0.72)]"}`}
                     >
                       Type name
                     </button>
@@ -380,7 +380,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                           onTouchEnd={stopDrawing}
                         />
                       </div>
-                      <button onClick={clearCanvas} className="flex items-center gap-1.5 self-start px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-[#9DB0C6] cursor-pointer">
+                      <button onClick={clearCanvas} className="flex items-center gap-1.5 self-start px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-[13px] font-bold text-[rgba(232,234,230,0.72)] cursor-pointer">
                         <RotateCcw size={12} /> Clear
                       </button>
                       <input
@@ -388,7 +388,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                         value={typedName}
                         onChange={(e) => setTypedName(e.target.value)}
                         placeholder="Signee's full name (for the record)"
-                        className="bg-[#0f1826] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-[#5a6b82] focus:outline-none focus:border-[#1466E0]"
+                        className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-[#5a6b82] focus:outline-none focus:border-[#4FE3DC]"
                       />
                     </>
                   ) : (
@@ -397,7 +397,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                       value={typedName}
                       onChange={(e) => setTypedName(e.target.value)}
                       placeholder="Type full name to sign"
-                      className="bg-[#0f1826] border border-white/10 rounded-lg px-3 py-3 text-sm text-white placeholder-[#5a6b82] focus:outline-none focus:border-[#1466E0]"
+                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-3 text-sm text-white placeholder-[#5a6b82] focus:outline-none focus:border-[#4FE3DC]"
                       style={{ fontFamily: "cursive" }}
                     />
                   )}
@@ -405,7 +405,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                   <button
                     onClick={handleSignSubmit}
                     disabled={submitting}
-                    className="mt-1 py-2.5 bg-[#35C46B] hover:bg-[#35C46B]/90 text-white rounded-lg text-[11px] font-bold uppercase tracking-wider cursor-pointer disabled:opacity-50"
+                    className="mt-1 py-2.5 bg-[#4ADE9B] hover:bg-[#4ADE9B]/90 text-white rounded-lg text-[13px] font-bold tracking-normal cursor-pointer disabled:opacity-50"
                   >
                     {submitting ? "Saving…" : "Save Signature"}
                   </button>

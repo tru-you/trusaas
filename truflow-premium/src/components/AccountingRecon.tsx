@@ -292,20 +292,20 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <FileSpreadsheet className="text-[#15C7C0]" size={20} />
+            <FileSpreadsheet className="text-[#4FE3DC]" size={20} />
             TrueCar DMS Accounting & Reconditioning Hub
           </h2>
-          <p className="text-xs text-[#9DB0C6] mt-1">
+          <p className="text-xs text-[rgba(232,234,230,0.72)] mt-1">
             Real-time Profit & Loss Ledger, Expense Audits, Refurbishment Cost Trackers, and Bank Statement Reconciliation.
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex bg-[#0f1826] border border-white/5 p-1 rounded-xl">
+        <div className="flex bg-[#0B0F17] border border-white/5 p-1 rounded-xl">
           <button
             onClick={() => setActiveTab("pl")}
             className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeTab === "pl" ? "bg-gradient-to-r from-[#1466E0] to-[#15C7C0] text-white" : "text-[#9DB0C6] hover:text-[#E8EEF6]"
+              activeTab === "pl" ? "bg-gradient-to-r from-[#4FE3DC] to-[#4FE3DC] text-white" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
             }`}
           >
             <Activity size={13} />
@@ -314,7 +314,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <button
             onClick={() => setActiveTab("recon")}
             className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeTab === "recon" ? "bg-gradient-to-r from-[#1466E0] to-[#15C7C0] text-white" : "text-[#9DB0C6] hover:text-[#E8EEF6]"
+              activeTab === "recon" ? "bg-gradient-to-r from-[#4FE3DC] to-[#4FE3DC] text-white" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
             }`}
           >
             <Wrench size={13} />
@@ -323,7 +323,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <button
             onClick={() => setActiveTab("bank")}
             className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeTab === "bank" ? "bg-gradient-to-r from-[#1466E0] to-[#15C7C0] text-white" : "text-[#9DB0C6] hover:text-[#E8EEF6]"
+              activeTab === "bank" ? "bg-gradient-to-r from-[#4FE3DC] to-[#4FE3DC] text-white" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
             }`}
           >
             <Sliders size={13} />
@@ -337,36 +337,36 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
           {/* Executive KPI Grid */}
           <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-[#0f1826]/60 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5">
-              <span className="text-[10px] text-[#9DB0C6] uppercase font-bold tracking-wider">Showroom Sales Revenue</span>
-              <span className="text-lg font-mono text-[#35C46B] font-bold">{formatZAR(revenueFromSales)}</span>
-              <span className="text-[9px] text-[#9DB0C6] flex items-center gap-1"><ArrowUpRight size={10} className="text-[#35C46B]" /> From paid invoices</span>
+            <div className="bg-[#0B0F17]/60 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5">
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Showroom Sales Revenue</span>
+              <span className="text-lg font-mono text-[#4ADE9B] font-bold">{formatZAR(revenueFromSales)}</span>
+              <span className="text-[12px] text-[rgba(232,234,230,0.72)] flex items-center gap-1"><ArrowUpRight size={10} className="text-[#4ADE9B]" /> From paid invoices</span>
             </div>
             
-            <div className="bg-[#0f1826]/60 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5">
-              <span className="text-[10px] text-[#9DB0C6] uppercase font-bold tracking-wider">Cost of Sales (COGS)</span>
-              <span className="text-lg font-mono text-[#F0555A] font-bold">{formatZAR(totalCostOfSales)}</span>
-              <span className="text-[9px] text-[#9DB0C6]">Units cost + Complete Recon</span>
+            <div className="bg-[#0B0F17]/60 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5">
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Cost of Sales (COGS)</span>
+              <span className="text-lg font-mono text-[#FF6B6B] font-bold">{formatZAR(totalCostOfSales)}</span>
+              <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Units cost + Complete Recon</span>
             </div>
 
-            <div className="bg-[#0f1826]/60 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5">
-              <span className="text-[10px] text-[#9DB0C6] uppercase font-bold tracking-wider">Gross Profit Margin</span>
+            <div className="bg-[#0B0F17]/60 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5">
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Gross Profit Margin</span>
               <span className="text-lg font-mono text-white font-bold">{formatZAR(grossProfit)}</span>
-              <span className="text-[9px] text-[#15C7C0] font-semibold">{grossMarginPercentage.toFixed(1)}% Gross Margin</span>
+              <span className="text-[12px] text-[#4FE3DC] font-semibold">{grossMarginPercentage.toFixed(1)}% Gross Margin</span>
             </div>
 
-            <div className="bg-[#0f1826]/60 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5">
-              <span className="text-[10px] text-[#9DB0C6] uppercase font-bold tracking-wider">Showroom Expenditures</span>
-              <span className="text-lg font-mono text-[#F0555A] font-bold">{formatZAR(totalOperatingExpenses)}</span>
-              <span className="text-[9px] text-[#9DB0C6]">Marketing, rent & operations</span>
+            <div className="bg-[#0B0F17]/60 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5">
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Showroom Expenditures</span>
+              <span className="text-lg font-mono text-[#FF6B6B] font-bold">{formatZAR(totalOperatingExpenses)}</span>
+              <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Marketing, rent & operations</span>
             </div>
 
-            <div className="bg-gradient-to-br from-[#1466E0]/10 to-[#15C7C0]/10 border border-[#1466E0]/20 rounded-xl p-4 flex flex-col gap-1.5 col-span-2 md:col-span-1">
-              <span className="text-[10px] text-[#15C7C0] uppercase font-black tracking-wider">Showroom Net Income</span>
-              <span className={`text-lg font-mono font-bold ${netProfit >= 0 ? "text-[#35C46B]" : "text-[#F0555A]"}`}>
+            <div className="bg-gradient-to-br from-[#4FE3DC]/10 to-[#4FE3DC]/10 border border-[#4FE3DC]/20 rounded-xl p-4 flex flex-col gap-1.5 col-span-2 md:col-span-1">
+              <span className="text-[13px] text-[#4FE3DC]  font-semibold tracking-wider">Showroom Net Income</span>
+              <span className={`text-lg font-mono font-bold ${netProfit >= 0 ? "text-[#4ADE9B]" : "text-[#FF6B6B]"}`}>
                 {formatZAR(netProfit)}
               </span>
-              <span className="text-[9px] text-[#9DB0C6]">Bottom-line performance</span>
+              <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Bottom-line performance</span>
             </div>
           </div>
 
@@ -374,10 +374,10 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <div className="lg:col-span-2 card p-5 flex flex-col gap-4">
             <div className="flex justify-between items-center">
               <h3 className="font-bold text-sm text-white flex items-center gap-1.5">
-                <Briefcase size={14} className="text-[#1466E0]" />
+                <Briefcase size={14} className="text-[#4FE3DC]" />
                 Showroom Expenditure Ledger
               </h3>
-              <span className="text-[10px] font-mono bg-[#0f1826]/5 px-2.5 py-1 rounded-full text-[#9DB0C6]">
+              <span className="text-[13px] font-mono bg-[#0B0F17]/5 px-2.5 py-1 rounded-full text-[rgba(232,234,230,0.72)]">
                 {state.expenses?.length || 0} Registered Debits
               </span>
             </div>
@@ -385,40 +385,40 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-white/5 text-[#9DB0C6]">
-                    <th className="pb-2.5 font-bold uppercase tracking-wider text-[10px]">Date</th>
-                    <th className="pb-2.5 font-bold uppercase tracking-wider text-[10px]">Description</th>
-                    <th className="pb-2.5 font-bold uppercase tracking-wider text-[10px]">Category</th>
-                    <th className="pb-2.5 font-bold uppercase tracking-wider text-[10px]">Reference</th>
-                    <th className="pb-2.5 font-bold uppercase tracking-wider text-[10px] text-right">Amount</th>
-                    <th className="pb-2.5 font-bold uppercase tracking-wider text-[10px] text-center">Audit Status</th>
+                  <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)]">
+                    <th className="pb-2.5 font-bold tracking-normal text-[13px]">Date</th>
+                    <th className="pb-2.5 font-bold tracking-normal text-[13px]">Description</th>
+                    <th className="pb-2.5 font-bold tracking-normal text-[13px]">Category</th>
+                    <th className="pb-2.5 font-bold tracking-normal text-[13px]">Reference</th>
+                    <th className="pb-2.5 font-bold tracking-normal text-[13px] text-right">Amount</th>
+                    <th className="pb-2.5 font-bold tracking-normal text-[13px] text-center">Audit Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {(state.expenses || []).map((e) => (
-                    <tr key={e.id} className="hover:bg-[#0f1826]/1 transition-all group">
-                      <td className="py-3 font-mono text-[11px] text-[#9DB0C6]">{e.date}</td>
+                    <tr key={e.id} className="hover:bg-[#0B0F17]/1 transition-all group">
+                      <td className="py-3 font-mono text-[13px] text-[rgba(232,234,230,0.72)]">{e.date}</td>
                       <td className="py-3 text-white font-semibold">
                         {e.description}
                       </td>
                       <td className="py-3">
-                        <span className="bg-[#0f1826]/5 border border-white/5 text-[10px] text-[#9DB0C6] px-2 py-0.5 rounded">
+                        <span className="bg-[#0B0F17]/5 border border-white/5 text-[13px] text-[rgba(232,234,230,0.72)] px-2 py-0.5 rounded">
                           {e.category}
                         </span>
                       </td>
-                      <td className="py-3 font-mono text-[10px] text-[#9DB0C6]">
+                      <td className="py-3 font-mono text-[13px] text-[rgba(232,234,230,0.72)]">
                         {e.referenceId ? e.referenceId : "Showroom Direct"}
                       </td>
-                      <td className="py-3 text-right font-mono font-bold text-white group-hover:text-[#F0555A] transition-all">
+                      <td className="py-3 text-right font-mono font-bold text-white group-hover:text-[#FF6B6B] transition-all">
                         {formatZAR(e.amount)}
                       </td>
                       <td className="py-3 text-center">
                         {e.reconciled ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] bg-[#35C46B]/10 text-[#35C46B] border border-[#35C46B]/20 font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] bg-[#4ADE9B]/10 text-[#4ADE9B] border border-[#4ADE9B]/20 font-bold">
                             <Check size={8} /> Reconciled
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] bg-[#F0555A]/10 text-[#F0555A] border border-[#F0555A]/20 font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] bg-[#FF6B6B]/10 text-[#FF6B6B] border border-[#FF6B6B]/20 font-bold">
                             <AlertCircle size={8} /> Unreconciled
                           </span>
                         )}
@@ -427,7 +427,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                   ))}
                   {(!state.expenses || state.expenses.length === 0) && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-[#9DB0C6] italic">
+                      <td colSpan={6} className="py-8 text-center text-[rgba(232,234,230,0.72)] italic">
                         No custom operating expenses registered. Use the panel on the right to log showroom overheads.
                       </td>
                     </tr>
@@ -438,42 +438,42 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           </div>
 
           {/* Log Expense Form */}
-          <div className="card p-5 flex flex-col gap-4 bg-gradient-to-b from-[#0f1826]/60 to-[#070e18]/60">
+          <div className="card p-5 flex flex-col gap-4 bg-gradient-to-b from-[#0B0F17]/60 to-[#070e18]/60">
             <div>
               <h3 className="font-bold text-sm text-white">Log Operating Expense</h3>
-              <p className="text-[11px] text-[#9DB0C6] mt-0.5">Register rent, cleaning services, marketing spend, or utility overheads.</p>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Register rent, cleaning services, marketing spend, or utility overheads.</p>
             </div>
 
             <form onSubmit={handleAddExpenseSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-[#9DB0C6] uppercase">Description / Payee</label>
+                <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] ">Description / Payee</label>
                 <input
                   type="text"
                   placeholder="e.g. Randburg Car Polishers"
                   value={expenseForm.description}
                   onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#0f1826] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#15C7C0]"
+                  className="w-full px-3 py-2 bg-[#0B0F17] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#4FE3DC]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-[#9DB0C6] uppercase">Amount (ZAR)</label>
+                  <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] ">Amount (ZAR)</label>
                   <input
                     type="number"
                     placeholder="R 4500"
                     value={expenseForm.amount}
                     onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0f1826] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#15C7C0] font-mono"
+                    className="w-full px-3 py-2 bg-[#0B0F17] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#4FE3DC] font-mono"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-[#9DB0C6] uppercase">Category</label>
+                  <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] ">Category</label>
                   <select
                     value={expenseForm.category}
                     onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0f1826] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#15C7C0]"
+                    className="w-full px-3 py-2 bg-[#0B0F17] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#4FE3DC]"
                   >
                     <option value="Rent">Rent / Lease</option>
                     <option value="Marketing">Marketing / Ads</option>
@@ -488,30 +488,30 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-[#9DB0C6] uppercase">Transaction Date</label>
+                  <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] ">Transaction Date</label>
                   <input
                     type="date"
                     value={expenseForm.date}
                     onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0f1826] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#15C7C0] font-mono"
+                    className="w-full px-3 py-2 bg-[#0B0F17] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#4FE3DC] font-mono"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-[#9DB0C6] uppercase">Asset Stock ID (Optional)</label>
+                  <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] ">Asset Stock ID (Optional)</label>
                   <input
                     type="text"
                     placeholder="e.g. PE-1042"
                     value={expenseForm.referenceId}
                     onChange={(e) => setExpenseForm({ ...expenseForm, referenceId: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#0f1826] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#15C7C0] font-mono"
+                    className="w-full px-3 py-2 bg-[#0B0F17] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#4FE3DC] font-mono"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2 bg-[#1466E0] text-white hover:bg-opacity-80 transition-all font-bold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer mt-2"
+                className="w-full py-2 bg-[#4FE3DC] text-white hover:bg-opacity-80 transition-all font-bold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer mt-2"
               >
                 <Plus size={14} /> Commit Expense Entry
               </button>
@@ -527,7 +527,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <div className="card p-5 flex flex-col gap-4">
             <div>
               <h3 className="font-bold text-sm text-white">Select Refurbishment Target</h3>
-              <p className="text-[11px] text-[#9DB0C6] mt-0.5">Choose a vehicle below to view or manage active reconditioning tasks.</p>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Choose a vehicle below to view or manage active reconditioning tasks.</p>
             </div>
 
             <div className="flex flex-col gap-2 max-h-[450px] overflow-y-auto">
@@ -543,16 +543,16 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     onClick={() => setSelectedVehicleId(v.id)}
                     className={`p-3 text-left border rounded-xl flex justify-between items-center transition-all cursor-pointer ${
                       isSelected 
-                        ? "bg-[#1466E0]/15 border-[#1466E0]/50 text-white" 
-                        : "bg-[#0f1826]/1 border-white/5 text-[#9DB0C6] hover:bg-[#0f1826]/3"
+                        ? "bg-[#4FE3DC]/15 border-[#4FE3DC]/50 text-white" 
+                        : "bg-[#0B0F17]/1 border-white/5 text-[rgba(232,234,230,0.72)] hover:bg-[#0B0F17]/3"
                     }`}
                   >
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs font-black truncate">{v.year} {v.make} {v.model}</span>
-                      <div className="flex items-center gap-2 text-[10px]">
-                        <span className="font-mono text-[#9DB0C6] uppercase">{v.stockNumber}</span>
+                      <span className="text-xs font-semibold truncate">{v.year} {v.make} {v.model}</span>
+                      <div className="flex items-center gap-2 text-[13px]">
+                        <span className="font-mono text-[rgba(232,234,230,0.72)] ">{v.stockNumber}</span>
                         {totalTasksCount > 0 && (
-                          <span className="text-[#15C7C0] font-semibold">
+                          <span className="text-[#4FE3DC] font-semibold">
                             {completedTasks}/{totalTasksCount} Complete
                           </span>
                         )}
@@ -560,7 +560,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     </div>
                     <div className="text-right flex flex-col gap-0.5">
                       <span className="text-xs font-mono font-bold text-white">{formatZAR(totalRecon)}</span>
-                      <span className="text-[9px] text-[#9DB0C6]">Recon Overhead</span>
+                      <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Recon Overhead</span>
                     </div>
                   </button>
                 );
@@ -577,13 +577,13 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     <h3 className="font-bold text-sm text-white">
                       Refurbishment Tasks: {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
                     </h3>
-                    <p className="text-[11px] text-[#9DB0C6] mt-0.5">
-                      Stock: <span className="font-mono text-white">{selectedVehicle.stockNumber}</span> | Internal Cost: <span className="text-[#15C7C0]">{formatZAR(selectedVehicle.costPrice)}</span>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
+                      Stock: <span className="font-mono text-white">{selectedVehicle.stockNumber}</span> | Internal Cost: <span className="text-[#4FE3DC]">{formatZAR(selectedVehicle.costPrice)}</span>
                     </p>
                   </div>
-                  <div className="bg-[#0f1826] border border-white/5 rounded-xl px-4 py-2 flex flex-col items-end">
-                    <span className="text-[10px] text-[#9DB0C6] uppercase font-bold tracking-wider">Total Refurbishment Overhead</span>
-                    <span className="text-sm font-mono font-bold text-[#15C7C0]">{formatZAR(totalReconSpent)}</span>
+                  <div className="bg-[#0B0F17] border border-white/5 rounded-xl px-4 py-2 flex flex-col items-end">
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Total Refurbishment Overhead</span>
+                    <span className="text-sm font-mono font-bold text-[#4FE3DC]">{formatZAR(totalReconSpent)}</span>
                   </div>
                 </div>
 
@@ -591,18 +591,18 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                   {/* Task List Workspace */}
                   <div className="md:col-span-2 flex flex-col gap-4">
                     <div className="flex justify-between items-center">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#9DB0C6]">Task Register</h4>
+                      <h4 className="text-xs font-bold tracking-normal text-[rgba(232,234,230,0.72)]">Task Register</h4>
                     </div>
 
                     <div className="flex flex-col gap-2.5 max-h-[300px] overflow-y-auto">
                       {reconTasks.map((task) => (
                         <div
                           key={task.id}
-                          className="bg-[#0f1826]/40 border border-white/5 rounded-xl p-3.5 flex justify-between items-center group hover:border-[#1466E0]/20 transition-all"
+                          className="bg-[#0B0F17]/40 border border-white/5 rounded-xl p-3.5 flex justify-between items-center group hover:border-[#4FE3DC]/20 transition-all"
                         >
                           <div className="flex flex-col gap-1">
                             <span className="text-xs font-semibold text-white">{task.name}</span>
-                            <div className="flex items-center gap-2 text-[10px] text-[#9DB0C6]">
+                            <div className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)]">
                               <span>Logged: {task.dateAdded}</span>
                               <span>•</span>
                               <span className="font-bold text-white">{formatZAR(task.cost)}</span>
@@ -614,14 +614,14 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                               <button
                                 key={st}
                                 onClick={() => toggleReconTaskStatus(selectedVehicle.id, task.id, st)}
-                                className={`px-2 py-1 text-[9px] font-black tracking-wider uppercase rounded-md transition-all cursor-pointer ${
+                                className={`px-2 py-1 text-[12px] font-semibold tracking-wider  rounded-md transition-all cursor-pointer ${
                                   task.status === st
                                     ? st === "Completed"
-                                      ? "bg-[#35C46B]/20 text-[#35C46B] border border-[#35C46B]/30"
+                                      ? "bg-[#4ADE9B]/20 text-[#4ADE9B] border border-[#4ADE9B]/30"
                                       : st === "In Progress"
-                                      ? "bg-[#1466E0]/20 text-[#1466E0] border border-[#1466E0]/30"
-                                      : "bg-[#F0555A]/20 text-[#F0555A] border border-[#F0555A]/30"
-                                    : "bg-[#0f1826]/3 text-[#9DB0C6] border border-transparent hover:text-[#E8EEF6]"
+                                      ? "bg-[#4FE3DC]/20 text-[#4FE3DC] border border-[#4FE3DC]/30"
+                                      : "bg-[#FF6B6B]/20 text-[#FF6B6B] border border-[#FF6B6B]/30"
+                                    : "bg-[#0B0F17]/3 text-[rgba(232,234,230,0.72)] border border-transparent hover:text-[#E8EAE6]"
                                 }`}
                               >
                                 {st === "In Progress" ? "Active" : st}
@@ -632,51 +632,51 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                       ))}
 
                       {reconTasks.length === 0 && (
-                        <div className="flex flex-col items-center justify-center p-8 text-center text-[#9DB0C6] bg-[#0f1826]/1 border border-dashed border-white/5 rounded-xl">
-                          <Wrench size={24} className="mb-2 text-[#9DB0C6]" />
+                        <div className="flex flex-col items-center justify-center p-8 text-center text-[rgba(232,234,230,0.72)] bg-[#0B0F17]/1 border border-dashed border-white/5 rounded-xl">
+                          <Wrench size={24} className="mb-2 text-[rgba(232,234,230,0.72)]" />
                           <p className="text-xs italic">No active or historic refurbishment records found for this unit.</p>
-                          <p className="text-[10px] mt-0.5">Use the adjacent form to record dings, detailing, safety audits or mechanical maintenance.</p>
+                          <p className="text-[13px] mt-0.5">Use the adjacent form to record dings, detailing, safety audits or mechanical maintenance.</p>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Add Recon Task Form */}
-                  <div className="bg-[#0f1826]/40 border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+                  <div className="bg-[#0B0F17]/40 border border-white/5 rounded-xl p-4 flex flex-col gap-3">
                     <div>
-                      <h4 className="text-xs font-bold text-white uppercase tracking-wider">Log Refurbishment Task</h4>
-                      <p className="text-[10px] text-[#9DB0C6] mt-0.5">Adds directly to vehicle ledger overhead index.</p>
+                      <h4 className="text-xs font-bold text-white tracking-normal">Log Refurbishment Task</h4>
+                      <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Adds directly to vehicle ledger overhead index.</p>
                     </div>
 
                     <form onSubmit={handleAddReconSubmit} className="flex flex-col gap-2.5">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] font-bold uppercase">Task Name / Vendor</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)] font-bold ">Task Name / Vendor</label>
                         <input
                           type="text"
                           placeholder="e.g. Dent Out Panelbeaters"
                           value={reconForm.name}
                           onChange={(e) => setReconForm({ ...reconForm, name: e.target.value })}
-                          className="w-full px-2.5 py-1.5 bg-[#0f1826] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#15C7C0]"
+                          className="w-full px-2.5 py-1.5 bg-[#0B0F17] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#4FE3DC]"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] font-bold uppercase">Repair Overhead Cost (ZAR)</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)] font-bold ">Repair Overhead Cost (ZAR)</label>
                         <input
                           type="number"
                           placeholder="R 3500"
                           value={reconForm.cost}
                           onChange={(e) => setReconForm({ ...reconForm, cost: e.target.value })}
-                          className="w-full px-2.5 py-1.5 bg-[#0f1826] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#15C7C0] font-mono"
+                          className="w-full px-2.5 py-1.5 bg-[#0B0F17] border border-white/5 rounded-lg text-xs text-white outline-none focus:border-[#4FE3DC] font-mono"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <label className="text-[9px] text-[#9DB0C6] font-bold uppercase">Current Workflow Stage</label>
+                        <label className="text-[12px] text-[rgba(232,234,230,0.72)] font-bold ">Current Workflow Stage</label>
                         <select
                           value={reconForm.status}
                           onChange={(e) => setReconForm({ ...reconForm, status: e.target.value as any })}
-                          className="w-full px-2.5 py-1.5 bg-[#0f1826] border border-white/5 rounded-lg text-xs text-white outline-none"
+                          className="w-full px-2.5 py-1.5 bg-[#0B0F17] border border-white/5 rounded-lg text-xs text-white outline-none"
                         >
                           <option value="Pending">Pending Audit</option>
                           <option value="In Progress">Active Repair</option>
@@ -686,7 +686,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
                       <button
                         type="submit"
-                        className="w-full py-2 bg-[#15C7C0] hover:bg-opacity-80 text-[#070e18] font-extrabold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer mt-1"
+                        className="w-full py-2 bg-[#4FE3DC] hover:bg-opacity-80 text-[#070e18] font-semibold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer mt-1"
                       >
                         <Plus size={12} /> Log Refurbishment
                       </button>
@@ -695,7 +695,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                 </div>
               </>
             ) : (
-              <div className="py-12 text-center text-[#9DB0C6]">
+              <div className="py-12 text-center text-[rgba(232,234,230,0.72)]">
                 No vehicles available to recondition.
               </div>
             )}
@@ -715,30 +715,30 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
               onDrop={handleDropStatementFile}
               className={`md:col-span-2 border border-dashed rounded-xl p-5 flex flex-col items-center justify-center text-center transition-all relative ${
                 dragActive 
-                  ? "border-[#15C7C0] bg-[#15C7C0]/5" 
+                  ? "border-[#4FE3DC] bg-[#4FE3DC]/5" 
                   : "border-white/10 hover:border-white/20 bg-black/20"
               }`}
             >
               {statementUploading ? (
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <RefreshCw className="animate-spin text-[#15C7C0] mb-1" size={24} />
-                  <span className="text-xs font-bold text-white font-mono uppercase tracking-wide">Scanning Statement Document...</span>
-                  <span className="text-[10px] font-mono text-[#9DB0C6]">Parsing rows, mapping credits, filtering debits...</span>
+                  <RefreshCw className="animate-spin text-[#4FE3DC] mb-1" size={24} />
+                  <span className="text-xs font-bold text-white font-mono  tracking-wide">Scanning Statement Document...</span>
+                  <span className="text-[13px] font-mono text-[rgba(232,234,230,0.72)]">Parsing rows, mapping credits, filtering debits...</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center gap-1.5">
-                  <Sliders className="text-[#1466E0] mb-1" size={24} />
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                  <Sliders className="text-[#4FE3DC] mb-1" size={24} />
+                  <span className="text-xs font-bold text-white tracking-normal">
                     {statementName ? `Statement File: "${statementName}"` : "Drag & Drop Bank Statement (PDF, CSV, OFX)"}
                   </span>
-                  <p className="text-[10px] text-[#9DB0C6] leading-normal max-w-md">
+                  <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-normal max-w-md">
                     {statementName 
                       ? "File successfully parsed. Transaction rows are updated in the feed below. Match with showroom ledgers to clear balances."
                       : "We never connect directly to your live bank accounts for maximum security. Simply upload your export file to reconcile instantly."}
                   </p>
                   
                   <div className="flex gap-2 items-center mt-1">
-                    <label className="px-3 py-1.5 bg-[#1466E0] hover:bg-opacity-80 text-white font-bold text-[9px] rounded-lg transition-all cursor-pointer uppercase">
+                    <label className="px-3 py-1.5 bg-[#4FE3DC] hover:bg-opacity-80 text-white font-bold text-[12px] rounded-lg transition-all cursor-pointer ">
                       Select Statement File
                       <input
                         type="file"
@@ -765,10 +765,10 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             </div>
 
             {/* Quick Demo Statement Loaders */}
-            <div className="bg-[#0f1826]/40 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
+            <div className="bg-[#0B0F17]/40 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
               <div>
-                <h4 className="text-[10px] font-black text-[#15C7C0] uppercase tracking-wider">Select Example Statements</h4>
-                <p className="text-[9px] text-[#9DB0C6] mt-0.5 leading-relaxed">
+                <h4 className="text-[13px] font-semibold text-[#4FE3DC] tracking-normal">Select Example Statements</h4>
+                <p className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5 leading-relaxed">
                   Click any standard template below to instantly load and test offline statement parsing.
                 </p>
               </div>
@@ -776,35 +776,35 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
               <div className="space-y-2 mt-3">
                 <button
                   onClick={() => handleLoadStatementTemplate("fnb", "FNB_Corporate_July2026.csv")}
-                  className="w-full p-2 bg-[#0f1826]/3 hover:bg-white/5 border border-white/5 rounded-lg text-left text-[10px] text-white flex justify-between items-center transition-all cursor-pointer"
+                  className="w-full p-2 bg-[#0B0F17]/3 hover:bg-white/5 border border-white/5 rounded-lg text-left text-[13px] text-white flex justify-between items-center transition-all cursor-pointer"
                 >
                   <div className="flex flex-col">
                     <span className="font-bold">FNB Commercial Account</span>
-                    <span className="text-[8px] text-[#9DB0C6]">7 Transactions parsed</span>
+                    <span className="text-[12px] text-[rgba(232,234,230,0.72)]">7 Transactions parsed</span>
                   </div>
-                  <ChevronRight size={12} className="text-[#9DB0C6]" />
+                  <ChevronRight size={12} className="text-[rgba(232,234,230,0.72)]" />
                 </button>
 
                 <button
                   onClick={() => handleLoadStatementTemplate("nedbank", "Nedbank_DealerStatement.pdf")}
-                  className="w-full p-2 bg-[#0f1826]/3 hover:bg-white/5 border border-white/5 rounded-lg text-left text-[10px] text-white flex justify-between items-center transition-all cursor-pointer"
+                  className="w-full p-2 bg-[#0B0F17]/3 hover:bg-white/5 border border-white/5 rounded-lg text-left text-[13px] text-white flex justify-between items-center transition-all cursor-pointer"
                 >
                   <div className="flex flex-col">
                     <span className="font-bold">Nedbank Business Ledger</span>
-                    <span className="text-[8px] text-[#9DB0C6]">5 Transactions parsed</span>
+                    <span className="text-[12px] text-[rgba(232,234,230,0.72)]">5 Transactions parsed</span>
                   </div>
-                  <ChevronRight size={12} className="text-[#9DB0C6]" />
+                  <ChevronRight size={12} className="text-[rgba(232,234,230,0.72)]" />
                 </button>
 
                 <button
                   onClick={() => handleLoadStatementTemplate("standard", "StandardBank_Main_July.ofx")}
-                  className="w-full p-2 bg-[#0f1826]/3 hover:bg-white/5 border border-white/5 rounded-lg text-left text-[10px] text-white flex justify-between items-center transition-all cursor-pointer"
+                  className="w-full p-2 bg-[#0B0F17]/3 hover:bg-white/5 border border-white/5 rounded-lg text-left text-[13px] text-white flex justify-between items-center transition-all cursor-pointer"
                 >
                   <div className="flex flex-col">
                     <span className="font-bold">Standard Bank Showroom</span>
-                    <span className="text-[8px] text-[#9DB0C6]">4 Transactions parsed</span>
+                    <span className="text-[12px] text-[rgba(232,234,230,0.72)]">4 Transactions parsed</span>
                   </div>
-                  <ChevronRight size={12} className="text-[#9DB0C6]" />
+                  <ChevronRight size={12} className="text-[rgba(232,234,230,0.72)]" />
                 </button>
               </div>
             </div>
@@ -813,8 +813,8 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           {/* Left Column: Showroom Ledger Entries (unreconciled expenses and invoices) */}
           <div className="lg:col-span-6 card p-5 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-2">
-              <h3 className="font-bold text-xs text-[#9DB0C6] uppercase tracking-wider">1. Showroom Ledger Entries</h3>
-              <span className="text-[9px] bg-[#F0555A]/10 text-[#F0555A] font-bold px-2 py-0.5 rounded border border-[#F0555A]/20">Reconciliation Required</span>
+              <h3 className="font-bold text-xs text-[rgba(232,234,230,0.72)] tracking-normal">1. Showroom Ledger Entries</h3>
+              <span className="text-[12px] bg-[#FF6B6B]/10 text-[#FF6B6B] font-bold px-2 py-0.5 rounded border border-[#FF6B6B]/20">Reconciliation Required</span>
             </div>
 
             <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1">
@@ -825,20 +825,20 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                   onClick={() => setSelectedLedgerId(selectedLedgerId === e.id ? null : e.id)}
                   className={`p-3.5 rounded-xl border text-left flex justify-between items-center transition-all cursor-pointer ${
                     selectedLedgerId === e.id
-                      ? "bg-[#1466E0]/15 border-[#1466E0] text-white"
-                      : "bg-[#0f1826]/1 border-white/5 hover:bg-[#0f1826]/3 text-[#9DB0C6]"
+                      ? "bg-[#4FE3DC]/15 border-[#4FE3DC] text-white"
+                      : "bg-[#0B0F17]/1 border-white/5 hover:bg-[#0B0F17]/3 text-[rgba(232,234,230,0.72)]"
                   }`}
                 >
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-white truncate">{e.description}</span>
-                    <div className="flex items-center gap-1.5 text-[10px]">
-                      <span className="bg-[#0f1826]/5 px-2 py-0.5 rounded text-[#9DB0C6] text-[9px] uppercase font-bold">{e.category}</span>
-                      <span className="text-[#9DB0C6]">Date: {e.date}</span>
+                    <div className="flex items-center gap-1.5 text-[13px]">
+                      <span className="bg-[#0B0F17]/5 px-2 py-0.5 rounded text-[rgba(232,234,230,0.72)] text-[12px]  font-bold">{e.category}</span>
+                      <span className="text-[rgba(232,234,230,0.72)]">Date: {e.date}</span>
                     </div>
                   </div>
                   <div className="text-right flex flex-col gap-1">
-                    <span className="text-xs font-mono font-bold text-[#F0555A]">{formatZAR(-e.amount)}</span>
-                    <span className="text-[9px] text-[#9DB0C6]">Internal Debit</span>
+                    <span className="text-xs font-mono font-bold text-[#FF6B6B]">{formatZAR(-e.amount)}</span>
+                    <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Internal Debit</span>
                   </div>
                 </button>
               ))}
@@ -847,21 +847,21 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
               {state.invoices.filter(i => i.status === 'Sent').map((inv) => (
                 <div
                   key={inv.id}
-                  className="p-3.5 rounded-xl border border-white/5 text-left flex justify-between items-center bg-[#0f1826]/1 opacity-60"
+                  className="p-3.5 rounded-xl border border-white/5 text-left flex justify-between items-center bg-[#0B0F17]/1 opacity-60"
                 >
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs font-semibold text-[#9DB0C6] truncate">Invoice {inv.invoiceNumber}</span>
-                    <span className="text-[10px] text-[#9DB0C6]">Sent to {getVehicleLabel(inv.vehicleId)}</span>
+                    <span className="text-xs font-semibold text-[rgba(232,234,230,0.72)] truncate">Invoice {inv.invoiceNumber}</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Sent to {getVehicleLabel(inv.vehicleId)}</span>
                   </div>
                   <div className="text-right flex flex-col gap-1">
-                    <span className="text-xs font-mono font-bold text-[#35C46B]">{formatZAR(inv.amount)}</span>
-                    <span className="text-[9px] text-[#9DB0C6]">Awaiting Deposit</span>
+                    <span className="text-xs font-mono font-bold text-[#4ADE9B]">{formatZAR(inv.amount)}</span>
+                    <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Awaiting Deposit</span>
                   </div>
                 </div>
               ))}
 
               {state.expenses?.filter(e => !e.reconciled).length === 0 && (
-                <div className="py-12 text-center text-[#9DB0C6] italic text-xs">
+                <div className="py-12 text-center text-[rgba(232,234,230,0.72)] italic text-xs">
                   All logged showroom expenditures are reconciled with FNB feed. Outstanding.
                 </div>
               )}
@@ -871,8 +871,8 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           {/* Right Column: Live Bank Feed Simulation */}
           <div className="lg:col-span-6 card p-5 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-2">
-              <h3 className="font-bold text-xs text-[#9DB0C6] uppercase tracking-wider">2. Live Corporate Bank Feed</h3>
-              <span className="text-[9px] bg-emerald-500/10 text-[#35C46B] font-mono px-2 py-0.5 rounded border border-[#35C46B]/20 font-bold">FNB SANDTON FEED SECURE</span>
+              <h3 className="font-bold text-xs text-[rgba(232,234,230,0.72)] tracking-normal">2. Live Corporate Bank Feed</h3>
+              <span className="text-[12px] bg-emerald-500/10 text-[#4ADE9B] font-mono px-2 py-0.5 rounded border border-[#4ADE9B]/20 font-bold">FNB SANDTON FEED SECURE</span>
             </div>
 
             <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1">
@@ -883,31 +883,31 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                   onClick={() => setSelectedBankTxId(selectedBankTxId === tx.id ? null : tx.id)}
                   className={`p-3.5 rounded-xl border text-left flex justify-between items-center transition-all ${
                     tx.matched
-                      ? "bg-[#0f1826]/1 border-white/3 opacity-45 cursor-not-allowed"
+                      ? "bg-[#0B0F17]/1 border-white/3 opacity-45 cursor-not-allowed"
                       : selectedBankTxId === tx.id
-                      ? "bg-[#15C7C0]/15 border-[#15C7C0] text-white cursor-pointer"
-                      : "bg-[#0f1826]/1 border-white/5 hover:bg-[#0f1826]/3 text-[#9DB0C6] cursor-pointer"
+                      ? "bg-[#4FE3DC]/15 border-[#4FE3DC] text-white cursor-pointer"
+                      : "bg-[#0B0F17]/1 border-white/5 hover:bg-[#0B0F17]/3 text-[rgba(232,234,230,0.72)] cursor-pointer"
                   }`}
                 >
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-bold text-white tracking-tight leading-none truncate">{tx.sender}</span>
-                    <div className="flex items-center gap-1.5 text-[9px] text-[#9DB0C6] mt-1">
+                    <div className="flex items-center gap-1.5 text-[12px] text-[rgba(232,234,230,0.72)] mt-1">
                       <span>{tx.date}</span>
                       <span>•</span>
-                      <span className="uppercase font-mono">{tx.type}</span>
+                      <span className=" font-mono">{tx.type}</span>
                     </div>
                   </div>
 
                   <div className="text-right flex flex-col items-end gap-1">
-                    <span className={`text-xs font-mono font-black ${tx.amount > 0 ? "text-[#35C46B]" : "text-[#F0555A]"}`}>
+                    <span className={`text-xs font-mono font-semibold ${tx.amount > 0 ? "text-[#4ADE9B]" : "text-[#FF6B6B]"}`}>
                       {tx.amount > 0 ? "+" : ""}{formatZAR(tx.amount)}
                     </span>
                     {tx.matched ? (
-                      <span className="bg-[#35C46B]/15 border border-[#35C46B]/30 text-[#35C46B] px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">
+                      <span className="bg-[#4ADE9B]/15 border border-[#4ADE9B]/30 text-[#4ADE9B] px-1.5 py-0.5 rounded text-[12px] font-semibold tracking-normal">
                         Linked Match
                       </span>
                     ) : (
-                      <span className="text-[9px] text-[#9DB0C6] italic">Unlinked</span>
+                      <span className="text-[12px] text-[rgba(232,234,230,0.72)] italic">Unlinked</span>
                     )}
                   </div>
                 </button>
@@ -916,17 +916,17 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           </div>
 
           {/* Match Button Panel */}
-          <div className="lg:col-span-12 flex flex-col md:flex-row justify-between items-center gap-4 bg-[#0f1826]/40 border border-white/5 rounded-xl p-4">
+          <div className="lg:col-span-12 flex flex-col md:flex-row justify-between items-center gap-4 bg-[#0B0F17]/40 border border-white/5 rounded-xl p-4">
             <div className="flex gap-4 items-center">
               <div className="flex flex-col gap-0.5">
-                <span className="text-[9px] text-[#9DB0C6] font-bold uppercase">Selected Showroom Entry</span>
+                <span className="text-[12px] text-[rgba(232,234,230,0.72)] font-bold ">Selected Showroom Entry</span>
                 <span className="text-xs text-white font-semibold truncate max-w-[200px]">
                   {selectedLedgerId ? state.expenses?.find(e => e.id === selectedLedgerId)?.description : "None Selected"}
                 </span>
               </div>
-              <div className="text-[#9DB0C6] font-black text-sm">↔</div>
+              <div className="text-[rgba(232,234,230,0.72)] font-semibold text-sm">↔</div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-[9px] text-[#9DB0C6] font-bold uppercase">Selected Bank Feed</span>
+                <span className="text-[12px] text-[rgba(232,234,230,0.72)] font-bold ">Selected Bank Feed</span>
                 <span className="text-xs text-white font-semibold truncate max-w-[200px]">
                   {selectedBankTxId ? bankFeed.find(tx => tx.id === selectedBankTxId)?.sender : "None Selected"}
                 </span>
@@ -936,7 +936,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             <button
               onClick={handleReconcileMatch}
               disabled={!selectedLedgerId || !selectedBankTxId}
-              className="px-6 py-2.5 bg-gradient-to-r from-[#1466E0] to-[#15C7C0] text-white hover:brightness-115 disabled:opacity-40 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-lg active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+              className="px-6 py-2.5 bg-gradient-to-r from-[#4FE3DC] to-[#4FE3DC] text-white hover:brightness-115 disabled:opacity-40 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-lg active:scale-95 cursor-pointer disabled:cursor-not-allowed"
             >
               <Check size={14} /> Link & Reconcile Transaction Match
             </button>

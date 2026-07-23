@@ -53,14 +53,14 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
         <div className="relative w-full h-full bg-neutral-950 rounded-[40px] overflow-hidden flex flex-col border border-neutral-800 shadow-2xl">
           
           {/* Status Bar */}
-          <div className="h-12 bg-neutral-950 text-white px-7 flex items-center justify-between text-[11px] font-semibold tracking-wider z-40 shrink-0">
+          <div className="h-12 bg-neutral-950 text-white px-7 flex items-center justify-between text-[13px] font-semibold tracking-wider z-40 shrink-0">
             {/* Clock */}
             <span className="text-neutral-200">{time}</span>
             
             {/* Status Icons */}
             <div className="flex items-center gap-1.5 text-neutral-300">
               <Signal size={12} className="text-neutral-400" />
-              <span className="text-[10px] text-neutral-400 font-bold">5G</span>
+              <span className="text-[13px] text-neutral-400 font-bold">5G</span>
               <Wifi size={12} className="text-indigo-400" />
               <Battery size={14} className="text-emerald-400 fill-emerald-500/20" />
             </div>
