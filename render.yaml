@@ -32,11 +32,19 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    # Captures + web3d packages are written to disk. WITHOUT this, every deploy
+    # or restart wipes the dealer's inventory back to the repo seed.
+    disk:
+      name: trulens-data
+      mountPath: /var/data
+      sizeGB: 5
     envVars:
       - key: NODE_ENV
         value: production
       - key: LOCAL_MODE
         value: "1"
+      - key: DATA_DIR
+        value: /var/data
       # Default export target = Premium (MKR path). Change to flow URL if dealer is on Lite.
       - key: TRUFLOW_DMS_URL
         value: https://premium.tru-saas.com  # custom domain on Render (onrender host still works as fallback)
@@ -122,8 +130,17 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    # data.json (all stock/leads/invoices) + portals.json live here. WITHOUT
+    # this, every deploy or restart resets the DMS to the demo seed and the
+    # dealer websites go back to showing nothing.
+    disk:
+      name: truflow-premium-data
+      mountPath: /var/data
+      sizeGB: 10
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DATA_DIR
+        value: /var/data
       - key: GEMINI_API_KEY
         sync: false

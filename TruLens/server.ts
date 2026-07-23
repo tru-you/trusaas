@@ -15,6 +15,9 @@ dotenv.config();
 const FIREBASE_PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0151924955';
 const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d4757ec-a059-4566-98db-d15a4840f4ec';
 const DEFAULT_DMS_URL = process.env.TRUFLOW_DMS_URL || process.env.DMS_URL || 'http://localhost:3001';
+// Which dealer owns captures made before dealer tagging existed (matches
+// TruFlow Premium's DEFAULT_DEALERSHIP_ID = d1 = mkr-autosales).
+const LENS_DEFAULT_DEALER_SLUG = process.env.LENS_DEFAULT_DEALER_SLUG || 'mkr-autosales';
 
 // Local PC mode: no Google Cloud credentials needed. Stores inventory in data/local-inventory.json
 // Set LOCAL_MODE=0 and provide GOOGLE_APPLICATION_CREDENTIALS to use real Firestore.
@@ -25,7 +28,9 @@ const hasAdc =
   !!process.env.GOOGLE_CLOUD_PROJECT;
 const LOCAL_MODE = !FORCE_CLOUD; // default ON for PC friendliness
 
-const LOCAL_DATA_DIR = path.join(process.cwd(), 'data');
+// Writable state lives under DATA_DIR so it can sit on a mounted Render disk
+// and survive deploys/restarts. Unset (local dev) = ./data, i.e. the old path.
+const LOCAL_DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const LOCAL_DATA_FILE = path.join(LOCAL_DATA_DIR, 'local-inventory.json');
 
 type LocalStore = { vehicles: any[] };
@@ -392,7 +397,7 @@ function toPublicFromLens(v: any) {
 }
 
 // ── Web 3D / spin packages for dealer websites ─────────────────
-const WEB3D_DIR = path.join(process.cwd(), 'data', 'web3d');
+const WEB3D_DIR = path.join(LOCAL_DATA_DIR, 'web3d');
 
 function ensureWeb3dDir() {
   if (!fs.existsSync(WEB3D_DIR)) fs.mkdirSync(WEB3D_DIR, { recursive: true });
@@ -474,7 +479,16 @@ app.get('/api/public/stock', async (req, res) => {
       const snapshot = await fdb.collection('vehicles').get();
       vehicles = snapshot.docs.map((d) => normalizeVehicle(d.data()));
     }
-    const publicList = vehicles.map(toPublicFromLens).filter(Boolean);
+    // A named dealer site must only ever see its OWN captures. Vehicles
+    // captured before dealer tagging existed carry no slug — those fall to the
+    // pilot dealer rather than being shown to everyone. "demo" sees all.
+    const scoped =
+      dealer === 'demo'
+        ? vehicles
+        : vehicles.filter(
+            (v: any) => (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealer
+          );
+    const publicList = scoped.map(toPublicFromLens).filter(Boolean);
     res.json({
       success: true,
       dealer,
@@ -893,6 +907,9 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
     }
 
     const exportMeta: any = {
+      // Remember which dealer this capture belongs to. Without it this app's
+      // own public feed can't tell one dealer's stock from another's.
+      dealerSlug: dealerSlug || vehicle.dealerSlug || undefined,
       lastDmsExportAt: new Date().toISOString(),
       lastDmsExportStatus: dmsData.synced ? 'success' : 'partial',
       lastDmsVehicleId: dmsData.vehicle?.id || null,
