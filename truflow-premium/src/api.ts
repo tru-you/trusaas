@@ -2,7 +2,8 @@ import { Vehicle, Lead, Task, Invoice, Agreement, DealerDocument, User, Communic
 
 const DEFAULT_MOCK_STATE: DMSState = {
   dealerships: [
-    { id: 'd1', name: 'TruFlow Pre-Owned', location: 'Johannesburg' }
+    { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg' },
+    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape' }
   ],
   documents: [],
   digitalProducts: [],

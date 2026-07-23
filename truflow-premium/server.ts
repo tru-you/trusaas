@@ -55,10 +55,25 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-const DATA_FILE = path.join(process.cwd(), "data.json");
+// Writable state lives under DATA_DIR so it can sit on a mounted Render disk
+// and survive deploys/restarts. Unset (local dev) = cwd, i.e. the old paths.
+const DATA_DIR = process.env.DATA_DIR || process.cwd();
+try { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true }); } catch {}
+
+const DATA_FILE = path.join(DATA_DIR, "data.json");
+// Repo-shipped seed. Used once, only when the disk is still empty — never
+// written back to, so a redeploy can't clobber the dealer's real stock.
+const SEED_FILE = path.join(process.cwd(), "data.json");
 
 // Default high-fidelity seed data
 const DEFAULT_MOCK_STATE = {
+  // Every dealer live on this instance needs an entry, and its id must match
+  // DEALER_SLUG_TO_ID below — that pairing is what keeps each dealer's stock
+  // on their own website only.
+  dealerships: [
+    { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg' },
+    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape' }
+  ],
   vehicles: [
     { 
       id: 'v1', year: 2023, make: 'Ford', model: 'Ranger', trim: 'Wildtrak', status: 'INVENTORY', retailPrice: 685000, costPrice: 580000, mileage: 18400, transmission: 'Automatic', fuelType: 'Diesel', stockNumber: 'PE-1042', dateAcquired: '2026-07-05', daysInInventory: 8, description: 'Single owner clean condition wildtrak. Full service history at Ford.',
@@ -169,8 +184,10 @@ const DEFAULT_MOCK_STATE = {
 // State Helper Functions
 function readState(): typeof DEFAULT_MOCK_STATE {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, "utf-8");
+    // Prefer the live file on the disk; fall back to the repo seed on first boot.
+    const src = fs.existsSync(DATA_FILE) ? DATA_FILE : SEED_FILE;
+    if (fs.existsSync(src)) {
+      const data = fs.readFileSync(src, "utf-8");
       const parsed = JSON.parse(data);
       if (!parsed.expenses) {
         parsed.expenses = DEFAULT_MOCK_STATE.expenses;
@@ -180,6 +197,12 @@ function readState(): typeof DEFAULT_MOCK_STATE {
       }
       if (!parsed.documents) {
         parsed.documents = [];
+      }
+      // Older state files predate multi-dealer support and have no dealerships
+      // array — without it the Add-Vehicle dealer picker renders empty and
+      // every hand-added car lands on the default dealer's website.
+      if (!Array.isArray(parsed.dealerships) || !parsed.dealerships.length) {
+        parsed.dealerships = DEFAULT_MOCK_STATE.dealerships;
       }
       parsed.vehicles.forEach((v: any) => {
         if (!v.images) v.images = [];
@@ -282,7 +305,12 @@ app.post("/api/inventory", (req, res) => {
     engine: req.body.engine || "",
     images: req.body.images || [],
     reconTasks: req.body.reconTasks || [],
-    dealershipId: req.body.dealershipId || undefined,
+    // Accept either the internal id or the website slug — callers that only
+    // know the dealer by their site (TruLens, widgets, integrations) would
+    // otherwise post untagged stock, which the public feed hands to the
+    // default dealer's website instead of theirs.
+    dealershipId:
+      req.body.dealershipId || DEALER_SLUG_TO_ID[req.body.dealerSlug] || undefined,
     truPrice: req.body.truPrice ? parseFloat(req.body.truPrice) : undefined
   };
 
@@ -944,6 +972,15 @@ app.post("/api/sync/pull-photos", async (req, res) => {
     }
 
     const lensVehicle = snapshot.docs[0].data();
+    // Stock numbers are only unique within a dealer — two dealers both running
+    // STK-1001 would otherwise pull each other's photos.
+    const { dealerSlug: wantSlug } = req.body || {};
+    if (wantSlug && lensVehicle.dealerSlug && lensVehicle.dealerSlug !== wantSlug) {
+      return res.json({
+        synced: false,
+        message: `AutoLens vehicle ${stockNumber || vehicleId} belongs to a different dealer (${lensVehicle.dealerSlug}).`,
+      });
+    }
     const photos = lensVehicle.photos || {};
     const photoCount = Object.keys(photos).length;
 
@@ -1007,13 +1044,21 @@ app.post("/api/sync/pull-all", async (req, res) => {
     let syncedCount = 0;
     const results: { stockNumber: string; status: string }[] = [];
 
+    // Optional dealer scope — batch-pulling for one dealer must not reach into
+    // another dealer's captures that happen to share a stock number.
+    const wantSlug = (req.body || {}).dealerSlug;
+    const wantId = wantSlug ? DEALER_SLUG_TO_ID[wantSlug] : undefined;
+
     for (const doc of snapshot.docs) {
       const lensVehicle = doc.data();
       const photos = lensVehicle.photos || {};
       if (Object.keys(photos).length === 0) continue;
+      if (wantSlug && lensVehicle.dealerSlug && lensVehicle.dealerSlug !== wantSlug) continue;
 
       const idx = state.vehicles.findIndex(
-        (v: any) => v.stockNumber === lensVehicle.stockNumber
+        (v: any) =>
+          v.stockNumber === lensVehicle.stockNumber &&
+          (!wantId || (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantId)
       );
       if (idx === -1) {
         results.push({ stockNumber: lensVehicle.stockNumber, status: "not_in_dms" });
@@ -1226,7 +1271,7 @@ app.get("/api/sync/status", async (req, res) => {
 // --- PUBLIC INVENTORY FEED & MULTI-PORTAL SYNC ---
 
 // Portal registry — stored alongside DMS data
-const PORTALS_FILE = path.join(process.cwd(), "portals.json");
+const PORTALS_FILE = path.join(DATA_DIR, "portals.json");
 
 interface Portal {
   id: string;
