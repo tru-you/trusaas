@@ -6,7 +6,10 @@ import { useAuth } from '../contexts/AuthContext';
 import trulensLogo from '../assets/images/trulens-lockup.png';
 
 export default function Login() {
-  const { enterDemoMode } = useAuth();
+  const { enterDemoMode, signInWithCode } = useAuth();
+  const [deviceCode, setDeviceCode] = React.useState('');
+  const [codeBusy, setCodeBusy] = React.useState(false);
+  const [codeError, setCodeError] = React.useState<string | null>(null);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -136,19 +139,46 @@ export default function Login() {
           </button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => enterDemoMode()}
-          className="mt-4 w-full flex flex-col items-center justify-center gap-1 py-3.5 bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/40 text-emerald-100 font-bold rounded-xl text-[13px]  tracking-widest transition-all shadow-[0_0_24px_-8px_rgba(16,185,129,0.5)]"
+        {/* Sign this phone in with the dealership's access code. It replaced a
+            "Start on this PC" button that sent the literal string
+            'local-demo-token' — which the server accepted from anyone, so the
+            captured stock and photos were readable by the whole internet. */}
+        <form
+          className="mt-4 w-full flex flex-col gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (codeBusy) return;
+            setCodeBusy(true); setCodeError(null);
+            try {
+              await signInWithCode(deviceCode.trim());
+            } catch (err: any) {
+              setCodeError(err?.message || 'Could not sign in on this device.');
+            } finally {
+              setCodeBusy(false);
+            }
+          }}
         >
-          <span className="flex items-center gap-2">
-            <Monitor size={14} className="text-emerald-400" />
-            Start on this PC
+          <input
+            type="password"
+            value={deviceCode}
+            onChange={(e) => setDeviceCode(e.target.value)}
+            placeholder="Dealership access code"
+            autoComplete="off"
+            className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-[13px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
+          />
+          {codeError && <p className="text-[12px] text-[#C07676]">{codeError}</p>}
+          <button
+            type="submit"
+            disabled={codeBusy || !deviceCode.trim()}
+            className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#4FE3DC] disabled:opacity-50 text-[#06080D] font-semibold rounded-xl text-[13px] transition-all"
+          >
+            <Monitor size={14} />
+            {codeBusy ? 'Checking…' : 'Use this device'}
+          </button>
+          <span className="text-[12px] text-neutral-500 text-center">
+            Signs this phone in for 30 days · full photo → export → web flow
           </span>
-          <span className="text-[12px] font-medium normal-case tracking-normal text-emerald-400/80">
-            No login · full photo → export → web flow
-          </span>
-        </button>
+        </form>
 
         <button 
           onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}

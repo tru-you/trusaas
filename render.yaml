@@ -45,6 +45,15 @@ services:
         value: "1"
       - key: DATA_DIR
         value: /var/data
+      # REQUIRED. Without it the API accepts any bearer token — `Bearer zzz`
+      # returned a dealer's captured vehicles and photos. Set the value in the
+      # Render dashboard; this file only declares that it must exist.
+      - key: TRULENS_ACCESS_CODE
+        sync: false
+      # Optional: pin the token signing key so device sessions survive a
+      # code rotation. Derived from the access code when unset.
+      - key: TRULENS_TOKEN_SECRET
+        sync: false
       # Default export target = Premium (MKR path). Change to flow URL if dealer is on Lite.
       - key: TRUFLOW_DMS_URL
         value: https://premium.tru-saas.com  # custom domain on Render (onrender host still works as fallback)

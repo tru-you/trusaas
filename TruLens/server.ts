@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
+import crypto from 'crypto';
 
 // Load environment variables first
 dotenv.config();
@@ -17,6 +18,41 @@ const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d47
 const DEFAULT_DMS_URL = process.env.TRUFLOW_DMS_URL || process.env.DMS_URL || 'http://localhost:3001';
 // Which dealer owns captures made before dealer tagging existed (matches
 // TruFlow Premium's DEFAULT_DEALERSHIP_ID = d1 = mkr-autosales).
+/**
+ * Device access code.
+ *
+ * Without one, this API was open in production: LOCAL_MODE accepted ANY bearer
+ * token (`Bearer zzz` returned inventory), and a `local-` prefix short-circuited
+ * auth entirely. Anyone could read, create or delete a dealer's captured
+ * vehicles and their photos.
+ *
+ * Set TRULENS_ACCESS_CODE and the app exchanges it for a signed token that
+ * every request must carry.
+ */
+const ACCESS_CODE = process.env.TRULENS_ACCESS_CODE || '';
+const TOKEN_SECRET =
+  process.env.TRULENS_TOKEN_SECRET ||
+  crypto.createHash('sha256').update(ACCESS_CODE || 'trulens-dev').digest('hex');
+const DEVICE_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // a month on the yard phone
+
+function signDeviceToken(): string {
+  const payload = Buffer.from(JSON.stringify({ k: 'device', exp: Date.now() + DEVICE_TOKEN_TTL_MS })).toString('base64url');
+  const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
+}
+
+function verifyDeviceToken(token: string): boolean {
+  try {
+    const [payload, sig] = String(token).split('.');
+    if (!payload || !sig) return false;
+    const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
+    const a = Buffer.from(sig), b = Buffer.from(expected);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return false;
+    const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
+    return claims.k === 'device' && claims.exp > Date.now();
+  } catch { return false; }
+}
+
 const LENS_DEFAULT_DEALER_SLUG = process.env.LENS_DEFAULT_DEALER_SLUG || 'mkr-autosales';
 
 // Local PC mode: no Google Cloud credentials needed. Stores inventory in data/local-inventory.json
@@ -182,12 +218,17 @@ const authenticate = async (req: any, res: any, next: any) => {
 
   const idToken = authHeader.split('Bearer ')[1];
 
-  // Explicit demo / local tokens from the frontend offline login
-  if (
-    idToken === 'local-demo-token' ||
-    idToken === 'demo' ||
-    idToken.startsWith('local-')
-  ) {
+  // A signed device token, issued by POST /api/auth/device in exchange for the
+  // dealership's access code.
+  if (verifyDeviceToken(idToken)) {
+    req.user = { uid: 'device', email: 'device@trulens.local', local: true };
+    return next();
+  }
+
+  // The old unconditional shortcut — any token starting with "local-", plus the
+  // literals "demo" and "local-demo-token" — only survives when no access code
+  // is configured, i.e. local development.
+  if (!ACCESS_CODE && (idToken === 'local-demo-token' || idToken === 'demo' || idToken.startsWith('local-'))) {
     req.user = { uid: 'local-demo-user', email: 'demo@trulens.local', local: true };
     return next();
   }
@@ -211,8 +252,10 @@ const authenticate = async (req: any, res: any, next: any) => {
     }
   }
 
-  // Local PC: accept any Bearer JWT and extract uid, or use demo user
-  if (LOCAL_MODE) {
+  // Local PC convenience: accept any Bearer JWT and extract a uid. This
+  // accepted literally any string, so it is now off whenever an access code
+  // is configured.
+  if (LOCAL_MODE && !ACCESS_CODE) {
     const payload = decodeJwtPayload(idToken);
     req.user = {
       uid: payload?.user_id || payload?.sub || payload?.uid || 'local-demo-user',
@@ -313,6 +356,20 @@ async function deleteVehicle(id: string): Promise<boolean> {
 
 // Health / mode check (no auth) + keep-alive pings
 const STARTED_AT = Date.now();
+/** Exchange the dealership's access code for a signed device token.
+ *  Deliberately public — it is the way in. Slow-hashed and rate-limited by
+ *  nothing yet, so keep the code long. */
+app.post('/api/auth/device', (req, res) => {
+  if (!ACCESS_CODE) {
+    return res.status(503).json({ error: 'No access code configured on this server.' });
+  }
+  const given = String(req.body?.code || '');
+  const a = Buffer.from(given), b = Buffer.from(ACCESS_CODE);
+  const ok = a.length === b.length && crypto.timingSafeEqual(a, b);
+  if (!ok) return res.status(401).json({ error: 'That code is not recognised.' });
+  res.json({ token: signDeviceToken(), expiresInDays: 30 });
+});
+
 app.get('/api/health', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.json({
