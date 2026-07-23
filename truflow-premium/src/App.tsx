@@ -1143,11 +1143,11 @@ export default function App() {
                     onClick={() => setSelectedDetailVehicle(v)}
                     className="v-card p-3 cursor-pointer group hover:-translate-y-0.5 transition-transform duration-200"
                   >
-                    <div className="aspect-[4/3] rounded-lg bg-gradient-to-br from-[#1a2c3d] to-[#0f1b29] flex items-center justify-center overflow-hidden mb-3 shadow-md shadow-black/40">
+                    <div className="aspect-[4/3] rounded-lg bg-[#0B0F17] flex items-center justify-center overflow-hidden mb-3 shadow-md shadow-black/40">
                       {v.images && v.images.length > 0 ? (
                         <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-tr from-[#4FE3DC] to-[#4FE3DC] flex items-center justify-center text-white font-semibold text-lg">
+                        <div className="w-full h-full bg-[#0B0F17] border border-white/5 flex items-center justify-center text-[rgba(232,234,230,0.45)] font-semibold text-lg">
                           {v.make.slice(0, 2).toUpperCase()}
                         </div>
                       )}
@@ -1390,7 +1390,7 @@ export default function App() {
                       className="v-card flex flex-col h-full group hover:-translate-y-1 transition-all duration-200 cursor-pointer"
                     >
                       {/* Card Image area */}
-                      <div className="aspect-[16/10] bg-gradient-to-br from-[#1a2c3d] to-[#0f1b29] flex items-center justify-center relative border-b border-white/5 overflow-hidden select-none">
+                      <div className="aspect-[16/10] bg-[#0B0F17] flex items-center justify-center relative border-b border-white/5 overflow-hidden select-none">
                         {v.images && v.images.length > 0 ? (
                           <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                         ) : (

@@ -78,7 +78,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
           <div className="w-1.5 h-1.5 rounded-full bg-neutral-900"></div>
         </div>
 
-        <div className="absolute top-6.5 left-1/2 -translate-x-1/2 w-32 h-6.5 rounded-full z-50 pointer-events-none bg-gradient-to-r from-blue-500/10 via-transparent to-purple-500/10 opacity-30"></div>
+        <div className="absolute top-6.5 left-1/2 -translate-x-1/2 w-32 h-6.5 rounded-full z-50 pointer-events-none bg-[#4FE3DC]/[0.04] opacity-30"></div>
 
         <div className="absolute top-28 -left-1 w-1 h-12 bg-neutral-800 rounded-r-md border-r border-neutral-700"></div>
         <div className="absolute top-44 -left-1 w-1 h-16 bg-neutral-800 rounded-r-md border-r border-neutral-700"></div>

@@ -1351,8 +1351,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           disabled={isRecording360}
           className={`w-full py-3.5 rounded-2xl flex items-center justify-center gap-2.5 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-semibold text-sm tracking-normal disabled:opacity-60 ${
             activeSlot.id === 'video_360'
-              ? 'bg-gradient-to-r from-red-600 to-rose-500 text-[#E8EAE6] border border-red-400/40'
-              : 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-[#E8EAE6] border border-indigo-400/30'
+              ? 'bg-[#B86A6A] text-[#06080D] border border-transparent'
+              : 'bg-[#4FE3DC] text-[#06080D] border border-transparent'
           }`}
           title={activeSlot.id === 'video_360' ? 'Record 360 walkaround' : 'Take picture for this slot'}
         >
