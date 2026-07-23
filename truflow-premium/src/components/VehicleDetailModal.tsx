@@ -44,8 +44,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Elite DMS States
-  const [activeTab, setActiveTab] = useState<"specs" | "natis" | "inspection" | "recon" | "syndication">("specs");
-  const [natisChecking, setNatisChecking] = useState(false);
+  const [activeTab, setActiveTab] = useState<"specs" | "inspection" | "recon" | "syndication">("specs");
   const [newReconName, setNewReconName] = useState("");
   const [newReconCost, setNewReconCost] = useState("");
 
@@ -53,8 +52,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [reconCategory, setReconCategory] = useState<string>("Bodywork / Painting");
   const [reconPhoto, setReconPhoto] = useState<string>("");
   const [suggestingCost, setSuggestingCost] = useState(false);
-  const [checkingMarket, setCheckingMarket] = useState(false);
-  const [marketResult, setMarketResult] = useState<{ avg: number; min: number; max: number; recom: number; matches: { dealer: string; price: number; mileage: number; age: number }[] } | null>(null);
+  const [editingTruPrice, setEditingTruPrice] = useState(false);
+  const [truPriceInput, setTruPriceInput] = useState("");
+  const [savingTruPrice, setSavingTruPrice] = useState(false);
 
   // TrueAI States
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
@@ -111,63 +111,17 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     return simulatedPresetPhotos[vehicle.make] || simulatedPresetPhotos.default;
   };
 
-  const handleCheckMarket = () => {
-    setCheckingMarket(true);
-    setMarketResult(null);
-    setTimeout(() => {
-      const isHilux = vehicle.model.toLowerCase().includes("hilux");
-      const isGolf = vehicle.model.toLowerCase().includes("golf") || vehicle.make.toLowerCase().includes("volkswagen");
-      const isBMW = vehicle.make.toLowerCase().includes("bmw");
-      const isRanger = vehicle.make.toLowerCase().includes("ford") || vehicle.model.toLowerCase().includes("ranger");
-
-      let basePrice = vehicle.retailPrice;
-      let matches = [];
-
-      if (isGolf) {
-        basePrice = 685000;
-        matches = [
-          { dealer: "Sandton Executive Select", price: 699000, mileage: 14000, age: 14 },
-          { dealer: "Barons Woodmead Volkswagen", price: 685000, mileage: 19500, age: 30 },
-          { dealer: "Pretoria GTi Club House", price: 679000, mileage: 22000, age: 45 }
-        ];
-      } else if (isHilux) {
-        basePrice = 825000;
-        matches = [
-          { dealer: "Toyota Sandton Approved", price: 849000, mileage: 11000, age: 8 },
-          { dealer: "N1 Pretoria Bakkie Centre", price: 829000, mileage: 13500, age: 19 },
-          { dealer: "Cape Town Tough Trucks", price: 819000, mileage: 16000, age: 25 }
-        ];
-      } else if (isBMW) {
-        basePrice = 910000;
-        matches = [
-          { dealer: "BMW Bryanston Motorrad", price: 929000, mileage: 7500, age: 12 },
-          { dealer: "Supertech JHB M-Division", price: 909000, mileage: 9800, age: 18 },
-          { dealer: "Constantia Kloof Prestige", price: 895000, mileage: 12100, age: 35 }
-        ];
-      } else if (isRanger) {
-        basePrice = 795000;
-        matches = [
-          { dealer: "Ford Sandton Auto", price: 809000, mileage: 18000, age: 15 },
-          { dealer: "Pretoria East Wildtrak Hub", price: 799000, mileage: 21000, age: 22 },
-          { dealer: "Tygerberg Commercial Ford", price: 779000, mileage: 25500, age: 40 }
-        ];
-      } else {
-        matches = [
-          { dealer: "Gauteng Classified Match A", price: Math.round(basePrice * 1.03), mileage: Math.round(vehicle.mileage * 0.9), age: 15 },
-          { dealer: "Sandton Premium Dealer", price: Math.round(basePrice * 1.01), mileage: Math.round(vehicle.mileage * 1.05), age: 22 },
-          { dealer: "Pretoria Car Market", price: Math.round(basePrice * 0.97), mileage: Math.round(vehicle.mileage * 1.15), age: 45 }
-        ];
-      }
-
-      const totalMatchesPrice = matches.reduce((sum, m) => sum + m.price, 0);
-      const avg = Math.round(totalMatchesPrice / matches.length);
-      const min = Math.min(...matches.map(m => m.price));
-      const max = Math.max(...matches.map(m => m.price));
-      const recom = Math.round(avg * 0.99);
-
-      setMarketResult({ avg, min, max, recom, matches });
-      setCheckingMarket(false);
-    }, 1000);
+  /** Save a TruPrice benchmark the dealer has worked out themselves.
+   *  This replaced a "market crawler" that invented comparable listings and
+   *  attributed them to real, named dealerships, then offered to reprice the
+   *  car from those invented numbers. */
+  const handleSaveTruPrice = async () => {
+    const value = Number(truPriceInput.replace(/[^0-9]/g, ""));
+    if (!value) return;
+    setSavingTruPrice(true);
+    await onUpdateVehicle(vehicle.id, { truPrice: value });
+    setSavingTruPrice(false);
+    setEditingTruPrice(false);
   };
 
   // Real browser file upload parser
@@ -307,7 +261,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           </div>
         </div>
 
-        {/* RIGHT COLUMN: DETAIL SPECS, NATIS, INSPECTION & RECON TABS */}
+        {/* RIGHT COLUMN: DETAIL SPECS, INSPECTION & RECON TABS */}
         <div className="md:w-2/5 p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
           <div>
             {/* Header */}
@@ -336,14 +290,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 }`}
               >
                 <Grid size={11} /> Specs
-              </button>
-              <button
-                onClick={() => setActiveTab("natis")}
-                className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                  activeTab === "natis" ? "bg-[#1466E0] text-white shadow-md" : "text-[#9DB0C6] hover:text-[#9DB0C6]"
-                }`}
-              >
-                <Shield size={11} /> NATIS
               </button>
               <button
                 onClick={() => setActiveTab("inspection")}
@@ -395,87 +341,48 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     </div>
                     <div className="text-right">
                       <button
-                        onClick={handleCheckMarket}
-                        disabled={checkingMarket}
-                        className="py-1 px-2.5 bg-[#15C7C0]/10 border border-[#15C7C0]/25 hover:bg-[#15C7C0]/15 text-[#15C7C0] text-[9px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                        onClick={() => { setTruPriceInput(String(vehicle.truPrice || vehicle.retailPrice || "")); setEditingTruPrice(true); }}
+                        className="py-1 px-2.5 bg-white/5 border border-white/15 hover:bg-white/10 text-[#E8EEF6] text-[9px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer"
                       >
-                        <Sparkles size={9} /> {checkingMarket ? "Querying..." : "Check Market"}
+                        {vehicle.truPrice ? "Edit TruPrice" : "Set TruPrice"}
                       </button>
                     </div>
                   </div>
 
-                  {checkingMarket && (
-                    <div className="bg-black/40 border border-white/5 rounded-lg p-3 py-4 flex flex-col items-center justify-center gap-2 animate-pulse-subtle">
-                      <RefreshCw size={14} className="animate-spin text-[#15C7C0]" />
-                      <div className="text-center">
-                        <span className="text-[9px] text-[#15C7C0] font-mono font-bold block uppercase tracking-wider">TrueAI Market Crawler</span>
-                        <span className="text-[8px] text-[#9DB0C6] block mt-0.5">Scoping regional Autotrader, Cars.co.za & social marketplace indicators...</span>
+                  {editingTruPrice && (
+                    <div className="bg-black/30 border border-white/10 rounded-lg p-3 space-y-2">
+                      <label className="text-[9px] text-[#9DB0C6] uppercase font-bold tracking-wider block">
+                        TruPrice benchmark
+                      </label>
+                      <p className="text-[9px] text-[#9DB0C6] leading-relaxed">
+                        What this vehicle is genuinely worth on the open market, from your own
+                        trade experience or book value. Shown on the website as the price
+                        customers are compared against — so it only carries weight if it is real.
+                      </p>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoFocus
+                        value={truPriceInput}
+                        onChange={(e) => setTruPriceInput(e.target.value)}
+                        placeholder="e.g. 389000"
+                        className="w-full bg-[#070d15] border border-white/15 rounded-lg px-3 py-2 text-sm text-white font-mono outline-none focus:border-[#1466E0]"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleSaveTruPrice}
+                          disabled={savingTruPrice}
+                          className="flex-1 py-1.5 bg-[#1466E0] hover:bg-opacity-90 disabled:opacity-60 text-white font-black uppercase text-[9px] rounded-md cursor-pointer"
+                        >
+                          {savingTruPrice ? "Saving…" : "Save benchmark"}
+                        </button>
+                        <button
+                          onClick={() => setEditingTruPrice(false)}
+                          className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[#9DB0C6] font-bold uppercase text-[9px] rounded-md cursor-pointer"
+                        >
+                          Cancel
+                        </button>
                       </div>
-                    </div>
-                  )}
-
-                  {marketResult && (
-                    <div className="bg-gradient-to-br from-[#121c2c] to-[#07101a] border border-[#15C7C0]/25 rounded-lg p-3 space-y-3 animate-in slide-in-from-top duration-300 text-[10px]">
-                      <div className="flex justify-between items-center border-b border-white/5 pb-1.5">
-                        <span className="text-[8px] text-white font-extrabold uppercase tracking-wider flex items-center gap-1">
-                          <Layers size={10} className="text-[#15C7C0]" /> Local Classified Matches (GP-ZAR)
-                        </span>
-                        <button onClick={() => setMarketResult(null)} className="text-[#9DB0C6] hover:text-[#E8EEF6] text-[8px] uppercase font-mono">Close</button>
-                      </div>
-
-                      {/* Similar listing list */}
-                      <div className="space-y-1.5 font-mono text-[9px] text-[#9DB0C6]">
-                        {marketResult.matches.map((match, mIdx) => (
-                          <div key={mIdx} className="flex justify-between items-center bg-black/20 px-2 py-1 rounded">
-                            <span className="truncate max-w-[130px] font-sans text-white">{match.dealer}</span>
-                            <span className="text-[#9DB0C6]">{match.mileage.toLocaleString()}km / {match.age}d</span>
-                            <span className="text-white font-bold">{formatZAR(match.price)}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Comparison range indicator */}
-                      <div className="bg-black/30 p-2 rounded border border-white/3 text-[9px] font-mono space-y-2">
-                        <div className="flex justify-between">
-                          <span>Low: {formatZAR(marketResult.min)}</span>
-                          <span className="text-white font-bold">Avg: {formatZAR(marketResult.avg)}</span>
-                          <span>High: {formatZAR(marketResult.max)}</span>
-                        </div>
-                        
-                        {/* Micro visual meter */}
-                        <div className="w-full h-1 bg-[#0f1826]/5 rounded-full overflow-hidden relative">
-                          <div className="absolute left-[15%] right-[20%] h-full bg-gradient-to-r from-red-400 via-[#15C7C0] to-yellow-500 rounded-full" />
-                          <div className="absolute left-[45%] w-1.5 h-1.5 bg-[#0f1826] border border-black rounded-full top-1/2 -translate-y-1/2" />
-                        </div>
-
-                        <div className="text-center text-[#15C7C0] text-[8px] uppercase tracking-wider font-bold">
-                          AI Recommended Target: {formatZAR(marketResult.recom)}
-                        </div>
-                      </div>
-
-                      {/* Two distinct actions: reprice the car, OR just record what the
-                          market says it's worth (keeps retail price + the "below
-                          market" story intact — this is what feeds public TruPrice). */}
-                      <button
-                        onClick={async () => {
-                          await onUpdateVehicle(vehicle.id, { truPrice: marketResult.avg });
-                          alert(`TruPrice benchmark set to market average R ${marketResult.avg.toLocaleString("en-ZA")} — retail price unchanged.`);
-                          setMarketResult(null);
-                        }}
-                        className="w-full py-1.5 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-black uppercase text-[9px] rounded-md text-center transition-all cursor-pointer block"
-                      >
-                        Set as TruPrice Benchmark (keep my price)
-                      </button>
-                      <button
-                        onClick={async () => {
-                          await onUpdateVehicle(vehicle.id, { retailPrice: marketResult.recom });
-                          alert(`Showroom retail price synced to recommended market rate of R ${marketResult.recom.toLocaleString("en-ZA")}!`);
-                          setMarketResult(null);
-                        }}
-                        className="w-full py-1.5 bg-[#15C7C0] hover:bg-opacity-90 text-black font-black uppercase text-[9px] rounded-md text-center transition-all cursor-pointer block"
-                      >
-                        1-Click Sync Retail to Recommended Price
-                      </button>
                     </div>
                   )}
                 </div>
@@ -530,99 +437,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     onChange={handleLocalFileSelection}
                     className="hidden"
                   />
-                </div>
-              </div>
-            )}
-
-            {/* TAB 2: NATIS SOUTH AFRICA REGISTRATION GATEWAY */}
-            {activeTab === "natis" && (
-              <div className="space-y-4 animate-in fade-in duration-200">
-                <div className="bg-gradient-to-tr from-[#121c2c] to-[#07101a] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <Shield size={18} className="text-[#15C7C0]" />
-                    <div>
-                      <h4 className="text-xs font-black text-white uppercase tracking-wider">NATIS Verification Node</h4>
-                      <p className="text-[9px] text-[#9DB0C6]">Gauteng Licensing & Police Registry Interface</p>
-                    </div>
-                  </div>
-
-                  {natisChecking ? (
-                    <div className="py-6 flex flex-col items-center justify-center gap-3">
-                      <RefreshCw className="animate-spin text-[#15C7C0]" size={24} />
-                      <span className="text-[10px] text-[#9DB0C6] font-semibold text-center font-mono leading-relaxed">
-                        Querying GP-NATIS centralized database...<br />
-                        Verifying Chassis serial match...
-                      </span>
-                    </div>
-                  ) : (vehicle as any).natisStatus === "VERIFIED" ? (
-                    <div className="space-y-3">
-                      <div className="bg-[#35C46B]/10 border border-[#35C46B]/20 rounded-lg p-2.5 flex items-center gap-2.5">
-                        <CheckCircle2 size={16} className="text-[#35C46B]" />
-                        <div>
-                          <div className="text-[10px] text-white font-black uppercase">REGISTRATION ACTIVE & CLEAR</div>
-                          <div className="text-[9px] text-[#35C46B] font-semibold">Cleared on {(vehicle as any).natisDetails?.verifiedAt || "Today"}</div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                        <div className="bg-[#0f1826]/2 p-2 rounded border border-white/3">
-                          <div className="text-[8px] text-[#9DB0C6] uppercase font-bold">Owner Status</div>
-                          <div className="text-white font-bold mt-0.5">MATCHED</div>
-                        </div>
-                        <div className="bg-[#0f1826]/2 p-2 rounded border border-white/3">
-                          <div className="text-[8px] text-[#9DB0C6] uppercase font-bold">Finance Lien</div>
-                          <div className="text-[#35C46B] font-bold mt-0.5">NONE (PAID)</div>
-                        </div>
-                        <div className="bg-[#0f1826]/2 p-2 rounded border border-white/3">
-                          <div className="text-[8px] text-[#9DB0C6] uppercase font-bold">Theft File</div>
-                          <div className="text-[#35C46B] font-bold mt-0.5">CLEAR</div>
-                        </div>
-                        <div className="bg-[#0f1826]/2 p-2 rounded border border-white/3">
-                          <div className="text-[8px] text-[#9DB0C6] uppercase font-bold">Licence Exp</div>
-                          <div className="text-white font-bold mt-0.5">2027-02-28</div>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          setNatisChecking(true);
-                          setTimeout(() => {
-                            setNatisChecking(false);
-                          }, 1000);
-                        }}
-                        className="w-full py-2 bg-[#0f1826]/5 hover:bg-white/10 text-xs text-[#9DB0C6] hover:text-[#E8EEF6] font-bold rounded-xl transition-all border border-white/5 cursor-pointer"
-                      >
-                        Re-Query Database Node
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3.5 py-2">
-                      <div className="text-[10px] text-[#9DB0C6] leading-relaxed">
-                        To protect the dealership against asset fraud, stolen title disputes, or hidden bank lines (Wesbank/Absa liens), run a secure registration validation.
-                      </div>
-                      <button
-                        onClick={async () => {
-                          setNatisChecking(true);
-                          setTimeout(async () => {
-                            await onUpdateVehicle(vehicle.id, {
-                              natisStatus: "VERIFIED",
-                              natisDetails: {
-                                verifiedAt: new Date().toLocaleDateString("en-ZA"),
-                                ownerMatch: "YES",
-                                theftCheck: "CLEAR",
-                                financeLien: "NONE",
-                                licenseExpiry: "2027-02-28"
-                              } as any
-                            });
-                            setNatisChecking(false);
-                          }, 1200);
-                        }}
-                        className="w-full py-2.5 bg-[#1466E0] hover:bg-opacity-90 text-xs font-bold text-white rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <Shield size={13} /> Perform NATIS Verification Check
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -904,9 +718,12 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                     `🌟 ${vehicle.year} ${vehicle.make.toUpperCase()} ${vehicle.model.toUpperCase()} (${vehicle.transmission})\n` +
                                     `📍 Mileage: ${vehicle.mileage.toLocaleString()} km\n` +
                                     `⛽ Fuel Type: ${vehicle.fuelType}\n` +
-                                    `💰 Price: ${formatZAR(vehicle.retailPrice)}\n` +
-                                    `📄 NATIS Registration Status: Fully Checked & Cleared\n\n` +
-                                    `✨ Fully certified with TrueAI computer-vision quality certificate! Clean title. Incredible performance, highly economical.\n\n` +
+                                    `💰 Price: ${formatZAR(vehicle.retailPrice)}\n\n` +
+                                    // Claims the dealer can stand behind. This previously asserted
+                                    // "NATIS Fully Checked & Cleared" and a "TrueAI quality
+                                    // certificate" in copy meant for public adverts — neither had
+                                    // happened, and the dealer would have been the one publishing it.
+                                    `✨ Well looked after and ready to drive away.\n\n` +
                                     `📞 Contact us now to secure or book a test-drive. Finance options available!`
                                   );
                                 }, 800);
