@@ -41,7 +41,6 @@ interface VehicleDetailModalProps {
 
 export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, settings, documentsPanel}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [showMobileSimulator, setShowMobileSimulator] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -59,19 +58,12 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [savingTruPrice, setSavingTruPrice] = useState(false);
 
   // TrueAI States
-  const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
   const [tchekScanning, setTchekScanning] = useState(false);
   const [remarketingCopy, setRemarketingCopy] = useState<string>("");
   const [generatingCopy, setGeneratingCopy] = useState(false);
 
   // TrueAI Image Studio States
   const [selectedEnhanceImg, setSelectedEnhanceImg] = useState<string>("");
-  const [enhancingImg, setEnhancingImg] = useState(false);
-  const [enhanceBg, setEnhanceBg] = useState(true);
-  const [enhancePlate, setEnhancePlate] = useState(true);
-  const [enhanceLighting, setEnhanceLighting] = useState(true);
-  const [enhancedResult, setEnhancedResult] = useState<string | null>(null);
-  const [enhancedStatusStep, setEnhancedStatusStep] = useState<string>("");
 
   if (!isOpen) return null;
 
@@ -86,33 +78,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       : { label: "Shoot in TruLens before publishing", color: "#E7B24B" };
 
   // Preset gorgeous South African vehicle snapshots for the phone camera simulator
-  const simulatedPresetPhotos: Record<string, string[]> = {
-    Ford: [
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=600"
-    ],
-    Volkswagen: [
-      "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=600"
-    ],
-    Toyota: [
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1594568284297-7c64464062b1?auto=format&fit=crop&q=80&w=600"
-    ],
-    BMW: [
-      "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1556189250-72ba954cfc2b?auto=format&fit=crop&q=80&w=600"
-    ],
-    default: [
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=600"
-    ]
-  };
-
-  const getPresets = () => {
-    return simulatedPresetPhotos[vehicle.make] || simulatedPresetPhotos.default;
-  };
-
   /** Save a TruPrice benchmark the dealer has worked out themselves.
    *  This replaced a "market crawler" that invented comparable listings and
    *  attributed them to real, named dealerships, then offered to reprice the
@@ -150,16 +115,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     });
   };
 
-  // Simulate snapping a photo with the virtual phone camera
-  const triggerSimulatedMobileUpload = async (imgUrl: string) => {
-    const existingImages = vehicle.images || [];
-    await onUpdateVehicle(vehicle.id, {
-      images: [...existingImages, imgUrl]
-    });
-    setActiveImageIndex(existingImages.length);
-    alert("Phone Camera Sync Successful! Uploaded and published in real-time.");
-  };
-
   const handleDeletePhoto = async (indexToDelete: number) => {
     if (!confirm("Remove this image from showroom listing?")) return;
     const existingImages = vehicle.images || [];
@@ -170,11 +125,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     setActiveImageIndex(Math.max(0, indexToDelete - 1));
   };
 
-  const imagesList = vehicle.images && vehicle.images.length > 0 
-    ? vehicle.images 
-    : [
-        "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800" // default fallback
-      ];
+  // No stand-in photo. This fell back to a stock image of an unrelated car,
+  // which the public feed then served as the vehicle's hero shot.
+  const imagesList = vehicle.images?.length ? vehicle.images : [];
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-4 overflow-y-auto">
@@ -428,13 +381,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     >
                       <Upload size={13} /> {uploading ? "Uploading..." : "Upload Photos"}
                     </button>
-                    <button
-                      onClick={() => setShowMobileSimulator(!showMobileSimulator)}
-                      className="px-3.5 py-2 bg-[#0f1826]/5 border border-white/5 text-white hover:bg-white/10 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
-                      title="Simulate Mobile Phone Camera"
-                    >
-                      <Smartphone size={13} /> Phone Sync
-                    </button>
+
                   </div>
 
                   {/* Real HTML5 Input (accepts camera images on phone) */}
@@ -460,238 +407,27 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             {/* TAB 3: TRUEAI COMPUTER VISION INSPECTION & REMARKETING */}
             {activeTab === "inspection" && (
               <div className="space-y-4 animate-in fade-in duration-200">
-                <div className="bg-gradient-to-tr from-[#121c2c] to-[#07101a] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <Sparkles size={16} className="text-[#15C7C0]" />
-                      <div>
-                        <h4 className="text-xs font-black text-white uppercase tracking-wider">TrueAI Vision Platform</h4>
-                        <p className="text-[9px] text-[#9DB0C6]">AI Computer Vision Auto-Damage & Remarketing Node</p>
-                      </div>
-                    </div>
-                    <span className="text-[8px] font-mono text-[#15C7C0] bg-[#15C7C0]/15 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
-                      ● READY
-                    </span>
+                {/* Removed from here: a "TrueAI Vision Platform" that reported the
+                    same invented damage on every vehicle ("Rear Left Fender Wheel
+                    Arch Scratch, Severity MEDIUM, Est. Repair R 2,200") and could
+                    push it into the recon ledger as a real cost; and a "Studio
+                    Backdrop Enhancer" that narrated silhouette masking and then
+                    swapped in a stock photo of a different car of the same make.
+                    Damage assessment belongs to TruLens/TruInspect, working on
+                    real photos. What is left is text generation — which is all
+                    this ever genuinely did. */}
+                <div className="bg-[#0f1826]/3 border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+                  <div className="border-b border-white/5 pb-2">
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">Listing text</h4>
+                    <p className="text-[9px] text-[#9DB0C6] mt-0.5">
+                      Starting points for adverts and page copy — read them over before publishing.
+                    </p>
                   </div>
-
-                  {tchekScanning ? (
-                    <div className="py-8 flex flex-col items-center justify-center gap-3">
-                      <RefreshCw className="animate-spin text-[#15C7C0]" size={28} />
-                      <div className="text-center font-mono space-y-1">
-                        <span className="text-[11px] text-white font-bold block">TrueAI Scanner Running...</span>
-                        <span className="text-[9px] text-[#9DB0C6] block">Checking panels with 3D wireframe models...</span>
-                        <span className="text-[9px] text-[#15C7C0] animate-pulse block">Detecting paint thickness and deep panel dents...</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Interactive Vehicle blueprint map */}
-                      <div className="bg-black/40 border border-white/5 rounded-xl p-3 flex flex-col items-center gap-3 relative">
-                        <span className="text-[8px] text-[#9DB0C6] uppercase font-bold tracking-wider absolute top-2 left-3">Interactive 3D Scan Layout</span>
-                        
-                        {/* Interactive hotspots diagram */}
-                        <div className="w-full h-36 flex items-center justify-center relative mt-3 bg-[radial-gradient(circle_at_center,rgba(21,199,192,0.06)_0%,transparent_70%)] rounded-lg">
-                          {/* Stylized Vehicle Outline */}
-                          <svg viewBox="0 0 400 180" className="w-full h-full opacity-60">
-                            <rect x="50" y="50" width="300" height="80" rx="25" fill="none" stroke="#5F7590" strokeWidth="1.5" strokeDasharray="4 4" />
-                            <rect x="100" y="40" width="200" height="100" rx="20" fill="none" stroke="#5F7590" strokeWidth="1.5" />
-                            {/* Front Windshield */}
-                            <path d="M130 50 L160 80 L240 80 L270 50 Z" fill="none" stroke="#5F7590" strokeWidth="1.5" />
-                            {/* Rear Windshield */}
-                            <path d="M110 90 L130 110 L270 110 L290 90 Z" fill="none" stroke="#5F7590" strokeWidth="1.5" />
-                            {/* Wheels */}
-                            <circle cx="90" cy="130" r="18" fill="none" stroke="#5F7590" strokeWidth="2" />
-                            <circle cx="310" cy="130" r="18" fill="none" stroke="#5F7590" strokeWidth="2" />
-                          </svg>
-
-                          {/* Hotspot buttons */}
-                          <button
-                            onClick={() => setSelectedHotspot("front_bumper")}
-                            className={`absolute top-[75px] right-[40px] w-5 h-5 rounded-full flex items-center justify-center font-bold text-[9px] cursor-pointer transition-all duration-300 ${
-                              selectedHotspot === "front_bumper" ? "bg-red-500 text-white animate-ping" : "bg-red-500/80 hover:bg-red-500 text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]"
-                            }`}
-                            title="Front Bumper Scratch"
-                          >
-                            !
-                          </button>
-
-                          <button
-                            onClick={() => setSelectedHotspot("left_mirror")}
-                            className={`absolute top-[28px] left-[150px] w-5 h-5 rounded-full flex items-center justify-center font-bold text-[9px] cursor-pointer transition-all duration-300 ${
-                              selectedHotspot === "left_mirror" ? "bg-[#E7B24B] text-black animate-ping" : "bg-[#E7B24B]/80 hover:bg-[#E7B24B] text-black shadow-[0_0_10px_rgba(231,178,75,0.5)]"
-                            }`}
-                            title="Side Mirror Dent"
-                          >
-                            !
-                          </button>
-
-                          <button
-                            onClick={() => setSelectedHotspot("windshield")}
-                            className={`absolute top-[60px] left-[190px] w-5 h-5 rounded-full flex items-center justify-center font-bold text-[9px] cursor-pointer transition-all duration-300 ${
-                              selectedHotspot === "windshield" ? "bg-red-500 text-white animate-ping" : "bg-red-500/80 hover:bg-red-500 text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]"
-                            }`}
-                            title="Windshield Star Crack"
-                          >
-                            !
-                          </button>
-
-                          <button
-                            onClick={() => setSelectedHotspot("rear_fender")}
-                            className={`absolute top-[85px] left-[55px] w-5 h-5 rounded-full flex items-center justify-center font-bold text-[9px] cursor-pointer transition-all duration-300 ${
-                              selectedHotspot === "rear_fender" ? "bg-[#E7B24B] text-black animate-ping" : "bg-[#E7B24B]/80 hover:bg-[#E7B24B] text-black shadow-[0_0_10px_rgba(231,178,75,0.5)]"
-                            }`}
-                            title="Rear Quarter Scratches"
-                          >
-                            !
-                          </button>
-                        </div>
-
-                        {/* Interactive hotspot details card */}
-                        <div className="w-full bg-[#070d15] border border-white/5 rounded-lg p-2.5 text-xs text-left min-h-[50px] flex items-center justify-between">
-                          {selectedHotspot === "front_bumper" && (
-                            <>
-                              <div className="flex-1 mr-2">
-                                <span className="font-bold text-white block">Front Bumper Lower Scratch</span>
-                                <span className="text-[10px] text-red-400 font-semibold block">Severity: HIGH | Est. Repair: R 1,800</span>
-                              </div>
-                              <button
-                                onClick={async () => {
-                                  const currentTasks = vehicle.reconTasks || [];
-                                  if (currentTasks.some(t => t.name.includes("Front Bumper Lower Scratch"))) {
-                                    alert("Item already exists in Recon list!");
-                                    return;
-                                  }
-                                  const updated = [...currentTasks, {
-                                    id: "rec_" + Date.now(),
-                                    name: "Front Bumper Scratch (TrueAI Scan)",
-                                    cost: 1800,
-                                    status: "Pending" as const,
-                                    dateAdded: new Date().toISOString().slice(0, 10)
-                                  }];
-                                  await onUpdateVehicle(vehicle.id, { reconTasks: updated });
-                                  alert("Synced to showroom reconditioning ledger!");
-                                }}
-                                className="px-2.5 py-1 bg-[#1466E0] text-white hover:bg-[#1466E0]/80 rounded text-[9px] font-bold cursor-pointer uppercase transition-all"
-                              >
-                                Sync to Recon
-                              </button>
-                            </>
-                          )}
-                          {selectedHotspot === "left_mirror" && (
-                            <>
-                              <div className="flex-1 mr-2">
-                                <span className="font-bold text-white block">Left Passenger Mirror Scuff</span>
-                                <span className="text-[10px] text-[#E7B24B] font-semibold block">Severity: MINOR | Est. Repair: R 850</span>
-                              </div>
-                              <button
-                                onClick={async () => {
-                                  const currentTasks = vehicle.reconTasks || [];
-                                  if (currentTasks.some(t => t.name.includes("Left Passenger Mirror"))) {
-                                    alert("Item already exists in Recon list!");
-                                    return;
-                                  }
-                                  const updated = [...currentTasks, {
-                                    id: "rec_" + Date.now(),
-                                    name: "Left Mirror Scuff (TrueAI Scan)",
-                                    cost: 850,
-                                    status: "Pending" as const,
-                                    dateAdded: new Date().toISOString().slice(0, 10)
-                                  }];
-                                  await onUpdateVehicle(vehicle.id, { reconTasks: updated });
-                                  alert("Synced to showroom reconditioning ledger!");
-                                }}
-                                className="px-2.5 py-1 bg-[#1466E0] text-white hover:bg-[#1466E0]/80 rounded text-[9px] font-bold cursor-pointer uppercase transition-all"
-                              >
-                                Sync to Recon
-                              </button>
-                            </>
-                          )}
-                          {selectedHotspot === "windshield" && (
-                            <>
-                              <div className="flex-1 mr-2">
-                                <span className="font-bold text-white block">Windshield Star Chip (Driver Side)</span>
-                                <span className="text-[10px] text-red-400 font-semibold block">Severity: CRITICAL | Est. Repair: R 1,200</span>
-                              </div>
-                              <button
-                                onClick={async () => {
-                                  const currentTasks = vehicle.reconTasks || [];
-                                  if (currentTasks.some(t => t.name.includes("Windshield Star Chip"))) {
-                                    alert("Item already exists in Recon list!");
-                                    return;
-                                  }
-                                  const updated = [...currentTasks, {
-                                    id: "rec_" + Date.now(),
-                                    name: "Windshield Chip (TrueAI Scan)",
-                                    cost: 1200,
-                                    status: "Pending" as const,
-                                    dateAdded: new Date().toISOString().slice(0, 10)
-                                  }];
-                                  await onUpdateVehicle(vehicle.id, { reconTasks: updated });
-                                  alert("Synced to showroom reconditioning ledger!");
-                                }}
-                                className="px-2.5 py-1 bg-[#1466E0] text-white hover:bg-[#1466E0]/80 rounded text-[9px] font-bold cursor-pointer uppercase transition-all"
-                              >
-                                Sync to Recon
-                              </button>
-                            </>
-                          )}
-                          {selectedHotspot === "rear_fender" && (
-                            <>
-                              <div className="flex-1 mr-2">
-                                <span className="font-bold text-white block">Rear Left Fender Wheel Arch Scratch</span>
-                                <span className="text-[10px] text-[#E7B24B] font-semibold block">Severity: MEDIUM | Est. Repair: R 2,200</span>
-                              </div>
-                              <button
-                                onClick={async () => {
-                                  const currentTasks = vehicle.reconTasks || [];
-                                  if (currentTasks.some(t => t.name.includes("Rear Left Fender"))) {
-                                    alert("Item already exists in Recon list!");
-                                    return;
-                                  }
-                                  const updated = [...currentTasks, {
-                                    id: "rec_" + Date.now(),
-                                    name: "Rear Fender Repair (TrueAI Scan)",
-                                    cost: 2200,
-                                    status: "Pending" as const,
-                                    dateAdded: new Date().toISOString().slice(0, 10)
-                                  }];
-                                  await onUpdateVehicle(vehicle.id, { reconTasks: updated });
-                                  alert("Synced to showroom reconditioning ledger!");
-                                }}
-                                className="px-2.5 py-1 bg-[#1466E0] text-white hover:bg-[#1466E0]/80 rounded text-[9px] font-bold cursor-pointer uppercase transition-all"
-                              >
-                                Sync to Recon
-                              </button>
-                            </>
-                          )}
-                          {!selectedHotspot && (
-                            <span className="text-[#9DB0C6] text-[10px] italic text-center w-full">
-                              Click any red/orange hotspot point on the wireframe model to extract computer-vision details.
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* TrueAI Scan and Remarketing control buttons */}
-                      <div className="flex flex-col gap-2.5">
-                        <button
-                          onClick={() => {
-                            setTchekScanning(true);
-                            setTimeout(() => {
-                              setTchekScanning(false);
-                              setSelectedHotspot("front_bumper");
-                            }, 1200);
-                          }}
-                          className="w-full py-2 bg-[#15C7C0]/10 border border-[#15C7C0]/20 hover:bg-[#15C7C0]/20 text-[#15C7C0] font-black text-[10px] rounded-xl transition-all uppercase tracking-wider cursor-pointer"
-                        >
-                          Trigger Fresh 3D AI Body Scan
-                        </button>
-
                         {/* TrueAI Copywriter Generator */}
                         <div className="bg-black/20 border border-white/5 rounded-xl p-3 flex flex-col gap-2">
                           <div className="flex items-center gap-1.5 text-xs text-white font-bold">
                             <Sparkles size={12} className="text-[#15C7C0]" />
-                            TrueAI One-Click Auto-Remarket Copy
+                            Advert copy
                           </div>
                           
                           {generatingCopy ? (
@@ -726,10 +462,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           ) : (
                             <button
                               onClick={() => {
-                                setGeneratingCopy(true);
-                                setTimeout(() => {
-                                  setGeneratingCopy(false);
-                                  setRemarketingCopy(
+                                // Built from the vehicle record, instantly. The
+                                // spinner here only ever simulated thinking.
+                                setRemarketingCopy(
                                     `🔥 JUST ARRIVED IN SHOWROOM! 🔥\n\n` +
                                     `🌟 ${vehicle.year} ${vehicle.make.toUpperCase()} ${vehicle.model.toUpperCase()} (${vehicle.transmission})\n` +
                                     `📍 Mileage: ${vehicle.mileage.toLocaleString()} km\n` +
@@ -741,12 +476,11 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                     // happened, and the dealer would have been the one publishing it.
                                     `✨ Well looked after and ready to drive away.\n\n` +
                                     `📞 Contact us now to secure or book a test-drive. Finance options available!`
-                                  );
-                                }, 800);
+                                );
                               }}
                               className="w-full py-2 bg-[#1466E0] hover:bg-opacity-90 text-xs text-white font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
                             >
-                              <FileText size={13} /> Draft TrueAI Showroom Listing
+                              <FileText size={13} /> Build advert text
                             </button>
                           )}
                         </div>
@@ -756,7 +490,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1.5 text-xs text-white font-bold">
                                 <Globe size={12} className="text-[#35C46B]" />
-                                Automated SEO & AEO Generator
+                                Page title & description
                               </div>
                               <span className="bg-[#35C46B]/15 text-[#35C46B] text-[8px] font-bold px-1.5 py-0.5 rounded">AUTO-RANK</span>
                             </div>
@@ -771,232 +505,10 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                             </button>
                           </div>
                         )}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* TRUEAI WEB-READY IMAGE ENHANCER STUDIO */}
-                <div className="bg-gradient-to-tr from-[#121c2c] to-[#07101a] border border-white/5 rounded-xl p-4 flex flex-col gap-4">
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <Layers size={16} className="text-[#15C7C0]" />
-                      <div>
-                        <h4 className="text-xs font-black text-white uppercase tracking-wider">TrueAI Studio Backdrop Enhancer</h4>
-                        <p className="text-[9px] text-[#9DB0C6]">Turn smartphone yard photos into premium web-ready showroom assets</p>
-                      </div>
-                    </div>
-                    <span className="text-[8px] font-mono text-[#15C7C0] bg-[#15C7C0]/15 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
-                      STUDIO BOOTH ACTIVE
-                    </span>
-                  </div>
-
-                  {/* Select Image Dropdown */}
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] text-[#9DB0C6] uppercase font-bold tracking-wider">Select Photo to Enhance</label>
-                    <div className="flex gap-2">
-                      <select
-                        value={selectedEnhanceImg || (imagesList[0] || "")}
-                        onChange={(e) => {
-                          setSelectedEnhanceImg(e.target.value);
-                          setEnhancedResult(null);
-                        }}
-                        className="flex-1 bg-black/40 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-[#15C7C0]"
-                      >
-                        {imagesList.map((img, idx) => (
-                          <option key={idx} value={img} className="bg-[#070d15]">
-                            Photo #{idx + 1} ({img.startsWith("data:") ? "Uploaded Base64" : "Web Asset"})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Configuration Checkboxes */}
-                  <div className="bg-black/30 border border-white/3 rounded-lg p-3 space-y-2.5 text-xs">
-                    <span className="text-[8px] text-[#9DB0C6] uppercase font-bold tracking-wider block">Enhancement Pipeline Config</span>
-                    
-                    <label className="flex items-center gap-2.5 text-white cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={enhanceBg}
-                        onChange={(e) => setEnhanceBg(e.target.checked)}
-                        className="rounded border-white/10 text-[#1466E0] focus:ring-[#1466E0] bg-black/40"
-                      />
-                      <div>
-                        <span className="font-semibold block">Remove Background & Place in Showroom Booth</span>
-                        <span className="text-[9px] text-[#9DB0C6] block">Superimposes vehicle onto high-end Sandton virtual showroom floor</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-2.5 text-white cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={enhanceLighting}
-                        onChange={(e) => setEnhanceLighting(e.target.checked)}
-                        className="rounded border-white/10 text-[#1466E0] focus:ring-[#1466E0] bg-black/40"
-                      />
-                      <div>
-                        <span className="font-semibold block">Intelligent Studio Lighting & Reflection Optimization</span>
-                        <span className="text-[9px] text-[#9DB0C6] block">Balances exposure, removes harsh shadows, adds paint gloss & depth</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-2.5 text-white cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={enhancePlate}
-                        onChange={(e) => setEnhancePlate(e.target.checked)}
-                        className="rounded border-white/10 text-[#1466E0] focus:ring-[#1466E0] bg-black/40"
-                      />
-                      <div>
-                        <span className="font-semibold block">Overlay Acrylic "DIALLED OPS" Branded Dealer Plate</span>
-                        <span className="text-[9px] text-[#9DB0C6] block">Auto-detects vehicle license plates and masks with branding</span>
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* Processing / Result Area */}
-                  {enhancingImg ? (
-                    <div className="bg-black/40 border border-white/5 rounded-xl p-6 flex flex-col items-center justify-center gap-3">
-                      <RefreshCw className="animate-spin text-[#15C7C0]" size={28} />
-                      <div className="text-center font-mono space-y-1">
-                        <span className="text-[11px] text-white font-bold block">TrueAI Studio Engine Running...</span>
-                        <span className="text-[9px] text-[#15C7C0] animate-pulse block">{enhancedStatusStep || "Processing..."}</span>
-                        
-                        {/* Fake micro progress bar */}
-                        <div className="w-48 h-1.5 bg-[#0f1826]/5 rounded-full overflow-hidden mx-auto mt-2">
-                          <div className="h-full bg-gradient-to-r from-[#1466E0] to-[#15C7C0] animate-[shimmer_2s_infinite] w-full" style={{
-                            animationDuration: '1.5s',
-                            backgroundImage: 'linear-gradient(90deg, #1466E0 0%, #15C7C0 50%, #1466E0 100%)',
-                            backgroundSize: '200% 100%'
-                          }} />
-                        </div>
-                      </div>
-                    </div>
-                  ) : enhancedResult ? (
-                    <div className="space-y-3">
-                      {/* Before / After side-by-side or comparative panel */}
-                      <span className="text-[8px] text-[#9DB0C6] uppercase font-bold tracking-wider block">Comparison Studio Preview</span>
-                      
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Before */}
-                        <div className="bg-black/40 border border-white/5 rounded-lg p-1.5 text-center relative overflow-hidden">
-                          <span className="absolute top-2 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[7px] font-bold text-gray-400 uppercase">Original Photo</span>
-                          <img
-                            src={selectedEnhanceImg || (imagesList[0] || "")}
-                            alt="Original"
-                            className="w-full h-24 object-cover rounded"
-                          />
-                        </div>
-
-                        {/* After */}
-                        <div className="bg-[#1466E0]/5 border border-[#15C7C0]/30 rounded-lg p-1.5 text-center relative overflow-hidden">
-                          <span className="absolute top-2 left-2 bg-[#15C7C0] text-black px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider font-bold">TrueAI Web-Ready</span>
-                          <img
-                            src={enhancedResult}
-                            alt="Enhanced Result"
-                            className="w-full h-24 object-cover rounded filter brightness-105 contrast-110 saturate-105"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Apply button */}
-                      <div className="flex flex-col gap-2">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={async () => {
-                              const originalImg = selectedEnhanceImg || (imagesList[0] || "");
-                              const existingImages = vehicle.images || [];
-                              // Replace original image with the enhanced one
-                              const updatedImages = existingImages.map(img => img === originalImg ? (enhancedResult || "") : img);
-                              
-                              await onUpdateVehicle(vehicle.id, { images: updatedImages });
-                              alert("Listing image successfully updated with TrueAI Web-Ready Studio asset!");
-                              setEnhancedResult(null);
-                            }}
-                            className="flex-1 py-2 bg-[#15C7C0] hover:bg-opacity-90 text-black font-black text-xs rounded-xl transition-all uppercase tracking-wider cursor-pointer"
-                          >
-                            Overwrite Original
-                          </button>
-                          <button
-                            onClick={async () => {
-                              const existingImages = vehicle.images || [];
-                              const updatedImages = [...existingImages, enhancedResult || ""];
-                              
-                              await onUpdateVehicle(vehicle.id, { images: updatedImages });
-                              setActiveImageIndex(updatedImages.length - 1);
-                              alert("Enhanced image successfully added to listing gallery!");
-                              setEnhancedResult(null);
-                            }}
-                            className="flex-1 py-2 bg-[#0f1826]/10 hover:bg-[#0f1826]/15 border border-white/15 text-white font-black text-xs rounded-xl transition-all uppercase tracking-wider cursor-pointer"
-                          >
-                            Add as New Photo
-                          </button>
-                        </div>
-                        {settings?.trueAI && (
-                          <button
-                            onClick={() => {
-                              alert("Generating social media campaign...\n\n" +
-                                    "Caption:\n🔥 Ready for a new ride? Check out this pristine " + vehicle.year + " " + vehicle.make + " " + vehicle.model + "! Just rolled into our showroom and won't last long.\n\n" +
-                                    "👉 DM us to book a test drive today!\n\n" +
-                                    "#Dealership #" + vehicle.make.replace(/\s+/g, '') + " #" + vehicle.model.replace(/\s+/g, '') + " #CarsForSale #AutoSales");
-                            }}
-                            className="w-full py-2 mt-1 bg-[#1466E0] hover:bg-opacity-90 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
-                          >
-                            <Facebook size={14} /> Create Social Remarketing Campaign
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        const targetImg = selectedEnhanceImg || (imagesList[0] || "");
-                        if (!targetImg) {
-                          alert("Please upload/select a photo first!");
-                          return;
-                        }
-
-                        setEnhancingImg(true);
-                        setEnhancedStatusStep("Isolating vehicle silhouette & masking edges...");
-                        
-                        setTimeout(() => {
-                          setEnhancedStatusStep("Replacing backdrop with Sandton Virtual Showroom Booth...");
-                        }, 600);
-
-                        setTimeout(() => {
-                          setEnhancedStatusStep("Overlaying premium 3D branded plates & lighting reflections...");
-                        }, 1200);
-
-                        setTimeout(() => {
-                          setEnhancingImg(false);
-                          
-                          // Set a gorgeous enhanced web-ready version based on the vehicle
-                          // Or use a custom high-end studio shot of the respective car make to simulate perfectly!
-                          let finalStudioImg = "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=800"; // Default clean BMW studio shot
-                          
-                          if (vehicle.make.toLowerCase().includes("ford")) {
-                            finalStudioImg = "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=800";
-                          } else if (vehicle.make.toLowerCase().includes("volkswagen") || vehicle.make.toLowerCase().includes("vw")) {
-                            finalStudioImg = "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800";
-                          } else if (vehicle.make.toLowerCase().includes("toyota")) {
-                            finalStudioImg = "https://images.unsplash.com/photo-1594568284297-7c64464062b1?auto=format&fit=crop&q=80&w=800";
-                          } else if (vehicle.make.toLowerCase().includes("bmw")) {
-                            finalStudioImg = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=800";
-                          }
-
-                          setEnhancedResult(finalStudioImg);
-                        }, 1800);
-                      }}
-                      className="w-full py-2.5 bg-gradient-to-r from-[#1466E0] to-[#15C7C0] hover:opacity-90 text-white font-black text-xs rounded-xl transition-all uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <Sparkles size={14} /> Run TrueAI Studio Enhancer
-                    </button>
-                  )}
                 </div>
               </div>
             )}
+
 
             {/* TAB 4: RECONDITIONING COST WORKFLOW AND LOGGING */}
             {activeTab === "recon" && (
@@ -1047,9 +559,10 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     await onUpdateVehicle(vehicle.id, { reconTasks: updated });
                   };
 
+                  /** Typical recon costs by category — a table, not a model.
+                   *  It was fronted by an "Assessing..." spinner and called an
+                   *  AI recommendation. The numbers are the useful part. */
                   const handleAICostRecommendation = () => {
-                    setSuggestingCost(true);
-                    setTimeout(() => {
                       let recommendedCost = 1500;
                       let recommendedName = "Valet & Detailing";
                       
@@ -1075,24 +588,17 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
                       setNewReconName(recommendedName);
                       setNewReconCost(recommendedCost.toString());
-                      setSuggestingCost(false);
-                    }, 500);
                   };
 
-                  const triggerSimulatedPrepPhoto = () => {
-                    // Pick a relevant gorgeous simulated reconditioning prep asset
-                    const simulatedPrepAssets: Record<string, string> = {
-                      "Bodywork / Painting": "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=300", // paint workshop
-                      "Interior Valet": "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&q=80&w=300", // vacuuming/detailing
-                      "Tyres & Alignment": "https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&q=80&w=300", // tyre alignment
-                      "Mechanical / Brakes": "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&q=80&w=300", // mechanics
-                      "Electrical / Diagnostics": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=300", // electrical diagnostic
-                      "Other": "https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&q=80&w=300"
-                    };
-
-                    const chosen = simulatedPrepAssets[reconCategory] || simulatedPrepAssets["Other"];
-                    setReconPhoto(chosen);
-                    alert("TrueAI Prep Camera Synced: Selected high-res inspection snapshot.");
+                  /** Attach a real photo of the work. This used to pick a stock
+                   *  workshop image by category and report "TrueAI Prep Camera
+                   *  Synced" — filing a photograph of someone else's garage as
+                   *  evidence of work done on this car. */
+                  const attachReconPhoto = (file?: File) => {
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => setReconPhoto(reader.result as string);
+                    reader.readAsDataURL(file);
                   };
 
                   return (
@@ -1222,7 +728,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                               disabled={suggestingCost}
                               className="w-full py-1 bg-[#15C7C0]/10 border border-[#15C7C0]/25 hover:bg-[#15C7C0]/15 text-[#15C7C0] text-[9px] font-black uppercase tracking-wider rounded transition-all cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 h-[24px]"
                             >
-                              <Sparkles size={9} /> {suggestingCost ? "Assessing..." : "Suggest AI Cost"}
+                              <Sparkles size={9} /> Typical cost
                             </button>
                           </div>
                         </div>
@@ -1261,13 +767,16 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           </div>
                           
                           <div className="flex gap-1.5">
-                            <button
-                              type="button"
-                              onClick={triggerSimulatedPrepPhoto}
-                              className="px-2 py-1 bg-[#0f1826]/5 hover:bg-white/10 border border-white/5 text-white rounded text-[8px] font-bold uppercase transition-all"
-                            >
-                              Simulate Camera Snap
-                            </button>
+                            <label className="px-2 py-1 bg-[#0f1826]/5 hover:bg-white/10 border border-white/5 text-white rounded text-[8px] font-bold uppercase transition-all cursor-pointer">
+                              Attach photo
+                              <input
+                                type="file"
+                                accept="image/*"
+                                capture="environment"
+                                className="hidden"
+                                onChange={(e) => attachReconPhoto(e.target.files?.[0])}
+                              />
+                            </label>
                           </div>
                         </div>
 
@@ -1352,76 +861,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           </div>
 
           {/* MOBILE PHONE SIMULATOR HUB */}
-          {showMobileSimulator && (
-            <div className="bg-[#0f1826]/90 border border-white/10 rounded-xl p-4 flex flex-col gap-3 mt-4 animate-fadeIn">
-              <div className="flex justify-between items-center border-b border-white/5 pb-1.5">
-                <div className="flex items-center gap-1 text-[#15C7C0]">
-                  <Smartphone size={12} />
-                  <span className="text-[10px] font-black uppercase tracking-wider">TrueCar DMS Mobile Sync</span>
-                </div>
-                <button
-                  onClick={() => setShowMobileSimulator(false)}
-                  className="text-[#9DB0C6] hover:text-[#E8EEF6] text-[10px] font-bold"
-                >
-                  Hide
-                </button>
-              </div>
-
-              <div className="flex items-start gap-2.5">
-                <div className="bg-[#070d15] p-2 rounded-lg border border-white/5">
-                  <QrCode size={40} className="text-[#15C7C0]" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[10px] text-white font-semibold">Virtual Mobile Phone Camera</p>
-                  <p className="text-[9px] text-[#9DB0C6] mt-0.5 leading-normal">
-                    This vehicle is tagged as barcode **`[STK:${vehicle.stockNumber}]`**. Trigger a simulated camera snap below to push a live image into the database in real-time.
-                  </p>
-                </div>
-              </div>
-
-              {/* simulated phone camera view screen */}
-              <div className="bg-[#070d15] border border-white/10 rounded-lg p-2.5 flex flex-col gap-2">
-                <div className="flex justify-between items-center text-[8px] font-mono text-[#9DB0C6]">
-                  <span>● CAM FEED SECURE</span>
-                  <span>100% SIGNAL</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  {getPresets().map((presetUrl, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => triggerSimulatedMobileUpload(presetUrl)}
-                      className="relative rounded-md overflow-hidden aspect-[16/10] group/preset cursor-pointer border border-white/5 hover:border-[#15C7C0]"
-                    >
-                      <img src={presetUrl} alt="Preset view" className="w-full h-full object-cover group-hover/preset:scale-105 transition-transform" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/preset:opacity-100 transition-all">
-                        <Camera size={16} className="text-white" />
-                      </div>
-                      <span className="absolute bottom-1 left-1.5 text-[8px] bg-black/60 px-1 py-0.5 rounded text-white font-bold uppercase font-mono">
-                        {idx === 0 ? "Front Exterior" : "Rear Angle"}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => triggerSimulatedMobileUpload("https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=600")}
-                  className="py-1.5 bg-[#15C7C0]/10 border border-[#15C7C0]/20 hover:bg-[#15C7C0]/20 text-[#15C7C0] rounded-md text-[9px] font-black uppercase tracking-wider text-center transition-all cursor-pointer"
-                >
-                  Snap Premium Interior Angle
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1 justify-center text-[9px] text-[#9DB0C6] leading-none">
-                <Zap size={8} className="text-[#15C7C0]" /> Real phones will trigger the system camera natively!
-              </div>
-            </div>
-          )}
-
-          {/* System watermark footer */}
-          <div className="text-[9px] text-[#9DB0C6] font-mono tracking-wider uppercase text-center mt-4">
-            TrueCar Sandton operations node: Live Sync active
-          </div>
         </div>
         </div>{/* end md:flex row */}
       </div>
