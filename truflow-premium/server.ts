@@ -77,17 +77,33 @@ const AUTH_FILE = path.join(DATA_DIR, "auth.json");
 // a session store.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Who a code belongs to.
+ *  admin      — TruSaaS, every dealership
+ *  principal  — the dealer who owns the account; manages their own staff
+ *  manager    — full access to that dealership, no seat management
+ *  salesperson— same data, no seat management
+ *  Seats are billable per active non-principal user. */
+type AuthRole = "admin" | "principal" | "manager" | "salesperson";
+
 type AuthAccount = {
   id: string;
   label: string;
   /** Which dealership this code sees. Omitted for the master admin. */
   dealershipId?: string;
-  role: "dealer" | "admin";
+  /** Links to a row in state.users for staff seats. Absent on the
+   *  principal's own login and on the master admin. */
+  userId?: string;
+  role: AuthRole;
   salt: string;
   hash: string;
   createdAt: string;
   rotatedAt?: string;
 };
+
+const MANAGES_USERS: AuthRole[] = ["admin", "principal"];
+/** Roles a dealer principal may hand out. Deliberately excludes admin — a
+ *  dealer must never be able to mint a login that sees other dealerships. */
+const ASSIGNABLE_ROLES: AuthRole[] = ["manager", "salesperson"];
 type AuthStore = { secret: string; accounts: AuthAccount[] };
 
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // one working day
@@ -117,7 +133,7 @@ function generateCode(): string {
  *    DEALER_CODE_D1 / _D2    — per dealership, id uppercased
  *  Unset means a random code is generated and printed instead. Changing the
  *  variable later does nothing; rotate the code through the API. */
-function codeFromEnv(role: AuthAccount["role"], dealershipId?: string): string {
+function codeFromEnv(role: AuthRole, dealershipId?: string): string {
   const raw =
     role === "admin"
       ? process.env.ADMIN_ACCESS_CODE
@@ -128,13 +144,14 @@ function codeFromEnv(role: AuthAccount["role"], dealershipId?: string): string {
   return code.length >= 6 ? code : "";
 }
 
-function makeAccount(label: string, role: AuthAccount["role"], dealershipId?: string, preset?: string) {
+function makeAccount(label: string, role: AuthRole, dealershipId?: string, preset?: string, userId?: string) {
   const code = preset || generateCode();
   const salt = crypto.randomBytes(16).toString("hex");
   const account: AuthAccount = {
     id: "acc_" + crypto.randomBytes(6).toString("hex"),
     label,
     dealershipId,
+    userId,
     role,
     salt,
     hash: hashCode(code, salt),
@@ -179,8 +196,8 @@ function ensureAuthStore(): AuthStore {
   }
   for (const d of readState().dealerships || []) {
     if (store.accounts.some((a) => a.dealershipId === d.id)) continue;
-    const preset = codeFromEnv("dealer", d.id);
-    const { account, code } = makeAccount(d.name, "dealer", d.id, preset);
+    const preset = codeFromEnv("principal", d.id);
+    const { account, code } = makeAccount(d.name + " (owner)", "principal", d.id, preset);
     store.accounts.push(account);
     issued.push(`  ${account.label.padEnd(32)} ${preset ? "*".repeat(code.length) : code} ${note(preset)}`);
   }
@@ -202,6 +219,7 @@ function signToken(account: AuthAccount, remember = false): string {
     JSON.stringify({
       sub: account.id,
       dealershipId: account.dealershipId,
+      userId: account.userId,
       role: account.role,
       label: account.label,
       exp: Date.now() + (remember ? TOKEN_TTL_REMEMBER_MS : TOKEN_TTL_MS),
@@ -261,6 +279,16 @@ function requireAuth(req: any, res: any, next: any) {
   if (!claims) {
     return res.status(401).json({ error: "Unauthorized", message: "Sign in to continue." });
   }
+
+  // A staff token stays valid until it expires, so removing someone has to be
+  // checked here — otherwise a dismissed salesperson keeps access for 30 days.
+  if (claims.userId) {
+    const user = readState().users.find((u: any) => u.id === claims.userId);
+    if (!user || user.isActive === false) {
+      return res.status(401).json({ error: "Unauthorized", message: "This login has been removed." });
+    }
+  }
+
   req.auth = claims;
   next();
 }
@@ -283,6 +311,14 @@ app.post("/api/auth/login", (req, res) => {
   const match = store.accounts.find((a) => hashCode(code, a.salt) === a.hash);
   if (!code || !match) {
     return res.status(401).json({ error: "Invalid code" });
+  }
+  // A removed staff member was still handed a token here — every later request
+  // then 401'd, so they got in and found a dead app instead of a clear refusal.
+  if (match.userId) {
+    const user = readState().users.find((u: any) => u.id === match.userId);
+    if (!user || user.isActive === false) {
+      return res.status(401).json({ error: "This login has been removed." });
+    }
   }
   res.json({
     token: signToken(match, remember),
@@ -312,13 +348,139 @@ app.post("/api/auth/codes/rotate", (req: any, res) => {
   if (preset && preset.length < 6) {
     return res.status(400).json({ error: "Code must be at least 6 characters." });
   }
-  const { account, code } = makeAccount(label || dealership.name, "dealer", dealershipId, preset);
-  store.accounts = store.accounts.filter((a) => a.dealershipId !== dealershipId);
+  const { account, code } = makeAccount(label || dealership.name + " (owner)", "principal", dealershipId, preset);
+  store.accounts = store.accounts.filter((a) => !(a.dealershipId === dealershipId && a.role === "principal"));
   account.rotatedAt = new Date().toISOString();
   store.accounts.push(account);
   writeAuth(store);
 
   res.json({ code, account: { label: account.label, dealershipId, role: account.role } });
+});
+
+// ── Seats — a dealer principal manages their own staff logins ───────────────
+
+/** The dealership the caller may act on. Admins may name one; everyone else
+ *  is pinned to their own, so a principal can't create staff elsewhere. */
+function targetDealership(req: any, bodyDealershipId?: string): string | undefined {
+  if (req.auth?.role === "admin") return bodyDealershipId || undefined;
+  return req.auth?.dealershipId;
+}
+
+/** Staff logins for a dealership, with the active seat count to bill against. */
+app.get("/api/auth/users", (req: any, res) => {
+  if (!MANAGES_USERS.includes(req.auth?.role)) {
+    return res.status(403).json({ error: "You can't manage logins." });
+  }
+  const dealershipId = targetDealership(req, req.query.dealershipId as string);
+  const state = readState();
+  const store = ensureAuthStore();
+
+  const seats = store.accounts
+    .filter((a) => a.userId && (!dealershipId || a.dealershipId === dealershipId))
+    .map((a) => {
+      const user = state.users.find((u: any) => u.id === a.userId);
+      return {
+        accountId: a.id,
+        userId: a.userId,
+        name: user?.name || a.label,
+        email: user?.email || "",
+        phone: user?.phone || "",
+        role: a.role,
+        dealershipId: a.dealershipId,
+        isActive: user?.isActive !== false,
+        createdAt: a.createdAt,
+        rotatedAt: a.rotatedAt,
+      };
+    });
+
+  res.json({
+    dealershipId,
+    seats,
+    activeSeats: seats.filter((s) => s.isActive).length,
+  });
+});
+
+/** Add a staff login. The code is returned once and never recoverable —
+ *  the principal hands it to the person, and rotates it if it goes missing. */
+app.post("/api/auth/users", (req: any, res) => {
+  if (!MANAGES_USERS.includes(req.auth?.role)) {
+    return res.status(403).json({ error: "You can't manage logins." });
+  }
+  const { name, email, phone, role, code: chosen } = req.body || {};
+  const dealershipId = targetDealership(req, req.body?.dealershipId);
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId is required." });
+  if (!String(name || "").trim()) return res.status(400).json({ error: "Name is required." });
+
+  const wanted: AuthRole = ASSIGNABLE_ROLES.includes(role) ? role : "salesperson";
+  const preset = String(chosen || "").trim();
+  if (preset && preset.length < 6) {
+    return res.status(400).json({ error: "Code must be at least 6 characters." });
+  }
+
+  const state = readState();
+  const user = {
+    id: "u_" + Date.now(),
+    name: String(name).trim(),
+    email: email || "",
+    role: wanted === "manager" ? "manager" : "salesperson",
+    phone: phone || "",
+    isActive: true,
+    dealershipId,
+  };
+  state.users.push(user);
+  writeState(state);
+
+  const store = ensureAuthStore();
+  const { account, code } = makeAccount(user.name, wanted, dealershipId, preset, user.id);
+  store.accounts.push(account);
+  writeAuth(store);
+
+  res.status(201).json({ code, user, role: wanted });
+});
+
+/** Issue a replacement code for a staff member. */
+app.post("/api/auth/users/:userId/rotate", (req: any, res) => {
+  if (!MANAGES_USERS.includes(req.auth?.role)) {
+    return res.status(403).json({ error: "You can't manage logins." });
+  }
+  const store = ensureAuthStore();
+  const existing = store.accounts.find((a) => a.userId === req.params.userId);
+  if (!existing) return res.status(404).json({ error: "No login for that user." });
+  if (req.auth.role !== "admin" && existing.dealershipId !== req.auth.dealershipId) {
+    return res.status(403).json({ error: "That login belongs to another dealership." });
+  }
+
+  const preset = String(req.body?.code || "").trim();
+  if (preset && preset.length < 6) {
+    return res.status(400).json({ error: "Code must be at least 6 characters." });
+  }
+  const { account, code } = makeAccount(
+    existing.label, existing.role, existing.dealershipId, preset, existing.userId
+  );
+  account.rotatedAt = new Date().toISOString();
+  store.accounts = store.accounts.filter((a) => a.userId !== req.params.userId);
+  store.accounts.push(account);
+  writeAuth(store);
+
+  res.json({ code, userId: req.params.userId });
+});
+
+/** Turn a seat off (or back on). Deactivating kills their session on the next
+ *  request and drops them out of the billable count; their history stays. */
+app.post("/api/auth/users/:userId/active", (req: any, res) => {
+  if (!MANAGES_USERS.includes(req.auth?.role)) {
+    return res.status(403).json({ error: "You can't manage logins." });
+  }
+  const state = readState();
+  const user = state.users.find((u: any) => u.id === req.params.userId);
+  if (!user) return res.status(404).json({ error: "Unknown user." });
+  if (req.auth.role !== "admin" && user.dealershipId !== req.auth.dealershipId) {
+    return res.status(403).json({ error: "That user belongs to another dealership." });
+  }
+
+  user.isActive = req.body?.isActive !== false;
+  writeState(state);
+  res.json({ user });
 });
 
 app.get("/api/auth/codes", (req: any, res) => {
@@ -930,20 +1092,14 @@ app.get("/api/users", (req: any, res) => {
   res.json(scopeToDealer(state.users, req.auth));
 });
 
-app.post("/api/users", (req, res) => {
-  const state = readState();
-  const newUser = {
-    id: "u_" + Date.now(),
-    name: req.body.name || "New Staff Member",
-    email: req.body.email || "",
-    role: req.body.role || "salesperson",
-    phone: req.body.phone || "",
-    isActive: true
-  };
-
-  state.users.push(newUser);
-  writeState(state);
-  res.status(201).json({ message: "User registered.", user: newUser });
+// Staff are created through /api/auth/users, which also mints their login and
+// counts the seat. This route stayed open and made users with no dealership and
+// no way to sign in, which is how you get uncounted staff on a per-seat plan.
+app.post("/api/users", (req: any, res) => {
+  res.status(410).json({
+    error: "Use POST /api/auth/users",
+    message: "Creating a staff member now issues their access code and books a seat.",
+  });
 });
 
 // Dispatch / Communications logging API
