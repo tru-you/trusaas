@@ -113,6 +113,59 @@ const DEALERSHIPS = [
   { id: "d2", name: "Cars on Caledon" },
 ];
 
+
+/* ── Pipeline discipline ────────────────────────────────────────────────────
+   A lead is only "in the pipeline" if someone knows what happens next and
+   when. These drive the board, the overdue filter and the day's worklist. */
+
+const DAY_MS = 86400000;
+const today = () => new Date().toISOString().slice(0, 10);
+const daysBetween = (iso?: string | null) =>
+  iso ? Math.floor((Date.now() - new Date(iso).getTime()) / DAY_MS) : null;
+
+/** How long a lead may sit in each stage before it needs chasing. A deal in
+ *  Negotiating going quiet for a week is the expensive kind of forgotten. */
+const STAGE_SLA_DAYS: Record<string, number> = {
+  "New": 1,
+  "Contacted": 3,
+  "Test Drive Scheduled": 2,
+  "Negotiating": 3,
+};
+
+/** Overdue means the next step's date has passed, or nobody set one and the
+ *  lead has been sitting longer than its stage allows. Closed leads never are. */
+function leadOverdue(l: any): boolean {
+  if (l.status === "Closed Won" || l.status === "Closed Lost") return false;
+  if (l.nextActionAt) return l.nextActionAt < today();
+  const sla = STAGE_SLA_DAYS[l.status];
+  if (sla == null) return false;
+  const idle = daysBetween(l.lastContactedAt || l.stageChangedAt || l.createdAt);
+  return idle != null && idle > sla;
+}
+
+/** Plain-language due state for a card. */
+function dueLabel(l: any): { text: string; overdue: boolean } | null {
+  if (l.status === "Closed Won" || l.status === "Closed Lost") return null;
+  if (l.nextActionAt) {
+    const d = Math.round((new Date(l.nextActionAt).getTime() - new Date(today()).getTime()) / DAY_MS);
+    if (d < 0) return { text: `${l.nextAction || "Follow up"} · ${Math.abs(d)}d overdue`, overdue: true };
+    if (d === 0) return { text: `${l.nextAction || "Follow up"} · today`, overdue: false };
+    if (d === 1) return { text: `${l.nextAction || "Follow up"} · tomorrow`, overdue: false };
+    return { text: `${l.nextAction || "Follow up"} · in ${d}d`, overdue: false };
+  }
+  const idle = daysBetween(l.lastContactedAt || l.stageChangedAt || l.createdAt);
+  if (idle == null) return { text: "No next step set", overdue: true };
+  return { text: idle === 0 ? "No next step set" : `No next step · idle ${idle}d`, overdue: leadOverdue(l) };
+}
+
+/** Moving a lead on should propose the next step, not leave a blank. */
+const NEXT_STEP_ON_STAGE: Record<string, { action: string; inDays: number }> = {
+  "New":                  { action: "First contact",       inDays: 0 },
+  "Contacted":            { action: "Follow up",           inDays: 2 },
+  "Test Drive Scheduled": { action: "Confirm test drive",   inDays: 1 },
+  "Negotiating":          { action: "Chase decision",       inDays: 2 },
+};
+
 export default function App() {
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
@@ -532,6 +585,20 @@ export default function App() {
   };
 
   // Resets (data only — not the same as log out)
+  /** Log that this lead was actioned and schedule the next step.
+   *  Leads go cold because nothing forces the question "and then what?" —
+   *  this asks it every time, and defaults sensibly by stage. */
+  const advanceLead = async (l: any) => {
+    const rule = NEXT_STEP_ON_STAGE[l.status] || { action: "Follow up", inDays: 2 };
+    const due = new Date(Date.now() + rule.inDays * DAY_MS).toISOString().slice(0, 10);
+    await updateLead(l.id, {
+      lastContactedAt: today(),
+      nextAction: rule.action,
+      nextActionAt: due,
+    } as any);
+    loadAllState();
+  };
+
   const handleResetState = () => {
     // Typed confirmation, not an OK button. This deletes every dealership's
     // stock, leads, invoices and signed documents, permanently.
@@ -1684,7 +1751,21 @@ export default function App() {
             <div className="flex justify-between items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Leads</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Enquiries from your website and walk-ins</p>
+                {/* The number that should decide how the morning goes. */}
+                {(() => {
+                  const open = filteredLeads.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost");
+                  const late = open.filter(leadOverdue).length;
+                  const due  = open.filter((l) => l.nextActionAt === today() && !leadOverdue(l)).length;
+                  return (
+                    <p className="text-xs mt-0.5 font-medium text-[rgba(232,234,230,0.72)]">
+                      {late > 0 && <span className="text-[#C07676] font-semibold">{late} overdue</span>}
+                      {late > 0 && (due > 0 || open.length > 0) && " · "}
+                      {due > 0 && <span>{due} due today</span>}
+                      {due > 0 && " · "}
+                      {open.length} open
+                    </p>
+                  );
+                })()}
               </div>
               <div className="flex gap-2">
                 <button
@@ -1740,7 +1821,7 @@ export default function App() {
                 {["New", "Contacted", "Test Drive Scheduled", "Negotiating", "Closed Won", "Closed Lost"].map((stage) => {
                   const filteredLeads = state.leads.filter((l) => {
                     const statusMatch = l.status === stage;
-                    const overdueMatch = !filterOverdueOnly || (l.status === "New" || !l.lastContactedAt);
+                    const overdueMatch = !filterOverdueOnly || leadOverdue(l);
                     return statusMatch && overdueMatch;
                   });
 
@@ -1768,7 +1849,19 @@ export default function App() {
                               )}
                             </div>
                             <div className="text-[13px] text-[rgba(232,234,230,0.72)] truncate">{getVehicleLabel(l.vehicleId)}</div>
-                            <div className="text-[12px] text-[rgba(232,234,230,0.72)] mt-1 font-mono">Origin: {l.source}</div>
+                            <div className="text-[12px] text-[rgba(232,234,230,0.55)] mt-1">{l.source}</div>
+
+                            {/* The next step, and whether it has slipped. This is the
+                                line a salesperson should be reading, so it gets the weight. */}
+                            {(() => {
+                              const d = dueLabel(l);
+                              if (!d) return null;
+                              return (
+                                <div className={`text-[12px] mt-1.5 font-medium ${d.overdue ? "text-[#C07676]" : "text-[rgba(232,234,230,0.72)]"}`}>
+                                  {d.overdue ? "● " : ""}{d.text}
+                                </div>
+                              );
+                            })()}
                             
                             <div className="flex justify-between items-center border-t border-white/3 pt-2 mt-2 gap-2">
                               <div className="flex items-center gap-1.5">
@@ -1790,7 +1883,16 @@ export default function App() {
                                     WA
                                   </button>
                                 )}
-                                <span className={`w-1.5 h-1.5 rounded-full ${l.lastContactedAt ? "bg-[#4ADE9B] shadow-[0_0_6px_#4ADE9B]" : "bg-[#FF6B6B] shadow-[0_0_6px_#FF6B6B]"}`}></span>
+                                {l.status !== "Closed Won" && l.status !== "Closed Lost" && (
+                                  <button
+                                    type="button"
+                                    title="Mark contacted and set the next step"
+                                    className="text-[12px] font-semibold px-1.5 py-0.5 rounded bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30"
+                                    onClick={() => advanceLead(l)}
+                                  >
+                                    Done
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>

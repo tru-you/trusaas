@@ -888,6 +888,10 @@ app.post("/api/leads", (req: any, res) => {
     createdAt: new Date().toISOString().slice(0, 10),
     lastContactedAt: null,
     digitalScore: req.body.digitalScore || Math.floor(Math.random() * 41) + 50, // Auto scoring
+    // A new lead is due a first contact today — not "sometime".
+    nextAction: req.body.nextAction || "First contact",
+    nextActionAt: req.body.nextActionAt || new Date().toISOString().slice(0, 10),
+    stageChangedAt: new Date().toISOString().slice(0, 10),
     notes: req.body.notes || "Generated automatically from web widget.",
     journey: req.body.journey || [
       { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), action: "Web Form Submission", detail: "Completed Lead Contact Form" }
@@ -2136,6 +2140,9 @@ app.post("/api/integration/webhook-lead", (req, res) => {
       phone,
       email: email || "",
       status: "New Lead",
+      nextAction: "First contact",
+      nextActionAt: new Date().toISOString().slice(0, 10),
+      stageChangedAt: new Date().toISOString().slice(0, 10),
       digitalScore: Math.floor(Math.random() * 30) + 60, // Warm/Hot lead from web
       vehicleId: vehicleId || state.vehicles[0]?.id || "",
       source: "WordPress Plugin",
