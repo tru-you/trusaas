@@ -366,10 +366,64 @@ export async function deleteDocument(id: string): Promise<void> {
   if (!res.ok) throw new Error(`Document delete failed (${res.status})`);
 }
 
-export async function createUser(user: Omit<User, "id">): Promise<User> {
-  const newU = { ...user, id: 'u' + Date.now() } as User;
-  await updateState(s => s.users.push(newU));
-  return newU;
+export type Seat = {
+  accountId: string;
+  userId: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: "principal" | "manager" | "salesperson";
+  dealershipId?: string;
+  isActive: boolean;
+  createdAt: string;
+  rotatedAt?: string;
+};
+
+/** Staff logins for this dealership, plus the billable active count. */
+export async function fetchSeats(): Promise<{ seats: Seat[]; activeSeats: number }> {
+  const res = await authFetch("/api/auth/users", { cache: "no-store" });
+  if (!res.ok) throw new Error("Could not load staff logins.");
+  return res.json();
+}
+
+/**
+ * Add a staff member. Creates the person AND their login in one step, and
+ * books the seat — the old version wrote a user with no dealership and no way
+ * to sign in.
+ *
+ * The returned code is shown once and is not recoverable; hand it over, and
+ * rotate it if it goes missing.
+ */
+export async function createUser(
+  user: Omit<User, "id" | "isActive"> & { role: "manager" | "salesperson" }
+): Promise<{ code: string; user: User }> {
+  const res = await authFetch("/api/auth/users", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(user),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || "Could not add that person.");
+  return data;
+}
+
+/** Replace someone's access code — for a forgotten code or a lost phone. */
+export async function rotateSeatCode(userId: string): Promise<string> {
+  const res = await authFetch(`/api/auth/users/${userId}/rotate`, { method: "POST" });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || "Could not issue a new code.");
+  return data.code;
+}
+
+/** Switch a seat off (or back on). Off ends their session immediately and
+ *  drops them out of the billable count; their leads and notes stay. */
+export async function setSeatActive(userId: string, isActive: boolean): Promise<void> {
+  const res = await authFetch(`/api/auth/users/${userId}/active`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ isActive }),
+  });
+  if (!res.ok) throw new Error("Could not update that login.");
 }
 
 export async function addCommunication(comm: Omit<Communication, "id" | "sentAt">): Promise<Communication> {

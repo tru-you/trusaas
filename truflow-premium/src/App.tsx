@@ -55,6 +55,10 @@ import {
   createExpense,
   reconcileExpense,
   createUser,
+  fetchSeats,
+  rotateSeatCode,
+  setSeatActive,
+  type Seat,
   uploadDocument,
   signDocument,
   deleteDocument
@@ -121,6 +125,10 @@ export default function App() {
   useEffect(() => {
     if (!isLoggedIn) return;
     return initGlassMotion();
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (isLoggedIn) refreshSeats();
   }, [isLoggedIn]);
 
   // --- Derived State ---
@@ -259,6 +267,13 @@ export default function App() {
   const [newAgreementForm, setNewAgreementForm] = useState({ leadId: "", vehicleId: "", purchasePrice: 0, depositAmount: 50000, type: "Vehicle Sale" as any, status: "Pending Signature" as any });
   const [newTaskForm, setNewTaskForm] = useState({ title: "", leadId: "", vehicleId: "", assignedUserId: "u1", dueDate: new Date().toISOString().slice(0, 10), priority: "Normal" as any, status: "Pending" as any });
   const [newUserForm, setNewUserForm] = useState({ name: "", email: "", role: "salesperson" as any, phone: "" });
+  // Staff logins ("seats") — the principal manages these, and activeSeats is
+  // what the dealership is billed on.
+  const [seats, setSeats] = useState<Seat[]>([]);
+  const [activeSeats, setActiveSeats] = useState(0);
+  const [seatError, setSeatError] = useState("");
+  /** A freshly issued code, shown once. Never fetched back from the server. */
+  const [issuedCode, setIssuedCode] = useState<{ name: string; code: string } | null>(null);
   const [newVehicleForm, setNewVehicleForm] = useState({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel" as any, transmission: "Automatic" as any, bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: "d1", category: "" });
 
   const [vinInput, setVinInput] = useState("");
@@ -597,10 +612,49 @@ export default function App() {
 
   const handleCreateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createUser(newUserForm);
-    setIsUserModalOpen(false);
-    setNewUserForm({ name: "", email: "", role: "salesperson", phone: "" });
-    loadAllState();
+    setSeatError("");
+    try {
+      // Adding a person issues their access code. It is shown once here and is
+      // not recoverable afterwards, so the modal stays open until it's copied.
+      const { code } = await createUser(newUserForm);
+      setIssuedCode({ name: newUserForm.name, code });
+      setNewUserForm({ name: "", email: "", role: "salesperson", phone: "" });
+      loadAllState();
+      refreshSeats();
+    } catch (err: any) {
+      setSeatError(err?.message || "Could not add that person.");
+    }
+  };
+
+  const refreshSeats = async () => {
+    try {
+      const data = await fetchSeats();
+      setSeats(data.seats);
+      setActiveSeats(data.activeSeats);
+    } catch {
+      setSeats([]);
+    }
+  };
+
+  const handleRotateSeat = async (userId: string, name: string) => {
+    setSeatError("");
+    try {
+      setIssuedCode({ name, code: await rotateSeatCode(userId) });
+      refreshSeats();
+    } catch (err: any) {
+      setSeatError(err?.message || "Could not issue a new code.");
+    }
+  };
+
+  const handleToggleSeat = async (userId: string, isActive: boolean) => {
+    setSeatError("");
+    try {
+      await setSeatActive(userId, isActive);
+      refreshSeats();
+      loadAllState();
+    } catch (err: any) {
+      setSeatError(err?.message || "Could not update that login.");
+    }
   };
 
   const handlePublishVehicle = async (e: React.FormEvent) => {
@@ -2158,12 +2212,58 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Team & Performance</h1>
-                <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">Salesperson catalog metrics & access configurations</p>
+                <h1 className="font-sans text-2xl font-black tracking-tight text-[#E8EEF6]">Team</h1>
+                <p className="text-xs text-[#9DB0C6] mt-0.5 font-medium">
+                  {activeSeats} {activeSeats === 1 ? "person" : "people"} with access
+                </p>
               </div>
-              <button onClick={() => setIsUserModalOpen(true)} className="btn btn-primary">
-                + Register User
+              <button onClick={() => { setIssuedCode(null); setSeatError(""); setIsUserModalOpen(true); }} className="btn btn-primary">
+                + Add staff member
               </button>
+            </div>
+
+            {seatError && <p className="text-xs text-[#F0555A]">{seatError}</p>}
+
+            {/* Who can sign in. Separate from the performance cards below, which
+                also cover people who no longer have access. */}
+            <div className="card p-4 flex flex-col gap-2">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#9DB0C6]">Access</span>
+                <span className="text-[10px] text-[#9DB0C6]">{activeSeats} active</span>
+              </div>
+              {seats.length === 0 ? (
+                <p className="text-xs text-[#9DB0C6] py-2">
+                  Only you can sign in so far. Add your salespeople so each has their own code.
+                </p>
+              ) : (
+                seats.map((s) => (
+                  <div key={s.accountId} className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0">
+                    <div className="min-w-0">
+                      <div className={`text-xs font-bold truncate ${s.isActive ? "text-[#E8EEF6]" : "text-[#9DB0C6] line-through"}`}>
+                        {s.name}
+                      </div>
+                      <div className="text-[10px] text-[#9DB0C6] uppercase font-mono tracking-wider">
+                        {s.role}{s.isActive ? "" : " · no access"}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleRotateSeat(s.userId, s.name)}
+                        className="text-[10px] uppercase font-bold text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer"
+                        title="Issue a replacement code"
+                      >
+                        New code
+                      </button>
+                      <button
+                        onClick={() => handleToggleSeat(s.userId, !s.isActive)}
+                        className={`text-[10px] uppercase font-bold cursor-pointer ${s.isActive ? "text-[#F0555A] hover:opacity-80" : "text-[#35C46B] hover:opacity-80"}`}
+                      >
+                        {s.isActive ? "Remove access" : "Restore"}
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* Sales reps card rosters */}
@@ -2846,10 +2946,38 @@ export default function App() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
           <div className="bg-[#0f1826] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-black tracking-tight text-[#E8EEF6]">Register User Account</h3>
-              <button onClick={() => setIsUserModalOpen(false)} className="text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer"><X size={16} /></button>
+              <h3 className="font-sans text-lg font-black tracking-tight text-[#E8EEF6]">
+                {issuedCode ? "Access code" : "Add a staff member"}
+              </h3>
+              <button onClick={() => { setIsUserModalOpen(false); setIssuedCode(null); setSeatError(""); }} className="text-[#9DB0C6] hover:text-[#E8EEF6] cursor-pointer"><X size={16} /></button>
             </div>
+
+            {/* Shown once. There is no way to read it back — only to issue a new one. */}
+            {issuedCode ? (
+              <div className="flex flex-col gap-3">
+                <p className="text-xs text-[#9DB0C6] leading-relaxed">
+                  Give this code to <b className="text-[#E8EEF6]">{issuedCode.name}</b>. It won't be
+                  shown again — if it goes missing, issue a new one from the staff list.
+                </p>
+                <div className="bg-[#070d15] border border-[#1466E0]/40 rounded-xl px-4 py-4 text-center">
+                  <span className="text-xl font-black font-mono tracking-[0.2em] text-[#E8EEF6] select-all">{issuedCode.code}</span>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard?.writeText(issuedCode.code)}
+                    className="btn btn-secondary"
+                  >
+                    Copy
+                  </button>
+                  <button type="button" onClick={() => setIssuedCode(null)} className="btn btn-primary">
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
             <form onSubmit={handleCreateUserSubmit} className="flex flex-col gap-3">
+              {seatError && <p className="text-xs text-[#F0555A]">{seatError}</p>}
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] text-[#9DB0C6] uppercase tracking-wider font-semibold">Full Name</label>
                 <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EEF6]" />
@@ -2864,7 +2992,6 @@ export default function App() {
                   <select value={newUserForm.role} onChange={(e) => setNewUserForm((p) => ({ ...p, role: e.target.value as any }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EEF6] font-sans">
                     <option className="bg-[#0f1826]" value="salesperson">Salesperson</option>
                     <option className="bg-[#0f1826]" value="manager">Manager</option>
-                    <option className="bg-[#0f1826]" value="admin">System Administrator</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -2872,11 +2999,16 @@ export default function App() {
                   <input type="text" required placeholder="082 111 2222" value={newUserForm.phone} onChange={(e) => setNewUserForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0f1826]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EEF6]" />
                 </div>
               </div>
+              <p className="text-[10px] text-[#9DB0C6] leading-relaxed">
+                They'll get their own access code and see only this dealership's stock and leads.
+                This adds a billable seat.
+              </p>
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" onClick={() => setIsUserModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Create User Profile</button>
+                <button type="submit" className="btn btn-primary">Add &amp; issue code</button>
               </div>
             </form>
+            )}
           </div>
         </div>
       )}

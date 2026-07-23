@@ -483,6 +483,33 @@ app.post("/api/auth/users/:userId/active", (req: any, res) => {
   res.json({ user });
 });
 
+/** Change your own admin code. Requires the current one, so a borrowed session
+ *  on an unlocked laptop can't lock you out of your own platform. */
+app.post("/api/auth/codes/admin", (req: any, res) => {
+  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+  const { currentCode, newCode } = req.body || {};
+  const next = String(newCode || "").trim();
+  if (next.length < 8) {
+    return res.status(400).json({ error: "Admin code must be at least 8 characters." });
+  }
+
+  const store = ensureAuthStore();
+  const admin = store.accounts.find((a) => a.id === req.auth.sub && a.role === "admin");
+  if (!admin) return res.status(404).json({ error: "Admin account not found." });
+  if (hashCode(String(currentCode || ""), admin.salt) !== admin.hash) {
+    return res.status(401).json({ error: "Current admin code is wrong." });
+  }
+
+  admin.salt = crypto.randomBytes(16).toString("hex");
+  admin.hash = hashCode(next, admin.salt);
+  admin.rotatedAt = new Date().toISOString();
+  writeAuth(store);
+
+  // The old token still verifies — it's signed, and the signing secret hasn't
+  // changed — so hand back a fresh one and let the client replace it.
+  res.json({ ok: true, token: signToken(admin, true) });
+});
+
 app.get("/api/auth/codes", (req: any, res) => {
   if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
   // Codes themselves are unrecoverable — this lists who has one.
