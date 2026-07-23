@@ -179,8 +179,8 @@
   --color-neutral-850: rgba(232,234,230,0.07);
   --color-neutral-900: #0B0F17;
   --color-neutral-950: #06080D;
-  --color-trulens-purple: #4FE3DC;
-  --color-trulens-blue: #4FE3DC;
+  --color-trulens-purple: #4FE3DC;   /* capture / catalogue accent */
+  --color-trulens-blue: #4D9BFF;      /* dashboard / analytics accent (logo blue) */
 
   /* TruSaaS rebrand: cyan accent everywhere — remap the legacy indigo/purple/violet
      utility classes to the cyan/sky family instead of touching hundreds of classNames. */

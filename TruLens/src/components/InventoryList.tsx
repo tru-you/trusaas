@@ -337,14 +337,14 @@ export default function InventoryList({
       {/* App Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
         <div className="flex items-center">
-          <img src={trulensLogo} alt="TruLens" className="h-8 w-auto object-contain tl-float drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]" />
+          <img src={trulensLogo} alt="TruLens" className="h-8 w-auto object-contain tl-float drop-shadow-[0_0_10px_rgba(79,227,220,0.30)]" />
         </div>
 
         {/* Flow DMS, sync & log out */}
         <div className="flex items-center gap-1.5">
           <button 
             onClick={() => window.open(dmsUrl || DEFAULT_DMS_URL, '_blank')}
-            className="flex items-center gap-1.5 px-2 py-1 rounded tl-btn-3d bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/50 text-[12px] text-[#E8EAE6] font-semibold tracking-normal transition-all shadow-sm shadow-indigo-600/20 cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#4FE3DC] hover:bg-[#7FF0EA] border border-transparent text-[12px] text-[#06080D] font-semibold tracking-normal transition-colors cursor-pointer"
             title={`Open TruFlow DMS (${dmsUrl || DEFAULT_DMS_URL})`}
           >
             <ExternalLink size={10} />
@@ -380,7 +380,7 @@ export default function InventoryList({
           onClick={() => setCurrentTab('catalog')}
           className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             currentTab === 'catalog'
-              ? 'tl-glass text-trulens-purple shadow-lg shadow-cyan-600/20 border border-trulens-purple/40'
+              ? 'tl-glass text-trulens-purple shadow-lg shadow-[#4FE3DC]/20 border border-trulens-purple/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
           }`}
         >
@@ -392,7 +392,7 @@ export default function InventoryList({
           onClick={() => setCurrentTab('dashboard')}
           className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             currentTab === 'dashboard'
-              ? 'tl-glass text-trulens-blue shadow-lg shadow-blue-600/20 border border-trulens-blue/40'
+              ? 'tl-glass text-trulens-blue shadow-lg shadow-[#4D9BFF]/20 border border-trulens-blue/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
           }`}
         >
