@@ -85,14 +85,47 @@ function truchat_rest_chat(WP_REST_Request $req) {
     return new WP_REST_Response($result, 200);
 }
 
+/**
+ * The client's IP, for rate limiting.
+ *
+ * X-Forwarded-For and CF-Connecting-IP are set by the *client* unless a proxy
+ * you control overwrites them. Trusting them first meant anyone could send a
+ * fresh random value on every request and never hit the rate limit — the chat
+ * endpoint is public, so that was an uncapped bill on the site owner's
+ * Anthropic key. REMOTE_ADDR cannot be spoofed over TCP, so it wins by default.
+ *
+ * Only enable "behind a proxy" in settings if the site really is behind
+ * Cloudflare or similar, otherwise you re-open the hole.
+ */
 function truchat_client_ip() {
-    foreach (array('HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR') as $h) {
-        if (!empty($_SERVER[$h])) {
-            $ip = explode(',', $_SERVER[$h])[0];
-            return trim($ip);
+    $remote = isset($_SERVER['REMOTE_ADDR']) ? trim($_SERVER['REMOTE_ADDR']) : '0.0.0.0';
+
+    if (truchat_opt('behind_proxy', '') === '1') {
+        foreach (array('HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR') as $h) {
+            if (!empty($_SERVER[$h])) {
+                $ip = trim(explode(',', $_SERVER[$h])[0]);
+                if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+            }
         }
     }
-    return '0.0.0.0';
+    return $remote;
+}
+
+/**
+ * A hard ceiling on paid API calls per day, across all visitors.
+ *
+ * The per-IP limit stops one person hammering it; this stops a distributed
+ * loop, a scraper farm or a bad week costing more than the site owner chose to
+ * spend. Returns false once the day's budget is used up.
+ */
+function truchat_api_budget_ok() {
+    $cap = (int) truchat_opt('daily_api_cap', '500');
+    if ($cap <= 0) return true; // 0 = no ceiling, deliberately opt-out
+    $key = 'truchat_api_day_' . gmdate('Ymd');
+    $n   = (int) get_transient($key);
+    if ($n >= $cap) return false;
+    set_transient($key, $n + 1, DAY_IN_SECONDS);
+    return true;
 }
 
 /* ------------------------------------------------------------------ */
