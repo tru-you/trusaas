@@ -371,9 +371,15 @@ app.post('/api/auth/device', (req, res) => {
 });
 
 app.get('/api/health', (_req, res) => {
+  // Whether an access code is configured — a boolean, never the value. Lets you
+  // confirm from outside that the env var actually reached the process, which is
+  // otherwise invisible until someone tries a bypass. Reveals nothing an attacker
+  // couldn't already learn by sending a bogus token.
+  const accessCodeConfigured = !!ACCESS_CODE;
   res.setHeader('Cache-Control', 'no-store');
   res.json({
     ok: true,
+    accessCodeConfigured,
     mode: LOCAL_MODE ? 'local' : 'cloud',
     dmsUrl: DEFAULT_DMS_URL,
     port: PORT,
