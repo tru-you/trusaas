@@ -166,6 +166,51 @@ const NEXT_STEP_ON_STAGE: Record<string, { action: string; inDays: number }> = {
   "Negotiating":          { action: "Chase decision",       inDays: 2 },
 };
 
+
+/* ── Stock economics ────────────────────────────────────────────────────────
+   Everything here already existed in the data and was never added up. A car's
+   real cost is what you paid plus what you spent getting it saleable, and the
+   number a principal actually wants is what's left after both. */
+
+/** What has been spent reconditioning this car. */
+function reconSpend(v: any): number {
+  return (v.reconTasks || []).reduce((sum: number, t: any) => sum + (Number(t.cost) || 0), 0);
+}
+
+/** Purchase price plus recon — the number a margin is honestly measured against. */
+function costBasis(v: any): number {
+  return (Number(v.costPrice) || 0) + reconSpend(v);
+}
+
+/** Gross margin. Projected while the car is in stock, realised once it's sold. */
+function grossMargin(v: any): { rand: number; pct: number } {
+  const retail = Number(v.retailPrice) || 0;
+  const basis = costBasis(v);
+  const rand = retail - basis;
+  return { rand, pct: retail > 0 ? (rand / retail) * 100 : 0 };
+}
+
+/** Days a car has been in stock. Prefers the acquisition date over the stored
+ *  counter, which is written once on create and then never moves. */
+function stockAge(v: any): number {
+  if (v.dateAcquired) {
+    const d = Math.floor((Date.now() - new Date(v.dateAcquired).getTime()) / 86400000);
+    if (!Number.isNaN(d) && d >= 0) return d;
+  }
+  return Number(v.daysInInventory) || 0;
+}
+
+/** Bands match the colours already used on the vehicle cards. */
+const AGE_BANDS = [
+  { key: "0-30",  label: "Under 30 days", min: 0,  max: 30,       tone: "#4FE3DC" },
+  { key: "31-60", label: "31 to 60 days", min: 31, max: 60,       tone: "#7FF0EA" },
+  { key: "61-90", label: "61 to 90 days", min: 61, max: 90,       tone: "#E8C468" },
+  { key: "90+",   label: "Over 90 days",  min: 91, max: Infinity, tone: "#C07676" },
+];
+function ageBand(days: number) {
+  return AGE_BANDS.find((b) => days >= b.min && days <= b.max) || AGE_BANDS[0];
+}
+
 export default function App() {
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
@@ -487,6 +532,7 @@ export default function App() {
       items: [
         { id: "leads", label: "Lead CRM", icon: Users },
         { id: "tasks", label: "Tasks", icon: CheckSquare },
+        { id: "stock_health", label: "Stock health", icon: TrendingUp },
         { id: "accounting_recon", label: "Finance & Recon", icon: Receipt },
       ]
     },
@@ -1746,6 +1792,116 @@ export default function App() {
         )}
 
         {/* LEAD CRM SECTION */}
+        {/* STOCK HEALTH — ageing and margin, the two numbers that decide whether
+            a yard makes money. Everything shown was already in the data. */}
+        {activeSection === "stock_health" && (() => {
+          const live = filteredVehicles.filter((v) => v.status === "INVENTORY");
+          const sold = filteredVehicles.filter((v) => v.status === "SOLD");
+
+          const capitalTiedUp = live.reduce((sum, v) => sum + costBasis(v), 0);
+          const reconTotal    = live.reduce((sum, v) => sum + reconSpend(v), 0);
+          const projected     = live.reduce((sum, v) => sum + grossMargin(v).rand, 0);
+          const realised      = sold.reduce((sum, v) => sum + grossMargin(v).rand, 0);
+          const aged          = live.filter((v) => stockAge(v) > 60);
+          const agedCapital   = aged.reduce((sum, v) => sum + costBasis(v), 0);
+
+          const byAge = [...live].sort((a, b) => stockAge(b) - stockAge(a));
+
+          return (
+            <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+              <div>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Stock health</h1>
+                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
+                  What your stock is costing you, and what it stands to make
+                </p>
+              </div>
+
+              {/* The four numbers worth knowing before opening the yard */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: "Capital in stock", value: formatZAR(capitalTiedUp), sub: `${live.length} cars, incl. ${formatZAR(reconTotal)} recon` },
+                  { label: "Projected margin", value: formatZAR(projected), sub: "if everything sells at asking" },
+                  { label: "Realised margin", value: formatZAR(realised), sub: `${sold.length} sold` },
+                  { label: "Tied up over 60 days", value: formatZAR(agedCapital), sub: `${aged.length} ${aged.length === 1 ? "car" : "cars"}`, warn: aged.length > 0 },
+                ].map((c) => (
+                  <div key={c.label} className="card p-4 flex flex-col gap-1">
+                    <span className="text-[12px] text-[rgba(232,234,230,0.55)]">{c.label}</span>
+                    <span className={`text-[20px] font-semibold tracking-tight ${c.warn ? "text-[#C07676]" : "text-[#E8EAE6]"}`}>{c.value}</span>
+                    <span className="text-[12px] text-[rgba(232,234,230,0.55)]">{c.sub}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Where the money is sitting, by age */}
+              <div className="card p-4 flex flex-col gap-3">
+                <span className="text-[13px] font-semibold text-[#E8EAE6]">Ageing</span>
+                {AGE_BANDS.map((b) => {
+                  const inBand = live.filter((v) => { const d = stockAge(v); return d >= b.min && d <= b.max; });
+                  const cap = inBand.reduce((sum, v) => sum + costBasis(v), 0);
+                  const share = live.length ? (inBand.length / live.length) * 100 : 0;
+                  return (
+                    <div key={b.key} className="flex items-center gap-3">
+                      <span className="text-[12px] text-[rgba(232,234,230,0.72)] w-[110px] shrink-0">{b.label}</span>
+                      <div className="flex-1 h-1.5 rounded-full bg-[rgba(232,234,230,0.08)] overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${share}%`, background: b.tone }} />
+                      </div>
+                      <span className="text-[12px] text-[rgba(232,234,230,0.72)] w-[40px] text-right">{inBand.length}</span>
+                      <span className="text-[12px] text-[rgba(232,234,230,0.55)] w-[90px] text-right">{formatZAR(cap)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Oldest first — this is the list to work through */}
+              <div className="card p-0 overflow-x-auto">
+                <div className="px-4 py-3 border-b border-white/5">
+                  <span className="text-[13px] font-semibold text-[#E8EAE6]">Oldest stock first</span>
+                </div>
+                {byAge.length === 0 ? (
+                  <p className="px-4 py-6 text-[13px] text-[rgba(232,234,230,0.55)]">No cars in stock yet.</p>
+                ) : (
+                  <table className="w-full text-[13px]">
+                    <thead>
+                      <tr className="text-[12px] text-[rgba(232,234,230,0.55)]">
+                        <th className="text-left font-medium px-4 py-2">Vehicle</th>
+                        <th className="text-right font-medium px-3 py-2">Age</th>
+                        <th className="text-right font-medium px-3 py-2">Cost</th>
+                        <th className="text-right font-medium px-3 py-2">Recon</th>
+                        <th className="text-right font-medium px-3 py-2">Asking</th>
+                        <th className="text-right font-medium px-4 py-2">Margin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {byAge.map((v) => {
+                        const days = stockAge(v);
+                        const band = ageBand(days);
+                        const m = grossMargin(v);
+                        return (
+                          <tr key={v.id} onClick={() => setSelectedDetailVehicle(v)}
+                              className="border-t border-white/5 cursor-pointer hover:bg-white/[0.03]">
+                            <td className="px-4 py-2.5">
+                              <span className="text-[#E8EAE6]">{v.year} {v.make} {v.model}</span>
+                              <span className="text-[12px] text-[rgba(232,234,230,0.55)] ml-2">{v.stockNumber}</span>
+                            </td>
+                            <td className="px-3 py-2.5 text-right" style={{ color: band.tone }}>{days}d</td>
+                            <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.costPrice || 0)}</td>
+                            <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
+                            <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.retailPrice || 0)}</td>
+                            <td className={`px-4 py-2.5 text-right font-medium ${m.rand < 0 ? "text-[#C07676]" : "text-[#E8EAE6]"}`}>
+                              {formatZAR(m.rand)}
+                              <span className="text-[12px] text-[rgba(232,234,230,0.55)] ml-1.5">{m.pct.toFixed(0)}%</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {activeSection === "leads" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
