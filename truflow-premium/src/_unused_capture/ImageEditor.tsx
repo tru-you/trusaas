@@ -221,7 +221,7 @@ export default function ImageEditor({
 
       {/* Top Header */}
       <div className="bg-neutral-950 px-4 py-3 flex items-center justify-between border-b border-neutral-850 z-20 shrink-0 shadow-md">
-        <button 
+        <button aria-label="Previous" 
           onClick={onBack}
           className="p-1 rounded-full hover:bg-neutral-800 text-neutral-300 flex items-center justify-center cursor-pointer"
         >

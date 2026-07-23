@@ -228,7 +228,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 <h3 className="text-lg font-bold text-white mt-1.5 leading-tight">{vehicle.year} {vehicle.make} {vehicle.model}</h3>
                 <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">{vehicle.trim || "Standard Trim Specs"}</p>
               </div>
-              <button
+              <button aria-label="Close"
                 onClick={onClose}
                 className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] p-1 rounded-lg transition-all cursor-pointer"
               >

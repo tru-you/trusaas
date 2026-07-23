@@ -131,7 +131,7 @@ export default function ChatWidget() {
               placeholder="Query stock, sales stats, hot prospects..."
               className="flex-1 bg-[#0B0F17]/3 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC] focus:bg-[#4FE3DC]/5 transition-all"
             />
-            <button
+            <button aria-label="Send message"
               type="submit"
               disabled={loading}
               className="bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 disabled:opacity-50 text-white rounded-lg p-2 flex items-center justify-center cursor-pointer transition-all active:scale-95"

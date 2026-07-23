@@ -171,7 +171,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
               placeholder="Ask about a car..."
               className="flex-1 bg-[#06080D] border border-white/10 rounded-full px-4 py-2 text-xs text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC] focus:bg-[#4FE3DC]/5 transition-all"
             />
-            <button
+            <button aria-label="Send message"
               type="submit"
               disabled={loading || showLeadForm}
               className="bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 disabled:opacity-50 text-white rounded-full w-8 h-8 flex items-center justify-center cursor-pointer transition-all active:scale-95 animate-none"
@@ -189,7 +189,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
             Chat with us live!
             <div className="absolute -bottom-1 left-4 w-2 h-2 bg-[#0B0F17] border-b border-r border-white/5 transform rotate-45"></div>
           </div>
-          <button className="w-14 h-14 bg-gradient-to-r from-blue-600 to-[#4FE3DC] text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
+          <button aria-label="Open chat" className="w-14 h-14 bg-gradient-to-r from-blue-600 to-[#4FE3DC] text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
             <MessageCircle className="w-6 h-6" />
           </button>
         </div>

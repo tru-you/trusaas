@@ -888,7 +888,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
       {/* Top Navigation */}
       <div className="bg-neutral-900/90 px-4 py-3 flex items-center justify-between border-b border-neutral-850 z-20 shrink-0">
-        <button 
+        <button aria-label="Previous" 
           onClick={onBack}
           className="p-1 rounded-full hover:bg-neutral-800 text-neutral-300 flex items-center justify-center cursor-pointer"
         >

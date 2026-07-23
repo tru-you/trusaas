@@ -1,5 +1,5 @@
 import logo from "./assets/truflow-logo.png";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import {
   Home,
   TrendingUp,
@@ -72,13 +72,18 @@ import WebsiteChatWidget from "./components/WebsiteChatWidget";
 import InvoicePreview from "./components/InvoicePreview";
 import AgreementPreview from "./components/AgreementPreview";
 import DocumentsHub from "./components/DocumentsHub";
+
+/* Split out of the initial bundle — none of these is needed to paint the
+   dashboard, and together they were roughly a third of a 540KB single chunk
+   that every dealer downloaded before the login screen appeared. They load
+   when the modal or section is first opened. */
+const LeadDetailModal = lazy(() => import("./components/LeadDetailModal"));
+const AccountingRecon = lazy(() => import("./components/AccountingRecon"));
+const VehicleDetailModal = lazy(() => import("./components/VehicleDetailModal"));
+const WordPressIntegration = lazy(() => import("./components/WordPressIntegration"));
 import AmortizationCalc from "./components/AmortizationCalc";
-import LeadDetailModal from "./components/LeadDetailModal";
-import AccountingRecon from "./components/AccountingRecon";
-import VehicleDetailModal from "./components/VehicleDetailModal";
 import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
-import WordPressIntegration from "./components/WordPressIntegration";
 import LoginSplash from "./components/LoginSplash";
 import { hasValidSession, clearSession, getAccount, SESSION_EXPIRED_EVENT } from "./lib/session";
 import DemoBanner from "./components/DemoBanner";
@@ -2115,12 +2120,14 @@ export default function App() {
         {/* ACCOUNTING & RECON SECTION */}
         {activeSection === "accounting_recon" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-            <AccountingRecon
+            <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+              <AccountingRecon
               state={state}
               onAddExpense={handleCreateExpense}
               onReconcileExpense={handleReconcileExpense}
               onUpdateVehicle={handleUpdateVehicle}
             />
+            </Suspense>
           </div>
         )}
 
@@ -2377,7 +2384,9 @@ export default function App() {
 
         {/* WORDPRESS & WEB SYNC MODULE */}
         {activeSection === "integration" && (
-          <WordPressIntegration onRefresh={loadAllState} />
+          <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+            <WordPressIntegration onRefresh={loadAllState} />
+          </Suspense>
         )}
 
         {/* STOCK MEDIA HUB — gallery only; capture lives in TruLens */}

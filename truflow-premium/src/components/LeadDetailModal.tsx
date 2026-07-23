@@ -337,7 +337,7 @@ export default function LeadDetailModal({
               Customer File — {lead.firstName} {lead.lastName}
             </h3>
           </div>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
