@@ -141,7 +141,7 @@ export default function ImageEditor({
         } else if (currentBg.id === 'outdoor_sunset') {
           const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
           grad.addColorStop(0, '#fca5a5');
-          grad.addColorStop(0.4, '#fef08a');
+          grad.addColorStop(0.4, '#E8C468');
           grad.addColorStop(1, '#93c5fd');
           ctx.fillStyle = grad;
         }
@@ -208,7 +208,7 @@ export default function ImageEditor({
   };
 
   return (
-    <div id="image-editor-container" className="flex flex-col h-full bg-neutral-900 text-white overflow-hidden relative">
+    <div id="image-editor-container" className="flex flex-col h-full bg-neutral-900 text-[#E8EAE6] overflow-hidden relative">
       
       {/* Hidden original image element to capture draw triggers */}
       <img 
@@ -238,7 +238,7 @@ export default function ImageEditor({
         <button
           type="button"
           onClick={handleSaveChanges}
-          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-wide text-white flex items-center gap-1 cursor-pointer transition-colors shadow-md shadow-emerald-600/20"
+          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-wide text-[#E8EAE6] flex items-center gap-1 cursor-pointer transition-colors shadow-md shadow-emerald-600/20"
         >
           <Save size={12} /> Save shot
         </button>
@@ -320,7 +320,7 @@ export default function ImageEditor({
             <div className="flex gap-4 items-center">
               {/* Radial Rating Circle */}
               <div className="relative w-14 h-14 rounded-full border-4 border-neutral-900 flex items-center justify-center shrink-0">
-                <span className="text-sm font-extrabold text-white">
+                <span className="text-sm font-extrabold text-[#E8EAE6]">
                   {isAnalyzing ? '...' : `${Math.round(fullReport.overallScore)}%`}
                 </span>
                 <div className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" style={{ animationDuration: isAnalyzing ? '1.5s' : '0s' }}></div>
@@ -360,7 +360,7 @@ export default function ImageEditor({
                       <Copy size={10} /> {copiedText === 'title' ? 'copied!' : 'copy'}
                     </button>
                   </span>
-                  <p className="text-xs font-semibold text-neutral-100 mt-0.5">{aiReport.suggestedTitle}</p>
+                  <p className="text-xs font-semibold text-[#E8EAE6] mt-0.5">{aiReport.suggestedTitle}</p>
                 </div>
 
                 <div>
@@ -500,7 +500,7 @@ export default function ImageEditor({
           <button
             type="button"
             onClick={handleSaveChanges}
-            className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-2xl text-sm font-black uppercase tracking-wider text-white flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-900/30"
+            className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-2xl text-sm font-black uppercase tracking-wider text-[#E8EAE6] flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-900/30"
           >
             <Save size={16} /> Save & next shot
           </button>

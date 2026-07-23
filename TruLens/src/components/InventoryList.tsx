@@ -332,7 +332,7 @@ export default function InventoryList({
   };
 
   return (
-    <div id="inventory-list-container" className="flex flex-col h-full bg-neutral-950 text-neutral-100 overflow-hidden">
+    <div id="inventory-list-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       
       {/* App Header */}
       <div className="tl-glass p-4 border-b border-violet-500/20 flex items-center justify-between shrink-0">
@@ -344,7 +344,7 @@ export default function InventoryList({
         <div className="flex items-center gap-1.5">
           <button 
             onClick={() => window.open(dmsUrl || DEFAULT_DMS_URL, '_blank')}
-            className="flex items-center gap-1.5 px-2 py-1 rounded tl-btn-3d bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/50 text-[9px] text-white font-black uppercase tracking-wider transition-all shadow-sm shadow-indigo-600/20 cursor-pointer"
+            className="flex items-center gap-1.5 px-2 py-1 rounded tl-btn-3d bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/50 text-[9px] text-[#E8EAE6] font-black uppercase tracking-wider transition-all shadow-sm shadow-indigo-600/20 cursor-pointer"
             title={`Open TruFlow DMS (${dmsUrl || DEFAULT_DMS_URL})`}
           >
             <ExternalLink size={10} />
@@ -404,7 +404,7 @@ export default function InventoryList({
           onClick={() => setCurrentTab('settings')}
           className={`flex-1 py-2 text-[10px] uppercase tracking-wider font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             currentTab === 'settings'
-              ? 'tl-glass text-neutral-100 shadow-lg border border-neutral-500/40'
+              ? 'tl-glass text-[#E8EAE6] shadow-lg border border-neutral-500/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
           }`}
           title="Dealership & DMS settings"
@@ -418,7 +418,7 @@ export default function InventoryList({
       <div className="grid grid-cols-3 gap-2 p-3 bg-neutral-950/40 border-b border-neutral-850 shrink-0">
         <div className="bg-neutral-950/70 p-2 rounded-lg border border-neutral-800/60 flex flex-col">
           <span className="text-[9px] text-neutral-400 uppercase font-bold tracking-wider">Total Catalogue</span>
-          <span className="text-base font-extrabold text-white mt-0.5">{vehicles.length}</span>
+          <span className="text-base font-extrabold text-[#E8EAE6] mt-0.5">{vehicles.length}</span>
         </div>
         <div className="bg-neutral-950/70 p-2 rounded-lg border border-neutral-800/60 flex flex-col">
           <span className="text-[9px] text-amber-400 uppercase font-bold tracking-wider">Shooting</span>
@@ -452,7 +452,7 @@ export default function InventoryList({
           </div>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="p-2 rounded-lg bg-trulens-purple hover:bg-trulens-purple/90 text-white shadow-md cursor-pointer transition-transform"
+            className="p-2 rounded-lg bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
           >
             <Plus size={16} />
           </button>
@@ -483,7 +483,7 @@ export default function InventoryList({
                   placeholder="e.g., Ford"
                   value={make}
                   onChange={(e) => setMake(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
               <div>
@@ -494,7 +494,7 @@ export default function InventoryList({
                   placeholder="e.g., Mustang"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
             </div>
@@ -507,7 +507,7 @@ export default function InventoryList({
                   placeholder="2024"
                   value={year}
                   onChange={(e) => setYear(Number(e.target.value))}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple font-mono"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
               <div>
@@ -517,7 +517,7 @@ export default function InventoryList({
                   placeholder="GT Premium"
                   value={trim}
                   onChange={(e) => setTrim(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
               <div>
@@ -527,7 +527,7 @@ export default function InventoryList({
                   placeholder="35000"
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple font-mono"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
             </div>
@@ -540,7 +540,7 @@ export default function InventoryList({
                   placeholder="STK-10293"
                   value={stockNumber}
                   onChange={(e) => setStockNumber(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple font-mono"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
               <div>
@@ -550,7 +550,7 @@ export default function InventoryList({
                   placeholder="Magnetic Gray"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
             </div>
@@ -561,7 +561,7 @@ export default function InventoryList({
                 <select
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 >
                   <option value="Sedan">Sedan</option>
                   <option value="SUV">SUV</option>
@@ -577,7 +577,7 @@ export default function InventoryList({
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'In-Progress' | 'Ready')}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 >
                   <option value="In-Progress">In-Progress</option>
                   <option value="Ready">Ready</option>
@@ -592,7 +592,7 @@ export default function InventoryList({
                 placeholder="Auto-generate or enter VIN"
                 value={vin}
                 onChange={(e) => setVin(e.target.value.toUpperCase())}
-                className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-white outline-none focus:border-trulens-purple font-mono"
+                className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
               />
             </div>
 
@@ -606,7 +606,7 @@ export default function InventoryList({
               </button>
               <button
                 type="submit"
-                className="flex-1 py-2 bg-trulens-purple hover:bg-trulens-purple/90 text-white rounded-lg text-xs font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
+                className="flex-1 py-2 bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] rounded-lg text-xs font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
               >
                 <Plus size={14} /> Add Vehicle
               </button>
@@ -637,7 +637,7 @@ export default function InventoryList({
             <button
               type="button"
               onClick={() => { setDeepLinkBanner(null); setHighlightStock(null); setSearchTerm(''); }}
-              className="text-[9px] font-bold text-violet-300 hover:text-white shrink-0"
+              className="text-[9px] font-bold text-violet-300 hover:text-[#E8EAE6] shrink-0"
             >
               Clear
             </button>
@@ -690,7 +690,7 @@ export default function InventoryList({
               <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-3">
                 <Camera size={22} className="text-indigo-400" />
               </div>
-              <p className="text-sm text-neutral-100 font-bold">
+              <p className="text-sm text-[#E8EAE6] font-bold">
                 {searchTerm || readinessFilter !== 'ALL' || activeFilter !== 'All' ? 'No matches' : 'No vehicles yet'}
               </p>
               <p className="text-[10px] text-neutral-500 mt-1.5 max-w-[220px] leading-relaxed">
@@ -710,7 +710,7 @@ export default function InventoryList({
                     setShowAddForm(true);
                   }
                 }}
-                className="mt-4 px-4 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"
+                className="mt-4 px-4 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"
               >
                 <Plus size={12} />{' '}
                 {searchTerm || readinessFilter !== 'ALL' || activeFilter !== 'All' ? 'Clear filters' : 'Add first vehicle'}
@@ -763,7 +763,7 @@ export default function InventoryList({
 
                       {/* Details */}
                       <div>
-                        <h3 className="text-xs font-bold text-neutral-100 flex items-center gap-1">
+                        <h3 className="text-xs font-bold text-[#E8EAE6] flex items-center gap-1">
                           {vehicle.year} {vehicle.make} {vehicle.model}
                           {isHighlighted && (
                             <span className="text-[8px] font-black uppercase tracking-wider text-violet-300 bg-violet-500/20 border border-violet-500/40 px-1.5 py-0.5 rounded">
@@ -855,7 +855,7 @@ export default function InventoryList({
                       <button
                         type="button"
                         onClick={() => onSelectVehicle(vehicle)}
-                        className="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-white tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-2 py-2 rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
+                        className="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-2 py-2 rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
                         title="Open camera guide and take pictures"
                       >
                         <Camera size={12} /> Take pictures
@@ -887,8 +887,8 @@ export default function InventoryList({
                             onViewReport(vehicle);
                           }}
                           title="Open inspection report with score, findings & damage photos"
-                          className="flex items-center justify-center gap-1 text-[10px] font-bold text-white cursor-pointer whitespace-nowrap px-2 py-1.5 rounded transition-colors shadow-sm"
-                          style={{ background: 'linear-gradient(120deg, #22d3ee, #3B82F6)' }}
+                          className="flex items-center justify-center gap-1 text-[10px] font-bold text-[#E8EAE6] cursor-pointer whitespace-nowrap px-2 py-1.5 rounded transition-colors shadow-sm"
+                          style={{ background: 'linear-gradient(120deg, #4FE3DC, #4FE3DC)' }}
                         >
                           Report <FileText size={10} />
                         </button>
@@ -975,7 +975,7 @@ export default function InventoryList({
             <div className="grid grid-cols-4 gap-2">
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
                 <span className="text-[7px] text-neutral-500 uppercase font-bold">Catalogue</span>
-                <span className="text-sm font-black text-white">{vehicles.length}</span>
+                <span className="text-sm font-black text-[#E8EAE6]">{vehicles.length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
                 <span className="text-[7px] text-emerald-500 uppercase font-bold">Ready</span>
@@ -1050,7 +1050,7 @@ export default function InventoryList({
                         cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                         contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #262626', fontSize: '9px' }}
                       />
-                      <Bar dataKey="photos" fill="#06b6d4" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="photos" fill="#4FE3DC" radius={[2, 2, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -1128,7 +1128,7 @@ export default function InventoryList({
                     type="text" 
                     value={dealershipName}
                     onChange={(e) => setDealershipName(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1137,7 +1137,7 @@ export default function InventoryList({
                     type="text"
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1145,7 +1145,7 @@ export default function InventoryList({
                   <select
                     value={dealerSlug}
                     onChange={(e) => setDealerSlug(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
                   >
                     <option value="mkr-autosales">MKR Auto Sales</option>
                     <option value="cars-on-caledon">Cars on Caledon</option>
@@ -1176,8 +1176,8 @@ export default function InventoryList({
                     onClick={() => applyDmsPreset('premium')}
                     className={`py-2 px-1 rounded-lg text-[9px] font-bold border cursor-pointer ${
                       dmsPreset === 'premium'
-                        ? 'bg-indigo-600 border-indigo-500 text-white'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                        ? 'bg-indigo-600 border-indigo-500 text-[#E8EAE6]'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-[#E8EAE6]'
                     }`}
                   >
                     Premium
@@ -1188,8 +1188,8 @@ export default function InventoryList({
                     onClick={() => applyDmsPreset('lite')}
                     className={`py-2 px-1 rounded-lg text-[9px] font-bold border cursor-pointer ${
                       dmsPreset === 'lite'
-                        ? 'bg-emerald-600 border-emerald-500 text-white'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                        ? 'bg-emerald-600 border-emerald-500 text-[#E8EAE6]'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-[#E8EAE6]'
                     }`}
                   >
                     Lite
@@ -1200,8 +1200,8 @@ export default function InventoryList({
                     onClick={() => applyDmsPreset('custom')}
                     className={`py-2 px-1 rounded-lg text-[9px] font-bold border cursor-pointer ${
                       dmsPreset === 'custom'
-                        ? 'bg-neutral-700 border-neutral-600 text-white'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                        ? 'bg-neutral-700 border-neutral-600 text-[#E8EAE6]'
+                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-[#E8EAE6]'
                     }`}
                   >
                     Custom
@@ -1219,14 +1219,14 @@ export default function InventoryList({
                       setDmsPreset('custom');
                     }}
                     placeholder="http://localhost:3002"
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-mono focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={saveDmsUrl}
-                    className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold cursor-pointer"
+                    className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] rounded-lg text-[10px] font-bold cursor-pointer"
                   >
                     {dmsUrlSaved ? 'Saved ✓' : 'Save DMS target'}
                   </button>
@@ -1261,7 +1261,7 @@ export default function InventoryList({
                   <select 
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs text-white"
+                    className="bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs text-[#E8EAE6]"
                   >
                     <option value="ZAR">South African Rand (R)</option>
                     <option value="USD">US Dollar ($)</option>
@@ -1306,7 +1306,7 @@ export default function InventoryList({
                   value={dealerWhatsApp}
                   onChange={(e) => setDealerWhatsApp(e.target.value)}
                   placeholder="+27 …"
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100"
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6]"
                 />
               </label>
               <button
@@ -1324,7 +1324,7 @@ export default function InventoryList({
                   setTimeout(() => setExportToast(null), 2800);
                   setTimeout(() => setDmsUrlSaved(false), 1600);
                 }}
-                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
+                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
               >
                 Save Configuration
               </button>

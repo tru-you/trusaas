@@ -45,9 +45,9 @@ function scoreForSlots(vehicle: Vehicle, slots: PhotoSlot[]): number | null {
 }
 
 function gradeFor(score: number | null) {
-  if (score === null) return { grade: '—', label: 'Not captured', color: '#94A3B8', bg: 'rgba(148,163,184,0.10)', sales: 'Incomplete' };
-  if (score >= 90) return { grade: 'A',  label: 'Excellent', color: '#22C55E', bg: 'rgba(34,197,94,0.14)', sales: 'List with confidence' };
-  if (score >= 80) return { grade: 'A-', label: 'Very good', color: '#22C55E', bg: 'rgba(34,197,94,0.12)', sales: 'List with confidence' };
+  if (score === null) return { grade: '—', label: 'Not captured', color: 'rgba(232,234,230,0.55)', bg: 'rgba(148,163,184,0.10)', sales: 'Incomplete' };
+  if (score >= 90) return { grade: 'A',  label: 'Excellent', color: '#4ADE9B', bg: 'rgba(34,197,94,0.14)', sales: 'List with confidence' };
+  if (score >= 80) return { grade: 'A-', label: 'Very good', color: '#4ADE9B', bg: 'rgba(34,197,94,0.12)', sales: 'List with confidence' };
   if (score >= 70) return { grade: 'B',  label: 'Good', color: '#EAB308', bg: 'rgba(234,179,8,0.14)', sales: 'List after light polish' };
   if (score >= 60) return { grade: 'C',  label: 'Fair · attend', color: '#F97316', bg: 'rgba(249,115,22,0.14)', sales: 'Recon before web' };
   return { grade: 'D', label: 'Substantial issues', color: '#EF4444', bg: 'rgba(239,68,68,0.16)', sales: 'Do not publish yet' };
@@ -228,7 +228,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100">
       <div className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-white/10 no-print">
         <div className="max-w-5xl mx-auto px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-white text-sm font-medium">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-[#E8EAE6] text-sm font-medium">
             <ArrowLeft size={16} /> Back
           </button>
           <div className="flex flex-wrap items-center gap-1.5">
@@ -270,8 +270,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white"
-              style={{ background: 'linear-gradient(120deg, #22d3ee, #3B82F6)' }}>
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-[#E8EAE6]"
+              style={{ background: 'linear-gradient(120deg, #4FE3DC, #4FE3DC)' }}>
               <Download size={12} /> {generating === 'full' ? '…' : 'Full VIR PDF'}
             </button>
           </div>
@@ -304,17 +304,17 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         <div ref={salesRef} className="tl-sales bg-white text-slate-900 rounded-xl overflow-hidden shadow-xl">
           <style>{`
             .tl-sales { font-family: Inter, system-ui, sans-serif; }
-            .tl-sales .band { background: linear-gradient(120deg,#0F172A,#1E3A5F); color:#fff; padding:20px 22px; }
+            .tl-sales .band { background: linear-gradient(120deg,#0B0F17,#1E3A5F); color:#fff; padding:20px 22px; }
             .tl-sales .grid2 { display:grid; grid-template-columns:1.1fr .9fr; gap:16px; padding:18px 22px; }
             .tl-sales h1 { font-size:22px; font-weight:800; margin:0 0 4px; letter-spacing:-.02em; }
-            .tl-sales .muted { color:#64748B; font-size:12px; }
+            .tl-sales .muted { color:rgba(232,234,230,0.45); font-size:12px; }
             .tl-sales .price { font-size:26px; font-weight:900; color:#0B5BD7; margin:10px 0; }
             .tl-sales .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
             .tl-sales .hero { width:100%; border-radius:12px; object-fit:cover; aspect-ratio:16/10; background:#F1F5F9; }
-            .tl-sales .box { border:1px solid #E2E8F0; border-radius:12px; padding:12px; }
-            .tl-sales .k { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#94A3B8; font-weight:700; }
+            .tl-sales .box { border:1px solid #E8EAE6; border-radius:12px; padding:12px; }
+            .tl-sales .k { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:rgba(232,234,230,0.55); font-weight:700; }
             .tl-sales .v { font-size:13px; font-weight:700; margin-top:3px; }
-            .tl-sales .foot { border-top:1px solid #E2E8F0; padding:12px 22px; font-size:10px; color:#94A3B8; display:flex; justify-content:space-between; }
+            .tl-sales .foot { border-top:1px solid #E8EAE6; padding:12px 22px; font-size:10px; color:rgba(232,234,230,0.55); display:flex; justify-content:space-between; }
           `}</style>
           <div className="band">
             <div style={{ display:'flex', justifyContent:'space-between', gap:12 }}>
@@ -380,13 +380,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         <div ref={reportRef} className="tl-report">
           <style>{`
             .tl-report {
-              width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0F172A;
+              width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0B0F17;
               font-family: Inter, system-ui, sans-serif; border-radius: 12px; overflow: hidden;
             }
-            .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0F172A 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; }
+            .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; }
             .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; }
             .tl-report .brand { display:flex; align-items:center; gap:12px; }
-            .tl-report .brand .mark { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#22d3ee,#3B82F6); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; }
+            .tl-report .brand .mark { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#4FE3DC,#4FE3DC); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; }
             .tl-report .brand .txt { font-weight:800; font-size:20px; }
             .tl-report .brand .txt em { font-style:normal; color:#93C5FD; }
             .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; }
@@ -401,22 +401,22 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report section { padding: 12mm 16mm; }
             .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
             .tl-report .grades { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
-            .tl-report .grade { border:1px solid #E2E8F0; border-radius:12px; padding:12px 8px; text-align:center; }
+            .tl-report .grade { border:1px solid #E8EAE6; border-radius:12px; padding:12px 8px; text-align:center; }
             .tl-report .grade .v { font-weight:800; font-size:22px; }
             .tl-report .grade .n { font-size:10px; color:#475569; margin-top:6px; font-weight:600; }
             .tl-report .finding { background:#FEF3C7; border-left:4px solid #F59E0B; border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; }
             .tl-report .finding .h { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#B45309; font-family:ui-monospace,monospace; }
             .tl-report .finding .l { font-size:12.5px; color:#78350F; margin-top:4px; font-weight:500; }
-            .tl-report .no-issues { background:#DCFCE7; border-left:4px solid #22C55E; border-radius:0 10px 10px 0; padding:12px 14px; color:#166534; font-weight:600; font-size:13px; }
+            .tl-report .no-issues { background:#DCFCE7; border-left:4px solid #4ADE9B; border-radius:0 10px 10px 0; padding:12px 14px; color:#166534; font-weight:600; font-size:13px; }
             .tl-report .damage-grid, .tl-report .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
             .tl-report .photo-grid { grid-template-columns:repeat(3,1fr); }
-            .tl-report .damage-card, .tl-report .photo-tile { border:1px solid #E2E8F0; border-radius:12px; overflow:hidden; }
+            .tl-report .damage-card, .tl-report .photo-tile { border:1px solid #E8EAE6; border-radius:12px; overflow:hidden; }
             .tl-report .damage-card img, .tl-report .photo-tile img { width:100%; height:auto; max-height:150px; object-fit:cover; display:block; }
             .tl-report .cap { padding:8px 10px; font-size:11px; }
             .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; }
-            .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E2E8F0; padding:7px 6px; text-align:left; }
-            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#94A3B8; }
-            .tl-report .foot { border-top:1px solid #E2E8F0; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; text-transform:uppercase; letter-spacing:.08em; font-family:ui-monospace,monospace; }
+            .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; }
+            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:rgba(232,234,230,0.55); }
+            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:rgba(232,234,230,0.45); text-transform:uppercase; letter-spacing:.08em; font-family:ui-monospace,monospace; }
             @media print {
               .no-print { display:none !important; }
               .tl-sales { break-after: page; }
@@ -481,7 +481,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   <div className="grade" key={p.id} style={{ background: g.bg, borderColor: g.color + '40' }}>
                     <div className="v" style={{ color: g.color }}>{g.grade}</div>
                     <div className="n"><Icon size={11} style={{display:'inline',verticalAlign:'-2px',marginRight:4,color:g.color}}/>{p.name}</div>
-                    <div style={{ fontSize:10, color:'#94A3B8', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
+                    <div style={{ fontSize:10, color:'rgba(232,234,230,0.55)', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
                   </div>
                 );
               })}
@@ -533,7 +533,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                     <img src={src} alt={slot.name} />
                     <div className="cap">
                       <b>{slot.name}</b>
-                      <div style={{ color:'#64748B', marginTop:3 }}>
+                      <div style={{ color:'rgba(232,234,230,0.45)', marginTop:3 }}>
                         {Array.isArray(quality?.aiAnalysis?.detectedIssues)
                           ? quality!.aiAnalysis!.detectedIssues![0]
                           : 'Documented area'}
@@ -561,21 +561,21 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <h2><Award size={16} /> Dealer & digital readiness</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'#94A3B8' }}>Dealership</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'rgba(232,234,230,0.55)' }}>Dealership</div>
                 <div style={{ fontWeight:700, marginTop:4 }}>{dealerName}</div>
-                {dealerBranch ? <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{dealerBranch}</div> : null}
+                {dealerBranch ? <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>{dealerBranch}</div> : null}
                 {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'#94A3B8' }}>Digital assets</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'uppercase', color:'rgba(232,234,230,0.55)' }}>Digital assets</div>
                 <div style={{ fontWeight:700, marginTop:4, color: readiness.color }}>{readiness.label}</div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:4 }}>
+                <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:4 }}>
                   Website: {vehicle.showOnWebsite ? 'Published' : 'Not published'}
                 </div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>
+                <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>
                   Web 3D: {vehicle.lastWeb3dExportAt ? `Exported ${new Date(vehicle.lastWeb3dExportAt).toLocaleDateString('en-ZA')}` : 'Not exported yet'}
                 </div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>
+                <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>
                   DMS: {vehicle.lastDmsExportAt ? `Synced ${new Date(vehicle.lastDmsExportAt).toLocaleDateString('en-ZA')}` : 'Not exported'}
                 </div>
               </div>
@@ -588,7 +588,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           </section>
 
           <div className="foot">
-            <div>Prepared by <b style={{color:'#06b6d4'}}>{dealerName}</b> · powered by <b>TruLens</b></div>
+            <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruLens</b></div>
             <img src={trusaasLogoDark} alt="TruSaaS" style={{ height:16, width:'auto' }} />
             <div>{reportId}</div>
             <div>Visual inspection at a moment in time — not a mechanical warranty</div>

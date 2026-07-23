@@ -65,7 +65,7 @@ export default function Login() {
         </div>
 
         <div className="text-center space-y-1 mb-8">
-          <h1 className="text-xl font-black text-white tracking-tight uppercase">
+          <h1 className="text-xl font-black text-[#E8EAE6] tracking-tight uppercase">
             {mode === 'login' ? 'Inspector Login' : 'Create Account'}
           </h1>
           <p className="text-neutral-500 text-[10px] font-medium uppercase tracking-widest">
@@ -85,7 +85,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                className="block w-full pl-10 pr-3 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-xs text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                 placeholder="Enter Email"
                 required
               />
@@ -102,7 +102,7 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                className="block w-full pl-10 pr-3 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-xs text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                 placeholder="Enter Password"
                 required
               />
@@ -119,7 +119,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 py-3.5 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-[11px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden hover:scale-[1.01] active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 py-3.5 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-black rounded-xl text-[11px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden hover:scale-[1.01] active:scale-[0.98]"
           >
             {isSubmitting ? (
               <div className="flex items-center gap-2">

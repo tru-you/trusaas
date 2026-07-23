@@ -93,7 +93,7 @@ export default function PwaInstallBanner() {
             <Smartphone size={16} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-black text-white tracking-wide uppercase">
+            <p className="text-[11px] font-black text-[#E8EAE6] tracking-wide uppercase">
               Install TruLens
             </p>
             <p className="text-[10px] text-neutral-400 leading-snug mt-0.5">
@@ -120,7 +120,7 @@ export default function PwaInstallBanner() {
               <button
                 type="button"
                 onClick={handleInstall}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[10px] font-black uppercase tracking-wider"
               >
                 <Download size={12} />
                 {deferred ? 'Install app' : isIosSafari() ? (iosHelp ? 'Got it' : 'How to install') : 'Install'}

@@ -421,7 +421,7 @@ export default function App() {
     }
   }, [activeView, activeVehicleId, vehicles]);
 
-  if (loading) return <div className="h-full w-full flex items-center justify-center bg-black text-white">Loading Auth...</div>;
+  if (loading) return <div className="h-full w-full flex items-center justify-center bg-black text-[#E8EAE6]">Loading Auth...</div>;
 
   const activeVehicle = activeVehicleId
     ? vehicles.find(v => v.id === activeVehicleId) || null

@@ -45,10 +45,10 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
   // ── Real phone / PWA: full screen ─────────────────────────────────
   if (nativeMode) {
     return (
-      <div className="relative flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-neutral-950 text-white font-sans select-none overflow-hidden">
+      <div className="relative flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-neutral-950 text-[#E8EAE6] font-sans select-none overflow-hidden">
         {/* Thin status strip only when not installed (browser chrome already there when not standalone) */}
         {!isStandaloneDisplay() && (
-          <div className="h-10 shrink-0 bg-neutral-950 text-white px-4 flex items-center justify-between text-[12px] font-semibold tracking-wider border-b border-neutral-900">
+          <div className="h-10 shrink-0 bg-neutral-950 text-[#E8EAE6] px-4 flex items-center justify-between text-[12px] font-semibold tracking-wider border-b border-neutral-900">
             <span className="text-neutral-300">TruLens</span>
             <div className="flex items-center gap-2 text-neutral-400">
               <Wifi size={13} className="text-indigo-400" />
@@ -86,7 +86,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
         <div className="absolute top-36 -right-1 w-1 h-16 bg-neutral-800 rounded-l-md border-l border-neutral-700"></div>
 
         <div className="relative w-full h-full bg-neutral-950 rounded-[40px] overflow-hidden flex flex-col border border-neutral-800 shadow-2xl">
-          <div className="h-12 bg-neutral-950 text-white px-7 flex items-center justify-between text-[11px] font-semibold tracking-wider z-40 shrink-0">
+          <div className="h-12 bg-neutral-950 text-[#E8EAE6] px-7 flex items-center justify-between text-[11px] font-semibold tracking-wider z-40 shrink-0">
             <span className="text-neutral-200">{time}</span>
             <div className="flex items-center gap-1.5 text-neutral-300">
               <Signal size={12} className="text-neutral-400" />

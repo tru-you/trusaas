@@ -361,7 +361,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     ctx.strokeRect(40, 40, 1000, 640);
 
     // Text details
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#FF6B6B';
     ctx.font = 'bold 24px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('LOT PHOTO RECORDING ENGINE • COMPULSORY BYPASS', 540, 180);
@@ -370,7 +370,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     ctx.font = 'bold 46px sans-serif';
     ctx.fillText('SERVICE HISTORY BOOKLET', 540, 310);
 
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#FF6B6B';
     ctx.font = 'bold 36px sans-serif';
     ctx.fillText('MARKED: "NONE" (NOT PRESENT WITH VEHICLE)', 540, 410);
 
@@ -473,7 +473,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               ctx.save();
               ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
               ctx.fillRect(40, 40, 260, 60);
-              ctx.strokeStyle = '#22d3ee';
+              ctx.strokeStyle = '#4FE3DC';
               ctx.lineWidth = 2;
               ctx.strokeRect(40, 40, 260, 60);
               
@@ -691,7 +691,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     // Headlights (glowing yellow based on brightness)
     ctx.beginPath();
     ctx.arc(92, 6, 4, 0, Math.PI * 2);
-    ctx.fillStyle = simBrightness > 150 ? '#fef08a' : '#94a3b8';
+    ctx.fillStyle = simBrightness > 150 ? '#E8C468' : '#94a3b8';
     ctx.fill();
 
     ctx.restore();
@@ -1024,7 +1024,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   const angleCorrect = Math.abs(simPitch - activeSlot.idealAngle.pitch) < 4 && Math.abs(simRoll) < 3;
 
   return (
-    <div id="camera-guide-container" className="flex flex-col h-full bg-neutral-950 text-white overflow-hidden relative">
+    <div id="camera-guide-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden relative">
       
       {/* Hidden processing canvas */}
       <canvas ref={canvasRef} className="hidden" />
@@ -1079,7 +1079,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                   <div
                     style={{
                       width: status.completed ? '100%' : isActive ? '50%' : '0%',
-                      backgroundColor: status.completed ? '#10b981' : '#06b6d4'
+                      backgroundColor: status.completed ? '#10b981' : '#4FE3DC'
                     }}
                     className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}
                   />
@@ -1113,7 +1113,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
         {captureHint && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 rounded-full bg-black/70 border border-white/15 text-[10px] font-bold text-white shadow-lg animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 rounded-full bg-black/70 border border-white/15 text-[10px] font-bold text-[#E8EAE6] shadow-lg animate-in fade-in slide-in-from-top-1">
             {captureHint}
           </div>
         )}
@@ -1140,7 +1140,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               <Upload size={40} strokeWidth={1.5} />
             </div>
             <div className="space-y-1.5 max-w-[260px]">
-              <p className="text-sm font-bold text-neutral-100">Ready to shoot this slot</p>
+              <p className="text-sm font-bold text-[#E8EAE6]">Ready to shoot this slot</p>
               <p className="text-[10px] text-neutral-400 leading-relaxed">
                 {cameraError ||
                   'Use the big Take picture button below. On PC you can also Upload a file first, then confirm.'}
@@ -1150,7 +1150,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               <button
                 type="button"
                 onClick={(e) => handleCapture(e)}
-                className="w-full py-3 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg"
+                className="w-full py-3 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg"
               >
                 <Camera size={14} /> Take picture
               </button>
@@ -1276,7 +1276,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 onClick={() => setSelectedSlotId(slot.id)}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap border cursor-pointer flex items-center gap-1.5 transition-all ${
                   isSelected
-                    ? 'bg-indigo-600 border-indigo-400 text-white shadow-md shadow-indigo-600/30'
+                    ? 'bg-indigo-600 border-indigo-400 text-[#E8EAE6] shadow-md shadow-indigo-600/30'
                     : isTaken
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                     : isNext
@@ -1304,7 +1304,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               const firstSlotOfNewPhase = PHOTO_SLOTS.find(s => s.phase === newPhase);
               if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
             }}
-            className="text-[10px] font-bold text-neutral-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+            className="text-[10px] font-bold text-neutral-400 hover:text-[#E8EAE6] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
           >
             <ChevronLeft size={12} /> Prev Phase
           </button>
@@ -1351,8 +1351,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           disabled={isRecording360}
           className={`w-full py-3.5 rounded-2xl flex items-center justify-center gap-2.5 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-black text-sm uppercase tracking-wider disabled:opacity-60 ${
             activeSlot.id === 'video_360'
-              ? 'bg-gradient-to-r from-red-600 to-rose-500 text-white border border-red-400/40'
-              : 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-white border border-indigo-400/30'
+              ? 'bg-gradient-to-r from-red-600 to-rose-500 text-[#E8EAE6] border border-red-400/40'
+              : 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 text-[#E8EAE6] border border-indigo-400/30'
           }`}
           title={activeSlot.id === 'video_360' ? 'Record 360 walkaround' : 'Take picture for this slot'}
         >
@@ -1452,7 +1452,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <div className="flex items-center gap-2">
               <Images className="text-indigo-400" size={18} />
               <div>
-                <h3 className="text-xs font-bold text-neutral-100">Bulk Camera Roll Importer</h3>
+                <h3 className="text-xs font-bold text-[#E8EAE6]">Bulk Camera Roll Importer</h3>
                 <p className="text-[9px] text-neutral-400">Streamline inventory lot photography bulk processing</p>
               </div>
             </div>
@@ -1587,7 +1587,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <button
               onClick={handleSyncBulkPhotos}
               disabled={bulkItems.length === 0 || bulkProgress.status === 'syncing'}
-              className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-xs font-extrabold text-white flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
+              className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-xs font-extrabold text-[#E8EAE6] flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
             >
               {bulkProgress.status === 'syncing' ? (
                 <>
