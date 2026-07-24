@@ -29,15 +29,26 @@ export async function registerTruLensServiceWorker(): Promise<ServiceWorkerRegis
   try {
     const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
     // Prompt reload when a new SW takes over
+    // When a new build ships, apply it and reload once — otherwise an installed
+    // app keeps serving the cached old shell (this is why a redeploy didn't show
+    // on the phone). Guarded so it reloads exactly once, not in a loop.
     reg.addEventListener('updatefound', () => {
       const worker = reg.installing;
       if (!worker) return;
       worker.addEventListener('statechange', () => {
         if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-          console.info('[TruLens PWA] Update ready — refresh to apply');
+          worker.postMessage('SKIP_WAITING');
         }
       });
     });
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded) return;
+      reloaded = true;
+      window.location.reload();
+    });
+    // Check for a new version each time the app is opened.
+    reg.update().catch(() => undefined);
     return reg;
   } catch (err) {
     console.warn('[TruLens PWA] Service worker registration failed', err);

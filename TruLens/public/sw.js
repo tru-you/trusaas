@@ -1,5 +1,5 @@
 /* TruLens PWA service worker — app shell cache; never cache API photo payloads */
-const CACHE_VERSION = 'trulens-v1';
+const CACHE_VERSION = 'trulens-v2';
 const SHELL = [
   '/',
   '/index.html',
