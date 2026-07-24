@@ -47,7 +47,18 @@ export default function DiscScanner({
       try {
         setStatus('scanning');
         controls = await reader.decodeFromConstraints(
-          { video: { facingMode: 'environment' } },
+          {
+            video: {
+              facingMode: 'environment',
+              // The SA disc's PDF417 has very fine bars — the default ~640x480
+              // stream can't resolve them, so the decoder never locks. Ask for
+              // the highest the camera will give and let it downscale.
+              width: { ideal: 3840 },
+              height: { ideal: 2160 },
+              // @ts-expect-error non-standard but honoured on most mobile cameras
+              focusMode: 'continuous',
+            },
+          },
           videoRef.current!,
           (res) => {
             if (res && !done) {
