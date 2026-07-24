@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserMultiFormatReader } from '@zxing/library';
+import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { X, ScanLine, Loader2, AlertCircle } from 'lucide-react';
 import { parseSaDisc, type DiscScan } from '../lib/saDisc';
@@ -31,14 +31,15 @@ export default function DiscScanner({
     const hints = new Map();
     hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.PDF_417]);
     hints.set(DecodeHintType.TRY_HARDER, true);
-    const reader = new BrowserMultiFormatReader(hints, 400);
+    const reader = new BrowserMultiFormatReader(hints);
     readerRef.current = reader;
     let done = false;
+    let controls: IScannerControls | null = null;
 
     (async () => {
       try {
         setStatus('scanning');
-        await reader.decodeFromConstraints(
+        controls = await reader.decodeFromConstraints(
           { video: { facingMode: 'environment' } },
           videoRef.current!,
           (res) => {
@@ -62,7 +63,7 @@ export default function DiscScanner({
     })();
 
     function stop() {
-      try { reader.reset(); } catch { /* ignore */ }
+      try { controls?.stop(); } catch { /* ignore */ }
     }
     return stop;
   }, [onResult]);

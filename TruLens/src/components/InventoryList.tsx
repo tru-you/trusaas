@@ -12,6 +12,8 @@ import {
 import { Vehicle, PHOTO_SLOTS, DmsExportResult } from '../types';
 import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
+import DiscScanner from './DiscScanner';
+import type { DiscScan } from '../lib/saDisc';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
