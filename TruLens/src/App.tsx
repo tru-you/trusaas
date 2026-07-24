@@ -7,6 +7,7 @@ import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
 import { Vehicle, QualityReport, DmsExportResult } from './types';
 import { useAuth } from './contexts/AuthContext';
+import DealerSelect from './components/DealerSelect';
 
 /** Keep client state crash-safe even if API returns partial records. */
 function normalizeVehicle(raw: any): Vehicle {
@@ -58,6 +59,11 @@ function normalizeVehicle(raw: any): Vehicle {
 
 export default function App() {
   const { user, loading } = useAuth();
+  // Which dealership this phone is filing to. Explicit choice at login — no
+  // default, so nothing is ever captured against the wrong yard.
+  const [dealerConfirmed, setDealerConfirmed] = React.useState<boolean>(
+    () => !!localStorage.getItem('trulens_dealer_confirmed'),
+  );
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
   const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report'>('inventory');
@@ -440,6 +446,14 @@ export default function App() {
     <MobileDevice>
       {!user ? (
         <Login />
+      ) : !dealerConfirmed ? (
+        <DealerSelect
+          onSelected={(slug) => {
+            localStorage.setItem('trulens_dealer_slug', slug);
+            localStorage.setItem('trulens_dealer_confirmed', '1');
+            setDealerConfirmed(true);
+          }}
+        />
       ) : (
         <>
           {activeView === 'inventory' && (

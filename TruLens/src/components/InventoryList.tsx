@@ -140,7 +140,7 @@ export default function InventoryList({
       A phone used on Caledon's floor should be set to "cars-on-caledon" so
       captures never default to (and leak onto) MKR's site. */
   const [dealerSlug, setDealerSlug] = React.useState(
-    () => localStorage.getItem('trulens_dealer_slug') || 'mkr-autosales'
+    () => localStorage.getItem('trulens_dealer_slug') || ''
   );
   const [dealerWhatsApp, setDealerWhatsApp] = React.useState(
     () => localStorage.getItem('trulens_dealer_wa') || ''
@@ -1360,6 +1360,7 @@ export default function InventoryList({
                   localStorage.setItem('trulens_dealer_name', dealershipName);
                   localStorage.setItem('trulens_dealer_branch', branch);
                   localStorage.setItem('trulens_dealer_slug', dealerSlug);
+                  if (dealerSlug) localStorage.setItem('trulens_dealer_confirmed', '1');
                   localStorage.setItem('trulens_dealer_wa', dealerWhatsApp);
                   localStorage.setItem('trulens_currency', currency);
                   localStorage.setItem('trulens_ai_threshold', String(aiThreshold));
