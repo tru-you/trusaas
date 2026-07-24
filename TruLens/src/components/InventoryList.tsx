@@ -27,13 +27,11 @@ interface InventoryListProps {
   onForceSync: () => void;
 }
 
-const DMS_PRESETS = {
-  premium: { label: 'TruFlow Premium', url: 'http://localhost:3001' },
-  lite: { label: 'TruFlow Lite', url: 'http://localhost:3002' },
-  custom: { label: 'Custom URL', url: '' },
-} as const;
-
-const DEFAULT_DMS_URL = DMS_PRESETS.premium.url;
+// The DMS target is fixed for every device and controlled server-side
+// (TRUFLOW_DMS_URL). Phones no longer carry their own base URL — a stale
+// localhost left in one phone's storage used to break its exports silently.
+// This constant is only used to open the DMS in a browser tab from the header.
+const DMS_URL = 'https://premium.tru-saas.com';
 
 export default function InventoryList({
   vehicles,
@@ -154,16 +152,14 @@ export default function InventoryList({
     const n = Number(localStorage.getItem('trulens_ai_threshold'));
     return Number.isFinite(n) && n >= 50 ? n : 85;
   });
-  const [dmsUrl, setDmsUrl] = React.useState(() =>
-    localStorage.getItem('trulens_dms_url') || DEFAULT_DMS_URL
-  );
-  const [dmsPreset, setDmsPreset] = React.useState<'premium' | 'lite' | 'custom'>(() => {
-    const saved = localStorage.getItem('trulens_dms_url') || DEFAULT_DMS_URL;
-    if (saved.includes(':3002')) return 'lite';
-    if (saved.includes(':3001') || saved === DEFAULT_DMS_URL) return 'premium';
-    return 'custom';
-  });
-  const [dmsUrlSaved, setDmsUrlSaved] = React.useState(false);
+  // Clear any per-device DMS URL a phone still has from the old settings —
+  // it's now server-controlled, and a leftover localhost would be ignored but
+  // is best not lingering in storage.
+  React.useEffect(() => {
+    if (localStorage.getItem('trulens_dms_url')) {
+      localStorage.removeItem('trulens_dms_url');
+    }
+  }, []);
   const [make, setMake] = React.useState('');
   const [model, setModel] = React.useState('');
   const [year, setYear] = React.useState(new Date().getFullYear());
@@ -280,28 +276,6 @@ export default function InventoryList({
     }
   };
 
-  const applyDmsPreset = (preset: 'premium' | 'lite' | 'custom') => {
-    setDmsPreset(preset);
-    if (preset === 'premium' || preset === 'lite') {
-      const url = DMS_PRESETS[preset].url;
-      setDmsUrl(url);
-      localStorage.setItem('trulens_dms_url', url);
-      setDmsUrlSaved(true);
-      setTimeout(() => setDmsUrlSaved(false), 2000);
-    }
-  };
-
-  const saveDmsUrl = () => {
-    const cleaned = dmsUrl.trim().replace(/\/$/, '') || DEFAULT_DMS_URL;
-    setDmsUrl(cleaned);
-    localStorage.setItem('trulens_dms_url', cleaned);
-    if (cleaned.includes(':3002')) setDmsPreset('lite');
-    else if (cleaned.includes(':3001')) setDmsPreset('premium');
-    else setDmsPreset('custom');
-    setDmsUrlSaved(true);
-    setTimeout(() => setDmsUrlSaved(false), 2000);
-  };
-
   const handleExportClick = async (e: React.MouseEvent, vehicle: Vehicle) => {
     e.stopPropagation();
     if (!onExportToDms) {
@@ -373,9 +347,9 @@ export default function InventoryList({
         {/* Flow DMS, sync & log out */}
         <div className="flex items-center gap-1.5">
           <button 
-            onClick={() => window.open(dmsUrl || DEFAULT_DMS_URL, '_blank')}
+            onClick={() => window.open(DMS_URL, '_blank')}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#4FE3DC] hover:bg-[#7FF0EA] border border-transparent text-[12px] text-[#06080D] font-semibold tracking-normal transition-colors cursor-pointer"
-            title={`Open TruFlow DMS (${dmsUrl || DEFAULT_DMS_URL})`}
+            title={`Open TruFlow DMS (${DMS_URL})`}
           >
             <ExternalLink size={10} />
             <span className="hidden sm:inline">TruFlow</span>
@@ -1204,11 +1178,11 @@ export default function InventoryList({
               </div>
             </div>
 
-            {/* DMS Integration — Premium or Lite */}
+            {/* DMS export target — fixed for every device, server-controlled */}
             <div className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
               <div className="p-3 border-b border-neutral-850 bg-neutral-900/40 flex items-center justify-between">
                 <span className="text-[13px] font-bold text-neutral-400 ">TruFlow DMS Export Target</span>
-                <ExternalLink size={12} className="text-indigo-400" />
+                <ExternalLink size={12} className="text-[#4FE3DC]" />
               </div>
               <div className="p-4 space-y-3">
                 <p className="text-[12px] text-neutral-500 leading-relaxed">
@@ -1216,80 +1190,23 @@ export default function InventoryList({
                   <span className="font-mono text-neutral-400">/api/sync/push-photos</span>.
                   Match by stock number; missing stock is created automatically.
                 </p>
-
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="flex items-center justify-between gap-3 rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2.5">
+                  <div className="min-w-0">
+                    <div className="text-[11px] text-neutral-600 uppercase tracking-wide">Target</div>
+                    <div className="text-[12px] font-mono text-[#E8EAE6] truncate">{DMS_URL}</div>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => applyDmsPreset('premium')}
-                    className={`py-2 px-1 rounded-lg text-[12px] font-bold border cursor-pointer ${
-                      dmsPreset === 'premium'
-                        ? 'bg-indigo-600 border-indigo-500 text-[#E8EAE6]'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-[#E8EAE6]'
-                    }`}
-                  >
-                    Premium
-                    <span className="block text-[7px] font-mono opacity-70 mt-0.5">:3001</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => applyDmsPreset('lite')}
-                    className={`py-2 px-1 rounded-lg text-[12px] font-bold border cursor-pointer ${
-                      dmsPreset === 'lite'
-                        ? 'bg-emerald-600 border-emerald-500 text-[#E8EAE6]'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-[#E8EAE6]'
-                    }`}
-                  >
-                    Lite
-                    <span className="block text-[7px] font-mono opacity-70 mt-0.5">:3002</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => applyDmsPreset('custom')}
-                    className={`py-2 px-1 rounded-lg text-[12px] font-bold border cursor-pointer ${
-                      dmsPreset === 'custom'
-                        ? 'bg-neutral-700 border-neutral-600 text-[#E8EAE6]'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-[#E8EAE6]'
-                    }`}
-                  >
-                    Custom
-                    <span className="block text-[7px] font-mono opacity-70 mt-0.5">URL</span>
-                  </button>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[12px] text-neutral-500  font-bold">DMS Base URL</label>
-                  <input
-                    type="url"
-                    value={dmsUrl}
-                    onChange={(e) => {
-                      setDmsUrl(e.target.value);
-                      setDmsPreset('custom');
-                    }}
-                    placeholder="http://localhost:3002"
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-mono focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={saveDmsUrl}
-                    className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer"
-                  >
-                    {dmsUrlSaved ? 'Saved ✓' : 'Save DMS target'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => window.open(dmsUrl || DEFAULT_DMS_URL, '_blank')}
-                    className="px-3 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-[13px] font-bold cursor-pointer"
+                    onClick={() => window.open(DMS_URL, '_blank')}
+                    className="shrink-0 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 rounded-lg text-[12px] font-bold cursor-pointer"
                     title="Open DMS in browser"
                   >
                     Open
                   </button>
                 </div>
                 <p className="text-[12px] text-neutral-600 leading-relaxed">
-                  Ports: TruLens <span className="text-neutral-400">3000</span> · Premium{' '}
-                  <span className="text-neutral-400">3001</span> · Lite{' '}
-                  <span className="text-neutral-400">3002</span>
+                  The same DMS for every device — set on the server, so a phone can't point exports
+                  at the wrong place.
                 </p>
               </div>
             </div>
@@ -1366,11 +1283,8 @@ export default function InventoryList({
                   localStorage.setItem('trulens_dealer_wa', dealerWhatsApp);
                   localStorage.setItem('trulens_currency', currency);
                   localStorage.setItem('trulens_ai_threshold', String(aiThreshold));
-                  localStorage.setItem('trulens_dms_url', dmsUrl);
-                  setDmsUrlSaved(true);
                   setExportToast({ type: 'ok', text: 'Settings saved on this device (used in VIR & WhatsApp)' });
                   setTimeout(() => setExportToast(null), 2800);
-                  setTimeout(() => setDmsUrlSaved(false), 1600);
                 }}
                 className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
               >

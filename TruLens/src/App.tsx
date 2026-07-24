@@ -249,9 +249,9 @@ export default function App() {
     setSyncStatus('syncing');
     try {
       const token = await user.getIdToken();
-      const dmsUrl =
-        localStorage.getItem('trulens_dms_url') ||
-        undefined;
+      // The DMS target is fixed on the server (TRUFLOW_DMS_URL) for every
+      // device — the phone no longer carries its own base URL. A stale
+      // localhost left in a phone's storage used to silently break exports.
       const dealerSlug =
         localStorage.getItem('trulens_dealer_slug') ||
         undefined;
@@ -264,7 +264,6 @@ export default function App() {
         },
         body: JSON.stringify({
           vehicleId: vehicle.id,
-          dmsUrl: dmsUrl || undefined,
           dealerSlug: dealerSlug || undefined,
           createIfMissing: true,
         }),

@@ -15,7 +15,15 @@ dotenv.config();
 // Same Firebase project + named DB as TruFlow Premium photo sync
 const FIREBASE_PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0151924955';
 const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d4757ec-a059-4566-98db-d15a4840f4ec';
-const DEFAULT_DMS_URL = process.env.TRUFLOW_DMS_URL || process.env.DMS_URL || 'http://localhost:3001';
+// Every device exports to this one DMS. Overridable only by env (for local
+// dev), never per-phone — a stale localhost in a phone's storage used to break
+// exports silently. Production default is TruFlow Premium.
+const DEFAULT_DMS_URL =
+  process.env.TRUFLOW_DMS_URL ||
+  process.env.DMS_URL ||
+  (process.env.NODE_ENV === 'production'
+    ? 'https://premium.tru-saas.com'
+    : 'http://localhost:3001');
 // Which dealer owns captures made before dealer tagging existed (matches
 // TruFlow Premium's DEFAULT_DEALERSHIP_ID = d1 = mkr-autosales).
 /**
