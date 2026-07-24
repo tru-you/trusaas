@@ -68,12 +68,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="coc-vd.css?v=8">
-<link rel="stylesheet" href="coc-polish.css?v=10">
-<link rel="stylesheet" href="coc-splash.css?v=6">
+<link rel="stylesheet" href="coc-vd.css?v=20260724q">
+<link rel="stylesheet" href="coc-polish.css?v=20260724q">
+<link rel="stylesheet" href="coc-splash.css?v=20260724q">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --blue:#23419A;
@@ -1065,15 +1065,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 .stock-source.live .dot{background:var(--wa);box-shadow:0 0 0 0 rgba(37,211,102,.5);animation:livePulse 1.8s ease-out infinite;}
 @keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,.55)}70%{box-shadow:0 0 0 8px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
 </style>
-<link rel="stylesheet" href="coc-book.css?v=20260723h">
-<link rel="stylesheet" href="coc-media.css?v=20260723h">
-<link rel="stylesheet" href="coc-tradein.css?v=20260723h">
+<link rel="stylesheet" href="coc-book.css?v=20260724q">
+<link rel="stylesheet" href="coc-media.css?v=20260724q">
+<link rel="stylesheet" href="coc-tradein.css?v=20260724q">
+<link rel="stylesheet" href="coc-skin.css?v=20260724q">
 </head>
 <body>
 <a class="coc-skip" href="#showroom">Skip to showroom</a>
 
 <!-- Splash intro (first visit per session) -->
-<script src="coc-splash.js?v=9"></script>
+<script src="coc-splash.js?v=20260724q"></script>
 
 <!-- Custom cursor + scroll progress (desktop) -->
 <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
@@ -1104,7 +1105,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
         <span class="cc-ring" aria-hidden="true"></span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.27a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
         <span class="cc-num"><b>Call us</b></span>
-        <span class="cc-arm">+27 61 875 9389 &middot; tap to call</span>
+        <span class="cc-arm">+27 61 875 9389</span>
       </button>
     </div>
   </div>
@@ -1133,7 +1134,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     <div class="nav-ctas">
       <!-- mobile-only: live open/closed pill + tap-to-WhatsApp fill the dead
            space between the logo and the burger -->
-      <a class="nav-status" id="navStatus" href="#visit" aria-label="Trading hours"><i></i><span>Open now</span></a>
+      <!-- header trading-hours badge removed: the topbar pill already states this, and two live "open now" indicators within a screen of each other competed with the headline -->
       <a class="nav-wa" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20to%20chat%20about%20a%20vehicle" target="_blank" rel="noopener" aria-label="WhatsApp us">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A9.9 9.9 0 0 0 2.1 11.9c0 1.75.46 3.45 1.32 4.95L2 22l5.3-1.38a9.9 9.9 0 0 0 4.7 1.2 9.9 9.9 0 0 0 9.9-9.9A9.9 9.9 0 0 0 12 2zm0 18.1c-1.5 0-2.97-.4-4.25-1.16l-.3-.18-3.15.82.84-3.07-.2-.31a8.1 8.1 0 1 1 7.06 3.9zm4.44-6.07c-.24-.12-1.43-.7-1.65-.79-.22-.08-.38-.12-.55.12-.16.24-.63.79-.77.95-.14.16-.28.18-.53.06-.24-.12-1.02-.38-1.95-1.2-.72-.64-1.2-1.43-1.35-1.67-.14-.24-.01-.37.11-.5.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.42-.55-.42h-.47c-.16 0-.42.06-.65.3-.22.24-.85.83-.85 2.02 0 1.2.87 2.35 1 2.51.12.16 1.72 2.62 4.16 3.68.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.43-.58 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28z"/></svg>
       </a>
@@ -1260,6 +1261,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 <section class="sell" id="sell">
   <div class="wrap sell-grid">
     <div class="sell-img rv">
+      <video class="si-vid" muted autoplay loop playsinline preload="none"
+             poster="coc-splash-v2.jpg?v=1" src="coc-splash-v2.mp4?v=1" aria-hidden="true"></video>
+      <div class="si-veil" aria-hidden="true"></div>
       <div class="si-badge"><div class="sb1">Average turnaround</div><div class="sb2">Under 24 hours</div></div>
     </div>
     <div class="sell-right">
@@ -1877,9 +1881,9 @@ observeAll();
 })();
 </script>
 
-<script src="coc-vd.js?v=9"></script>
-<script src="coc-polish.js?v=10" defer></script>
-<script src="coc-motion.js?v=1" defer></script>
+<script src="coc-vd.js?v=20260724q"></script>
+<script src="coc-polish.js?v=20260724q" defer></script>
+<script src="coc-motion.js?v=20260724q" defer></script>
 
 <!-- TruChat · AI chat + leads (TrueSaas) -->
 <script src="truchat/shared/qualifier.js"></script>
@@ -1890,7 +1894,7 @@ observeAll();
 
 <!-- TruAfford · soft affordability (TrueSaas) — all showrooms -->
 <script
-  src="tru-afford.js?v=5"
+  src="tru-afford.js?v=20260724q"
   data-dealer="Cars on Caledon"
   data-wa="27618759389"
   data-brand="trusaas"
@@ -1898,10 +1902,9 @@ observeAll();
   data-bottom="20px"
   data-z="999990"
   defer></script>
-<script src="coc-book.js?v=20260723h" defer></script>
-<script src="coc-media.js?v=20260723h" defer></script>
-<script src="coc-tradein.js?v=20260723h" defer></script>
-<script src="coc-hours.js?v=20260723h" defer></script>
-<script src="coc-dock.js?v=20260723h" defer></script>
+<script src="coc-book.js?v=20260724q" defer></script>
+<script src="coc-media.js?v=20260724q" defer></script>
+<script src="coc-tradein.js?v=20260724q" defer></script>
+<script src="coc-hours.js?v=20260724q" defer></script>
 </body>
 </html>
