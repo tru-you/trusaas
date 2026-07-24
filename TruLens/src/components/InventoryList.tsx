@@ -31,7 +31,7 @@ interface InventoryListProps {
 // (TRUFLOW_DMS_URL). Phones no longer carry their own base URL — a stale
 // localhost left in one phone's storage used to break its exports silently.
 // This constant is only used to open the DMS in a browser tab from the header.
-const DMS_URL = 'https://premium.tru-saas.com';
+const DMS_URL = 'https://lens.tru-saas.com';
 
 export default function InventoryList({
   vehicles,

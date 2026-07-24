@@ -22,7 +22,7 @@ const DEFAULT_DMS_URL =
   process.env.TRUFLOW_DMS_URL ||
   process.env.DMS_URL ||
   (process.env.NODE_ENV === 'production'
-    ? 'https://premium.tru-saas.com'
+    ? 'https://lens.tru-saas.com'
     : 'http://localhost:3001');
 // Which dealer owns captures made before dealer tagging existed (matches
 // TruFlow Premium's DEFAULT_DEALERSHIP_ID = d1 = mkr-autosales).
