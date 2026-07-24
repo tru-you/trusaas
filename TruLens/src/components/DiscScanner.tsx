@@ -32,6 +32,7 @@ export default function DiscScanner({
   const detectorRef = React.useRef<any>(null);      // native BarcodeDetector, if usable
   const zxingRef = React.useRef<BrowserMultiFormatReader | null>(null);
   const rafRef = React.useRef<number | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const doneRef = React.useRef(false);
   const [status, setStatus] = React.useState<'starting' | 'scanning' | 'error'>('starting');
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
@@ -111,6 +112,56 @@ export default function DiscScanner({
     if (payload) finish(payload);
     else setHint('No barcode read — fill the box with just the barcode, hold steady, torch on if shiny.');
   }, [decodeStill, finish, reading]);
+
+  // Lazily build a native pdf417 detector (may not exist / may not support it).
+  const ensureDetector = React.useCallback(async () => {
+    if (detectorRef.current) return detectorRef.current;
+    const BD: any = (window as any).BarcodeDetector;
+    if (!BD) return null;
+    try {
+      const formats: string[] = await BD.getSupportedFormats();
+      if (formats.includes('pdf417')) detectorRef.current = new BD({ formats: ['pdf417'] });
+    } catch { detectorRef.current = null; }
+    return detectorRef.current;
+  }, []);
+
+  // Decode a still PHOTO taken with the phone's real camera (full resolution,
+  // properly focused) — far more likely to read than a live video frame.
+  const decodeImageFile = React.useCallback(async (file: File) => {
+    if (doneRef.current) return;
+    setReading(true);
+    setHint(null);
+    const url = URL.createObjectURL(file);
+    let payload: string | null = null;
+    try {
+      const detector = await ensureDetector();
+      if (detector) {
+        try {
+          const bmp = await createImageBitmap(file);
+          const codes = await detector.detect(bmp);
+          (bmp as any).close?.();
+          if (codes && codes.length && codes[0].rawValue) payload = codes[0].rawValue as string;
+        } catch { /* fall through */ }
+      }
+      if (!payload) {
+        if (!zxingRef.current) {
+          const hints = new Map();
+          hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.PDF_417]);
+          hints.set(DecodeHintType.TRY_HARDER, true);
+          zxingRef.current = new BrowserMultiFormatReader(hints);
+        }
+        try {
+          const res = await zxingRef.current.decodeFromImageUrl(url);
+          if (res) payload = res.getText();
+        } catch { /* no code in this photo */ }
+      }
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+    setReading(false);
+    if (payload) finish(payload);
+    else setHint('No barcode in that photo — get closer so the barcode fills the frame, then retake.');
+  }, [ensureDetector, finish]);
 
   React.useEffect(() => {
     doneRef.current = false;
@@ -219,7 +270,7 @@ export default function DiscScanner({
               <div className="w-[86%] aspect-[3/2] rounded-xl border-2 border-[#4FE3DC]/70 shadow-[0_0_0_100vmax_rgba(6,8,13,0.55)]" />
             </div>
             <p className="absolute top-4 left-0 right-0 text-center text-[13px] text-[#E8EAE6] px-6">
-              {hint || 'Fill the box with the barcode, then tap Capture.'}
+              {hint || 'Tap “Take a photo” and fill the frame with just the barcode.'}
             </p>
           </>
         )}
@@ -242,16 +293,40 @@ export default function DiscScanner({
         )}
       </div>
 
-      {status === 'scanning' && (
-        <div className="p-4 border-t border-white/10">
+      {/* Photo capture works even if the live camera failed to start. */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = '';
+          if (f) decodeImageFile(f);
+        }}
+      />
+
+      {status !== 'starting' && (
+        <div className="p-4 border-t border-white/10 space-y-2">
           <button
             type="button"
-            onClick={captureAndRead}
+            onClick={() => fileInputRef.current?.click()}
             disabled={reading}
             className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2.5 font-semibold text-sm bg-[#4FE3DC] text-[#06080D] active:scale-[0.98] transition-all disabled:opacity-60"
           >
-            {reading ? <><Loader2 size={18} className="animate-spin" /> Reading…</> : <><Camera size={18} strokeWidth={2.5} /> Capture &amp; read</>}
+            {reading ? <><Loader2 size={18} className="animate-spin" /> Reading…</> : <><Camera size={18} strokeWidth={2.5} /> Take a photo of the barcode</>}
           </button>
+          {status === 'scanning' && (
+            <button
+              type="button"
+              onClick={captureAndRead}
+              disabled={reading}
+              className="w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-semibold text-[13px] bg-white/5 border border-white/15 text-[#E8EAE6] active:scale-[0.98] transition-all disabled:opacity-60"
+            >
+              <ScanLine size={16} /> Or read from live view
+            </button>
+          )}
         </div>
       )}
     </div>
