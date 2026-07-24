@@ -37,6 +37,8 @@ data/local-inventory.json
 case-sites/_deploy/
 case-sites/*-DEPLOY.zip
 **/*.zip
+# Marketing-site Netlify drop — rebuilt by rebuild-drop.ps1 from index.html + assets.
+_deploy/
 
 # Archive masters — full-resolution splash video / artwork sources. Kept
 # locally; the sites ship the compressed splash-*.mp4 / *-small.mp4 variants.
