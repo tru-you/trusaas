@@ -606,7 +606,7 @@ const DEFAULT_MOCK_STATE = {
   // on their own website only.
   dealerships: [
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
-    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://carsoncaledon.netlify.app' },
+    { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://www.carsoncaledon.co.za' },
     { id: 'demo', name: 'Demo Dealership', location: 'Sandbox', slug: 'demo', websiteUrl: 'https://tru-saas.com' }
   ],
   vehicles: [
@@ -744,7 +744,7 @@ function readState(): typeof DEFAULT_MOCK_STATE {
         // dealer's own websiteUrl would never appear without this.
         parsed.dealerships = parsed.dealerships.map((d: any) => {
           const seed = DEFAULT_MOCK_STATE.dealerships.find((x: any) => x.id === d.id);
-          return seed ? { ...seed, ...d, websiteUrl: d.websiteUrl || (seed as any).websiteUrl, slug: d.slug || (seed as any).slug } : d;
+          return seed ? { ...d, ...seed } : d; // platform-managed website/slug: seed wins
         });
       }
       parsed.vehicles.forEach((v: any) => {

@@ -10,4 +10,4 @@ export const TRUINSPECT_URL = "https://inspect.tru-saas.com";
 
 // Dealer showrooms built on the stack — used for "see it live" links.
 export const MKR_URL = "https://mkrauto.netlify.app";
-export const CARS_ON_CALEDON_URL = "https://carsoncaledon.netlify.app";
+export const CARS_ON_CALEDON_URL = "https://www.carsoncaledon.co.za";
