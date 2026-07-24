@@ -21,6 +21,7 @@ interface InventoryListProps {
   onDeleteVehicle: (id: string) => void;
   onExportToDms?: (vehicle: Vehicle) => Promise<DmsExportResult>;
   onOpenChecklist?: (vehicle: Vehicle) => void;
+  onTagDamage?: (vehicle: Vehicle) => void;
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
@@ -42,6 +43,7 @@ export default function InventoryList({
   onDeleteVehicle,
   onExportToDms,
   onOpenChecklist,
+  onTagDamage,
   onUpdateVehicle,
   syncStatus,
   onForceSync
@@ -856,6 +858,20 @@ export default function InventoryList({
                           className="flex items-center gap-1 text-[13px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer whitespace-nowrap bg-cyan-500/10 px-2 py-1.5 rounded border border-cyan-500/20 transition-colors"
                         >
                           <BookOpen size={10} /> Checklist
+                        </button>
+                      )}
+
+                      {takenCount > 0 && onTagDamage && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onTagDamage(vehicle); }}
+                          title="Tag damage directly on the photos — dent, scratch, rust with location and severity"
+                          className="flex items-center gap-1 text-[13px] font-bold text-amber-300 hover:text-amber-200 cursor-pointer whitespace-nowrap bg-amber-500/10 px-2 py-1.5 rounded border border-amber-500/25 transition-colors"
+                        >
+                          <AlertCircle size={10} /> Tag damage
+                          {(() => {
+                            const n = Object.values(vehicle.damageFindings || {}).reduce((a, l) => a + l.length, 0);
+                            return n > 0 ? <span className="ml-0.5">{n}</span> : null;
+                          })()}
                         </button>
                       )}
 

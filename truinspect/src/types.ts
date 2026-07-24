@@ -136,20 +136,28 @@ export const INSPECTION_CHECKLIST: { section: string; items: ChecklistItem[] }[]
 ];
 
 /** TruInspect: a single AI-detected (or manually logged) damage item on a photo */
+/**
+ * A defect the inspector tags by hand on a real photo. Every field is entered
+ * by a person — nothing inferred — because this ends up on a report a buyer
+ * relies on. `x`/`y` pin the mark to the exact spot on the photo it belongs to.
+ */
 export interface DamageFinding {
-  /** Panel / area, e.g. "front bumper", "driver door" */
+  /** Stable id for editing/removing a tag */
+  id: string;
+  /** Panel / area, e.g. "front bumper", "driver door" (defaults from the slot) */
   panel: string;
   damageType: 'scratch' | 'dent' | 'chip' | 'rust' | 'crack' | 'hail' | 'paint' | 'wear' | 'missing' | 'other';
   /** 1 = cosmetic blemish … 5 = structural / safety concern */
   severity: 1 | 2 | 3 | 4 | 5;
-  /** 0–1 model confidence */
-  confidence: number;
-  /** Short human note, e.g. "20cm scratch through clearcoat" */
+  /** Inspector's note, e.g. "20cm scratch through clearcoat" */
   note: string;
-  /** Rough location words for the report, e.g. "lower left" */
-  location?: string;
-  /** Inspector moderation: AI findings start 'ai'; inspector can confirm/dismiss */
-  status?: 'ai' | 'confirmed' | 'dismissed';
+  /** Position of the mark on the photo, 0–1 relative to width/height */
+  x: number;
+  y: number;
+  /** Who created it: the inspector by hand, or a real vision model as a suggestion */
+  source?: 'manual' | 'ai';
+  /** AI suggestions start false; only a human-confirmed tag reaches the report */
+  confirmed?: boolean;
 }
 
 export interface DmsExportResult {

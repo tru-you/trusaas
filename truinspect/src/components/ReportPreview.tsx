@@ -52,7 +52,7 @@ function gradeFor(score: number | null) {
   return { grade: 'D', label: 'Substantial issues', color: '#EF4444', bg: 'rgba(239,68,68,0.16)', sales: 'Do not publish yet' };
 }
 
-/** TruInspect: severity badge styling for AI damage findings */
+/** TruInspect: severity badge styling for inspector-tagged damage */
 function severityMeta(sev: number) {
   if (sev >= 5) return { label: 'Critical', color: '#DC2626', bg: '#FEE2E2' };
   if (sev >= 4) return { label: 'Major', color: '#EA580C', bg: '#FFEDD5' };
@@ -64,13 +64,13 @@ function severityMeta(sev: number) {
 /** TruInspect: overall condition out of 5 from accumulated damage findings */
 function computeCondition(vehicle: Vehicle) {
   const all = Object.entries(vehicle.damageFindings || {}).flatMap(([slotId, list]) =>
-    (list || []).filter(f => f.status !== 'dismissed').map(f => ({ ...f, slotId }))
+    (list || []).map(f => ({ ...f, slotId }))
   );
   const penalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
   const penalty = all.reduce((s, f) => s + (penalties[f.severity] ?? 0.3), 0);
   const stars = Math.max(1, Math.round((5 - Math.min(4, penalty)) * 10) / 10);
   const label =
-    all.length === 0 ? 'No visible damage detected' :
+    all.length === 0 ? 'No damage tagged' :
     stars >= 4.5 ? 'Excellent — minor blemishes only' :
     stars >= 3.5 ? 'Good — light cosmetic wear' :
     stars >= 2.5 ? 'Fair — visible defects to address' :
@@ -158,25 +158,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     const slots = PHOTO_SLOTS.filter(s => s.phase === p.id);
     return { ...p, slots, score: scoreForSlots(vehicle, slots) };
   });
-
-  const allFindings = useMemo(() => {
-    const set = new Set<string>();
-    const bySlot: { slotId: string; slotName: string; issues: string[] }[] = [];
-    PHOTO_SLOTS.forEach(slot => {
-      const raw: unknown = vehicle.quality?.[slot.id]?.aiAnalysis?.detectedIssues;
-      let issues: string[] = [];
-      if (Array.isArray(raw)) {
-        issues = raw.map(String).filter((s) => s.trim());
-      } else if (typeof raw === 'string' && raw.trim()) {
-        issues = [raw.trim()];
-      }
-      if (issues.length) {
-        bySlot.push({ slotId: slot.id, slotName: slot.name, issues });
-        issues.forEach(i => set.add(String(i).trim().toLowerCase()));
-      }
-    });
-    return { unique: Array.from(set), bySlot };
-  }, [vehicle]);
 
   const damagePhotos = PHOTO_SLOTS.filter(s => s.phase === 5)
     .map(s => ({ slot: s, src: vehicle.photos?.[s.id], quality: vehicle.quality?.[s.id] }))
@@ -321,7 +302,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="text-slate-400 mt-1">
                 Photos {readiness.requiredTaken}/{readiness.requiredTotal}
                 {readiness.overallScore != null ? ` · Capture quality ${readiness.overallScore}/100` : ''}
-                {` · ${condition.findings.length} AI finding${condition.findings.length === 1 ? '' : 's'}`}
+                {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
                 {` · ${checklistFlags.length} checklist flag${checklistFlags.length === 1 ? '' : 's'}`}
               </div>
             </div>
@@ -464,18 +445,18 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           </section>
 
           <section>
-            <h2><AlertTriangle size={16} /> AI damage findings</h2>
+            <h2><AlertTriangle size={16} /> Damage tagged by inspector</h2>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, padding:'10px 14px', background:'#F8FAFC', border:'1px solid #E8EAE6', borderRadius:12 }}>
               <div style={{ fontWeight:800, fontSize:24, color: condition.stars >= 3.5 ? '#16A34A' : condition.stars >= 2.5 ? '#CA8A04' : '#DC2626' }}>
                 {condition.stars.toFixed(1)}<span style={{ fontSize:12, color:'rgba(232,234,230,0.55)' }}>/5</span>
               </div>
               <div>
                 <div style={{ fontWeight:700, fontSize:13 }}>Condition score</div>
-                <div style={{ fontSize:11.5, color:'rgba(232,234,230,0.45)' }}>{condition.label} · {condition.findings.length} finding{condition.findings.length === 1 ? '' : 's'} across {Object.keys(vehicle.damageFindings || {}).length} inspected photos</div>
+                <div style={{ fontSize:11.5, color:'rgba(232,234,230,0.45)' }}>{condition.label} · {condition.findings.length} tag{condition.findings.length === 1 ? '' : 's'} across {Object.keys(vehicle.damageFindings || {}).length} photos</div>
               </div>
             </div>
             {condition.findings.length === 0 ? (
-              <div className="no-issues"><CheckCircle2 size={14} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> AI inspection found no visible damage on the captured photos.</div>
+              <div className="no-issues"><CheckCircle2 size={14} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> No damage was tagged on the inspection photos.</div>
             ) : (
               condition.findings.map((f, i) => {
                 const sev = severityMeta(f.severity);
@@ -483,20 +464,15 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 return (
                   <div className="finding" key={i} style={{ background: sev.bg, borderLeftColor: sev.color }}>
                     <div className="h" style={{ color: sev.color }}>
-                      {sev.label} · {f.damageType} · {f.panel}{f.location ? ` (${f.location})` : ''}
+                      {sev.label} · {f.damageType} · {f.panel}
                     </div>
                     <div className="l" style={{ color:'#334155' }}>
-                      {f.note}
-                      <span style={{ color:'rgba(232,234,230,0.55)' }}> — {slot?.name || f.slotId}, confidence {(f.confidence * 100).toFixed(0)}%</span>
+                      {f.note || 'Tagged by inspector'}
+                      <span style={{ color:'rgba(232,234,230,0.55)' }}> — {slot?.name || f.slotId}</span>
                     </div>
                   </div>
                 );
               })
-            )}
-            {allFindings.bySlot.length > 0 && (
-              <div style={{ marginTop:10, fontSize:11, color:'rgba(232,234,230,0.45)' }}>
-                Photo-quality notes: {allFindings.bySlot.map(({ slotName, issues }) => `${slotName}: ${issues.join(', ')}`).join(' · ')}
-              </div>
             )}
           </section>
 
@@ -542,14 +518,14 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <section>
               <h2><AlertTriangle size={16} /> Damage & recon</h2>
               <div className="damage-grid">
-                {damagePhotos.map(({ slot, src, quality }) => (
+                {damagePhotos.map(({ slot, src }) => (
                   <div className="damage-card" key={slot.id}>
                     <img src={src} alt={slot.name} />
                     <div className="cap">
                       <b>{slot.name}</b>
                       <div style={{ color:'rgba(232,234,230,0.45)', marginTop:3 }}>
-                        {Array.isArray(quality?.aiAnalysis?.detectedIssues)
-                          ? quality!.aiAnalysis!.detectedIssues![0]
+                        {(vehicle.damageFindings?.[slot.id]?.length ?? 0) > 0
+                          ? `${vehicle.damageFindings![slot.id].length} tag${vehicle.damageFindings![slot.id].length === 1 ? '' : 's'}`
                           : 'Documented area'}
                       </div>
                     </div>
@@ -586,7 +562,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   Photos captured: {Object.keys(vehicle.photos || {}).length}
                 </div>
                 <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
-                  AI damage findings: {condition.findings.length}
+                  Damage tags: {condition.findings.length}
                 </div>
                 <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
                   Checklist answered: {checklistAnswered.length} · flagged: {checklistFlags.length}
