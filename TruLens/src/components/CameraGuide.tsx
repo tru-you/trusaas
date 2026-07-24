@@ -447,14 +447,16 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
       setIsRecording360(true);
       setRecordingProgress(0);
       
+      // ~18s total: a realistic single walkaround. 60 ticks × 300ms, and the
+      // spin completes exactly one 360° over that time (360 / 60 = 6° a tick).
       let prog = 0;
       const interval = setInterval(() => {
-        prog += 5;
-        setRecordingProgress(prog);
-        
-        // Spin the simulated vehicle smoothly
-        setSimRotation((prev) => (prev + 18) % 360);
-        
+        prog += 100 / 60;
+        setRecordingProgress(Math.min(100, Math.round(prog)));
+
+        // Spin the simulated vehicle smoothly — one full turn across the record
+        setSimRotation((prev) => (prev + 6) % 360);
+
         if (prog >= 100) {
           clearInterval(interval);
           setIsRecording360(false);
@@ -489,7 +491,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
             }
           }
         }
-      }, 150);
+      }, 300);
       return;
     }
 
