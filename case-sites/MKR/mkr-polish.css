@@ -172,3 +172,60 @@
   }
   p a, li a, .lede a, .sec-lede a, .card-body h3 a{min-height:0;display:inline;}
 }
+
+/* ── Mobile: clear the hero of optional floating launchers ──────────────────
+   At 375px five fixed elements were live at once — the skip link, the fab rail,
+   the quick-contact bar, the TruChat bubble and the TruAfford dock. Measured,
+   the dock sat on top of the quick bar and the rail's circles landed on the
+   "Collections / Browse showroom" row, leaving the hero's WhatsApp button
+   unreachable before a single scroll.
+
+   The quick bar stays — it is the deliberate always-there one and already
+   carries the primary actions. The rail, chat bubble and dock fade in once the
+   hero is out of view (class set by floatingClearance() in mkr-polish.js).
+   Desktop is untouched: there is room there and nothing overlaps.            */
+@media (max-width:720px){
+  #tru-afford-root,
+  #tc-fab,
+  .fab-rail{
+    transition:opacity .28s ease, transform .28s ease, visibility .28s;
+  }
+  /* !important throughout: mkr-elevate.css pins .fab-rail with !important on
+     position and transform, so a plain declaration here loses to it. */
+  html.mkr-hero-visible #tru-afford-root,
+  html.mkr-hero-visible #tc-fab,
+  html.mkr-hero-visible .fab-rail{
+    opacity:0 !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  /* Never hide a panel the customer has actually opened. */
+  html.mkr-hero-visible #tru-afford-root.is-open,
+  html.mkr-hero-visible #tc-fab.is-open{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+    transform:none;
+  }
+
+  /* "Browse showroom" was rendering as "Browse show" — the hero CTA pair had
+     no room to shrink, so let the label wrap rather than truncate. */
+  .hero-ctas .btn{
+    min-width:0;
+    white-space:normal;
+    text-align:center;
+  }
+}
+
+/* ── Mobile topbar: give the phone number room ──────────────────────────────
+   The bar packs address, trading status and phone into a nowrap flex row. At
+   375px the phone was squeezed to 46px and rendered as "66 291" — an unusable
+   number in the most prominent strip on the page. The address is the least
+   useful of the three on a phone and already appears in the Visit section and
+   the footer, so it steps aside below 720px.                                 */
+@media (max-width:720px){
+  .topbar .tb-loc{display:none !important;}
+  .topbar .wrap{gap:12px; justify-content:space-between;}
+  .topbar .tb-phone{white-space:nowrap; flex:0 0 auto;}
+  .topbar .tb-status{flex:0 1 auto; min-width:0;}
+}

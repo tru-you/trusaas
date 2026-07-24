@@ -117,6 +117,34 @@ function mobileBar(){
   document.body.appendChild(bar);
 }
 
+/* Keep the optional launchers off the hero on phones.
+   Five fixed elements were live at 375px — the skip link, the fab rail, this
+   quick bar, the chat bubble and the TruAfford dock. The dock covered the quick
+   bar outright and the rail sat over the CTA row, so the hero's WhatsApp button
+   was unreachable. The quick bar stays; the rest hold back until the hero has
+   scrolled away.
+
+   Measured from the hero's bottom edge rather than an IntersectionObserver
+   ratio: a hero taller than the viewport never reaches a percentage threshold,
+   so a ratio test releases the launchers while the user is still on the hero. */
+function floatingClearance(){
+  var hero = document.querySelector("section.hero, #top");
+  if(!hero) return;
+  var root = document.documentElement, queued = false;
+  function update(){
+    queued = false;
+    root.classList.toggle("mkr-hero-visible", hero.getBoundingClientRect().bottom > 120);
+  }
+  function onScroll(){
+    if(queued) return;
+    queued = true;
+    requestAnimationFrame(update);
+  }
+  update();
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", onScroll);
+}
+
 /* ===== INIT ===== */
 function init(){
   try{skeletons();}catch(e){}
@@ -124,6 +152,7 @@ function init(){
   try{reviewsStrip();}catch(e){}
   try{ticker();}catch(e){}
   try{mobileBar();}catch(e){}
+  try{floatingClearance();}catch(e){}
 }
 if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
 else init();
