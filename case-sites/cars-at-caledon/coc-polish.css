@@ -499,3 +499,33 @@ footer :focus-visible,
 @media (max-width:420px){
   .coc-mbar .mb-call .cc-arm{display:none;}
 }
+
+/* ── Keep the inline call link out of the filled-pill treatment ─────────────
+   coc-skin.css turns .coc-call into a filled, embossed accent pill — right for
+   the standalone button, which was previously a hairline ghost. But it lands on
+   the .coc-call-text variant too, and that one is an inline dashed-underline
+   link sitting inside a hero-meta chip, the Visit row and the footer. Given a
+   fill, a border and 9px/18px padding it renders as a second square box inside
+   the chip's pill — the doubled border in the hero.
+
+   Two classes beat one, so this wins over the skin's !important rules on
+   specificity and does not depend on stylesheet order.                       */
+.coc-call.coc-call-text{
+  background:none !important;
+  border:0 !important;
+  border-bottom:1px dashed currentColor !important;
+  border-radius:0 !important;
+  padding:0 !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+  color:inherit !important;
+  font-weight:inherit !important;
+}
+.coc-call.coc-call-text:hover{
+  transform:none !important;
+  filter:none !important;
+  box-shadow:none !important;
+}
+.coc-call.coc-call-text.armed{
+  border-bottom-color:#25D366 !important;
+}
