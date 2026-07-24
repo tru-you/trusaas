@@ -3,7 +3,7 @@ import {
   ArrowLeft, Download, Printer, Share2, Award, AlertTriangle, CheckCircle2,
   Camera, FileText, Wrench, ClipboardList, Clock, Copy, Check, MessageCircle, Box,
 } from 'lucide-react';
-import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, INSPECTION_CHECKLIST } from '../types';
+import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, INSPECTION_CHECKLIST, INSPECTION_POINTS, PointResult } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
@@ -61,21 +61,45 @@ function severityMeta(sev: number) {
   return { label: 'Cosmetic', color: 'rgba(232,234,230,0.55)', bg: '#F8FAFC' };
 }
 
-/** TruInspect: overall condition out of 5 from accumulated damage findings */
+/**
+ * Overall condition out of 5 — computed ONLY from real inspector inputs:
+ * tagged damage (by severity) plus per-point ratings and function faults.
+ * No black-box scoring.
+ */
 function computeCondition(vehicle: Vehicle) {
   const all = Object.entries(vehicle.damageFindings || {}).flatMap(([slotId, list]) =>
     (list || []).map(f => ({ ...f, slotId }))
   );
   const penalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
-  const penalty = all.reduce((s, f) => s + (penalties[f.severity] ?? 0.3), 0);
+  let penalty = all.reduce((s, f) => s + (penalties[f.severity] ?? 0.3), 0);
+
+  // Flagged inspection points: notes, damage ratings, and faulty functions.
+  const pts = vehicle.inspectionPoints || {};
+  const flaggedPoints = INSPECTION_POINTS
+    .map(p => ({ point: p, res: pts[p.id] }))
+    .filter(({ res }) => res && (res.rating === 'note' || res.rating === 'damage' || res.works === 'no'));
+  for (const { res } of flaggedPoints) {
+    if (res?.works === 'no') penalty += 0.4;
+    else if (res?.rating === 'damage') penalty += 0.5;
+    else if (res?.rating === 'note') penalty += 0.15;
+  }
+
+  // Capture-time per-photo condition scores.
+  const slotAssess = vehicle.slotAssessment || {};
+  for (const res of Object.values(slotAssess)) {
+    if (res?.rating === 'damage') penalty += 0.5;
+    else if (res?.rating === 'note') penalty += 0.15;
+  }
+
   const stars = Math.max(1, Math.round((5 - Math.min(4, penalty)) * 10) / 10);
+  const hasInput = all.length > 0 || flaggedPoints.length > 0 || Object.keys(pts).length > 0 || Object.keys(slotAssess).length > 0;
   const label =
-    all.length === 0 ? 'No damage tagged' :
+    !hasInput ? 'Not yet inspected' :
     stars >= 4.5 ? 'Excellent — minor blemishes only' :
     stars >= 3.5 ? 'Good — light cosmetic wear' :
     stars >= 2.5 ? 'Fair — visible defects to address' :
     'Poor — significant damage documented';
-  return { stars, label, findings: all };
+  return { stars, label, findings: all, flaggedPoints };
 }
 
 const PHASES = [
@@ -476,42 +500,97 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             )}
           </section>
 
+          {(() => {
+            const sa = vehicle.slotAssessment || {};
+            const rows = PHOTO_SLOTS
+              .map(s => ({ s, r: sa[s.id], shots: vehicle.closeups?.[s.id] || [] }))
+              .filter(({ r, shots }) => r && (r.rating || r.comment || shots.length));
+            if (!rows.length) return null;
+            const stateOf = (r?: PointResult) =>
+              r?.rating === 'ok' ? { t: 'OK', c: '#16A34A' } :
+              r?.rating === 'note' ? { t: 'Note', c: '#B45309' } :
+              r?.rating === 'damage' ? { t: 'Damage', c: '#DC2626' } : { t: '—', c: '#64748B' };
+            return (
+              <section>
+                <h2><Camera size={16} /> Condition by photo</h2>
+                {rows.map(({ s, r, shots }) => {
+                  const st = stateOf(r);
+                  return (
+                    <div className="finding" key={s.id} style={r?.rating === 'ok' ? { background:'#F0FDF4', borderLeftColor:'#16A34A' } : undefined}>
+                      <div className="h" style={{ color: st.c }}>{s.name} · {st.t}</div>
+                      {r?.comment && <div className="l" style={{ color:'#334155' }}>{r.comment}</div>}
+                      {shots.length > 0 && (
+                        <div style={{ display:'flex', gap:6, marginTop:6, flexWrap:'wrap' }}>
+                          {shots.map((src, i) => (
+                            <img key={i} src={src} alt="close-up" style={{ width:96, height:72, objectFit:'cover', borderRadius:8, border:'1px solid #E8EAE6' }} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </section>
+            );
+          })()}
+
           <section>
-            <h2><ClipboardList size={16} /> Inspector checklist</h2>
-            {checklistAnswered.length === 0 ? (
-              <div style={{ fontSize:12, color:'rgba(232,234,230,0.55)', fontStyle:'italic' }}>
-                Checklist not completed for this inspection.
-              </div>
-            ) : (
-              <>
-                {checklistFlags.length > 0 && (
-                  <div style={{ marginBottom:12 }}>
-                    {checklistFlags.map(({ item, note }) => (
-                      <div className="finding" key={item.id}>
-                        <div className="h">Disclosure · {item.q}</div>
-                        <div className="l">{note || (item.flagWhen === 'yes' ? 'Confirmed by inspector' : 'Not confirmed by inspector')}</div>
-                      </div>
-                    ))}
+            <h2><ClipboardList size={16} /> Inspection sheet</h2>
+            {(() => {
+              const pts = vehicle.inspectionPoints || {};
+              const rows = INSPECTION_POINTS
+                .map(p => ({ p, r: pts[p.id] }))
+                .filter(({ r }) => r && (r.rating || r.works || r.comment));
+              if (!rows.length) {
+                return (
+                  <div style={{ fontSize:12, color:'rgba(232,234,230,0.55)', fontStyle:'italic' }}>
+                    Inspection not completed for this vehicle.
                   </div>
-                )}
-                <table className="checklist">
-                  <thead>
-                    <tr><th>Item</th><th style={{width:70}}>Answer</th><th>Note</th></tr>
-                  </thead>
-                  <tbody>
-                    {checklistAnswered.map(({ section: sec, item, answer, note, flagged }) => (
-                      <tr key={item.id} style={flagged ? { background:'#FFFBEB' } : undefined}>
-                        <td><span style={{ color:'rgba(232,234,230,0.55)', fontSize:9, textTransform:'', letterSpacing:'.08em' }}>{sec}</span><br/>{item.q}</td>
-                        <td style={{ fontWeight:700, color: flagged ? '#B45309' : '#16A34A' }}>
-                          {answer === 'na' ? 'N/A' : answer === 'yes' ? 'Yes' : 'No'}
-                        </td>
-                        <td style={{ color:'rgba(232,234,230,0.45)' }}>{note || '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </>
-            )}
+                );
+              }
+              const stateLabel = (r?: typeof rows[number]['r']) =>
+                r?.works === 'yes' ? { t: 'Works', c: '#16A34A' } :
+                r?.works === 'no' ? { t: 'Faulty', c: '#DC2626' } :
+                r?.works === 'na' ? { t: 'N/A', c: '#64748B' } :
+                r?.rating === 'ok' ? { t: 'OK', c: '#16A34A' } :
+                r?.rating === 'note' ? { t: 'Note', c: '#B45309' } :
+                r?.rating === 'damage' ? { t: 'Damage', c: '#DC2626' } :
+                { t: '—', c: '#64748B' };
+              const flagged = condition.flaggedPoints;
+              return (
+                <>
+                  {flagged.length > 0 && (
+                    <div style={{ marginBottom:12 }}>
+                      {flagged.map(({ point, res }) => (
+                        <div className="finding" key={point.id}>
+                          <div className="h">Disclosure · {point.name}</div>
+                          <div className="l">
+                            {stateLabel(res).t}{res?.comment ? ` — ${res.comment}` : ''}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <table className="checklist">
+                    <thead>
+                      <tr><th>Point</th><th style={{width:70}}>State</th><th>Comment</th></tr>
+                    </thead>
+                    <tbody>
+                      {rows.map(({ p, r }) => {
+                        const s = stateLabel(r);
+                        const isFlag = r?.rating === 'note' || r?.rating === 'damage' || r?.works === 'no';
+                        return (
+                          <tr key={p.id} style={isFlag ? { background:'#FFFBEB' } : undefined}>
+                            <td><span style={{ color:'rgba(232,234,230,0.55)', fontSize:9, letterSpacing:'.08em' }}>{p.group}</span><br/>{p.name}</td>
+                            <td style={{ fontWeight:700, color: s.c }}>{s.t}</td>
+                            <td style={{ color:'rgba(232,234,230,0.45)' }}>{r?.comment || '—'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </>
+              );
+            })()}
           </section>
 
           {damagePhotos.length > 0 && (

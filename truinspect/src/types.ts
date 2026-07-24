@@ -66,6 +66,12 @@ export interface Vehicle {
   damageFindings?: Record<string, DamageFinding[]>;
   /** TruInspect: inspector questionnaire answers, keyed by checklist item id */
   inspectionChecklist?: Record<string, ChecklistAnswer>;
+  /** TruInspect: per-point inspection results (rating / works / comment), keyed by point id */
+  inspectionPoints?: Record<string, PointResult>;
+  /** TruInspect: condition + note recorded at the moment each photo is taken, keyed by photo slot id */
+  slotAssessment?: Record<string, PointResult>;
+  /** TruInspect: close-up damage photos taken at capture time, keyed by photo slot id */
+  closeups?: Record<string, string[]>;
 }
 
 /** TruInspect: one answered checklist question */
@@ -159,6 +165,88 @@ export interface DamageFinding {
   /** AI suggestions start false; only a human-confirmed tag reaches the report */
   confirmed?: boolean;
 }
+
+/**
+ * One line item in the inspection. Two kinds:
+ *  - 'condition': a physical area rated OK / Note / Damage, often with a photo
+ *    the inspector can tag damage on (photoSlotId).
+ *  - 'function': something that either works or doesn't — headlights, indicators,
+ *    wipers, aircon — recorded as Works / Faulty / N/A.
+ * Every point takes a free comment. The report is graded only from these real
+ * inputs plus tagged damage — never a black-box score.
+ */
+export interface InspectionPoint {
+  id: string;
+  group: string;
+  name: string;
+  kind: 'condition' | 'function';
+  /** condition points that have a captured photo to tag damage on */
+  photoSlotId?: string;
+  /** short prompt shown under the name, e.g. "tread depth", "matches licence disc?" */
+  hint?: string;
+}
+
+/** The inspector's result for one point, keyed by point id on the vehicle. */
+export interface PointResult {
+  /** condition points */
+  rating?: 'ok' | 'note' | 'damage';
+  /** function points */
+  works?: 'yes' | 'no' | 'na';
+  comment?: string;
+}
+
+/**
+ * The full inspection sheet — every part of the car gets a place to rate,
+ * check function, comment, and (where there's a photo) tag damage.
+ */
+export const INSPECTION_POINTS: InspectionPoint[] = [
+  // ---- Exterior panels (rate + tag on the angle photos) ----
+  { id: 'ext_front', group: 'Exterior', name: 'Front (bumper, bonnet, grille)', kind: 'condition', photoSlotId: 'front_3_4' },
+  { id: 'ext_rear', group: 'Exterior', name: 'Rear (bumper, boot/tailgate)', kind: 'condition', photoSlotId: 'rear_3_4' },
+  { id: 'ext_driver', group: 'Exterior', name: 'Driver side (doors, fenders, sills)', kind: 'condition', photoSlotId: 'side_driver' },
+  { id: 'ext_passenger', group: 'Exterior', name: 'Passenger side (doors, fenders, sills)', kind: 'condition', photoSlotId: 'side_passenger' },
+  { id: 'ext_roof', group: 'Exterior', name: 'Roof', kind: 'condition', photoSlotId: 'roof_view' },
+  { id: 'ext_paint', group: 'Exterior', name: 'Paint & panel gaps', kind: 'condition', hint: 'respray, mismatched panels, uneven gaps' },
+
+  // ---- Glass, lights & wipers ----
+  { id: 'glass_windscreen', group: 'Glass & lights', name: 'Windscreen', kind: 'condition', photoSlotId: 'lights_detail', hint: 'chips / cracks' },
+  { id: 'fn_headlights', group: 'Glass & lights', name: 'Headlights work', kind: 'function', hint: 'both sides, high & low beam' },
+  { id: 'cond_headlights', group: 'Glass & lights', name: 'Headlight lenses', kind: 'condition', hint: 'cracked / hazed / water ingress' },
+  { id: 'fn_indicators', group: 'Glass & lights', name: 'Indicators & hazards work', kind: 'function' },
+  { id: 'fn_taillights', group: 'Glass & lights', name: 'Tail & brake lights work', kind: 'function' },
+  { id: 'fn_wipers', group: 'Glass & lights', name: 'Wipers & washers work', kind: 'function' },
+
+  // ---- Wheels & tyres ----
+  { id: 'tyre_tread', group: 'Wheels & tyres', name: 'Tyre tread & condition', kind: 'condition', photoSlotId: 'wheels_all', hint: 'tread mm per corner, cracks, uneven wear' },
+  { id: 'cond_rims', group: 'Wheels & tyres', name: 'Rims', kind: 'condition', hint: 'kerbing, cracks, buckles' },
+  { id: 'fn_spare', group: 'Wheels & tyres', name: 'Spare wheel present & serviceable', kind: 'function' },
+  { id: 'fn_jack', group: 'Wheels & tyres', name: 'Jack & wheel tools present', kind: 'function' },
+
+  // ---- Interior ----
+  { id: 'int_dash', group: 'Interior', name: 'Dashboard & warning lights', kind: 'condition', photoSlotId: 'interior_dash', hint: 'any lights on with ignition' },
+  { id: 'int_seat_driver', group: 'Interior', name: 'Driver seat & trim', kind: 'condition', photoSlotId: 'seat_driver' },
+  { id: 'int_seat_pass', group: 'Interior', name: 'Passenger seat & trim', kind: 'condition', photoSlotId: 'seat_passenger' },
+  { id: 'int_seats_rear', group: 'Interior', name: 'Rear seats', kind: 'condition', photoSlotId: 'seats_rear' },
+  { id: 'int_headliner', group: 'Interior', name: 'Roof lining (headliner)', kind: 'condition', hint: 'sagging, stains, smoke' },
+  { id: 'int_carpets', group: 'Interior', name: 'Carpets & mats', kind: 'condition', photoSlotId: 'floor_mats' },
+  { id: 'fn_aircon', group: 'Interior', name: 'Aircon blows cold', kind: 'function' },
+  { id: 'fn_electrics', group: 'Interior', name: 'Windows, mirrors, central locking work', kind: 'function' },
+  { id: 'fn_infotainment', group: 'Interior', name: 'Infotainment & reverse camera work', kind: 'function' },
+
+  // ---- Engine & underbody ----
+  { id: 'eng_bay', group: 'Engine & underbody', name: 'Engine bay', kind: 'condition', photoSlotId: 'engine_bay', hint: 'leaks, corrosion, non-standard wiring' },
+  { id: 'fn_leaks', group: 'Engine & underbody', name: 'No oil / coolant leaks', kind: 'function' },
+  { id: 'fn_battery', group: 'Engine & underbody', name: 'Battery secure & healthy', kind: 'function' },
+  { id: 'fn_smoke', group: 'Engine & underbody', name: 'No abnormal smoke on start', kind: 'function' },
+  { id: 'eng_under', group: 'Engine & underbody', name: 'Undercarriage', kind: 'condition', photoSlotId: 'undercarriage', hint: 'rust, impact, weld repairs' },
+
+  // ---- Identity & documents ----
+  { id: 'doc_vin', group: 'Identity & documents', name: 'VIN plate', kind: 'condition', photoSlotId: 'vin_plate', hint: 'legible, untampered' },
+  { id: 'fn_vin_match', group: 'Identity & documents', name: 'VIN matches licence disc & papers', kind: 'function' },
+  { id: 'fn_service', group: 'Identity & documents', name: 'Service history validated', kind: 'function', hint: 'book or digital history confirmed' },
+  { id: 'fn_disc', group: 'Identity & documents', name: 'Licence disc present & current', kind: 'function' },
+  { id: 'fn_spare_key', group: 'Identity & documents', name: 'Spare key present', kind: 'function' },
+];
 
 export interface DmsExportResult {
   success: boolean;

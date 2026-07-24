@@ -2,12 +2,12 @@ import React from 'react';
 import MobileDevice from './components/MobileDevice';
 import InventoryList from './components/InventoryList';
 import CameraGuide from './components/CameraGuide';
-import ImageEditor from './components/ImageEditor';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
-import InspectionChecklist from './components/InspectionChecklist';
+import SlotReview from './components/SlotReview';
+import InspectionSheet from './components/InspectionSheet';
 import DamageTagger from './components/DamageTagger';
-import { Vehicle, QualityReport, DmsExportResult, DamageFinding, PHOTO_SLOTS } from './types';
+import { Vehicle, QualityReport, DmsExportResult, PointResult, PHOTO_SLOTS } from './types';
 import { useAuth } from './contexts/AuthContext';
 
 /** Keep client state crash-safe even if API returns partial records. */
@@ -343,6 +343,54 @@ export default function App() {
     }
   };
 
+  // Capture-time review: save the real photo AND the condition/note/close-ups
+  // assessed the moment it was taken.
+  const handleSaveSlotReview = async (
+    mainImage: string,
+    assessment: PointResult,
+    closeups: string[],
+  ) => {
+    if (!activeVehicleId || !activeSlotId || !user) return;
+    const slotId = activeSlotId;
+    setSyncStatus('syncing');
+    try {
+      const token = await user.getIdToken();
+      const report: QualityReport = activeQualityReport || {
+        overallScore: 100,
+        lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: 'Captured.' },
+        angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Captured.' },
+      };
+      const res = await fetch('/api/inventory/upload-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ vehicleId: activeVehicleId, slotId, base64Image: mainImage, qualityReport: report }),
+      });
+      if (!res.ok) { setSyncStatus('error'); return; }
+      const result = await res.json();
+      const saved = normalizeVehicle(result.vehicle);
+
+      // Merge the assessment + close-ups for this slot onto the saved vehicle.
+      const hasAssessment = !!(assessment.rating || assessment.comment);
+      const nextAssessment = { ...(saved.slotAssessment || {}) };
+      if (hasAssessment) nextAssessment[slotId] = assessment; else delete nextAssessment[slotId];
+      const nextCloseups = { ...(saved.closeups || {}) };
+      if (closeups.length) nextCloseups[slotId] = closeups; else delete nextCloseups[slotId];
+
+      const merged: Vehicle = { ...saved, slotAssessment: nextAssessment, closeups: nextCloseups };
+      setVehicles((prev) => prev.map((v) => (v.id === saved.id ? merged : v)));
+      setSyncStatus('synced');
+      await handleUpdateVehicle(saved, { slotAssessment: nextAssessment, closeups: nextCloseups });
+
+      setActiveView('camera');
+      setActiveImageSrc(null);
+      setActiveSlotId(null);
+      setActiveQualityReport(null);
+    } catch (e) {
+      console.error('Failed to save reviewed shot:', e);
+      setSyncStatus('error');
+    }
+  };
+
   /** Partial vehicle update (publish flag, dealer fields, web3d stamps, etc.) */
   const handleUpdateVehicle = async (vehicle: Vehicle, patch: Partial<Vehicle>): Promise<Vehicle | null> => {
     if (!user) return null;
@@ -477,12 +525,13 @@ export default function App() {
           )}
 
           {activeView === 'checklist' && activeVehicle && (
-            <InspectionChecklist
+            <InspectionSheet
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
-              onSave={async (answers) => {
-                await handleUpdateVehicle(activeVehicle, { inspectionChecklist: answers });
+              onSave={async (points) => {
+                await handleUpdateVehicle(activeVehicle, { inspectionPoints: points });
               }}
+              onTagDamage={() => setActiveView('damage')}
             />
           )}
 
@@ -520,19 +569,18 @@ export default function App() {
             />
           )}
 
-          {activeView === 'editor' && activeVehicle && activeSlotId && activeImageSrc && activeQualityReport && (
-            <ImageEditor
+          {activeView === 'editor' && activeVehicle && activeSlotId && activeImageSrc && (
+            <SlotReview
               vehicle={activeVehicle}
               slotId={activeSlotId}
               imageSrc={activeImageSrc}
-              qualityReport={activeQualityReport}
               onBack={() => {
                 setActiveView('camera');
                 setActiveImageSrc(null);
                 setActiveSlotId(null);
                 setActiveQualityReport(null);
               }}
-              onSave={handleSaveProcessedImage}
+              onSave={handleSaveSlotReview}
             />
           )}
         </>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogIn, Lock, User, Sparkles, AlertCircle, Loader2, UserPlus, Monitor } from 'lucide-react';
+import { LogIn, Lock, User, Check, AlertCircle, Loader2, UserPlus, Monitor } from 'lucide-react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -56,7 +56,7 @@ export default function Login() {
             <span className="text-neutral-200">Tru</span><span className="text-cyan-400">Inspect</span>
           </div>
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 whitespace-nowrap">
-            <span className="text-[13px] font-semibold text-indigo-400  tracking-[0.3em] font-sans">AI Vehicle Inspection</span>
+            <span className="text-[13px] font-semibold text-cyan-400  tracking-[0.3em] font-sans">Vehicle Inspection Reports</span>
             <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
           </div>
         </div>
@@ -163,9 +163,9 @@ export default function Login() {
             </a>
             <div className="w-[1px] h-6 bg-neutral-800" />
             <div className="flex flex-col items-start">
-              <span className="text-[12px] text-neutral-600  tracking-tighter">Secured By</span>
-              <span className="text-[12px] font-bold text-indigo-400 flex items-center gap-1">
-                AI Audit Core <Sparkles size={10} />
+              <span className="text-[12px] text-neutral-600  tracking-tighter">Reports</span>
+              <span className="text-[12px] font-bold text-cyan-400 flex items-center gap-1">
+                Inspector-signed <Check size={10} />
               </span>
             </div>
           </div>
@@ -180,7 +180,7 @@ export default function Login() {
           </a>
           
           <p className="text-[12px] text-neutral-700 max-w-[200px] text-center leading-relaxed">
-            By initializing, you agree to the Automated Photography & AI Processing Terms of Service.
+            By signing in, you agree to the Inspection & Data Terms of Service.
           </p>
           <div className="pt-4 flex flex-col items-center">
             <span className="text-[7px] text-neutral-800  tracking-[0.2em]">TruLens v1.0</span>
