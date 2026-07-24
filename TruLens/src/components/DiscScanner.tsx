@@ -40,6 +40,7 @@ export default function DiscScanner({
   const [torchSupported, setTorchSupported] = React.useState(false);
   const [reading, setReading] = React.useState(false);
   const [hint, setHint] = React.useState<string | null>(null);
+  const [diag, setDiag] = React.useState<string>('');
 
   // Latest onResult without making it an effect dependency.
   const onResultRef = React.useRef(onResult);
@@ -191,13 +192,21 @@ export default function DiscScanner({
         const caps: any = track?.getCapabilities?.() || {};
         if (caps.torch) setTorchSupported(true);
 
-        // Set up native BarcodeDetector if it can do pdf417.
+        // Set up native BarcodeDetector if it can do pdf417, and record what
+        // this device actually supports so a failed read is diagnosable.
         const BD: any = (window as any).BarcodeDetector;
-        if (BD) {
+        if (!BD) {
+          setDiag('no native scanner (zxing)');
+        } else {
           try {
             const formats: string[] = await BD.getSupportedFormats();
-            if (formats.includes('pdf417')) detectorRef.current = new BD({ formats: ['pdf417'] });
-          } catch { detectorRef.current = null; }
+            if (formats.includes('pdf417')) {
+              detectorRef.current = new BD({ formats: ['pdf417'] });
+              setDiag('native pdf417 ✓');
+            } else {
+              setDiag('native, no pdf417 (zxing)');
+            }
+          } catch { detectorRef.current = null; setDiag('native error (zxing)'); }
         }
 
         // Opportunistic live loop — a clean steady frame can lock without a tap.
@@ -272,6 +281,11 @@ export default function DiscScanner({
             <p className="absolute top-4 left-0 right-0 text-center text-[13px] text-[#E8EAE6] px-6">
               {hint || 'Tap “Take a photo” and fill the frame with just the barcode.'}
             </p>
+            {diag && (
+              <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[10px] font-mono text-[rgba(232,234,230,0.4)]">
+                {diag}
+              </span>
+            )}
           </>
         )}
 
