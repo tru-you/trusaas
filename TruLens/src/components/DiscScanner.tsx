@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
+import { BrowserMultiFormatReader } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { X, ScanLine, Loader2, AlertCircle, Zap, ZapOff, Camera } from 'lucide-react';
 import { parseSaDisc, type DiscScan } from '../lib/saDisc';
@@ -7,17 +7,17 @@ import { parseSaDisc, type DiscScan } from '../lib/saDisc';
 /**
  * Scan a South African vehicle licence disc and hand back its fields.
  *
- * The disc carries a PDF417 barcode with make, model, colour, VIN and expiry
- * in plaintext, so this fills the Add Vehicle form without typing.
+ * The disc carries a PDF417 barcode with make, model, colour, VIN and expiry in
+ * plaintext. Live-video decoding proved unreliable — up close the camera can't
+ * focus and motion blurs the fine bars — so the primary path is a MANUAL,
+ * one-tap capture: the dealer lines the barcode up in the box and taps, we grab
+ * a crisp full-resolution still, and decode THAT with whichever engine works:
  *
- * Decoding path:
- *  1. The browser's native BarcodeDetector when it supports pdf417 (Android
- *     Chrome). It's dramatically more reliable on the dense SA disc barcode
- *     than the JS decoder — this is what makes scanning actually work.
- *  2. zxing-js as a fallback where BarcodeDetector is missing (e.g. iOS Safari).
+ *  - Native BarcodeDetector (pdf417) when present — best on Android Chrome.
+ *  - zxing-js on the still image as a fallback (e.g. iOS Safari).
  *
- * A failed or absent scan just closes and the dealer types as before, so it can
- * never block adding a car.
+ * A live loop also runs opportunistically, so a clean, steady frame can lock on
+ * without a tap. Either way a miss just closes and the dealer types as before.
  */
 export default function DiscScanner({
   onResult,
@@ -27,66 +27,97 @@ export default function DiscScanner({
   onClose: () => void;
 }) {
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
-  const zxingControlsRef = React.useRef<IScannerControls | null>(null);
+  const detectorRef = React.useRef<any>(null);      // native BarcodeDetector, if usable
+  const zxingRef = React.useRef<BrowserMultiFormatReader | null>(null);
   const rafRef = React.useRef<number | null>(null);
   const doneRef = React.useRef(false);
   const [status, setStatus] = React.useState<'starting' | 'scanning' | 'error'>('starting');
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [torchOn, setTorchOn] = React.useState(false);
   const [torchSupported, setTorchSupported] = React.useState(false);
-  const [engine, setEngine] = React.useState<'native' | 'zxing'>('native');
+  const [reading, setReading] = React.useState(false);
+  const [hint, setHint] = React.useState<string | null>(null);
 
-  // Latest onResult without making it an effect dependency — otherwise a parent
-  // re-render would tear the camera down and restart it.
+  // Latest onResult without making it an effect dependency.
   const onResultRef = React.useRef(onResult);
   onResultRef.current = onResult;
+
+  const stopEverything = React.useCallback(() => {
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+  }, []);
 
   const finish = React.useCallback((payload: string) => {
     if (doneRef.current) return;
     doneRef.current = true;
-    const scan = parseSaDisc(payload);
-    onResultRef.current(scan);
+    stopEverything();
+    onResultRef.current(parseSaDisc(payload));
+  }, [stopEverything]);
+
+  // Decode a single still frame with whatever engine is available. Returns the
+  // payload string, or null if nothing decoded.
+  const decodeStill = React.useCallback(async (): Promise<string | null> => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || !video.videoWidth) return null;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Native detector first — reads pdf417 straight off the canvas.
+    if (detectorRef.current) {
+      try {
+        const codes = await detectorRef.current.detect(canvas);
+        if (codes && codes.length && codes[0].rawValue) return codes[0].rawValue as string;
+      } catch { /* fall through to zxing */ }
+    }
+    // zxing on the still image.
+    try {
+      if (!zxingRef.current) {
+        const hints = new Map();
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.PDF_417]);
+        hints.set(DecodeHintType.TRY_HARDER, true);
+        zxingRef.current = new BrowserMultiFormatReader(hints);
+      }
+      const dataUrl = canvas.toDataURL('image/png');
+      const res = await zxingRef.current.decodeFromImageUrl(dataUrl);
+      if (res) return res.getText();
+    } catch { /* no code in this frame */ }
+    return null;
   }, []);
+
+  const captureAndRead = React.useCallback(async () => {
+    if (doneRef.current || reading) return;
+    setReading(true);
+    setHint(null);
+    // Try the current frame plus a couple of quick retries — helps if the first
+    // grab caught a mid-focus frame.
+    let payload: string | null = null;
+    for (let i = 0; i < 3 && !payload; i++) {
+      payload = await decodeStill();
+      if (!payload) await new Promise((r) => setTimeout(r, 250));
+    }
+    setReading(false);
+    if (payload) finish(payload);
+    else setHint('No barcode read — fill the box with just the barcode, hold steady, torch on if shiny.');
+  }, [decodeStill, finish, reading]);
 
   React.useEffect(() => {
     doneRef.current = false;
     let cancelled = false;
 
-    const startNative = async (detector: any, video: HTMLVideoElement) => {
-      const tick = async () => {
-        if (cancelled || doneRef.current) return;
-        try {
-          const codes = await detector.detect(video);
-          if (codes && codes.length && codes[0].rawValue) {
-            stop();
-            finish(codes[0].rawValue);
-            return;
-          }
-        } catch {
-          /* transient decode error — keep trying */
-        }
-        rafRef.current = requestAnimationFrame(tick);
-      };
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    const startZxing = async (video: HTMLVideoElement) => {
-      const hints = new Map();
-      hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.PDF_417]);
-      hints.set(DecodeHintType.TRY_HARDER, true);
-      const reader = new BrowserMultiFormatReader(hints);
-      zxingControlsRef.current = await reader.decodeFromVideoElement(video, (res) => {
-        if (res && !doneRef.current) {
-          stop();
-          finish(res.getText());
-        }
-      });
-    };
-
     (async () => {
       try {
-        // One high-res rear-camera stream, shared by whichever engine runs.
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
@@ -105,30 +136,29 @@ export default function DiscScanner({
         try { await video.play(); } catch { /* autoplay policy */ }
         setStatus('scanning');
 
-        // Torch support (rear camera, Android). Feature-detected off the track.
         const track = stream.getVideoTracks()[0];
         const caps: any = track?.getCapabilities?.() || {};
         if (caps.torch) setTorchSupported(true);
 
-        // Prefer native BarcodeDetector when it can do pdf417.
+        // Set up native BarcodeDetector if it can do pdf417.
         const BD: any = (window as any).BarcodeDetector;
-        let nativeOk = false;
         if (BD) {
           try {
             const formats: string[] = await BD.getSupportedFormats();
-            if (formats.includes('pdf417')) {
-              setEngine('native');
-              await startNative(new BD({ formats: ['pdf417'] }), video);
-              nativeOk = true;
-            }
-          } catch {
-            nativeOk = false;
-          }
+            if (formats.includes('pdf417')) detectorRef.current = new BD({ formats: ['pdf417'] });
+          } catch { detectorRef.current = null; }
         }
-        if (!nativeOk) {
-          setEngine('zxing');
-          await startZxing(video);
-        }
+
+        // Opportunistic live loop — a clean steady frame can lock without a tap.
+        const tick = async () => {
+          if (cancelled || doneRef.current) return;
+          const payload = await decodeStill();
+          if (payload) { finish(payload); return; }
+          rafRef.current = requestAnimationFrame(() =>
+            setTimeout(() => { rafRef.current = requestAnimationFrame(tick); }, 350) as unknown as number,
+          );
+        };
+        rafRef.current = requestAnimationFrame(tick);
       } catch (e: any) {
         if (cancelled) return;
         setStatus('error');
@@ -140,23 +170,13 @@ export default function DiscScanner({
       }
     })();
 
-    function stop() {
+    return () => {
       cancelled = true;
-      if (rafRef.current != null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-      try { zxingControlsRef.current?.stop(); } catch { /* ignore */ }
-      zxingControlsRef.current = null;
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
-      }
-    }
-    return stop;
+      stopEverything();
+    };
     // Mount once — camera lifecycle must not restart on parent re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finish]);
+  }, []);
 
   const toggleTorch = async () => {
     const track = streamRef.current?.getVideoTracks()[0];
@@ -164,9 +184,7 @@ export default function DiscScanner({
     try {
       await track.applyConstraints({ advanced: [{ torch: !torchOn } as any] });
       setTorchOn((v) => !v);
-    } catch {
-      /* torch unavailable */
-    }
+    } catch { /* torch unavailable */ }
   };
 
   return (
@@ -193,19 +211,16 @@ export default function DiscScanner({
 
       <div className="relative flex-1 overflow-hidden bg-black">
         <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
+        <canvas ref={canvasRef} className="hidden" />
 
-        {/* Aiming frame */}
         {status === 'scanning' && (
           <>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[82%] aspect-[3/2] rounded-xl border-2 border-[#4FE3DC]/70 shadow-[0_0_0_100vmax_rgba(6,8,13,0.55)]" />
+              <div className="w-[86%] aspect-[3/2] rounded-xl border-2 border-[#4FE3DC]/70 shadow-[0_0_0_100vmax_rgba(6,8,13,0.55)]" />
             </div>
-            <p className="absolute bottom-6 left-0 right-0 text-center text-[13px] text-[#E8EAE6] px-6">
-              Fill the box with the barcode — hold steady and let it focus.
+            <p className="absolute top-4 left-0 right-0 text-center text-[13px] text-[#E8EAE6] px-6">
+              {hint || 'Fill the box with the barcode, then tap Capture.'}
             </p>
-            <span className="absolute top-3 left-1/2 -translate-x-1/2 text-[10px] font-mono text-[rgba(232,234,230,0.4)]">
-              {engine === 'native' ? 'reader: native' : 'reader: fallback'}
-            </span>
           </>
         )}
 
@@ -226,6 +241,19 @@ export default function DiscScanner({
           </div>
         )}
       </div>
+
+      {status === 'scanning' && (
+        <div className="p-4 border-t border-white/10">
+          <button
+            type="button"
+            onClick={captureAndRead}
+            disabled={reading}
+            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2.5 font-semibold text-sm bg-[#4FE3DC] text-[#06080D] active:scale-[0.98] transition-all disabled:opacity-60"
+          >
+            {reading ? <><Loader2 size={18} className="animate-spin" /> Reading…</> : <><Camera size={18} strokeWidth={2.5} /> Capture &amp; read</>}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
