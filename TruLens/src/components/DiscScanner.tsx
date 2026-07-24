@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
-import { X, ScanLine, Loader2, AlertCircle, Zap, ZapOff, Camera } from 'lucide-react';
+import { X, ScanLine, Loader2, AlertCircle, Zap, ZapOff, Camera, Pencil } from 'lucide-react';
 import { parseSaDisc, type DiscScan } from '../lib/saDisc';
 
 /**
@@ -341,6 +341,19 @@ export default function DiscScanner({
               <ScanLine size={16} /> Or read from live view
             </button>
           )}
+          {/* Fail-safe: never trap the dealer in the scanner — always a one-tap
+              way out to type the details. Emphasised once a read has failed. */}
+          <button
+            type="button"
+            onClick={onClose}
+            className={`w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-semibold text-[13px] active:scale-[0.98] transition-all ${
+              hint
+                ? 'bg-[#4FE3DC] text-[#06080D]'
+                : 'text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]'
+            }`}
+          >
+            <Pencil size={15} /> {hint ? 'Couldn’t read it — enter manually' : 'Enter manually instead'}
+          </button>
         </div>
       )}
     </div>
