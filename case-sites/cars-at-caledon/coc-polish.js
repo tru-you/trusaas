@@ -218,6 +218,39 @@ function ticker(){
   setInterval(show, 18000);
 }
 
+/* Keep the optional launchers off the hero on phones.
+   Three fixed elements were stacking over a 375px hero — the affordability
+   dock, the chat bubble and this quick bar — and the dock landed squarely on
+   top of the hero's WhatsApp button, which is the one thing a buyer on a phone
+   actually taps. The quick bar stays (it is the deliberate always-there one);
+   the other two hold back until the hero has scrolled away. */
+function floatingClearance(){
+  var hero = document.querySelector("section.hero, #top");
+  if(!hero) return;
+  var root = document.documentElement;
+  var queued = false;
+
+  /* Deliberately geometry, not an IntersectionObserver ratio: a hero taller
+     than the viewport never reaches a 25% threshold, so a ratio test drops the
+     class while the user is still looking at the hero and the launchers come
+     back over the WhatsApp button. Measuring the hero's bottom edge behaves the
+     same at every hero height and viewport size. */
+  function update(){
+    queued = false;
+    var bottom = hero.getBoundingClientRect().bottom;
+    root.classList.toggle("coc-hero-visible", bottom > 120);
+  }
+  function onScroll(){
+    if(queued) return;
+    queued = true;
+    requestAnimationFrame(update);
+  }
+
+  update();
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", onScroll);
+}
+
 function mobileBar(){
   if(document.querySelector(".coc-mbar")) return;
   var bar = document.createElement("nav");
@@ -240,6 +273,7 @@ function init(){
   try{reviewsStrip();}catch(e){}
   try{ticker();}catch(e){}
   try{mobileBar();}catch(e){}
+  try{floatingClearance();}catch(e){}
 }
 if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
 else init();
