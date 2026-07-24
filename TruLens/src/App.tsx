@@ -294,7 +294,15 @@ export default function App() {
   };
 
   // Trigger when photo is captured in viewfinder
+  // A kept shot saves immediately — no detour through the editor. Redo happens
+  // in the camera before this is ever called; polishing is opt-in afterwards.
   const handlePhotoCaptured = (slotId: string, base64Image: string, qualityReport: QualityReport) => {
+    setActiveSlotId(slotId);
+    void handleSaveProcessedImage(base64Image, qualityReport, slotId);
+  };
+
+  /** Open the editor for a slot on demand (the optional "Edit" button). */
+  const handleEditSlot = (slotId: string, base64Image: string, qualityReport: QualityReport) => {
     setActiveSlotId(slotId);
     setActiveImageSrc(base64Image);
     setActiveQualityReport(qualityReport);
@@ -302,8 +310,9 @@ export default function App() {
   };
 
   // Trigger when composite photo is saved in the editor
-  const handleSaveProcessedImage = async (processedImage: string, updatedReport: QualityReport) => {
-    if (!activeVehicleId || !activeSlotId || !user) return;
+  const handleSaveProcessedImage = async (processedImage: string, updatedReport: QualityReport, slotId?: string) => {
+    const targetSlot = slotId || activeSlotId;
+    if (!activeVehicleId || !targetSlot || !user) return;
     setSyncStatus('syncing');
 
     try {
@@ -316,7 +325,7 @@ export default function App() {
         },
         body: JSON.stringify({
           vehicleId: activeVehicleId,
-          slotId: activeSlotId,
+          slotId: targetSlot,
           base64Image: processedImage,
           qualityReport: updatedReport
         })
@@ -480,6 +489,7 @@ export default function App() {
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
               onPhotoCaptured={handlePhotoCaptured}
+              onEditRequested={handleEditSlot}
               onBulkPhotosUploaded={(updatedVehicle) => {
                 setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
               }}

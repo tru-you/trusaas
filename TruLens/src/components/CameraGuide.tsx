@@ -2,8 +2,7 @@ import React from 'react';
 import { 
   Camera, Sliders, ChevronLeft, ChevronRight, Sun, Volume2, Sparkles, AlertCircle, 
   Check, RefreshCw, Upload, Smartphone, HelpCircle, Eye, Images, Loader2, Trash2, X,
-  Circle, CheckCircle2
-} from 'lucide-react';
+  Circle, CheckCircle2, RotateCcw} from 'lucide-react';
 import { Vehicle, PhotoSlot, QualityReport, PHOTO_SLOTS } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,10 +10,14 @@ interface CameraGuideProps {
   vehicle: Vehicle;
   onBack: () => void;
   onPhotoCaptured: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
+  onEditRequested?: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
   onBulkPhotosUploaded: (updatedVehicle: Vehicle) => void;
 }
 
-export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPhotosUploaded }: CameraGuideProps) {
+export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRequested, onBulkPhotosUploaded }: CameraGuideProps) {
+  // A just-taken shot awaiting Redo / Keep. This is the whole point: shoot,
+  // glance, keep or redo — no forced save-and-edit between every angle.
+  const [pendingShot, setPendingShot] = React.useState<{ slotId: string; base64: string; report: QualityReport } | null>(null);
   const { user } = useAuth();
   // Crash-safe: never read vehicle.photos when undefined
   const photos = vehicle?.photos || {};
@@ -574,9 +577,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
       }
     };
 
-    setCaptureHint(`Captured · ${activeSlot.name}`);
-    setTimeout(() => setCaptureHint(null), 1400);
-    onPhotoCaptured(selectedSlotId, base64Data, report);
+    // Hold it for Redo / Keep rather than committing straight to save.
+    setPendingShot({ slotId: selectedSlotId, base64: base64Data, report });
   };
 
   // After a photo is saved (parent updates vehicle.photos), auto-advance to next empty required slot
@@ -1072,7 +1074,47 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </div>
         )}
 
-        {/* Primary shutter — large & labeled so it is never confused with Settings */}
+        {pendingShot ? (
+          /* Shoot → glance → Redo or Keep. Keep saves and auto-advances to the
+             next empty slot; Edit is there if a shot genuinely needs it. */
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingShot(null)}
+                className="flex-1 py-3.5 rounded-2xl flex items-center justify-center gap-2 font-semibold text-sm bg-white/5 border border-white/15 text-[#E8EAE6] active:scale-[0.98] transition-all"
+              >
+                <RotateCcw size={18} /> Redo
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const s = pendingShot;
+                  setPendingShot(null);
+                  setCaptureHint(`Kept · ${activeSlot.name}`);
+                  setTimeout(() => setCaptureHint(null), 1200);
+                  onPhotoCaptured(s.slotId, s.base64, s.report);
+                }}
+                className="flex-[2] py-3.5 rounded-2xl flex items-center justify-center gap-2 font-semibold text-sm bg-[#4FE3DC] text-[#06080D] active:scale-[0.98] transition-all"
+              >
+                <Check size={18} strokeWidth={2.5} /> Keep & next
+              </button>
+            </div>
+            {onEditRequested && (
+              <button
+                type="button"
+                onClick={() => {
+                  const s = pendingShot;
+                  setPendingShot(null);
+                  onEditRequested(s.slotId, s.base64, s.report);
+                }}
+                className="w-full py-2 rounded-xl text-[13px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] border border-white/10 transition-colors"
+              >
+                Edit this shot first
+              </button>
+            )}
+          </div>
+        ) : (
         <button
           type="button"
           onClick={handleCapture}
@@ -1100,6 +1142,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             </>
           )}
         </button>
+        )}
 
         {/* Secondary tools */}
         <div className="flex items-center justify-between gap-2">
