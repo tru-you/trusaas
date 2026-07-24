@@ -153,3 +153,37 @@ services:
         value: /var/data
       - key: GEMINI_API_KEY
         sync: false
+
+  # ── 4. TruChat API — hosted Claude chat brain for static sites ────────────
+  #   trusaas-chat.onrender.com → marketing bot + any HTML dealer embed.
+  #   Zero npm deps (native Node http + fetch). Claude primary, WhatsApp/knowledge
+  #   fallback if the key is missing/errors — degrades, never breaks.
+  - type: web
+    name: trusaas-chat
+    runtime: node
+    plan: starter
+    rootDir: truchat-api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # REQUIRED for the AI to answer — set the value in the Render dashboard.
+      # Reuse the same funded key as TruLive/TruValue. Without it the bot still
+      # runs (knowledge answers + WhatsApp handoff), just no free-form AI.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TRUCHAT_MODEL
+        value: claude-haiku-4-5
+      # Market/locale — SA is launch; override per region to serve any market.
+      - key: TRUCHAT_MARKET
+        value: South Africa
+      - key: TRUCHAT_LOCALE
+        value: en-ZA
+      - key: TRUCHAT_CURRENCY
+        value: ZAR
+      - key: STOCK_API
+        value: https://premium.tru-saas.com/api/public/stock?dealer=true-cars
+      - key: SALES_WHATSAPP
+        value: "27620502091"

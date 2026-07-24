@@ -54,3 +54,6 @@ Proposals/
 
 # Runtime auth store — hashed access codes, generated per instance. Never commit.
 **/auth.json
+
+# Marketing-site Netlify drop
+_deploy/
