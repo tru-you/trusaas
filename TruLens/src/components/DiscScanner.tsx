@@ -25,6 +25,13 @@ export default function DiscScanner({
   const [status, setStatus] = React.useState<'starting' | 'scanning' | 'error'>('starting');
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
+  // Keep the latest onResult without making it an effect dependency — otherwise
+  // every parent re-render (the sync poll fires every few seconds) would change
+  // the callback identity, tear the camera down and restart it, which looks like
+  // the scanner flashing and dropping straight back to the form.
+  const onResultRef = React.useRef(onResult);
+  onResultRef.current = onResult;
+
   React.useEffect(() => {
     // Only look for PDF417 — the disc format — so it locks on fast and doesn't
     // trip over other barcodes in frame.
@@ -47,10 +54,13 @@ export default function DiscScanner({
               done = true;
               const scan = parseSaDisc(res.getText());
               stop();
-              onResult(scan);
+              onResultRef.current(scan);
             }
           },
         );
+        // On some mobile browsers the stream attaches but the element never
+        // starts painting (black frame) unless play() is nudged explicitly.
+        try { await videoRef.current?.play(); } catch { /* autoplay policies */ }
       } catch (e: any) {
         if (done) return;
         setStatus('error');
@@ -66,7 +76,9 @@ export default function DiscScanner({
       try { controls?.stop(); } catch { /* ignore */ }
     }
     return stop;
-  }, [onResult]);
+    // Mount once — camera lifecycle must not restart on parent re-renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[400] bg-[#06080D] flex flex-col">
@@ -80,7 +92,7 @@ export default function DiscScanner({
       </div>
 
       <div className="relative flex-1 overflow-hidden bg-black">
-        <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+        <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
 
         {/* Aiming frame */}
         {status === 'scanning' && (
