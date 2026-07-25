@@ -1058,6 +1058,15 @@ export default function App() {
            </div>
 
            <div className="flex items-center gap-2">
+             <button
+               type="button"
+               onClick={() => setAssistOpen(true)}
+               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)] hover:text-[color:var(--ink)] transition-colors cursor-pointer text-[13px] font-semibold"
+               title="Ask Dealer Assist"
+             >
+               <Sparkles size={14} />
+               Dealer Assist
+             </button>
              <div className="flex items-center gap-3 bg-[color:var(--ink-2)] border border-white/5 rounded-full pl-3 pr-3 py-2">
                <div className="flex flex-col items-end">
                  <span className="text-[13px] font-bold text-[color:var(--white)]">{account?.label || 'Signed in'}</span>
@@ -1086,6 +1095,17 @@ export default function App() {
               <Menu size={20} />
             </button>
             <img src={logo} alt="TruFlow Premium" className="h-9 w-auto max-w-[180px] object-contain logo-float" />
+            {/* The desktop top bar is hidden on mobile, so the assistant needs
+                its own way in here or phone users lose it entirely. */}
+            <button
+              type="button"
+              onClick={() => setAssistOpen(true)}
+              className="flex items-center gap-1 h-8 px-3 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] cursor-pointer text-[13px] font-semibold ml-auto mr-2"
+              title="Ask Dealer Assist"
+            >
+              <Sparkles size={14} />
+              Assist
+            </button>
             <button
               type="button"
               onClick={handleLogout}
@@ -1124,13 +1144,6 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => setAssistOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-[color:var(--cyan)] text-[color:var(--ink)] text-[13px] font-semibold flex items-center gap-2 hover:bg-[color:var(--cyan-bright)] transition-colors cursor-pointer active:scale-95"
-                >
-                  <Sparkles size={15} />
-                  Ask Dealer Assist
-                </button>
                 <button onClick={() => navigateTo("upload")} className="btn btn-primary">
                   + New Inventory
                 </button>
@@ -3087,14 +3100,15 @@ export default function App() {
         )}
       </main>
 
-      {/* Side floating Copilot assistant chat widget */}
+      {/* Dealer Assist. Opens from the top bar — no floating launcher. */}
       <PwaInstallBanner appName="TruFlow Premium" accent="var(--blue)" dismissKey="truflow_premium_pwa_dismissed" />
       <ChatWidget open={assistOpen} onOpenChange={setAssistOpen} />
-      
-      {/* Website Chat Widget Simulation */}
-      {(state.settings?.chatbot || state.settings?.liveReceptionist) && (
-        <WebsiteChatWidget onLeadCapture={handleWebsiteLeadCapture} />
-      )}
+
+      {/* The public-facing website chatbot simulation used to float bottom-left
+          of the dealer's own workstation, which put two different assistants on
+          one screen — one for the dealer, one pretending to be the customer's.
+          It belongs on the dealer's website, not in the DMS. Component kept;
+          only the render is removed. */}
 
       {/* --- FORM MODALS --- */}
 

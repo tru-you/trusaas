@@ -156,15 +156,8 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
         </div>
       )}
 
-      {/* Floating Action Button */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="w-14 h-14 bg-[color:var(--cyan)] hover:bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)] rounded-full flex items-center justify-center shadow-lg hover:shadow-[color:var(--cyan-soft)] transition-all cursor-pointer active:scale-95 group"
-        >
-          <MessageSquare className="w-6 h-6 group-hover:scale-110 transition-transform" />
-        </button>
-      )}
+      {/* No floating launcher. Dealer Assist opens from the top bar, so it sits
+          with the rest of the controls instead of covering the screen corner. */}
     </div>
   );
 }
