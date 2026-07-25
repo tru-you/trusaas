@@ -42,6 +42,10 @@ export interface Vehicle {
   color: string;
   price: number;
   vehicleType?: string; // Bakkie, Sedan, SUV, etc.
+  /** Who carried out the inspection. Printed on the VIR — the report lands with
+   *  buyers and finance houses, and a dealership name is not an inspector. */
+  inspectorName?: string;
+  inspectorRole?: string;
   status: 'In-Progress' | 'Ready' | 'Listed';
   createdAt: string;
   updatedAt: string;
@@ -471,7 +475,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     name: 'Undercarriage',
     description: 'Low angle shot showing chassis, exhaust, and lack of leaks.',
     overlaySvgPath: 'generic_detail',
-    required: false,
+    required: true,
     idealAngle: { pitch: -30, roll: 0, yaw: 0 },
     phase: 4,
     category: 'Interior + Engine',

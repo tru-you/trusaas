@@ -43,13 +43,41 @@ function scoreForSlots(vehicle: Vehicle, slots: PhotoSlot[]): number | null {
   return Math.round(captured.reduce((sum, q) => sum + q.overallScore, 0) / captured.length);
 }
 
-function gradeFor(score: number | null) {
-  if (score === null) return { grade: '—', label: 'Not captured', color: 'rgba(232,234,230,0.55)', bg: 'rgba(148,163,184,0.10)', sales: 'Incomplete' };
-  if (score >= 90) return { grade: 'A',  label: 'Excellent', color: '#22C55E', bg: 'rgba(34,197,94,0.14)', sales: 'List with confidence' };
-  if (score >= 80) return { grade: 'A-', label: 'Very good', color: '#22C55E', bg: 'rgba(34,197,94,0.12)', sales: 'List with confidence' };
-  if (score >= 70) return { grade: 'B',  label: 'Good', color: '#EAB308', bg: 'rgba(234,179,8,0.14)', sales: 'List after light polish' };
-  if (score >= 60) return { grade: 'C',  label: 'Fair · attend', color: '#F97316', bg: 'rgba(249,115,22,0.14)', sales: 'Recon before web' };
-  return { grade: 'D', label: 'Substantial issues', color: '#EF4444', bg: 'rgba(239,68,68,0.16)', sales: 'Do not publish yet' };
+/**
+ * The condition scale, printed on the report so a number never has to be
+ * interpreted. Numeric only and weighted from inspector findings — the same
+ * shape a dealer already reads on a Manheim condition report.
+ *
+ * This replaces an A–D letter grade that was derived from computeOverallScore,
+ * i.e. from the AI's assessment of the PHOTOGRAPHS — lighting, framing,
+ * sharpness. A reader seeing "Grade A" on a vehicle inspection report will take
+ * it to describe the vehicle. It described the pictures.
+ */
+const CONDITION_SCALE = [
+  { min: 4.5, band: '5.0 – 4.5', label: 'Excellent', meaning: 'Minor blemishes only. Retail ready.', color: '#16A34A' },
+  { min: 3.5, band: '4.4 – 3.5', label: 'Good', meaning: 'Light cosmetic wear consistent with age.', color: '#65A30D' },
+  { min: 2.5, band: '3.4 – 2.5', label: 'Fair', meaning: 'Visible defects recorded. Attention advised.', color: '#CA8A04' },
+  { min: 0,   band: '2.4 – 1.0', label: 'Poor', meaning: 'Significant damage documented below.', color: '#DC2626' },
+];
+
+/**
+ * Photo capture quality — how good the PHOTOGRAPHS are, per section. Kept
+ * because it tells the shooter where to re-shoot, but never expressed as a
+ * grade and never near the condition score, since that is precisely the
+ * confusion this report used to ship.
+ */
+function captureBand(score: number | null) {
+  if (score === null) return { label: 'Not captured', color: 'rgba(232,234,230,0.55)', bg: 'rgba(148,163,184,0.10)' };
+  if (score >= 80) return { label: 'Good', color: '#16A34A', bg: 'rgba(34,197,94,0.12)' };
+  if (score >= 60) return { label: 'Usable', color: '#CA8A04', bg: 'rgba(234,179,8,0.14)' };
+  return { label: 'Re-shoot', color: '#DC2626', bg: 'rgba(239,68,68,0.14)' };
+}
+
+function conditionBand(stars: number | null) {
+  if (stars === null) {
+    return { label: 'Not yet inspected', meaning: 'No inspector findings recorded.', color: 'rgba(232,234,230,0.55)' };
+  }
+  return CONDITION_SCALE.find(b => stars >= b.min) ?? CONDITION_SCALE[CONDITION_SCALE.length - 1];
 }
 
 /** TruInspect: severity badge styling for inspector-tagged damage */
@@ -168,7 +196,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   };
-  const overallGrade = gradeFor(overall.score);
+  const hasCondition = condition.findings.length > 0 || condition.flaggedPoints.length > 0;
+  const band = conditionBand(hasCondition ? condition.stars : null);
   const waBlurb = useMemo(
     () => whatsAppSalesBlurb(brandedVehicle, readiness, { dealerName, waNumber: dealerWa || undefined }),
     [brandedVehicle, readiness, dealerName, dealerWa]
@@ -187,7 +216,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     .map(s => ({ slot: s, src: vehicle.photos?.[s.id], quality: vehicle.quality?.[s.id] }))
     .filter(p => !!p.src);
 
-  const reportId = `TL-${vehicle.stockNumber || vehicle.id.slice(0, 6).toUpperCase()}-${Date.now().toString(36).slice(-5).toUpperCase()}`;
+  /* Stable for the life of the vehicle record. This carried Date.now(), so
+     printing the same inspection twice produced two different IDs and the
+     report could not be cited. Derived only from the vehicle id, which does
+     not change. (Prefix was TL-, which reads as TruLens.) */
+  const reportId = `TI-${(vehicle.stockNumber || vehicle.id).toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
   const generatedAt = new Date().toLocaleString('en-ZA', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
@@ -280,6 +313,48 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
   return (
     <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100">
+      {/* Signed off after the inspection, before the report goes anywhere.
+          On screen only — the printed VIR shows the values on its own
+          signature block. */}
+      <div className="no-print bg-slate-950/60 border-b border-white/10">
+        <div className="max-w-5xl mx-auto px-3 py-3">
+          <div className="text-[11px] font-bold tracking-widest text-neutral-400 mb-2">
+            SIGNED OFF BY
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input
+              type="text"
+              defaultValue={vehicle.inspectorName || ''}
+              onBlur={(e) => {
+                const v = e.target.value.trim();
+                if (v !== (vehicle.inspectorName || '')) onVehicleUpdated?.({ ...vehicle, inspectorName: v });
+              }}
+              placeholder="Inspector name"
+              className="w-full px-3 py-2.5 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
+            />
+            <input
+              type="text"
+              defaultValue={vehicle.inspectorRole || ''}
+              onBlur={(e) => {
+                const v = e.target.value.trim();
+                if (v !== (vehicle.inspectorRole || '')) onVehicleUpdated?.({ ...vehicle, inspectorRole: v });
+              }}
+              placeholder="Designation (e.g. Workshop Manager)"
+              className="w-full px-3 py-2.5 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
+            />
+          </div>
+          {(!vehicle.inspectorName || !vehicle.vin) && (
+            <p className="text-[11.5px] text-amber-300/90 mt-2">
+              {!vehicle.vin && !vehicle.inspectorName
+                ? 'No VIN and no inspector recorded — both print blank on the report.'
+                : !vehicle.vin
+                  ? 'No VIN on this vehicle — it prints blank on the report.'
+                  : 'No inspector recorded — the signature block prints blank.'}
+            </p>
+          )}
+        </div>
+      </div>
+
       <div className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-white/10 no-print">
         <div className="max-w-5xl mx-auto px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
           <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-[#E8EAE6] text-sm font-medium">
@@ -405,18 +480,22 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <div className="subhead">{vehicle.trim} · {vehicle.color} · Stock <b>{vehicle.stockNumber}</b></div>
             <div className="score-strip">
               <div className="score-big">
-                <div className="score-ring" style={{ background: `conic-gradient(${overallGrade.color} ${overall.score * 3.6}deg, rgba(255,255,255,.08) 0)` }}>
+                {/* The vehicle's condition, weighted from inspector findings —
+                    not the photo-quality score that used to sit here. */}
+                <div className="score-ring" style={{ background: `conic-gradient(${band.color} ${(hasCondition ? condition.stars / 5 : 0) * 360}deg, rgba(255,255,255,.08) 0)` }}>
                   <div style={{ background:'#1E293B', borderRadius:'50%', width:70, height:70, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
-                    <div style={{ fontWeight:800, fontSize:28, color: overallGrade.color }}>{overall.score}</div>
-                    <div style={{ fontSize:9, opacity:.7 }}>/ 100</div>
+                    <div style={{ fontWeight:800, fontSize:28, color: band.color }}>{hasCondition ? condition.stars.toFixed(1) : '—'}</div>
+                    <div style={{ fontSize:9, opacity:.7 }}>/ 5</div>
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'', opacity:.55 }}>Overall condition</div>
-                  <div style={{ fontWeight:800, fontSize:20, color: overallGrade.color, marginTop:4 }}>{overallGrade.grade} · {overallGrade.label}</div>
-                  <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{overallGrade.sales}</div>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'', opacity:.55 }}>Vehicle condition</div>
+                  <div style={{ fontWeight:800, fontSize:20, color: band.color, marginTop:4 }}>{band.label}</div>
+                  <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{band.meaning}</div>
+                  {/* Capture completeness is a separate fact and is labelled as one,
+                      so it can never be mistaken for the condition of the vehicle. */}
                   <div style={{ fontSize:11, opacity:.65, marginTop:6 }}>
-                    {overall.captured} captured · {readiness.requiredTaken}/{readiness.requiredTotal} required
+                    Photos captured {overall.captured} · required {readiness.requiredTaken}/{readiness.requiredTotal}
                   </div>
                 </div>
               </div>
@@ -429,15 +508,22 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </div>
           </div>
 
+          {/* Was "Grades by section", showing A–D letters derived from photo
+              quality directly beneath a vehicle condition score. Two different
+              things in the same visual language on the same page. */}
           <section>
-            <h2><Award size={16} /> Grades by section</h2>
+            <h2><Award size={16} /> Photo capture quality by section</h2>
+            <div style={{ fontSize:11, color:'#475569', marginTop:-4, marginBottom:8 }}>
+              How well each section was photographed. This is about the images, not
+              the vehicle — the vehicle's condition is the score at the top.
+            </div>
             <div className="grades">
               {phaseScores.map(p => {
-                const g = gradeFor(p.score);
+                const g = captureBand(p.score);
                 const Icon = p.icon;
                 return (
                   <div className="grade" key={p.id} style={{ background: g.bg, borderColor: g.color + '40' }}>
-                    <div className="v" style={{ color: g.color }}>{g.grade}</div>
+                    <div className="v" style={{ color: g.color, fontSize:15 }}>{g.label}</div>
                     <div className="n"><Icon size={11} style={{display:'inline',verticalAlign:'-2px',marginRight:4,color:g.color}}/>{p.name}</div>
                     <div style={{ fontSize:10, color:'rgba(232,234,230,0.55)', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
                   </div>
@@ -636,7 +722,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Scope covered</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Work done</div>
                 <div style={{ fontSize:12, color:'#334155', marginTop:4 }}>
                   Photos captured: {Object.keys(vehicle.photos || {}).length}
                 </div>
@@ -648,6 +734,91 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 </div>
               </div>
             </div>
+
+            {/* Identity. A stock number can be reused, and has been across two
+                dealers in this system — the VIN is what ties this document to
+                one vehicle. */}
+            <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'rgba(232,234,230,0.55)' }}>Vehicle identity</div>
+              <div style={{ fontSize:12, color:'#334155', marginTop:4 }}>
+                VIN <b style={{ fontFamily:'ui-monospace, monospace' }}>{vehicle.vin || '— not recorded —'}</b>
+              </div>
+              <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
+                Stock {vehicle.stockNumber || '—'} · {vehicle.year} {vehicle.make} {vehicle.model}
+              </div>
+              <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
+                Inspected {generatedAt}
+              </div>
+            </div>
+
+            {/* The scale, printed. A number a reader has to interpret is a
+                number they will interpret wrongly. */}
+            <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'rgba(232,234,230,0.55)' }}>Condition scale</div>
+              <div style={{ marginTop:6 }}>
+                {CONDITION_SCALE.map(b => (
+                  <div key={b.label} style={{ display:'flex', gap:8, fontSize:11.5, color:'#334155', marginTop:3 }}>
+                    <b style={{ color:b.color, minWidth:64, fontFamily:'ui-monospace, monospace' }}>{b.band}</b>
+                    <b style={{ minWidth:64 }}>{b.label}</b>
+                    <span style={{ opacity:.85 }}>{b.meaning}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize:11, color:'#475569', marginTop:8 }}>
+                Weighted from recorded findings — damage severity, flagged inspection
+                points and function faults. It is not a measure of photo quality.
+              </div>
+            </div>
+
+            {/* Scope. What was looked at, and — the part that matters in a
+                dispute — what was not. */}
+            <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'rgba(232,234,230,0.55)' }}>Scope of this inspection</div>
+              <div style={{ fontSize:11.5, color:'#334155', marginTop:6 }}>
+                <b>Covered —</b> a visual inspection of the vehicle's exterior panels,
+                interior, engine bay and documents, carried out with the vehicle
+                stationary and on the ground. Engine oil level and condition checked
+                by eye on the dipstick. Tyres checked visually for tread and damage.
+              </div>
+              <div style={{ fontSize:11.5, color:'#334155', marginTop:6 }}>
+                <b>Not covered —</b> no inspection on a lift or over a pit, no
+                dismantling or removal of trim, no fluid sampling or laboratory
+                analysis, no paint depth or structural measurement, and no assessment
+                of any component not visible from outside the vehicle.
+              </div>
+              <div style={{ fontSize:11.5, color:'#334155', marginTop:6 }}>
+                <b>Road test and diagnostics —</b> carried out only where the checklist
+                below records it. Where an item is unanswered or marked not applicable,
+                that check was not performed and nothing should be inferred from its
+                absence.
+              </div>
+              <div style={{ fontSize:11.5, color:'#334155', marginTop:6 }}>
+                Findings describe what was observed on the date shown. Nothing in this
+                report states or implies the mechanical condition of any component
+                that was not physically tested.
+              </div>
+            </div>
+
+            {/* Signed by a person. "Inspected by <dealership>" is not an
+                inspector, and a document that lands with a finance house
+                should carry the name of whoever stands behind it. */}
+            <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'rgba(232,234,230,0.55)' }}>Inspected by</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginTop:10 }}>
+                <div>
+                  <div style={{ borderBottom:'1px solid #94A3B8', height:26 }}>
+                    <span style={{ fontSize:12, color:'#334155' }}>{vehicle.inspectorName || ''}</span>
+                  </div>
+                  <div style={{ fontSize:9.5, color:'#475569', marginTop:3 }}>Inspector name</div>
+                </div>
+                <div>
+                  <div style={{ borderBottom:'1px solid #94A3B8', height:26 }}>
+                    <span style={{ fontSize:12, color:'#334155' }}>{vehicle.inspectorRole || ''}</span>
+                  </div>
+                  <div style={{ fontSize:9.5, color:'#475569', marginTop:3 }}>Designation</div>
+                </div>
+              </div>
+            </div>
           </section>
 
           <div className="foot" style={{ alignItems:'center' }}>
@@ -656,7 +827,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <img src={trusaasLogoDark} alt="TruSaaS" style={{ height:16, width:'auto' }} />
               <span>{reportId}</span>
             </div>
-            <div>Visual inspection at a moment in time — not a mechanical warranty</div>
+            <div>Visual inspection at a moment in time — not a mechanical warranty. See Scope.</div>
           </div>
         </div>
       </div>

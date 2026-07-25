@@ -287,7 +287,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     name: 'Undercarriage',
     description: 'Low angle shot showing chassis, exhaust, and lack of leaks.',
     overlaySvgPath: 'generic_detail',
-    required: false,
+    required: true,
     idealAngle: { pitch: -30, roll: 0, yaw: 0 },
     phase: 4,
     category: 'Interior + Engine',
