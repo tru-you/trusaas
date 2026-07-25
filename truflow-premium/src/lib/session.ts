@@ -12,7 +12,12 @@ const ACCOUNT_KEY = "truflow_session_account";
 
 export type Account = {
   label: string;
-  role: "dealer" | "admin";
+  /** Mirrors AuthRole on the server. This said "dealer" | "admin", neither of
+   *  which the server has issued for some time — every real account is a
+   *  principal. The effect was that TypeScript treated the role checks driving
+   *  the owner/manager/salesperson view as impossible comparisons, so the one
+   *  place that decides what a user can see had no type checking at all. */
+  role: "admin" | "principal" | "manager" | "salesperson";
   dealershipId?: string;
 };
 

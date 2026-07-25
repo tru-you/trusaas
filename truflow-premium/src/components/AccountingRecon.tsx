@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { DMSState, Vehicle, Expense, Invoice } from "../types";
+import LeadSourcePerformance from "./LeadSourcePerformance";
 import { 
   DollarSign, 
   TrendingUp, 
@@ -293,7 +294,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
         <div>
           <h2 className="text-xl font-bold tracking-tight text-[color:var(--white)] flex items-center gap-2">
             <FileSpreadsheet className="text-[color:var(--cyan)]" size={20} />
-            TrueCar DMS Accounting & Reconditioning Hub
+            Finance &amp; reconditioning
           </h2>
           <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-1">
             Real-time Profit & Loss Ledger, Expense Audits, Refurbishment Cost Trackers, and Bank Statement Reconciliation.
@@ -868,52 +869,10 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             </div>
           </div>
 
-          {/* Right Column: Live Bank Feed Simulation */}
-          <div className="lg:col-span-6 card p-5 flex flex-col gap-4">
-            <div className="flex justify-between items-center border-b border-white/5 pb-2">
-              <h3 className="font-bold text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal">2. Live Corporate Bank Feed</h3>
-              <span className="text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] font-mono px-2 py-0.5 rounded border border-[color:var(--cyan-faint)] font-bold">Bank feed</span>
-            </div>
-
-            <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1">
-              {bankFeed.map((tx) => (
-                <button
-                  key={tx.id}
-                  disabled={tx.matched}
-                  onClick={() => setSelectedBankTxId(selectedBankTxId === tx.id ? null : tx.id)}
-                  className={`p-4 rounded-xl border text-left flex justify-between items-center transition-all ${
-                    tx.matched
-                      ? "bg-[color:var(--glass)] border-white/3 opacity-45 cursor-not-allowed"
-                      : selectedBankTxId === tx.id
-                      ? "bg-[color:var(--cyan-faint)] border-[color:var(--cyan)] text-[color:var(--white)] cursor-pointer"
-                      : "bg-[color:var(--glass)] border-white/5 hover:bg-[color:var(--glass)] text-[rgba(232,234,230,0.72)] cursor-pointer"
-                  }`}
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[13px] font-bold text-[color:var(--white)] tracking-tight leading-none truncate">{tx.sender}</span>
-                    <div className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] mt-1">
-                      <span>{tx.date}</span>
-                      <span>•</span>
-                      <span className=" font-mono">{tx.type}</span>
-                    </div>
-                  </div>
-
-                  <div className="text-right flex flex-col items-end gap-1">
-                    <span className={`text-[13px] font-mono font-semibold ${tx.amount > 0 ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"}`}>
-                      {tx.amount > 0 ? "+" : ""}{formatZAR(tx.amount)}
-                    </span>
-                    {tx.matched ? (
-                      <span className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan)] px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal">
-                        Linked Match
-                      </span>
-                    ) : (
-                      <span className="text-[13px] text-[rgba(232,234,230,0.72)] italic">Unlinked</span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Where the deals come from — replaces a simulated bank feed.
+              A live SA bank feed needs open-banking rails and licensing; this
+              answers a question the dealer actually asks, off data already held. */}
+          <LeadSourcePerformance state={state} />
 
           {/* Match Button Panel */}
           <div className="lg:col-span-12 flex flex-col md:flex-row justify-between items-center gap-4 bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4">

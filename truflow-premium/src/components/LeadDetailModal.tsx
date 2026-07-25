@@ -475,7 +475,7 @@ export default function LeadDetailModal({
                     <div className="flex items-center gap-2">
                       <Sparkles size={16} className="text-[color:var(--cyan)]" />
                       <div>
-                        <span className="text-[13px] font-bold text-[color:var(--cyan)] tracking-normal font-mono block">TrueAI Smart Qualification</span>
+                        <span className="text-[13px] font-bold text-[color:var(--cyan)] tracking-normal font-mono block">Dealer Assist qualification</span>
                         <span className="text-[13px] text-[rgba(232,234,230,0.72)]">What this customer did</span>
                       </div>
                     </div>
@@ -510,7 +510,7 @@ export default function LeadDetailModal({
 
                   {/* Suggested Smart Actions Grid */}
                   <div className="space-y-2 mt-1">
-                    <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono block">TrueAI Smart Suggestions:</span>
+                    <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono block">Dealer Assist suggestions:</span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       
                       {/* Suggestion 1: Book Test Drive / Call Now */}

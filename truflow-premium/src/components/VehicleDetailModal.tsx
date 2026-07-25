@@ -36,10 +36,14 @@ interface VehicleDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateVehicle: (id: string, updates: Partial<Vehicle>) => Promise<void>;
+  /** Remove the unit from stock. The owning screen does the checks and the
+   *  confirming — this just asks for it. Optional, so the modal still renders
+   *  for anywhere that shouldn't offer deletion. */
+  onDeleteVehicle?: (id: string) => Promise<void>;
   settings?: any;
 }
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, settings, documentsPanel}: VehicleDetailModalProps) {
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, settings, documentsPanel}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -228,12 +232,24 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 <h3 className="text-lg font-bold text-[color:var(--white)] mt-2 leading-tight">{vehicle.year} {vehicle.make} {vehicle.model}</h3>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{vehicle.trim || "Standard Trim Specs"}</p>
               </div>
-              <button aria-label="Close"
-                onClick={onClose}
-                className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] p-1 rounded-lg transition-all cursor-pointer"
-              >
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-1 shrink-0">
+                {onDeleteVehicle && (
+                  <button
+                    onClick={() => onDeleteVehicle(vehicle.id)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[color:var(--glass-line)] bg-[color:var(--glass)] text-[color:var(--muted)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
+                    title="Remove this unit from stock"
+                  >
+                    <Trash2 size={14} />
+                    Remove
+                  </button>
+                )}
+                <button aria-label="Close"
+                  onClick={onClose}
+                  className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] p-1 rounded-lg transition-all cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Premium Operations Tab Selector */}
@@ -260,7 +276,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   activeTab === "inspection" ? "bg-[color:var(--cyan)] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
-                <Sparkles size={11} /> TrueAI
+                <Sparkles size={11} /> Dealer Assist
               </button>
               <button
                 onClick={() => setActiveTab("recon")}

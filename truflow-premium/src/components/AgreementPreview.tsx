@@ -257,9 +257,11 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
             {/* Signatures */}
             <div className="grid grid-cols-2 gap-12 mt-8 text-[13px] border-t border-gray-100 pt-6">
               <div className="flex flex-col">
-                <div className="h-12 border-b border-gray-300 flex items-end justify-center font-mono text-[color:var(--cyan)] italic font-semibold text-center pb-1">
-                  TrueCar Sandton Showroom Floor Node
-                </div>
+                {/* Left blank to be signed. This printed "TrueCar Sandton
+                    Showroom Floor Node" in the dealer's signature field —
+                    wrong product, a hardcoded branch, and a contract should
+                    never arrive with a signature already in it. */}
+                <div className="h-12 border-b border-gray-300" />
                 <div className="font-semibold text-gray-900 mt-2">Signature of Dealer Representative</div>
                 <div className="text-gray-400 text-[13px] mt-0.5">Date: {agreement.signedAt?.slice(0, 10) || new Date().toISOString().slice(0, 10)}</div>
               </div>

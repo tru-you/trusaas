@@ -29,7 +29,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
       setMessages([
         {
           id: "welcome",
-          text: "Hi! Welcome to TrueCar. I'm your digital assistant. Looking for a specific vehicle or want to book a test drive?",
+          text: "Hi! I'm the showroom assistant. Looking for a specific vehicle, or want to book a test drive?",
           sender: "bot",
           timestamp: new Date(),
         },

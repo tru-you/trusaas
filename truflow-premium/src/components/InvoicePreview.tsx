@@ -59,7 +59,7 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
           {/* Header */}
           <div className="flex justify-between border-b-2 border-white/10 pb-5 mb-6">
             <div>
-              <div className="text-xl font-semibold tracking-tight text-[color:var(--ink-2)]">TrueCar DMS</div>
+              <div className="text-xl font-semibold tracking-tight text-[color:var(--ink-2)]">TruFlow</div>
               <div className="text-[13px] text-gray-400 font-medium">Automotive Retail Operations South Africa</div>
             </div>
             <div className="text-right">

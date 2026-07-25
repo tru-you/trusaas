@@ -47,6 +47,7 @@ import {
   updateSettings,
   createVehicle,
   updateVehicle,
+  deleteVehicle,
   createLead,
   updateLead,
   autoAssignLeads,
@@ -381,7 +382,7 @@ export default function App() {
             // Native Browser Notification (if supported/permitted)
             if ("Notification" in window && Notification.permission === "granted") {
               try {
-                new Notification("TrueCar DMS: Task Due Soon", {
+                new Notification("TruFlow: Task Due Soon", {
                   body: message,
                   icon: "https://ais-dev-qn66bypajuveujrpl7bhld-891304121884.europe-west2.run.app/favicon.ico"
                 });
@@ -714,6 +715,51 @@ export default function App() {
   const handleUpdateVehicle = async (id: string, updates: Partial<Vehicle>) => {
     await updateVehicle(id, updates);
     loadAllState();
+  };
+
+  /** Remove a unit from stock.
+   *  Deleting a car that a deal, invoice or lead points at leaves those records
+   *  referencing something that no longer exists — the lead's vehicle shows as
+   *  blank and the invoice loses what it was for. So say what is attached
+   *  before asking, and refuse outright once money is involved: a sold unit is
+   *  a record of a transaction, not stock to tidy away. */
+  const handleDeleteVehicle = async (id: string) => {
+    const v = state.vehicles.find((x) => x.id === id);
+    if (!v) return;
+    const label = `${v.year} ${v.make} ${v.model} (${v.stockNumber})`;
+
+    if (v.status === "SOLD") {
+      addNotification(
+        "Cannot remove a sold unit",
+        `${label} is sold. Removing it would delete the record of the sale — archive it instead if it should leave the floor.`,
+        "warning"
+      );
+      return;
+    }
+
+    const linkedLeads = state.leads.filter((l) => l.vehicleId === id);
+    const linkedInvoices = state.invoices.filter((i) => i.vehicleId === id);
+    const linkedAgreements = state.agreements.filter((a) => a.vehicleId === id);
+    const attached = [
+      linkedLeads.length && `${linkedLeads.length} lead${linkedLeads.length > 1 ? "s" : ""}`,
+      linkedInvoices.length && `${linkedInvoices.length} invoice${linkedInvoices.length > 1 ? "s" : ""}`,
+      linkedAgreements.length && `${linkedAgreements.length} agreement${linkedAgreements.length > 1 ? "s" : ""}`,
+    ].filter(Boolean).join(", ");
+
+    const totalLinked = linkedLeads.length + linkedInvoices.length + linkedAgreements.length;
+    const warning = attached
+      ? `\n\n${attached} still ${totalLinked === 1 ? "points" : "point"} at this vehicle and will be left without one.`
+      : "";
+    if (!confirm(`Remove ${label} from stock?${warning}\n\nThis cannot be undone.`)) return;
+
+    try {
+      await deleteVehicle(id);
+      setSelectedDetailVehicle(null);
+      loadAllState();
+      addNotification("Removed from stock", `${label} is no longer on the floor.`, "info");
+    } catch (err: any) {
+      addNotification("Could not remove vehicle", err?.message || "Something went wrong.", "warning");
+    }
   };
 
   const handleUploadDocument = async (doc: { fileName: string; mimeType: string; fileData: string; leadId?: string; vehicleId?: string }) => {
@@ -3111,7 +3157,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-[16px] text-[color:var(--white)] block">TrueAI VIR & Image Studio</span>
+                    <span className="font-bold text-[16px] text-[color:var(--white)] block">Dealer Assist — VIR & image studio</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Generates automated visual inspection reports (VIR) and optimizes vehicle images using neural nets.</span>
                   </div>
                 </div>
@@ -3560,6 +3606,7 @@ export default function App() {
           isOpen={true}
           onClose={() => setSelectedDetailVehicle(null)}
           onUpdateVehicle={handleUpdateVehicle}
+          onDeleteVehicle={handleDeleteVehicle}
           settings={state.settings}
           documentsPanel={
             <DocumentsHub
