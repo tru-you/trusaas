@@ -1,7 +1,7 @@
 {
-  "name": "truvalue",
+  "name": "trutrade",
   "version": "1.0.0",
-  "description": "TruValue — live video trade-in appraisals. A TruSaas module.",
+  "description": "TruTrade — live video trade-in appraisals. A TruSaaS module.",
   "type": "module",
   "main": "server.js",
   "scripts": {

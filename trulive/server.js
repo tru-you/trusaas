@@ -68,8 +68,8 @@ app.post('/api/summary', async (req, res) => {
 });
 
 async function claudeSummary(d) {
-  const model = process.env.TRULIVE_MODEL || 'claude-sonnet-5';
-  const prompt = `You are the inspection assistant for TruLive, a live guided vehicle walkthrough tool used by car dealers.
+  const model = process.env.TRUVIEW_MODEL || 'claude-sonnet-5';
+  const prompt = `You are the inspection assistant for TruView, a live guided vehicle walkthrough tool used by car dealers.
 Write a concise, professional inspection summary for the buyer's record based on this completed live walkthrough.
 
 Vehicle: ${d.veh || 'Unknown'}

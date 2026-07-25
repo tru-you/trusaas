@@ -1,6 +1,6 @@
 {
-  "name": "TruLive — Live Vehicle Walkthrough",
-  "short_name": "TruLive",
+  "name": "TruView — Live Vehicle Walkthrough",
+  "short_name": "TruView",
   "description": "Live, guided vehicle walkthroughs over a secure link.",
   "start_url": "/",
   "scope": "/",

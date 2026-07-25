@@ -66,8 +66,8 @@ app.post('/api/writeup', async (req, res) => {
 });
 
 async function claudeWriteup(d) {
-  const model = process.env.TRUVALUE_MODEL || 'claude-sonnet-5';
-  const prompt = `You are the appraisal assistant for TruValue, a live video trade-in appraisal tool used by South African car dealers.
+  const model = process.env.TRUTRADE_MODEL || 'claude-sonnet-5';
+  const prompt = `You are the appraisal assistant for TruTrade, a live video trade-in appraisal tool used by South African car dealers.
 A dealer has just appraised a customer's vehicle over a live video call. Write the condition write-up for the offer document.
 
 Vehicle: ${d.veh || 'Unknown'}

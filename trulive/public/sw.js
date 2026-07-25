@@ -1,6 +1,6 @@
-// TruLive service worker — caches the app shell so it launches instantly and
+// TruView service worker — caches the app shell so it launches instantly and
 // survives a flaky signal on the lot. Live video/signalling always go to network.
-const CACHE = 'trulive-v2';
+const CACHE = 'truview-v1';
 const SHELL = ['/', '/logo.png', '/icon.svg', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
