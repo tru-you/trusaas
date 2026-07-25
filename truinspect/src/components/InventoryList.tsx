@@ -954,7 +954,7 @@ export default function InventoryList({
                           }}
                           title="Open inspection report with score, findings & damage photos"
                           className="flex items-center justify-center gap-1 text-[13px] font-bold text-[#E8EAE6] cursor-pointer whitespace-nowrap px-3 min-h-[44px] rounded transition-colors shadow-sm"
-                          style={{ background: 'linear-gradient(120deg, #4FE3DC, #4D9BFF)' }}
+                          style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
                         >
                           Report <FileText size={10} />
                         </button>

@@ -50,28 +50,28 @@
   --color-teal-800: #22807C;
   --color-teal-900: #175A57;
   --color-teal-950: #0C302E;
-  --color-sky-50: #EAF2FE;
-  --color-sky-100: #D2E4FD;
-  --color-sky-200: #A8CAFB;
-  --color-sky-300: #7DB0F9;
-  --color-sky-400: #4D9BFF;
-  --color-sky-500: #2B82F5;
-  --color-sky-600: #1466E0;
-  --color-sky-700: #1152B4;
-  --color-sky-800: #0D3E87;
-  --color-sky-900: #0A2C5F;
-  --color-sky-950: #061A3A;
-  --color-blue-50: #EAF2FE;
-  --color-blue-100: #D2E4FD;
-  --color-blue-200: #A8CAFB;
-  --color-blue-300: #7DB0F9;
-  --color-blue-400: #4D9BFF;
-  --color-blue-500: #2B82F5;
-  --color-blue-600: #1466E0;
-  --color-blue-700: #1152B4;
-  --color-blue-800: #0D3E87;
-  --color-blue-900: #0A2C5F;
-  --color-blue-950: #061A3A;
+  --color-sky-50: #EEF2F5;
+  --color-sky-100: #DCE3EA;
+  --color-sky-200: #BCC8D4;
+  --color-sky-300: #9FB0C0;
+  --color-sky-400: #8AA2B8;
+  --color-sky-500: #7A93AB;
+  --color-sky-600: #63798F;
+  --color-sky-700: #4C5D6E;
+  --color-sky-800: #36424E;
+  --color-sky-900: #242C34;
+  --color-sky-950: #161B20;
+  --color-blue-50: #EEF2F5;
+  --color-blue-100: #DCE3EA;
+  --color-blue-200: #BCC8D4;
+  --color-blue-300: #9FB0C0;
+  --color-blue-400: #8AA2B8;
+  --color-blue-500: #7A93AB;
+  --color-blue-600: #63798F;
+  --color-blue-700: #4C5D6E;
+  --color-blue-800: #36424E;
+  --color-blue-900: #242C34;
+  --color-blue-950: #161B20;
   --color-cyan-50: #EAFBFA;
   --color-cyan-100: #CFF6F3;
   --color-cyan-200: #A8EFEA;
@@ -187,7 +187,7 @@
   --color-neutral-900: #0B0F17;
   --color-neutral-950: #06080D;
   --color-trulens-purple: #4FE3DC;   /* capture / catalogue accent */
-  --color-trulens-blue: #4D9BFF;      /* dashboard / analytics accent (logo blue) */
+  --color-trulens-blue: #4FE3DC;      /* dashboard / analytics accent (logo blue) */
 
   /* TruSaaS rebrand: cyan accent everywhere — remap the legacy indigo/purple/violet
      utility classes to the cyan/sky family instead of touching hundreds of classNames. */

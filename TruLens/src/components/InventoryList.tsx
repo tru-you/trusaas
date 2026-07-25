@@ -442,7 +442,7 @@ export default function InventoryList({
           onClick={() => setCurrentTab('dashboard')}
           className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             currentTab === 'dashboard'
-              ? 'tl-glass text-trulens-blue shadow-lg shadow-[#4D9BFF]/20 border border-trulens-blue/40'
+              ? 'tl-glass text-trulens-blue shadow-lg shadow-[#4FE3DC]/20 border border-trulens-blue/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
           }`}
         >

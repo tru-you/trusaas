@@ -367,7 +367,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
-              style={{ background: 'linear-gradient(120deg, #4FE3DC, #4D9BFF)' }}>
+              style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}>
               <Download size={12} /> {generating === 'full' ? '…' : 'Inspection PDF'}
             </button>
           </div>
@@ -404,7 +404,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; }
             .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; }
             .tl-report .brand { display:flex; align-items:center; gap:12px; }
-            .tl-report .brand .mark { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#4FE3DC,#4D9BFF); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; }
+            .tl-report .brand .mark { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#7FF0EA,#4FE3DC); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; }
             .tl-report .brand .txt { font-weight:800; font-size:20px; }
             .tl-report .brand .txt em { font-style:normal; color:#93C5FD; }
             .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; }
