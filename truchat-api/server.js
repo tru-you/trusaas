@@ -2,7 +2,7 @@
  * TruChat API — hosted Claude tool-use chat brain (zero-dependency Node).
  *
  * Ported from the WordPress plugin (truchat/wordpress-plugin/truchat/includes/chat.php)
- * so static sites — the TruSaas marketing bot and any HTML dealer embed — get the
+ * so static sites — the TruSaaS marketing bot and any HTML dealer embed — get the
  * same brain the WordPress dealers have, without WordPress.
  *
  * POST /api/chat  { messages, session, catalog } -> { reply, actions, session, suggestions, source }
@@ -20,7 +20,7 @@ const CFG = {
   apiKey:        process.env.ANTHROPIC_API_KEY || '',
   model:         process.env.TRUCHAT_MODEL || 'claude-haiku-4-5',
   assistantName: process.env.ASSISTANT_NAME || 'True',
-  dealerName:    process.env.DEALER_NAME || 'TruSaas',
+  dealerName:    process.env.DEALER_NAME || 'TruSaaS',
   salesWhatsApp: (process.env.SALES_WHATSAPP || '27620502091').replace(/\D/g, ''),
   stockApi:      process.env.STOCK_API || 'https://premium.tru-saas.com/api/public/stock?dealer=true-cars',
   stockApiFallback: process.env.STOCK_API_FALLBACK || 'https://premium.tru-saas.com/api/public/stock?dealer=demo',
@@ -42,13 +42,13 @@ const priceFmt = (() => {
 function faqIntents() {
   return [
     { keys: ['hi','hello','hey','howzit','hallo','good morning','good afternoon','good day'],
-      reply: `Howzit! 👋 I'm **${CFG.assistantName}**, the AI assistant on **${CFG.dealerName}**. I can show you **live stock**, explain how **TruSaas** runs a dealership, or put you onto a human. What are you after?`,
-      suggestions: ['Browse stock','How TruSaas works','Book a walkthrough'] },
+      reply: `Howzit! 👋 I'm **${CFG.assistantName}**, the AI assistant on **${CFG.dealerName}**. I can show you **live stock**, explain how **TruSaaS** runs a dealership, or put you onto a human. What are you after?`,
+      suggestions: ['Browse stock','How TruSaaS works','Book a walkthrough'] },
     { keys: ['thanks','thank you','thank u','cheers','dankie','appreciate','lekker','awesome'],
       reply: `Pleasure! 🙌 Anything else — stock, a demo, or how the platform fits your dealership?`,
       suggestions: ['Browse stock','Book a walkthrough'] },
     { keys: ['what is trusaas','how does trusaas','about trusaas','what do you do','how it works','what is this'],
-      reply: `**TruSaas** is the operating system for independent dealers — capture (TruLens), condition reports (TruInspect), the DMS/pipeline (TruFlow), the website (TruShowroom), 24/7 AI (TruChat, that's me) and live video (TruLive). One stack, buy what you need. Want a walkthrough on your own stock?`,
+      reply: `**TruSaaS** is the operating system for independent dealers — capture (TruLens), condition reports (TruInspect), the DMS/pipeline (TruFlow), the website (TruShowroom), 24/7 AI (TruChat, that's me) and live video (TruLive). One stack, buy what you need. Want a walkthrough on your own stock?`,
       suggestions: ['Book a walkthrough','Browse stock'] },
     { keys: ['walkthrough','demo','book','call','get started','pricing','how much','cost'],
       reply: `Happy to set up a walkthrough on the same stack that runs the live demo — with your currency, integrations and stock plugged in. Tap below to grab a slot, or share your **name, number and email** and I'll have someone reach out.`,
@@ -149,12 +149,12 @@ function matchStock(list, query) {
 /* ---- System prompt ------------------------------------------------------ */
 function systemPrompt(stockText) {
   return [
-    `You are ${CFG.assistantName}, the AI assistant on the ${CFG.dealerName} website — a live demonstration of TruChat, the 24/7 AI module in the TruSaas dealer platform. The dealership serves the ${CFG.market} market.`,
+    `You are ${CFG.assistantName}, the AI assistant on the ${CFG.dealerName} website — a live demonstration of TruChat, the 24/7 AI module in the TruSaaS dealer platform. The dealership serves the ${CFG.market} market.`,
     `Be warm and concise, and mirror the customer's language and local tone for the ${CFG.market} market. Short paragraphs. Quote prices in the local currency as shown in the stock list. Never quote guaranteed finance rates or approvals — finance is always subject to lender assessment.`,
     ``,
     `You can:`,
     `- Show live vehicles from the demo dealership using the search_stock tool.`,
-    `- Explain how TruSaas works for an independent dealer (capture, condition reports, DMS/pipeline, website, AI, live video).`,
+    `- Explain how TruSaaS works for an independent dealer (capture, condition reports, DMS/pipeline, website, AI, live video).`,
     `- Capture a lead (name, mobile, email) with capture_lead when someone wants a walkthrough, finance or a callback.`,
     `- Hand off to a human on WhatsApp with request_whatsapp_handoff once the person is qualified or asks for a person.`,
     ``,
@@ -198,7 +198,7 @@ function whatsappText(s) {
   let intent;
   if (s.financeInterest) intent = `I'm interested in finance${s.vehicleInterest ? ' on the ' + s.vehicleInterest : ''}.`;
   else if (s.vehicleInterest) intent = `I'm interested in the ${s.vehicleInterest}.`;
-  else intent = `I'd like a TruSaas walkthrough.`;
+  else intent = `I'd like a TruSaaS walkthrough.`;
   const contact = [];
   if (s.phone) contact.push(`my number is ${s.phone}`);
   if (s.email) contact.push(`email ${s.email}`);
@@ -340,7 +340,7 @@ const server = http.createServer((req, res) => {
         console.error('[TruChat fatal]', e);
         return json(res, 200, {
           reply: "Sorry, I hit a snag. Please try again, or tap below for WhatsApp.",
-          actions: [{ type: 'whatsapp', phone: CFG.salesWhatsApp, text: 'Hi — I was chatting on the TruSaas site.' }],
+          actions: [{ type: 'whatsapp', phone: CFG.salesWhatsApp, text: 'Hi — I was chatting on the TruSaaS site.' }],
           session: (body && body.session) || {},
           source: 'error',
         });

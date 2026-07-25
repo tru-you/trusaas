@@ -1,7 +1,7 @@
 {
   "name": "trusaas-chat",
   "version": "1.0.0",
-  "description": "TruChat API — hosted Claude tool-use chat brain for TruSaas static sites (marketing demo + HTML dealer embeds).",
+  "description": "TruChat API — hosted Claude tool-use chat brain for TruSaaS static sites (marketing demo + HTML dealer embeds).",
   "type": "module",
   "engines": { "node": ">=18" },
   "scripts": {

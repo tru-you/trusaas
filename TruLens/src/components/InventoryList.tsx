@@ -326,7 +326,7 @@ export default function InventoryList({
             /* The supplied wordmark is the light-background variant: its "Tru" is
                dark graphite chrome, which goes muddy on #06080D and reads grey.
                Lifting brightness makes the chrome read as silver on dark, matching
-               the TruSaas wordmark the holding site uses. Remove this once a
+               the TruSaaS wordmark the holding site uses. Remove this once a
                proper light-chrome TruLens wordmark exists. */
             className="h-8 w-auto object-contain [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
           />
@@ -1292,7 +1292,7 @@ export default function InventoryList({
             </div>
 
             <div className="pt-8 pb-4 flex flex-col items-center opacity-40">
-              <span className="text-[12px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaas</span>
+              <span className="text-[12px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaaS</span>
             </div>
           </div>
         )}

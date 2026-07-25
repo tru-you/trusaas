@@ -1241,7 +1241,7 @@ export default function InventoryList({
             </div>
 
             <div className="pt-8 pb-4 flex flex-col items-center opacity-40">
-              <span className="text-[12px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaas</span>
+              <span className="text-[12px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaaS</span>
             </div>
           </div>
         )}

@@ -1,6 +1,6 @@
 # TruLive
 
-*A TruSaas module — live video walkaround streaming.*
+*A TruSaaS module — live video walkaround streaming.*
 
 **Live, guided vehicle walkthroughs over a secure link.** A dealer sends a single-use link
 (via WhatsApp), the buyer opens it **in their browser — no app install** — and they run
@@ -8,7 +8,7 @@ through the car together on a live video call. The app *guides both sides* throu
 section of the vehicle with prompts and a shared checklist, then generates an AI inspection
 summary for the CRM and the buyer.
 
-Part of the **TruSaas** automotive platform (the `TruLive` module).
+Part of the **TruSaaS** automotive platform (the `TruLive` module).
 
 ---
 

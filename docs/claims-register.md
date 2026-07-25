@@ -59,24 +59,54 @@ All uses of the wrong spelling have been catalogued below. **Fixed in this branc
 - `case-sites/MKR/tru-afford.js` + `case-sites/cars-at-caledon/tru-afford.js` header comments ✅
 - `case-sites/cars-at-caledon/index.html` HTML comments ✅
 
+### FIXED (second sweep — "TruSaas", lowercase final s)
+The first sweep matched `TrueSaas`/`TrueSaaS` only and missed `TruSaas`,
+which was the spelling actually rendering on the TruFlow login splash.
+40 occurrences across 17 in-scope files, all now `TruSaaS`:
+- App login/inventory/demo-banner surfaces: TruLens, TruInspect,
+  TruFlow Lite, TruFlow Premium ✅
+- `truchat-api/server.js` + `package.json` description ✅
+- `Trulive/` README, public index, assets README ✅
+- `case-sites/hv-motors`, `case-sites/cars-at-caledon` (+ `coc-polish.css`) ✅
+
+### STILL PRESENT — OUT OF SCOPE
+- `index.html` (root) — 12 occurrences of `TruSaas`. This is the TruSaaS
+  marketing site, which the brief puts explicitly out of scope. Needs an
+  owner decision alongside the `/truesaas.html` slug rename below, since
+  both are public-facing and change together.
+
 ### STILL PRESENT (URL slugs — not display strings)
 - `truweb/mkr-autosales/` HTML files: `href="…/truesaas.html"` — URL slug on the live
   true-cars.co.za domain; requires a server-side redirect + page rename, out of branch scope
 
 ---
 
-## CSS COLOUR SYSTEM — DEFERRED VIOLATIONS
+## CSS COLOUR SYSTEM — RESOLVED
 
-Raw hex/rgba values NOT yet migrated to tokens (require colour-decision first):
+The cyan conflict is closed. `--tru-cyan-400` is `#4FE3DC` (the actual brand
+cyan); the stock Tailwind `#22D3EE` was the error and is gone.
 
-| File | Rule | Value | Issue |
-|------|------|-------|-------|
-| `TruLens/src/index.css` | `.tl-btn-3d` | `#7FF0EA`, `#4FE3DC`, `#3ECFC8` gradient | No gradient token; brand cyan `#4FE3DC` conflicts with `--tru-cyan-400: #22D3EE` in token file |
-| `TruLens/src/index.css` | `.tl-card-lift::before` | `rgba(79,227,220,...)` glow | Same cyan conflict |
-| `TruLens/src/index.css` | `.tl-stock-highlight` | `rgba(79,227,220,...)` pulse | Same cyan conflict |
-| `*/brand.css` | All L1 vars | `#4FE3DC`, `#0B0F17`, etc. | brand.css is an L1-alias file; exempt until token-file cyan is resolved |
+| File | Rule | Status |
+|------|------|--------|
+| `TruLens/src/index.css` | `.tl-btn-3d`, `.tl-btn-3d-dark` | ✅ token gradient (`--tru-cyan-300/400/500`) |
+| `TruLens/src/index.css` | `.tl-card-lift` + `::before` | ✅ `rgb(var(--accent-rgb) / a)`, `--accent-glow` |
+| `TruLens/src/index.css` | `.tl-stock-highlight`, `tl-stock-pulse` | ✅ token channel forms |
+| `*/brand.css` | All L1 vars | ✅ reference `--tru-*` primitives |
 
-**Critical open item — cyan colour:** `brand.css` and all apps use `#4FE3DC` (RGB 79,227,220) as the TruSaaS brand cyan. `tru-tokens.css` was created with `--tru-cyan-400: #22D3EE` (standard Tailwind cyan-400). These are visually different. Before the purge can be completed, decide: does the brand cyan stay `#4FE3DC`, and if so, update L1 primitives in `tru-tokens.css` accordingly.
+Arbitrary-alpha glows are expressed via channel-form primitives
+(`--tru-cyan-400-rgb` etc.) so a colour is still defined exactly once.
+
+### Known remaining raw hex — accepted, with reason
+- **`@theme` blocks in each app's `index.css`.** Tailwind v4 palette ramps.
+  These deliberately collapse the stock emerald/green/lime/teal/indigo/
+  purple/violet/fuchsia/pink ramps onto brand cyan so several hundred
+  existing utility classNames land on-brand without being edited. They are
+  palette definitions, not component rules — the same category as
+  `brand.css`. **Action:** add `**/index.css` `@theme` to the stylelint
+  ignore set, or migrate the ramps to `var(--tru-*)` references in a
+  separate commit; do not silently leave them failing lint.
+- **`--color-*-tc` legacy alias sets** in both TruFlow entry points. Now
+  brand-consistent between Lite and Premium, but still raw hex.
 
 ---
 
