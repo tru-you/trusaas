@@ -1,0 +1,23 @@
+# Standalone Blueprint for TruLive.
+#
+# TO SLOT INTO THE MONOREPO (github.com/tru-you/trusaas): move this app to `trulive/`
+# and add the block below as a service in the repo-root render.yaml (alongside
+# trusaas-lens / trusaas-flow-lite / trusaas-flow-premium / trusaas-inspect),
+# adding `rootDir: trulive`. Keep plan: starter — never `free` (Blueprint sync
+# would downgrade the whole suite).
+services:
+  - type: web
+    name: trusaas-live
+    runtime: node
+    plan: starter
+    # rootDir: trulive        # <-- uncomment when moved into the monorepo
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      # Optional — set to enable AI Audit Core summaries via Claude.
+      # Add your key in the Render dashboard (do NOT commit it).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TRULIVE_MODEL
+        value: claude-sonnet-5

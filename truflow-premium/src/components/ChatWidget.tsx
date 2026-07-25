@@ -9,8 +9,22 @@ interface Message {
   timestamp: Date;
 }
 
-export default function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(false);
+interface ChatWidgetProps {
+  /** Let a parent open the assistant (the dashboard's "Ask Dealer Assist"
+   *  button). Left undefined, the widget keeps owning its own state and
+   *  behaves exactly as before. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {}) {
+  const [selfOpen, setSelfOpen] = useState(false);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : selfOpen;
+  const setIsOpen = (v: boolean) => {
+    if (!isControlled) setSelfOpen(v);
+    onOpenChange?.(v);
+  };
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,7 +41,7 @@ export default function ChatWidget() {
       setMessages([
         {
           id: "welcome",
-          text: "Greetings from the TrueCar DMS AI Agent! I have access to your live showroom floor inventory, customer CRM files, and operational tasks. Ask me anything!",
+          text: "Hi — I'm Dealer Assist. I can see your stock, your leads and today's jobs. Ask me what to chase, what a unit should be priced at, or what's sitting too long.",
           sender: "bot",
           timestamp: new Date(),
         },
@@ -82,7 +96,7 @@ export default function ChatWidget() {
           <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(126,164,214,0.1)] bg-[linear-gradient(90deg,rgba(20,102,224,0.1),rgba(21,199,192,0.05))]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[color:var(--cyan)] shadow-[var(--glow-cyan)]"></span>
-              <span className="font-bold text-[16px] text-[color:var(--white)]">TrueCar DMS AI Agent</span>
+              <span className="font-bold text-[16px] text-[color:var(--white)]">Dealer Assist</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}

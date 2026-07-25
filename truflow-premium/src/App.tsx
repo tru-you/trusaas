@@ -244,6 +244,9 @@ function Segmented<T extends string>({ value, onChange, options }: {
 export default function App() {
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
+  // Lifted out of ChatWidget so the dashboard can open the assistant directly —
+  // the floating bubble is easy to miss on a desk monitor.
+  const [assistOpen, setAssistOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("u1");
   // Driven by the signed token, not a sessionStorage flag — a flag said "logged
   // in" while the token was gone or expired, and every API call 401'd behind a
@@ -576,6 +579,27 @@ export default function App() {
   // Anything unanswered for more than an hour is the one thing on this screen
   // allowed to draw the eye. Under an hour the dealer is on top of it.
   const replyIsLate = oldestWaitMs > 60 * 60 * 1000;
+
+  /** Whose floor this is. Falls back through the signed-in account so the
+   *  banner never renders a bare "· live" with nothing in front of it. */
+  const dealershipLabel =
+    (state?.dealerships || [])[0]?.name || account?.label || "Your dealership";
+  const todayLabel = new Date().toLocaleDateString("en-ZA", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  /* Card subtexts should answer "compared to what?" — "Ready for viewing" and
+     "Cleared this cycle" are decoration. Aged stock and unpaid invoices are
+     the two numbers a dealer principal actually chases. */
+  const AGED_DAYS = 60;
+  const agedStockCount = state.vehicles.filter(
+    (v) => v.status !== "SOLD" && (v.daysInInventory ?? 0) > AGED_DAYS
+  ).length;
+  const outstandingRevenue = state.invoices
+    .filter((i) => i.status !== "Paid")
+    .reduce((sum, i) => sum + i.amount, 0);
 
   // Grouped menu sections for elegant layout
   const groupedNavigation = [
@@ -1077,14 +1101,40 @@ export default function App() {
         {/* OVERVIEW SECTION */}
         {activeSection === "dashboard" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-            <div className="flex justify-between items-center gap-4">
-              <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Overview</h1>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Your stock and leads, live</p>
+            {/* Framed header. The plain heading read like a page title on a
+                form; a dealer opening this at 8am should see whose floor it is,
+                that it is live, and have the assistant one click away. */}
+            <div className="card p-5 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[length:var(--t-micro)] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--cyan)] animate-pulse" />
+                    {dealershipLabel} · live
+                  </span>
+                  <span className="text-[length:var(--t-micro)] text-[rgba(232,234,230,0.55)]">
+                    {todayLabel} · sales &amp; workshop
+                  </span>
+                </div>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">
+                  Dealership overview
+                </h1>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                  Stock, leads, workshop and money — one live view of the floor.
+                </p>
               </div>
-              <button onClick={() => navigateTo("upload")} className="btn btn-primary">
-                + New Inventory
-              </button>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setAssistOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-[color:var(--cyan)] text-[color:var(--ink)] text-[13px] font-semibold flex items-center gap-2 hover:bg-[color:var(--cyan-bright)] transition-colors cursor-pointer active:scale-95"
+                >
+                  <Sparkles size={15} />
+                  Ask Dealer Assist
+                </button>
+                <button onClick={() => navigateTo("upload")} className="btn btn-primary">
+                  + New Inventory
+                </button>
+              </div>
             </div>
 
             {/* Stats Row */}
@@ -1114,20 +1164,35 @@ export default function App() {
                     : `Oldest waiting ${formatWait(oldestWaitMs)} · ${unresolvedLeadsCount} open`}
                 </div>
               </button>
-              <div className="stat-card p-4">
+              <button
+                onClick={() => navigateTo("inventory")}
+                className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
+              >
                 <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Cars in stock</div>
                 <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Ready for viewing</div>
-              </div>
+                <div className="text-[13px] font-semibold mt-1 text-[rgba(232,234,230,0.55)]">
+                  {agedStockCount > 0
+                    ? `${agedStockCount} over ${AGED_DAYS} days`
+                    : `None over ${AGED_DAYS} days`}
+                </div>
+              </button>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Units Sold</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Units sold</div>
                 <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1"><Counter value={soldUnitsCount} /></div>
-                <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Cleared this cycle</div>
+                <div className="text-[13px] text-[rgba(232,234,230,0.55)] font-semibold mt-1">
+                  {activeVehiclesCount + soldUnitsCount > 0
+                    ? `${Math.round((soldUnitsCount / (activeVehiclesCount + soldUnitsCount)) * 100)}% of the floor moved`
+                    : "No stock loaded yet"}
+                </div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Revenue</div>
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Banked</div>
                 <div className="text-2xl font-serif font-semibold text-[color:var(--cyan-bright)] mt-1"><Counter value={totalRevenue} prefix="R " /></div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Cleared payments</div>
+                <div className="text-[13px] font-semibold mt-1 text-[rgba(232,234,230,0.55)]">
+                  {outstandingRevenue > 0
+                    ? `R${outstandingRevenue.toLocaleString("en-ZA")} still owed`
+                    : "Nothing outstanding"}
+                </div>
               </div>
             </div>
 
@@ -3024,7 +3089,7 @@ export default function App() {
 
       {/* Side floating Copilot assistant chat widget */}
       <PwaInstallBanner appName="TruFlow Premium" accent="var(--blue)" dismissKey="truflow_premium_pwa_dismissed" />
-      <ChatWidget />
+      <ChatWidget open={assistOpen} onOpenChange={setAssistOpen} />
       
       {/* Website Chat Widget Simulation */}
       {(state.settings?.chatbot || state.settings?.liveReceptionist) && (

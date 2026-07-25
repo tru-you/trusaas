@@ -96,7 +96,7 @@ export const ExecutiveDashboard: React.FC = () => {
             className="px-4 py-2.5 bg-white text-black hover:bg-zinc-200 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition-all"
           >
             <Sparkles className="w-4 h-4 text-black animate-pulse" />
-            Ask TrueAI Copilot
+            Ask Dealer Assist
           </button>
         </div>
       </div>

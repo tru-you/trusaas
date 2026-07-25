@@ -210,7 +210,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     {
       id: 'msg-1',
       sender: 'ai',
-      text: "Hi — I'm TruAI, your dealership assistant. Ask me about deals to chase, what to price a unit at, aged stock, follow-ups, or the day's numbers.",
+      text: "Hi — I'm Dealer Assist. Ask me about deals to chase, what to price a unit at, aged stock, follow-ups, or the day's numbers.",
       timestamp: 'Just now',
     },
   ]);
@@ -715,7 +715,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         {
           id: `msg-err-${Date.now()}`,
           sender: 'ai',
-          text: 'I ran into an error connecting to TrueAI Copilot. Here is a local summary based on your dashboard state:\n\n- Active CRM Deals: ' + deals.length + '\n- Active Projects: ' + projects.length + '\n- Total Revenue: $' + getFinancialSummary().totalRevenue.toLocaleString(),
+          text: 'I ran into an error connecting to Dealer Assist. Here is a local summary based on your dashboard state:\n\n- Active CRM Deals: ' + deals.length + '\n- Active Projects: ' + projects.length + '\n- Total Revenue: $' + getFinancialSummary().totalRevenue.toLocaleString(),
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);

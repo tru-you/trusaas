@@ -1,6 +1,77 @@
 {
   "vehicles": [
     {
+      "id": "demo_v3",
+      "year": 2018,
+      "make": "Ford",
+      "model": "EcoSport",
+      "trim": "1.5 Ambiente",
+      "status": "INVENTORY",
+      "retailPrice": 199900,
+      "costPrice": 172000,
+      "mileage": 96800,
+      "transmission": "Manual",
+      "fuelType": "Petrol",
+      "stockNumber": "DEMO-102",
+      "dateAcquired": "2026-05-12",
+      "daysInInventory": 74,
+      "description": "2018 Ford EcoSport — sample stock for the demo.",
+      "bodyType": "SUV",
+      "images": [],
+      "reconTasks": [],
+      "dealershipId": "demo"
+    },
+    {
+      "id": "demo_v2",
+      "year": 2021,
+      "make": "Volkswagen",
+      "model": "Polo",
+      "trim": "1.0 TSI Comfortline",
+      "status": "INVENTORY",
+      "retailPrice": 269900,
+      "costPrice": 228000,
+      "mileage": 52300,
+      "transmission": "Manual",
+      "fuelType": "Petrol",
+      "stockNumber": "DEMO-101",
+      "dateAcquired": "2026-06-14",
+      "daysInInventory": 41,
+      "description": "2021 Volkswagen Polo — sample stock for the demo.",
+      "bodyType": "Hatchback",
+      "images": [],
+      "reconTasks": [
+        {
+          "id": "demo_r1",
+          "name": "Valet & polish",
+          "cost": 1800,
+          "status": "Completed",
+          "dateAdded": "2026-07-25"
+        }
+      ],
+      "dealershipId": "demo"
+    },
+    {
+      "id": "demo_v1",
+      "year": 2020,
+      "make": "Toyota",
+      "model": "Hilux",
+      "trim": "2.4 GD-6 SRX",
+      "status": "INVENTORY",
+      "retailPrice": 379900,
+      "costPrice": 318000,
+      "mileage": 112000,
+      "transmission": "Manual",
+      "fuelType": "Diesel",
+      "stockNumber": "DEMO-100",
+      "dateAcquired": "2026-07-13",
+      "daysInInventory": 12,
+      "description": "2020 Toyota Hilux — sample stock for the demo.",
+      "bodyType": "Bakkie",
+      "images": [],
+      "reconTasks": [],
+      "dealershipId": "demo"
+    },
+    {
       "id": "v_lens_1784493151509",
       "year": 2026,
       "make": "sS",
@@ -176,6 +247,44 @@
     }
   ],
   "leads": [
+    {
+      "id": "demo_l2",
+      "firstName": "Annelie",
+      "lastName": "Botha",
+      "phone": "082 000 0002",
+      "email": "annelie@example.co.za",
+      "vehicleId": "demo_v2",
+      "source": "Walk-in",
+      "status": "Contacted",
+      "assignedUserId": "u1",
+      "createdAt": "2026-07-16",
+      "lastContactedAt": "2026-07-16",
+      "digitalScore": 64,
+      "notes": "Wants a trade-in valuation.",
+      "nextAction": "Follow up",
+      "nextActionAt": "2026-07-21",
+      "stageChangedAt": "2026-07-16",
+      "dealershipId": "demo"
+    },
+    {
+      "id": "demo_l1",
+      "firstName": "Sipho",
+      "lastName": "Ndlovu",
+      "phone": "079 000 0001",
+      "email": "sipho@example.co.za",
+      "vehicleId": "demo_v1",
+      "source": "Website",
+      "status": "New",
+      "assignedUserId": "u1",
+      "createdAt": "2026-07-25",
+      "lastContactedAt": null,
+      "digitalScore": 82,
+      "notes": "Asked about finance on the Hilux.",
+      "nextAction": "First contact",
+      "nextActionAt": "2026-07-25",
+      "stageChangedAt": "2026-07-25",
+      "dealershipId": "demo"
+    },
     {
       "id": "l1",
       "firstName": "David",
@@ -438,5 +547,29 @@
     "seoAeo": true,
     "syndication": true,
     "liveReceptionist": true
-  }
+  },
+  "documents": [],
+  "dealerships": [
+    {
+      "id": "d1",
+      "name": "MKR Auto Sales",
+      "location": "Johannesburg",
+      "slug": "mkr-autosales",
+      "websiteUrl": "https://mkrauto.netlify.app"
+    },
+    {
+      "id": "d2",
+      "name": "Cars on Caledon",
+      "location": "Kariega, Eastern Cape",
+      "slug": "cars-on-caledon",
+      "websiteUrl": "https://www.carsoncaledon.co.za"
+    },
+    {
+      "id": "demo",
+      "name": "Demo Dealership",
+      "location": "Sandbox",
+      "slug": "demo",
+      "websiteUrl": "https://tru-saas.com"
+    }
+  ]
 }

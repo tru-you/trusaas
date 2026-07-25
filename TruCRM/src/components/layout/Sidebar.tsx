@@ -135,7 +135,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       id: 'copilot',
-      label: 'TrueAI Copilot',
+      label: 'Dealer Assist',
       icon: Sparkles,
       badge: 'AI Active',
       badgeColor: badgeQuiet,

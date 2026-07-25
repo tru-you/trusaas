@@ -126,7 +126,7 @@ Respond strictly with valid JSON only.`;
     }
   });
 
-  // AI Endpoint: TrueAI Copilot (Cross-Suite Business Intelligence Assistant)
+  // AI Endpoint: Dealer Assist (sales, stock, workshop and cash assistant)
   app.post("/api/ai/copilot", async (req, res) => {
     try {
       const { message, contextData } = req.body;
@@ -134,7 +134,7 @@ Respond strictly with valid JSON only.`;
 
       if (!ai) {
         return res.json({
-          reply: "I'm TruAI running offline. From today's state:\n\n- **Pipeline**: 5 deals worth about **R3.46m** in play, including a fleet order and a rent-to-own.\n- **Workshop**: a D-Max in delivery prep and a 4x Hilux fleet fit-out underway.\n- **Money**: one overdue rent-to-own instalment (R8,500) to chase.\n\n*Tip: add a Gemini API key in Settings to switch me to live AI.*",
+          reply: "I'm Dealer Assist running offline. From today's state:\n\n- **Pipeline**: 5 deals worth about **R3.46m** in play, including a fleet order and a rent-to-own.\n- **Workshop**: a D-Max in delivery prep and a 4x Hilux fleet fit-out underway.\n- **Money**: one overdue rent-to-own instalment (R8,500) to chase.\n\n*Tip: add a Gemini API key in Settings to switch me to live AI.*",
           suggestedActions: [
             { label: "Chase the Haval Jolion website lead", type: "crm", targetId: "deal-105" },
             { label: "Send the fleet deposit invoice", type: "accounting", targetId: "inv-2002" },
@@ -143,7 +143,7 @@ Respond strictly with valid JSON only.`;
         });
       }
 
-      const systemInstruction = `You are TruAI, the assistant for a South African used-car dealership running on TruSaaS (sales, workshop/service, stock and accounting in one).
+      const systemInstruction = `You are Dealer Assist, the assistant for a South African used-car dealership running on TruSaaS (sales, workshop/service, stock and accounting in one).
 You can see the dealer's live state in contextData (deals and vehicles in the pipeline, reconditioning jobs, stock, invoices, cash).
 Give direct, practical dealer advice: which deals to chase, what to price a unit at, aged stock to move, follow-ups to make, and draft customer messages. Talk like a sales manager, not a SaaS consultant. Amounts are in Rand (R).
 

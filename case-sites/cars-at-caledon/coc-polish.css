@@ -335,7 +335,7 @@ footer :focus-visible,
   .coc-ticker{display:none;}
 
   /* The fixed bar overlays the end of the document — without this the footer's
-     copyright / "Powered by TruSaas" row is permanently hidden underneath it. */
+     copyright / "Powered by TruSaaS" row is permanently hidden underneath it. */
   footer{padding-bottom:calc(78px + env(safe-area-inset-bottom)) !important;}
   /* 4 stacked columns at 40px gaps makes the mobile footer ~700px tall */
   footer .f-grid{gap:26px !important;}
