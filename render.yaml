@@ -64,9 +64,12 @@ services:
       - key: TRULENS_DEALER_CODES
         sync: false
       # Shared secret for the photo push to TruFlow. MUST equal TRUFLOW_SYNC_KEY
-      # on trusaas-premium. Set it on TruFlow FIRST, then here — the reverse
-      # order leaves every export failing in between. Unset on both means
-      # /api/sync/push-photos accepts anonymous writes.
+      # on trusaas-premium. Set it HERE FIRST, then on TruFlow — this note used
+      # to say the opposite, which is the order that breaks exports:
+      #   TruLens sends the x-tru-sync-key header only when this is set.
+      #   TruFlow leaves /api/sync/push-photos open while ITS key is unset.
+      # So lens-then-flow has no failing window; flow-then-lens 401s every
+      # export until lens restarts. Unset on both means anonymous writes.
       - key: TRUFLOW_SYNC_KEY
         sync: false
       # Default export target = Premium (MKR path). Change to flow URL if dealer is on Lite.

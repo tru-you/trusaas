@@ -51,6 +51,13 @@ app.get("/api/health", (_req, res) => {
     product: "truflow-premium",
     port: PORT,
     nodeEnv: process.env.NODE_ENV || "development",
+    /* A boolean, never the value — the same field TruLens reports. Without it
+       the only way to tell whether TRUFLOW_SYNC_KEY reached the process was to
+       POST a deliberately wrong key and read 401-vs-400 out of the status
+       code, which is not a check anyone will remember to run. An env var saved
+       under a mistyped name restarts the service and looks identical to
+       success from outside; this is the field that tells them apart. */
+    syncKeyConfigured: !!SYNC_SERVICE_KEY,
     uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
     ts: new Date().toISOString(),
   });
