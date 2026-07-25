@@ -1,13 +1,19 @@
-# TruSaaS smoke test — Lens + Flow Lite + Premium
+# TruSaaS smoke test — Lens + TruFlow
 # Usage: pwsh -File scripts/smoke-trusaas.ps1
 # Exit 0 = all healthy; non-zero = failures
+#
+# TruFlow Lite retired — flow.tru-saas.com now resolves to the Premium service,
+# which is simply "TruFlow". Both hostnames are checked because live dealer
+# sites reference each of them, and a cert or DNS fault on one would otherwise
+# go unnoticed until a showroom looked empty.
 
 $ErrorActionPreference = "Continue"
 $targets = @(
-  @{ Name = "Lens";     Url = "https://trusaas-lens.onrender.com/api/health" },
-  @{ Name = "Lite";     Url = "https://trusaas-flow.onrender.com/api/health" },
-  @{ Name = "Premium";  Url = "https://trusaas-premium.onrender.com/api/health" },
-  @{ Name = "Stock";    Url = "https://trusaas-premium.onrender.com/api/public/stock?dealer=mkr-autosales" }
+  @{ Name = "Lens";        Url = "https://trusaas-lens.onrender.com/api/health" },
+  @{ Name = "Flow";        Url = "https://trusaas-premium.onrender.com/api/health" },
+  @{ Name = "Flow (flow.)"; Url = "https://flow.tru-saas.com/api/health" },
+  @{ Name = "Flow (prem.)"; Url = "https://premium.tru-saas.com/api/health" },
+  @{ Name = "Stock";       Url = "https://trusaas-premium.onrender.com/api/public/stock?dealer=mkr-autosales" }
 )
 
 $failed = 0
