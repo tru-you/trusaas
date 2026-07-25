@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio — Real dealer sites, built on TruSaas</title>
+<meta name="description" content="Case studies from live SA dealer sites powered by the TruSaas platform. AI-verified TruVIR by TruLens, integrated TruDMS, WhatsApp-native TruCRM.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231466E0'/%3E%3Cpath d='M8 20l4-8 4 5 4-9 4 12' stroke='%2315C7C0' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#0A1420; --navy:#122943; --navy-2:#0d2440; --blue:#1466E0; --blue-bright:#1F9AD9;
+  --teal:#15C7C0; --teal-bright:#4FE3DC; --purple:#8B5CF6; --indigo:#6366F1; --cyan:#22D3EE;
+  --paper:#F4F8FC; --grey:#8291A6; --grey-dark:#465468; --line:rgba(255,255,255,.08);
+  --ease:cubic-bezier(.22,1,.36,1); --ease-bounce:cubic-bezier(.34,1.56,.64,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Archivo',system-ui,sans-serif;background:linear-gradient(180deg,#050B15 0%,#0A1420 60%,#080D19 100%);color:#fff;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;}
+body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(79,227,220,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,227,220,.03) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(70% 100% at 20% 0%,#000,transparent 75%);pointer-events:none;z-index:0;}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1240px;margin:0 auto;padding:0 32px;position:relative;z-index:1;}
+
+/* ── Header ── */
+.top{padding:24px 0 12px;position:sticky;top:0;background:rgba(5,11,21,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line);z-index:50;}
+.top-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.tc-logo{display:inline-flex;align-items:baseline;font-family:'Archivo',sans-serif;font-weight:900;font-size:24px;letter-spacing:-.035em;line-height:1;position:relative;}
+.tc-true{background:linear-gradient(180deg,#ffffff 0%,#dfe5ec 30%,#9aa4b2 52%,#f2f5f9 70%,#b6bfca 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding-right:.02em;}
+.tc-car{background:linear-gradient(96deg,#16c98d 0%,#1f9ad9 22%,#1466e0 38%,#8a7be0 50%,#e8b23a 66%,#e5732a 82%,#d6394f 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 6px rgba(20,102,224,.35));}
+.tc-sa{font-size:.46em;font-weight:800;letter-spacing:.14em;color:var(--teal-bright);margin-left:.34em;transform:translateY(-.85em);}
+.top-nav{display:flex;align-items:center;gap:22px;font-size:13.5px;font-weight:600;color:rgba(255,255,255,.72);}
+.top-nav a{transition:color .2s;padding:6px 0;border-bottom:1px solid transparent;}
+.top-nav a:hover{color:#fff;border-bottom-color:var(--teal-bright);}
+.top-cta{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(120deg,var(--blue),var(--teal));color:#fff;font-weight:700;font-size:13px;padding:10px 18px;border-radius:100px;box-shadow:0 12px 30px -10px rgba(20,102,224,.5);transition:transform .25s var(--ease-bounce),box-shadow .25s;}
+.top-cta:hover{transform:translateY(-2px);box-shadow:0 18px 40px -10px rgba(20,102,224,.6);}
+@media(max-width:640px){.top-nav{display:none;}}
+
+/* ── Hero ── */
+.hero{padding:80px 0 40px;position:relative;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:11px;font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--teal-bright);margin-bottom:22px;}
+.hero-eyebrow::before{content:"";width:34px;height:1px;background:var(--teal-bright);}
+.hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(40px,6vw,74px);letter-spacing:-.025em;line-height:1.02;max-width:20ch;}
+.hero h1 em{font-style:italic;font-weight:400;background:linear-gradient(96deg,var(--purple),var(--cyan) 60%,var(--teal-bright));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{margin-top:22px;font-size:17px;line-height:1.75;color:rgba(255,255,255,.65);max-width:60ch;}
+.hero-stats{display:flex;gap:44px;margin-top:36px;flex-wrap:wrap;}
+.hero-stat b{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1;background:linear-gradient(120deg,var(--teal-bright),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-stat span{display:block;font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.42);margin-top:8px;}
+
+/* ── Case study grid ── */
+.cases{padding:60px 0 100px;}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:36px;}
+.sec-h{font-family:'Fraunces',serif;font-size:clamp(28px,3vw,40px);font-weight:600;letter-spacing:-.02em;}
+.sec-note{font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+
+.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+@media(max-width:900px){.case-grid{grid-template-columns:1fr;}}
+
+.case{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid var(--line);border-radius:22px;overflow:hidden;transition:transform .4s var(--ease),border-color .4s,box-shadow .4s;display:flex;flex-direction:column;}
+.case:hover{transform:translateY(-4px);border-color:rgba(79,227,220,.28);box-shadow:0 30px 70px -25px rgba(20,102,224,.35);}
+.case-preview{position:relative;aspect-ratio:16/10;overflow:hidden;background:#0a0f1a;border-bottom:1px solid var(--line);}
+.case-preview iframe{position:absolute;inset:0;width:200%;height:200%;transform:scale(.5);transform-origin:top left;border:0;pointer-events:none;}
+.case-preview::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 65%,rgba(5,11,21,.55) 100%);pointer-events:none;}
+.case-open{position:absolute;top:14px;right:14px;display:inline-flex;align-items:center;gap:6px;background:rgba(5,11,21,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);color:#fff;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;padding:6px 10px 6px 12px;border-radius:100px;transition:border-color .2s,color .2s;z-index:2;}
+.case-open:hover{border-color:var(--teal-bright);color:var(--teal-bright);}
+.case-open svg{width:11px;height:11px;}
+
+.case-body{padding:26px 26px 28px;flex:1;display:flex;flex-direction:column;}
+.case-loc{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal-bright);margin-bottom:10px;}
+.case-title{font-family:'Fraunces',serif;font-size:28px;font-weight:600;letter-spacing:-.015em;line-height:1.15;}
+.case-tag{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.32);color:#c4b5fd;padding:5px 11px;border-radius:100px;margin-top:14px;width:fit-content;}
+.case-desc{margin-top:16px;font-size:14.5px;line-height:1.7;color:rgba(255,255,255,.62);}
+
+.case-modules{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px;}
+.case-modules span{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.08em;color:rgba(255,255,255,.55);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:5px 10px;}
+
+.case-ctas{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px;padding-top:22px;border-top:1px solid var(--line);}
+.case-ctas.one{grid-template-columns:1fr;}
+.case-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:'Archivo';font-weight:700;font-size:12.5px;padding:12px 14px;border-radius:11px;text-align:center;transition:transform .2s,box-shadow .25s,background .25s;}
+.case-btn svg{width:13px;height:13px;flex-shrink:0;}
+.case-btn.primary{background:linear-gradient(120deg,var(--blue),var(--teal-bright));color:#fff;box-shadow:0 8px 22px -8px rgba(20,102,224,.5);}
+.case-btn.primary:hover{transform:translateY(-1.5px);box-shadow:0 14px 32px -8px rgba(20,102,224,.6);}
+.case-btn.ghost{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.9);}
+.case-btn.ghost:hover{border-color:var(--teal-bright);color:var(--teal-bright);}
+
+/* Ribbon on hero card */
+.case-ribbon{position:absolute;top:14px;left:14px;display:inline-flex;align-items:center;gap:7px;background:linear-gradient(120deg,rgba(139,92,246,.9),rgba(34,211,238,.9));color:#fff;font-family:'IBM Plex Mono';font-size:8.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:5px 11px;border-radius:100px;box-shadow:0 8px 22px -6px rgba(139,92,246,.5);z-index:2;}
+
+/* ── What every site includes ── */
+.includes{padding:40px 0 100px;border-top:1px solid var(--line);}
+.inc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px;}
+@media(max-width:860px){.inc-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:500px){.inc-grid{grid-template-columns:1fr;}}
+.inc-card{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:22px;transition:border-color .3s,background .3s;}
+.inc-card:hover{border-color:rgba(79,227,220,.28);background:rgba(79,227,220,.04);}
+.inc-ic{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;color:#fff;margin-bottom:16px;}
+.inc-ic svg{width:20px;height:20px;}
+.inc-card h4{font-family:'Archivo';font-weight:700;font-size:14.5px;color:#fff;}
+.inc-card p{margin-top:6px;font-size:12.5px;line-height:1.6;color:rgba(255,255,255,.55);}
+
+/* ── CTA band ── */
+.cta-band{margin:0 0 80px;padding:52px 44px;background:linear-gradient(135deg,rgba(139,92,246,.14),rgba(34,211,238,.10));border:1px solid rgba(139,92,246,.28);border-radius:22px;display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:center;position:relative;overflow:hidden;}
+.cta-band::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(139,92,246,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.05) 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(60% 100% at 80% 50%,#000,transparent 80%);pointer-events:none;}
+.cta-copy{position:relative;}
+.cta-copy .eb{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal-bright);margin-bottom:14px;}
+.cta-copy h3{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(24px,3vw,34px);letter-spacing:-.02em;line-height:1.15;}
+.cta-copy p{margin-top:14px;font-size:14.5px;line-height:1.7;color:rgba(255,255,255,.65);max-width:44ch;}
+.cta-actions{position:relative;display:flex;flex-direction:column;gap:12px;}
+.cta-actions .case-btn{width:100%;padding:14px;font-size:13px;}
+@media(max-width:820px){.cta-band{grid-template-columns:1fr;padding:36px 28px;}}
+
+footer{padding:32px 0;border-top:1px solid var(--line);font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);text-align:center;}
+footer b{color:var(--teal-bright);font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap top-inner">
+    <a href="/index.html" aria-label="True-Cars home">
+      <span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span>
+    </a>
+    <nav class="top-nav">
+      <a href="/technology.html">Platform</a>
+      <a href="/portal.html">Dealer Console</a>
+      <a href="#cases">Case studies</a>
+    </nav>
+    <a class="top-cta" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20a%20dealer%20and%20I%27d%20like%20a%20site%20like%20one%20of%20these." target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>
+      Get one like this
+    </a>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-eyebrow">Portfolio · Live dealer sites</div>
+    <h1>Real dealer sites, <em>built on TruSaas.</em></h1>
+    <p>Every site below runs on the same integrated stack — inventory, TruDMS, WhatsApp-native TruCRM, AI-verified TruVIR by TruLens, and portal syndication. Not templates. Full custom builds, launched in weeks, priced in rand.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><b>3</b><span>Live storefronts</span></div>
+      <div class="hero-stat"><b>3–4 wk</b><span>From brief to launch</span></div>
+      <div class="hero-stat"><b>R500/mo</b><span>Starter tier</span></div>
+      <div class="hero-stat"><b>TruLens</b><span>AI-verified on every VIR</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="cases" id="cases">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="sec-h">Case studies</h2>
+      <span class="sec-note">Click any card to open the live mockup</span>
+    </div>
+
+    <div class="case-grid">
+
+      <!-- Apex Auto -->
+      <article class="case">
+        <div class="case-ribbon">🎬 Live mockup</div>
+        <div class="case-preview">
+          <iframe src="Apex-Auto/index.html" title="Apex Auto storefront preview" loading="lazy" scrolling="no"></iframe>
+          <a class="case-open" href="Apex-Auto/index.html" target="_blank" rel="noopener">Open<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="case-body">
+          <div class="case-loc">Newton Park · Port Elizabeth</div>
+          <div class="case-title">Apex Auto</div>
+          <span class="case-tag">Family-owned · 18-vehicle floor</span>
+          <p class="case-desc">A full storefront designed to convert an offline family dealership into a 24/7 digital showroom. Custom brand palette, embedded ROI calculator, live enquiry toasts and a real WhatsApp handoff — all served from one TruSaas build.</p>
+          <div class="case-modules">
+            <span>Storefront</span><span>TruDMS</span><span>TruCRM</span><span>TruFinance</span><span>TruVIR</span><span>Live toasts</span>
+          </div>
+          <div class="case-ctas one">
+            <a class="case-btn primary" href="Apex-Auto/index.html" target="_blank" rel="noopener">Open the storefront <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+
+      <!-- MKR Auto Sales -->
+      <article class="case">
+        <div class="case-ribbon">🎬 Live mockup</div>
+        <div class="case-preview">
+          <iframe src="mkr-autosales.html" title="MKR Auto Sales storefront preview" loading="lazy" scrolling="no"></iframe>
+          <a class="case-open" href="mkr-autosales.html" target="_blank" rel="noopener">Open<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="case-body">
+          <div class="case-loc">Gqeberha · Eastern Cape</div>
+          <div class="case-title">MKR Auto Sales</div>
+          <span class="case-tag">AA Authorised · Premium pre-owned</span>
+          <p class="case-desc">A cinematic, high-impact storefront for an AA Authorised dealer in Gqeberha. VAF Bridge finance calculator, Luna AI chat assistant, gold-accented premium branding and zero-cost nationwide delivery — built to convert browsers into buyers.</p>
+          <div class="case-modules">
+            <span>Storefront</span><span>VAF Bridge</span><span>Luna AI chat</span><span>WhatsApp</span><span>Finance</span><span>SEO ready</span>
+          </div>
+          <div class="case-ctas one">
+            <a class="case-btn primary" href="mkr-autosales.html" target="_blank" rel="noopener">Open the storefront <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+
+      <!-- HV Motors -->
+      <article class="case">
+        <div class="case-ribbon">🎬 Live mockup</div>
+        <div class="case-preview">
+          <iframe src="hv-motors.html" title="HV Motors storefront preview" loading="lazy" scrolling="no"></iframe>
+          <a class="case-open" href="hv-motors.html" target="_blank" rel="noopener">Open<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="case-body">
+          <div class="case-loc">Worcester · Western Cape</div>
+          <div class="case-title">HV Motors</div>
+          <span class="case-tag">Hand-picked used · Bank finance</span>
+          <p class="case-desc">A clean, conversion-focused storefront for a Worcester dealer specialising in hand-picked, good-quality used vehicles. Bank-approved finance, trade-ins welcome, nationwide delivery — built to move stock fast with minimal admin.</p>
+          <div class="case-modules">
+            <span>Storefront</span><span>TruDMS</span><span>TruCRM</span><span>Finance</span><span>WhatsApp</span><span>SEO ready</span>
+          </div>
+          <div class="case-ctas one">
+            <a class="case-btn primary" href="hv-motors.html" target="_blank" rel="noopener">Open the storefront <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section class="includes">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="sec-h">Every site includes</h2>
+      <span class="sec-note">One platform, no bolt-ons</span>
+    </div>
+    <div class="inc-grid">
+      <div class="inc-card">
+        <div class="inc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+        <h4>Custom storefront</h4>
+        <p>Not a template. Every dealer gets a mobile-fast, brand-tuned site built from scratch on the same tested stack.</p>
+      </div>
+      <div class="inc-card">
+        <div class="inc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg></div>
+        <h4>TruDMS + TruCRM</h4>
+        <p>Inventory, invoicing, VAT 264s, lead pipeline and WhatsApp-native follow-up — one console, one login, POPIA-compliant.</p>
+      </div>
+      <div class="inc-card">
+        <div class="inc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M2 12h4M18 12h4M12 2v4M12 18v4"/></svg></div>
+        <h4>TruVIR by TruLens</h4>
+        <p>Every car scanned by TruLens — 95% damage-detection accuracy, VIN & mileage OCR, condition grading, repair estimation.</p>
+      </div>
+      <div class="inc-card">
+        <div class="inc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 2.9a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.5c.9.3 1.9.6 2.9.7a2 2 0 011.7 2z"/></svg></div>
+        <h4>AI receptionist</h4>
+        <p>TruVoice handles after-hours calls, qualifies leads and books test drives. Every call transcribed straight into the TruCRM.</p>
+      </div>
+    </div>
+
+    <div class="cta-band">
+      <div class="cta-copy">
+        <div class="eb">Ready to be the next case study?</div>
+        <h3>Get a dealer site like these — live in 3–4 weeks.</h3>
+        <p>Starter package: <strong style="color:#fff">R500/mo</strong> + R7,000 once-off setup. Website, dealer portal, lead capture, mobile-optimised. Add TruDMS, TruCRM and TruVIR when you're ready — no re-onboarding.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="case-btn primary" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27ve%20seen%20the%20TruSaas%20portfolio%20and%20I%27d%20like%20a%20dealer%20site%20like%20these." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>
+          WhatsApp Paul
+        </a>
+        <a class="case-btn ghost" href="/technology.html">
+          See the full platform
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 <b>TruSaas</b> · Built by Paul de Beer · AI-verified by <b>TruLens</b></div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+# ── Emergency debris (don't ship to the world) ─────────────
+audit_html.zip
+audit_html/
+_archive/
+
+# ── Nested TruDMS project — separate app, separate repo ─────
+TruDMS/
+
+# ── System files ───────────────────────────────────────────
+Thumbs.db
+.DS_Store
+desktop.ini
+*.log
+.env
+.env.local
+
+# ── OneDrive artifacts ─────────────────────────────────────
+*.lnk
+$RECYCLE.BIN/
+
+# ── Node/build junk (in case something drops it in later) ──
+node_modules/
+dist/
+build/
+
+# ── Editor caches ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+
+# ── Nested leftover with unused zip ────────────────────────
+TrueCar-SA/
+
+# ── Claude Code / editor dev config (not for public repo) ──
+.claude/
+audit_html.py
+
+# ── Deploy artifacts (built on demand, not source) ─────────
+_deploy/

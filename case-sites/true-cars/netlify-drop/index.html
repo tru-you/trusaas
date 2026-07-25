@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>True-Cars SA — Cape Town's Fairest Way to Buy & Sell a Car</title>
+<meta name="description" content="Buy and sell cars the fair way in South Africa. Every vehicle with a Tru3D + VIR inspection, a transparent TruPrice, live video viewings, instant trade-in offers and finance across all major banks.">
+<link rel="canonical" href="https://true-cars.co.za/">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<!-- Share card: this link gets pitched over WhatsApp and LinkedIn, so it must
+     preview as a card rather than a bare URL. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="True-Cars SA">
+<meta property="og:locale" content="en_ZA">
+<meta property="og:url" content="https://true-cars.co.za/">
+<meta property="og:title" content="True-Cars SA — Cape Town's fairest way to buy &amp; sell a car">
+<meta property="og:description" content="Every vehicle with a Tru3D + VIR inspection, a transparent TruPrice, live video viewings and instant trade-in offers. A working demo of the TruSaas dealer stack.">
+<meta property="og:image" content="https://true-cars.co.za/assets/brand/og-truecars.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="True-Cars SA — Cape Town's fairest way to buy &amp; sell a car">
+<meta name="twitter:description" content="Tru3D + VIR inspection, transparent TruPrice, live video viewings, instant trade-in offers.">
+<meta name="twitter:image" content="https://true-cars.co.za/assets/brand/og-truecars.jpg">
+<meta name="theme-color" content="#0A1420">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="assets/brand/favicon-tc.png">
+<link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/site.css?v=12">
+<link rel="stylesheet" href="assets/css/site-chrome.css?v=12">
+<link rel="stylesheet" href="assets/css/web3d.css?v=2">
+<style>
+/* ============ HERO — CAPE TOWN ============ */
+header.hero{position:relative;min-height:100svh;background:linear-gradient(180deg,#0A1420 0%,#0E2136 55%,#123152 100%);color:#fff;display:flex;flex-direction:column;overflow:hidden;}
+.hero-scene{position:absolute;inset:0;z-index:0;overflow:hidden;}
+/* Raise frame so more of the banner is visible (less zoom-crop) */
+.hero-photo{position:absolute;inset:0;background-size:cover;background-position:center 18%;background-repeat:no-repeat;opacity:0;transition:opacity 1.2s ease;z-index:1;}
+.hero-photo.loaded{opacity:1;}
+/* When the real True-Cars banner loads, retire the illustrated scene */
+.hero.has-photo .hero-sky,.hero.has-photo .hero-sun,.hero.has-photo .hero-mountains{opacity:0;transition:opacity 1s ease;pointer-events:none;}
+.hero.has-photo .hero-grid{opacity:.22;}
+.hero.has-photo .hero-overlay{background:
+  linear-gradient(180deg,rgba(8,16,28,.28) 0%,rgba(8,16,28,.12) 35%,rgba(8,16,28,.35) 72%,rgba(8,16,28,.88) 100%),
+  linear-gradient(90deg,rgba(8,16,28,.45) 0%,transparent 45%,rgba(8,16,28,.2) 100%);}
+
+/* golden hour sky + Table Mountain SVG scene (fallback + always-on atmosphere) */
+.hero-sky{position:absolute;inset:0;background:
+  radial-gradient(120% 80% at 78% 8%, rgba(255,196,120,.55), transparent 46%),
+  radial-gradient(90% 60% at 88% 4%, rgba(255,150,90,.45), transparent 40%),
+  linear-gradient(180deg,#F4A85E 0%,#E97B58 14%,#9A5B7A 32%,#3C3E74 54%,#122A48 76%,#0A1826 100%);}
+.hero-sun{position:absolute;top:7%;right:14%;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,#FFE7B8,#FFB067 55%,rgba(255,150,90,0) 72%);filter:blur(2px);animation:sunPulse 8s ease-in-out infinite;}
+@keyframes sunPulse{0%,100%{opacity:.9;transform:scale(1);}50%{opacity:1;transform:scale(1.05);}}
+.hero-mountains{position:absolute;left:0;right:0;bottom:0;width:100%;height:auto;z-index:1;}
+.hero-haze{position:absolute;left:0;right:0;bottom:0;height:46%;z-index:1;background:linear-gradient(180deg,transparent,rgba(10,20,32,.4) 60%,var(--ink) 100%);}
+.hero-overlay{position:absolute;inset:0;z-index:2;background:
+  radial-gradient(95% 75% at 20% 38%,transparent,rgba(10,20,32,.30) 100%),
+  linear-gradient(180deg,rgba(10,20,32,.42) 0%,transparent 42%,rgba(10,20,32,.22) 78%,rgba(10,20,32,.9) 100%);}
+.hero-grid{position:absolute;inset:0;z-index:2;background-image:linear-gradient(rgba(79,227,220,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(79,227,220,.05) 1px,transparent 1px);background-size:74px 74px;mask-image:radial-gradient(70% 55% at 30% 40%,#000,transparent 78%);animation:gridPan 44s linear infinite;}
+@keyframes gridPan{to{background-position:74px 74px;}}
+
+.hero-inner{position:relative;z-index:5;flex:1;display:flex;flex-direction:column;padding:calc(var(--nav-h) + 56px) 32px 72px;max-width:1340px;margin:0 auto;width:100%;}
+.hero-top{flex:1;display:flex;align-items:flex-start;padding-top:24px;}
+
+h1.hero-h{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(32px,4.2vw,58px);line-height:1.18;letter-spacing:.01em;max-width:22ch;text-shadow:0 4px 30px rgba(0,0,0,.35);}
+h1.hero-h em{font-style:italic;font-weight:300;}
+h1.hero-h .hl{background:linear-gradient(120deg,#7FE9E3,#4D9BFF 60%,#8FB6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* staggered word reveal on load */
+h1.hero-h .w{display:inline-block;opacity:0;transform:translateY(30px) rotate(1.5deg);animation:heroWord .85s cubic-bezier(.2,1,.32,1) forwards;animation-delay:calc(var(--i,0)*68ms + 180ms);}
+@keyframes heroWord{to{opacity:1;transform:translateY(0) rotate(0);}}
+.hero-copy.split .hero-ctas{opacity:0;animation:heroFade .8s ease forwards;animation-delay:.9s;}
+@keyframes heroFade{to{opacity:1;}}
+@media(prefers-reduced-motion:reduce){h1.hero-h .w{animation:none;opacity:1;transform:none;}.hero-copy.split .hero-ctas{animation:none;opacity:1;}}
+.hero-ctas{display:flex;gap:18px;margin-top:40px;flex-wrap:wrap;}
+
+/* Quick search */
+.qsearch{position:relative;z-index:6;margin-top:20px;}
+.qs-card{background:rgba(255,255,255,.78);backdrop-filter:blur(var(--glass-blur-heavy)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur-heavy)) saturate(1.4);border-radius:18px;padding:12px;display:grid;grid-template-columns:1.1fr 1.1fr 1fr 1fr auto;gap:10px;box-shadow:0 40px 90px -30px rgba(4,17,38,.6),inset 0 1px 0 rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.45);}
+.qs-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.qs-tab{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:100px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;font-weight:700;font-size:13px;backdrop-filter:blur(8px);transition:all .25s;}
+.qs-tab svg{width:15px;height:15px;}
+.qs-tab.on{background:#fff;color:var(--ink);border-color:#fff;}
+.qs-field{position:relative;}
+.qs-field label{position:absolute;top:8px;left:16px;font-family:'IBM Plex Mono';font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);pointer-events:none;}
+.qs-field select,.qs-field input{width:100%;appearance:none;background:var(--bone);border:1.5px solid transparent;border-radius:11px;color:var(--ink);font-weight:600;font-size:14px;padding:25px 16px 10px;transition:border-color .2s,background .2s;cursor:pointer;}
+.qs-field select:focus,.qs-field input:focus{outline:none;border-color:var(--blue);background:#fff;}
+.qs-go{background:linear-gradient(120deg,var(--blue),var(--teal-deep));color:#fff;border-radius:12px;padding:0 30px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:10px;transition:transform .2s,box-shadow .3s;}
+.qs-go:hover{transform:translateY(-1px);box-shadow:0 12px 30px -8px rgba(20,102,224,.6);}
+.qs-go svg{width:17px;height:17px;}
+@media(max-width:960px){.qs-card{grid-template-columns:1fr 1fr;}.qs-go{grid-column:1/-1;padding:15px;}}
+
+.hero-ticker{position:relative;z-index:6;display:flex;align-items:center;gap:8px 26px;flex-wrap:wrap;padding:22px 0 6px;margin-top:26px;border-top:1px solid rgba(255,255,255,.1);font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey-2);}
+.hero-ticker .dot{color:#7FE9E3;}
+
+
+/* ============ STATS BAND ============ */
+.stats-band{background:var(--ink);color:#fff;padding:72px 0;position:relative;overflow:hidden;}
+.stats-band::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 100% at 80% 0%,rgba(20,102,224,.16),transparent 60%);}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative;z-index:1;}
+.stat .n{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(34px,4vw,50px);letter-spacing:-.02em;line-height:1;}
+.stat .n em{color:var(--teal-bright);font-style:normal;}
+.stat .l{font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-2);margin-top:10px;}
+@media(max-width:640px){.stats-grid{grid-template-columns:1fr 1fr;gap:30px 20px;}}
+
+/* ============ WHY SECTION ============ */
+.why-section{background:var(--bone);padding-bottom:80px;}
+.why-hero{display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:center;margin-top:52px;padding:48px;background:var(--paper);border:1px solid var(--line);border-radius:24px;position:relative;overflow:hidden;}
+.why-hero::before{content:'';position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,var(--teal),var(--blue));}
+.why-hero-visual{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.why-hero-ring{position:relative;width:110px;height:110px;display:flex;align-items:center;justify-content:center;}
+.why-hero-ring svg{position:absolute;inset:0;width:100%;height:100%;animation:whySpin 18s linear infinite;}
+@keyframes whySpin{to{transform:rotate(360deg);}}
+.why-hero-ic{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--teal-deep),var(--teal));display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px -8px rgba(14,157,152,.4);}
+.why-hero-ic svg{width:28px;height:28px;}
+.why-hero-stat{text-align:center;}
+.why-num{font-size:32px;font-weight:900;letter-spacing:-.03em;background:linear-gradient(135deg,var(--blue),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;line-height:1;}
+.why-unit{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-dark);font-weight:600;}
+.why-hero-body .sub{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:8px;}
+.why-hero-body h3{font-size:26px;font-weight:900;letter-spacing:-.02em;margin-bottom:14px;line-height:1.2;}
+.why-hero-body p{font-size:15px;color:var(--grey-dark);line-height:1.7;margin-bottom:22px;max-width:480px;}
+.btn-sm{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:var(--blue);color:#fff;font-size:13px;font-weight:700;text-decoration:none;transition:transform .2s var(--ease-bounce),box-shadow .2s;}
+.btn-sm:hover{transform:translateY(-2px);box-shadow:0 8px 20px -6px rgba(20,102,224,.4);}
+.why-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px;}
+.why-card{padding:32px 28px;background:var(--paper);border:1px solid var(--line);border-radius:20px;position:relative;overflow:hidden;transition:transform .4s var(--ease),box-shadow .4s;}
+.why-card:hover{transform:translateY(-6px);box-shadow:0 28px 60px -20px rgba(20,102,224,.18);}
+.why-card-accent{position:absolute;top:0;left:0;width:100%;height:4px;}
+.why-card-accent.blue{background:linear-gradient(90deg,var(--blue),var(--blue-bright));}
+.why-card-accent.red{background:linear-gradient(90deg,#FF4D4D,#FF7A7A);}
+.why-card-accent.gold{background:linear-gradient(90deg,var(--gold),var(--gold-light));}
+.why-card-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;color:#fff;}
+.why-card-ic.blue{background:linear-gradient(135deg,var(--blue),var(--blue-bright));}
+.why-card-ic.red{background:linear-gradient(135deg,#FF4D4D,#FF7A7A);}
+.why-card-ic.gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--ink);}
+.why-card-ic svg{width:22px;height:22px;}
+.why-card-stat{margin-bottom:14px;}
+.why-card b{font-size:16px;font-weight:800;display:block;letter-spacing:-.01em;margin-bottom:8px;}
+.why-card p{font-size:13.5px;color:var(--grey-dark);line-height:1.65;}
+@media(max-width:960px){.why-hero{grid-template-columns:1fr;text-align:center;padding:36px 28px;}.why-hero-body p{max-width:none;}.why-cards{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.why-cards{grid-template-columns:1fr;}.why-hero{padding:28px 22px;}.why-hero-body h3{font-size:22px;}}
+
+/* ── WHY TRU-CARS SA · 4-GRID INTERACTIVE ── */
+.why-tcsa{background:var(--bone);padding:90px 0 100px;position:relative;overflow:hidden;}
+.why-tcsa::before{content:'';position:absolute;top:-40%;right:-8%;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(20,102,224,.06),transparent 62%);pointer-events:none;}
+.why-tcsa::after{content:'';position:absolute;bottom:-30%;left:-6%;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(21,199,192,.05),transparent 65%);pointer-events:none;}
+.why-head{margin-bottom:54px;position:relative;z-index:1;}
+.why-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;position:relative;z-index:1;}
+.why-card-tcsa{background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(200,216,239,.45);border-radius:22px;padding:32px 26px;position:relative;overflow:hidden;transition:transform .45s var(--ease),box-shadow .45s,border-color .45s,background .45s;opacity:1;animation:whyCardIn .75s cubic-bezier(.22,.61,.36,1) forwards;animation-delay:var(--delay,.1s);box-shadow:0 4px 20px -6px rgba(8,22,45,.08),inset 0 1px 0 rgba(255,255,255,.55);}
+.why-card-tcsa::before{content:'';position:absolute;inset:0;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),rgba(20,102,224,.08),transparent 60%);opacity:0;transition:opacity .35s;z-index:0;}
+.why-card-tcsa:hover::before{opacity:1;}
+.why-card-tcsa:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 32px 72px -28px rgba(20,102,224,.22),inset 0 1px 0 rgba(255,255,255,.8);border-color:rgba(20,102,224,.15);background:rgba(255,255,255,.82);}
+.wic{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;margin-bottom:20px;position:relative;z-index:1;transition:transform .45s var(--ease-bounce);box-shadow:0 10px 22px -8px rgba(20,102,224,.35);}
+.why-card-tcsa:hover .wic{transform:scale(1.12) rotate(-5deg);}
+.wic-blue{background:linear-gradient(135deg,var(--blue),var(--blue-bright));}
+.wic-teal{background:linear-gradient(135deg,var(--teal-deep),var(--teal));}
+.wic-red{background:linear-gradient(135deg,#FF4D4D,#FF7A7A);}
+.wic-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--ink);}
+.wic svg{width:24px;height:24px;}
+.wstat{font-family:'Fraunces',serif;font-size:30px;font-weight:700;margin-bottom:6px;position:relative;z-index:1;letter-spacing:-.02em;color:var(--ink);}
+.wstat small{font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-2);display:block;margin-top:4px;font-weight:600;}
+.why-card-tcsa h4{font-size:18px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px;position:relative;z-index:1;color:var(--ink);}
+.why-card-tcsa p{font-size:13.5px;color:var(--grey-dark);line-height:1.65;position:relative;z-index:1;}
+.why-card-tcsa:nth-child(1) .wic{animation:whyFloat 5s ease-in-out infinite;animation-delay:0s;}
+.why-card-tcsa:nth-child(2) .wic{animation:whyFloat 5s ease-in-out infinite;animation-delay:1.3s;}
+.why-card-tcsa:nth-child(3) .wic{animation:whyFloat 5s ease-in-out infinite;animation-delay:2.6s;}
+.why-card-tcsa:nth-child(4) .wic{animation:whyFloat 5s ease-in-out infinite;animation-delay:3.9s;}
+@keyframes whyCardIn{from{transform:translateY(34px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes whyFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+@media(prefers-reduced-motion:reduce){.why-card-tcsa{animation:none;transform:none;}}
+@media(max-width:960px){.why-grid{grid-template-columns:1fr 1fr;gap:18px;}}
+@media(max-width:560px){.why-grid{grid-template-columns:1fr;}.why-tcsa{padding:64px 0 72px;}}
+
+
+/* rail head */
+.rail-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:38px;}
+
+/* ============ HOW IT WORKS · STEPS ============ */
+.steps-strip{background:var(--paper);padding:84px 0;}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+.step{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:34px 30px;position:relative;transition:transform .35s var(--ease),box-shadow .35s;}
+.step:hover{transform:translateY(-6px);box-shadow:0 24px 50px -20px rgba(20,102,224,.16);}
+.step-num{font-family:'IBM Plex Mono';font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--blue);background:rgba(20,102,224,.08);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+.step h4{font-size:19px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px;}
+.step p{font-size:14px;color:var(--grey-dark);line-height:1.68;}
+@media(max-width:820px){.steps-grid{grid-template-columns:1fr;}.steps-strip{padding:64px 0;}}
+
+/* ============ TRUSTED-BY / PARTNER BAR ============ */
+.partner-bar{background:var(--bone);padding:46px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.pb-label{text-align:center;font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--grey);margin-bottom:26px;}
+.partner-logos{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px 34px;}
+.partner-logos span{display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:700;color:var(--grey-dark);}
+.partner-logos svg{width:20px;height:20px;color:var(--blue);flex-shrink:0;}
+
+/* Feature split sections */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.split.rev .split-media{order:2;}
+@media(max-width:900px){.split{grid-template-columns:1fr;gap:40px;}.split.rev .split-media{order:0;}}
+.media-frame{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:linear-gradient(150deg,var(--navy),var(--ink));aspect-ratio:4/3;}
+
+/* VIR360 teaser */
+.vir-stage{position:relative;aspect-ratio:4/3;background:radial-gradient(120% 90% at 50% 20%,#1a3556,#0a1420);display:flex;align-items:center;justify-content:center;border-radius:20px;overflow:hidden;border:1px solid var(--line-dark);cursor:grab;touch-action:pan-y;}
+.vir-stage:active{cursor:grabbing;}
+.vir-floor{position:absolute;bottom:0;left:0;right:0;height:40%;background:radial-gradient(60% 100% at 50% 0,rgba(20,102,224,.25),transparent 70%);}
+.vir-ring{position:absolute;bottom:15%;left:50%;transform:translateX(-50%) rotate(0deg);width:72%;height:22%;border-radius:50%;border:1.5px dashed rgba(127,233,227,.4);}
+.vir-photo{position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);width:82%;z-index:2;filter:drop-shadow(0 22px 30px rgba(0,0,0,.55));animation:virspin 1.4s var(--ease);pointer-events:none;user-select:none;}
+@keyframes virspin{from{transform:translate(-50%,-52%) rotateY(-30deg) scale(.9);opacity:0;}to{transform:translate(-50%,-52%);opacity:1;}}
+.vir-hot{position:absolute;z-index:3;width:26px;height:26px;border-radius:50%;background:rgba(255,77,77,.9);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;cursor:pointer;box-shadow:0 0 0 0 rgba(255,77,77,.6);animation:hotpulse 2s infinite;}
+@keyframes hotpulse{0%{box-shadow:0 0 0 0 rgba(255,77,77,.6);}70%{box-shadow:0 0 0 14px rgba(255,77,77,0);}100%{box-shadow:0 0 0 0 rgba(255,77,77,0);}}
+.vir-badge{position:absolute;top:16px;left:16px;z-index:4;}
+.vir-score{position:absolute;top:16px;right:16px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(9,18,32,.72);backdrop-filter:blur(8px);border:1px solid rgba(127,233,227,.35);border-radius:14px;padding:10px 14px;color:#fff;}
+.vir-score b{font-family:'Fraunces',serif;font-size:26px;line-height:1;color:#7FE9E3;}
+.vir-score span{font-family:'IBM Plex Mono';font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey-2);}
+.vir-caption{position:absolute;bottom:16px;left:16px;right:16px;z-index:4;display:flex;align-items:center;gap:10px;justify-content:space-between;background:rgba(9,18,32,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;color:#fff;font-size:12.5px;font-weight:600;}
+.vir-caption .dmg{display:inline-flex;align-items:center;gap:7px;color:#FFB49A;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
+.vir-caption .dmg::before{content:"";width:8px;height:8px;border-radius:50%;background:#ff6a4d;box-shadow:0 0 0 3px rgba(255,106,77,.25);}
+/* Scaleflex 360 viewer embed */
+.vir-stage .cloudimage-360{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
+.vir-stage .cloudimage-360 img{max-width:92%;max-height:92%;object-fit:contain;filter:drop-shadow(0 22px 30px rgba(0,0,0,.55));cursor:grab;user-select:none;}
+.vir-stage .cloudimage-360 img:active{cursor:grabbing;}
+@media(max-width:560px){
+  .vir-stage{aspect-ratio:4/3.5;}
+  .vir-photo{width:80%;top:44%;}
+  .vir-score{padding:8px 11px;top:14px;right:14px;}
+  .vir-score b{font-size:21px;}
+  .vir-caption{left:12px;right:12px;bottom:12px;padding:9px 12px;font-size:11.5px;flex-wrap:wrap;gap:4px 10px;}
+  .vir-caption .dmg{font-size:9px;}
+}
+
+/* ── VIR360 DAMAGE / SERVICE TAGS ── */
+.vir-tags{position:absolute;inset:0;z-index:5;pointer-events:none;}
+.vir-tag{position:absolute;pointer-events:auto;transform:translate(-50%,-50%);cursor:pointer;}
+.vir-tag-dot{width:22px;height:22px;border-radius:50%;background:#ff6a4d;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;box-shadow:0 3px 10px rgba(255,106,77,.45),0 0 0 0 rgba(255,106,77,.5);animation:tagPulse 2.2s ease-out infinite;transition:transform .2s,box-shadow .2s;}
+.vir-tag.ok .vir-tag-dot{background:#15C7C0;box-shadow:0 3px 10px rgba(21,199,192,.4),0 0 0 0 rgba(21,199,192,.5);animation-name:tagPulseOk;}
+.vir-tag:hover .vir-tag-dot{transform:scale(1.18);animation-play-state:paused;}
+.vir-tag-num{position:absolute;top:-9px;right:-9px;background:var(--ink);color:#fff;font-family:'IBM Plex Mono';font-size:8px;font-weight:700;padding:2px 5px;border-radius:6px;border:1px solid rgba(255,255,255,.25);}
+@keyframes tagPulse{0%,100%{box-shadow:0 3px 10px rgba(255,106,77,.45),0 0 0 0 rgba(255,106,77,.5);}70%{box-shadow:0 3px 10px rgba(255,106,77,.45),0 0 0 10px rgba(255,106,77,0);}}
+@keyframes tagPulseOk{0%,100%{box-shadow:0 3px 10px rgba(21,199,192,.4),0 0 0 0 rgba(21,199,192,.5);}70%{box-shadow:0 3px 10px rgba(21,199,192,.4),0 0 0 10px rgba(21,199,192,0);}}
+.vir-tag-pop{position:absolute;z-index:10;width:210px;background:rgba(9,18,32,.95);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;color:#fff;box-shadow:0 16px 40px -14px rgba(0,0,0,.55);opacity:0;transform:translateY(8px) scale(.96);pointer-events:none;transition:opacity .25s,transform .25s;}
+.vir-tag-pop.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+.vir-tag-pop::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:rgba(9,18,32,.95);}
+.vir-tag-pop.up::after{bottom:auto;top:-6px;border-top-color:transparent;border-bottom-color:rgba(9,18,32,.95);}
+.vir-tag-pop .ttl{font-size:12px;font-weight:800;letter-spacing:.02em;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.vir-tag-pop .ttl .dot{width:7px;height:7px;border-radius:50%;background:#ff6a4d;}
+.vir-tag-pop.ok .ttl .dot{background:#15C7C0;}
+.vir-tag-pop .txt{font-size:12px;color:rgba(255,255,255,.78);line-height:1.5;}
+.vir-tag-pop .meta{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);}
+
+.feat-list{margin-top:26px;display:grid;gap:12px;}
+.feat-list li{display:flex;gap:14px;align-items:flex-start;font-size:14.5px;color:var(--grey-dark);}
+.feat-list li svg{width:22px;height:22px;color:var(--teal-deep);flex-shrink:0;margin-top:1px;}
+.feat-list li b{color:var(--ink);}
+
+/* Trade-in band */
+.tradein-band{background:linear-gradient(120deg,var(--ink),var(--navy) 90%);color:#fff;border-radius:24px;padding:60px;position:relative;overflow:hidden;}
+.tradein-band::after{content:"";position:absolute;right:-80px;top:-80px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(21,199,192,.16),transparent 65%);}
+.ti-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;position:relative;z-index:1;}
+@media(max-width:820px){.ti-grid{grid-template-columns:1fr;gap:34px;}.tradein-band{padding:38px;}}
+.ti-quote{background:rgba(255,255,255,.04);border:1px solid var(--line-dark);border-radius:18px;padding:28px;}
+.ti-quote .tag{font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--teal-bright);margin-bottom:16px;}
+.ti-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line-dark);font-size:14px;}
+.ti-row:last-child{border:none;}
+.ti-row .r{font-family:'IBM Plex Mono';font-weight:600;}
+.ti-offer{margin-top:16px;background:rgba(21,199,192,.1);border:1px solid rgba(21,199,192,.3);border-radius:12px;padding:18px 20px;text-align:center;}
+.ti-offer .amt{font-family:'Fraunces',serif;font-weight:600;font-size:34px;color:#fff;}
+.ti-offer .lbl{font-size:12px;color:var(--grey-2);}
+
+/* Premium select */
+#premium{background:var(--ink);color:#fff;position:relative;overflow:hidden;}
+#premium::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 80% 10%,rgba(201,162,75,.12),transparent 60%);}
+#premium .sec-h,#premium .lede{color:#fff;}
+#premium .lede{color:var(--grey-2);}
+#premium .vcard{background:#101f34;border-color:rgba(255,255,255,.08);}
+#premium .vcard-title{color:#fff;}
+#premium .vcard-price{color:#fff;}
+#premium .vcard-meta{border-color:rgba(255,255,255,.08);}
+#premium .vcard-meta .m span{color:var(--grey-2);}
+
+/* TruSaaS teaser */
+.ax-band{background:linear-gradient(135deg,#081326,#0d2647);border-radius:24px;padding:60px;color:#fff;position:relative;overflow:hidden;text-align:center;}
+.ax-band::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(79,227,220,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(79,227,220,.06) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(60% 60% at 50% 40%,#000,transparent 75%);}
+.ax-logos{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:32px 0;position:relative;z-index:1;}
+.ax-chip{display:inline-flex;align-items:center;gap:9px;padding:11px 18px;border:1px solid var(--line-dark);border-radius:100px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.04);}
+.ax-chip .d{width:8px;height:8px;border-radius:50%;background:var(--teal);}
+
+/* Quote */
+#quote{background:var(--bone);text-align:center;}
+#quote blockquote{font-family:'Fraunces',serif;font-weight:300;font-style:italic;font-size:clamp(24px,3.4vw,40px);line-height:1.34;max-width:900px;margin:0 auto;color:var(--ink);}
+#quote blockquote b{font-weight:600;font-style:normal;color:var(--blue);}
+.hero-noise{position:absolute;inset:0;z-index:1;opacity:.035;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-repeat:repeat;background-size:128px;}
+.ax-band::after{content:"";position:absolute;left:50%;top:50%;width:300px;height:300px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(79,227,220,.12),transparent 65%);animation:axGlow 4s ease-in-out infinite alternate;pointer-events:none;}
+@keyframes axGlow{0%{opacity:.5;transform:translate(-50%,-50%) scale(.8);}100%{opacity:1;transform:translate(-50%,-50%) scale(1.2);}}
+
+/* ============ PRODUCTS & SERVICES ============ */
+.products-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px;}
+.prod-card{display:flex;flex-direction:column;align-items:center;text-align:center;padding:36px 24px 28px;background:var(--paper);border:1px solid var(--line);border-radius:20px;text-decoration:none;color:var(--ink);position:relative;overflow:hidden;transition:transform .4s var(--ease),box-shadow .4s;}
+.prod-card:hover{transform:translateY(-8px);box-shadow:0 28px 60px -20px rgba(20,102,224,.18);}
+.prod-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--blue),var(--teal));opacity:0;transition:opacity .3s;}
+.prod-card:hover::before{opacity:1;}
+.prod-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 12px 28px -8px rgba(0,0,0,.2);}
+.prod-icon svg{width:28px;height:28px;}
+.prod-card h4{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px;}
+.prod-card p{font-size:13.5px;color:var(--grey-dark);line-height:1.65;flex:1;}
+.prod-link{display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:12.5px;font-weight:700;color:var(--blue);transition:gap .2s;}
+.prod-link svg{width:14px;height:14px;}
+.prod-card:hover .prod-link{gap:10px;}
+@media(max-width:960px){.products-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.products-grid{grid-template-columns:1fr;}}
+
+/* ============ SHOP BY BUDGET ============ */
+#budget{background:var(--ink);color:#fff;position:relative;overflow:hidden;}
+#budget::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 80% at 80% 20%,rgba(20,102,224,.2),transparent 60%);}
+.budget-split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;z-index:1;}
+.budget-copy .sec-h{color:#fff;}
+.budget-copy .lede{color:var(--grey-2);}
+.budget-form{display:grid;gap:16px;margin-top:32px;max-width:400px;}
+.bf-field label{display:block;font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey-2);margin-bottom:6px;}
+.bf-input-wrap{position:relative;display:flex;align-items:center;}
+.bf-prefix{position:absolute;left:16px;font-weight:700;color:rgba(255,255,255,.4);font-size:15px;pointer-events:none;}
+.bf-field input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px 14px 36px;font-size:16px;font-weight:700;color:#fff;transition:border-color .2s;}
+.bf-field input:focus{outline:none;border-color:var(--teal);}
+.bf-field select{width:100%;appearance:none;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;transition:border-color .2s;}
+.bf-field select:focus{outline:none;border-color:var(--teal);}
+.bf-field select option{background:var(--ink);color:#fff;}
+.bf-go{margin-top:8px;width:100%;}
+.budget-visual{display:flex;align-items:center;justify-content:center;}
+.budget-car-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:14px;width:100%;max-width:520px;aspect-ratio:3/2;position:relative;}
+.budget-car-card{border-radius:16px;overflow:hidden;background:#0d1c32;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 40px -15px rgba(0,0,0,.6);position:relative;opacity:0;transform:translateY(0);transition:transform .4s var(--ease),box-shadow .4s;animation:budgetFadeIn .8s ease forwards;}
+.budget-car-card:nth-child(1){animation-delay:.1s;}
+.budget-car-card:nth-child(2){animation-delay:.25s;}
+.budget-car-card:nth-child(3){animation-delay:.4s;}
+.budget-car-card:nth-child(4){animation-delay:.55s;}
+.budget-car-card:nth-child(5){animation-delay:.7s;}
+.budget-car-card:nth-child(6){animation-delay:.85s;}
+.budget-car-card img{width:100%;height:100%;object-fit:cover;animation:gridFloat 6s ease-in-out infinite;}
+.budget-car-card:nth-child(1) img{animation-delay:0s;}
+.budget-car-card:nth-child(2) img{animation-delay:1s;}
+.budget-car-card:nth-child(3) img{animation-delay:2s;}
+.budget-car-card:nth-child(4) img{animation-delay:3s;}
+.budget-car-card:nth-child(5) img{animation-delay:4s;}
+.budget-car-card:nth-child(6) img{animation-delay:5s;}
+.budget-car-card:hover{transform:scale(1.05) translateY(-6px);z-index:10;box-shadow:0 30px 60px -20px rgba(0,0,0,.8);}
+@keyframes gridFloat{0%,100%{transform:translateY(-6%) scale(1.12);}50%{transform:translateY(6%) scale(1.12);}}
+@keyframes budgetFadeIn{to{opacity:1;}}
+@media(max-width:900px){.budget-split{grid-template-columns:1fr;gap:40px;}.budget-visual{order:-1;}.budget-car-grid{max-width:400px;gap:10px;}}
+</style>
+</head>
+<body>
+
+<!-- ============ SPLASH / INTRO ============ -->
+<style>
+html.tc-splashing,html.tc-splashing body{overflow:hidden!important;}
+
+#tcSplash{position:fixed;inset:0;z-index:99999;overflow:hidden;color:#fff;
+  background:radial-gradient(130% 100% at 50% 118%,#16406B 0%,#0E2136 38%,#070E18 78%,#05090F 100%);
+  clip-path:inset(0 0 0 0);
+  --sp-cyan:#7FE9E3;--sp-blue:#4D9BFF;}
+
+/* ── depth: drifting star / dust field ── */
+#tcSplash .sp-dust{position:absolute;inset:0;z-index:1;}
+#tcSplash .sp-dust i{position:absolute;border-radius:50%;background:#cfe9ff;opacity:0;
+  animation:spDust linear infinite;}
+@keyframes spDust{0%{opacity:0;transform:translate3d(0,0,0);}
+  12%{opacity:.55;}70%{opacity:.35;}100%{opacity:0;transform:translate3d(var(--dx,20px),var(--dy,-70px),0);}}
+
+/* ── headlight beams sweeping in ── */
+#tcSplash .sp-beam{position:absolute;bottom:-8%;width:58vw;height:150vh;z-index:2;pointer-events:none;
+  filter:blur(26px);opacity:0;mix-blend-mode:screen;}
+#tcSplash .sp-beam.l{left:-6vw;transform-origin:bottom left;transform:rotate(-42deg) scaleY(.2);
+  background:linear-gradient(6deg,rgba(255,238,199,.55),rgba(255,214,150,.16) 42%,transparent 72%);
+  animation:spBeamL 1.5s cubic-bezier(.16,.9,.28,1) .05s forwards;}
+#tcSplash .sp-beam.r{right:-6vw;transform-origin:bottom right;transform:rotate(42deg) scaleY(.2);
+  background:linear-gradient(-6deg,rgba(180,222,255,.5),rgba(77,155,255,.16) 42%,transparent 72%);
+  animation:spBeamR 1.5s cubic-bezier(.16,.9,.28,1) .18s forwards;}
+@keyframes spBeamL{0%{opacity:0;transform:rotate(-58deg) scaleY(.2);}
+  35%{opacity:1;}100%{opacity:.72;transform:rotate(-30deg) scaleY(1);}}
+@keyframes spBeamR{0%{opacity:0;transform:rotate(58deg) scaleY(.2);}
+  35%{opacity:1;}100%{opacity:.72;transform:rotate(30deg) scaleY(1);}}
+
+/* ── ignition flash ── */
+#tcSplash .sp-flash{position:absolute;inset:0;z-index:6;pointer-events:none;background:#dff4ff;
+  opacity:0;animation:spFlash .55s .5s ease-out forwards;mix-blend-mode:screen;}
+@keyframes spFlash{0%{opacity:0;}18%{opacity:.5;}100%{opacity:0;}}
+
+/* ── perspective floor grid rushing toward you ── */
+#tcSplash .sp-floor{position:absolute;left:-25%;right:-25%;bottom:0;height:46%;z-index:2;opacity:0;
+  background-image:linear-gradient(rgba(127,233,227,.30) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(127,233,227,.16) 1px,transparent 1px);
+  background-size:100% 46px,7.5% 100%;
+  transform:perspective(300px) rotateX(66deg) scale(1.5);transform-origin:bottom center;
+  mask-image:linear-gradient(180deg,transparent,#000 45%,rgba(0,0,0,.35));
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 45%,rgba(0,0,0,.35));
+  animation:spFloorIn .9s .35s ease forwards,spFloorRun 1.5s .35s linear infinite;}
+@keyframes spFloorIn{to{opacity:.85;}}
+@keyframes spFloorRun{to{background-position:0 46px,0 0;}}
+
+/* ── Table Mountain horizon, drawn in ── */
+#tcSplash .sp-horizon{position:absolute;left:50%;bottom:0;width:min(1500px,150vw);max-width:none;
+  transform:translateX(-50%);z-index:3;opacity:.95;}
+#tcSplash .sp-horizon path.ln{fill:none;stroke:rgba(127,233,227,.85);stroke-width:2;
+  stroke-dasharray:2400;stroke-dashoffset:2400;filter:drop-shadow(0 0 7px rgba(127,233,227,.65));
+  animation:spDraw 1.7s .32s cubic-bezier(.5,0,.2,1) forwards;}
+#tcSplash .sp-horizon path.fl{opacity:0;animation:spFade .9s 1.25s ease forwards;}
+@keyframes spDraw{to{stroke-dashoffset:0;}}
+
+/* ── vignette + scanline texture ── */
+#tcSplash .sp-vig{position:absolute;inset:0;z-index:7;pointer-events:none;
+  background:radial-gradient(76% 62% at 50% 46%,transparent 40%,rgba(3,7,13,.72) 100%);}
+#tcSplash .sp-lines{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:.25;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px);}
+
+/* ── VIR scan sweep ── */
+#tcSplash .sp-scan{position:absolute;left:0;right:0;height:150px;z-index:8;pointer-events:none;top:-160px;
+  background:linear-gradient(180deg,transparent,rgba(127,233,227,.14) 62%,rgba(127,233,227,.9) 84%,rgba(127,233,227,.14) 88%,transparent);
+  animation:spScan 1.5s 1.0s cubic-bezier(.45,0,.25,1) forwards;}
+@keyframes spScan{0%{top:-160px;opacity:0;}12%{opacity:1;}88%{opacity:1;}100%{top:100%;opacity:0;}}
+
+/* ── centre stage ── */
+#tcSplash .sp-inner{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:0 24px;
+  transition:transform .8s cubic-bezier(.7,0,.3,1),opacity .5s ease;}
+
+#tcSplash .sp-mark{position:relative;display:inline-flex;align-items:baseline;
+  font-family:'Fraunces',Georgia,serif;font-size:clamp(42px,8.6vw,92px);font-weight:600;
+  letter-spacing:-.025em;line-height:1;}
+#tcSplash .sp-mark > span{display:inline-block;opacity:0;will-change:transform,filter;}
+#tcSplash .sp-mark .b{transform:translateX(-46px) scale(.86);filter:blur(14px);
+  animation:spIn .95s .52s cubic-bezier(.16,1,.3,1) forwards;
+  text-shadow:0 0 46px rgba(190,225,255,.45);}
+#tcSplash .sp-mark .c{transform:translateX(46px) scale(.86);filter:blur(14px);
+  animation:spIn .95s .66s cubic-bezier(.16,1,.3,1) forwards;
+  background:linear-gradient(118deg,#7FE9E3,#4D9BFF 52%,#B79CFF);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:blur(14px) drop-shadow(0 0 30px rgba(77,155,255,.55));}
+#tcSplash .sp-mark .sa{align-self:flex-start;margin-left:.4em;position:relative;top:.42em;
+  font-family:'IBM Plex Mono',monospace;font-size:.2em;font-weight:600;letter-spacing:.3em;
+  color:var(--sp-cyan);transform:translateY(-16px);filter:blur(8px);
+  animation:spIn .8s .92s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes spIn{to{opacity:1;transform:none;filter:blur(0);}}
+#tcSplash .sp-mark .c{animation-name:spInC;}
+@keyframes spInC{to{opacity:1;transform:none;filter:blur(0) drop-shadow(0 0 30px rgba(77,155,255,.55));}}
+
+/* chrome shine raking across the wordmark */
+#tcSplash .sp-shine{position:absolute;inset:-22% -34%;pointer-events:none;mix-blend-mode:overlay;
+  background:linear-gradient(102deg,transparent 40%,rgba(255,255,255,.85) 50%,transparent 60%);
+  transform:translateX(-125%);animation:spShine 1.25s 1.05s cubic-bezier(.5,0,.2,1) forwards;}
+@keyframes spShine{to{transform:translateX(125%);}}
+
+#tcSplash .sp-rule{width:0;height:1px;margin:26px auto 0;
+  background:linear-gradient(90deg,transparent,rgba(127,233,227,.9),transparent);
+  animation:spRule .9s 1.15s cubic-bezier(.5,0,.2,1) forwards;}
+@keyframes spRule{to{width:min(320px,72vw);}}
+
+#tcSplash .sp-tag{margin-top:20px;font-family:'IBM Plex Mono',monospace;
+  font-size:clamp(9px,1.6vw,11.5px);letter-spacing:.36em;text-transform:uppercase;
+  color:rgba(226,240,255,.62);opacity:0;transform:translateY(9px);
+  animation:spUp .8s 1.3s ease forwards;}
+@keyframes spUp{to{opacity:1;transform:none;}}
+@keyframes spFade{to{opacity:1;}}
+
+/* system readout */
+#tcSplash .sp-sys{display:flex;gap:22px;margin-top:26px;flex-wrap:wrap;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;}
+#tcSplash .sp-sys span{display:inline-flex;align-items:center;gap:7px;color:rgba(226,240,255,.4);
+  opacity:0;transform:translateY(8px);animation:spUp .5s ease forwards;}
+#tcSplash .sp-sys span:nth-child(1){animation-delay:1.45s;}
+#tcSplash .sp-sys span:nth-child(2){animation-delay:1.62s;}
+#tcSplash .sp-sys span:nth-child(3){animation-delay:1.79s;}
+#tcSplash .sp-sys b{width:5px;height:5px;border-radius:50%;background:var(--sp-cyan);
+  box-shadow:0 0 9px var(--sp-cyan);animation:spBlip 1.1s ease-in-out infinite;}
+
+@keyframes spBlip{0%,100%{opacity:.35;transform:scale(.8);}50%{opacity:1;transform:scale(1);}}
+
+/* loader */
+#tcSplash .sp-load{display:flex;align-items:center;gap:12px;margin-top:34px;
+  opacity:0;animation:spFade .5s 1.5s ease forwards;}
+#tcSplash .sp-road{position:relative;width:min(300px,66vw);height:2px;border-radius:2px;
+  background:rgba(255,255,255,.12);overflow:hidden;}
+#tcSplash .sp-road i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--sp-cyan),var(--sp-blue));
+  box-shadow:0 0 14px rgba(77,155,255,.75);
+  animation:spLoad 1.35s 1.52s cubic-bezier(.42,0,.2,1) forwards;}
+@keyframes spLoad{to{transform:scaleX(1);}}
+#tcSplash .sp-pct{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;
+  color:rgba(226,240,255,.55);min-width:34px;text-align:left;}
+
+#tcSplash .sp-skip{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:11;
+  font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(226,240,255,.34);background:none;border:0;cursor:pointer;padding:12px 18px;
+  opacity:0;animation:spFade .6s 1.3s ease forwards;transition:color .2s;}
+#tcSplash .sp-skip:hover{color:rgba(255,255,255,.92);}
+
+/* ── exit: shutter slams open ── */
+#tcSplash.sp-out{clip-path:inset(50% 0 50% 0);opacity:0;
+  transition:clip-path .78s cubic-bezier(.76,0,.24,1),opacity .5s .3s ease;pointer-events:none;}
+#tcSplash.sp-out .sp-inner{transform:scale(1.14);opacity:0;}
+
+@media(max-width:520px){
+  /* the mark has to carry the frame on a small screen */
+  #tcSplash .sp-mark{font-size:clamp(44px,13.2vw,70px);}
+  #tcSplash .sp-mark .b{transform:translateX(-30px) scale(.86);}
+  #tcSplash .sp-mark .c{transform:translateX(30px) scale(.86);}
+  /* scale the scene up so the beams and skyline still read */
+  #tcSplash .sp-beam{width:88vw;filter:blur(20px);}
+  #tcSplash .sp-horizon{width:230vw;}
+  #tcSplash .sp-floor{height:38%;background-size:100% 38px,13% 100%;}
+  #tcSplash .sp-rule{margin-top:22px;}
+  #tcSplash .sp-tag{letter-spacing:.24em;margin-top:16px;}
+  #tcSplash .sp-sys{gap:14px;font-size:8.5px;margin-top:20px;}
+  #tcSplash .sp-load{margin-top:26px;}
+}
+/* landscape phones / short viewports — drop the readout row */
+@media(max-height:560px){
+  #tcSplash .sp-sys{display:none;}
+  #tcSplash .sp-rule{margin-top:18px;}
+  #tcSplash .sp-load{margin-top:20px;}
+  #tcSplash .sp-skip{bottom:14px;}
+}
+@media(prefers-reduced-motion:reduce){
+  #tcSplash *{animation:none!important;transition:none!important;opacity:1!important;
+    transform:none!important;filter:none!important;}
+  #tcSplash .sp-road i{transform:scaleX(1)!important;}
+  #tcSplash .sp-rule{width:min(320px,72vw)!important;}
+  #tcSplash .sp-horizon{transform:translateX(-50%)!important;}
+  #tcSplash .sp-horizon path.ln{stroke-dashoffset:0!important;}
+  #tcSplash .sp-scan,#tcSplash .sp-flash,#tcSplash .sp-shine,
+  #tcSplash .sp-beam,#tcSplash .sp-floor,#tcSplash .sp-dust{display:none!important;}
+  /* still fades out, just without the shutter */
+  #tcSplash.sp-out{opacity:0!important;transition:opacity .4s ease!important;clip-path:none!important;}
+}
+</style>
+
+<div id="tcSplash" role="status" aria-label="Loading True-Cars SA">
+  <div class="sp-dust"></div>
+  <div class="sp-beam l"></div>
+  <div class="sp-beam r"></div>
+  <div class="sp-floor"></div>
+  <svg class="sp-horizon" viewBox="0 0 1440 300" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <path class="fl" d="M0 300 L0 214 L250 214 L340 96 L430 214 L560 214 L610 168 L1000 168 L1050 206 L1130 206 L1215 78 L1300 206 L1440 206 L1440 300 Z" fill="#060D17"/>
+    <path class="ln" d="M0 214 L250 214 L340 96 L430 214 L560 214 L610 168 L1000 168 L1050 206 L1130 206 L1215 78 L1300 206 L1440 206"/>
+  </svg>
+  <div class="sp-flash"></div>
+  <div class="sp-scan"></div>
+
+  <div class="sp-inner">
+    <div class="sp-mark">
+      <span class="b">True</span><span class="c">Cars</span><span class="sa">SA</span>
+      <div class="sp-shine"></div>
+    </div>
+    <div class="sp-rule"></div>
+    <div class="sp-tag">Cape Town &middot; The fairest way to buy &amp; sell</div>
+    <div class="sp-sys">
+      <span><b></b>Tru3D scan</span>
+      <span><b></b>VIR verified</span>
+      <span><b></b>TruPrice live</span>
+    </div>
+    <div class="sp-load">
+      <div class="sp-road"><i></i></div>
+      <div class="sp-pct">0%</div>
+    </div>
+  </div>
+
+  <div class="sp-vig"></div>
+  <div class="sp-lines"></div>
+  <button class="sp-skip" type="button">Skip intro</button>
+</div>
+<script>
+(function(){
+  var el = document.getElementById('tcSplash');
+  if(!el) return;
+  var root = document.documentElement;
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* ?splash — force a replay (handy for testing on a real phone) */
+  var force = /[?&]splash/.test(location.search);
+  var seen = false;
+  try{ seen = !force && sessionStorage.getItem('tcSplashSeen') === '1'; }catch(e){}
+  if(seen){ el.remove(); return; }
+
+  root.classList.add('tc-splashing');
+
+  /* dust field */
+  if(!reduce){
+    var dust = el.querySelector('.sp-dust'), frag = document.createDocumentFragment();
+    for(var i = 0; i < 34; i++){
+      var d = document.createElement('i');
+      var s = 1 + Math.random() * 2.4;
+      d.style.cssText = 'left:' + (Math.random()*100) + '%;top:' + (55 + Math.random()*45) + '%;' +
+        'width:' + s.toFixed(1) + 'px;height:' + s.toFixed(1) + 'px;' +
+        '--dx:' + ((Math.random()-.5)*90).toFixed(0) + 'px;--dy:' + (-(120 + Math.random()*300)).toFixed(0) + 'px;' +
+        'animation-duration:' + (3.4 + Math.random()*3.6).toFixed(2) + 's;' +
+        'animation-delay:' + (Math.random()*2.2).toFixed(2) + 's;';
+      frag.appendChild(d);
+    }
+    dust.appendChild(frag);
+  }
+
+  /* percentage readout, locked to the loader bar */
+  var pct = el.querySelector('.sp-pct');
+  if(pct && !reduce){
+    var t0 = null, DUR = 1350, START = 1520;
+    var run = function(now){
+      if(t0 === null) t0 = now;
+      var e = now - t0 - START;
+      if(e < 0){ requestAnimationFrame(run); return; }
+      var p = Math.min(e / DUR, 1);
+      var eased = 1 - Math.pow(1 - p, 2.2);
+      pct.textContent = Math.round(eased * 100) + '%';
+      if(p < 1 && !done) requestAnimationFrame(run);
+    };
+    requestAnimationFrame(run);
+  } else if(pct){ pct.textContent = '100%'; }
+
+  var done = false;
+  function close(){
+    if(done) return; done = true;
+    try{ sessionStorage.setItem('tcSplashSeen','1'); }catch(e){}
+    if(pct) pct.textContent = '100%';
+    el.classList.add('sp-out');
+    root.classList.remove('tc-splashing');
+    setTimeout(function(){ el.remove(); }, 1000);
+  }
+  el.querySelector('.sp-skip').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
+  setTimeout(close, reduce ? 1500 : 3300);
+})();
+</script>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="certi-used.html">Buy a car</a>
+      <a href="trade-in.html">Sell / Trade-in</a>
+      <a href="finance.html">Finance</a>
+      <a href="https://www.tru-saas.com">I'm a dealer</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-grad btn-sm" href="certi-used.html"><span>Browse stock</span></a>
+    </div>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu">
+  <button class="mobile-menu-close" aria-label="Close menu" onclick="document.querySelector('.mobile-menu').classList.remove('open');document.querySelector('.hamburger').classList.remove('open');document.body.style.overflow='';">✕</button>
+  <a href="certi-used.html">Buy a car</a>
+  <a href="trade-in.html">Sell / Trade-in</a>
+  <a href="finance.html">Finance</a>
+  <a href="https://www.tru-saas.com">I'm a dealer</a>
+  <a class="btn btn-grad" href="certi-used.html" style="margin-top:10px"><span>Browse stock</span></a>
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="hero-scene">
+    <div class="hero-sky"></div>
+    <div class="hero-sun"></div>
+    <div class="hero-photo" id="heroPhoto"></div>
+    <!-- Cape Town: Table Mountain, Devil's Peak, Lion's Head silhouette -->
+    <svg class="hero-mountains" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#243a5e"/><stop offset="1" stop-color="#0d1f2e"/>
+        </linearGradient>
+        <linearGradient id="mtn2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1a2c49"/><stop offset="1" stop-color="#0a1420"/>
+        </linearGradient>
+      </defs>
+      <!-- far range -->
+      <path d="M0 300 L120 250 L260 280 L400 210 L520 250 L640 300 L1440 300 L1440 420 L0 420 Z" fill="#2a4066" opacity=".55"/>
+      <!-- Lion's Head (left peak) -->
+      <path d="M120 420 L120 300 L210 150 L300 300 L300 420 Z" fill="url(#mtn2)"/>
+      <!-- Table Mountain (flat top) + Devil's Peak -->
+      <path d="M470 420 L470 235 L520 205 L900 205 L950 240 L950 300 L1080 130 L1180 300 L1180 420 Z" fill="url(#mtn2)"/>
+      <path d="M470 420 L470 235 L520 205 L900 205 L950 240 L950 420 Z" fill="#162942"/>
+      <rect x="470" y="205" width="480" height="30" fill="#1b2f4d"/>
+      <!-- foreground darkening -->
+      <path d="M0 420 L0 340 L360 320 L760 350 L1120 320 L1440 350 L1440 420 Z" fill="#0a1420"/>
+    </svg>
+    <div class="hero-haze"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-noise"></div>
+  </div>
+
+  <style>
+  /* ── DEMO HERO BADGE ── */
+  .hero-demo-badge{display:inline-flex;align-self:flex-start;align-items:center;gap:9px;background:rgba(255,255,255,.09);border:1px solid rgba(79,227,220,.35);border-radius:100px;padding:7px 16px 7px 10px;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#7FE9E3;margin-bottom:22px;backdrop-filter:blur(8px);opacity:0;transform:translateY(12px);animation:heroFade .7s .1s ease forwards;}
+  .hero-demo-badge .dot{width:8px;height:8px;border-radius:50%;background:#4FE3DC;box-shadow:0 0 0 0 rgba(79,227,220,.6);animation:livePing 1.8s ease-out infinite;}
+  @keyframes livePing{0%{box-shadow:0 0 0 0 rgba(79,227,220,.55);}70%{box-shadow:0 0 0 9px rgba(79,227,220,0);}100%{box-shadow:0 0 0 0 rgba(79,227,220,0);}}
+  /* ── HERO MODULE TICKER ── */
+  .hero-modules{display:flex;align-items:center;gap:0;overflow:hidden;margin-top:28px;opacity:0;transform:translateY(10px);animation:heroFade .7s 1.1s ease forwards;}
+  .hero-modules-track{display:flex;gap:10px;animation:moduleScroll 28s linear infinite;}
+  .hero-modules-track:hover{animation-play-state:paused;}
+  @keyframes moduleScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+  .hm-chip{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid rgba(255,255,255,.14);border-radius:100px;font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.65);white-space:nowrap;background:rgba(255,255,255,.04);}
+  .hm-chip .d{width:5px;height:5px;border-radius:50%;background:#4FE3DC;flex-shrink:0;}
+  /* ── HERO BROWSE LINK ── */
+  .hero-browse-link{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:rgba(255,255,255,.55);margin-top:18px;transition:color .2s;text-decoration:none;}
+  .hero-browse-link:hover{color:rgba(255,255,255,.85);}
+  .hero-browse-link svg{width:14px;height:14px;transition:transform .2s;}
+  .hero-browse-link:hover svg{transform:translateX(3px);}
+  </style>
+
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div class="hero-copy rv in">
+        <h1 class="hero-h">Cape Town's <em>fairest</em> way to <span class="hl">buy &amp; sell a car.</span></h1>
+      </div>
+    </div>
+
+    <!-- ── QUICK SEARCH ── -->
+    <div class="qsearch rv in d3" style="margin-top:0;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;opacity:0;animation:heroFade .6s 1.3s ease forwards;">
+        <span style="font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.45);">Search the demo stock</span>
+        <span style="font-family:'IBM Plex Mono';font-size:9px;background:rgba(79,227,220,.15);color:#7FE9E3;border:1px solid rgba(79,227,220,.3);border-radius:100px;padding:2px 10px;letter-spacing:.1em;">240+ vehicles live</span>
+      </div>
+      <form class="qs-card" onsubmit="return TCSApage.search(event)">
+        <div class="qs-field"><label>Make</label><select id="qMake"><option value="">Any make</option></select></div>
+        <div class="qs-field"><label>Body type</label><select id="qBody"><option value="">Any type</option><option value="suv">SUV</option><option value="bakkie">Bakkie / 4x4</option><option value="hatch">Hatchback</option><option value="sedan">Sedan</option><option value="coupe">Coupé</option></select></div>
+        <div class="qs-field"><label>Fuel</label><select id="qFuel"><option value="">Any fuel</option><option>Petrol</option><option>Diesel</option><option>Electric</option><option>Hybrid</option></select></div>
+        <div class="qs-field"><label>Max price</label><select id="qPrice"><option value="">No max</option><option value="300000">R300 000</option><option value="500000">R500 000</option><option value="800000">R800 000</option><option value="1500000">R1 500 000</option><option value="99000000">R1.5m +</option></select></div>
+        <button class="qs-go" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Search</button>
+      </form>
+    </div>
+  </div>
+</header>
+
+
+<!-- ============ STATS ============ -->
+<div class="stats-band">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat rv"><div class="n" data-count="240" data-suf="+">0</div><div class="l">Cars in stock right now</div></div>
+      <div class="stat rv d1"><div class="n"><em><span data-count="96" data-suf="%">0</span></em></div><div class="l">Sold within TruPrice</div></div>
+      <div class="stat rv d2"><div class="n" data-count="48" data-suf="hr">0</div><div class="l">Average time to delivery</div></div>
+      <div class="stat rv d3"><div class="n">R<span data-count="186" data-suf="m">0</span></div><div class="l">Traded through this dealership</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ WHY TRU-CARS SA ============ -->
+<section id="why" class="why-tcsa">
+  <div class="wrap">
+    <div class="why-head rv">
+      <div class="eyebrow" style="justify-content:center">Why True-Cars SA</div>
+      <h2 class="sec-h" style="text-align:center;margin-top:10px">Buy with confidence. <em>Sell with certainty.</em></h2>
+      <p class="lede" style="text-align:center;max-width:640px;margin:16px auto 0">Every car gets Tru3D + VIR, an honest TruPrice, TruChat when you need help, and live video when you want a human on the yard — so you never have to guess.</p>
+    </div>
+    <div class="why-grid" id="whyGrid"></div>
+  </div>
+</section>
+
+<!-- ============ HOW TRU-CARS SA WORKS ============ -->
+<section class="steps-strip">
+  <div class="wrap">
+    <div class="sec-head rv" style="text-align:center;max-width:520px;margin:0 auto 38px">
+      <div class="eyebrow" style="justify-content:center">How it works</div>
+      <h2 class="sec-h">Buy or sell a car in <em>three simple steps.</em></h2>
+    </div>
+    <div class="steps-grid rv d1">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Find your car</h4>
+        <p>Browse Certi-Used stock with TruPrice — live units can stream from TruFlow when the yard updates DMS.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>Inspect with confidence</h4>
+        <p>Orbit Tru3D, read the VIR, chat with AI, or book a live video walk-around.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>Drive away delivered</h4>
+        <p>Secure finance, arrange free countrywide delivery, or collect in Cape Town.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUSTED BY ============ -->
+<section class="partner-bar">
+  <div class="wrap">
+    <div class="pb-label rv">Finance, insurance &amp; delivery partners</div>
+    <div class="partner-logos rv d1">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>WesBank</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>Absa</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>FNB</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Nedbank</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>MFC</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Nationwide delivery</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURED RAIL ============ -->
+<section id="featured" style="background:var(--bone)">
+  <div class="wrap">
+    <div class="rail-head rv">
+      <div>
+        <div class="eyebrow">Fresh on the floor</div>
+        <h2 class="sec-h">Featured stock</h2>
+      </div>
+      <a class="btn btn-ghost" href="certi-used.html">View all 1 240+ cars<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <div class="v-grid" id="featuredGrid"></div>
+  </div>
+</section>
+
+<!-- ============ WEB3D TEASER ============ -->
+<section id="web3d">
+  <div class="wrap">
+    <div class="split">
+      <div class="split-media rv-left">
+        <div id="homeWeb3d" class="vir360 w3d-host" style="overflow:hidden;border-radius:20px;border:1px solid var(--line);min-height:380px;background:#0b1220;" aria-label="Tru3D vehicle scan"></div>
+      </div>
+      <div class="split-copy rv-right">
+        <div class="eyebrow teal">Tru3D · TruLens package</div>
+        <h2 class="sec-h">Orbit the car. <em>Every mark, tagged.</em></h2>
+        <p class="lede">Tru3D replaces old “360 gadgets.” Drag the orbit, scrub frames, tap severity pins — the same package TruLens exports for your TruShowroom and bank-grade VIR.</p>
+        <ul class="feat-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg><span><b>Tru3D orbit</b> — frames + play, product-faithful to TruSaaS.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg><span><b>Damage pins</b> — info / attention / critical on azimuth.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg><span><b>TruShowroom ready</b> — embed on dealer sites like this one.</span></li>
+        </ul>
+        <a class="btn btn-grad btn-lg" href="vehicle.html?id=porsche-cayenne-s-19" style="margin-top:30px"><span>Open full Tru3D + VIR</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AI / TruLens BAND ============ -->
+<style>
+.aiband{background:radial-gradient(120% 120% at 50% 0%,#0d2440 0%,#07101e 62%);color:#fff;position:relative;overflow:hidden;}
+.aiband::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(20,102,224,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(20,102,224,.07) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(90% 80% at 50% 30%,#000,transparent 88%);}
+.aiband .wrap{position:relative;z-index:1;}
+.aiband-inner{display:grid;grid-template-columns:1.15fr .85fr;gap:52px;align-items:center;}
+@media(max-width:880px){.aiband-inner{grid-template-columns:1fr;gap:36px;}}
+.aiband-eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4FE3DC;margin-bottom:16px;}
+.aiband-eyebrow .d{width:7px;height:7px;border-radius:50%;background:#4FE3DC;box-shadow:0 0 0 0 rgba(79,227,220,.6);animation:tcDemoPulse 2s ease-out infinite;}
+.aiband-h{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(28px,3.4vw,46px);line-height:1.06;letter-spacing:-.025em;}
+.aiband-h em{font-style:italic;font-weight:300;color:#7FE9E3;}
+.aiband-p{font-size:15px;color:rgba(255,255,255,.62);line-height:1.75;margin-top:16px;max-width:52ch;}
+.aiband-chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px;}
+.aiband-chips span{font-size:12.5px;font-weight:600;color:#cfe9f7;background:rgba(255,255,255,.05);border:1px solid rgba(0,161,221,.28);border-radius:100px;padding:7px 13px;}
+.aiband-visual{position:relative;display:flex;flex-direction:column;align-items:center;}
+.aiband-visual-glow{position:absolute;top:50%;left:50%;width:110%;height:110%;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(79,227,220,.22),transparent 70%);z-index:0;pointer-events:none;}
+.aiband-visual-card{position:relative;z-index:1;width:100%;max-width:400px;background:#fff;border-radius:22px;padding:12px;box-shadow:0 40px 80px -24px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);transform:rotate(-1.4deg);transition:transform .5s var(--ease,cubic-bezier(.2,.8,.2,1));}
+.aiband-visual-card:hover{transform:rotate(0deg) translateY(-6px) scale(1.015);}
+.aiband-visual-card img{display:block;width:100%;height:auto;border-radius:14px;}
+.aiband-visual-tag{position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;margin-top:22px;background:rgba(255,255,255,.06);border:1px solid rgba(79,227,220,.3);border-radius:100px;padding:8px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#7FE9E3;}
+.aiband-visual-tag .d{width:7px;height:7px;border-radius:50%;background:#4FE3DC;box-shadow:0 0 0 0 rgba(79,227,220,.6);animation:tcDemoPulse 2s ease-out infinite;}
+@media(max-width:880px){.aiband-visual{margin-top:8px;}}
+.aiband-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-top:52px;}
+@media(max-width:760px){.aiband-stats{grid-template-columns:1fr 1fr;}}
+.aiband-stat{background:#0a1626;padding:24px 18px;text-align:center;}
+.aiband-stat b{display:block;font-family:'Fraunces',serif;font-weight:600;font-size:clamp(28px,3vw,38px);line-height:1;letter-spacing:-.02em;background:linear-gradient(120deg,#4FE3DC,#1466E0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.aiband-stat span{display:block;font-size:11.5px;color:rgba(255,255,255,.55);margin-top:9px;line-height:1.4;}
+.aiband-foot{position:relative;z-index:1;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.42);margin-top:40px;border-top:1px solid rgba(255,255,255,.08);padding-top:22px;}
+.aiband-foot b{color:#4FE3DC;}
+@media(prefers-reduced-motion:reduce){.aiband-eyebrow .d{animation:none;}}
+</style>
+<section class="aiband section-pad">
+  <div class="wrap">
+    <div class="aiband-inner">
+      <div class="aiband-lead">
+        <div class="aiband-eyebrow"><span class="d"></span>TruVIR · Powered by TruLens AI</div>
+        <h2 class="aiband-h">Every car is <em>AI-inspected</em> before you see it.</h2>
+        <p class="aiband-p">Before a vehicle reaches this showroom, TruLens AI scans every panel, wheel and interior zone — detecting damage at 95% accuracy and grading condition out of 100. No surprises, no hidden dents — just a verified TruVIR you can trust before you visit the lot.</p>
+        <div class="aiband-chips">
+          <span>🔍 Damage detection</span><span>🧩 Condition grade</span><span>🔠 VIN &amp; plate read</span><span>✨ Image enhance</span>
+        </div>
+      </div>
+      <div class="aiband-visual">
+        <div class="aiband-visual-glow"></div>
+        <div class="aiband-visual-card">
+          <img src="assets/img/trulens-damage-detection.webp" alt="TruLens AI scanning a vehicle bumper and flagging a scratch, with severity and repair cost estimated automatically" loading="lazy">
+        </div>
+        <div class="aiband-visual-tag"><span class="d"></span>Live TruVIR scan</div>
+      </div>
+    </div>
+    <div class="aiband-stats">
+      <div class="aiband-stat"><b>95%</b><span>Damage-detection accuracy</span></div>
+      <div class="aiband-stat"><b>1M+</b><span>AI analyses in 2024</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRADE-IN ============ -->
+<section id="trade">
+  <div class="wrap">
+    <div class="tradein-band rv">
+      <div class="ti-grid">
+        <div>
+          <div class="eyebrow teal">Sell or trade-in</div>
+          <h2 class="sec-h" style="color:#fff">We'll buy your car — <em style="color:var(--teal-bright)">even if you don't buy ours.</em></h2>
+          <p class="lede" style="color:var(--grey-2)">Just like South Africa's biggest buyers, but with a fair, benchmarked True-Cars valuation. Get an indicative estimate in 60 seconds, then a <b style="color:var(--teal-bright)">TruValue</b> remote inspection &mdash; and a firm written offer from the dealership, not an algorithm.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-grad btn-lg" href="trade-in.html"><span>Value my car in 60 sec</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <button class="btn btn-ghost-light btn-lg" data-chat="Value my trade-in">Ask TruChat</button>
+          </div>
+        </div>
+        <div class="ti-quote">
+          <div class="tag">Instant estimate · Example</div>
+          <div class="ti-row"><span>2019 VW Polo 1.0 TSI</span><span class="r">92 000 km</span></div>
+          <div class="ti-row"><span>Condition</span><span class="r" style="color:var(--teal-bright)">Good</span></div>
+          <div class="ti-row"><span>Market benchmark</span><span class="r">R214 000</span></div>
+          <div class="ti-offer">
+            <div class="lbl">Your instant True-Cars offer</div>
+            <div class="amt">R198 500</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADDITIONAL PRODUCTS & SERVICES ============ -->
+<section id="products" style="background:var(--bone)">
+  <div class="wrap">
+    <div class="sec-head rv" style="text-align:center;max-width:640px;margin:0 auto">
+      <div class="eyebrow teal" style="justify-content:center">Complete Car Care</div>
+      <h2 class="sec-h">Additional products <em>&amp; services.</em></h2>
+      <p class="lede" style="text-align:center">Protect your investment with our curated partner products — all available at checkout or anytime after purchase.</p>
+    </div>
+    <div class="products-grid rv d1">
+      <a class="prod-card" href="finance.html">
+        <div class="prod-icon" style="background:linear-gradient(135deg,#1466E0,#4D9BFF)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <h4>Car Insurance</h4>
+        <p>Comprehensive cover from SA's top insurers. Get multiple quotes in one click — no call centres.</p>
+        <span class="prod-link">Get a quote <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a class="prod-card" href="finance.html">
+        <div class="prod-icon" style="background:linear-gradient(135deg,#15C7C0,#7FE9E3)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h4>Car Tracking</h4>
+        <p>24/7 stolen vehicle recovery and live GPS tracking. Armed response in under 3 minutes, nationwide.</p>
+        <span class="prod-link">Activate tracking <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a class="prod-card" href="finance.html">
+        <div class="prod-icon" style="background:linear-gradient(135deg,#C9A24B,#E8C97A)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+        </div>
+        <h4>Warranty Cover</h4>
+        <p>Mechanical breakdown warranty up to 3 years. Engine, gearbox, electrics — major components covered.</p>
+        <span class="prod-link">See plans <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a class="prod-card" href="finance.html">
+        <div class="prod-icon" style="background:linear-gradient(135deg,#FF4D4D,#FF7A7A)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </div>
+        <h4>Service Plan</h4>
+        <p>Pre-paid servicing at fixed monthly rates. Lock in today's prices and never worry about workshop bills.</p>
+        <span class="prod-link">Choose a plan <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHOP BY BUDGET ============ -->
+<section id="budget">
+  <div class="wrap">
+    <div class="budget-split">
+      <div class="budget-copy rv-left">
+        <div class="eyebrow">Shop smart</div>
+        <h2 class="sec-h">Shop by <em>budget.</em></h2>
+        <p class="lede">Tell us what you can afford — we'll show you every car that fits. No surprises, no pressure. Just honest matches.</p>
+        <div class="budget-form" id="budgetForm">
+          <div class="bf-field">
+            <label>Down payment</label>
+            <div class="bf-input-wrap">
+              <span class="bf-prefix">R</span>
+              <input type="text" id="bfDeposit" value="50 000" inputmode="numeric">
+            </div>
+          </div>
+          <div class="bf-field">
+            <label>Monthly payment</label>
+            <div class="bf-input-wrap">
+              <span class="bf-prefix">R</span>
+              <input type="text" id="bfMonthly" value="5 000" inputmode="numeric">
+            </div>
+          </div>
+          <div class="bf-field">
+            <label>Credit score</label>
+            <select id="bfCredit">
+              <option value="excellent">Excellent (700+)</option>
+              <option value="good" selected>Good (650–699)</option>
+              <option value="fair">Fair (600–649)</option>
+              <option value="rebuilding">Rebuilding (&lt;600)</option>
+            </select>
+          </div>
+          <button class="btn btn-grad btn-lg bf-go" onclick="TCSApage.budgetSearch()"><span>See your matches</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+      <div class="budget-visual rv-right">
+        <div class="budget-car-grid">
+          <div class="budget-car-card" id="budgetCar1"></div>
+          <div class="budget-car-card" id="budgetCar2"></div>
+          <div class="budget-car-card" id="budgetCar3"></div>
+          <div class="budget-car-card" id="budgetCar4"></div>
+          <div class="budget-car-card" id="budgetCar5"></div>
+          <div class="budget-car-card" id="budgetCar6"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUE PERFORMANCE ============ -->
+<section id="performance">
+  <div class="wrap">
+    <div class="rail-head rv">
+      <div>
+        <div class="eyebrow" style="color:#ff6b6b">True Performance</div>
+        <h2 class="sec-h" style="color:#fff">Engineered for <em style="color:#ff6b6b">adrenaline.</em></h2>
+        <p class="lede" style="color:rgba(255,255,255,.55)">M Competition, AMG, Porsche and Aston Martin — each a certified driver's car with a full Tru3D + VIR. Delivered free to your door, anywhere in SA.</p>
+      </div>
+      <a class="btn" style="background:rgba(255,255,255,.08);color:#fff;border:1.5px solid rgba(255,255,255,.18)" href="performance.html">All Performance Cars<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <div class="v-grid cols-3" id="performanceGrid"></div>
+  </div>
+</section>
+
+<!-- ============ NATIONWIDE FREE DELIVERY ============ -->
+<section id="delivery">
+  <div class="wrap">
+    <div class="delivery-split">
+      <div class="rv-left">
+        <div class="eyebrow teal">Countrywide Free Delivery</div>
+        <h2 class="sec-h">We deliver to <em>your door.</em></h2>
+        <p class="lede" style="margin-bottom:24px">Buy a car in Cape Town — get it delivered to Polokwane, Durban, Bloemfontein or anywhere in between. R0 delivery fee. Enclosed transporter. Live GPS tracking.</p>
+        <div class="delivery-pills">
+          <div class="dpill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>Free on every vehicle</div>
+          <div class="dpill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Enclosed transporter</div>
+          <div class="dpill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Live GPS tracking</div>
+          <div class="dpill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>1–3 business days</div>
+        </div>
+        <div style="margin-top:32px;display:flex;gap:14px;flex-wrap:wrap">
+          <a class="btn btn-grad" href="certi-used.html"><span>Browse cars</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <button class="btn btn-ghost" data-chat="How does free delivery work?">Ask TruChat</button>
+        </div>
+      </div>
+      <div class="rv-right">
+        <div class="map-stage">
+          <span class="map-tag">Delivery Network &mdash; ZA</span>
+          <svg id="saMap" viewBox="0 0 440 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="True-Cars SA free delivery routes across South Africa">
+            <path d="M78 96 C90 82 112 72 136 68 C168 62 204 58 238 56 C266 54 292 56 312 62
+                     C326 66 336 74 340 86 C346 100 352 108 364 112 C376 116 384 124 386 136
+                     C388 150 384 162 376 172 C370 180 366 190 364 200 C360 218 352 234 340 246
+                     C326 262 308 274 288 284 C264 296 238 306 212 310 C186 314 162 312 142 304
+                     C120 296 102 282 90 264 C78 246 70 226 66 204 C62 182 62 160 66 140
+                     C69 124 71 108 78 96 Z"
+                  fill="#F0F4FA" stroke="#c8d8ef" stroke-width="1.8" stroke-linejoin="round"/>
+            <ellipse cx="300" cy="212" rx="21" ry="15" fill="#e8f0fb" stroke="#c8d8ef" stroke-width="1.3"/>
+            <path class="route" d="M190 256 C150 260 120 270 104 286"/>
+            <path class="route" d="M190 256 C220 264 256 270 292 264"/>
+            <path class="route" d="M190 256 C240 248 296 238 344 226"/>
+            <path class="route" d="M190 256 C220 210 256 170 296 122"/>
+            <path class="route" d="M190 256 C210 240 234 224 258 206"/>
+            <g class="province" data-name="Western Cape" data-city="Cape Town" data-days="Same-day / next-day">
+              <circle class="city-dot" cx="104" cy="286" r="4.5"/><text class="city-lab" x="60" y="302">Cape Town</text>
+            </g>
+            <g class="province" data-name="Eastern Cape" data-city="East London" data-days="2–3 business days">
+              <circle class="city-dot" cx="292" cy="264" r="4.5"/><text class="city-lab" x="278" y="280">East London</text>
+            </g>
+            <g class="province" data-name="KwaZulu-Natal" data-city="Durban" data-days="2–3 business days">
+              <circle class="city-dot" cx="344" cy="226" r="4.5"/><text class="city-lab" x="352" y="222">Durban</text>
+            </g>
+            <g class="province" data-name="Gauteng" data-city="Johannesburg" data-days="1–2 business days">
+              <circle class="city-dot" cx="296" cy="122" r="4.5"/><text class="city-lab" x="302" y="114">Johannesburg</text>
+            </g>
+            <g class="province" data-name="Free State" data-city="Bloemfontein" data-days="2–3 business days">
+              <circle class="city-dot" cx="258" cy="206" r="4.5"/><text class="city-lab" x="196" y="200">Bloemfontein</text>
+            </g>
+            <circle class="origin-ring" cx="190" cy="256" r="13"><animate attributeName="r" values="9;17;9" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".6;.05;.6" dur="2.4s" repeatCount="indefinite"/></circle>
+            <circle cx="190" cy="256" r="6.5" fill="var(--blue)"/>
+            <text class="city-lab" x="148" y="282" style="font-weight:600;fill:var(--ink);">SOUTH AFRICA &middot; NATIONWIDE</text>
+          </svg>
+          <div class="map-info-card" id="mapInfo">
+            <div class="map-info-default">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--blue)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Click a city to see delivery times</span>
+            </div>
+          </div>
+          <span class="map-origin-tag"><i></i>Free delivery anywhere in SA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUE PREMIUM ============ -->
+<section id="premium">
+  <div class="wrap">
+    <div class="rail-head rv">
+      <div>
+        <div class="eyebrow gold">True Premium</div>
+        <h2 class="sec-h">The finest, <em>hand-curated.</em></h2>
+        <p class="lede">Rolls-Royce, Ferrari, Lamborghini, Mercedes-Maybach — each concours-inspected, fully documented with VIR, and delivered free, nationwide. A collection without compromise.</p>
+      </div>
+      <a class="btn btn-gold" href="premium-select.html">Enter True Premium</a>
+    </div>
+    <div class="v-grid cols-3" id="premiumGrid"></div>
+  </div>
+</section>
+
+<!-- ============ QUOTE ============ -->
+<section id="quote">
+  <div class="wrap-tight">
+    <div class="eyebrow center rv" style="justify-content:center">True-Cars Founder</div>
+    <blockquote class="rv d1">"<b>Honest pricing, nothing hidden, and technology that respects your time.</b> That's what buying a car should feel like — whether you're in the Western Cape, Eastern Cape or Kenya."</blockquote>
+    <div class="quote-person rv d2">
+      <span class="quote-avatar" aria-hidden="true">PdB</span>
+      <div class="quote-id">
+        <span class="quote-sig">Paul de Beer</span>
+        <span class="quote-role">True-Cars Founder · Western Cape · Eastern Cape · Kenya</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHOWROOM → PLATFORM BRIDGE (one allowed) ============ -->
+<section class="why-section" style="padding:48px 0 56px">
+  <div class="wrap">
+    <div class="ts-funnel rv" style="padding:28px 28px 26px;border-radius:20px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(20,102,224,.08),rgba(21,199,192,.06));">
+      <div class="eyebrow teal" style="margin-bottom:10px">Next · for dealers &amp; partners</div>
+      <h3 class="sec-h" style="font-size:clamp(22px,2.8vw,32px);margin-bottom:10px">Liked the showroom? <em>See the stack behind it.</em></h3>
+      <p class="lede" style="margin:0 0 20px;max-width:56ch">True-Cars is the buyer experience. TruSaaS is the product: modules, live SaaS demos, dealer case studies, and how you go live.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        <a class="btn btn-grad" href="truesaas.html"><span>TruSaaS modules &amp; demos</span></a>
+        <a class="btn btn-ghost" href="https://www.tru-saas.com">I'm a dealer</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLOSER — FIND YOUR CAR ============ -->
+<section class="tcsa-closer">
+  <div class="wrap">
+    <div class="closer-inner rv">
+      <div class="eyebrow teal" style="color:#4FE3DC;justify-content:center">240+ cars · delivered nationwide</div>
+      <h2 class="closer-h">Find your car <em>this week.</em></h2>
+      <p class="closer-p">Tru3D inspected, honestly priced, delivered to your door anywhere in South Africa.</p>
+      <div class="closer-ctas">
+        <a class="btn btn-grad" href="certi-used.html"><span>Browse the stock</span></a>
+        <a class="btn btn-wa" href="https://wa.me/27620502091?text=Hi%20True-Cars%2C%20help%20me%20find%20a%20car" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:17px;height:17px"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>
+          WhatsApp us
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="index.html">
+          <span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span>
+        </a>
+        <p>The fair way to buy and sell a car in South Africa. 360° verified, transparently priced, delivered nationwide. Proudly built in Cape Town.</p>
+        <div class="foot-cta-row">
+          <a class="btn btn-grad btn-sm" href="https://www.tru-saas.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> I'm a dealer</a>
+          <a class="btn btn-wa btn-sm" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20a%20dealer%20and%20I%27d%20like%20to%20book%20a%20demo%20of%20TruSaaS." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;flex-shrink:0"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg> Book a demo</a>
+        </div>
+        <div class="foot-socials">
+          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="https://wa.me/27620502091" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg></a>
+        </div>
+      </div>
+      <div class="foot-col">
+        <h5>Buy</h5>
+        <a href="certi-used.html">All Stock</a>
+        <a href="ev.html">Electric &amp; Hybrid</a>
+        <a href="certi-used.html">Bakkies &amp; 4x4</a>
+        <a href="premium-select.html">Premium Select</a>
+        <a href="finance.html">Finance</a>
+      </div>
+      <div class="foot-col">
+        <h5>Sell &amp; Tech</h5>
+        <a href="trade-in.html">Sell / Trade-in</a>
+        <a href="vehicle.html?id=porsche-cayenne-s-19">Tru3D demo</a>
+        <a href="https://www.tru-saas.com">Dealer stack</a>
+        <a href="portal.html">Dealer console</a>
+      </div>
+
+      <div class="foot-col">
+        <h5>Talk to us</h5>
+        <ul class="foot-contact">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Cape Town · Western Cape · Eastern Cape · Kenya</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 2.9a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.5c.9.3 1.9.6 2.9.7a2 2 0 011.7 2z"/></svg><a href="https://wa.me/27620502091">+27 62 050 2091 · WhatsApp</a></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg><span>hello@true-cars.co.za</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 True-Cars SA · Built by Paul de Beer</span>
+      <span class="ax">Powered by <a href="truesaas.html" style="color:inherit;text-decoration:none"><b>TruSaaS</b></a> · <a href="https://true-cars.co.za" style="color:inherit;text-decoration:underline;text-underline-offset:2px">true-cars.co.za</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=12"></script>
+<script src="assets/js/products.js?v=2"></script>
+<script src="assets/js/stock-bridge.js?v=1"></script>
+<script src="assets/js/web3d-mock.js?v=2"></script>
+<script src="assets/js/site-chrome.js?v=16"></script>
+<script src="assets/js/site.js?v=14"></script>
+<script>
+(function(){
+  /* Tru3D on homepage — ship local Honda orbit immediately (don't wait on Lens cold start) */
+  var home = document.getElementById('homeWeb3d');
+  if (home && TCSA.loadWeb3DForVehicle) {
+    var demo =
+      (TCSA.vehicles && TCSA.vehicles.find && TCSA.vehicles.find(function(v){ return v.id === 'porsche-cayenne-s-19'; })) ||
+      (TCSA.vehicles && TCSA.vehicles[0]) ||
+      { year: 2022, make: 'Honda', model: 'Civic', colour: 'White', vir: 94, id: 'home-tru3d' };
+    TCSA.loadWeb3DForVehicle(home, demo, { homeDemo: true, useHondaOrbit: true, skipLive: true });
+  }
+})();
+</script>
+<script>
+/* ── hero: split H1 into words for staggered reveal (keeps .hl gradient) ── */
+(function(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const h1=document.querySelector('.hero-h'); if(!h1) return;
+  let i=0;
+  const wrapWords=(node,cls)=>{
+    const frag=document.createDocumentFragment();
+    node.textContent.split(/(\s+)/).forEach(tok=>{
+      if(/^\s+$/.test(tok)){ frag.appendChild(document.createTextNode(tok)); return; }
+      if(!tok) return;
+      const s=document.createElement('span'); s.className='w'+(cls?' '+cls:''); s.style.setProperty('--i',i++); s.textContent=tok;
+      frag.appendChild(s);
+    });
+    return frag;
+  };
+  [...h1.childNodes].forEach(n=>{
+    if(n.nodeType===3){ h1.replaceChild(wrapWords(n),n); }
+    else if(n.classList&&n.classList.contains('hl')){ const f=wrapWords(n,'hl'); n.textContent=''; n.appendChild(f); n.classList.remove('hl'); n.style.background='none'; }
+  });
+  h1.closest('.hero-copy').classList.add('split');
+})();
+
+window.TCSApage = {
+  search(e){
+    e.preventDefault();
+    const p = new URLSearchParams();
+    const map = {qMake:'make',qBody:'body',qFuel:'fuel',qPrice:'maxPrice'};
+    Object.keys(map).forEach(id=>{ const v=document.getElementById(id).value; if(v) p.set(map[id], v); });
+    window.location.href = 'certi-used.html' + (p.toString()?('?'+p.toString()):'');
+    return false;
+  }
+};
+// populate makes
+(function(){
+  const makes=[...new Set(TCSA.vehicles.map(v=>v.make))].sort();
+  const sel=document.getElementById('qMake');
+  makes.forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o); });
+})();
+// featured grid (8) + performance (3) + true premium (3)
+document.getElementById('featuredGrid').innerHTML = TCSA.vehicles.filter(v=>v.featured&&!v.premium).slice(0,8).map(TCSA.vcard).join('');
+var perfVehicles = TCSA.vehicles.filter(function(v){return v.premium&&v.price<2500000&&v.fuel!=='Electric';});
+document.getElementById('performanceGrid').innerHTML = perfVehicles.slice(0,3).map(TCSA.vcard).join('');
+document.getElementById('premiumGrid').innerHTML = TCSA.vehicles.filter(function(v){return v.premium&&v.price>=2500000;}).slice(0,3).map(TCSA.vcard).join('');
+// re-run reveal observer for injected cards
+document.querySelectorAll('#featuredGrid .vcard,#performanceGrid .vcard,#premiumGrid .vcard').forEach((c,i)=>{ c.classList.add('rv'); if(i%4) c.classList.add('d'+(i%4)); });
+
+// ── Interactive SA delivery map ──
+(function(){
+  const info = document.getElementById('mapInfo');
+  let active = null;
+  document.querySelectorAll('#saMap .province').forEach(p=>{
+    const show = ()=>{
+      if(active) active.classList.remove('prov-active');
+      p.classList.add('prov-active');
+      active = p;
+      info.classList.add('active');
+      info.innerHTML = `<div class="map-info-name">${p.dataset.name}</div><div class="map-info-city"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg> ${p.dataset.city}</div><div class="map-info-days"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:13px;height:13px"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>${p.dataset.days} · Free delivery</div><button class="map-luna-btn" data-chat="How does delivery to ${p.dataset.city} work?"><svg viewBox="0 0 48 48" style="width:18px;height:18px"><circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="1.8" opacity=".5"/><circle cx="24" cy="24" r="14" fill="currentColor" opacity=".12"/><ellipse cx="18" cy="22" rx="3.4" ry="3.4" fill="currentColor"/><ellipse cx="30" cy="22" rx="3.4" ry="3.4" fill="currentColor"/><circle cx="24" cy="32" r="2" fill="currentColor" opacity=".5"/></svg>Ask TruChat about ${p.dataset.city} delivery</button>`;
+    };
+    p.addEventListener('mouseenter', show);
+    p.addEventListener('click', show);
+    p.addEventListener('touchstart', (e)=>{ e.preventDefault(); show(); }, {passive:false});
+  });
+  // Delegate click on "Ask TruChat" button inside map info card
+  info.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.map-luna-btn');
+    if(btn && btn.dataset.chat && window.TCSA && TCSA.luna){
+      TCSA.luna.open(btn.dataset.chat);
+    }
+  });
+})();
+// Budget search
+TCSApage.budgetSearch = function(){
+  var dep = parseInt((document.getElementById('bfDeposit').value||'0').replace(/\s/g,'')) || 0;
+  var mo = parseInt((document.getElementById('bfMonthly').value||'0').replace(/\s/g,'')) || 0;
+  var p = new URLSearchParams();
+  if(dep) p.set('deposit', dep);
+  if(mo) p.set('monthly', mo);
+  p.set('credit', document.getElementById('bfCredit').value);
+  window.location.href = 'certi-used.html?' + p.toString();
+};
+// Budget car grid — a deliberately varied spread of body styles, brands and colours
+(function(){
+  var pick = ['toyota-fortuner-28-20','ford-puma-23','mazda-cx5-22','renault-sandero-19','ford-ecosport-22','hyundai-exter-25'];
+  var byId = {}; TCSA.vehicles.forEach(function(v){ byId[v.id] = v; });
+  var budgetCars = pick.map(function(id){ return byId[id]; }).filter(function(v){ return v && v.img; });
+  ['budgetCar1','budgetCar2','budgetCar3','budgetCar4','budgetCar5','budgetCar6'].forEach(function(id,i){
+    var el = document.getElementById(id);
+    var v = budgetCars[i];
+    if(el && v) el.innerHTML = '<img src="'+(v.thumb||v.img)+'"'
+      + (v.thumb ? ' srcset="'+v.thumb+' 480w, '+v.img+' 960w" sizes="(max-width:760px) 92vw, 400px"' : '')
+      + ' alt="'+v.year+' '+v.make+' '+v.model+'" loading="lazy" decoding="async">';
+  });
+})();
+// WHY TRU-CARS SA — randomised interactive 4-grid
+(function(){
+  var cards = [
+    {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h4m10 0h4"/><path d="M12 3v4m0 10v4"/></svg>', title:'Tru3D + VIR Inspection', desc:'Every vehicle is photographed and inspected from every angle. No surprises, no hidden damage.', stat:'128', unit:'point check', color:'blue'},
+    {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>', title:'Honest TruPrice', desc:'Benchmarked against the live market so you know you’re paying — or receiving — a fair price.', stat:'98', unit:'% market matched', color:'teal'},
+    {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>', title:'Live Video Walkaround', desc:'Book a video call and we’ll show you the car in real time, answer questions, and start the deal.', stat:'24/7', unit:'video bookings', color:'red'},
+    {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>', title:'Free Nationwide Delivery', desc:'We deliver anywhere in South Africa. Or collect in Cape Town. Your choice, always free.', stat:'1 240', unit:'cars in stock', color:'gold'}
+  ];
+  // Randomise card order on every load
+  cards.sort(function(){ return Math.random() - .5; });
+  var grid = document.getElementById('whyGrid');
+  if(!grid) return;
+  grid.innerHTML = cards.map(function(c){
+    return '<div class="why-card-tcsa" data-color="'+c.color+'" style="--delay:'+(Math.random()*1.2).toFixed(2)+'s">'+
+      '<div class="wic wic-'+c.color+'">'+c.icon+'</div>'+
+      '<div class="wstat">'+c.stat+'<small>'+c.unit+'</small></div>'+
+      '<h4>'+c.title+'</h4>'+
+      '<p>'+c.desc+'</p>'+
+    '</div>';
+  }).join('');
+  // Mouse-follow spotlight on each card
+  grid.querySelectorAll('.why-card-tcsa').forEach(function(card){
+    card.addEventListener('mousemove', function(e){
+      var rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - rect.left)+'px');
+      card.style.setProperty('--my', (e.clientY - rect.top)+'px');
+    });
+  });
+})();
+// VIR360 Honda damage / service tags
+(function(){
+  var tags = [
+    {x:28,y:54,ok:false,ttl:'2 mm scratch',txt:'Light scuff on front bumper. Documented; quoted R650 to polish.',meta:'Damage · minor'},
+    {x:72,y:62,ok:true,ttl:'Tyres at 70%',txt:'Michelin Pilot Sport 4 tyres with ~5.2 mm tread remaining across all four wheels.',meta:'Wear · good'},
+    {x:48,y:38,ok:true,ttl:'Full service history',txt:'Complete Honda dealer service record. Last service at 42 000 km.',meta:'History · verified'}
+  ];
+  var stage = document.getElementById('virTeaser');
+  var wrap = document.getElementById('virTags');
+  if(!stage || !wrap) return;
+  var openPop = null;
+  function closePop(){ if(openPop){ openPop.classList.remove('show'); openPop = null; } }
+  tags.forEach(function(t,i){
+    var tag = document.createElement('div');
+    tag.className = 'vir-tag' + (t.ok ? ' ok' : '');
+    tag.style.left = t.x + '%';
+    tag.style.top = t.y + '%';
+    tag.innerHTML = '<div class="vir-tag-dot">+</div><span class="vir-tag-num">0'+(i+1)+'</span>';
+    var pop = document.createElement('div');
+    pop.className = 'vir-tag-pop' + (t.ok ? ' ok' : '');
+    pop.innerHTML = '<div class="ttl"><span class="dot"></span>'+t.ttl+'</div>'+
+      '<div class="txt">'+t.txt+'</div>'+
+      '<div class="meta">'+t.meta+'</div>';
+    pop.style.left = (t.x > 55 ? Math.max(4, t.x - 28) : Math.min(72, t.x - 4)) + '%';
+    pop.style.top = (t.y > 50 ? Math.max(6, t.y - 34) : Math.min(70, t.y + 8)) + '%';
+    if(t.y > 50) pop.classList.add('up');
+    tag.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(openPop === pop){ closePop(); return; }
+      closePop();
+      pop.classList.add('show');
+      openPop = pop;
+    });
+    wrap.appendChild(tag);
+    wrap.appendChild(pop);
+  });
+  stage.addEventListener('click', function(e){ if(!e.target.closest('.vir-tag,.vir-tag-pop')) closePop(); });
+})();
+TCSA.initChrome();
+// load the real True-Cars banner image; reveal it as the primary hero
+(function(){
+  const el=document.getElementById('heroPhoto');
+  const hero=document.querySelector('header.hero');
+  if(!el||!hero) return;
+  // File on disk is hero-truecar.avif (no "s") — older builds pointed at a 404 name
+  const candidates=['assets/img/hero-truecar.avif','assets/img/hero-trucars.avif','assets/img/hero-truecar.jpg','assets/img/hero-truecar.webp'];
+  let i=0;
+  function tryNext(){
+    if(i>=candidates.length) return;
+    const img=new Image();
+    const src=candidates[i++];
+    img.onload=function(){
+      el.style.backgroundImage='url("'+src+'")';
+      el.classList.add('loaded');
+      hero.classList.add('has-photo');
+    };
+    img.onerror=tryNext;
+    img.src=src;
+  }
+  tryNext();
+})();
+// ===== Scaleflex 360 viewer loaded from TruSaaS CDN =====
+/* The cloudimage-360 div auto-initializes via the Scaleflex plugin */
+</script>
+<script src="https://cdn.scaleflex.com/plugins/js-cloudimage-360-view/2.7.1/js-cloudimage-360-view.min.js"></script>
+<script>
+/* ============ POLISH EFFECTS ============ */
+(function(){
+  'use strict';
+
+  // 1. Scroll progress bar
+  var progressBar = document.createElement('div');
+  progressBar.className = 'scroll-progress';
+  document.body.appendChild(progressBar);
+  window.addEventListener('scroll', function(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    progressBar.style.transform = 'scaleX(' + (window.scrollY / h) + ')';
+  }, {passive:true});
+
+  // 2. Nav solid background on scroll
+  var nav = document.querySelector('.nav');
+  if(nav){
+    var ticking = false;
+    window.addEventListener('scroll', function(){
+      if(!ticking){
+        requestAnimationFrame(function(){
+          nav.classList.toggle('solid', window.scrollY > 60);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, {passive:true});
+  }
+
+  // 3. Scroll reveal (IntersectionObserver)
+  var rvObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry, i){
+      if(entry.isIntersecting){
+        setTimeout(function(){ entry.target.classList.add('in'); }, i * 80);
+        rvObserver.unobserve(entry.target);
+      }
+    });
+  }, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
+  document.querySelectorAll('.rv, .rv-left, .rv-right').forEach(function(el){ rvObserver.observe(el); });
+
+  // 4. Card spotlight (mouse tracking)
+  document.querySelectorAll('.vcard').forEach(function(card){
+    card.addEventListener('mousemove', function(e){
+      var rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
+      card.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
+    });
+  });
+
+  // 5. Button glow (mouse tracking)
+  document.querySelectorAll('.btn-grad').forEach(function(btn){
+    btn.addEventListener('mousemove', function(e){
+      var rect = btn.getBoundingClientRect();
+      btn.style.setProperty('--bx', (e.clientX - rect.left) + 'px');
+      btn.style.setProperty('--by', (e.clientY - rect.top) + 'px');
+    });
+  });
+
+  // 6. Hero parallax
+  var heroScene = document.querySelector('.hero-scene');
+  var heroSun = document.querySelector('.hero-sun');
+  var heroMtn = document.querySelector('.hero-mountains');
+  if(heroScene){
+    window.addEventListener('scroll', function(){
+      var y = window.scrollY;
+      if(y < window.innerHeight){
+        if(heroSun) heroSun.style.transform = 'translateY(' + (y * 0.15) + 'px)';
+        if(heroMtn) heroMtn.style.transform = 'translateY(' + (y * 0.08) + 'px)';
+      }
+    }, {passive:true});
+  }
+
+  // 7. Ambient hero particles
+  var hero = document.querySelector('header.hero');
+  if(hero && !matchMedia('(prefers-reduced-motion:reduce)').matches){
+    var particles = document.createElement('div');
+    particles.className = 'hero-particles';
+    hero.appendChild(particles);
+    for(var i = 0; i < 18; i++){
+      var p = document.createElement('i');
+      p.style.cssText = 'left:' + (Math.random() * 100) + '%;top:' + (Math.random() * 100) + '%;animation-duration:' + (6 + Math.random() * 10) + 's;animation-delay:' + (Math.random() * 8) + 's;--drift:' + ((Math.random() - 0.5) * 60) + 'px;width:' + (2 + Math.random() * 2) + 'px;height:' + (2 + Math.random() * 2) + 'px;';
+      p.style.animationName = 'particleFloat';
+      particles.appendChild(p);
+    }
+  }
+
+  // 8. Stat counter animation
+  var statObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var el = entry.target;
+        var target = parseFloat(el.dataset.count);
+        var suf = el.dataset.suf || '';
+        var dec = parseInt(el.dataset.dec) || 0;
+        var dur = 1800;
+        var start = performance.now();
+        var tick = function(now){
+          var p = Math.min((now - start) / dur, 1);
+          var ease = 1 - Math.pow(1 - p, 3);
+          var val = (target * ease).toFixed(dec);
+          var formatted = dec > 0 ? parseFloat(val).toLocaleString('en-ZA') : parseInt(val).toLocaleString('en-ZA');
+          el.textContent = formatted + suf;
+          if(p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+        statObserver.unobserve(el);
+      }
+    });
+  }, {threshold: 0.1});
+  document.querySelectorAll('[data-count]').forEach(function(el){ statObserver.observe(el); });
+
+  // 9. Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var id = a.getAttribute('href');
+      if(id.length > 1){
+        var target = document.querySelector(id);
+        if(target){
+          e.preventDefault();
+          target.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      }
+    });
+  });
+
+  // 10. Mobile hamburger toggle
+  var hamburger = document.querySelector('.hamburger');
+  var mobileMenu = document.querySelector('.mobile-menu');
+  if(hamburger && mobileMenu){
+    hamburger.addEventListener('click', function(e){
+      e.stopPropagation();
+      var isOpen = mobileMenu.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    });
+    mobileMenu.querySelectorAll('a').forEach(function(link){
+      link.addEventListener('click', function(){
+        hamburger.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && mobileMenu.classList.contains('open')){
+        hamburger.classList.remove('open');
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+
+})();
+</script>
+
+
+<!-- TruChat · True (True-Cars only) -->
+<script src="truchat/shared/qualifier.js?v=3"></script>
+<script src="truchat/shared/chat-core.js?v=5"></script>
+<script src="truchat/true-cars/config.js?v=4"></script>
+<script src="truchat/true-cars/widget.js?v=5" data-bottom="24px" data-position="right" defer></script>
+
+<!-- TruAfford · soft affordability (TruSaaS) -->
+<script src="tru-afford.js?v=5" data-dealer="True-Cars" data-wa="27620502091" data-brand="truecars" data-position="left" data-bottom="96px"></script>
+
+<script>
+/* Pause the hero's infinite animations whenever it scrolls out of view */
+(function(){
+  var hero = document.querySelector('.hero');
+  if(!hero || !('IntersectionObserver' in window)) return;
+  new IntersectionObserver(function(en){
+    hero.classList.toggle('is-offscreen', !en[0].isIntersecting);
+  }, {threshold: 0.02}).observe(hero);
+})();
+</script>
+
+<!-- ============ MOTION LAYER ============ -->
+<style>
+/* scroll progress */
+#tcProgress{position:fixed;top:0;left:0;height:2px;width:100%;z-index:9998;pointer-events:none;
+  background:linear-gradient(90deg,#7FE9E3,#4D9BFF 55%,#8FB6FF);transform:scaleX(0);transform-origin:0 50%;
+  box-shadow:0 0 12px rgba(79,227,220,.5);}
+/* scroll cue in hero */
+.tc-cue{position:absolute;left:50%;bottom:22px;z-index:6;transform:translateX(-50%);display:flex;flex-direction:column;
+  align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.24em;
+  text-transform:uppercase;color:rgba(255,255,255,.45);opacity:0;animation:heroFade .8s 1.8s ease forwards;}
+.tc-cue i{display:block;width:1px;height:34px;background:linear-gradient(180deg,rgba(255,255,255,.5),transparent);
+  position:relative;overflow:hidden;}
+.tc-cue i::after{content:'';position:absolute;left:0;top:-34px;width:1px;height:34px;
+  background:linear-gradient(180deg,transparent,#7FE9E3);animation:cueRun 2.2s ease-in-out infinite;}
+@keyframes cueRun{0%{transform:translateY(0);}60%,100%{transform:translateY(68px);}}
+.hero.is-offscreen .tc-cue{opacity:0;transition:opacity .4s;}
+/* magnetic + shine on primary buttons */
+.btn{will-change:transform;}
+.tc-mag{transition:transform .35s cubic-bezier(.2,1,.32,1);}
+/* card tilt */
+.tc-tilt{transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,1,.32,1),box-shadow .5s;}
+.tc-tilt.tc-tilting{transition:transform .12s linear;}
+/* reveal-in shine sweep for cards */
+.tc-sheen{position:relative;overflow:hidden;}
+.tc-sheen::after{content:'';position:absolute;top:0;left:-140%;width:60%;height:100%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-16deg);opacity:0;}
+.tc-sheen.in::after{animation:tcSheen 1.1s .25s cubic-bezier(.5,0,.2,1) forwards;}
+@keyframes tcSheen{0%{left:-140%;opacity:1;}100%{left:160%;opacity:0;}}
+/* headline underline draw */
+.tc-uline{position:relative;display:inline-block;}
+.tc-uline::after{content:'';position:absolute;left:0;bottom:-.12em;height:3px;width:100%;border-radius:3px;
+  background:linear-gradient(90deg,#7FE9E3,#4D9BFF);transform:scaleX(0);transform-origin:0 50%;
+  transition:transform .9s cubic-bezier(.2,1,.32,1) .15s;}
+.tc-uline.in::after{transform:scaleX(1);}
+/* soft float for section media */
+@keyframes tcFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.tc-float{animation:tcFloat 7s ease-in-out infinite;}
+/* nav shrink on scroll */
+.nav{transition:padding .35s ease,backdrop-filter .35s ease,background .35s ease;}
+.nav.tc-shrunk{box-shadow:0 8px 30px -18px rgba(10,20,32,.55);}
+@media(prefers-reduced-motion:reduce){
+  .tc-sheen::after,.tc-cue i::after,.tc-float{animation:none!important;}
+  .tc-tilt,.tc-mag{transition:none!important;}
+}
+</style>
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var isTouch = matchMedia('(hover:none)').matches;
+
+  /* ---- 1. scroll progress bar ---- */
+  var bar = document.createElement('div');
+  bar.id = 'tcProgress';
+  document.body.appendChild(bar);
+  var ticking = false;
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = 'scaleX(' + (h > 0 ? Math.min(window.scrollY / h, 1) : 0) + ')';
+      var nav = document.querySelector('.nav');
+      if(nav) nav.classList.toggle('tc-shrunk', window.scrollY > 120);
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  /* ---- 2. hero scroll cue ---- */
+  var hero = document.querySelector('header.hero');
+  if(hero && !hero.querySelector('.tc-cue')){
+    var cue = document.createElement('div');
+    cue.className = 'tc-cue';
+    cue.innerHTML = '<span>Scroll</span><i></i>';
+    hero.appendChild(cue);
+  }
+
+  /* ---- 3. magnetic buttons ---- */
+  if(!reduce && !isTouch){
+    document.querySelectorAll('.btn-grad, .qs-go, .btn-lg').forEach(function(b){
+      b.classList.add('tc-mag');
+      b.addEventListener('mousemove', function(e){
+        var r = b.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width/2)) / r.width;
+        var dy = (e.clientY - (r.top + r.height/2)) / r.height;
+        b.style.transform = 'translate(' + (dx*9).toFixed(2) + 'px,' + (dy*7).toFixed(2) + 'px)';
+      });
+      b.addEventListener('mouseleave', function(){ b.style.transform = ''; });
+    });
+  }
+
+  /* ---- 4. 3D tilt on cards ---- */
+  if(!reduce && !isTouch){
+    document.querySelectorAll('.prod-card, .why-card-tcsa, .vcard').forEach(function(c){
+      c.classList.add('tc-tilt');
+      c.addEventListener('mouseenter', function(){ c.classList.add('tc-tilting'); });
+      c.addEventListener('mousemove', function(e){
+        var r = c.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - .5;
+        var py = (e.clientY - r.top) / r.height - .5;
+        c.style.transform = 'perspective(900px) rotateX(' + (-py*5).toFixed(2) + 'deg) rotateY(' + (px*6).toFixed(2) + 'deg) translateY(-6px)';
+      });
+      c.addEventListener('mouseleave', function(){
+        c.classList.remove('tc-tilting');
+        c.style.transform = '';
+      });
+    });
+  }
+
+  /* ---- 5. sheen sweep + underline draw on reveal ---- */
+  if('IntersectionObserver' in window){
+    var lifeObs = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add('in'); lifeObs.unobserve(en.target); }
+      });
+    }, {threshold:.2, rootMargin:'0px 0px -50px 0px'});
+
+    if(!reduce){
+      document.querySelectorAll('.why-card-tcsa, .prod-card, .stat').forEach(function(el){
+        el.classList.add('tc-sheen'); lifeObs.observe(el);
+      });
+    }
+    document.querySelectorAll('.tc-uline').forEach(function(el){ lifeObs.observe(el); });
+
+    /* generic lift-in for sections that weren't already wired to .rv */
+    var lift = document.createElement('style');
+    lift.textContent = '.tc-lift{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,1,.32,1),transform .8s cubic-bezier(.2,1,.32,1);}.tc-lift.in{opacity:1;transform:none;}';
+    document.head.appendChild(lift);
+    if(!reduce){
+      document.querySelectorAll('section > .wrap > h2, .steps-strip .step, .partner-bar img, .map-info-card').forEach(function(el, i){
+        el.classList.add('tc-lift');
+        el.style.transitionDelay = (i % 6 * 60) + 'ms';
+        lifeObs.observe(el);
+      });
+    }
+  }
+
+  /* ---- 6. gentle float on feature media ---- */
+  if(!reduce){
+    document.querySelectorAll('.media-frame, .vir360').forEach(function(el){ el.classList.add('tc-float'); });
+  }
+
+  /* ---- 7. depth parallax on dark bands ---- */
+  if(!reduce && !isTouch){
+    var bands = [].slice.call(document.querySelectorAll('.tradein-band, .aiband, #premium, #budget'));
+    if(bands.length){
+      var bTick = false;
+      window.addEventListener('scroll', function(){
+        if(bTick) return;
+        bTick = true;
+        requestAnimationFrame(function(){
+          var vh = window.innerHeight;
+          bands.forEach(function(b){
+            var r = b.getBoundingClientRect();
+            if(r.bottom < 0 || r.top > vh) return;
+            var p = (r.top + r.height/2 - vh/2) / vh;
+            b.style.setProperty('--tc-par', (p * 18).toFixed(1) + 'px');
+            b.style.backgroundPosition = 'center calc(50% + ' + (p * 18).toFixed(1) + 'px)';
+          });
+          bTick = false;
+        });
+      }, {passive:true});
+    }
+  }
+})();
+</script>
+
+</body>
+</html>

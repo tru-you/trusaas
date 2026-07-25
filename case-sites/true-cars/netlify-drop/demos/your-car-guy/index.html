@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TruAfford · Check Affordability — Your Car Guy</title>
+<meta name="description" content="TruSaaS TruAfford soft affordability widget for Your Car Guy — soft pre-qual, no hard credit check.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06070c;--signal:#7C3AED;--signal-bright:#A78BFA;--blue:#3B82F6;--teal:#14B8A6;
+  --text:#F4F4F1;--muted:#94a3b8;
+  --glass:rgba(17,18,26,.55);--border:rgba(255,255,255,.1);
+  --brand-grad:linear-gradient(115deg,#7C3AED 0%,#6366F1 48%,#2563EB 100%);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;line-height:1.55;-webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 10% -10%,rgba(124,58,237,.2),transparent 50%),
+    radial-gradient(ellipse 50% 40% at 90% 10%,rgba(37,99,235,.14),transparent 45%);
+}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+header{
+  position:sticky;top:0;z-index:40;
+  background:rgba(5,7,14,.7);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
+.brand{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.02em}
+.brand span{background:var(--brand-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav a{color:var(--muted);font-size:13px;font-weight:600;text-decoration:none;margin-left:14px}
+.nav a:hover{color:#fff}
+.hero{padding:56px 0 40px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--signal-bright);
+  background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);
+  padding:7px 12px;border-radius:100px;margin-bottom:16px;
+}
+h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.1;max-width:16ch;margin-bottom:12px}
+h1 em{font-style:normal;background:linear-gradient(120deg,#A78BFA,#60A5FA 55%,#5EEAD4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.lede{color:var(--muted);max-width:48ch;font-size:15px;margin-bottom:22px}
+.cards{display:grid;grid-template-columns:1fr;gap:14px;padding-bottom:100px}
+@media(min-width:720px){.cards{grid-template-columns:1fr 1fr}}
+.card{
+  background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);
+  border-radius:18px;padding:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.card h3{font-size:15px;font-weight:800;margin-bottom:8px}
+.card p{font-size:13px;color:var(--muted);line-height:1.55}
+.card code{font-size:11px;color:#cbd5e1;background:rgba(0,0,0,.35);padding:2px 6px;border-radius:6px}
+.cta{
+  display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:11px 16px;border-radius:12px;
+  background:var(--brand-grad);color:#fff;font-weight:800;font-size:13px;
+  text-decoration:none;border:0;cursor:pointer;
+  box-shadow:0 10px 28px -10px rgba(124,58,237,.5);
+}
+.cta:hover{filter:brightness(1.08)}
+.note{font-size:12px;color:var(--muted);margin-top:20px;max-width:56ch}
+footer{border-top:1px solid var(--border);padding:20px 0 40px;font-size:12px;color:var(--muted)}
+/* fake WA FAB for stacking demo */
+.fake-wa{
+  position:fixed;bottom:16px;right:16px;z-index:999980;
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(145deg,#34d399,#059669);color:#fff;
+  display:grid;place-items:center;box-shadow:0 10px 28px -8px rgba(16,185,129,.5);
+  font-size:11px;font-weight:800;text-decoration:none;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="brand">Your Car <span>Guy</span> · TruAfford</div>
+    <div>
+      <a href="#how">How it works</a>
+      <a href="#embed">Embed</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="pill">TruSaaS · Soft pre-qual · No hard bureau pull</div>
+    <h1>Our own <em>Check Affordability</em> widget.</h1>
+    <p class="lede">
+      Replaces the Find&amp;Drive / Seriti embed with a TruSaaS-owned TruAfford desk —
+      glass FAB, multi-step soft estimate, WhatsApp lead handoff to the yard.
+    </p>
+    <button type="button" class="cta" id="open-afford">Open widget →</button>
+    <p class="note">Look bottom-right (above the green WA demo FAB). Same corner as live yourcarguy.co.za — without the third-party iframe.</p>
+  </section>
+
+  <section class="cards" id="how">
+    <div class="card">
+      <h3>1 · Soft numbers</h3>
+      <p>Income, expenses, deposit and term. Disposable income drives an instalment band using a conservative % of free cash.</p>
+    </div>
+    <div class="card">
+      <h3>2 · Employment adjuster</h3>
+      <p>Permanent / contract / self-employed softens or tightens the band — still not a bureau score.</p>
+    </div>
+    <div class="card">
+      <h3>3 · Budget range</h3>
+      <p>Shows estimated vehicle price range + monthly from/to, with clear “estimate only” disclaimer.</p>
+    </div>
+    <div class="card">
+      <h3>4 · Lead → WhatsApp</h3>
+      <p>Name + mobile pre-fill a WhatsApp to YCG with the soft estimate. No third-party Seriti code required.</p>
+    </div>
+  </section>
+
+  <section class="cards" id="embed" style="padding-top:0">
+    <div class="card" style="grid-column:1/-1">
+      <h3>Drop-in embed (WordPress / any site)</h3>
+      <p style="margin-bottom:12px">Paste before <code>&lt;/body&gt;</code>:</p>
+      <pre style="background:rgba(0,0,0,.4);padding:14px;border-radius:12px;overflow:auto;font-size:12px;line-height:1.5;color:#e2e8f0;border:1px solid var(--border)"><code>&lt;script
+  src="https://YOUR-CDN/tru-afford.js"
+  data-dealer="Your Car Guy"
+  data-wa="27834659921"
+  data-brand="ycg"
+  data-bottom="88px"
+  data-position="right"
+  defer&gt;&lt;/script&gt;</code></pre>
+      <p style="margin-top:12px">Options: <code>data-rate</code> (default 0.1175), <code>data-bottom</code> (clear Joinchat), <code>data-z</code>, <code>data-position</code>.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 Your Car Guy · TruAfford by TruSaaS · Soft estimate demo · Not a credit provider tool by itself</div>
+</footer>
+
+<!-- Simulated Joinchat-style WA FAB so stacking looks real -->
+<a class="fake-wa" href="https://wa.me/27834659921" target="_blank" rel="noopener" title="WhatsApp">WA</a>
+
+<script
+  src="tru-afford.js"
+  data-dealer="Your Car Guy"
+  data-wa="27834659921"
+  data-brand="ycg"
+  data-bottom="88px"
+  data-position="right"
+></script>
+<script>
+document.getElementById("open-afford")?.addEventListener("click", function () {
+  if (window.TruAfford) window.TruAfford.open();
+});
+</script>
+</body>
+</html>

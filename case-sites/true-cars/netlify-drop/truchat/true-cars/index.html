@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>True · TruChat · True-Cars</title>
+  <meta name="theme-color" content="#0a1220" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: #070c18;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20,102,224,.3), transparent 55%),
+        radial-gradient(circle at 50% 100%, #0d1f2e 0%, #070c18 55%);
+      color: #f8fafc; min-height: 100vh; padding: 32px 20px 48px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .hero { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+    .hero img {
+      width: 64px; height: 64px; object-fit: contain; border-radius: 14px; background: #fff; padding: 8px;
+      box-shadow: 0 12px 32px -10px rgba(20,102,224,.5), 0 0 0 3px rgba(20,102,224,.3);
+    }
+    .hero h1 { font-family: "Plus Jakarta Sans", sans-serif; font-size: 24px; font-weight: 800; color: #4D9FFF; letter-spacing: -.02em; }
+    .hero p { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+    .lede { font-size: 15px; color: #94a3b8; line-height: 1.65; max-width: 48ch; margin-bottom: 18px; }
+    .lede strong { color: #fff; }
+    .grid { display: grid; gap: 14px; }
+    @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
+    a.card {
+      display: flex; flex-direction: column; text-decoration: none; color: inherit;
+      background: linear-gradient(165deg, rgba(13,36,64,.95), rgba(10,18,32,.98));
+      border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 22px; min-height: 170px;
+      transition: border-color .2s, transform .2s;
+    }
+    a.card:hover { transform: translateY(-3px); border-color: rgba(20,102,224,.5); }
+    .tag {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 5px 10px; border-radius: 999px; margin-bottom: 12px; width: fit-content;
+      color: #fff; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18);
+    }
+    .tag.pub { color: #93c5fd; background: rgba(20,102,224,.18); border-color: rgba(20,102,224,.4); }
+    a.card h2 { font-family: "Plus Jakarta Sans", sans-serif; font-size: 18px; margin-bottom: 8px; color: #fff; }
+    a.card p { font-size: 13px; color: #94a3b8; line-height: 1.55; flex: 1; }
+    a.card .go { margin-top: 14px; font-size: 12px; font-weight: 800; color: #4D9FFF; }
+    .note {
+      margin-top: 20px; padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,.1);
+      background: rgba(0,0,0,.28); font-size: 12px; color: #94a3b8; line-height: 1.55;
+    }
+    .note code { color: #fff; background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 6px; font-size: 11px; }
+    footer { margin-top: 24px; font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <img src="assets/truecars-mark.jpg" alt="True-Cars" width="64" height="64" />
+      <div>
+        <h1>TRUE-CARS</h1>
+        <p>TruChat · True-Cars only</p>
+      </div>
+    </header>
+    <p class="lede">
+      AI chatbot for <strong>true-cars.co.za</strong> + private leads portal.
+      Standalone True-Cars brand — not linked to any dealer bot.
+    </p>
+    <div class="grid">
+      <a class="card" href="chat.html">
+        <span class="tag pub">1 · Public</span>
+        <h2>AI chatbot · True</h2>
+        <p>Stock, test drives, trade-ins, finance. WhatsApp handoff when qualified.</p>
+        <div class="go">Open chatbot →</div>
+      </a>
+      <a class="card" href="portal.html">
+        <span class="tag">2 · Private</span>
+        <h2>Leads portal</h2>
+        <p>PIN <code>true</code> by default. Tickets + WhatsApp to demo line.</p>
+        <div class="go">Open portal →</div>
+      </a>
+    </div>
+    <div class="note">
+      Site embed (before <code>&lt;/body&gt;</code>): qualifier → chat-core → config → widget.<br />
+      Widget FAB bottom-right · pulse blue · assistant name <strong>True</strong>.
+    </div>
+    <footer>TruSaaS · TruChat · True-Cars</footer>
+  </div>
+  <script src="../shared/qualifier.js?v=3"></script>
+  <script src="../shared/chat-core.js?v=5"></script>
+  <script src="config.js"></script>
+  <script src="widget.js" data-bottom="24px" data-position="right" defer></script>
+</body>
+</html>
