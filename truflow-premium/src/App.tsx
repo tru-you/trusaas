@@ -87,6 +87,7 @@ const LeadDetailModal = lazy(() => import("./components/LeadDetailModal"));
 const AccountingRecon = lazy(() => import("./components/AccountingRecon"));
 const VehicleDetailModal = lazy(() => import("./components/VehicleDetailModal"));
 const WordPressIntegration = lazy(() => import("./components/WordPressIntegration"));
+const DealershipAdmin = lazy(() => import("./components/DealershipAdmin"));
 import AmortizationCalc from "./components/AmortizationCalc";
 import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
@@ -3042,6 +3043,14 @@ export default function App() {
                 {PRODUCT_NAME} — stock, CRM, media hub, full finance & website embeds
               </p>
             </div>
+
+            {/* Onboarding a dealership. Admin only — the server enforces it too,
+                so this gate only avoids rendering a form that would 403. */}
+            {getAccount()?.role === "admin" && (
+              <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+                <DealershipAdmin onNotify={addNotification} />
+              </Suspense>
+            )}
 
             {/* Integration URLs + website kit */}
             <div className="card border-[color:var(--cyan-soft)]">
