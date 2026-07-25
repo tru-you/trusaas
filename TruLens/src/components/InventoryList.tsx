@@ -128,6 +128,47 @@ export default function InventoryList({
     return () => root.removeEventListener('pointermove', onMove);
   }, []);
   
+  /**
+   * What the yard should do next, derived from the actual fleet.
+   *
+   * This replaced a hardcoded line claiming vehicles with 360 walkarounds
+   * "sell 18% faster on average" — a figure with no source, in an app that
+   * holds no sales data, shown to a dealer who would repeat it to a customer.
+   * Everything below is computed from photos actually captured.
+   */
+  const fleet = React.useMemo(() => {
+    const rows = vehicles.map(v => ({ v, r: computeWebReadiness(v) }));
+    const shortOfPublish = rows
+      .filter(({ r }) => r.missingRequired.length > 0)
+      .sort((a, b) => a.r.missingRequired.length - b.r.missingRequired.length);
+    const readyToExport = rows.filter(({ v, r }) => r.missingRequired.length === 0 && !v.lastDmsExportAt);
+    const done = rows.filter(({ r }) => r.missingRequired.length === 0).length;
+    return { rows, shortOfPublish, readyToExport, done, total: rows.length };
+  }, [vehicles]);
+
+  /** One sentence, the most useful thing true right now. */
+  const nextAction = React.useMemo(() => {
+    if (fleet.total === 0) {
+      return { head: 'No vehicles yet', body: 'Add one to start capturing.' };
+    }
+    if (fleet.shortOfPublish.length > 0) {
+      const nearest = fleet.shortOfPublish[0];
+      const missing = nearest.r.missingRequired;
+      const name = `${nearest.v.year} ${nearest.v.make} ${nearest.v.model}`.trim();
+      return {
+        head: `${fleet.shortOfPublish.length} ${fleet.shortOfPublish.length === 1 ? 'vehicle is' : 'vehicles are'} short of publishing`,
+        body: `Closest: ${name} — ${missing.length === 1 ? missing[0] : `${missing.length} shots, starting with ${missing[0]}`}.`,
+      };
+    }
+    if (fleet.readyToExport.length > 0) {
+      return {
+        head: `${fleet.readyToExport.length} ready to send to TruFlow`,
+        body: 'Every required shot is captured. Export to publish them.',
+      };
+    }
+    return { head: 'Everything captured', body: `All ${fleet.total} vehicles have their required shots.` };
+  }, [fleet]);
+
   // Settings state (persisted for VIR / share branding)
   const [dealershipName, setDealershipName] = React.useState(
     () => localStorage.getItem('trulens_dealer_name') || 'TruLens South Africa'
@@ -318,18 +359,35 @@ export default function InventoryList({
     <div id="inventory-list-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       
       {/* App Header */}
-      <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
-        <div className="flex items-center">
-          <img
-            src={trulensLogo}
-            alt="TruLens"
-            /* The supplied wordmark is the light-background variant: its "Tru" is
-               dark graphite chrome, which goes muddy on #06080D and reads grey.
-               Lifting brightness makes the chrome read as silver on dark, matching
-               the TruSaaS wordmark the holding site uses. Remove this once a
-               proper light-chrome TruLens wordmark exists. */
-            className="h-8 w-auto object-contain [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
-          />
+      <div className="tl-glass px-3 py-2.5 border-b border-neutral-800 flex items-center gap-3 shrink-0">
+        {/* The bar used to be a logo, a wide gap, and three secondary buttons.
+            The gap now carries the two things a person in a yard needs: whose
+            stock this is, and how much is left. The dealership decides which
+            dealer's inventory the photos land in and was shown nowhere. */}
+        <img
+          src={trulensLogo}
+          alt="TruLens"
+          /* The supplied wordmark is the light-background variant: its "Tru" is
+             dark graphite chrome, which goes muddy on #06080D and reads grey.
+             Lifting brightness makes the chrome read as silver on dark, matching
+             the TruSaaS wordmark the holding site uses. Remove this once a
+             proper light-chrome TruLens wordmark exists. */
+          className="h-6 w-auto object-contain shrink-0 [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
+        />
+
+        <div className="h-7 w-px bg-neutral-800 shrink-0" aria-hidden="true" />
+
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-semibold text-[#E8EAE6] truncate leading-tight">
+            {dealershipName}
+          </div>
+          <div className="text-[11px] text-neutral-400 leading-tight truncate">
+            {fleet.total === 0
+              ? 'No vehicles yet'
+              : fleet.shortOfPublish.length > 0
+                ? `${fleet.done}/${fleet.total} complete · ${fleet.shortOfPublish.length} need photos`
+                : `${fleet.done}/${fleet.total} complete`}
+          </div>
         </div>
 
         {/* Flow DMS, sync & log out */}
@@ -1095,16 +1153,32 @@ export default function InventoryList({
               </div>
             </div>
 
-            {/* Operational Efficiency Card */}
-            <div className="bg-indigo-950/10 border border-indigo-500/20 rounded-xl p-3 flex items-start gap-3">
-              <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+            {/* Next action — computed from the fleet, not asserted. */}
+            <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-3.5 flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-[#4FE3DC]/12 text-[#4FE3DC] shrink-0">
                 <Lightbulb size={14} />
               </div>
-              <div className="flex-1 space-y-1">
-                <span className="text-[12px] font-semibold text-indigo-300  tracking-tighter">Business Intelligence</span>
-                <p className="text-[13px] text-indigo-200 leading-tight">
-                  Vehicles with <strong>360° Walkarounds</strong> and <strong>complete interior sets</strong> sell 18% faster on average. You currently have {vehicles.filter(v => (v.photos || {})['video_360']).length} walkarounds active.
+              <div className="flex-1 min-w-0">
+                <span className="text-[11px] font-bold text-neutral-400 tracking-widest">DO NEXT</span>
+                <p className="text-[15px] font-semibold text-[#E8EAE6] leading-snug mt-1">
+                  {nextAction.head}
                 </p>
+                <p className="text-[13px] text-neutral-300 leading-snug mt-0.5">
+                  {nextAction.body}
+                </p>
+                {fleet.total > 0 && (
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <div className="h-1.5 flex-1 rounded-full bg-neutral-800 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#4FE3DC] transition-all duration-500"
+                        style={{ width: `${Math.round((fleet.done / fleet.total) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-mono text-neutral-400 shrink-0">
+                      {fleet.done}/{fleet.total} complete
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
