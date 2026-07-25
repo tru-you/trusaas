@@ -283,19 +283,28 @@ export default function App() {
   const isMasterAdmin = currentUser?.role === 'admin';
   const dealershipId = currentUser?.dealershipId;
 
-  // Filter state for non-admins (vehicles with no dealershipId always visible — e.g. TruLens imports)
-  const filteredVehicles = state
-    ? (isMasterAdmin
-        ? state.vehicles
-        : state.vehicles.filter(v => !v.dealershipId || v.dealershipId === dealershipId))
-    : [];
-  const filteredLeads = state ? (isMasterAdmin ? state.leads : state.leads.filter(l => l.dealershipId === dealershipId)) : [];
-  const filteredTasks = state ? (isMasterAdmin ? state.tasks : state.tasks.filter(t => t.dealershipId === dealershipId)) : [];
-  const filteredInvoices = state ? (isMasterAdmin ? state.invoices : state.invoices.filter(i => i.dealershipId === dealershipId)) : [];
-  const filteredAgreements = state ? (isMasterAdmin ? state.agreements : state.agreements.filter(a => a.dealershipId === dealershipId)) : [];
-  const filteredDocuments = state ? (isMasterAdmin ? state.documents : (state.documents || []).filter(d => !d.dealershipId || d.dealershipId === dealershipId)) : [];
-  const filteredCommunications = state ? (isMasterAdmin ? state.communications : state.communications.filter(c => c.dealershipId === dealershipId)) : [];
-  const filteredExpenses = state ? (isMasterAdmin ? state.expenses : state.expenses.filter(e => e.dealershipId === dealershipId)) : [];
+  /* Tenant scoping ----------------------------------------------------------
+     The server already scopes /api/state to the signed-in tenant, so this is a
+     second, narrower net — useful for an admin looking at everything, wrong as
+     a hard filter.
+
+     It used to filter on `dealershipId` even when that was undefined, which
+     happens whenever there is no user record for the tenant (the demo ships
+     with none). Every list then matched nothing: the Leads header read
+     "0 open" while the board beside it showed two, because the board built its
+     own list straight off state.leads. Records with no dealershipId are kept
+     too — TruLens imports arrive without one. */
+  const mine = (d?: string) => !d || d === dealershipId;
+  const showAll = isMasterAdmin || !dealershipId;
+
+  const filteredVehicles = !state ? [] : showAll ? state.vehicles : state.vehicles.filter(v => mine(v.dealershipId));
+  const filteredLeads = !state ? [] : showAll ? state.leads : state.leads.filter(l => mine(l.dealershipId));
+  const filteredTasks = !state ? [] : showAll ? state.tasks : state.tasks.filter(t => mine(t.dealershipId));
+  const filteredInvoices = !state ? [] : showAll ? state.invoices : state.invoices.filter(i => mine(i.dealershipId));
+  const filteredAgreements = !state ? [] : showAll ? state.agreements : state.agreements.filter(a => mine(a.dealershipId));
+  const filteredDocuments = !state ? [] : showAll ? (state.documents || []) : (state.documents || []).filter(d => mine(d.dealershipId));
+  const filteredCommunications = !state ? [] : showAll ? state.communications : state.communications.filter(c => mine(c.dealershipId));
+  const filteredExpenses = !state ? [] : showAll ? state.expenses : state.expenses.filter(e => mine(e.dealershipId));
   const [selectedDetailVehicle, setSelectedDetailVehicle] = useState<Vehicle | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leadDetailId, setLeadDetailId] = useState<string | null>(null);
@@ -1009,16 +1018,9 @@ export default function App() {
           <div className="w-full flex items-center justify-center px-1">
             <img src={logo} alt="TruFlow Premium" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
-          {/* Whose floor this is, and who is signed in — stated once, here,
-              directly under the mark rather than repeated across the top bar. */}
-          <div className="mt-3 flex flex-col items-center text-center">
-            <span className="text-[13px] font-semibold text-[color:var(--white)] leading-tight">
-              {account?.label || 'Signed in'}
-            </span>
-            <span className="text-[length:var(--t-micro)] text-[color:var(--cyan)] font-semibold">
-              {selectedRole === 'owner' ? 'Owner' : selectedRole === 'manager' ? 'Manager' : 'Salesperson'}
-            </span>
-          </div>
+          {/* The dealership is named in the overview banner; repeating it under
+              the logo said "Demo Dealership" next to a banner reading "MKR Auto
+              Sales", which just looked broken. */}
           {/* The dealer's OWN showroom. This was hardcoded to true-cars.co.za,
               so every dealership's sidebar linked to our consumer site instead
               of to their website. */}
@@ -1030,9 +1032,9 @@ export default function App() {
             const label = site.replace(/^https?:\/\//, '').replace(/\/$/, '');
             return (
               <>
-                <a href={site} target="_blank" rel="noopener noreferrer"
-                   className="text-[13px] text-[rgba(232,234,230,0.55)] hover:text-[color:var(--white)] mt-2 transition-colors">{label}</a>
-                <div className="flex gap-2 mt-2">
+                {/* The bare URL sat directly above a button that goes to the
+                    same place — the button says what it does, the URL didn't. */}
+                <div className="flex gap-2 mt-3">
                   <a href={site} target="_blank" rel="noopener noreferrer"
                      className="text-[13px] px-3 py-1 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-faint)] transition-colors">
                     Your showroom
@@ -2191,7 +2193,10 @@ export default function App() {
             {leadCrmTab === "kanban" ? (
               <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-thin">
                 {["New", "Contacted", "Test Drive Scheduled", "Negotiating", "Closed Won", "Closed Lost"].map((stage) => {
-                  const filteredLeads = state.leads.filter((l) => {
+                  // Off the scoped list, not state.leads — the board was the
+                  // one view ignoring tenant scoping, which is why its counts
+                  // disagreed with the header above it.
+                  const stageLeads = filteredLeads.filter((l) => {
                     const statusMatch = l.status === stage;
                     const overdueMatch = !filterOverdueOnly || leadOverdue(l);
                     return statusMatch && overdueMatch;
@@ -2201,10 +2206,10 @@ export default function App() {
                     <div key={stage} className="flex-1 min-w-[220px] max-w-[280px] bg-[color:var(--glass)] rounded-xl p-3 flex flex-col gap-3 min-h-[460px] border border-white/5">
                       <div className="flex justify-between items-center border-b border-white/5 pb-1">
                         <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">{stage}</span>
-                        <span className="px-2 py-0.5 bg-[color:var(--glass)] rounded-full text-[13px] font-bold text-[rgba(232,234,230,0.72)]">{filteredLeads.length}</span>
+                        <span className="px-2 py-0.5 bg-[color:var(--glass)] rounded-full text-[13px] font-bold text-[rgba(232,234,230,0.72)]">{stageLeads.length}</span>
                       </div>
                       <div className="flex-1 flex flex-col gap-3">
-                        {filteredLeads.map((l) => (
+                        {stageLeads.map((l) => (
                           <div
                             key={l.id}
                             onClick={() => setLeadDetailId(l.id)}
