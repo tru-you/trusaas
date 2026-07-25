@@ -374,11 +374,44 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
 [data-app="truinspect"] .photo-review :where(*) { --accent: transparent; }
 
 /* Capture-state indicators §1.10 — amber retake, not red; red = system error only. */
-[data-app="truinspect"] .slot-state--idle     { outline: 1px solid var(--border-subtle); }
-[data-app="truinspect"] .slot-state--active   { outline: 2px solid var(--accent); animation: ti-ring-pulse 1.5s ease-in-out infinite; }
-[data-app="truinspect"] .slot-state--captured { background: var(--bg-overlay); }
-[data-app="truinspect"] .slot-state--retake   { outline: 2px solid var(--state-attention); }
-[data-app="truinspect"] .slot-state--error    { outline: 2px solid var(--state-error); }
+/* Plain (unlayered) CSS so these win over the Tailwind colour utilities on
+   the same element without stripping every className. */
+[data-app="truinspect"] .slot-state {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+[data-app="truinspect"] .slot-state--idle:hover { border-color: var(--border-strong); }
+
+/* Selected / in progress — the one place the eye should go. */
+[data-app="truinspect"] .slot-state--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-on-accent);
+}
+
+/* Captured. Neutral by design: a wall of cyan ticks competes with the
+   active chip and the inspector loses track of where they are. */
+[data-app="truinspect"] .slot-state--captured {
+  background: var(--bg-overlay);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+/* Amber, not red — red reads as system fault, amber reads as "do it again". */
+[data-app="truinspect"] .slot-state--next,
+[data-app="truinspect"] .slot-state--retake {
+  border-color: var(--state-attention);
+  color: var(--state-attention);
+}
+[data-app="truinspect"] .slot-state--retake { border-width: 2px; }
+
+/* Red is reserved for upload / connection failure. */
+[data-app="truinspect"] .slot-state--error {
+  border-color: var(--state-error);
+  border-width: 2px;
+  color: var(--state-error);
+}
 
 @keyframes ti-ring-pulse {
   0%, 100% { outline-offset: 0; }

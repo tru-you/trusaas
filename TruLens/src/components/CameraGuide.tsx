@@ -1090,20 +1090,20 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
                 key={slot.id}
                 type="button"
                 onClick={() => setSelectedSlotId(slot.id)}
-                className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap border cursor-pointer flex items-center gap-1.5 transition-all ${
+                className={`slot-state px-3 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-1.5 transition-all ${
                   isSelected
-                    ? 'bg-indigo-600 border-indigo-400 text-[#E8EAE6] shadow-md shadow-indigo-600/30'
+                    ? 'slot-state--active'
                     : isTaken
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    ? 'slot-state--captured'
                     : isNext
-                    ? 'bg-amber-500/10 border-amber-400/40 text-amber-200'
-                    : 'bg-neutral-950 border-neutral-800 text-neutral-300 hover:border-neutral-600'
+                    ? 'slot-state--next'
+                    : 'slot-state--idle'
                 }`}
               >
                 {isTaken ? (
-                  <Check size={10} className="text-emerald-400 font-semibold" />
+                  <Check size={10} className="font-semibold" />
                 ) : isNext ? (
-                  <span className="text-[12px] font-semibold text-amber-400">NEXT</span>
+                  <span className="text-[12px] font-semibold">NEXT</span>
                 ) : null}
                 {slot.name} {slot.required && !isTaken ? '*' : ''}
               </button>
