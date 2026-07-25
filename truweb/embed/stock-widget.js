@@ -146,7 +146,7 @@
           <select id="ts-year"><option value="">All years</option>${years.map((y) => `<option value="${y}">${y}</option>`).join("")}</select>
         </div>
         <div class="ts-grid" id="ts-grid">${list.slice(0, limit).map(card).join("")}</div>
-        <div class="ts-powered">Powered by <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener" style="color:inherit"><b>TrueSaas</b></a> · <a href="https://true-cars.co.za" target="_blank" rel="noopener" style="color:inherit">true-cars.co.za</a></div>
+        <div class="ts-powered">Powered by <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener" style="color:inherit"><b>TruSaaS</b></a> · <a href="https://true-cars.co.za" target="_blank" rel="noopener" style="color:inherit">true-cars.co.za</a></div>
       </div>`;
 
     const apply = () => {

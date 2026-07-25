@@ -1,0 +1,6 @@
+{
+  "name": "TruSaaS",
+  "description": "All-in-one business platform integrating CRM, project management, and automated accounting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

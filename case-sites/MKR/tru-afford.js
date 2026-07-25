@@ -1,5 +1,5 @@
 /**
- * TruAfford — soft affordability / pre-qual widget (TrueSaas)
+ * TruAfford — soft affordability / pre-qual widget (TruSaaS)
  * Drop-in: <script src="tru-afford.js" data-dealer="Your Car Guy" data-wa="27834659921" data-brand="ycg"></script>
  * Soft estimate only — not a hard credit bureau check.
  */

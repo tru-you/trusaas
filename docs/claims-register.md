@@ -46,24 +46,22 @@ All uses of the wrong spelling have been catalogued below. **Fixed in this branc
 - `case-sites/cars-at-caledon/tru-afford.js` — footer text, brand comment, legal disclaimer ✅
 - `truweb/mkr-autosales/tru-afford.js` — footer text, brand comment, file header, legal disclaimer ✅
 
-### NEEDS FIX (tracked but unrelated to this refactor)
-- `TruCRM/server.ts` lines 45, 382 — "TrueSaaS" (capital S at end)
-- `TruCRM/metadata.json` line 2 — "TrueSaaS"
-- `TruCRM/src/context/AppContext.tsx` line 367 — "TrueSaaS"
-- `TruCRM/src/data/carDealerData.ts` line 172 — "TrueSaaS"
+### FIXED (Commit 12 — full sweep)
+- `TruCRM/server.ts`, `TruCRM/metadata.json` ✅
+- `TruCRM/src/context/AppContext.tsx`, `carDealerData.ts`, `ExecutiveDashboard.tsx` ✅
+- `TruCRM/src/components/accounting/AccountingSuite.tsx`, `WorkflowsSuite.tsx` ✅
+- `TruCRM/src/components/common/CommunicationModal.tsx`, `SettingsView.tsx`, `Sidebar.tsx` ✅
+- All Truchat `index.html` footers (true-cars + ray, across MKR, YCG, Caledon) ✅
+- All `truweb/mkr-autosales/` HTML files ✅
+- All `case-sites/your-car-guy/` HTML files + `_inject_tru_afford.py` ✅
+- All `public/embed/stock-widget.js` copies (TruLens, TruInspect, TruFlow Premium, TruFlow Light) ✅
+- `truweb/embed/stock-widget.js` ✅
+- `case-sites/MKR/tru-afford.js` + `case-sites/cars-at-caledon/tru-afford.js` header comments ✅
+- `case-sites/cars-at-caledon/index.html` HTML comments ✅
 
-### NEEDS FIX (static/HTML files — separate task)
-- `Truchat/true-cars/index.html` line 86 — "TrueSaas"
-- `case-sites/MKR/truchat/true-cars/index.html` line 86 — "TrueSaas"
-- `truweb/mkr-autosales/index.html` — "TrueSaas" in footer (×2)
-- `truweb/mkr-autosales/premium-select.html` — "TrueSaas" in footer + comment
-- `truweb/mkr-autosales/premium-performance.html` — "TrueSaas" in footer + comment
-- `truweb/embed/stock-widget.js` — "TrueSaas" in powered-by text
-- `case-sites/your-car-guy/YCG CB.html` — comment
-- `case-sites/your-car-guy/truchat-your-car-guy.html` — comment
-- `case-sites/your-car-guy/tru-afford-demo.html` — multiple: meta description, body text, footer (×4)
-- `case-sites/your-car-guy/_inject_tru_afford.py` — comment
-- `truweb/mkr-autosales/premium-select.html` line 1040 — external URL `truesaas.html` (review if page exists)
+### STILL PRESENT (URL slugs — not display strings)
+- `truweb/mkr-autosales/` HTML files: `href="…/truesaas.html"` — URL slug on the live
+  true-cars.co.za domain; requires a server-side redirect + page rename, out of branch scope
 
 ---
 
