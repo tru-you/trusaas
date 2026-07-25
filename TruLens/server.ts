@@ -38,6 +38,11 @@ const DEFAULT_DMS_URL =
  * every request must carry.
  */
 const ACCESS_CODE = process.env.TRULENS_ACCESS_CODE || '';
+
+/** Shared secret for the TruFlow photo push. Must match TRUFLOW_SYNC_KEY on
+ *  TruFlow. Unset here and the header is simply omitted, which is what keeps
+ *  this deployable ahead of the key being set on the other side. */
+const SYNC_KEY = process.env.TRUFLOW_SYNC_KEY || '';
 const TOKEN_SECRET =
   process.env.TRULENS_TOKEN_SECRET ||
   crypto.createHash('sha256').update(ACCESS_CODE || 'trulens-dev').digest('hex');
@@ -460,6 +465,11 @@ app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
     accessCodeConfigured,
+    // Booleans and a count, never values. Lets you confirm from outside that
+    // the env vars reached the process — otherwise invisible until an export
+    // fails or a dealer files a car into the wrong yard.
+    syncKeyConfigured: !!SYNC_KEY,
+    dealerCodesConfigured: DEALER_CODES.length,
     mode: LOCAL_MODE ? 'local' : 'cloud',
     dmsUrl: DEFAULT_DMS_URL,
     port: PORT,
@@ -1035,9 +1045,18 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       photos,
     };
 
+    /* Service-to-service auth for the DMS push. TruFlow leaves
+       /api/sync/push-photos open when its TRUFLOW_SYNC_KEY is unset — which is
+       how it has been running — so anyone who knew the URL could write vehicles
+       and photos into a dealer's inventory. Sending it here is the half that
+       has to ship first: set the key on TruFlow before this and every export
+       starts failing. Same value on both services. */
     const dmsRes = await fetch(pushUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(SYNC_KEY ? { 'x-tru-sync-key': SYNC_KEY } : {}),
+      },
       body: JSON.stringify(payload),
     });
 

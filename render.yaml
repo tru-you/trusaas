@@ -57,6 +57,18 @@ services:
       # code rotation. Derived from the access code when unset.
       - key: TRULENS_TOKEN_SECRET
         sync: false
+      # Per-dealership codes: "cars-on-caledon:CODE1,mkr-autosales:CODE2".
+      # A code here pins the dealership into the device token, so a capture
+      # cannot file into another dealer's yard whichever way the picker is set.
+      # TRULENS_ACCESS_CODE above still works and leaves the picker in charge.
+      - key: TRULENS_DEALER_CODES
+        sync: false
+      # Shared secret for the photo push to TruFlow. MUST equal TRUFLOW_SYNC_KEY
+      # on trusaas-premium. Set it on TruFlow FIRST, then here — the reverse
+      # order leaves every export failing in between. Unset on both means
+      # /api/sync/push-photos accepts anonymous writes.
+      - key: TRUFLOW_SYNC_KEY
+        sync: false
       # Default export target = Premium (MKR path). Change to flow URL if dealer is on Lite.
       - key: TRUFLOW_DMS_URL
         value: https://premium.tru-saas.com  # custom domain on Render (onrender host still works as fallback)
@@ -155,6 +167,17 @@ services:
         value: production
       - key: DATA_DIR
         value: /var/data
+      # Gates /api/sync/push-photos. While unset the endpoint accepts
+      # unauthenticated writes — anyone who knows the URL can push vehicles and
+      # photos into a dealer's inventory. MUST equal TRUFLOW_SYNC_KEY on
+      # trusaas-lens. Set it here first, then on TruLens.
+      - key: TRUFLOW_SYNC_KEY
+        sync: false
+      # Set once, at first boot on a fresh disk, to choose the master admin code
+      # instead of reading a generated one out of the service log. Ignored
+      # afterwards — rotate through /api/auth/codes/rotate.
+      - key: ADMIN_ACCESS_CODE
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
 
