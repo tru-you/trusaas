@@ -602,7 +602,7 @@ app.get("/api/auth/codes", (req: any, res) => {
 // Default high-fidelity seed data
 const DEFAULT_MOCK_STATE = {
   // Every dealer live on this instance needs an entry, and its id must match
-  // DEALER_SLUG_TO_ID below — that pairing is what keeps each dealer's stock
+  // its slug below — that pairing is what keeps each dealer's stock
   // on their own website only.
   dealerships: [
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
@@ -898,7 +898,7 @@ app.post("/api/inventory", (req, res) => {
     // adding a car by hand got it filed to the default dealership and it
     // vanished from their own stock list.
     dealershipId:
-      req.body.dealershipId || DEALER_SLUG_TO_ID[req.body.dealerSlug] || ownerDealership(req),
+      req.body.dealershipId || dealerIdForSlug(req.body.dealerSlug) || ownerDealership(req),
     // Showroom tier. Left unset when not supplied so the website falls back to
     // its own heuristic rather than defaulting everything into one category.
     category: CATEGORY_VALUES.includes(req.body.category) ? req.body.category : undefined,
@@ -957,7 +957,7 @@ app.post("/api/leads", (req: any, res) => {
     // only ever create leads for themselves.
     dealershipId:
       req.auth?.role === "admin"
-        ? req.body.dealershipId || DEALER_SLUG_TO_ID[req.body.dealerSlug] || undefined
+        ? req.body.dealershipId || dealerIdForSlug(req.body.dealerSlug) || undefined
         : req.auth?.dealershipId,
     firstName: req.body.firstName || "Anonymous",
     lastName: req.body.lastName || "Lead",
@@ -1295,14 +1295,16 @@ app.post("/api/leads/auto-assign", async (req, res) => {
     const tenant = ownerDealership(req);
     const ours = (id?: string) => !tenant || !id || id === tenant;
 
-    const newLeads = state.leads.filter(l => l.status === "New" && ours(l.dealershipId));
+    const newLeads = state.leads.filter(
+      (l: any) => l.status === "New" && ours(l.dealershipId)
+    );
 
     if (newLeads.length === 0) {
       return res.json({ message: "No 'New' leads found for auto-assignment.", assignments: [] });
     }
 
     const salespeople = state.users.filter(
-      u => u.role === "salesperson" && u.isActive && ours(u.dealershipId)
+      (u: any) => u.role === "salesperson" && u.isActive && ours(u.dealershipId)
     );
     if (salespeople.length === 0) {
       return res.status(400).json({ error: "No active salespeople available for assignment." });
@@ -1675,7 +1677,7 @@ app.post("/api/sync/pull-all", async (req, res) => {
     // Optional dealer scope — batch-pulling for one dealer must not reach into
     // another dealer's captures that happen to share a stock number.
     const wantSlug = (req.body || {}).dealerSlug;
-    const wantId = wantSlug ? DEALER_SLUG_TO_ID[wantSlug] : undefined;
+    const wantId = wantSlug ? dealerIdForSlug(wantSlug) : undefined;
 
     for (const doc of snapshot.docs) {
       const lensVehicle = doc.data();
@@ -1751,10 +1753,10 @@ app.post("/api/sync/push-photos", (req, res) => {
        untagged, which the public feed then reads as the default dealership —
        so the first cars of a new dealer land on someone else's website. Refuse
        loudly instead. An absent slug is a legacy client and still allowed. */
-    if (dealerSlug && !DEALER_SLUG_TO_ID[dealerSlug]) {
+    if (dealerSlug && !dealerIdForSlug(dealerSlug)) {
       return res.status(400).json({
         synced: false,
-        error: `Unknown dealer "${dealerSlug}". Add it to DEALER_SLUG_TO_ID before capturing for this dealership.`,
+        error: `Unknown dealer "${dealerSlug}". Add the dealership in TruFlow before capturing for it.`,
       });
     }
 
@@ -1763,7 +1765,7 @@ app.post("/api/sync/push-photos", (req, res) => {
        for one dealer could find, and overwrite the photos of, another dealer's
        vehicle. Scope the search the same way the public feed scopes reads, so
        write and read agree on who owns an untagged row. */
-    const pushDealerId = DEALER_SLUG_TO_ID[dealerSlug] || DEFAULT_DEALERSHIP_ID;
+    const pushDealerId = dealerIdForSlug(dealerSlug) || DEFAULT_DEALERSHIP_ID;
     const ownedByPusher = (v: any) =>
       (v.dealershipId || DEFAULT_DEALERSHIP_ID) === pushDealerId;
 
@@ -1824,7 +1826,7 @@ app.post("/api/sync/push-photos", (req, res) => {
         // Tag to the dealer whose phone captured this — keeps it off every
         // other dealer's website. Unrecognized/missing slug = untagged,
         // which the public feed treats as the original pilot dealer (MKR).
-        dealershipId: DEALER_SLUG_TO_ID[dealerSlug] || undefined,
+        dealershipId: dealerIdForSlug(dealerSlug) || undefined,
         /* Whether the dealer's website may show it. TruLens has a Publish
            toggle, but it only ever wrote to TruLens's own store — the export
            never carried the value and this never set it, and the public feed
@@ -1965,14 +1967,34 @@ function writePortals(portals: Portal[]) {
  *  tags its vehicles. Untagged (legacy) vehicles belong to the FIRST entry
  *  here so existing pilot sites (MKR) keep working unchanged.
  *  Add a line here whenever a new dealer site goes live on this instance. */
-const DEALER_SLUG_TO_ID: Record<string, string> = {
-  "mkr-autosales": "d1",
-  "cars-on-caledon": "d2",
-  // A sandbox tenant for demos and the website "try it" link. Isolated by the
-  // same dealership scoping that keeps real dealers apart, so a prospect can
-  // never see or touch live stock.
-  "demo": "demo",
-};
+/**
+ * Slug -> dealershipId, derived from state rather than hardcoded.
+ *
+ * This was a literal map that had to be edited and deployed for every new
+ * dealer — and the same dealer had to be added to TruLens's picker and
+ * deployed again. Two releases to onboard one customer, each one a chance to
+ * break the service for everyone already on it. Every dealership in state
+ * already carries its own slug, so the map only ever duplicated data that
+ * was sitting right there.
+ *
+ * Read per call, not cached at module load, so a dealership added at runtime
+ * works immediately without a restart.
+ */
+function dealerSlugMap(state?: any): Record<string, string> {
+  const s = state || readState();
+  const out: Record<string, string> = {};
+  for (const d of s.dealerships || []) {
+    if (d?.slug && d?.id) out[String(d.slug)] = String(d.id);
+  }
+  return out;
+}
+
+/** The dealership a slug belongs to, or undefined when the slug is unknown. */
+function dealerIdForSlug(slug: string, state?: any): string | undefined {
+  if (!slug) return undefined;
+  return dealerSlugMap(state)[slug];
+}
+
 const DEFAULT_DEALERSHIP_ID = "d1";
 
 /** Showroom tiers a dealer can shelve a vehicle into. Anything else is
@@ -2046,7 +2068,7 @@ function buildPublicStock(state: any, dealerSlug: string, source: string) {
   // no mapping and not an aggregate view gets an empty result rather than
   // leaking another dealer's inventory (was previously returning everything
   // to everyone regardless of the ?dealer= value).
-  const wantedId = DEALER_SLUG_TO_ID[dealerSlug];
+  const wantedId = dealerIdForSlug(dealerSlug, state);
   const rawVehicles = state.vehicles || [];
   const scoped = wantedId
     ? rawVehicles.filter((v: any) => (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId)
@@ -2091,7 +2113,7 @@ app.get("/api/public/stock", (req, res) => {
    guessed one. */
 app.get("/api/feed/vehicle/:stockNumber", (req, res) => {
   const dealerSlug = String(req.query.dealer || "");
-  const wantedId = DEALER_SLUG_TO_ID[dealerSlug];
+  const wantedId = dealerIdForSlug(dealerSlug, state);
   if (!wantedId && !AGGREGATE_SLUGS.has(dealerSlug)) {
     return res.status(400).json({ error: "A known ?dealer= is required." });
   }
@@ -2130,6 +2152,95 @@ app.get("/api/feed/vehicle/:stockNumber", (req, res) => {
 });
 
 // --- Portal management ---
+
+/* ── Dealerships ────────────────────────────────────────────────────────────
+   Onboarding a dealer used to mean editing a literal map here, deploying,
+   editing TruLens's picker, and deploying again — two releases per customer,
+   each one a chance to break the service for everyone already on it. These
+   make it a form.
+
+   Creating one does NOT issue a code. Do that separately via
+   /api/auth/codes/rotate, so the code is shown once and deliberately, rather
+   than falling out of a create call and into a log. */
+
+/** Public: the list TruLens's dealer picker reads. Names and slugs only —
+ *  no counts, no contacts, nothing a competitor could not read off the
+ *  dealer websites these slugs already serve. */
+app.get("/api/public/dealerships", (_req, res) => {
+  const s = readState();
+  res.setHeader("Cache-Control", "no-store");
+  res.json(
+    (s.dealerships || [])
+      .filter((d: any) => d?.slug && d?.id && d.id !== "demo")
+      .map((d: any) => ({ slug: d.slug, name: d.name, location: d.location || "" }))
+  );
+});
+
+app.get("/api/dealerships", (req: any, res) => {
+  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+  res.json(readState().dealerships || []);
+});
+
+app.post("/api/dealerships", (req: any, res) => {
+  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+
+  const name = String(req.body?.name || "").trim();
+  const location = String(req.body?.location || "").trim();
+  const websiteUrl = String(req.body?.websiteUrl || "").trim();
+  /* The slug is the dealer's identity everywhere: their website feed, the
+     TruLens picker, the tag on every captured vehicle. Renaming one later
+     orphans stock, so it is validated hard and never derived silently. */
+  const slug = String(req.body?.slug || "").trim().toLowerCase();
+
+  if (!name) return res.status(400).json({ error: "name is required" });
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) {
+    return res.status(400).json({
+      error: "slug must be lowercase letters, numbers and single hyphens, e.g. cars-on-caledon",
+    });
+  }
+
+  const state = readState();
+  const existing = state.dealerships || [];
+  if (existing.some((d: any) => d.slug === slug)) {
+    return res.status(409).json({ error: `A dealership already uses the slug "${slug}".` });
+  }
+
+  /* Sequential d-ids, continuing the existing scheme. Never reuse a retired
+     id — vehicles carry it, and a reused id would silently adopt them. */
+  const used = existing
+    .map((d: any) => /^d(\d+)$/.exec(String(d.id))?.[1])
+    .filter(Boolean)
+    .map(Number);
+  const id = "d" + String(used.length ? Math.max(...used) + 1 : 1);
+
+  const dealership = { id, name, location, slug, websiteUrl };
+  state.dealerships = [...existing, dealership];
+  writeState(state);
+
+  console.log(`[dealerships] created ${id} "${name}" (${slug})`);
+  res.status(201).json({
+    dealership,
+    next: "Issue this dealership a code with POST /api/auth/codes/rotate, then add the same slug to TRULENS_DEALER_CODES so their phones pin to it.",
+  });
+});
+
+app.put("/api/dealerships/:id", (req: any, res) => {
+  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+  const state = readState();
+  const i = (state.dealerships || []).findIndex((d: any) => d.id === req.params.id);
+  if (i === -1) return res.status(404).json({ error: "Dealership not found" });
+
+  /* Slug and id are deliberately not editable. Vehicles are tagged by id and
+     dealer websites are wired to the slug; changing either detaches stock
+     from the dealer it belongs to. Retire and recreate instead. */
+  const { name, location, websiteUrl } = req.body || {};
+  if (typeof name === "string" && name.trim()) state.dealerships[i].name = name.trim();
+  if (typeof location === "string") state.dealerships[i].location = location.trim();
+  if (typeof websiteUrl === "string") state.dealerships[i].websiteUrl = websiteUrl.trim();
+
+  writeState(state);
+  res.json({ dealership: state.dealerships[i] });
+});
 
 app.get("/api/portals", (req, res) => {
   res.json(readPortals());
@@ -2291,7 +2402,7 @@ app.post("/api/integration/webhook-lead", (req, res) => {
       id: "lead_" + Date.now(),
       // Which dealer's website sent this. Unset means it lands with the pilot
       // dealership, so every site posting here must identify itself.
-      dealershipId: dealershipId || DEALER_SLUG_TO_ID[dealerSlug] || undefined,
+      dealershipId: dealershipId || dealerIdForSlug(dealerSlug) || undefined,
       firstName,
       lastName: lastName || "",
       phone,
