@@ -296,7 +296,12 @@
 .tl-btn-3d {
   /* Was still on stock Tailwind cyan (#22d3ee) — this one never got the
      rebrand that TruLens had, so the two field apps shipped different accents. */
-  background: linear-gradient(180deg, var(--tru-cyan-300) 0%, var(--tru-cyan-400) 40%, var(--tru-cyan-500) 100%);
+  /* Was a three-stop gradient opening on --tru-cyan-300 (#7FF0EA), noticeably
+     brighter than the brand. On a large primary button that is a lot of
+     luminance sitting in view all day, and it is not the brand colour. Now
+     #4FE3DC itself, with only enough gradient to keep the surface reading as
+     a physical button rather than a flat rectangle. */
+  background: linear-gradient(180deg, var(--tru-cyan-400) 0%, var(--tru-cyan-400) 55%, var(--tru-cyan-500) 100%);
   border: 1px solid rgba(255,255,255,0.22);
   /* Ink, not paper. Callers pass text-[#E8EAE6], which on this fill is ~1.3:1.
      The letterpress shadow below was always written for dark type on a light

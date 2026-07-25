@@ -831,7 +831,7 @@ export default function InventoryList({
                         {/* The one thing scanned for on this screen, so it takes
                             the top of the scale. Everything else on the card was
                             the same 13px, which is why the list read as a wall. */}
-                        <h3 className="text-[20px] font-bold text-[#E8EAE6] leading-tight tracking-[-0.01em] flex items-center gap-2">
+                        <h3 className="text-[17px] font-bold text-[#E8EAE6] leading-tight tracking-[-0.01em] flex items-center gap-2">
                           {vehicle.year} {vehicle.make} {vehicle.model}
                           {isHighlighted && (
                             <span className="text-[13px] font-semibold tracking-normal text-cyan-300 bg-cyan-500/20 border border-cyan-500/40 px-2 py-0.5 rounded">
