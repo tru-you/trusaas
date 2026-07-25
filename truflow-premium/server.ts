@@ -779,9 +779,47 @@ if (!fs.existsSync(DATA_FILE)) {
   writeState(DEFAULT_MOCK_STATE);
 }
 
+/**
+ * Master-admin recovery.
+ *
+ * The admin code is printed once at first boot and cannot be read back, only
+ * rotated — and rotating is itself admin-only. The auth store lives on a
+ * mounted disk, so redeploying does not re-seed it and ADMIN_ACCESS_CODE (which
+ * only applies to an empty store) has no effect either. Lose the code and there
+ * is no way back into the instance at all: no dealership admin, no code
+ * reissue for a dealer who has lost theirs.
+ *
+ * So ADMIN_ACCESS_CODE now also repoints the existing master admin at boot.
+ * The gate is Render dashboard access, which already implies full control of
+ * the service — anyone who can set an env var here can deploy arbitrary code.
+ * Dealer principals are deliberately untouched; this only restores the way in.
+ */
+function applyAdminRecovery(store: AuthStore): void {
+  const preset = codeFromEnv("admin");
+  if (!preset) return;
+
+  const admin = store.accounts.find((a) => a.role === "admin");
+  if (!admin) return; // empty store — ensureAuthStore seeds it the normal way
+
+  // Already the live code: don't rewrite the file or log on every boot.
+  if (hashCode(preset, admin.salt) === admin.hash) return;
+
+  const { account } = makeAccount("Master admin (TruSaaS)", "admin", undefined, preset);
+  account.rotatedAt = new Date().toISOString();
+  store.accounts = store.accounts.filter((a) => a.role !== "admin");
+  store.accounts.push(account);
+  writeAuth(store);
+
+  console.log(
+    "[auth] ADMIN_ACCESS_CODE is set and differs from the stored master admin " +
+    "code — the master admin has been repointed to it. Unset the variable once " +
+    "you are back in, so the code is not sitting in the dashboard."
+  );
+}
+
 // Mint access codes on first boot. Must run at startup, not lazily on first
 // request — the codes are printed to the log and you need them to sign in.
-ensureAuthStore();
+applyAdminRecovery(ensureAuthStore());
 if (!SYNC_SERVICE_KEY) {
   console.warn(
     "[auth] TRUFLOW_SYNC_KEY is not set — /api/sync/push-photos accepts " +
