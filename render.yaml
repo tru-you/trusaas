@@ -1,13 +1,16 @@
 # TruSaaS — PRODUCT modules only (Render starter plan, always-on since 2026-07-21)
 # Domain: trusaas.co.za
 #
-# Deploy these three:
+# Services:
 #   trusaas-lens.onrender.com     → TruLens          (TruLens/)
 #   trusaas-inspect.onrender.com  → TruInspect       (truinspect)
-#   trusaas-flow.onrender.com     → TruFlow Lite     (truflow-light)
-#   trusaas-premium.onrender.com  → TruFlow Premium  (truflow-premium)
+#   trusaas-premium.onrender.com  → TruFlow          (truflow-premium)
+#                                   → flow.tru-saas.com     (canonical)
+#                                   → premium.tru-saas.com  (alias, legacy embeds)
 #   trusaas-live.onrender.com     → TruLive          (trulive)  → live.tru-saas.com
 #   trusaas-value.onrender.com    → TruValue         (truvalue) → value.tru-saas.com
+#
+# TruFlow Lite retired 2026-07-25 — see the note where its block used to be.
 #
 # STABILITY (see STABILITY.md):
 #   - Services are on paid starter plan → always-on, no spin-down. Do NOT
@@ -77,20 +80,21 @@ services:
       - key: GEMINI_API_KEY
         sync: false
 
-  # ── 2. TruFlow Lite — stock / leads / tasks ───────────────────────────────
-  - type: web
-    name: trusaas-flow
-    runtime: node
-    plan: starter
-    rootDir: truflow-light
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    healthCheckPath: /api/health
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: GEMINI_API_KEY
-        sync: false
+  # ── 2. TruFlow Lite — RETIRED 2026-07-25 ──────────────────────────────────
+  #
+  # Removed outright rather than left commented, so a Blueprint sync cannot
+  # resurrect it. Lite was a second codebase carrying a stripped copy of
+  # Premium, its "login" was `password === '2026'` in client JS, and it had no
+  # disk — state reset on every deploy, which is why its seed cars kept
+  # reappearing. The tier split is gone: there is one product, TruFlow.
+  #
+  # flow.tru-saas.com is now a custom domain on trusaas-premium, so every
+  # dealer embed already pointing at flow. keeps working. premium.tru-saas.com
+  # is kept as an alias for the same reason. flow. is the canonical hostname —
+  # use it in links, docs and dealer training; logins are per-origin, so
+  # mixing the two logs people out.
+  #
+  # truflow-light/ is still in the repo pending deletion.
 
   # ── 2b. TruLive — live guided vehicle walkaround (WebRTC, no app for buyer) ─
   - type: web

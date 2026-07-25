@@ -1733,12 +1733,35 @@ app.post("/api/sync/push-photos", (req, res) => {
       stockNumber || vehicleMeta.stockNumber || null;
     const matchId = vehicleId || vehicleMeta.id || null;
 
+    /* A slug that is sent but not in the map means a dealer was onboarded in
+       TruLens and never added here. Silently accepting it files the car as
+       untagged, which the public feed then reads as the default dealership —
+       so the first cars of a new dealer land on someone else's website. Refuse
+       loudly instead. An absent slug is a legacy client and still allowed. */
+    if (dealerSlug && !DEALER_SLUG_TO_ID[dealerSlug]) {
+      return res.status(400).json({
+        synced: false,
+        error: `Unknown dealer "${dealerSlug}". Add it to DEALER_SLUG_TO_ID before capturing for this dealership.`,
+      });
+    }
+
+    /* Stock numbers are dealer-chosen and short — PE-1042, STK-001 — so they
+       collide across dealerships. Matching on stockNumber alone meant a push
+       for one dealer could find, and overwrite the photos of, another dealer's
+       vehicle. Scope the search the same way the public feed scopes reads, so
+       write and read agree on who owns an untagged row. */
+    const pushDealerId = DEALER_SLUG_TO_ID[dealerSlug] || DEFAULT_DEALERSHIP_ID;
+    const ownedByPusher = (v: any) =>
+      (v.dealershipId || DEFAULT_DEALERSHIP_ID) === pushDealerId;
+
     let idx = -1;
     if (matchStock) {
-      idx = state.vehicles.findIndex((v: any) => v.stockNumber === matchStock);
+      idx = state.vehicles.findIndex(
+        (v: any) => ownedByPusher(v) && v.stockNumber === matchStock
+      );
     }
     if (idx === -1 && matchId) {
-      idx = state.vehicles.findIndex((v: any) => v.id === matchId);
+      idx = state.vehicles.findIndex((v: any) => ownedByPusher(v) && v.id === matchId);
     }
 
     let created = false;
@@ -2017,23 +2040,40 @@ function buildPublicStock(state: any, dealerSlug: string, source: string) {
   };
 }
 
-// Public feed — any dealer website can GET this (no auth, CORS open)
+/* Public feeds — any dealer website can GET these (no auth, CORS open).
+   No ?dealer= used to mean "demo", so an embed that lost its query string —
+   a copy-paste slip, a CMS stripping params — filled a real dealer's website
+   with DEMO- stock instead of going empty. Customers then enquire about cars
+   that do not exist. Unmatched now yields nothing, which is the honest
+   failure. The demo tenant is still reachable deliberately at ?dealer=demo. */
 app.get("/api/feed/inventory", (req, res) => {
-  const dealer = String(req.query.dealer || "demo");
+  const dealer = String(req.query.dealer || "");
   res.json(buildPublicStock(readState(), dealer, "premium"));
 });
 
-// Canonical public stock endpoint (same shape across Premium / Lite / TruLens)
+// Canonical public stock endpoint (same shape across Premium / TruLens)
 app.get("/api/public/stock", (req, res) => {
-  const dealer = String(req.query.dealer || "demo");
+  const dealer = String(req.query.dealer || "");
   res.json(buildPublicStock(readState(), dealer, "premium"));
 });
 
-// Single vehicle detail (public)
+/* Single vehicle detail (public).
+   Scoped by ?dealer= like every other public read. Without it this matched on
+   stockNumber across every tenant, and stock numbers are short and guessable —
+   PE-1042, DEMO-100 — so any dealer's vehicle could be read by anyone who
+   guessed one. */
 app.get("/api/feed/vehicle/:stockNumber", (req, res) => {
+  const dealerSlug = String(req.query.dealer || "");
+  const wantedId = DEALER_SLUG_TO_ID[dealerSlug];
+  if (!wantedId && !AGGREGATE_SLUGS.has(dealerSlug)) {
+    return res.status(400).json({ error: "A known ?dealer= is required." });
+  }
+
   const state = readState();
   const v = state.vehicles.find(
-    (v: any) => v.stockNumber === req.params.stockNumber || v.id === req.params.stockNumber
+    (v: any) =>
+      (!wantedId || (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId) &&
+      (v.stockNumber === req.params.stockNumber || v.id === req.params.stockNumber)
   );
   if (!v) return res.status(404).json({ error: "Vehicle not found" });
 
