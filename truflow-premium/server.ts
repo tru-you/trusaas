@@ -1285,13 +1285,25 @@ app.post("/api/communications", (req: any, res) => {
 app.post("/api/leads/auto-assign", async (req, res) => {
   try {
     const state = readState();
-    const newLeads = state.leads.filter(l => l.status === "New");
-    
+
+    /* Scope both sides to the signed-in dealership.
+       Neither list was scoped, so on a multi-dealer instance this shared one
+       dealer's new leads out across every salesperson on the box — a demo lead
+       was assigned to another dealership's salesperson in testing. A lead with
+       no dealershipId is treated as the caller's, matching how the rest of the
+       app handles legacy and TruLens-imported records. */
+    const tenant = ownerDealership(req);
+    const ours = (id?: string) => !tenant || !id || id === tenant;
+
+    const newLeads = state.leads.filter(l => l.status === "New" && ours(l.dealershipId));
+
     if (newLeads.length === 0) {
       return res.json({ message: "No 'New' leads found for auto-assignment.", assignments: [] });
     }
 
-    const salespeople = state.users.filter(u => u.role === "salesperson" && u.isActive);
+    const salespeople = state.users.filter(
+      u => u.role === "salesperson" && u.isActive && ours(u.dealershipId)
+    );
     if (salespeople.length === 0) {
       return res.status(400).json({ error: "No active salespeople available for assignment." });
     }
@@ -1712,6 +1724,7 @@ app.post("/api/sync/push-photos", (req, res) => {
       vehicleId,
       createIfMissing = true,
       dealerSlug,
+      showOnWebsite,
       vehicle: vehicleMeta = {},
       photos = {},
     } = req.body || {};
@@ -1812,6 +1825,14 @@ app.post("/api/sync/push-photos", (req, res) => {
         // other dealer's website. Unrecognized/missing slug = untagged,
         // which the public feed treats as the original pilot dealer (MKR).
         dealershipId: DEALER_SLUG_TO_ID[dealerSlug] || undefined,
+        /* Whether the dealer's website may show it. TruLens has a Publish
+           toggle, but it only ever wrote to TruLens's own store — the export
+           never carried the value and this never set it, and the public feed
+           reads "not set" as published. So every capture went live the moment
+           it was exported, and unpublishing in TruLens changed nothing on the
+           website. A junk test capture reached a dealer's public feed that way.
+           An older client that sends nothing keeps the old behaviour. */
+        showOnWebsite: typeof showOnWebsite === "boolean" ? showOnWebsite : undefined,
       };
 
       state.vehicles.unshift(newVehicle);
@@ -1842,6 +1863,12 @@ app.post("/api/sync/push-photos", (req, res) => {
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     if (vehicleMeta.vin) (state.vehicles[idx] as any).vin = vehicleMeta.vin;
     if (vehicleMeta.color) (state.vehicles[idx] as any).color = vehicleMeta.color;
+    /* Re-publishing or un-publishing in TruLens now reaches the website. Only
+       applied when the client actually sends a boolean, so a push that says
+       nothing about it leaves whatever the dealer set here untouched. */
+    if (typeof showOnWebsite === "boolean") {
+      (state.vehicles[idx] as any).showOnWebsite = showOnWebsite;
+    }
     if (vehicleMeta.price || vehicleMeta.retailPrice) {
       state.vehicles[idx].retailPrice =
         parseFloat(vehicleMeta.price ?? vehicleMeta.retailPrice) ||

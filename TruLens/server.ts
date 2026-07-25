@@ -1029,6 +1029,12 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       vehicleId: vehicle.id,
       createIfMissing: createIfMissing !== false,
       dealerSlug: dealerSlug || undefined,
+      /* TruLens has had a Publish / Unpublish toggle all along, but the value
+         never left this app — so it decided nothing about what the dealer's
+         website actually showed. TruFlow serves that feed, and it read "not
+         set" as published, which is how a junk test capture ended up on a live
+         dealer feed. Sending it makes the button mean what it says. */
+      showOnWebsite: typeof vehicle.showOnWebsite === "boolean" ? vehicle.showOnWebsite : undefined,
       vehicle: {
         id: vehicle.id,
         make: vehicle.make,
