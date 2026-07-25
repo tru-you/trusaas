@@ -132,6 +132,65 @@ export default function InventoryList({
     return () => root.removeEventListener('pointermove', onMove);
   }, []);
   
+  /**
+   * What the yard should do next, derived from the actual fleet.
+   *
+   * Replaces a hardcoded line claiming vehicles with 360 walkarounds "sell 18%
+   * faster on average" — no source, and TruInspect holds no sales data. It was
+   * labelled Business Intelligence and shown to a dealer, who repeats it to a
+   * customer, at which point it is their claim too.
+   *
+   * Framed around finishing an inspection rather than publishing: this app
+   * produces the VIR, and an unsigned or half-answered one is the thing that
+   * causes trouble later.
+   */
+  const fleet = React.useMemo(() => {
+    const rows = vehicles.map(v => {
+      const r = computeWebReadiness(v);
+      const answered = Object.keys(v.inspectionChecklist || {}).length;
+      const signed = !!(v.inspectorName && v.inspectorName.trim());
+      return { v, r, answered, signed };
+    });
+    return {
+      rows,
+      needPhotos: rows.filter(({ r }) => r.missingRequired.length > 0)
+        .sort((a, b) => a.r.missingRequired.length - b.r.missingRequired.length),
+      needChecklist: rows.filter(({ r, answered }) => r.missingRequired.length === 0 && answered === 0),
+      needSignoff: rows.filter(({ r, answered, signed }) => r.missingRequired.length === 0 && answered > 0 && !signed),
+      complete: rows.filter(({ r, answered, signed }) => r.missingRequired.length === 0 && answered > 0 && signed).length,
+      total: rows.length,
+    };
+  }, [vehicles]);
+
+  /** One sentence, the most useful thing true right now. */
+  const nextAction = React.useMemo(() => {
+    if (fleet.total === 0) return { head: 'No vehicles yet', body: 'Add one to start an inspection.' };
+    if (fleet.needPhotos.length > 0) {
+      const n = fleet.needPhotos[0];
+      const missing = n.r.missingRequired;
+      const name = `${n.v.year} ${n.v.make} ${n.v.model}`.trim();
+      return {
+        head: `${fleet.needPhotos.length} ${fleet.needPhotos.length === 1 ? 'inspection is' : 'inspections are'} short of photos`,
+        body: `Closest: ${name} — ${missing.length === 1 ? missing[0] : `${missing.length} shots, starting with ${missing[0]}`}.`,
+      };
+    }
+    if (fleet.needChecklist.length > 0) {
+      const name = `${fleet.needChecklist[0].v.year} ${fleet.needChecklist[0].v.make} ${fleet.needChecklist[0].v.model}`.trim();
+      return {
+        head: `${fleet.needChecklist.length} awaiting the checklist`,
+        body: `Photos are done. Next: ${name}.`,
+      };
+    }
+    if (fleet.needSignoff.length > 0) {
+      const name = `${fleet.needSignoff[0].v.year} ${fleet.needSignoff[0].v.make} ${fleet.needSignoff[0].v.model}`.trim();
+      return {
+        head: `${fleet.needSignoff.length} unsigned`,
+        body: `The VIR prints a blank signature block until an inspector is named. Next: ${name}.`,
+      };
+    }
+    return { head: 'All inspections complete', body: `${fleet.total} signed off and ready to issue.` };
+  }, [fleet]);
+
   // Settings state (persisted for VIR / share branding)
   const [dealershipName, setDealershipName] = React.useState(
     () => localStorage.getItem('trulens_dealer_name') || 'TruInspect South Africa'
@@ -226,7 +285,7 @@ export default function InventoryList({
     if (activeFilter !== 'All' && v.status !== activeFilter) return false;
     if (readinessFilter !== 'ALL') {
       const r = computeWebReadiness(v);
-      if (readinessFilter === 'NEEDS' && (r.level === 'ready' || r.level === 'web-ready' || r.level === 'listed')) {
+      if (readinessFilter === 'NEEDS' && (r.level === 'inspecting' || r.level === 'signed' || r.level === 'issued')) {
         return false;
       }
       if (readinessFilter === 'READY' && r.level === 'capture') return false;
@@ -331,25 +390,36 @@ export default function InventoryList({
     <div id="inventory-list-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       
       {/* App Header */}
-      <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
-        <div className="flex items-center">
-          <div className="font-display font-semibold text-lg tracking-tight tl-float drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]">
-            <span className="text-neutral-200">Tru</span><span className="text-cyan-400">Inspect</span>
+      <div className="tl-glass px-3 py-2.5 border-b border-neutral-800 flex items-center gap-3 shrink-0">
+        {/* Was a wordmark, a wide gap, and two buttons. The gap now carries the
+            two things that matter on a yard phone: whose vehicles these are, and
+            how much is left.
+
+            The "Sync" button is gone. It was wired to fetchInventory — a local
+            refetch, not a cloud sync — and TruInspect is standalone, so a cloud
+            icon labelled Sync described something that never happened. */}
+        <div className="font-display font-semibold text-[15px] tracking-tight shrink-0">
+          <span className="text-neutral-200">Tru</span><span className="text-[#4FE3DC]">Inspect</span>
+        </div>
+
+        <div className="h-7 w-px bg-neutral-800 shrink-0" aria-hidden="true" />
+
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-semibold text-[#E8EAE6] truncate leading-tight">
+            {dealershipName}
+          </div>
+          <div className="text-[11px] text-neutral-400 leading-tight truncate">
+            {fleet.total === 0
+              ? 'No vehicles yet'
+              : fleet.needPhotos.length > 0
+                ? `${fleet.complete}/${fleet.total} signed off · ${fleet.needPhotos.length} need photos`
+                : fleet.needSignoff.length > 0
+                  ? `${fleet.complete}/${fleet.total} signed off · ${fleet.needSignoff.length} unsigned`
+                  : `${fleet.complete}/${fleet.total} signed off`}
           </div>
         </div>
 
-        {/* Sync & log out */}
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={onForceSync}
-            className="flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] px-3 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-[13px] text-neutral-300 transition-colors cursor-pointer"
-            title="Force Cloud Sync"
-          >
-            {getSyncIcon()}
-            <span className="font-mono hidden xs:inline">
-              {syncStatus === 'syncing' ? '…' : syncStatus === 'error' ? 'Err' : 'Sync'}
-            </span>
-          </button>
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
             onClick={handleLogout}
@@ -397,7 +467,7 @@ export default function InventoryList({
               ? 'tl-glass text-[#E8EAE6] shadow-lg border border-neutral-500/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
           }`}
-          title="Dealership & DMS settings"
+          title="Organisation settings"
         >
           <Settings size={12} />
           Settings
@@ -1091,16 +1161,32 @@ export default function InventoryList({
               </div>
             </div>
 
-            {/* Operational Efficiency Card */}
-            <div className="bg-indigo-950/10 border border-indigo-500/20 rounded-xl p-3 flex items-start gap-3">
-              <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+            {/* Next action — computed from the fleet, not asserted. */}
+            <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-3.5 flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-[#4FE3DC]/12 text-[#4FE3DC] shrink-0">
                 <Lightbulb size={14} />
               </div>
-              <div className="flex-1 space-y-1">
-                <span className="text-[12px] font-semibold text-indigo-300  tracking-tighter">Business Intelligence</span>
-                <p className="text-[13px] text-indigo-200 leading-tight">
-                  Vehicles with <strong>360° Walkarounds</strong> and <strong>complete interior sets</strong> sell 18% faster on average. You currently have {vehicles.filter(v => (v.photos || {})['video_360']).length} walkarounds active.
+              <div className="flex-1 min-w-0">
+                <span className="text-[11px] font-bold text-neutral-400 tracking-widest">DO NEXT</span>
+                <p className="text-[15px] font-semibold text-[#E8EAE6] leading-snug mt-1">
+                  {nextAction.head}
                 </p>
+                <p className="text-[13px] text-neutral-300 leading-snug mt-0.5">
+                  {nextAction.body}
+                </p>
+                {fleet.total > 0 && (
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <div className="h-1.5 flex-1 rounded-full bg-neutral-800 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#4FE3DC] transition-all duration-500"
+                        style={{ width: `${Math.round((fleet.complete / fleet.total) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-mono text-neutral-400 shrink-0">
+                      {fleet.complete}/{fleet.total} signed off
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1109,17 +1195,17 @@ export default function InventoryList({
             {/* Settings Heading */}
             <div className="flex items-center gap-1.5">
               <Sliders size={15} className="text-indigo-400" />
-              <span className="text-xs font-bold text-neutral-200 tracking-normal">Dealership Settings</span>
+              <span className="text-xs font-bold text-neutral-200 tracking-normal">Organisation Settings</span>
             </div>
 
             {/* Profile Section */}
             <div className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
               <div className="p-3 border-b border-neutral-850 bg-neutral-900/40">
-                <span className="text-[13px] font-bold text-neutral-400 ">Dealership Profile</span>
+                <span className="text-[13px] font-bold text-neutral-400 ">Organisation Profile</span>
               </div>
               <div className="p-4 space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[12px] text-neutral-500  font-bold">Dealership Name</label>
+                  <label className="text-[12px] text-neutral-500  font-bold">Organisation Name</label>
                   <input 
                     type="text" 
                     value={dealershipName}

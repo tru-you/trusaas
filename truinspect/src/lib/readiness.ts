@@ -1,6 +1,19 @@
 import { PHOTO_SLOTS, Vehicle, QualityReport } from '../types';
 
-export type WebReadinessLevel = 'capture' | 'ready' | 'web-ready' | 'listed';
+/**
+ * Inspection progress, not merchandising readiness.
+ *
+ * This file was copied from TruLens and kept its language: "Ready to publish",
+ * "Published to web", "Not published to website yet". TruInspect is standalone
+ * and produces a VIR — it does not publish anything to a dealer website, so
+ * every one of those labels described something the app cannot do.
+ *
+ *   capture    photos still outstanding
+ *   inspecting photos done, checklist not started or part-done
+ *   signed     an inspector has put their name to it
+ *   issued     the VIR has been exported / shared
+ */
+export type WebReadinessLevel = 'capture' | 'inspecting' | 'signed' | 'issued';
 
 export interface WebReadiness {
   level: WebReadinessLevel;
@@ -53,25 +66,32 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
     scoreOk &&
     vehicle.showOnWebsite === true;
 
+  const checklistAnswered = Object.keys(vehicle.inspectionChecklist || {}).length;
+  const signedOff = !!(vehicle.inspectorName && vehicle.inspectorName.trim());
+
+  if (allRequired && checklistAnswered === 0) {
+    reasons.push('Checklist not started');
+  }
+  if (allRequired && checklistAnswered > 0 && !signedOff) {
+    reasons.push('No inspector named — the VIR signature block prints blank');
+  }
+
   let level: WebReadinessLevel = 'capture';
-  let label = 'Capture in progress';
+  let label = `Photos ${requiredTaken}/${required.length}`;
   let color = '#F59E0B';
 
-  if (vehicle.status === 'Listed' || vehicle.lastDmsExportAt) {
-    level = 'listed';
-    label = canPublishWeb ? 'Listed · web ready' : 'Exported · finish shots for web';
-    color = canPublishWeb ? '#0EA5E9' : '#06b6d4';
-  } else if (allRequired && scoreOk && vehicle.showOnWebsite === true) {
-    level = 'web-ready';
-    label = 'Published to web';
-    color = '#10B981';
+  if (vehicle.lastDmsExportAt) {
+    level = 'issued';
+    label = 'VIR issued';
+    color = '#0EA5E9';
+  } else if (allRequired && signedOff) {
+    level = 'signed';
+    label = 'Signed off · VIR ready';
+    color = '#22C55E';
   } else if (allRequired) {
-    level = 'ready';
-    label = scoreOk ? 'Ready to publish' : 'Shots complete · improve quality';
-    color = scoreOk ? '#22C55E' : '#F97316';
-    if (scoreOk && vehicle.showOnWebsite !== true) {
-      reasons.push('Not published to website yet');
-    }
+    level = 'inspecting';
+    label = checklistAnswered === 0 ? 'Photos done · checklist next' : 'Awaiting sign-off';
+    color = checklistAnswered === 0 ? '#06B6D4' : '#F97316';
   }
 
   return {

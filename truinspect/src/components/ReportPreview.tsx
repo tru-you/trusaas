@@ -1,10 +1,10 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, Download, Printer, Share2, Award, AlertTriangle, CheckCircle2,
-  Camera, FileText, Wrench, ClipboardList, Clock, Copy, Check, MessageCircle, Box,
+  Camera, FileText, Wrench, ClipboardList, Clock, Copy, Check, Box,
 } from 'lucide-react';
 import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, INSPECTION_CHECKLIST, INSPECTION_POINTS, PointResult } from '../types';
-import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
+import { computeWebReadiness } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
 import trusaasLogo from '../assets/images/trusaas-lockup.png';
@@ -143,7 +143,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const reportRef = useRef<HTMLDivElement>(null);
   const salesRef = useRef<HTMLDivElement>(null);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [waCopied, setWaCopied] = useState(false);
   const [generating, setGenerating] = useState<'sales' | 'full' | null>(null);
   const [web3dBusy, setWeb3dBusy] = useState(false);
   const [web3dMsg, setWeb3dMsg] = useState<string | null>(null);
@@ -198,10 +197,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   };
   const hasCondition = condition.findings.length > 0 || condition.flaggedPoints.length > 0;
   const band = conditionBand(hasCondition ? condition.stars : null);
-  const waBlurb = useMemo(
-    () => whatsAppSalesBlurb(brandedVehicle, readiness, { dealerName, waNumber: dealerWa || undefined }),
-    [brandedVehicle, readiness, dealerName, dealerWa]
-  );
 
   const embedUrl = vehicle.web3dPublicPath
     ? `/embed/web3d-viewer.html?stock=${encodeURIComponent(vehicle.stockNumber)}`
@@ -248,14 +243,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     } finally {
       setGenerating(null);
     }
-  };
-
-  const handleCopyWa = async () => {
-    try {
-      await navigator.clipboard.writeText(waBlurb);
-      setWaCopied(true);
-      setTimeout(() => setWaCopied(false), 1600);
-    } catch { /* ignore */ }
   };
 
   const handleExportWeb3d = async () => {
@@ -372,9 +359,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             >
               Condition {condition.stars.toFixed(1)}/5
             </span>
-            <button onClick={handleCopyWa} className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[13px] font-bold text-emerald-300">
-              {waCopied ? <Check size={12} /> : <MessageCircle size={12} />} WhatsApp blurb
-            </button>
             <button onClick={exportHtml} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <FileText size={12} /> HTML
             </button>
