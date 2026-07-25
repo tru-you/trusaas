@@ -180,8 +180,10 @@
   --font-display: "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   
-  --color-trulens-purple: #22d3ee;
-  --color-trulens-blue: #3B82F6;
+  /* Were #22d3ee and #3B82F6 — stock Tailwind, never rebranded, so TruInspect
+     ran a brighter bluer accent than TruLens on the same screens. */
+  --color-trulens-purple: #4FE3DC;   /* capture / catalogue accent */
+  --color-trulens-blue: #4D9BFF;     /* dashboard / analytics accent (logo blue) */
 
   /* TruSaaS rebrand: cyan accent everywhere — remap the legacy indigo/purple/violet
      utility classes to the cyan/sky family instead of touching hundreds of classNames. */
@@ -245,9 +247,9 @@
   --my: 40%;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(160deg, rgba(38, 38, 48, 0.75), rgba(10, 10, 14, 0.85));
-  backdrop-filter: blur(16px) saturate(1.3);
-  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  /* Same reasoning as .tl-glass: the tint plus saturate() was the cast. These
+     cards also carry vehicle photos, so neutral chrome matters here. */
+  background: var(--bg-raised);
   transition: transform 200ms cubic-bezier(.22,1,.36,1), border-color 180ms ease, box-shadow 200ms ease;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.06) inset,
@@ -334,11 +336,15 @@
 
 /* Glass panels in app chrome */
 .tl-glass {
-  background: linear-gradient(160deg, rgba(30,30,40,0.72), rgba(12,12,18,0.8));
-  backdrop-filter: blur(18px) saturate(1.35);
-  -webkit-backdrop-filter: blur(18px) saturate(1.35);
-  border: 1px solid rgba(34, 211, 238, 0.18);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 12px 28px -16px rgba(0,0,0,0.65);
+  /* Was a blue-violet gradient under saturate(1.35), which amplified whatever
+     sat behind it — read as a colour cast on banners and grid boxes, and it is
+     the reason TruInspect looked tinted next to TruLens. Same neutral glass as
+     TruLens now, and the border is no longer stock Tailwind cyan. */
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
 }
 
 @keyframes tl-float {
@@ -426,4 +432,26 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
 @keyframes ti-ring-pulse {
   0%, 100% { outline-offset: 0; }
   50%       { outline-offset: 3px; }
+}
+
+
+/* ── Text on an accent fill ──────────────────────────────────────────────
+   Every one of these ramp classes resolves to brand cyan in the @theme block
+   above, so they paint a LIGHT surface. Components pass text-[#E8EAE6] or
+   text-white on top of them, which is about 1.3:1 — the "+" button and several
+   primary actions were effectively invisible. Reported from the yard as blue
+   boxes you cannot read.
+
+   Unlayered, so it beats the Tailwind text utility. Opacity variants such as
+   bg-cyan-600/20 are a different class token and are NOT matched, which is
+   correct: those are dark tints that want light text. */
+.bg-trulens-purple,
+.bg-cyan-400, .bg-cyan-500, .bg-cyan-600,
+.bg-teal-400, .bg-teal-500, .bg-teal-600,
+.bg-emerald-400, .bg-emerald-500, .bg-emerald-600,
+.bg-green-400, .bg-green-500, .bg-green-600,
+.bg-indigo-400, .bg-indigo-500, .bg-indigo-600,
+.bg-purple-400, .bg-purple-500, .bg-purple-600,
+.bg-violet-400, .bg-violet-500, .bg-violet-600 {
+  color: var(--text-on-accent);
 }
