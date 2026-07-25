@@ -10,6 +10,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 } from 'recharts';
 import { Vehicle, PHOTO_SLOTS, DmsExportResult } from '../types';
+import InstallAppButton from './InstallAppButton';
 import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -1312,6 +1313,11 @@ export default function InventoryList({
               >
                 Save Configuration
               </button>
+
+              {/* The install banner is dismissible and only shows when the
+                  browser volunteers the prompt, so this is the only reliable
+                  way back to installing once it has been closed. */}
+              <InstallAppButton />
 
               <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 space-y-2">
                 <div className="text-[13px] tracking-normal text-red-300/80 font-bold">Session</div>

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Download, Share, X, Smartphone } from 'lucide-react';
 import {
-  BeforeInstallPromptEvent,
+  canPromptInstall,
   isIosSafari,
   isStandaloneDisplay,
+  promptInstall,
+  subscribeInstallState,
 } from '../lib/pwa';
 
 /**
@@ -29,7 +31,11 @@ export default function PwaInstallBanner({
   accent?: string;
   dismissKey?: string;
 }) {
-  const [deferred, setDeferred] = React.useState<BeforeInstallPromptEvent | null>(null);
+  /* The prompt event lives in lib/pwa, captured at module load. It is
+     single-use, so the banner and the Settings install button have to draw on
+     one copy — two independent listeners would each hold the same event and the
+     second prompt() call would throw. */
+  const [deferred, setDeferred] = React.useState(canPromptInstall());
   const [visible, setVisible] = React.useState(false);
   const [iosHelp, setIosHelp] = React.useState(false);
   const [installed, setInstalled] = React.useState(isStandaloneDisplay());
@@ -47,18 +53,20 @@ export default function PwaInstallBanner({
     }
     if (dismissed) return;
 
-    const onBip = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
-      setVisible(true);
-    };
+    // Already captured before this mounted — the common case, since the browser
+    // fires it early.
+    if (canPromptInstall()) setVisible(true);
+
+    const unsub = subscribeInstallState(() => {
+      const ready = canPromptInstall();
+      setDeferred(ready);
+      if (ready) setVisible(true);
+    });
     const onInstalled = () => {
       setInstalled(true);
       setVisible(false);
-      setDeferred(null);
+      setDeferred(false);
     };
-
-    window.addEventListener('beforeinstallprompt', onBip);
     window.addEventListener('appinstalled', onInstalled);
 
     // iOS never fires beforeinstallprompt — offer the manual steps after a beat
@@ -67,7 +75,7 @@ export default function PwaInstallBanner({
 
     return () => {
       if (t) window.clearTimeout(t);
-      window.removeEventListener('beforeinstallprompt', onBip);
+      unsub();
       window.removeEventListener('appinstalled', onInstalled);
     };
   }, [dismissKey]);
@@ -86,13 +94,12 @@ export default function PwaInstallBanner({
 
   const handleInstall = async () => {
     if (deferred) {
-      await deferred.prompt();
-      const choice = await deferred.userChoice;
-      if (choice.outcome === 'accepted') {
+      const outcome = await promptInstall();
+      if (outcome === 'accepted') {
         setVisible(false);
         setInstalled(true);
       }
-      setDeferred(null);
+      setDeferred(false);
       return;
     }
     if (iosHelp) {

@@ -38,6 +38,7 @@ import {
   FileText,
   MessageSquare,
   CalendarClock,
+  Download,
 } from "lucide-react";
 
 import {
@@ -78,6 +79,7 @@ import InvoicePreview from "./components/InvoicePreview";
 import AgreementPreview from "./components/AgreementPreview";
 import DocumentsHub from "./components/DocumentsHub";
 import PwaInstallBanner from "./components/PwaInstallBanner";
+import InstallAppButton from "./components/InstallAppButton";
 
 /* Split out of the initial bundle — none of these is needed to paint the
    dashboard, and together they were roughly a third of a 540KB single chunk
@@ -3126,7 +3128,21 @@ export default function App() {
                 </div>
               </div>
             </div>
-            
+
+            {/* Install as an app. The banner is dismissible and only appears
+                when the browser volunteers the prompt, so without this there
+                was no way back to installing once it had been closed. */}
+            <div className="card border-[color:var(--cyan-soft)]">
+              <div className="card-header border-b border-white/5 px-5 py-3">
+                <h3 className="font-bold text-[16px] text-[color:var(--white)] flex items-center gap-2">
+                  <Download size={14} className="text-[color:var(--cyan-bright)]" /> Install TruFlow as an app
+                </h3>
+              </div>
+              <div className="card-body p-5">
+                <InstallAppButton appName="TruFlow" />
+              </div>
+            </div>
+
             <div className="card border-[color:var(--cyan-soft)] bg-gradient-to-br from-[color:var(--ink-2)] via-[color:var(--ink-2)] to-[color:var(--ink)]">
               <div className="card-header border-b border-white/5 px-6 py-4 flex justify-between items-center">
                 <div>
