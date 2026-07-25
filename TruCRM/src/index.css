@@ -206,233 +206,114 @@
   --color-info-tc: #4FE3DC;
 }
 
-:root {
-  --bg: #06080D;
-  --card: #0B0F17;
-  --card-hover: #121826;
-  --border: rgba(232,234,230,0.14);
-  --border-hover: rgba(79,227,220,0.35);
-  --primary: #4FE3DC;
-  --primary-light: #7FF0EA;
-  --secondary: #4FE3DC;
-  --accent: #4FE3DC;
-  --teal: #4FE3DC;
-  --teal-bright: #7FF0EA;
-  --gold: #4FE3DC;
-  --gold-light: #7FF0EA;
-  --text: #E8EAE6;
-  --text-dim: rgba(232, 234, 230, 0.72);
-  --text-faint: rgba(232, 234, 230, 0.55);
-  --success: #35C46B;
-  --success-bg: rgba(53,196,107,0.12);
-  --warning: #E7B24B;
-  --warning-bg: rgba(231,178,75,0.12);
-  --danger: #F0555A;
-  --danger-bg: rgba(240,85,90,0.12);
-  --info: #4D9BFF;
-  --info-bg: rgba(77,155,255,0.12);
-  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+@theme {
+  /* Neutrals folded into the two-surface rule. The app was built on
+     slate/zinc cards over pure black, which is the generic dark-dashboard
+     look; these map onto ink / ink-2 and the one off-white at its four
+     opacities so existing utility classes convert without editing each one. */
+  --color-slate-50:  #E8EAE6;
+  --color-slate-100: #E8EAE6;
+  --color-slate-200: #E8EAE6;
+  --color-slate-300: rgba(232, 234, 230, 0.72);
+  --color-slate-400: rgba(232, 234, 230, 0.55);
+  --color-slate-500: rgba(232, 234, 230, 0.55);
+  --color-slate-600: rgba(232, 234, 230, 0.32);
+  --color-slate-700: rgba(232, 234, 230, 0.14);
+  --color-slate-800: rgba(232, 234, 230, 0.14);
+  --color-slate-900: #0B0F17;
+  --color-slate-950: #06080D;
+
+  --color-zinc-50:  #E8EAE6;
+  --color-zinc-100: #E8EAE6;
+  --color-zinc-200: #E8EAE6;
+  --color-zinc-300: rgba(232, 234, 230, 0.72);
+  --color-zinc-400: rgba(232, 234, 230, 0.55);
+  --color-zinc-500: rgba(232, 234, 230, 0.55);
+  --color-zinc-600: rgba(232, 234, 230, 0.32);
+  --color-zinc-700: rgba(232, 234, 230, 0.14);
+  --color-zinc-800: rgba(232, 234, 230, 0.14);
+  --color-zinc-900: #0B0F17;
+  --color-zinc-950: #06080D;
 }
 
-body {
-  font-family: var(--sans);
-  background: var(--ink);
-  color: var(--white);
-  min-height: 100vh;
-  font-size: 15px;
-  line-height: 1.55;
-  letter-spacing: -0.005em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  :root { color-scheme: dark; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--ink);
+    color: var(--white);
+    font-size: var(--t-body);
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headings tighten as they grow, and stop at 600. */
+  h1, h2, h3, h4 { font-weight: var(--w-semibold); color: var(--white); }
+  h1 { font-size: var(--t-h1); letter-spacing: var(--track-h1); line-height: 1.12; }
+  h2 { font-size: var(--t-h2); letter-spacing: var(--track-h2); line-height: 1.18; }
+  h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(232, 234, 230, 0.14);
+    border: 3px solid var(--ink);
+    border-radius: var(--r-pill);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(232, 234, 230, 0.24); }
 }
 
-/* Headings tighten as they grow, and stop at 600 — nothing here needs 900. */
-h1, h2, h3, h4 { font-weight: var(--w-semibold); color: var(--white); }
-h1 { font-size: var(--t-h1); letter-spacing: var(--track-h1); line-height: 1.1; }
-h2 { font-size: var(--t-h2); letter-spacing: var(--track-h2); line-height: 1.18; }
-h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; }
-
-/* A single faint cyan wash at the top. The grid plus four radial blobs it
-   replaced were doing a lot of work for no information. */
-.bg-grid {
+/* One faint cyan wash, top-right. Not four radial blobs and a grid. */
+.tru-wash {
   position: fixed;
   inset: 0;
-  background: radial-gradient(70% 45% at 70% -10%, rgba(79,227,220,0.055), transparent 65%);
+  background: radial-gradient(70% 45% at 75% -10%, rgba(79, 227, 220, 0.05), transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* ── Surfaces ────────────────────────────────────────────────────────────
-   The vocabulary is a lit top hairline and one soft shadow. What was here
-   before: two stacked gradients, a 22px backdrop blur, four shadows including
-   a teal glow, a radial spotlight tracking the cursor, a shine line across the
-   top edge, and 3D tilt on every card. Stacked depth effects are the loudest
-   signal of a generated interface — the holding site does none of it. */
-.perspective-scene { perspective: none; }
-
-.card, .v-card, .pipeline-card, .stat-card, .glass-panel {
-  position: relative;
+/* Depth vocabulary: a lit top hairline and one soft shadow. Nothing else. */
+.tru-card {
   background: var(--glass);
   border: 1px solid var(--glass-line);
   border-radius: var(--r-card);
   box-shadow: var(--shadow-card);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+.tru-card:hover { border-color: var(--cyan-soft); box-shadow: var(--shadow-lift); }
 
-.card:hover, .v-card:hover, .stat-card:hover, .glass-panel:hover {
-  border-color: var(--cyan-soft);
-  box-shadow: var(--shadow-lift);
-}
-
-/* The sidebar sits *under* the content, so it reads darker than the page —
-   ink-2 made it the lighter surface, which inverted the hierarchy. */
-.glass-sidebar {
-  background: #03050A;
-  border-right: 1px solid rgba(232,234,230,0.07) !important;
-}
-
-.glass-nav-item {
-  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-}
-.glass-nav-item:hover {
-  background: var(--glass);
-}
-/* Active state is a cyan hairline, not a 28px bloom. */
-.glass-nav-item.is-active {
-  background: var(--cyan-faint);
-  box-shadow: inset 2px 0 0 var(--cyan);
-}
-
-.logo-float {
-  transition: opacity 0.25s ease;
-}
-.logo-float:hover {
-  opacity: 0.85;
-}
-
-/* Primary is a cyan fill with ink text — cyan on white fails contrast, which
-   is why the holding site never does it. The four stacked inset/outset shadows
-   that used to mould these are gone. */
-.btn-primary {
-  background: var(--cyan) !important;
-  color: var(--ink) !important;
-  border: 1px solid transparent !important;
-  box-shadow: none !important;
-  font-weight: var(--w-semibold) !important;
-  transition: background 0.15s ease, transform 0.1s ease !important;
-}
-.btn-primary:hover { background: var(--cyan-bright) !important; }
-.btn-primary:active { transform: translateY(1px); }
-
-/* Scroll progress */
-.scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
+/* On a cyan fill the text is ink, never white — cyan/white fails contrast. */
+.on-fill {
   background: var(--cyan);
-  transform-origin: left;
-  z-index: 9999;
-}
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(232,234,230,0.10);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(232,234,230,0.20);
-}
-/* Firefox */
-* { scrollbar-width: thin; scrollbar-color: rgba(232,234,230,0.14) transparent; }
-
-@keyframes demoPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: .5; transform: scale(0.75); }
-}
-
-.animate-pulse-custom {
-  animation: demoPulse 1.8s ease-in-out infinite;
-}
-
-@utility btn {
-  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-medium text-[13px] transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
-}
-
-@utility btn-primary {
-  @apply bg-primary-tc text-white shadow-lg shadow-primary-tc/20 hover:bg-primary-tc/90 border border-white/10;
-}
-
-@utility btn-secondary {
-  @apply bg-white/5 border border-white/10 text-text-dim-tc hover:text-text-tc hover:bg-white/10;
-}
-
-@utility btn-sm {
-  @apply px-4 py-2 text-[12px];
-}
-
-@utility btn-xs {
-  @apply px-3 py-1.5 text-[12px];
-}
-
-@utility btn-danger {
-  @apply bg-danger-tc/10 border border-danger-tc/20 text-danger-tc hover:bg-danger-tc/20;
-}
-
-@keyframes progress-shrink {
-  from { transform: scaleX(1); }
-  to { transform: scaleX(0); }
-}
-
-@utility animate-progress-shrink {
-  animation: progress-shrink 10s linear forwards;
-}
-
-/* Text on a cyan (or any light) fill. Light-on-cyan fails contrast badly —
-   these read as ghosted. The text-shadow is a letterpress highlight: it lifts
-   the lettering off the fill without resorting to a drop shadow. */
-.on-fill,
-.btn-primary {
-  color: var(--ink) !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
-  font-weight: var(--w-semibold);
-}
-.on-fill svg, .btn-primary svg {
   color: var(--ink);
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.30));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-/* ── Keyboard focus ──────────────────────────────────────────────────────
-   196 buttons shipped with no visible focus ring, so tabbing through the app
-   gave no indication of position. :focus-visible (not :focus) means mouse
-   users never see it — only keyboard navigation. */
-:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-button:focus-visible,
-a:focus-visible,
-[role="button"]:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
-}
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 1px;
-  border-color: transparent;
-}
-/* Skip the ring on a cyan fill — it disappears into the button. */
-.btn-primary:focus-visible,
-.on-fill:focus-visible {
-  outline-color: var(--white);
+.tru-mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* Type-floor, weight and caps guardrails now live in brand.css (canonical). */
+
+/* ── Print — clean, borderless document ────────────────────────────────────
+   Any element marked .print-doc prints on its own: the app chrome, the modal
+   overlay and everything else are hidden, and the document loses its card
+   border, shadow and radius for a full-bleed page. Dark brand is preserved via
+   print-color-adjust (turn on "Background graphics" in the print dialog). */
+@media print {
+  body * { visibility: hidden !important; }
+  .print-doc, .print-doc * { visibility: visible !important; }
+  .print-doc {
+    position: absolute !important; left: 0; top: 0; width: 100%;
+    margin: 0 !important; padding: 24px !important;
+    border: none !important; border-radius: 0 !important; box-shadow: none !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  /* Inner cards in the document also drop their chrome when printed. */
+  .print-doc [class*="rounded"], .print-doc [class*="border"] {
+    box-shadow: none !important;
+  }
+  .no-print { display: none !important; }
+  @page { margin: 12mm; }
 }
