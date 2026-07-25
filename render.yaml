@@ -101,7 +101,7 @@ services:
     name: trusaas-live
     runtime: node
     plan: starter
-    rootDir: truview
+    rootDir: trulive
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
@@ -120,7 +120,7 @@ services:
     name: trusaas-value
     runtime: node
     plan: starter
-    rootDir: trutrade
+    rootDir: truvalue
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
