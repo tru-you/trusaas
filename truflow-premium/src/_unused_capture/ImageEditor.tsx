@@ -127,22 +127,22 @@ export default function ImageEditor({
         // Create matching background gradient
         if (currentBg.id === 'showroom_luxury') {
           const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 50, canvas.width/2, canvas.height/2, canvas.width);
-          grad.addColorStop(0, '#374151');
-          grad.addColorStop(1, '#111827');
+          grad.addColorStop(0, 'var(--ink-2)');
+          grad.addColorStop(1, 'var(--ink-2)');
           ctx.fillStyle = grad;
         } else if (currentBg.id === 'studio_clean') {
           const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          grad.addColorStop(0, '#f9fafb');
-          grad.addColorStop(0.7, '#e5e7eb');
-          grad.addColorStop(1, '#9ca3af');
+          grad.addColorStop(0, 'var(--white)');
+          grad.addColorStop(0.7, 'var(--white)');
+          grad.addColorStop(1, 'var(--muted)');
           ctx.fillStyle = grad;
         } else if (currentBg.id === 'industrial_depot') {
-          ctx.fillStyle = '#1e293b';
+          ctx.fillStyle = 'var(--ink-2)';
         } else if (currentBg.id === 'outdoor_sunset') {
           const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          grad.addColorStop(0, '#fca5a5');
-          grad.addColorStop(0.4, '#fef08a');
-          grad.addColorStop(1, '#93c5fd');
+          grad.addColorStop(0, 'var(--danger)');
+          grad.addColorStop(0.4, 'var(--warning)');
+          grad.addColorStop(1, 'var(--blue)');
           ctx.fillStyle = grad;
         }
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -208,7 +208,7 @@ export default function ImageEditor({
   };
 
   return (
-    <div id="image-editor-container" className="flex flex-col h-full bg-neutral-900 text-white overflow-hidden relative">
+    <div id="image-editor-container" className="flex flex-col h-full bg-neutral-900 text-[color:var(--white)] overflow-hidden relative">
       
       {/* Hidden original image element to capture draw triggers */}
       <img 
@@ -237,7 +237,7 @@ export default function ImageEditor({
         {/* Save & Sync action */}
         <button
           onClick={handleSaveChanges}
-          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-[13px] font-bold text-white flex items-center gap-1 cursor-pointer transition-colors"
+          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-[13px] font-bold text-[color:var(--white)] flex items-center gap-1 cursor-pointer transition-colors"
         >
           <Save size={12} /> Sync to Lot
         </button>
@@ -282,7 +282,7 @@ export default function ImageEditor({
                 {/* Simulated circle graphic */}
                 <div 
                   className="w-7 h-7 rounded-full border border-white/10 mb-1 flex items-center justify-center overflow-hidden"
-                  style={{ background: bg.gradient || '#3f3f46' }}
+                  style={{ background: bg.gradient || 'var(--ink-2)' }}
                 >
                   {bg.id === 'none' && <ImageIcon size={12} className="text-neutral-500" />}
                 </div>
@@ -319,7 +319,7 @@ export default function ImageEditor({
             <div className="flex gap-4 items-center">
               {/* Radial Rating Circle */}
               <div className="relative w-14 h-14 rounded-full border-4 border-neutral-900 flex items-center justify-center shrink-0">
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm font-semibold text-[color:var(--white)]">
                   {isAnalyzing ? '...' : `${Math.round(fullReport.overallScore)}%`}
                 </span>
                 <div className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" style={{ animationDuration: isAnalyzing ? '1.5s' : '0s' }}></div>
@@ -490,7 +490,7 @@ export default function ImageEditor({
         <div className="px-4">
           <button
             onClick={handleDownload}
-            className="w-full py-2.5 bg-neutral-950 border border-neutral-800 hover:bg-neutral-900 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer shadow-md"
+            className="w-full py-2.5 bg-neutral-950 border border-neutral-800 hover:bg-neutral-900 rounded-xl text-xs font-bold text-[color:var(--white)] flex items-center justify-center gap-2 cursor-pointer shadow-md"
           >
             <Download size={14} className="text-indigo-400" /> Export Enhanced Image (.PNG)
           </button>

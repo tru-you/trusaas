@@ -30,17 +30,17 @@ export default function DemoBanner({ productName = "TruFlow" }: { productName?: 
         <p className="text-[13px] text-[rgba(232,234,230,0.55)] leading-snug min-w-0 truncate">
           Vehicle photos are captured in <span className="text-[rgba(232,234,230,0.72)]">TruLens</span>.
           {" "}
-          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[#8AA2B8] hover:text-[#7DB0F9] inline-flex items-center gap-0.5">
+          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[color:var(--blue)] hover:text-[color:var(--blue)] inline-flex items-center gap-0.5">
             Showroom <ExternalLink size={10} />
           </a>
           {" · "}
-          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[#8AA2B8] hover:text-[#7DB0F9]">
+          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[color:var(--blue)] hover:text-[color:var(--blue)]">
             TruSaaS
           </a>
         </p>
         <button
           type="button"
-          className="text-[rgba(232,234,230,0.45)] hover:text-[#E8EAE6] p-0.5 shrink-0 ml-auto"
+          className="text-[rgba(232,234,230,0.45)] hover:text-[color:var(--white)] p-0.5 shrink-0 ml-auto"
           aria-label="Dismiss"
           onClick={() => {
             try {

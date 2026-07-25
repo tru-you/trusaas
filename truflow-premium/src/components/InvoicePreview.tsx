@@ -28,7 +28,7 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
             .doc-header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #1a1a2e; padding-bottom: 16px; }
             .doc-meta { font-size: 12px; color: #555; line-height: 1.7; }
             table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-            th { text-align: left; padding: 10px; background: #f8f8fa; font-size: 11px; border-bottom: 2px solid #1a1a2e; text-transform: ; letter-spacing: 0.5px; }
+            th { text-align: left; padding: 10px; background: #f8f8fa; font-size: 11px; border-bottom: 2px solid #1a1a2e; letter-spacing: 0.5px; }
             td { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
             .totals { margin-left: auto; width: 280px; text-align: right; font-size: 13px; line-height: 2; margin-top: 20px; }
             .totals .grand { font-size: 18px; font-weight: 800; border-top: 2px solid #1a1a2e; padding-top: 8px; margin-top: 8px; color: #1a1a2e; }
@@ -55,11 +55,11 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
         </button>
       </div>
       <div className="card-body p-6" id="printableInvoiceFrame">
-        <div className="bg-[#0B0F17] text-[#1a1a2e] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans">
+        <div className="bg-[color:var(--ink-2)] text-[color:var(--ink-2)] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans">
           {/* Header */}
           <div className="flex justify-between border-b-2 border-white/10 pb-5 mb-6">
             <div>
-              <div className="text-xl font-semibold tracking-tight text-[#122a48]">TrueCar DMS</div>
+              <div className="text-xl font-semibold tracking-tight text-[color:var(--ink-2)]">TrueCar DMS</div>
               <div className="text-[13px] text-gray-400 font-medium">Automotive Retail Operations South Africa</div>
             </div>
             <div className="text-right">

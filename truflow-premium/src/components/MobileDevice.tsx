@@ -39,7 +39,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
         </div>
 
         {/* Dynamic Island Highlight Pill */}
-        <div className="absolute top-6.5 left-1/2 -translate-x-1/2 w-32 h-6.5 rounded-full z-50 hover:scale-105 transition-transform duration-300 pointer-events-none bg-[#4FE3DC]/[0.04] opacity-30"></div>
+        <div className="absolute top-6.5 left-1/2 -translate-x-1/2 w-32 h-6.5 rounded-full z-50 hover:scale-105 transition-transform duration-300 pointer-events-none bg-[color:var(--cyan)]/[0.04] opacity-30"></div>
 
         {/* Physical Volume Buttons */}
         <div className="absolute top-28 -left-1 w-1 h-12 bg-neutral-800 rounded-r-md border-r border-neutral-700"></div>
@@ -53,7 +53,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
         <div className="relative w-full h-full bg-neutral-950 rounded-[40px] overflow-hidden flex flex-col border border-neutral-800 shadow-2xl">
           
           {/* Status Bar */}
-          <div className="h-12 bg-neutral-950 text-white px-7 flex items-center justify-between text-[13px] font-semibold tracking-wider z-40 shrink-0">
+          <div className="h-12 bg-neutral-950 text-[color:var(--white)] px-7 flex items-center justify-between text-[13px] font-semibold tracking-wider z-40 shrink-0">
             {/* Clock */}
             <span className="text-neutral-200">{time}</span>
             

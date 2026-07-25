@@ -36,7 +36,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   const [simPitch, setSimPitch] = React.useState(12); // Pitch (Phone vertical level)
   const [simRoll, setSimRoll] = React.useState(0); // Roll (Phone horizontal level)
   const [simBrightness, setSimBrightness] = React.useState(130); // 0-255
-  const [simColor, setSimColor] = React.useState('#1e3a8a'); // Blue
+  const [simColor, setSimColor] = React.useState('var(--blue-deep)'); // Blue
   const [customFile, setCustomFile] = React.useState<string | null>(null);
 
   // Auto-level assistant toggle
@@ -265,7 +265,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     if (!ctx) return;
 
     // Fill beautiful cyber dark background
-    ctx.fillStyle = '#0a0f1d';
+    ctx.fillStyle = 'var(--ink)';
     ctx.fillRect(0, 0, 1080, 720);
     
     // Draw grid
@@ -290,20 +290,20 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     ctx.strokeRect(40, 40, 1000, 640);
 
     // Text details
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = 'var(--danger)';
     ctx.font = 'bold 24px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('LOT PHOTO RECORDING ENGINE • COMPULSORY BYPASS', 540, 180);
 
-    ctx.fillStyle = '#f3f4f6';
+    ctx.fillStyle = 'var(--white)';
     ctx.font = 'bold 46px sans-serif';
     ctx.fillText('SERVICE HISTORY BOOKLET', 540, 310);
 
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = 'var(--danger)';
     ctx.font = 'bold 36px sans-serif';
     ctx.fillText('MARKED: "NONE" (NOT PRESENT WITH VEHICLE)', 540, 410);
 
-    ctx.fillStyle = '#9ca3af';
+    ctx.fillStyle = 'var(--muted)';
     ctx.font = '18px sans-serif';
     ctx.fillText('This vehicle listing has been bypass-approved for launch by Lot Manager.', 540, 500);
 
@@ -368,11 +368,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               ctx.save();
               ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
               ctx.fillRect(40, 40, 260, 60);
-              ctx.strokeStyle = '#22d3ee';
+              ctx.strokeStyle = 'var(--cyan)';
               ctx.lineWidth = 2;
               ctx.strokeRect(40, 40, 260, 60);
               
-              ctx.fillStyle = '#ffffff';
+              ctx.fillStyle = 'var(--white)';
               ctx.font = 'bold 16px monospace';
               ctx.fillText('● 360° VIDEO RECORDED', 60, 75);
               ctx.restore();
@@ -462,10 +462,10 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   const drawSimulatedCarScene = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     // 1. Solid backdrop base
     const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, '#0f172a'); // Slate dark sky
-    grad.addColorStop(0.6, '#1e293b'); // Horizon
-    grad.addColorStop(0.61, '#475569'); // Concrete deck
-    grad.addColorStop(1, '#0f172a');
+    grad.addColorStop(0, 'var(--ink-2)'); // Slate dark sky
+    grad.addColorStop(0.6, 'var(--ink-2)'); // Horizon
+    grad.addColorStop(0.61, 'var(--faint)'); // Concrete deck
+    grad.addColorStop(1, 'var(--ink-2)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
@@ -489,7 +489,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
     // Dynamic coloring based on user color selection
     ctx.fillStyle = simColor;
-    ctx.strokeStyle = '#ffffff';
+    ctx.strokeStyle = 'var(--white)';
 
     // Shadow blob
     ctx.beginPath();
@@ -531,7 +531,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     ctx.beginPath();
     ctx.arc(-65, 15, 14, Math.PI, 0, false);
     ctx.arc(65, 15, 14, Math.PI, 0, false);
-    ctx.fillStyle = '#090d16';
+    ctx.fillStyle = 'var(--ink)';
     ctx.fill();
     ctx.stroke();
 
@@ -539,16 +539,16 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     ctx.beginPath();
     ctx.arc(-65, 15, 10, 0, Math.PI * 2);
     ctx.arc(65, 15, 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = 'var(--white)';
     ctx.fill();
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = '#334155';
+    ctx.strokeStyle = 'var(--ink-2)';
     ctx.stroke();
 
     // Headlights (glowing yellow based on brightness)
     ctx.beginPath();
     ctx.arc(92, 6, 4, 0, Math.PI * 2);
-    ctx.fillStyle = simBrightness > 150 ? '#fef08a' : '#94a3b8';
+    ctx.fillStyle = simBrightness > 150 ? 'var(--warning)' : 'var(--muted)';
     ctx.fill();
 
     ctx.restore();
@@ -881,7 +881,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   const angleCorrect = Math.abs(simPitch - activeSlot.idealAngle.pitch) < 4 && Math.abs(simRoll) < 3;
 
   return (
-    <div id="camera-guide-container" className="flex flex-col h-full bg-neutral-950 text-white overflow-hidden relative">
+    <div id="camera-guide-container" className="flex flex-col h-full bg-neutral-950 text-[color:var(--white)] overflow-hidden relative">
       
       {/* Hidden processing canvas */}
       <canvas ref={canvasRef} className="hidden" />
@@ -936,7 +936,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                   <div
                     style={{
                       width: status.completed ? '100%' : isActive ? '50%' : '0%',
-                      backgroundColor: status.completed ? '#10b981' : '#06b6d4'
+                      backgroundColor: status.completed ? 'var(--cyan)' : 'var(--cyan)'
                     }}
                     className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}
                   />
@@ -1093,7 +1093,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 onClick={() => setSelectedSlotId(slot.id)}
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap border cursor-pointer flex items-center gap-1.5 transition-all ${
                   isSelected
-                    ? 'bg-indigo-600 border-indigo-500 text-white'
+                    ? 'bg-indigo-600 border-indigo-500 text-[color:var(--white)]'
                     : isTaken
                     ? 'bg-neutral-950 border-neutral-850 text-neutral-400'
                     : 'bg-neutral-950 border-neutral-850 text-neutral-300 hover:border-neutral-700'
@@ -1115,7 +1115,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               const firstSlotOfNewPhase = PHOTO_SLOTS.find(s => s.phase === newPhase);
               if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
             }}
-            className="text-[13px] font-bold text-neutral-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+            className="text-[13px] font-bold text-neutral-400 hover:text-[color:var(--white)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
           >
             <ChevronLeft size={12} /> Prev Phase
           </button>
@@ -1188,8 +1188,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             disabled={isRecording360}
             className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer shadow-lg active:scale-95 transition-all shrink-0 ${
               activeSlot.id === 'video_360'
-                ? 'bg-gradient-to-tr from-red-600 to-rose-500 border-2 border-white text-white'
-                : 'bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white'
+                ? 'bg-gradient-to-tr from-red-600 to-rose-500 border-2 border-white text-[color:var(--white)]'
+                : 'bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-[color:var(--white)]'
             }`}
             title={activeSlot.id === 'video_360' ? 'Record Walkaround' : 'Take Photo'}
           >
@@ -1366,7 +1366,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <button
               onClick={handleSyncBulkPhotos}
               disabled={bulkItems.length === 0 || bulkProgress.status === 'syncing'}
-              className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-xs font-semibold text-white flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
+              className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-xs font-semibold text-[color:var(--white)] flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-md"
             >
               {bulkProgress.status === 'syncing' ? (
                 <>

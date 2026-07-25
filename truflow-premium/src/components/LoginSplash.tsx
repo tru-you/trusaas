@@ -43,12 +43,12 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#06080D] text-white p-4 relative overflow-hidden">
+    <div className="flex items-center justify-center min-h-screen bg-[color:var(--ink)] text-[color:var(--white)] p-4 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-80" />
       <div
         className="relative w-full max-w-sm p-8 rounded-2xl border border-[rgba(232,234,230,0.14)]"
         style={{
-          background: '#0B0F17',
+          background: 'var(--ink-2)',
           boxShadow: '0 1px 0 rgba(232,234,230,0.06) inset, 0 40px 90px -40px rgba(0,0,0,0.95)',
         }}
       >
@@ -67,7 +67,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
               autoComplete="off"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#06080D] border border-white/20 rounded-xl px-4 py-3 text-[16px] text-white focus:outline-none focus:border-[#4FE3DC] transition-colors"
+              className="w-full bg-[color:var(--ink)] border border-white/20 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)] transition-colors"
             />
             <Lock className="absolute right-3 top-3.5 w-4 h-4 text-[rgba(232,234,230,0.72)]" />
           </div>
@@ -76,12 +76,12 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
               type="checkbox"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
-              className="w-3.5 h-3.5 accent-[#4FE3DC]"
+              className="w-3.5 h-3.5 accent-[color:var(--cyan)]"
             />
             <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Keep me signed in on this device</span>
           </label>
-          {error && <p className="text-[13px] text-[#FF6B6B] mb-4">{error}</p>}
-          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#4FE3DC] hover:bg-[#7FF0EA] disabled:opacity-60 on-fill font-bold text-[16px]">
+          {error && <p className="text-[13px] text-[color:var(--danger)] mb-4">{error}</p>}
+          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-bright)] disabled:opacity-60 on-fill font-bold text-[16px]">
             {busy ? 'Checking…' : 'Enter'}
           </button>
         </form>
@@ -95,16 +95,16 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
             catch (err: any) { setError(err?.message || 'Demo is unavailable right now.'); }
             finally { setDemoBusy(false); }
           }}
-          className="mt-3 w-full py-3 rounded-xl border border-[rgba(232,234,230,0.14)] text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:border-[#4FE3DC]/40 transition-colors disabled:opacity-60"
+          className="mt-3 w-full py-3 rounded-xl border border-[rgba(232,234,230,0.14)] text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:border-[color:var(--cyan-soft)] transition-colors disabled:opacity-60"
         >
           {demoBusy ? 'Opening demo…' : 'Explore the demo — no login needed'}
         </button>
 
         <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center gap-2">
-          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[#67E8F9] hover:underline inline-flex items-center gap-1">
+          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[color:var(--cyan-bright)] hover:underline inline-flex items-center gap-1">
             true-cars.co.za showroom <ExternalLink size={10} />
           </a>
-          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[#67e8f9] hover:underline">
+          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[color:var(--cyan-bright)] hover:underline">
             TruSaaS platform
           </a>
         </div>

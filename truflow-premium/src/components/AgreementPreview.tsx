@@ -30,7 +30,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
           <title>Agreement Deed - ${agreement.agreementNumber}</title>
           <style>
             body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; color: #1a1a2e; background: #fff; }
-            .doc-title { text-align: center; color: #122a48; font-size: 20px; font-weight: 800; text-transform: ; margin-bottom: 5px; }
+            .doc-title { text-align: center; color: #122a48; font-size: 20px; font-weight: 800; margin-bottom: 5px; }
             .doc-sub { text-align: center; font-size: 11px; color: #666; margin-bottom: 30px; }
             .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px; font-size: 12px; line-height: 1.6; }
             .asset-panel { background: #f8f8fa; border-radius: 6px; padding: 15px; margin-bottom: 30px; font-size: 12px; border: 1px solid #ddd; }
@@ -57,7 +57,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
 
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
-    ctx.strokeStyle = "#122a48";
+    ctx.strokeStyle = "var(--ink-2)";
 
     const rect = canvas.getBoundingClientRect();
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
@@ -143,13 +143,13 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
         {/* CONTRACT PAPER VIEW */}
         <div className="lg:col-span-2">
-          <div className="bg-[#0B0F17] text-[#1a1a2e] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans relative overflow-hidden" id="printableAgreementFrame">
+          <div className="bg-[color:var(--ink-2)] text-[color:var(--ink-2)] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans relative overflow-hidden" id="printableAgreementFrame">
             {/* Security Badge watermark */}
-            <div className="absolute top-8 right-8 text-[#4FE3DC]/10 flex items-center gap-1 text-[13px] font-bold tracking-wider select-none">
+            <div className="absolute top-8 right-8 text-[color:var(--cyan-faint)] flex items-center gap-1 text-[13px] font-bold tracking-wider select-none">
               <Shield size={16} /> SECURED BY TRUECAR DMS SIGN-OFF
             </div>
 
-            <h1 className="text-center font-serif text-xl font-semibold text-[#122a48] tracking-tight ">
+            <h1 className="text-center font-serif text-xl font-semibold text-[color:var(--ink-2)] tracking-tight ">
               {agreement.type === "Offer to Purchase" ? "Offer to Purchase (OTP)" :
                agreement.type === "Finance Application" ? "Pre-Approval Credit Finance Application" :
                agreement.type === "Trade-In Transfer" ? "Trade-In Exchange Agreement" :
@@ -191,14 +191,14 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
 
             {/* Asset Identification Panel */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-[13px] text-gray-800">
-              <div className="font-bold text-[#122a48] mb-2 tracking-wide  text-[13px]">
+              <div className="font-bold text-[color:var(--ink-2)] mb-2 tracking-wide  text-[13px]">
                 Acquired Asset Assignment Identification:
               </div>
               <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                 <div><span className="text-gray-400 font-medium">Year Model:</span> <span className="font-semibold">{vehicle?.year || "N/A"}</span></div>
                 <div><span className="text-gray-400 font-medium">Make Manufacturer:</span> <span className="font-semibold">{vehicle?.make || "N/A"}</span></div>
                 <div><span className="text-gray-400 font-medium">Engine / Model:</span> <span className="font-semibold">{vehicle?.model || "N/A"}</span></div>
-                <div><span className="text-gray-400 font-medium">Stock identification:</span> <span className="font-semibold font-mono text-[#122a48]">{vehicle?.stockNumber || "N/A"}</span></div>
+                <div><span className="text-gray-400 font-medium">Stock identification:</span> <span className="font-semibold font-mono text-[color:var(--ink-2)]">{vehicle?.stockNumber || "N/A"}</span></div>
               </div>
             </div>
 
@@ -210,7 +210,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
               </div>
               <div>
                 <span className="text-gray-400 font-medium">Downpayment / Deposit:</span>{" "}
-                <span className="font-bold text-[#4FE3DC]">{formatZAR(agreement.depositAmount)}</span>
+                <span className="font-bold text-[color:var(--cyan)]">{formatZAR(agreement.depositAmount)}</span>
               </div>
               <div>
                 <span className="text-gray-400 font-medium">Standard 15% VAT:</span>{" "}
@@ -257,7 +257,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
             {/* Signatures */}
             <div className="grid grid-cols-2 gap-12 mt-8 text-[13px] border-t border-gray-100 pt-6">
               <div className="flex flex-col">
-                <div className="h-12 border-b border-gray-300 flex items-end justify-center font-mono text-[#4FE3DC] italic font-semibold text-center pb-1">
+                <div className="h-12 border-b border-gray-300 flex items-end justify-center font-mono text-[color:var(--cyan)] italic font-semibold text-center pb-1">
                   TrueCar Sandton Showroom Floor Node
                 </div>
                 <div className="font-semibold text-gray-900 mt-2">Signature of Dealer Representative</div>
@@ -267,7 +267,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 <div className="h-12 border-b border-gray-300 flex items-center justify-center text-center">
                   {agreement.signature ? (
                     agreement.signature.startsWith("TYPED:") ? (
-                      <span className="font-serif italic text-base text-[#122a48] tracking-wider font-semibold">
+                      <span className="font-serif italic text-base text-[color:var(--ink-2)] tracking-wider font-semibold">
                         {agreement.signature.replace("TYPED:", "")}
                       </span>
                     ) : (
@@ -287,9 +287,9 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
         </div>
 
         {/* INTERACTIVE SIGNING PAD */}
-        <div className="flex flex-col justify-between bg-[#0B0F17]/3 border border-white/5 rounded-xl p-5 gap-4">
+        <div className="flex flex-col justify-between bg-[color:var(--glass)] border border-white/5 rounded-xl p-5 gap-4">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-[#4FE3DC]">
+            <div className="flex items-center gap-2 text-[color:var(--cyan)]">
               <FileSignature size={16} />
               <h4 className="font-semibold text-[13px] tracking-normal">Signing</h4>
             </div>
@@ -300,11 +300,11 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
 
           {agreement.status === "Pending Signature" ? (
             <div className="flex flex-col gap-3">
-              <div className="flex bg-[#0B0F17]/5 rounded-lg p-0.5 border border-white/5">
+              <div className="flex bg-[color:var(--glass)] rounded-lg p-0.5 border border-white/5">
                 <button
                   onClick={() => setSignMode("draw")}
                   className={`flex-1 text-center py-1 text-[13px] font-bold rounded-md transition-all ${
-                    signMode === "draw" ? "bg-[#4FE3DC] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
+                    signMode === "draw" ? "bg-[color:var(--cyan)] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
                   }`}
                 >
                   Draw Signature
@@ -312,7 +312,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 <button
                   onClick={() => setSignMode("type")}
                   className={`flex-1 text-center py-1 text-[13px] font-bold rounded-md transition-all ${
-                    signMode === "type" ? "bg-[#4FE3DC] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
+                    signMode === "type" ? "bg-[color:var(--cyan)] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
                   }`}
                 >
                   Type E-Sign
@@ -321,7 +321,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
 
               {signMode === "draw" ? (
                 <div className="flex flex-col gap-2">
-                  <div className="relative bg-[#0B0F17] rounded-lg overflow-hidden border border-white/10">
+                  <div className="relative bg-[color:var(--ink-2)] rounded-lg overflow-hidden border border-white/10">
                     <canvas
                       ref={canvasRef}
                       width={280}
@@ -333,7 +333,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                       onTouchStart={startDrawing}
                       onTouchMove={draw}
                       onTouchEnd={stopDrawing}
-                      className="w-full bg-[#0B0F17] cursor-crosshair touch-none"
+                      className="w-full bg-[color:var(--ink-2)] cursor-crosshair touch-none"
                     />
                     <button
                       onClick={clearCanvas}
@@ -351,10 +351,10 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                     value={typedName}
                     onChange={(e) => setTypedName(e.target.value)}
                     placeholder="Enter full legal name..."
-                    className="w-full px-3 py-2 bg-[#0B0F17]/5 border border-white/10 rounded-lg text-[13px] text-white outline-none focus:border-[#4FE3DC]"
+                    className="w-full px-3 py-2 bg-[color:var(--glass)] border border-white/10 rounded-lg text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
                   />
-                  <div className="h-16 bg-[#0B0F17]/5 rounded-lg border border-dashed border-white/10 flex items-center justify-center p-3">
-                    <span className="font-serif italic text-lg text-[#4FE3DC] tracking-wider">
+                  <div className="h-16 bg-[color:var(--glass)] rounded-lg border border-dashed border-white/10 flex items-center justify-center p-3">
+                    <span className="font-serif italic text-lg text-[color:var(--cyan)] tracking-wider">
                       {typedName || "Cursive Preview"}
                     </span>
                   </div>
@@ -364,29 +364,29 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
               <button
                 onClick={handleSignSubmit}
                 disabled={submitting}
-                className="w-full py-3 bg-gradient-to-r from-[#4ADE9B] to-[#2DA056] text-white hover:brightness-110 active:scale-95 transition-all text-[13px] font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--white)] hover:brightness-110 active:scale-95 transition-all text-[13px] font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 disabled:opacity-50"
               >
                 {submitting ? "Processing E-Sign..." : "Affix Binding Signature"}
               </button>
             </div>
           ) : (
-            <div className="bg-[#4ADE9B]/10 border border-[#4ADE9B]/20 rounded-xl p-4 flex flex-col items-center justify-center gap-3 py-6">
-              <div className="w-10 h-10 rounded-full bg-[#4ADE9B]/20 flex items-center justify-center text-[#4ADE9B]">
+            <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-4 flex flex-col items-center justify-center gap-3 py-6">
+              <div className="w-10 h-10 rounded-full bg-[color:var(--cyan-faint)] flex items-center justify-center text-[color:var(--cyan)]">
                 <Check size={20} />
               </div>
               <div className="text-center">
-                <h5 className="text-[13px] font-semibold text-white tracking-normal">Signed</h5>
+                <h5 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Signed</h5>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                   Digitally signed with unique hashing index. Document locked from modifications.
                 </p>
               </div>
-              <div className="text-[13px] font-mono bg-[#0B0F17]/5 border border-white/5 rounded px-3 py-1 text-[#4ADE9B] text-center max-w-full truncate">
+              <div className="text-[13px] font-mono bg-[color:var(--glass)] border border-white/5 rounded px-3 py-1 text-[color:var(--cyan)] text-center max-w-full truncate">
                 SHA-256: {agreement.id.slice(4)}
               </div>
             </div>
           )}
 
-          <div className="bg-[#0B0F17]/40 rounded-lg p-3 text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed border border-white/3 flex flex-col gap-1">
+          <div className="bg-[color:var(--glass-line)] rounded-lg p-3 text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed border border-white/3 flex flex-col gap-1">
             <span className="font-bold text-[rgba(232,234,230,0.72)]">Audit trail:</span>
             <span>IP Location: Sandton, RSA (Vite Showroom)</span>
             <span>Timestamp: {agreement.signedAt || "Pending Execution"}</span>

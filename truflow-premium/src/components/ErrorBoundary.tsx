@@ -32,7 +32,7 @@ export default class ErrorBoundary extends Component<
     if (!error) return this.props.children;
 
     return (
-      <div className="min-h-screen bg-[#06080D] text-[#E8EAE6] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[color:var(--ink)] text-[color:var(--white)] flex items-center justify-center p-6">
         <div className="max-w-md w-full flex flex-col gap-4 rounded-[18px] border border-[rgba(232,234,230,0.14)] bg-[rgba(232,234,230,0.055)] p-6">
           <div>
             <h2 className="text-[20px] font-semibold tracking-[-0.01em]">Something went wrong</h2>
@@ -43,7 +43,7 @@ export default class ErrorBoundary extends Component<
           </div>
 
           {/* The message, not the stack. Enough for you to tell us what broke. */}
-          <p className="text-[13px] font-mono text-[rgba(232,234,230,0.55)] bg-[#06080D] border border-[rgba(232,234,230,0.14)] rounded-lg px-3 py-2 break-words">
+          <p className="text-[13px] font-mono text-[rgba(232,234,230,0.55)] bg-[color:var(--ink)] border border-[rgba(232,234,230,0.14)] rounded-lg px-3 py-2 break-words">
             {error.message || "Unknown error"}
           </p>
 

@@ -35,8 +35,10 @@
   /* Second accent — the blue from the logo. Cyan carries interactive and live
      states; blue is for iconography and quiet emphasis, so the two never
      compete for the same job. */
-  --blue:       #4D9BFF;
-  --blue-deep:  #1466E0;
+  /* Retired as an accent — the brand is cyan only, and #4D9BFF glared on
+     black. Kept as a calm slate so anything still reaching for it is quiet. */
+  --blue:       #8AA2B8;
+  --blue-deep:  #63798F;
   --blue-faint: rgba(77, 155, 255, 0.10);
 
   /* Status without a traffic-light palette. Good/live reads cyan, warnings

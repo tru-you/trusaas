@@ -202,9 +202,9 @@
   --color-text-tc: #E8EAE6;
   --color-text-dim-tc: rgba(232, 234, 230, 0.72);
   --color-text-faint-tc: rgba(232, 234, 230, 0.55);
-  --color-success-tc: #4ADE9B;
-  --color-warning-tc: #E8C468;
-  --color-danger-tc: #FF6B6B;
+  --color-success-tc: #4FE3DC;
+  --color-warning-tc: rgba(232, 234, 230, 0.55);
+  --color-danger-tc: #B86A6A;
   --color-info-tc: #4FE3DC;
 }
 
@@ -226,14 +226,19 @@
   --text: #E8EAE6;
   --text-dim: rgba(232, 234, 230, 0.72);
   --text-faint: rgba(232, 234, 230, 0.55);
-  --success: #35C46B;
-  --success-bg: rgba(53,196,107,0.12);
-  --warning: #E7B24B;
-  --warning-bg: rgba(231,178,75,0.12);
-  --danger: #F0555A;
-  --danger-bg: rgba(240,85,90,0.12);
-  --info: #4D9BFF;
-  --info-bg: rgba(77,155,255,0.12);
+  /* Status, without a traffic light. These previously shadowed brand.css with
+     a green/amber/red set, which is most of why the app read as a playground.
+     Good and live are cyan; a warning de-emphasises to muted text rather than
+     shouting in yellow; one dusty red is kept for destructive actions only. */
+  --success: #4FE3DC;
+  --success-bg: rgba(79,227,220,0.08);
+  --warning: rgba(232,234,230,0.55);
+  --warning-bg: rgba(232,234,230,0.055);
+  --danger: #B86A6A;
+  --danger-bg: rgba(184,106,106,0.12);
+  /* Blue was retired as an accent — #4D9BFF glared on black. Calm slate. */
+  --info: #8AA2B8;
+  --info-bg: rgba(138,162,184,0.10);
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
