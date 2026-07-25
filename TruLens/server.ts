@@ -43,22 +43,75 @@ const TOKEN_SECRET =
   crypto.createHash('sha256').update(ACCESS_CODE || 'trulens-dev').digest('hex');
 const DEVICE_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // a month on the yard phone
 
-function signDeviceToken(): string {
-  const payload = Buffer.from(JSON.stringify({ k: 'device', exp: Date.now() + DEVICE_TOKEN_TTL_MS })).toString('base64url');
+/**
+ * Per-dealership access codes.
+ *
+ * TRULENS_DEALER_CODES = "cars-on-caledon:CODE1,mkr-autosales:CODE2"
+ *
+ * With one shared code the login could not tell which dealership was holding
+ * the phone, so the dealer picker was the only thing deciding where a car
+ * filed — and a wrong tap put it in someone else's yard with no error. A code
+ * from this map pins the dealership server-side and the picker becomes a
+ * confirmation rather than the source of truth.
+ *
+ * TRULENS_ACCESS_CODE still works exactly as before. Phones already signed in
+ * keep their tokens, and a dealership without its own code yet behaves as it
+ * always has.
+ */
+const DEALER_CODES: Array<{ slug: string; code: string }> = String(
+  process.env.TRULENS_DEALER_CODES || ''
+)
+  .split(',')
+  .map((pair) => pair.trim())
+  .filter(Boolean)
+  .map((pair) => {
+    const i = pair.indexOf(':');
+    if (i < 1) return null;
+    const slug = pair.slice(0, i).trim();
+    const code = pair.slice(i + 1).trim();
+    return slug && code.length >= 6 ? { slug, code } : null;
+  })
+  .filter(Boolean) as Array<{ slug: string; code: string }>;
+
+/** Constant-time compare that does not leak length via early return. */
+function codeMatches(given: string, expected: string): boolean {
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+/** The dealership a code belongs to, or null for the legacy shared code. */
+function dealerForCode(given: string): string | null {
+  for (const entry of DEALER_CODES) {
+    if (codeMatches(given, entry.code)) return entry.slug;
+  }
+  return null;
+}
+
+function signDeviceToken(dealerSlug?: string | null): string {
+  const claims: Record<string, unknown> = { k: 'device', exp: Date.now() + DEVICE_TOKEN_TTL_MS };
+  if (dealerSlug) claims.d = dealerSlug;
+  const payload = Buffer.from(JSON.stringify(claims)).toString('base64url');
   const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
   return `${payload}.${sig}`;
 }
 
-function verifyDeviceToken(token: string): boolean {
+/** Claims when the token is valid, otherwise null. */
+function deviceTokenClaims(token: string): { dealerSlug?: string } | null {
   try {
     const [payload, sig] = String(token).split('.');
-    if (!payload || !sig) return false;
+    if (!payload || !sig) return null;
     const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
     const a = Buffer.from(sig), b = Buffer.from(expected);
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return false;
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
     const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
-    return claims.k === 'device' && claims.exp > Date.now();
-  } catch { return false; }
+    if (claims.k !== 'device' || !(claims.exp > Date.now())) return null;
+    return { dealerSlug: typeof claims.d === 'string' ? claims.d : undefined };
+  } catch { return null; }
+}
+
+function verifyDeviceToken(token: string): boolean {
+  return deviceTokenClaims(token) !== null;
 }
 
 const LENS_DEFAULT_DEALER_SLUG = process.env.LENS_DEFAULT_DEALER_SLUG || 'mkr-autosales';
@@ -228,8 +281,16 @@ const authenticate = async (req: any, res: any, next: any) => {
 
   // A signed device token, issued by POST /api/auth/device in exchange for the
   // dealership's access code.
-  if (verifyDeviceToken(idToken)) {
-    req.user = { uid: 'device', email: 'device@trulens.local', local: true };
+  const deviceClaims = deviceTokenClaims(idToken);
+  if (deviceClaims) {
+    req.user = {
+      uid: 'device',
+      email: 'device@trulens.local',
+      local: true,
+      // Present only when signed in with a per-dealership code. Anything the
+      // request body claims about the dealership is overridden by this.
+      dealerSlug: deviceClaims.dealerSlug,
+    };
     return next();
   }
 
@@ -368,14 +429,25 @@ const STARTED_AT = Date.now();
  *  Deliberately public — it is the way in. Slow-hashed and rate-limited by
  *  nothing yet, so keep the code long. */
 app.post('/api/auth/device', (req, res) => {
-  if (!ACCESS_CODE) {
+  if (!ACCESS_CODE && DEALER_CODES.length === 0) {
     return res.status(503).json({ error: 'No access code configured on this server.' });
   }
   const given = String(req.body?.code || '');
-  const a = Buffer.from(given), b = Buffer.from(ACCESS_CODE);
-  const ok = a.length === b.length && crypto.timingSafeEqual(a, b);
-  if (!ok) return res.status(401).json({ error: 'That code is not recognised.' });
-  res.json({ token: signDeviceToken(), expiresInDays: 30 });
+
+  // A per-dealership code pins the yard server-side, so the phone cannot claim
+  // to be someone else later.
+  const dealerSlug = dealerForCode(given);
+  if (dealerSlug) {
+    return res.json({ token: signDeviceToken(dealerSlug), expiresInDays: 30, dealerSlug });
+  }
+
+  // Legacy shared code — still valid, but carries no dealership, so the picker
+  // remains the only thing that decides where captures file.
+  if (ACCESS_CODE && codeMatches(given, ACCESS_CODE)) {
+    return res.json({ token: signDeviceToken(), expiresInDays: 30, dealerSlug: null });
+  }
+
+  return res.status(401).json({ error: 'That code is not recognised.' });
 });
 
 app.get('/api/health', (_req, res) => {
@@ -903,9 +975,20 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
     const {
       vehicleId,
       dmsUrl: dmsUrlOverride,
-      dealerSlug,
+      dealerSlug: claimedDealerSlug,
       createIfMissing = true,
     } = req.body || {};
+
+    /* When the device signed in with a per-dealership code, that wins. The
+       body value is a claim from the client; the token is evidence. This is
+       what stops a mis-set picker filing a car into another dealer's yard. */
+    const dealerSlug = req.user?.dealerSlug || claimedDealerSlug;
+    if (req.user?.dealerSlug && claimedDealerSlug && claimedDealerSlug !== req.user.dealerSlug) {
+      console.warn(
+        `[export] device is signed in as "${req.user.dealerSlug}" but requested ` +
+        `"${claimedDealerSlug}" — using the signed-in dealership.`
+      );
+    }
 
     if (!vehicleId) {
       return res.status(400).json({ error: 'vehicleId is required' });

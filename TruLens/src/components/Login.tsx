@@ -1,7 +1,5 @@
 import React from 'react';
-import { LogIn, Lock, User, Sparkles, AlertCircle, Loader2, Monitor } from 'lucide-react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { Lock, Sparkles, AlertCircle, Loader2, Monitor } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import trulensLogo from '../assets/images/trulens-wordmark.png';
 
@@ -10,36 +8,6 @@ export default function Login() {
   const [deviceCode, setDeviceCode] = React.useState('');
   const [codeBusy, setCodeBusy] = React.useState(false);
   const [codeError, setCodeError] = React.useState<string | null>(null);
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err: any) {
-      console.error('Auth error:', err);
-      let message = 'An error occurred during authentication.';
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        message = 'Invalid email or password.';
-      } else if (err.code === 'auth/email-already-in-use') {
-        message = 'Email already in use.';
-      } else if (err.code === 'auth/weak-password') {
-        message = 'Password should be at least 6 characters.';
-      } else if (err.code === 'auth/invalid-email') {
-        message = 'Invalid email address.';
-      }
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="h-full w-full bg-black flex flex-col items-center justify-center p-8 relative overflow-hidden">
       {/* Background Glow effects */}
@@ -71,68 +39,11 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="w-full space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[12px] text-neutral-500  font-bold tracking-widest ml-1">Terminal ID (Email)</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-600 group-focus-within:text-indigo-400 transition-colors">
-                <User size={14} />
-              </div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-xs text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
-                placeholder="Enter Email"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[12px] text-neutral-500  font-bold tracking-widest ml-1">Access Token (Password)</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-600 group-focus-within:text-indigo-400 transition-colors">
-                <Lock size={14} />
-              </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 bg-neutral-900/80 border border-neutral-800 rounded-xl text-xs text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
-                placeholder="Enter Password"
-                required
-              />
-            </div>
-          </div>
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 p-2.5 rounded-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
-              <AlertCircle size={12} className="text-red-400 shrink-0" />
-              <p className="text-[12px] font-bold text-red-400  tracking-wide">{error}</p>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 py-3.5 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-semibold rounded-xl text-[13px]  tracking-widest transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden hover:scale-[1.01] active:scale-[0.98]"
-          >
-            {isSubmitting ? (
-              <div className="flex items-center gap-2">
-                <Loader2 size={14} className="animate-spin" />
-                <span>Authorizing...</span>
-              </div>
-            ) : (
-              <>
-                <LogIn size={14} />
-                <span>Initialize Session</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-              </>
-            )}
-          </button>
-        </form>
+        {/* The Firebase email/password form lived here. It could never work in
+            production: TruLens runs LOCAL_MODE=1 with no Firebase credentials, so
+            the server never starts the verifier — a dealer signed in on the phone
+            and then every request 401'd. It was also the most prominent thing on
+            the screen. The access code below is the only real way in. */}
 
         {/* Sign this phone in with the dealership's access code. It replaced a
             "Start on this PC" button that sent the literal string

@@ -82,6 +82,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data?.error || 'Could not sign in on this device.');
     localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
+
+    /* A per-dealership code already establishes the yard, so there is nothing
+       for the picker to ask. Recording it here means the phone agrees with the
+       token; the server ignores this value on export either way. A shared code
+       returns no slug and the picker still runs. */
+    if (data.dealerSlug) {
+      localStorage.setItem('trulens_dealer_slug', data.dealerSlug);
+      localStorage.setItem('trulens_dealer_confirmed', '1');
+    }
+
     enterDemoMode();
   };
 
