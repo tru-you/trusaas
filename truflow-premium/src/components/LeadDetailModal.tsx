@@ -348,10 +348,10 @@ export default function LeadDetailModal({
         {/* Body */}
         <div className="p-6 flex-1 overflow-y-auto min-h-0 flex flex-col gap-4">
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-[rgba(126,164,214,0.1)] pb-1.5">
+          <div className="flex gap-2 border-b border-[rgba(126,164,214,0.1)] pb-2">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "overview"
                   ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
@@ -361,7 +361,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("journey")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "journey"
                   ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
@@ -371,7 +371,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("comm")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "comm"
                   ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
@@ -381,7 +381,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("history")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "history"
                   ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
@@ -391,7 +391,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("tasks")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
                 activeTab === "tasks"
                   ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
@@ -401,7 +401,7 @@ export default function LeadDetailModal({
             </button>
              <button
               onClick={() => setActiveTab("finance")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-t-lg transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer flex items-center gap-1 ${
                 activeTab === "finance"
                   ? "text-[#E8EAE6] bg-[#4FE3DC]/15 border-b-2 border-[#4FE3DC]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/5"
@@ -420,11 +420,11 @@ export default function LeadDetailModal({
                   <div className="card-body p-4 flex flex-col gap-2">
                     <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Contact Details</div>
                     <div className="text-base font-bold text-[#E8EAE6]">{lead.firstName} {lead.lastName}</div>
-                    <div className="text-xs text-[rgba(232,234,230,0.72)] flex flex-col gap-1.5 mt-1">
-                      <span className="flex items-center gap-1.5"><Phone size={13} className="text-[#4FE3DC]" /> {lead.phone}</span>
-                      <span className="flex items-center gap-1.5"><Mail size={13} className="text-[#4FE3DC]" /> {lead.email}</span>
+                    <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-col gap-2 mt-1">
+                      <span className="flex items-center gap-2"><Phone size={13} className="text-[#4FE3DC]" /> {lead.phone}</span>
+                      <span className="flex items-center gap-2"><Mail size={13} className="text-[#4FE3DC]" /> {lead.email}</span>
                     </div>
-                    <div className="border-t border-white/5 mt-2 pt-2 text-xs">
+                    <div className="border-t border-white/5 mt-2 pt-2 text-[13px]">
                       <span className="font-bold text-[#E8EAE6]">Notes:</span> <span className="text-[rgba(232,234,230,0.72)]">{lead.notes || "None logged"}</span>
                     </div>
                   </div>
@@ -434,13 +434,13 @@ export default function LeadDetailModal({
                 <div className="card !bg-[#0B0F17]/1">
                   <div className="card-body p-4 flex flex-col gap-2">
                     <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Session Attributes</div>
-                    <div className="text-xs text-[rgba(232,234,230,0.72)] flex flex-col gap-2 leading-relaxed">
+                    <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-col gap-2 leading-relaxed">
                       <div><span className="font-bold text-[#E8EAE6]">Ad Source:</span> <span className="px-2 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[13px] font-bold tracking-normal">{lead.source}</span></div>
                       <div><span className="font-bold text-[#E8EAE6]">Creation Stamp:</span> <span>{lead.createdAt}</span></div>
                       <div><span className="font-bold text-[#E8EAE6]">Assigned Specialist:</span> <span>{assignedUser?.name || "Awaiting Pool Assign"}</span></div>
-                      <div className="flex items-center gap-1.5 mt-1">
+                      <div className="flex items-center gap-2 mt-1">
                         <span className="font-bold text-[#E8EAE6]">Intent Score:</span>
-                        <span className="font-mono text-sm font-bold text-[#4FE3DC] bg-[#4FE3DC]/10 px-2 py-0.5 rounded">{lead.digitalScore}%</span>
+                        <span className="font-mono text-[16px] font-bold text-[#4FE3DC] bg-[#4FE3DC]/10 px-2 py-0.5 rounded">{lead.digitalScore}%</span>
                       </div>
                     </div>
                   </div>
@@ -453,8 +453,8 @@ export default function LeadDetailModal({
                   <div className="card-body p-4 flex items-center justify-between">
                     <div>
                       <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-1">Subject Vehicle Focus</div>
-                      <div className="text-sm font-bold text-[#E8EAE6]">{vehicle.year} {vehicle.make} {vehicle.model}</div>
-                      <div className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Stock No: {vehicle.stockNumber} / Price: R {vehicle.retailPrice.toLocaleString()}</div>
+                      <div className="text-[16px] font-bold text-[#E8EAE6]">{vehicle.year} {vehicle.make} {vehicle.model}</div>
+                      <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Stock No: {vehicle.stockNumber} / Price: R {vehicle.retailPrice.toLocaleString()}</div>
                     </div>
                     <span className="px-2 py-1 bg-[#4ADE9B]/15 text-[#4ADE9B] text-[13px] font-bold tracking-normal rounded">
                       {vehicle.status === "INVENTORY" ? "Active Showroom" : vehicle.status === "PENDING" ? "Finance Pending" : "Delivered"}
@@ -470,31 +470,31 @@ export default function LeadDetailModal({
                   
                   <div className="flex items-center justify-between border-b border-white/5 pb-3">
                     <div className="flex items-center gap-2">
-                      <Sparkles size={16} className="text-[#4FE3DC] animate-pulse" />
+                      <Sparkles size={16} className="text-[#4FE3DC]" />
                       <div>
                         <span className="text-[13px] font-bold text-[#4FE3DC] tracking-normal font-mono block">TrueAI Smart Qualification</span>
-                        <span className="text-[12px] text-[rgba(232,234,230,0.72)]">What this customer did</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]">What this customer did</span>
                       </div>
                     </div>
                     
                     {/* Dynamic Hot/Warm/Cold Rating Badge */}
                     {lead.digitalScore >= 75 ? (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/15 text-red-400 text-xs font-semibold tracking-normal rounded-lg border border-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.2)] font-mono">
+                      <span className="flex items-center gap-2 px-3 py-1 bg-red-500/15 text-red-400 text-[13px] font-semibold tracking-normal rounded-lg border border-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.2)] font-mono">
                         Hot 🔥 (High Intent: {lead.digitalScore}%)
                       </span>
                     ) : lead.digitalScore >= 50 ? (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-[#E8C468]/15 text-[#E8C468] text-xs font-semibold tracking-normal rounded-lg border border-[#E8C468]/20 font-mono">
+                      <span className="flex items-center gap-2 px-3 py-1 bg-[#E8C468]/15 text-[#E8C468] text-[13px] font-semibold tracking-normal rounded-lg border border-[#E8C468]/20 font-mono">
                         Warm ☀️ (Engaged: {lead.digitalScore}%)
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1.5 px-3 py-1 bg-sky-500/15 text-sky-400 text-xs font-semibold tracking-normal rounded-lg border border-sky-500/20 font-mono">
+                      <span className="flex items-center gap-2 px-3 py-1 bg-sky-500/15 text-sky-400 text-[13px] font-semibold tracking-normal rounded-lg border border-sky-500/20 font-mono">
                         Cold ❄️ (Nurture: {lead.digitalScore}%)
                       </span>
                     )}
                   </div>
 
                   {/* Behavioral Analysis Explanation */}
-                  <div className="text-xs text-[#E8EAE6] leading-relaxed font-sans space-y-1.5">
+                  <div className="text-[13px] text-[#E8EAE6] leading-relaxed font-sans space-y-2">
                     <p className="font-semibold text-white">Analysis Summary:</p>
                     <p className="text-[rgba(232,234,230,0.72)]">
                       {lead.digitalScore >= 75 
@@ -507,8 +507,8 @@ export default function LeadDetailModal({
 
                   {/* Suggested Smart Actions Grid */}
                   <div className="space-y-2 mt-1">
-                    <span className="text-[12px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono block">TrueAI Smart Suggestions:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono block">TrueAI Smart Suggestions:</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       
                       {/* Suggestion 1: Book Test Drive / Call Now */}
                       <button
@@ -520,9 +520,9 @@ export default function LeadDetailModal({
                         }}
                         className="p-2 bg-[#0B0F17]/3 border border-white/5 hover:border-[#4FE3DC]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[12px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 01</span>
+                        <span className="text-[13px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 01</span>
                         <span className="text-[13px] font-bold text-white block mt-0.5 group-hover:text-[#4FE3DC]">Book Test Drive</span>
-                        <span className="text-[12px] text-[rgba(232,234,230,0.72)] block mt-0.5">Call now & schedule date</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)] block mt-0.5">Call now & schedule date</span>
                       </button>
 
                       {/* Suggestion 2: Send pricing PDF / WhatsApp */}
@@ -535,9 +535,9 @@ export default function LeadDetailModal({
                         }}
                         className="p-2 bg-[#0B0F17]/3 border border-white/5 hover:border-[#4FE3DC]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[12px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 02</span>
+                        <span className="text-[13px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 02</span>
                         <span className="text-[13px] font-bold text-white block mt-0.5 group-hover:text-[#4FE3DC]">Send pricing PDF</span>
-                        <span className="text-[12px] text-[rgba(232,234,230,0.72)] block mt-0.5">Push pricing template over WhatsApp</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)] block mt-0.5">Push pricing template over WhatsApp</span>
                       </button>
 
                       {/* Suggestion 3: Draft Offer to Purchase (OTP) */}
@@ -549,9 +549,9 @@ export default function LeadDetailModal({
                         }}
                         className="p-2 bg-[#0B0F17]/3 border border-white/5 hover:border-[#4FE3DC]/30 hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[12px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 03</span>
+                        <span className="text-[13px] text-[#4FE3DC] font-bold tracking-normal block font-mono">Action 03</span>
                         <span className="text-[13px] font-bold text-white block mt-0.5 group-hover:text-[#4FE3DC]">Generate OTP Document</span>
-                        <span className="text-[12px] text-[rgba(232,234,230,0.72)] block mt-0.5">Draft digital pre-agreement folder</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)] block mt-0.5">Draft digital pre-agreement folder</span>
                       </button>
 
                     </div>
@@ -561,8 +561,8 @@ export default function LeadDetailModal({
 
               {/* Alerts */}
               {!lead.lastContactedAt && (
-                <div className="bg-[#FF6B6B]/10 border border-[#FF6B6B]/30 rounded-xl p-4 text-xs text-[#FF6B6B] font-medium leading-relaxed flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center font-bold text-sm">!</span>
+                <div className="bg-[#FF6B6B]/10 border border-[#FF6B6B]/30 rounded-xl p-4 text-[13px] text-[#FF6B6B] font-medium leading-relaxed flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center font-bold text-[16px]">!</span>
                   <span>Alert: This lead is currently uncontacted. Direct follow-up or automated introductory welcome email dispatch is highly advised.</span>
                 </div>
               )}
@@ -584,13 +584,13 @@ export default function LeadDetailModal({
                              <Icon size={12} className="text-[#4FE3DC]" />
                              <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono font-medium">{j.time}</div>
                           </div>
-                          <div className="text-xs font-bold text-[#E8EAE6] mt-0.5">{j.action}</div>
-                          <div className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">{j.detail}</div>
+                          <div className="text-[13px] font-bold text-[#E8EAE6] mt-0.5">{j.action}</div>
+                          <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{j.detail}</div>
                         </div>
                       )
                     })}
                     {(!lead.journey || lead.journey.length === 0) && (
-                      <div className="text-xs text-[rgba(232,234,230,0.72)] italic py-2">No navigation telemetry records stored.</div>
+                      <div className="text-[13px] text-[rgba(232,234,230,0.72)] italic py-2">No navigation telemetry records stored.</div>
                     )}
                   </div>
                 </div>
@@ -607,7 +607,7 @@ export default function LeadDetailModal({
                     <select
                       value={commTemplate}
                       onChange={(e) => handleTemplateChange(e.target.value)}
-                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
+                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none font-sans"
                     >
                       <option className="bg-[#0B0F17]" value="custom">Custom (No template)</option>
                       <option className="bg-[#0B0F17]" value="welcome">Welcome Pre-Owned Introduction</option>
@@ -621,7 +621,7 @@ export default function LeadDetailModal({
                     <select
                       value={commChannel}
                       onChange={(e) => setCommChannel(e.target.value as any)}
-                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
+                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none font-sans"
                     >
                       <option className="bg-[#0B0F17]" value="email">Email preview</option>
                       <option className="bg-[#0B0F17]" value="sms">SMS text network</option>
@@ -641,7 +641,7 @@ export default function LeadDetailModal({
                         value={emailSubject}
                         onChange={(e) => setEmailSubject(e.target.value)}
                         placeholder="Subject..."
-                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
+                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
                       />
                     </div>
                     <div className="flex flex-col gap-1 relative">
@@ -650,7 +650,7 @@ export default function LeadDetailModal({
                         <button
                           type="button"
                           onClick={() => setEmailBody(templates.email())}
-                          className="flex items-center gap-1 text-[12px] font-bold text-[#4FE3DC] hover:text-[#E8EAE6] transition-colors cursor-pointer"
+                          className="flex items-center gap-1 text-[13px] font-bold text-[#4FE3DC] hover:text-[#E8EAE6] transition-colors cursor-pointer"
                         >
                           <><Wand2 size={10} /> Use template</>
                         </button>
@@ -660,7 +660,7 @@ export default function LeadDetailModal({
                         value={emailBody}
                         onChange={(e) => setEmailBody(e.target.value)}
                         placeholder="Type email body contents..."
-                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
+                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
                       ></textarea>
                     </div>
                   </div>
@@ -673,7 +673,7 @@ export default function LeadDetailModal({
                       <button
                         type="button"
                         onClick={() => setSmsBody(templates.sms())}
-                        className="flex items-center gap-1 text-[12px] font-bold text-[#4FE3DC] hover:text-[#E8EAE6] transition-colors cursor-pointer"
+                        className="flex items-center gap-1 text-[13px] font-bold text-[#4FE3DC] hover:text-[#E8EAE6] transition-colors cursor-pointer"
                       >
                         <Wand2 size={10} /> Use template
                       </button>
@@ -684,7 +684,7 @@ export default function LeadDetailModal({
                       value={smsBody}
                       onChange={(e) => setSmsBody(e.target.value)}
                       placeholder="Type SMS text..."
-                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
+                      className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
                     ></textarea>
                   </div>
                 )}
@@ -695,11 +695,11 @@ export default function LeadDetailModal({
                     <div className="flex flex-col gap-3">
                       <div className="flex justify-between items-center">
                         <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-bold">Compose Message</label>
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => setWhatsappBody(templates.whatsapp())}
-                            className="flex items-center gap-1 text-[12px] font-bold text-[#4FE3DC] bg-[#4FE3DC]/10 border border-[#4FE3DC]/20 px-2 py-1 rounded-lg hover:bg-[#4FE3DC]/20 transition-all cursor-pointer"
+                            className="flex items-center gap-1 text-[13px] font-bold text-[#4FE3DC] bg-[#4FE3DC]/10 border border-[#4FE3DC]/20 px-2 py-1 rounded-lg hover:bg-[#4FE3DC]/20 transition-all cursor-pointer"
                           >
                             <Sparkles size={10} /> Use template
                           </button>
@@ -711,7 +711,7 @@ export default function LeadDetailModal({
                         value={whatsappBody}
                         onChange={(e) => setWhatsappBody(e.target.value)}
                         placeholder="Type WhatsApp content or load a template..."
-                        className="bg-[#0B0F17] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans resize-none leading-relaxed"
+                        className="bg-[#0B0F17] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans resize-none leading-relaxed"
                       ></textarea>
 
                       {/* Launch Real Deep Link Button */}
@@ -722,14 +722,14 @@ export default function LeadDetailModal({
                           const encodedText = encodeURIComponent(whatsappBody || "Good day! Following up from Sandton Pre-Owned.");
                           window.open(`https://wa.me/${sanitizedPhone}?text=${encodedText}`, "_blank");
                         }}
-                        className="w-full py-1.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-semibold tracking-normal transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-semibold tracking-normal transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
                         <Smartphone size={12} /> Open Real WhatsApp Desktop (wa.me)
                       </button>
                     </div>
 
                     {/* RIGHT PANE: WHATSAPP PHONE SIMULATOR */}
-                    <div className="bg-[#06080D] border border-[#25D366]/20 rounded-2xl overflow-hidden flex flex-col shadow-inner h-64 font-sans text-xs">
+                    <div className="bg-[#06080D] border border-[#25D366]/20 rounded-2xl overflow-hidden flex flex-col shadow-inner h-64 font-sans text-[13px]">
                       {/* Phone Header */}
                       <div className="bg-[#075e54] text-white px-3 py-2 flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-[#128C7E] flex items-center justify-center text-[13px] font-semibold text-white  font-mono shadow-sm">
@@ -737,24 +737,24 @@ export default function LeadDetailModal({
                         </div>
                         <div className="flex-1">
                           <div className="font-bold text-[13px] leading-tight">{lead.firstName} {lead.lastName}</div>
-                          <div className="text-[12px] text-[#25D366] font-bold">Online</div>
+                          <div className="text-[13px] text-[#25D366] font-bold">Online</div>
                         </div>
                         <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse"></span>
                       </div>
 
                       {/* Phone Chat Body */}
-                      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5 bg-[radial-gradient(circle_at_center,rgba(7,94,84,0.08)_0%,transparent_80%)]">
+                      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 bg-[radial-gradient(circle_at_center,rgba(7,94,84,0.08)_0%,transparent_80%)]">
                         {whatsappHistory.map((msg, idx) => (
                           <div
                             key={idx}
-                            className={`max-w-[85%] rounded-lg px-2.5 py-1.5 leading-relaxed text-[13px] relative flex flex-col gap-0.5 shadow-sm ${
+                            className={`max-w-[85%] rounded-lg px-3 py-2 leading-relaxed text-[13px] relative flex flex-col gap-0.5 shadow-sm ${
                               msg.sender === "agent"
                                 ? "bg-[#dcf8c6] text-gray-900 self-end rounded-tr-none"
                                 : "bg-[#0B0F17] text-gray-100 self-start rounded-tl-none border border-white/5"
                             }`}
                           >
                             <span>{msg.text}</span>
-                            <span className={`text-[12px] self-end mt-0.5 ${msg.sender === "agent" ? "text-gray-400" : "text-gray-400 font-mono"}`}>
+                            <span className={`text-[13px] self-end mt-0.5 ${msg.sender === "agent" ? "text-gray-400" : "text-gray-400 font-mono"}`}>
                               {msg.time}
                             </span>
                           </div>
@@ -762,9 +762,9 @@ export default function LeadDetailModal({
                       </div>
 
                       {/* Phone Footer */}
-                      <div className="bg-[#0B0F17] border-t border-white/5 p-1.5 flex justify-between items-center text-[rgba(232,234,230,0.72)] font-mono text-[12px]">
+                      <div className="bg-[#0B0F17] border-t border-white/5 p-2 flex justify-between items-center text-[rgba(232,234,230,0.72)] font-mono text-[13px]">
                         <span>Secure Messaging Session</span>
-                        <span className="text-[#25D366] font-bold  tracking-widest text-[12px]">WhatsApp API Active</span>
+                        <span className="text-[#25D366] font-bold  tracking-widest text-[13px]">WhatsApp API Active</span>
                       </div>
                     </div>
                   </div>
@@ -779,7 +779,7 @@ export default function LeadDetailModal({
                           type="number"
                           value={callDuration}
                           onChange={(e) => setCallDuration(parseInt(e.target.value) || 0)}
-                          className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
@@ -787,7 +787,7 @@ export default function LeadDetailModal({
                         <select
                           value={callOutcome}
                           onChange={(e) => setCallOutcome(e.target.value)}
-                          className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
+                          className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none font-sans"
                         >
                           <option className="bg-[#0B0F17]" value="Reached">Reached client directly</option>
                           <option className="bg-[#0B0F17]" value="No Answer">No Answer / Left Voicemail</option>
@@ -802,7 +802,7 @@ export default function LeadDetailModal({
                         value={callNotes}
                         onChange={(e) => setCallNotes(e.target.value)}
                         placeholder="Log what was discussed or agreed..."
-                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
+                        className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC] font-sans"
                       ></textarea>
                     </div>
                   </div>
@@ -811,7 +811,7 @@ export default function LeadDetailModal({
                 <div className="flex justify-end mt-1">
                   <button
                     type="submit"
-                    className="btn btn-primary btn-sm flex items-center gap-1.5"
+                    className="btn btn-primary btn-sm flex items-center gap-2"
                   >
                     <Send size={12} /> Dispatch Outbound Message
                   </button>
@@ -822,28 +822,28 @@ export default function LeadDetailModal({
               <div className="mt-4 border-t border-white/5 pt-4">
                 <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-2">Communications Outbound logs</div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-[rgba(232,234,230,0.72)] text-left border-collapse">
+                  <table className="w-full text-[13px] text-[rgba(232,234,230,0.72)] text-left border-collapse">
                     <thead>
                       <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
-                        <th className="py-2 font-bold tracking-normal text-[12px]">Date</th>
-                        <th className="py-2 font-bold tracking-normal text-[12px]">Type</th>
-                        <th className="py-2 font-bold tracking-normal text-[12px]">Subject discussion</th>
-                        <th className="py-2 font-bold tracking-normal text-[12px]">Sent by</th>
+                        <th className="py-2 font-bold tracking-normal text-[13px]">Date</th>
+                        <th className="py-2 font-bold tracking-normal text-[13px]">Type</th>
+                        <th className="py-2 font-bold tracking-normal text-[13px]">Subject discussion</th>
+                        <th className="py-2 font-bold tracking-normal text-[13px]">Sent by</th>
                       </tr>
                     </thead>
                     <tbody>
                       {communications.map((c) => (
                         <tr key={c.id} className="border-b border-white/5 hover:bg-[#0B0F17]/2">
-                          <td className="py-2.5 font-medium">{c.sentAt}</td>
-                          <td className="py-2.5">
-                            <span className="px-1.5 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[12px] font-mono font-bold tracking-normal">
+                          <td className="py-3 font-medium">{c.sentAt}</td>
+                          <td className="py-3">
+                            <span className="px-2 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[13px] font-mono font-bold tracking-normal">
                               {c.type}
                             </span>
                           </td>
-                          <td className="py-2.5 max-w-[280px] truncate font-semibold text-[#E8EAE6]">
+                          <td className="py-3 max-w-[280px] truncate font-semibold text-[#E8EAE6]">
                             {c.subject} <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{c.content}</span>
                           </td>
-                          <td className="py-2.5">{c.sentBy}</td>
+                          <td className="py-3">{c.sentBy}</td>
                         </tr>
                       ))}
                       {communications.length === 0 && (
@@ -866,28 +866,28 @@ export default function LeadDetailModal({
                 <div className="card-body p-4">
                   <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-2">DMS Lifecycle events</div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-[rgba(232,234,230,0.72)] border-collapse">
+                    <table className="w-full text-left text-[13px] text-[rgba(232,234,230,0.72)] border-collapse">
                       <thead>
                         <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
-                          <th className="py-2 font-bold tracking-normal text-[12px]">Date Stamp</th>
-                          <th className="py-2 font-bold tracking-normal text-[12px]">Who</th>
-                          <th className="py-2 font-bold tracking-normal text-[12px]">System Action</th>
-                          <th className="py-2 font-bold tracking-normal text-[12px]">Outcome</th>
+                          <th className="py-2 font-bold tracking-normal text-[13px]">Date Stamp</th>
+                          <th className="py-2 font-bold tracking-normal text-[13px]">Who</th>
+                          <th className="py-2 font-bold tracking-normal text-[13px]">System Action</th>
+                          <th className="py-2 font-bold tracking-normal text-[13px]">Outcome</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td className="py-2.5">{lead.createdAt}</td>
-                          <td className="py-2.5 font-mono">DMS CENTRAL</td>
-                          <td className="py-2.5 font-bold text-[#E8EAE6]">Lead Registered</td>
-                          <td className="py-2.5">Logged from {lead.source} source</td>
+                          <td className="py-3">{lead.createdAt}</td>
+                          <td className="py-3 font-mono">DMS CENTRAL</td>
+                          <td className="py-3 font-bold text-[#E8EAE6]">Lead Registered</td>
+                          <td className="py-3">Logged from {lead.source} source</td>
                         </tr>
                         {lead.lastContactedAt && (
                           <tr>
-                            <td className="py-2.5">{lead.lastContactedAt}</td>
-                            <td className="py-2.5 font-mono">MARC_VAN_DER_MERWE</td>
-                            <td className="py-2.5 font-bold text-[#E8EAE6]">Contact Completed</td>
-                            <td className="py-2.5">Sent</td>
+                            <td className="py-3">{lead.lastContactedAt}</td>
+                            <td className="py-3 font-mono">MARC_VAN_DER_MERWE</td>
+                            <td className="py-3 font-bold text-[#E8EAE6]">Contact Completed</td>
+                            <td className="py-3">Sent</td>
                           </tr>
                         )}
                       </tbody>
@@ -908,7 +908,7 @@ export default function LeadDetailModal({
                     <div className="bg-[#4FE3DC]/10 border border-[#4FE3DC]/30 rounded-lg p-3 flex justify-between items-center">
                       <div className="flex gap-2 items-center">
                         <Award size={14} className="text-[#4FE3DC]" />
-                        <span className="text-xs text-[#E8EAE6]">AI Suggestion: Lead hasn't been contacted recently. Schedule a follow-up call.</span>
+                        <span className="text-[13px] text-[#E8EAE6]">AI Suggestion: Lead hasn't been contacted recently. Schedule a follow-up call.</span>
                       </div>
                       <button 
                         onClick={() => {
@@ -929,7 +929,7 @@ export default function LeadDetailModal({
                         placeholder="Task Description..."
                         value={newTaskTitle}
                         onChange={(e) => setNewTaskTitle(e.target.value)}
-                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none placeholder:text-[rgba(232,234,230,0.72)]"
+                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none placeholder:text-[rgba(232,234,230,0.72)]"
                         required
                       />
                     </div>
@@ -938,14 +938,14 @@ export default function LeadDetailModal({
                         type="date"
                         value={newTaskDate}
                         onChange={(e) => setNewTaskDate(e.target.value)}
-                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
+                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none"
                       />
                     </div>
                     <div className="col-span-6 md:col-span-2">
                       <select
                         value={newTaskPriority}
                         onChange={(e) => setNewTaskPriority(e.target.value as any)}
-                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
+                        className="w-full bg-[#06080D] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none"
                       >
                         <option value="High">High Priority</option>
                         <option value="Normal">Normal</option>
@@ -953,7 +953,7 @@ export default function LeadDetailModal({
                       </select>
                     </div>
                     <div className="col-span-6 md:col-span-2">
-                      <button type="submit" className="w-full bg-[#0B0F17]/10 hover:bg-[#0B0F17]/15 border border-white/15 text-white font-bold text-xs rounded-lg py-2 transition-all cursor-pointer h-full">
+                      <button type="submit" className="w-full bg-[#0B0F17]/10 hover:bg-[#0B0F17]/15 border border-white/15 text-white font-bold text-[13px] rounded-lg py-2 transition-all cursor-pointer h-full">
                         Add Task
                       </button>
                     </div>
@@ -966,7 +966,7 @@ export default function LeadDetailModal({
                   <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono border-b border-white/5 pb-2">Active Tasks</div>
                   <div className="flex flex-col gap-2 mt-2">
                     {tasks.length === 0 ? (
-                      <div className="text-center py-6 text-xs text-[rgba(232,234,230,0.72)]">No tasks scheduled for this lead.</div>
+                      <div className="text-center py-6 text-[13px] text-[rgba(232,234,230,0.72)]">No tasks scheduled for this lead.</div>
                     ) : (
                       tasks.map((task) => (
                         <div key={task.id} className="bg-[#06080D] border border-white/5 rounded-lg p-3 flex justify-between items-center group">
@@ -979,12 +979,12 @@ export default function LeadDetailModal({
                               <CheckCircle size={18} />
                             </button>
                             <div className="flex flex-col">
-                              <span className={`text-xs font-semibold ${task.status === "Completed" ? "text-[rgba(232,234,230,0.72)] line-through" : "text-[#E8EAE6]"}`}>
+                              <span className={`text-[13px] font-semibold ${task.status === "Completed" ? "text-[rgba(232,234,230,0.72)] line-through" : "text-[#E8EAE6]"}`}>
                                 {task.title}
                               </span>
                               <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[12px] text-[rgba(232,234,230,0.72)] flex items-center gap-1"><Calendar size={10} /> {task.dueDate}</span>
-                                {task.priority === "High" && <span className="text-[12px] bg-[#FF6B6B]/20 text-[#FF6B6B] px-1.5 py-0.5 rounded font-bold tracking-normal">High</span>}
+                                <span className="text-[13px] text-[rgba(232,234,230,0.72)] flex items-center gap-1"><Calendar size={10} /> {task.dueDate}</span>
+                                {task.priority === "High" && <span className="text-[13px] bg-[#FF6B6B]/20 text-[#FF6B6B] px-2 py-0.5 rounded font-bold tracking-normal">High</span>}
                               </div>
                             </div>
                           </div>
@@ -1024,32 +1024,32 @@ export default function LeadDetailModal({
                   <div className="card-body p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
                       <div className="text-[13px] font-bold text-[#4FE3DC] tracking-normal font-mono">Finance estimate</div>
-                      <span className="text-[12px] bg-[#4FE3DC]/15 text-[#4FE3DC] px-2 py-0.5 rounded font-bold tracking-normal"></span>
+                      <span className="text-[13px] bg-[#4FE3DC]/15 text-[#4FE3DC] px-2 py-0.5 rounded font-bold tracking-normal"></span>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-black/30 border border-white/5 p-2.5 rounded-xl flex flex-col">
-                        <span className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Vehicle Price</span>
-                        <span className="text-xs font-mono font-bold text-[#4ADE9B]">{vehicle ? `R ${vehicle.retailPrice.toLocaleString()}` : "N/A"}</span>
+                      <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex flex-col">
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Vehicle Price</span>
+                        <span className="text-[13px] font-mono font-bold text-[#4ADE9B]">{vehicle ? `R ${vehicle.retailPrice.toLocaleString()}` : "N/A"}</span>
                       </div>
-                      <div className="bg-black/30 border border-white/5 p-2.5 rounded-xl flex flex-col">
-                        <span className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Est. Monthly</span>
-                        <span className="text-xs font-mono font-bold text-[rgba(232,234,230,0.72)]">{vehicle ? `R ${Math.round(vehicle.retailPrice * 0.0195).toLocaleString()}` : "N/A"}</span>
+                      <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex flex-col">
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Est. Monthly</span>
+                        <span className="text-[13px] font-mono font-bold text-[rgba(232,234,230,0.72)]">{vehicle ? `R ${Math.round(vehicle.retailPrice * 0.0195).toLocaleString()}` : "N/A"}</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-2">
                       <button 
                         type="button"
                         onClick={() => alert("SMS with secure pre-approval link dispatched to customer cell.")}
-                        className="w-full py-2 bg-[#4FE3DC]/10 hover:bg-[#4FE3DC]/20 border border-[#4FE3DC]/30 text-[#4FE3DC] font-bold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-[#4FE3DC]/10 hover:bg-[#4FE3DC]/20 border border-[#4FE3DC]/30 text-[#4FE3DC] font-bold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
                         <Phone size={11} /> Send Pre-Approval SMS Link
                       </button>
                       <button 
                         type="button"
                         onClick={() => alert("Bureau analysis complete. Passing probability score: 92%. Soft-check approved.")}
-                        className="w-full py-2 bg-[#0B0F17]/5 hover:bg-white/10 border border-white/10 text-white font-bold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-[#0B0F17]/5 hover:bg-white/10 border border-white/10 text-white font-bold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
                         <CheckCircle size={11} /> Soft credit bureau check
                       </button>
@@ -1064,12 +1064,12 @@ export default function LeadDetailModal({
                       F&I Document Generator
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Select Agreement Template</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Select Agreement Template</label>
                       <select
                         value={docTypeToGenerate}
                         onChange={(e) => setDocTypeToGenerate(e.target.value as any)}
-                        className="bg-[#0B0F17] border border-white/10 rounded-lg p-2 text-xs text-[#E8EAE6] outline-none"
+                        className="bg-[#0B0F17] border border-white/10 rounded-lg p-2 text-[13px] text-[#E8EAE6] outline-none"
                       >
                         <option value="Offer to Purchase">Offer to Purchase (OTP)</option>
                         <option value="Finance Application">Finance Application</option>
@@ -1108,7 +1108,7 @@ export default function LeadDetailModal({
                           setGeneratingDoc(false);
                         }
                       }}
-                      className="w-full py-2.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/80 text-white font-bold text-[13px] tracking-normal rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md"
+                      className="w-full py-3 bg-[#4FE3DC] hover:bg-[#4FE3DC]/80 text-white font-bold text-[13px] tracking-normal rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
                     >
                       <FileSignature size={12} /> {generatingDoc ? "Drafting legal terms..." : "Generate Digital Document"}
                     </button>
@@ -1121,13 +1121,13 @@ export default function LeadDetailModal({
                     <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">
                       Draft Folders ({agreements.length})
                     </div>
-                    <div className="flex flex-col gap-1.5 mt-1">
+                    <div className="flex flex-col gap-2 mt-1">
                       {agreements.map((ag) => (
                         <button
                           key={ag.id}
                           type="button"
                           onClick={() => setSelectedAgreementId(ag.id)}
-                          className={`w-full p-2.5 text-left rounded-lg border transition-all cursor-pointer flex items-center justify-between ${
+                          className={`w-full p-3 text-left rounded-lg border transition-all cursor-pointer flex items-center justify-between ${
                             selectedAgreementId === ag.id
                               ? "bg-[#4FE3DC]/15 border-[#4FE3DC] text-[#E8EAE6]"
                               : "bg-black/20 border-white/5 text-[rgba(232,234,230,0.72)] hover:bg-black/30"
@@ -1137,10 +1137,10 @@ export default function LeadDetailModal({
                             <FileText size={13} className={selectedAgreementId === ag.id ? "text-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)]"} />
                             <div className="flex flex-col">
                               <span className="text-[13px] font-bold">{ag.type}</span>
-                              <span className="text-[12px] text-[rgba(232,234,230,0.72)] font-mono">{ag.id.substring(0, 8).toUpperCase()} • {ag.date}</span>
+                              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{ag.id.substring(0, 8).toUpperCase()} • {ag.date}</span>
                             </div>
                           </div>
-                          <span className={`text-[12px] font-bold px-1.5 py-0.5 rounded  ${
+                          <span className={`text-[13px] font-bold px-2 py-0.5 rounded  ${
                             ag.status === "Signed" 
                               ? "bg-[#4ADE9B]/10 text-[#4ADE9B]" 
                               : "bg-red-500/10 text-red-400 animate-pulse"
@@ -1184,7 +1184,7 @@ export default function LeadDetailModal({
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-gray-400">
                     <FileSignature size={48} className="text-[rgba(232,234,230,0.72)] mb-3 opacity-40" />
-                    <h3 className="text-xs font-bold text-[rgba(232,234,230,0.72)] tracking-normal mb-1">Signature</h3>
+                    <h3 className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal mb-1">Signature</h3>
                     <p className="text-[13px] max-w-sm text-[rgba(232,234,230,0.72)] leading-relaxed">
                       Select or generate a contract package from the left panel to display interactive legal layouts, finance amortization grids, and the digital signature pad.
                     </p>
@@ -1201,14 +1201,14 @@ export default function LeadDetailModal({
         <div className="px-6 py-4 border-t border-[rgba(126,164,214,0.1)] flex justify-between items-center bg-[#0B0F17]/1">
           <button
             onClick={handleDelete}
-            className="px-3 py-1.5 rounded-lg border border-[#FF6B6B]/30 text-[#FF6B6B] bg-[#FF6B6B]/10 text-xs font-semibold cursor-pointer active:scale-95 transition-all hover:bg-[#FF6B6B]/20"
+            className="px-3 py-2 rounded-lg border border-[#FF6B6B]/30 text-[#FF6B6B] bg-[#FF6B6B]/10 text-[13px] font-semibold cursor-pointer active:scale-95 transition-all hover:bg-[#FF6B6B]/20"
           >
             Delete Lead File
           </button>
           
           <div className="flex gap-2">
             {leadStatus === "Closed Won" && (
-              <label className="flex items-center gap-2 text-xs text-[#E8EAE6] cursor-pointer bg-[#0B0F17]/5 px-2 py-1.5 rounded-lg">
+              <label className="flex items-center gap-2 text-[13px] text-[#E8EAE6] cursor-pointer bg-[#0B0F17]/5 px-2 py-2 rounded-lg">
                 <input type="checkbox" checked={crmSetupFee} onChange={(e) => setCrmSetupFee(e.target.checked)} />
                 CRM Setup & Training Fee (R 5,000)
               </label>
@@ -1216,7 +1216,7 @@ export default function LeadDetailModal({
             <select
               value={leadStatus}
               onChange={(e) => setLeadStatus(e.target.value)}
-              className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
+              className="bg-[#0B0F17]/4 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none font-sans"
             >
               <option className="bg-[#0B0F17]" value="New">New</option>
               <option className="bg-[#0B0F17]" value="Contacted">Contacted</option>

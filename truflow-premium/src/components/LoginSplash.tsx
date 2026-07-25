@@ -67,7 +67,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
               autoComplete="off"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#06080D] border border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#4FE3DC] transition-colors"
+              className="w-full bg-[#06080D] border border-white/20 rounded-xl px-4 py-3 text-[16px] text-white focus:outline-none focus:border-[#4FE3DC] transition-colors"
             />
             <Lock className="absolute right-3 top-3.5 w-4 h-4 text-[rgba(232,234,230,0.72)]" />
           </div>
@@ -80,8 +80,8 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
             />
             <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Keep me signed in on this device</span>
           </label>
-          {error && <p className="text-xs text-[#FF6B6B] mb-4">{error}</p>}
-          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#4FE3DC] hover:bg-[#7FF0EA] disabled:opacity-60 on-fill font-bold text-sm">
+          {error && <p className="text-[13px] text-[#FF6B6B] mb-4">{error}</p>}
+          <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-[#4FE3DC] hover:bg-[#7FF0EA] disabled:opacity-60 on-fill font-bold text-[16px]">
             {busy ? 'Checking…' : 'Enter'}
           </button>
         </form>
@@ -95,7 +95,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
             catch (err: any) { setError(err?.message || 'Demo is unavailable right now.'); }
             finally { setDemoBusy(false); }
           }}
-          className="mt-3 w-full py-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:border-[#4FE3DC]/40 transition-colors disabled:opacity-60"
+          className="mt-3 w-full py-3 rounded-xl border border-[rgba(232,234,230,0.14)] text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:border-[#4FE3DC]/40 transition-colors disabled:opacity-60"
         >
           {demoBusy ? 'Opening demo…' : 'Explore the demo — no login needed'}
         </button>

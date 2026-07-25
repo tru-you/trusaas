@@ -133,7 +133,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-4 overflow-y-auto">
       <div className="bg-[#06080D] border border-white/10 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Product cut: capture lives in TruLens — Premium is gallery + publish */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-white/10 bg-[#0a121c] shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-white/10 bg-[#0a121c] shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <span
               className="text-[13px] font-bold px-2 py-1 rounded border"
@@ -148,7 +148,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           <button
             type="button"
             onClick={() => openTruLens(vehicle.stockNumber)}
-            className="inline-flex items-center gap-1.5 text-[13px] font-bold px-3 py-1.5 rounded-lg bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30 hover:bg-[#4FE3DC]/25 cursor-pointer"
+            className="inline-flex items-center gap-2 text-[13px] font-bold px-3 py-2 rounded-lg bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30 hover:bg-[#4FE3DC]/25 cursor-pointer"
           >
             <Camera size={12} /> Complete shoot in TruLens
           </button>
@@ -158,7 +158,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
         {/* LEFT COLUMN: ACTIVE IMAGE VIEWER & GALLERY */}
         <div className="md:w-3/5 bg-black flex flex-col justify-between relative p-4 group">
           {/* Top Info Banner */}
-          <div className="absolute top-4 left-4 z-10 bg-black/60 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md text-xs font-mono">
+          <div className="absolute top-4 left-4 z-10 bg-black/60 px-3 py-2 rounded-lg border border-white/10 backdrop-blur-md text-[13px] font-mono">
             {activeImageIndex + 1} of {imagesList.length} Photos
           </div>
 
@@ -225,8 +225,8 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 <span className="text-[13px] bg-[#4FE3DC]/20 text-[#7FF0EA] px-2 py-0.5 rounded font-mono font-bold tracking-normal">
                   Stock: {vehicle.stockNumber}
                 </span>
-                <h3 className="text-lg font-bold text-white mt-1.5 leading-tight">{vehicle.year} {vehicle.make} {vehicle.model}</h3>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">{vehicle.trim || "Standard Trim Specs"}</p>
+                <h3 className="text-lg font-bold text-white mt-2 leading-tight">{vehicle.year} {vehicle.make} {vehicle.model}</h3>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{vehicle.trim || "Standard Trim Specs"}</p>
               </div>
               <button aria-label="Close"
                 onClick={onClose}
@@ -240,7 +240,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             <div className="flex bg-black/40 border border-white/5 rounded-xl p-1 mb-4 text-[13px] font-bold flex-wrap gap-1">
               <button
                 onClick={() => setActiveTab("specs")}
-                className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                className={`flex-1 min-w-[70px] py-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
                   activeTab === "specs" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
@@ -248,7 +248,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               </button>
               <button
                 onClick={() => setActiveTab("docs")}
-                className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                className={`flex-1 min-w-[70px] py-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
                   activeTab === "docs" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
@@ -256,7 +256,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               </button>
               <button
                 onClick={() => setActiveTab("inspection")}
-                className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                className={`flex-1 min-w-[70px] py-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
                   activeTab === "inspection" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
@@ -264,7 +264,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               </button>
               <button
                 onClick={() => setActiveTab("recon")}
-                className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                className={`flex-1 min-w-[70px] py-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
                   activeTab === "recon" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                 }`}
               >
@@ -273,7 +273,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               {settings?.syndication && (
                 <button
                   onClick={() => setActiveTab("syndication")}
-                  className={`flex-1 min-w-[70px] py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                  className={`flex-1 min-w-[70px] py-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
                     activeTab === "syndication" ? "bg-[#4FE3DC] on-fill shadow-md" : "text-[rgba(232,234,230,0.72)] hover:text-[rgba(232,234,230,0.72)]"
                   }`}
                 >
@@ -289,23 +289,23 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 <div className="bg-[#0B0F17]/3 border border-white/5 rounded-xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
-                      <span className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Showroom Retail Price</span>
+                      <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Showroom Retail Price</span>
                       <div className="text-lg font-semibold text-[#4FE3DC] font-mono mt-0.5">{formatZAR(vehicle.retailPrice)}</div>
                       {vehicle.truPrice ? (
-                        <div className="text-[12px] font-bold mt-1" style={{ color: vehicle.truPrice > vehicle.retailPrice ? "#4ADE9B" : "rgba(232,234,230,0.72)" }}>
+                        <div className="text-[13px] font-bold mt-1" style={{ color: vehicle.truPrice > vehicle.retailPrice ? "#4ADE9B" : "rgba(232,234,230,0.72)" }}>
                           TruPrice {formatZAR(vehicle.truPrice)}
                           {vehicle.truPrice > vehicle.retailPrice
                             ? ` · ${formatZAR(vehicle.truPrice - vehicle.retailPrice)} below market`
                             : " · at or above market"}
                         </div>
                       ) : (
-                        <div className="text-[12px] text-[rgba(232,234,230,0.72)]/60 mt-1">No TruPrice benchmark set</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]/60 mt-1">No TruPrice benchmark set</div>
                       )}
                     </div>
                     <div className="text-right">
                       <button
                         onClick={() => { setTruPriceInput(String(vehicle.truPrice || vehicle.retailPrice || "")); setEditingTruPrice(true); }}
-                        className="py-1 px-2.5 bg-white/5 border border-white/15 hover:bg-white/10 text-[#E8EAE6] text-[12px] font-semibold tracking-normal rounded-lg transition-all cursor-pointer"
+                        className="py-1 px-3 bg-white/5 border border-white/15 hover:bg-white/10 text-[#E8EAE6] text-[13px] font-semibold tracking-normal rounded-lg transition-all cursor-pointer"
                       >
                         {vehicle.truPrice ? "Edit TruPrice" : "Set TruPrice"}
                       </button>
@@ -314,10 +314,10 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
                   {editingTruPrice && (
                     <div className="bg-black/30 border border-white/10 rounded-lg p-3 space-y-2">
-                      <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider block">
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider block">
                         TruPrice benchmark
                       </label>
-                      <p className="text-[12px] text-[rgba(232,234,230,0.72)] leading-relaxed">
+                      <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
                         What this vehicle is genuinely worth on the open market, from your own
                         trade experience or book value. Shown on the website as the price
                         customers are compared against — so it only carries weight if it is real.
@@ -329,19 +329,19 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         value={truPriceInput}
                         onChange={(e) => setTruPriceInput(e.target.value)}
                         placeholder="e.g. 389000"
-                        className="w-full bg-[#06080D] border border-white/15 rounded-lg px-3 py-2 text-sm text-white font-mono outline-none focus:border-[#4FE3DC]"
+                        className="w-full bg-[#06080D] border border-white/15 rounded-lg px-3 py-2 text-[16px] text-white font-mono outline-none focus:border-[#4FE3DC]"
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={handleSaveTruPrice}
                           disabled={savingTruPrice}
-                          className="flex-1 py-1.5 bg-[#4FE3DC] hover:bg-opacity-90 disabled:opacity-60 on-fill font-semibold  text-[12px] rounded-md cursor-pointer"
+                          className="flex-1 py-2 bg-[#4FE3DC] hover:bg-opacity-90 disabled:opacity-60 on-fill font-semibold  text-[13px] rounded-md cursor-pointer"
                         >
                           {savingTruPrice ? "Saving…" : "Save benchmark"}
                         </button>
                         <button
                           onClick={() => setEditingTruPrice(false)}
-                          className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[rgba(232,234,230,0.72)] font-bold  text-[12px] rounded-md cursor-pointer"
+                          className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-[rgba(232,234,230,0.72)] font-bold  text-[13px] rounded-md cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -351,7 +351,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 </div>
 
                 {/* Spec Matrix */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[13px]">
                   <div><span className="text-[rgba(232,234,230,0.72)]">Mileage:</span> <span className="font-semibold text-white">{vehicle.mileage.toLocaleString()} km</span></div>
                   <div><span className="text-[rgba(232,234,230,0.72)]">Transmission:</span> <span className="font-semibold text-white">{vehicle.transmission}</span></div>
                   <div><span className="text-[rgba(232,234,230,0.72)]">Fuel Type:</span> <span className="font-semibold text-white">{vehicle.fuelType}</span></div>
@@ -360,14 +360,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 </div>
 
                 {/* Description scrollbox */}
-                <div className="text-xs text-[rgba(232,234,230,0.72)] leading-relaxed border-t border-b border-white/5 py-3 max-h-24 overflow-y-auto">
+                <div className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed border-t border-b border-white/5 py-3 max-h-24 overflow-y-auto">
                   <span className="font-bold text-white block mb-0.5">Dealer Comments:</span>
                   {vehicle.description || "No comments entered."}
                 </div>
 
                 {/* MEDIA SYNC CONTROLS */}
                 <div className="flex flex-col gap-3 pt-1">
-                  <h4 className="text-xs font-bold text-white tracking-normal flex items-center gap-1.5">
+                  <h4 className="text-[13px] font-bold text-white tracking-normal flex items-center gap-2">
                     <Layers size={14} className="text-[#4FE3DC]" />
                     Media Sync Station
                   </h4>
@@ -377,7 +377,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
-                      className="flex-1 py-2 bg-[#4FE3DC] on-fill hover:bg-opacity-80 transition-all font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="flex-1 py-2 bg-[#4FE3DC] on-fill hover:bg-opacity-80 transition-all font-bold text-[13px] rounded-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <Upload size={13} /> {uploading ? "Uploading..." : "Upload Photos"}
                     </button>
@@ -418,20 +418,20 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     this ever genuinely did. */}
                 <div className="bg-[#0B0F17]/3 border border-white/5 rounded-xl p-4 flex flex-col gap-3">
                   <div className="border-b border-white/5 pb-2">
-                    <h4 className="text-xs font-semibold text-white tracking-normal">Listing text</h4>
-                    <p className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5">
+                    <h4 className="text-[13px] font-semibold text-white tracking-normal">Listing text</h4>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                       Starting points for adverts and page copy — read them over before publishing.
                     </p>
                   </div>
                         {/* TrueAI Copywriter Generator */}
                         <div className="bg-black/20 border border-white/5 rounded-xl p-3 flex flex-col gap-2">
-                          <div className="flex items-center gap-1.5 text-xs text-white font-bold">
+                          <div className="flex items-center gap-2 text-[13px] text-white font-bold">
                             <Sparkles size={12} className="text-[#4FE3DC]" />
                             Advert copy
                           </div>
                           
                           {generatingCopy ? (
-                            <div className="py-3 flex justify-center items-center gap-1.5 text-[13px] text-[rgba(232,234,230,0.72)] font-mono">
+                            <div className="py-3 flex justify-center items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] font-mono">
                               <RefreshCw size={12} className="animate-spin text-[#4FE3DC]" /> Creating listing copy...
                             </div>
                           ) : remarketingCopy ? (
@@ -447,13 +447,13 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                     navigator.clipboard.writeText(remarketingCopy);
                                     alert("Copied to clipboard!");
                                   }}
-                                  className="flex-1 py-1.5 bg-[#0B0F17]/5 border border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] font-bold text-[12px] rounded-lg cursor-pointer transition-all "
+                                  className="flex-1 py-2 bg-[#0B0F17]/5 border border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] font-bold text-[13px] rounded-lg cursor-pointer transition-all "
                                 >
                                   Copy Copywriting Text
                                 </button>
                                 <button
                                   onClick={() => setRemarketingCopy("")}
-                                  className="px-3 py-1.5 bg-[#0B0F17]/5 border border-white/5 text-red-400 hover:bg-red-500/10 font-bold text-[12px] rounded-lg cursor-pointer transition-all "
+                                  className="px-3 py-2 bg-[#0B0F17]/5 border border-white/5 text-red-400 hover:bg-red-500/10 font-bold text-[13px] rounded-lg cursor-pointer transition-all "
                                 >
                                   Clear
                                 </button>
@@ -478,7 +478,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                     `📞 Contact us now to secure or book a test-drive. Finance options available!`
                                 );
                               }}
-                              className="w-full py-2 bg-[#4FE3DC] hover:bg-opacity-90 text-xs on-fill font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              className="w-full py-2 bg-[#4FE3DC] hover:bg-opacity-90 text-[13px] on-fill font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
                             >
                               <FileText size={13} /> Build advert text
                             </button>
@@ -488,18 +488,18 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         {settings?.seoAeo && (
                           <div className="bg-black/20 border border-white/5 rounded-xl p-3 flex flex-col gap-2 mt-2">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5 text-xs text-white font-bold">
+                              <div className="flex items-center gap-2 text-[13px] text-white font-bold">
                                 <Globe size={12} className="text-[#4ADE9B]" />
                                 Page title & description
                               </div>
-                              <span className="bg-[#4ADE9B]/15 text-[#4ADE9B] text-[12px] font-bold px-1.5 py-0.5 rounded">AUTO-RANK</span>
+                              <span className="bg-[#4ADE9B]/15 text-[#4ADE9B] text-[13px] font-bold px-2 py-0.5 rounded">AUTO-RANK</span>
                             </div>
                             <button
                               onClick={() => {
                                 alert("Generated Meta Title:\n" + `${vehicle.year} ${vehicle.make} ${vehicle.model} for Sale | Approved Dealer\n\n` + 
                                       "Generated SEO Description:\n" + `Looking for a pristine ${vehicle.year} ${vehicle.make} ${vehicle.model}? This ${vehicle.bodyType || 'vehicle'} offers incredible value at ${formatZAR(vehicle.retailPrice)}. Fully inspected and approved.`);
                               }}
-                              className="w-full py-2 bg-[#0B0F17]/5 hover:bg-white/10 border border-white/10 text-xs text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              className="w-full py-2 bg-[#0B0F17]/5 hover:bg-white/10 border border-white/10 text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
                             >
                               <Search size={13} /> Generate SEO Tags & Description
                             </button>
@@ -602,19 +602,19 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   };
 
                   return (
-                    <div className="space-y-3.5">
+                    <div className="space-y-4">
                       {/* Financial outline */}
-                      <div className="bg-gradient-to-tr from-[#121c2c] to-[#07101a] border border-white/5 rounded-xl p-3 grid grid-cols-3 gap-2 text-xs font-mono">
+                      <div className="bg-gradient-to-tr from-[#121c2c] to-[#07101a] border border-white/5 rounded-xl p-3 grid grid-cols-3 gap-2 text-[13px] font-mono">
                         <div>
-                          <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Total Recon Spend</div>
+                          <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Total Recon Spend</div>
                           <div className="text-white font-semibold mt-0.5">{formatZAR(totalReconCost)}</div>
                         </div>
                         <div className="border-l border-white/5 pl-2">
-                          <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Adjusted Cost</div>
+                          <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Adjusted Cost</div>
                           <div className="text-[#4FE3DC] font-semibold mt-0.5">{formatZAR(adjustedCostBasis)}</div>
                         </div>
                         <div className="border-l border-white/5 pl-2">
-                          <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Expected Margin</div>
+                          <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Expected Margin</div>
                           <div className={`font-semibold mt-0.5 ${isBelowTarget ? "text-red-400" : "text-[#4ADE9B]"}`}>
                             {formatZAR(profit)} ({marginPercent.toFixed(1)}%)
                           </div>
@@ -624,7 +624,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       {/* Profitability Warning Alert with Quick Price Adjust */}
                       {isBelowTarget && (
                         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex flex-col gap-2 animate-pulse-subtle">
-                          <div className="flex items-start gap-2 text-xs text-red-400">
+                          <div className="flex items-start gap-2 text-[13px] text-red-400">
                             <AlertCircle size={15} className="mt-0.5 shrink-0" />
                             <div>
                               <span className="font-bold block">Profitability Target Violation</span>
@@ -638,7 +638,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                               await onUpdateVehicle(vehicle.id, { retailPrice: suggestedHealthyPrice });
                               alert(`Retail price adjusted to R ${suggestedHealthyPrice.toLocaleString("en-ZA")}! Target profit margin of 15% is now secured.`);
                             }}
-                            className="w-full py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold text-[13px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 "
+                            className="w-full py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold text-[13px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 "
                           >
                             <Zap size={10} /> Quick Adjust Price to {formatZAR(suggestedHealthyPrice)} (15% Margin)
                           </button>
@@ -646,19 +646,19 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       )}
 
                       {/* List of current recon tasks */}
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                         {tasks.length === 0 ? (
                           <div className="text-center py-4 text-[13px] text-[rgba(232,234,230,0.72)] border border-dashed border-white/5 rounded-lg">
                             No reconditioning items registered. Use the tool below to estimate and log pre-sale prep.
                           </div>
                         ) : (
                           tasks.map((task) => (
-                            <div key={task.id} className="bg-black/30 border border-[#4FE3DC]/10 rounded-lg p-2.5 flex justify-between items-center text-xs">
-                              <div className="flex items-center gap-2.5">
+                            <div key={task.id} className="bg-black/30 border border-[#4FE3DC]/10 rounded-lg p-3 flex justify-between items-center text-[13px]">
+                              <div className="flex items-center gap-3">
                                 {task.photo ? (
                                   <div className="relative w-10 h-10 rounded overflow-hidden border border-white/5 shrink-0">
                                     <img src={task.photo} alt={task.name} className="w-full h-full object-cover" />
-                                    <span className="absolute bottom-0 right-0 bg-black/70 text-[6px] text-[#4FE3DC] px-0.5 font-bold font-mono">IMG</span>
+                                    <span className="absolute bottom-0 right-0 bg-black/70 text-[11px] text-[#4FE3DC] px-0.5 font-bold font-mono">IMG</span>
                                   </div>
                                 ) : (
                                   <div className="w-10 h-10 rounded bg-[#0B0F17]/5 border border-dashed border-white/10 flex items-center justify-center text-gray-400 shrink-0">
@@ -669,16 +669,16 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                   <span className={`font-semibold ${task.status === "Completed" ? "line-through text-[rgba(232,234,230,0.72)]" : "text-white"}`}>
                                     {task.name}
                                   </span>
-                                  <div className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5 flex items-center gap-1.5 font-mono">
-                                    <span className="bg-[#0B0F17]/5 px-1 py-0.2 rounded text-[12px]  font-sans">{task.category || "General"}</span>
+                                  <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 flex items-center gap-2 font-mono">
+                                    <span className="bg-[#0B0F17]/5 px-1 py-0.2 rounded text-[13px]  font-sans">{task.category || "General"}</span>
                                     <span>Cost: {formatZAR(task.cost)}</span>
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => handleToggleTaskStatus(task.id)}
-                                  className={`px-2 py-0.5 rounded text-[12px] font-bold  cursor-pointer ${
+                                  className={`px-2 py-0.5 rounded text-[13px] font-bold  cursor-pointer ${
                                     task.status === "Completed" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                                   }`}
                                 >
@@ -698,16 +698,16 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       </div>
 
                       {/* Form to log new recon tasks */}
-                      <form onSubmit={handleAddTask} className="bg-[#0B0F17]/3 border border-white/5 rounded-xl p-2.5 space-y-2.5">
+                      <form onSubmit={handleAddTask} className="bg-[#0B0F17]/3 border border-white/5 rounded-xl p-3 space-y-3">
                         <div className="flex justify-between items-center">
-                          <div className="text-[12px] text-white font-semibold tracking-normal">Log Work Directive & Prep Tasks</div>
-                          <span className="text-[12px] text-[rgba(232,234,230,0.72)] font-mono">1-CLICK AI ASSISTANT</span>
+                          <div className="text-[13px] text-white font-semibold tracking-normal">Log Work Directive & Prep Tasks</div>
+                          <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">1-CLICK AI ASSISTANT</span>
                         </div>
 
                         {/* Category and AI cost recommend row */}
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-1">
-                            <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Task Category</label>
+                            <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Task Category</label>
                             <select
                               value={reconCategory}
                               onChange={(e) => setReconCategory(e.target.value)}
@@ -726,14 +726,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                               type="button"
                               onClick={handleAICostRecommendation}
                               disabled={suggestingCost}
-                              className="w-full py-1 bg-[#4FE3DC]/10 border border-[#4FE3DC]/25 hover:bg-[#4FE3DC]/15 text-[#4FE3DC] text-[12px] font-semibold tracking-normal rounded transition-all cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 h-[24px]"
+                              className="w-full py-1 bg-[#4FE3DC]/10 border border-[#4FE3DC]/25 hover:bg-[#4FE3DC]/15 text-[#4FE3DC] text-[13px] font-semibold tracking-normal rounded transition-all cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 h-[24px]"
                             >
                               <Sparkles size={9} /> Typical cost
                             </button>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-5 gap-1.5">
+                        <div className="grid grid-cols-5 gap-2">
                           <input
                             type="text"
                             placeholder="Describe precise repair task..."
@@ -761,13 +761,13 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                               </div>
                             )}
                             <div>
-                              <span className="text-[12px] font-bold text-white block">Task Damage Photo</span>
-                              <span className="text-[12px] text-[rgba(232,234,230,0.72)] block">{reconPhoto ? "Photo Attached" : "None attached"}</span>
+                              <span className="text-[13px] font-bold text-white block">Task Damage Photo</span>
+                              <span className="text-[13px] text-[rgba(232,234,230,0.72)] block">{reconPhoto ? "Photo Attached" : "None attached"}</span>
                             </div>
                           </div>
                           
-                          <div className="flex gap-1.5">
-                            <label className="px-2 py-1 bg-[#0B0F17]/5 hover:bg-white/10 border border-white/5 text-white rounded text-[12px] font-bold  transition-all cursor-pointer">
+                          <div className="flex gap-2">
+                            <label className="px-2 py-1 bg-[#0B0F17]/5 hover:bg-white/10 border border-white/5 text-white rounded text-[13px] font-bold  transition-all cursor-pointer">
                               Attach photo
                               <input
                                 type="file"
@@ -782,7 +782,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
                         <button
                           type="submit"
-                          className="w-full py-1.5 bg-[#4FE3DC] hover:bg-opacity-90 on-fill font-bold text-[13px] rounded-md transition-all cursor-pointer flex items-center justify-center gap-1 "
+                          className="w-full py-2 bg-[#4FE3DC] hover:bg-opacity-90 on-fill font-bold text-[13px] rounded-md transition-all cursor-pointer flex items-center justify-center gap-1 "
                         >
                           <Plus size={11} /> Save & Log Prep Directive
                         </button>
@@ -800,8 +800,8 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   <div className="flex items-center gap-2">
                     <Share2 size={18} className="text-[#4FE3DC]" />
                     <div>
-                      <h4 className="text-xs font-semibold text-white tracking-normal">Marketplace listings</h4>
-                      <p className="text-[12px] text-[rgba(232,234,230,0.72)]">Distribute inventory to partner networks</p>
+                      <h4 className="text-[13px] font-semibold text-white tracking-normal">Marketplace listings</h4>
+                      <p className="text-[13px] text-[rgba(232,234,230,0.72)]">Distribute inventory to partner networks</p>
                     </div>
                   </div>
 
@@ -809,12 +809,12 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     {/* AutoTrader */}
                     <div className="bg-black/30 border border-white/5 rounded-lg p-3 flex justify-between items-center">
                       <div className="flex flex-col">
-                        <span className="text-white text-xs font-bold">AutoTrader SA</span>
+                        <span className="text-white text-[13px] font-bold">AutoTrader SA</span>
                         <span className="text-[rgba(232,234,230,0.72)] text-[13px]">Premium listings</span>
                       </div>
                       <button
                         onClick={() => alert("Simulated push to AutoTrader successful.")}
-                        className="px-3 py-1.5 bg-[#ff6b00]/10 hover:bg-[#ff6b00]/20 text-[#ff6b00] text-[13px] font-bold rounded tracking-normal transition-all"
+                        className="px-3 py-2 bg-[#ff6b00]/10 hover:bg-[#ff6b00]/20 text-[#ff6b00] text-[13px] font-bold rounded tracking-normal transition-all"
                       >
                         Publish
                       </button>
@@ -823,12 +823,12 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     {/* Cars.co.za */}
                     <div className="bg-black/30 border border-white/5 rounded-lg p-3 flex justify-between items-center">
                       <div className="flex flex-col">
-                        <span className="text-white text-xs font-bold">Cars.co.za</span>
+                        <span className="text-white text-[13px] font-bold">Cars.co.za</span>
                         <span className="text-[rgba(232,234,230,0.72)] text-[13px]">Marketplace network</span>
                       </div>
                       <button
                         onClick={() => alert("Simulated push to Cars.co.za successful.")}
-                        className="px-3 py-1.5 bg-[#2ecc71]/10 hover:bg-[#2ecc71]/20 text-[#2ecc71] text-[13px] font-bold rounded tracking-normal transition-all"
+                        className="px-3 py-2 bg-[#2ecc71]/10 hover:bg-[#2ecc71]/20 text-[#2ecc71] text-[13px] font-bold rounded tracking-normal transition-all"
                       >
                         Publish
                       </button>
@@ -837,12 +837,12 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     {/* Facebook Marketplace */}
                     <div className="bg-black/30 border border-white/5 rounded-lg p-3 flex justify-between items-center">
                       <div className="flex flex-col">
-                        <span className="text-white text-xs font-bold">Facebook Marketplace</span>
+                        <span className="text-white text-[13px] font-bold">Facebook Marketplace</span>
                         <span className="text-[rgba(232,234,230,0.72)] text-[13px]">Social Commerce</span>
                       </div>
                       <button
                         onClick={() => alert("Simulated push to Facebook Marketplace successful.")}
-                        className="px-3 py-1.5 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] text-[13px] font-bold rounded tracking-normal transition-all"
+                        className="px-3 py-2 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] text-[13px] font-bold rounded tracking-normal transition-all"
                       >
                         Publish
                       </button>
@@ -851,7 +851,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   
                   <button
                     onClick={() => alert("1-Click Bulk Syndicate completed. Inventory synced to all selected platforms.")}
-                    className="w-full mt-2 py-2 bg-[#4FE3DC] hover:bg-opacity-90 on-fill font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 tracking-normal"
+                    className="w-full mt-2 py-2 bg-[#4FE3DC] hover:bg-opacity-90 on-fill font-bold text-[13px] rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 tracking-normal"
                   >
                     <Send size={14} /> Syndicate to All Selected
                   </button>

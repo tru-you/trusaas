@@ -20,7 +20,7 @@ import {
 export default function PwaInstallBanner({
   appName = 'TruFlow',
   blurb = 'Install on this device for one-tap access — no browser bar, works offline for the app shell.',
-  accent = '#4D9BFF',
+  accent = '#8AA2B8',
   dismissKey = 'truflow_pwa_install_dismissed',
 }: {
   appName?: string;
@@ -105,7 +105,7 @@ export default function PwaInstallBanner({
   return (
     <div className="fixed bottom-3 left-3 right-3 md:left-auto md:right-4 md:w-[360px] z-[300]">
       <div
-        className="rounded-[18px] border bg-[#0B0F17] px-3.5 py-3 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]"
+        className="rounded-[18px] border bg-[#0B0F17] px-4 py-3 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]"
         style={{ borderColor: `${accent}40` }}
       >
         <div className="flex items-start gap-3">
@@ -118,14 +118,14 @@ export default function PwaInstallBanner({
 
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-[#E8EAE6]">Install {appName}</p>
-            <p className="text-[12px] text-[rgba(232,234,230,0.55)] leading-snug mt-0.5">
+            <p className="text-[13px] text-[rgba(232,234,230,0.55)] leading-snug mt-0.5">
               {isIosSafari()
                 ? 'Add to your Home Screen to run it full-screen, without the browser bar.'
                 : blurb}
             </p>
 
             {iosHelp && (
-              <ol className="mt-2 text-[12px] text-[rgba(232,234,230,0.72)] space-y-1 list-decimal list-inside">
+              <ol className="mt-2 text-[13px] text-[rgba(232,234,230,0.72)] space-y-1 list-decimal list-inside">
                 <li>
                   Tap <Share size={10} className="inline" style={{ color: accent }} /> <b>Share</b>
                 </li>
@@ -138,11 +138,11 @@ export default function PwaInstallBanner({
               </ol>
             )}
 
-            <div className="flex gap-2 mt-2.5">
+            <div className="flex gap-2 mt-3">
               <button
                 type="button"
                 onClick={handleInstall}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[12px] font-semibold text-[#06080D] transition-opacity hover:opacity-90"
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-full text-[13px] font-semibold text-[#06080D] transition-opacity hover:opacity-90"
                 style={{ background: accent }}
               >
                 <Download size={12} />

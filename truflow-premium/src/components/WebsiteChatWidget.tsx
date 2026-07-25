@@ -104,7 +104,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#4FE3DC] shadow-[0_0_8px_#4FE3DC]"></span>
               <div className="flex flex-col">
-                <span className="font-bold text-sm text-[#E8EAE6]">Website Chat Bot</span>
+                <span className="font-bold text-[16px] text-[#E8EAE6]">Website Chat Bot</span>
                 <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Public Customer Assistant</span>
               </div>
             </div>
@@ -123,21 +123,21 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
             {messages.map((m) => (
               <div
                 key={m.id}
-                className={`max-w-[85%] px-3 py-2 rounded-xl text-xs line-height-relaxed ${
+                className={`max-w-[85%] px-3 py-2 rounded-xl text-[13px] line-height-relaxed ${
                   m.sender === "user"
                     ? "self-end bg-[#4FE3DC] on-fill rounded-br-none"
                     : "self-start bg-[rgba(90,109,138,0.1)] border border-[rgba(90,109,138,0.15)] text-[#E8EAE6] rounded-bl-none"
                 }`}
               >
                 <div className="whitespace-pre-wrap">{m.text}</div>
-                <div className={`text-[12px] mt-1 text-right ${m.sender === "user" ? "text-blue-200" : "text-[rgba(232,234,230,0.72)]"}`}>
+                <div className={`text-[13px] mt-1 text-right ${m.sender === "user" ? "text-blue-200" : "text-[rgba(232,234,230,0.72)]"}`}>
                   {m.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>
             ))}
             
             {loading && (
-              <div className="self-start bg-[rgba(90,109,138,0.1)] border border-[rgba(90,109,138,0.15)] text-[#E8EAE6] px-3 py-2 rounded-xl rounded-bl-none text-xs flex items-center gap-1.5">
+              <div className="self-start bg-[rgba(90,109,138,0.1)] border border-[rgba(90,109,138,0.15)] text-[#E8EAE6] px-3 py-2 rounded-xl rounded-bl-none text-[13px] flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-[#4FE3DC] rounded-full animate-bounce"></span>
                 <span className="w-1.5 h-1.5 bg-[#4FE3DC] rounded-full animate-bounce [animation-delay:0.2s]"></span>
                 <span className="w-1.5 h-1.5 bg-[#4FE3DC] rounded-full animate-bounce [animation-delay:0.4s]"></span>
@@ -145,13 +145,13 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
             )}
             
             {showLeadForm && (
-              <div className="self-start bg-[#121826] border border-[#4FE3DC]/30 rounded-xl rounded-bl-none shadow-sm p-3 w-[90%] text-xs animate-in slide-in-from-left-2 text-[#E8EAE6]">
+              <div className="self-start bg-[#121826] border border-[#4FE3DC]/30 rounded-xl rounded-bl-none shadow-sm p-3 w-[90%] text-[13px] animate-in slide-in-from-left-2 text-[#E8EAE6]">
                 <p className="font-bold text-[#E8EAE6] mb-2">Can we get your details?</p>
                 <form onSubmit={handleLeadSubmit} className="flex flex-col gap-2">
-                  <input required placeholder="Name" value={leadForm.name} onChange={(e) => setLeadForm({...leadForm, name: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-1.5 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
-                  <input required type="tel" placeholder="Phone Number" value={leadForm.phone} onChange={(e) => setLeadForm({...leadForm, phone: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-1.5 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
-                  <input type="email" placeholder="Email (Optional)" value={leadForm.email} onChange={(e) => setLeadForm({...leadForm, email: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-1.5 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
-                  <button type="submit" className="bg-[#4FE3DC] on-fill font-bold py-1.5 rounded mt-1 cursor-pointer hover:bg-[#4FE3DC]/90 transition-colors">Send to Dealer</button>
+                  <input required placeholder="Name" value={leadForm.name} onChange={(e) => setLeadForm({...leadForm, name: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-2 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
+                  <input required type="tel" placeholder="Phone Number" value={leadForm.phone} onChange={(e) => setLeadForm({...leadForm, phone: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-2 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
+                  <input type="email" placeholder="Email (Optional)" value={leadForm.email} onChange={(e) => setLeadForm({...leadForm, email: e.target.value})} className="bg-[#0B0F17] border border-white/10 rounded px-2 py-2 text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]" />
+                  <button type="submit" className="bg-[#4FE3DC] on-fill font-bold py-2 rounded mt-1 cursor-pointer hover:bg-[#4FE3DC]/90 transition-colors">Send to Dealer</button>
                 </form>
               </div>
             )}
@@ -169,7 +169,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about a car..."
-              className="flex-1 bg-[#06080D] border border-white/10 rounded-full px-4 py-2 text-xs text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC] focus:bg-[#4FE3DC]/5 transition-all"
+              className="flex-1 bg-[#06080D] border border-white/10 rounded-full px-4 py-2 text-[13px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC] focus:bg-[#4FE3DC]/5 transition-all"
             />
             <button aria-label="Send message"
               type="submit"
@@ -185,7 +185,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
       {/* Floating Action Button */}
       {!isOpen && (
         <div className="relative group cursor-pointer animate-none" onClick={() => setIsOpen(true)}>
-          <div className="absolute -top-10 left-0 bg-[#0B0F17] shadow-lg text-[#E8EAE6] text-xs font-bold px-3 py-1.5 rounded-lg border border-white/5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[1001]">
+          <div className="absolute -top-10 left-0 bg-[#0B0F17] shadow-lg text-[#E8EAE6] text-[13px] font-bold px-3 py-2 rounded-lg border border-white/5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[1001]">
             Chat with us live!
             <div className="absolute -bottom-1 left-4 w-2 h-2 bg-[#0B0F17] border-b border-r border-white/5 transform rotate-45"></div>
           </div>

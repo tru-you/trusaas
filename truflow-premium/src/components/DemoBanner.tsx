@@ -25,16 +25,16 @@ export default function DemoBanner({ productName = "TruFlow" }: { productName?: 
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[200] md:left-[240px] px-3 pt-2 pointer-events-none">
-      <div className="pointer-events-auto mx-auto max-w-4xl flex items-center gap-3 rounded-full border border-[rgba(232,234,230,0.14)] bg-[rgba(232,234,230,0.055)] px-4 py-1.5">
-        <span className="text-[12px] text-[rgba(232,234,230,0.55)] shrink-0">{productName}</span>
-        <p className="text-[12px] text-[rgba(232,234,230,0.55)] leading-snug min-w-0 truncate">
+      <div className="pointer-events-auto mx-auto max-w-4xl flex items-center gap-3 rounded-full border border-[rgba(232,234,230,0.14)] bg-[rgba(232,234,230,0.055)] px-4 py-2">
+        <span className="text-[13px] text-[rgba(232,234,230,0.55)] shrink-0">{productName}</span>
+        <p className="text-[13px] text-[rgba(232,234,230,0.55)] leading-snug min-w-0 truncate">
           Vehicle photos are captured in <span className="text-[rgba(232,234,230,0.72)]">TruLens</span>.
           {" "}
-          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[#4D9BFF] hover:text-[#7DB0F9] inline-flex items-center gap-0.5">
+          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[#8AA2B8] hover:text-[#7DB0F9] inline-flex items-center gap-0.5">
             Showroom <ExternalLink size={10} />
           </a>
           {" · "}
-          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[#4D9BFF] hover:text-[#7DB0F9]">
+          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[#8AA2B8] hover:text-[#7DB0F9]">
             TruSaaS
           </a>
         </p>

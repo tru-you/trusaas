@@ -82,7 +82,7 @@ export default function ChatWidget() {
           <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(126,164,214,0.1)] bg-[linear-gradient(90deg,rgba(20,102,224,0.1),rgba(21,199,192,0.05))]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#4FE3DC] shadow-[0_0_8px_#4FE3DC]"></span>
-              <span className="font-bold text-sm text-[#E8EAE6]">TrueCar DMS AI Agent</span>
+              <span className="font-bold text-[16px] text-[#E8EAE6]">TrueCar DMS AI Agent</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -97,20 +97,20 @@ export default function ChatWidget() {
             {messages.map((m) => (
               <div
                 key={m.id}
-                className={`max-w-[85%] px-3 py-2 rounded-xl text-xs line-height-relaxed ${
+                className={`max-w-[85%] px-3 py-2 rounded-xl text-[13px] line-height-relaxed ${
                   m.sender === "user"
                     ? "self-end bg-[#4FE3DC] on-fill rounded-br-none"
                     : "self-start bg-[rgba(90,109,138,0.1)] border border-[rgba(90,109,138,0.15)] text-[#E8EAE6] rounded-bl-none"
                 }`}
               >
                 <div className="whitespace-pre-wrap">{m.text}</div>
-                <div className="text-[12px] text-[rgba(232,234,230,0.72)] mt-1 text-right">
+                <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-1 text-right">
                   {m.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>
             ))}
             {loading && (
-              <div className="self-start bg-[rgba(90,109,138,0.1)] border border-[rgba(90,109,138,0.15)] text-[#E8EAE6] px-3 py-2 rounded-xl rounded-bl-none text-xs flex items-center gap-1.5">
+              <div className="self-start bg-[rgba(90,109,138,0.1)] border border-[rgba(90,109,138,0.15)] text-[#E8EAE6] px-3 py-2 rounded-xl rounded-bl-none text-[13px] flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-[#4FE3DC] rounded-full animate-bounce"></span>
                 <span className="w-1.5 h-1.5 bg-[#4FE3DC] rounded-full animate-bounce [animation-delay:0.2s]"></span>
                 <span className="w-1.5 h-1.5 bg-[#4FE3DC] rounded-full animate-bounce [animation-delay:0.4s]"></span>
@@ -129,7 +129,7 @@ export default function ChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Query stock, sales stats, hot prospects..."
-              className="flex-1 bg-[#0B0F17]/3 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-xs text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC] focus:bg-[#4FE3DC]/5 transition-all"
+              className="flex-1 bg-[#0B0F17]/3 border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC] focus:bg-[#4FE3DC]/5 transition-all"
             />
             <button aria-label="Send message"
               type="submit"

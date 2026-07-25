@@ -228,7 +228,7 @@ function Segmented<T extends string>({ value, onChange, options }: {
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`px-2.5 py-1 rounded-md text-[12px] font-medium transition-colors cursor-pointer ${
+          className={`px-3 py-1 rounded-md text-[13px] font-medium transition-colors cursor-pointer ${
             value === o.value
               ? "bg-[#4FE3DC]/15 text-[#4FE3DC]"
               : "text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6]"
@@ -502,12 +502,12 @@ export default function App() {
   if (loadError) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-[#E8EAE6] font-sans">
-        <div className="text-red-500 mb-4 font-mono text-sm border border-red-500/20 bg-red-500/10 p-4 rounded-lg">
+        <div className="text-red-500 mb-4 font-mono text-[16px] border border-red-500/20 bg-red-500/10 p-4 rounded-lg">
           Connection Error: {loadError}
         </div>
         <button 
           onClick={loadAllState}
-          className="px-4 py-2 bg-[#4FE3DC] on-fill rounded text-xs font-bold hover:bg-opacity-80"
+          className="px-4 py-2 bg-[#4FE3DC] on-fill rounded text-[13px] font-bold hover:bg-opacity-80"
         >
           Retry Connection
         </button>
@@ -519,15 +519,15 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#06080D] flex flex-col items-center justify-center p-6 text-[#E8EAE6] font-sans gap-3">
         <div className="w-12 h-12 rounded-full border-4 border-t-[#4FE3DC] border-[#4FE3DC]/10 animate-spin" />
-        <div className="font-bold text-sm tracking-wide">Starting TruFlow Premium…</div>
-        <div className="text-xs text-[rgba(232,234,230,0.72)] text-center max-w-xs">
+        <div className="font-bold text-[16px] tracking-wide">Starting TruFlow Premium…</div>
+        <div className="text-[13px] text-[rgba(232,234,230,0.72)] text-center max-w-xs">
           Loading floor data from <span className="font-mono text-[#4FE3DC]">localhost:3001</span>.
           If this hangs, restart the server (`npm run dev` in truflow-premium).
         </div>
         <button
           type="button"
           onClick={loadAllState}
-          className="mt-2 px-4 py-2 rounded-lg bg-[#4FE3DC] on-fill text-xs font-bold"
+          className="mt-2 px-4 py-2 rounded-lg bg-[#4FE3DC] on-fill text-[13px] font-bold"
         >
           Retry load
         </button>
@@ -943,10 +943,10 @@ export default function App() {
             return (
               <>
                 <a href={site} target="_blank" rel="noopener noreferrer"
-                   className="text-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] mt-2 transition-colors">{label}</a>
+                   className="text-[13px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] mt-2 transition-colors">{label}</a>
                 <div className="flex gap-2 mt-2">
                   <a href={site} target="_blank" rel="noopener noreferrer"
-                     className="text-[12px] px-2.5 py-1 rounded-full bg-[#4FE3DC]/12 text-[#4FE3DC] border border-[#4FE3DC]/25 hover:bg-[#4FE3DC]/20 transition-colors">
+                     className="text-[13px] px-3 py-1 rounded-full bg-[#4FE3DC]/12 text-[#4FE3DC] border border-[#4FE3DC]/25 hover:bg-[#4FE3DC]/20 transition-colors">
                     Your showroom
                   </a>
                 </div>
@@ -958,7 +958,7 @@ export default function App() {
          <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1 scrollbar-thin">
           {filteredNavigation.map((group) => (
             <div key={group.category} className="flex flex-col gap-1">
-              <span className="font-mono text-[12px] text-[rgba(232,234,230,0.72)] tracking-widest  font-semibold pl-2.5 mb-1 block">
+              <span className="font-mono text-[13px] text-[rgba(232,234,230,0.72)] tracking-widest  font-semibold pl-3 mb-1 block">
                 {group.category}
               </span>
               {group.items.map((n) => {
@@ -969,7 +969,7 @@ export default function App() {
                     key={n.id}
                     type="button"
                     onClick={() => navigateTo(n.id)}
-                    className={`glass-nav-item flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-left relative cursor-pointer border ${
+                    className={`glass-nav-item flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-xl text-left relative cursor-pointer border ${
                       active
                         ? "is-active bg-[#4FE3DC]/10 text-[#E8EAE6] border-[#4FE3DC]/30"
                         : "text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] hover:bg-white/[0.04] border-transparent"
@@ -978,7 +978,7 @@ export default function App() {
                     {active && (
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/5 rounded-r bg-[#4FE3DC]" />
                     )}
-                    <Icon size={15} className={active ? "text-[#4FE3DC]" : "text-[#4D9BFF]"} />
+                    <Icon size={15} className={active ? "text-[#4FE3DC]" : "text-[#8AA2B8]"} />
                     {n.label}
                   </button>
                 );
@@ -992,7 +992,7 @@ export default function App() {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold tracking-normal text-red-300 bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 hover:text-red-200 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-[13px] font-bold tracking-normal text-red-300 bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 hover:text-red-200 transition-all cursor-pointer"
             title="Sign out of TruFlow"
           >
             <LogOut size={14} />
@@ -1007,21 +1007,21 @@ export default function App() {
         <div className="hidden md:flex justify-between items-center gap-4 border-b border-white/5 pb-4">
            {/* The dealership, at a glance. Role comes from the login, not a toggle. */}
            <div>
-             <h2 className="text-[15px] font-semibold text-[#E8EAE6]">{account?.label || 'TruFlow'}</h2>
-             <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Signed in</span>
+             <h2 className="text-[16px] font-semibold text-[#E8EAE6]">{account?.label || 'TruFlow'}</h2>
+             <span className="text-[13px] text-[rgba(232,234,230,0.55)]">Signed in</span>
            </div>
 
            <div className="flex items-center gap-2">
-             <div className="flex items-center gap-3 bg-[#0B0F17] border border-white/5 rounded-full pl-3 pr-3 py-1.5">
+             <div className="flex items-center gap-3 bg-[#0B0F17] border border-white/5 rounded-full pl-3 pr-3 py-2">
                <div className="flex flex-col items-end">
                  <span className="text-[13px] font-bold text-[#E8EAE6]">{account?.label || 'Signed in'}</span>
-                 <span className="text-[12px] text-[#4FE3DC] font-semibold">{selectedRole === 'owner' ? 'Owner' : selectedRole === 'manager' ? 'Manager' : 'Salesperson'}</span>
+                 <span className="text-[13px] text-[#4FE3DC] font-semibold">{selectedRole === 'owner' ? 'Owner' : selectedRole === 'manager' ? 'Manager' : 'Salesperson'}</span>
                </div>
              </div>
              <button
                type="button"
                onClick={handleLogout}
-               className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 text-[13px] font-bold tracking-normal"
+               className="flex items-center gap-2 h-9 px-3 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 text-[13px] font-bold tracking-normal"
                title="Log out"
              >
                <LogOut size={14} />
@@ -1043,7 +1043,7 @@ export default function App() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-1 h-8 px-2.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 cursor-pointer text-[12px] font-bold "
+              className="flex items-center gap-1 h-8 px-3 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 cursor-pointer text-[13px] font-bold "
               title="Log out"
             >
               <LogOut size={14} />
@@ -1058,7 +1058,7 @@ export default function App() {
             <div className="flex justify-between items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Overview</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Your stock and leads, live</p>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Your stock and leads, live</p>
               </div>
               <button onClick={() => navigateTo("upload")} className="btn btn-primary">
                 + New Inventory
@@ -1098,14 +1098,14 @@ export default function App() {
                   </div>
                   <div>
                     <h3 className="font-sans text-base font-semibold tracking-tight text-[#E8EAE6]">End of day summary</h3>
-                    <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 max-w-xl leading-relaxed">
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 max-w-xl leading-relaxed">
                       Generate a detailed operational report including customer leads worked, vehicles sold, reconditioning layout, and gross yield margins for the past 24 hours.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowEODReport(true)}
-                  className="px-5 py-2.5 bg-gradient-to-r from-[#4FE3DC]/85 to-[#4FE3DC] hover:from-[#4FE3DC] hover:to-[#4FE3DC] text-white rounded-xl text-xs font-bold shadow-lg shadow-[#4FE3DC]/10 hover:shadow-[#4FE3DC]/25 cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
+                  className="px-5 py-3 bg-gradient-to-r from-[#4FE3DC]/85 to-[#4FE3DC] hover:from-[#4FE3DC] hover:to-[#4FE3DC] text-white rounded-xl text-[13px] font-bold shadow-lg shadow-[#4FE3DC]/10 hover:shadow-[#4FE3DC]/25 cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
                 >
                   <Sparkles size={14} className="animate-pulse" />
                   Compile EOD Summary
@@ -1117,7 +1117,7 @@ export default function App() {
             <div className="card p-6">
               <div className="flex items-center justify-between mb-4 gap-2">
                 <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Website analytics</div>
-                <span className="text-[12px] font-semibold tracking-normal px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
+                <span className="text-[13px] font-semibold tracking-normal px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
                   Sample / demo data
                 </span>
               </div>
@@ -1144,7 +1144,7 @@ export default function App() {
             {/* Featured Catalog list */}
             <div className="card">
               <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Recent Showroom Inventory</h3>
+                <h3 className="font-semibold text-[16px]">Recent Showroom Inventory</h3>
                 <button
                   onClick={() => navigateTo("inventory")}
                   className="btn btn-secondary btn-sm"
@@ -1168,10 +1168,10 @@ export default function App() {
                         </div>
                       )}
                     </div>
-                    <h4 className="font-bold text-xs text-[#E8EAE6] truncate">{v.year} {v.make} {v.model}</h4>
+                    <h4 className="font-bold text-[13px] text-[#E8EAE6] truncate">{v.year} {v.make} {v.model}</h4>
                     <p className="text-[13px] text-[rgba(232,234,230,0.72)] truncate mt-0.5">{v.transmission} / {v.fuelType}</p>
-                    <div className="text-sm font-bold text-[#7FF0EA] mt-1.5">{formatZAR(v.retailPrice)}</div>
-                    <div className="text-[12px] text-[rgba(232,234,230,0.72)] mt-2 font-mono">Stock Ref: {v.stockNumber}</div>
+                    <div className="text-[16px] font-bold text-[#7FF0EA] mt-2">{formatZAR(v.retailPrice)}</div>
+                    <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-2 font-mono">Stock Ref: {v.stockNumber}</div>
                   </div>
                 ))}
               </div>
@@ -1180,7 +1180,7 @@ export default function App() {
             {/* Recent Leads list */}
             <div className="card">
               <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Leads</h3>
+                <h3 className="font-semibold text-[16px]">Leads</h3>
                 <button
                   onClick={() => navigateTo("leads")}
                   className="btn btn-secondary btn-sm"
@@ -1189,7 +1189,7 @@ export default function App() {
                 </button>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse min-w-[600px]">
+                <table className="w-full text-[13px] text-left border-collapse min-w-[600px]">
                   <thead>
                     <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[#0B0F17]/5">
                       <th className="py-3 px-4 font-bold">Prospect</th>
@@ -1209,12 +1209,12 @@ export default function App() {
                         </td>
                         <td className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
                         <td className="py-3 px-4">
-                          <span className="px-1.5 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[12px] font-bold tracking-normal">
+                          <span className="px-2 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[13px] font-bold tracking-normal">
                             {l.source}
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-1.5 py-0.5 bg-[#4ADE9B]/10 text-[#4ADE9B] rounded text-[12px] font-bold tracking-normal">
+                          <span className="px-2 py-0.5 bg-[#4ADE9B]/10 text-[#4ADE9B] rounded text-[13px] font-bold tracking-normal">
                             {l.status}
                           </span>
                         </td>
@@ -1222,7 +1222,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setLeadDetailId(l.id)}
-                            className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[#4FE3DC]/20 active:scale-95"
+                            className="px-4 py-2 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[#4FE3DC]/20 active:scale-95"
                           >
                             Review File
                           </button>
@@ -1241,7 +1241,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Traffic Analytics</h1>
-              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Showroom visitors & conversion metrics</p>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Showroom visitors & conversion metrics</p>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1272,7 +1272,7 @@ export default function App() {
             {/* Weekly chart mock */}
             <div className="card">
               <div className="card-header px-4 py-3 border-b border-white/5">
-                <h3 className="font-semibold text-sm">Weekly Traffic Activity Overview</h3>
+                <h3 className="font-semibold text-[16px]">Weekly Traffic Activity Overview</h3>
               </div>
               <div className="card-body p-4 flex flex-col gap-2">
                 <div className="flex items-end justify-around h-44 bg-[#0B0F17]/1 border border-white/5 rounded-xl p-4 gap-2">
@@ -1281,14 +1281,14 @@ export default function App() {
                     const percent = (val / 3010) * 100;
                     return (
                       <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
-                        <span className="text-[12px] text-[#4FE3DC] font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[13px] text-[#4FE3DC] font-mono opacity-0 group-hover:opacity-100 transition-opacity">
                           {val}
                         </span>
                         <div
                           style={{ height: `${percent * 0.8}px` }}
                           className="w-full bg-gradient-to-t from-[#4FE3DC] to-[#4FE3DC] rounded-t-sm opacity-70 group-hover:opacity-100 transition-all duration-200"
                         />
-                        <span className="text-[12px] text-[rgba(232,234,230,0.72)] mt-1">{days[idx]}</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-1">{days[idx]}</span>
                       </div>
                     );
                   })}
@@ -1304,7 +1304,7 @@ export default function App() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Stock</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                   Manage live pre-owned floor assets and pricing
                   {state.vehicles.some((v: any) => (v.images?.length || 0) > 0) && (
                     <span className="text-[#4FE3DC] ml-2">
@@ -1325,7 +1325,7 @@ export default function App() {
                       })
                       .catch((err) => alert(err.message || "Refresh failed"));
                   }}
-                  className="btn btn-secondary text-[13px] font-bold px-3 py-2 flex items-center gap-1.5"
+                  className="btn btn-secondary text-[13px] font-bold px-3 py-2 flex items-center gap-2"
                   title="Reload inventory from server (shows photos exported from TruLens)"
                 >
                   <RefreshCw size={12} /> Refresh photos
@@ -1337,7 +1337,7 @@ export default function App() {
                     value={inventorySearch}
                     onChange={(e) => setInventorySearch(e.target.value)}
                     placeholder="Search model, make, VIN..."
-                    className="w-full md:w-56 bg-[#0B0F17]/4 border border-white/5 rounded-lg pl-9 pr-3 py-2 text-xs text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]"
+                    className="w-full md:w-56 bg-[#0B0F17]/4 border border-white/5 rounded-lg pl-9 pr-3 py-2 text-[13px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[#4FE3DC]"
                   />
                 </div>
                 <Segmented
@@ -1412,13 +1412,13 @@ export default function App() {
                             {(v.make || "??").slice(0, 2).toUpperCase()}
                           </div>
                         )}
-                        <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[12px] font-bold font-mono tracking-wider  ${
+                        <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[13px] font-bold font-mono tracking-wider  ${
                           v.status === "INVENTORY" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : v.status === "PENDING" ? "bg-[#E8C468]/15 text-[#E8C468]" : "bg-[#FF6B6B]/15 text-[#FF6B6B]"
                         }`}>
                           {v.status === "INVENTORY" ? "Showroom Floor" : v.status === "PENDING" ? "Sale Pending" : "Delivered"}
                         </span>
                         <span
-                          className="absolute top-3 left-3 px-2 py-0.5 rounded text-[12px] font-bold border max-w-[70%] truncate"
+                          className="absolute top-3 left-3 px-2 py-0.5 rounded text-[13px] font-bold border max-w-[70%] truncate"
                           style={{ color: readiness.color, borderColor: readiness.color + "55", background: readiness.color + "22" }}
                           title={(readiness.reasons || []).join(" · ")}
                         >
@@ -1429,7 +1429,7 @@ export default function App() {
                       {/* Info Area */}
                       <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                         <div>
-                          <h4 className="font-semibold text-sm text-[#E8EAE6] truncate">{v.year || ""} {v.make || "Vehicle"} {v.model || ""}</h4>
+                          <h4 className="font-semibold text-[16px] text-[#E8EAE6] truncate">{v.year || ""} {v.make || "Vehicle"} {v.model || ""}</h4>
                           <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                             {v.trim || "Standard Specs"} · <span className="font-mono">{v.stockNumber}</span>
                           </p>
@@ -1450,23 +1450,23 @@ export default function App() {
 
                         <div className="border-t border-white/5 pt-3 mt-1 flex justify-between items-center">
                           <div>
-                            <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Retail Valuation</div>
+                            <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Retail Valuation</div>
                             <div className="text-base font-semibold text-[#7FF0EA] font-mono mt-0.5">{formatZAR(Number(v.retailPrice) || 0)}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Days in stock</div>
-                            <div className={`text-xs font-bold mt-0.5 ${ageTone}`}>{days} Days{days >= 60 ? " · age" : ""}</div>
+                            <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Days in stock</div>
+                            <div className={`text-[13px] font-bold mt-0.5 ${ageTone}`}>{days} Days{days >= 60 ? " · age" : ""}</div>
                           </div>
                         </div>
 
                         {/* Actions — stopPropagation so card click still opens detail */}
                         <div
-                          className="flex gap-1.5 pt-1"
+                          className="flex gap-2 pt-1"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
                             type="button"
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[12px] font-semibold tracking-normal bg-[#4FE3DC]/20 text-[#7FF0EA] border border-[#4FE3DC]/30 hover:bg-[#4FE3DC]/30"
+                            className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[#4FE3DC]/20 text-[#7FF0EA] border border-[#4FE3DC]/30 hover:bg-[#4FE3DC]/30"
                             onClick={() => openTruLens(v.stockNumber)}
                             title="Guided shoot in TruLens"
                           >
@@ -1474,7 +1474,7 @@ export default function App() {
                           </button>
                           <button
                             type="button"
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[12px] font-semibold tracking-normal bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25"
+                            className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25"
                             onClick={() => openStockWhatsApp(v)}
                             title="WhatsApp stock blurb"
                           >
@@ -1482,7 +1482,7 @@ export default function App() {
                           </button>
                           <button
                             type="button"
-                            className="px-2 py-1.5 rounded-lg text-[12px] font-bold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-white"
+                            className="px-2 py-2 rounded-lg text-[13px] font-bold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-white"
                             onClick={async () => {
                               try {
                                 await copyStockBlurb(v);
@@ -1509,7 +1509,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Reconditioning & Delivery Pipeline</h1>
-              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">Control prep workflows for pre-owned stock</p>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Control prep workflows for pre-owned stock</p>
             </div>
 
             {/* Stages Grid columns */}
@@ -1519,7 +1519,7 @@ export default function App() {
                 return (
                   <div key={stage} className="card bg-[#0B0F17]/2 flex flex-col h-full min-h-[500px]">
                     <div className="card-header border-b border-white/5 px-4 py-3 flex justify-between items-center bg-[#0B0F17]/1">
-                      <span className="font-bold text-xs  text-[#E8EAE6]">
+                      <span className="font-bold text-[13px]  text-[#E8EAE6]">
                         {stage === "INVENTORY" ? "Floor Inventory" : stage === "PENDING" ? "Processing Sale" : "Delivered"}
                       </span>
                       <span className="px-2 py-0.5 bg-[#0B0F17]/5 rounded-full text-[rgba(232,234,230,0.72)] text-[13px] font-bold">
@@ -1531,19 +1531,19 @@ export default function App() {
                       {filtered.map((v) => (
                         <div key={v.id} className="pipeline-card p-3 flex flex-col justify-between gap-3 shadow-md">
                           <div>
-                            <div className="font-bold text-xs text-[#E8EAE6] truncate">{v.year} {v.make} {v.model}</div>
+                            <div className="font-bold text-[13px] text-[#E8EAE6] truncate">{v.year} {v.make} {v.model}</div>
                             <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Ref: {v.stockNumber} / {v.mileage.toLocaleString()} km</p>
-                            <p className="text-xs font-bold text-[#7FF0EA] mt-1.5">{formatZAR(v.retailPrice)}</p>
+                            <p className="text-[13px] font-bold text-[#7FF0EA] mt-2">{formatZAR(v.retailPrice)}</p>
                           </div>
 
-                          <div className="flex justify-between items-center border-t border-white/3 pt-2.5">
-                            <span className="text-[12px] text-[rgba(232,234,230,0.72)]">Age: {v.daysInInventory}d</span>
+                          <div className="flex justify-between items-center border-t border-white/3 pt-3">
+                            <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Age: {v.daysInInventory}d</span>
                             
                             <div className="flex gap-1">
                               {stage !== "INVENTORY" && (
                                 <button
                                   onClick={() => moveVehicle(v.id, v.status, "PREV")}
-                                  className="px-2 py-1 bg-[#0B0F17]/5 border border-white/5 rounded text-[12px] font-bold hover:bg-white/10 transition-all cursor-pointer"
+                                  className="px-2 py-1 bg-[#0B0F17]/5 border border-white/5 rounded text-[13px] font-bold hover:bg-white/10 transition-all cursor-pointer"
                                 >
                                   &larr; Prev
                                 </button>
@@ -1551,7 +1551,7 @@ export default function App() {
                               {stage !== "SOLD" && (
                                 <button
                                   onClick={() => moveVehicle(v.id, v.status, "NEXT")}
-                                  className="px-2 py-1 bg-[#4FE3DC]/15 border border-[#4FE3DC]/20 text-[#7FF0EA] rounded text-[12px] font-bold hover:bg-[#4FE3DC]/25 transition-all cursor-pointer"
+                                  className="px-2 py-1 bg-[#4FE3DC]/15 border border-[#4FE3DC]/20 text-[#7FF0EA] rounded text-[13px] font-bold hover:bg-[#4FE3DC]/25 transition-all cursor-pointer"
                                 >
                                   Next &rarr;
                                 </button>
@@ -1574,7 +1574,7 @@ export default function App() {
             <div className="flex justify-between items-start">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Add vehicle</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5">
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                   Create stock metadata here. <b className="text-[#E8EAE6]">Photos only in TruLens</b> (guided shoot → Export to DMS).
                 </p>
               </div>
@@ -1582,14 +1582,14 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => openTruLens()}
-                  className="btn btn-primary flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold"
+                  className="btn btn-primary flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold"
                 >
                   <Camera size={12} /> Open TruLens
                 </button>
                 <button 
                   type="button" 
                   onClick={loadAllState} 
-                  className="btn btn-secondary flex items-center gap-2 border border-white/10 hover:bg-white/5 px-3 py-1.5 rounded-lg text-xs"
+                  className="btn btn-secondary flex items-center gap-2 border border-white/10 hover:bg-white/5 px-3 py-2 rounded-lg text-[13px]"
                 >
                   <RefreshCw size={12} className="text-[#4FE3DC]" />
                   Pull gallery
@@ -1602,33 +1602,33 @@ export default function App() {
                 <form onSubmit={handlePublishVehicle} className="flex flex-col gap-4">
                   {/* Dealership — which dealer site this stock belongs to */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Dealership</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Dealership</label>
                     <select
                       value={newVehicleForm.dealershipId}
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, dealershipId: e.target.value }))}
-                      className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
+                      className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none"
                     >
                       {DEALERSHIPS.map((d) => (
                         <option key={d.id} value={d.id}>{d.name}</option>
                       ))}
                     </select>
-                    <p className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5">This stock will only appear on this dealer's own website and inventory.</p>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">This stock will only appear on this dealer's own website and inventory.</p>
                   </div>
 
                   {/* Showroom tier — which category page this car lands on */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Showroom Category</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Showroom Category</label>
                     <select
                       value={newVehicleForm.category}
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, category: e.target.value }))}
-                      className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
+                      className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none"
                     >
                       <option value="">Auto — decide from price &amp; model</option>
                       <option value="used">Premium Used</option>
                       <option value="select">Premium Select</option>
                       <option value="performance">Premium Performance</option>
                     </select>
-                    <p className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5">Leave on Auto and the website guesses from price and model name. Pick a tier to override that guess.</p>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Leave on Auto and the website guesses from price and model name. Pick a tier to override that guess.</p>
                   </div>
 
                   {/* Specification grid panel */}
@@ -1636,70 +1636,70 @@ export default function App() {
                     <span className="text-[13px] font-bold font-mono tracking-wider  text-[#4FE3DC]">Showroom Vehicle Specifications</span>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Year</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Year</label>
                         <input
                           type="number"
                           value={newVehicleForm.year}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, year: parseInt(e.target.value) || 2026 }))}
-                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Make</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Make</label>
                         <input
                           type="text"
                           value={newVehicleForm.make}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, make: e.target.value }))}
-                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Model</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Model</label>
                         <input
                           type="text"
                           value={newVehicleForm.model}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, model: e.target.value }))}
-                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Trim Level</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Trim Level</label>
                         <input
                           type="text"
                           value={newVehicleForm.trim}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, trim: e.target.value }))}
-                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Engine</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Engine</label>
                         <input
                           type="text"
                           value={newVehicleForm.engine}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, engine: e.target.value }))}
-                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Transmission</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Transmission</label>
                         <select
                           value={newVehicleForm.transmission}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, transmission: e.target.value as any }))}
-                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none font-sans"
                         >
                           <option className="bg-[#0B0F17]" value="Automatic">Automatic</option>
                           <option className="bg-[#0B0F17]" value="Manual">Manual</option>
                         </select>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Fuel Type</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Fuel Type</label>
                         <select
                           value={newVehicleForm.fuelType}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, fuelType: e.target.value as any }))}
-                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none font-sans"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none font-sans"
                         >
                           <option className="bg-[#0B0F17]" value="Diesel">Diesel</option>
                           <option className="bg-[#0B0F17]" value="Petrol">Petrol</option>
@@ -1708,12 +1708,12 @@ export default function App() {
                         </select>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold">Body Type</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Body Type</label>
                         <input
                           type="text"
                           value={newVehicleForm.bodyType}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, bodyType: e.target.value }))}
-                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] outline-none"
+                          className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] outline-none"
                         />
                       </div>
                     </div>
@@ -1727,7 +1727,7 @@ export default function App() {
                         type="number"
                         value={newVehicleForm.retailPrice}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, retailPrice: parseFloat(e.target.value) || 0 }))}
-                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
+                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -1736,7 +1736,7 @@ export default function App() {
                         type="number"
                         value={newVehicleForm.costPrice}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, costPrice: parseFloat(e.target.value) || 0 }))}
-                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
+                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -1745,7 +1745,7 @@ export default function App() {
                         type="number"
                         value={newVehicleForm.mileage}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, mileage: parseInt(e.target.value) || 0 }))}
-                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none"
+                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -1754,13 +1754,13 @@ export default function App() {
                         type="text"
                         value={newVehicleForm.stockNumber}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, stockNumber: e.target.value }))}
-                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none font-mono"
+                        className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none font-mono"
                       />
                     </div>
                   </div>
 
                   <div className="bg-[#4FE3DC]/8 border border-[#4FE3DC]/25 rounded-xl p-4 flex flex-col gap-2">
-                    <span className="text-[13px] font-bold font-mono tracking-wider  text-[#4FE3DC] flex items-center gap-1.5">
+                    <span className="text-[13px] font-bold font-mono tracking-wider  text-[#4FE3DC] flex items-center gap-2">
                       <Camera size={12} /> Photos live in TruLens only
                     </span>
                     <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
@@ -1771,7 +1771,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openTruLens(newVehicleForm.stockNumber)}
-                      className="self-start mt-1 text-[13px] font-bold tracking-normal px-3 py-1.5 rounded-lg bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30 hover:bg-[#4FE3DC]/25"
+                      className="self-start mt-1 text-[13px] font-bold tracking-normal px-3 py-2 rounded-lg bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30 hover:bg-[#4FE3DC]/25"
                     >
                       Open TruLens for this stock #
                     </button>
@@ -1783,7 +1783,7 @@ export default function App() {
                       rows={3}
                       value={newVehicleForm.description}
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, description: e.target.value }))}
-                      className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] outline-none font-sans"
+                      className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] outline-none font-sans"
                     ></textarea>
                   </div>
 
@@ -1825,7 +1825,7 @@ export default function App() {
             <div className="flex flex-col gap-6 animate-in fade-in duration-200">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Stock health</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
                   What your stock is costing you, and what it stands to make
                 </p>
               </div>
@@ -1839,9 +1839,9 @@ export default function App() {
                   { label: "Tied up over 60 days", value: formatZAR(agedCapital), sub: `${aged.length} ${aged.length === 1 ? "car" : "cars"}`, warn: aged.length > 0 },
                 ].map((c) => (
                   <div key={c.label} className="card p-4 flex flex-col gap-1">
-                    <span className="text-[12px] text-[rgba(232,234,230,0.55)]">{c.label}</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.55)]">{c.label}</span>
                     <span className={`text-[20px] font-semibold tracking-tight ${c.warn ? "text-[#C07676]" : "text-[#E8EAE6]"}`}>{c.value}</span>
-                    <span className="text-[12px] text-[rgba(232,234,230,0.55)]">{c.sub}</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.55)]">{c.sub}</span>
                   </div>
                 ))}
               </div>
@@ -1855,12 +1855,12 @@ export default function App() {
                   const share = live.length ? (inBand.length / live.length) * 100 : 0;
                   return (
                     <div key={b.key} className="flex items-center gap-3">
-                      <span className="text-[12px] text-[rgba(232,234,230,0.72)] w-[110px] shrink-0">{b.label}</span>
+                      <span className="text-[13px] text-[rgba(232,234,230,0.72)] w-[110px] shrink-0">{b.label}</span>
                       <div className="flex-1 h-1.5 rounded-full bg-[rgba(232,234,230,0.08)] overflow-hidden">
                         <div className="h-full rounded-full" style={{ width: `${share}%`, background: b.tone }} />
                       </div>
-                      <span className="text-[12px] text-[rgba(232,234,230,0.72)] w-[40px] text-right">{inBand.length}</span>
-                      <span className="text-[12px] text-[rgba(232,234,230,0.55)] w-[90px] text-right">{formatZAR(cap)}</span>
+                      <span className="text-[13px] text-[rgba(232,234,230,0.72)] w-[40px] text-right">{inBand.length}</span>
+                      <span className="text-[13px] text-[rgba(232,234,230,0.55)] w-[90px] text-right">{formatZAR(cap)}</span>
                     </div>
                   );
                 })}
@@ -1876,7 +1876,7 @@ export default function App() {
                 ) : (
                   <table className="w-full text-[13px]">
                     <thead>
-                      <tr className="text-[12px] text-[rgba(232,234,230,0.55)]">
+                      <tr className="text-[13px] text-[rgba(232,234,230,0.55)]">
                         <th className="text-left font-medium px-4 py-2">Vehicle</th>
                         <th className="text-right font-medium px-3 py-2">Age</th>
                         <th className="text-right font-medium px-3 py-2">Cost</th>
@@ -1893,17 +1893,17 @@ export default function App() {
                         return (
                           <tr key={v.id} onClick={() => setSelectedDetailVehicle(v)}
                               className="border-t border-white/5 cursor-pointer hover:bg-white/[0.03]">
-                            <td className="px-4 py-2.5">
+                            <td className="px-4 py-3">
                               <span className="text-[#E8EAE6]">{v.year} {v.make} {v.model}</span>
-                              <span className="text-[12px] text-[rgba(232,234,230,0.55)] ml-2">{v.stockNumber}</span>
+                              <span className="text-[13px] text-[rgba(232,234,230,0.55)] ml-2">{v.stockNumber}</span>
                             </td>
-                            <td className="px-3 py-2.5 text-right" style={{ color: band.tone }}>{days}d</td>
-                            <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.costPrice || 0)}</td>
-                            <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
-                            <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.retailPrice || 0)}</td>
-                            <td className={`px-4 py-2.5 text-right font-medium ${m.rand < 0 ? "text-[#C07676]" : "text-[#E8EAE6]"}`}>
+                            <td className="px-3 py-3 text-right" style={{ color: band.tone }}>{days}d</td>
+                            <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.costPrice || 0)}</td>
+                            <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
+                            <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.retailPrice || 0)}</td>
+                            <td className={`px-4 py-3 text-right font-medium ${m.rand < 0 ? "text-[#C07676]" : "text-[#E8EAE6]"}`}>
                               {formatZAR(m.rand)}
-                              <span className="text-[12px] text-[rgba(232,234,230,0.55)] ml-1.5">{m.pct.toFixed(0)}%</span>
+                              <span className="text-[13px] text-[rgba(232,234,230,0.55)] ml-1.5">{m.pct.toFixed(0)}%</span>
                             </td>
                           </tr>
                         );
@@ -1927,7 +1927,7 @@ export default function App() {
                   const late = open.filter(leadOverdue).length;
                   const due  = open.filter((l) => l.nextActionAt === today() && !leadOverdue(l)).length;
                   return (
-                    <p className="text-xs mt-0.5 font-medium text-[rgba(232,234,230,0.72)]">
+                    <p className="text-[13px] mt-0.5 font-medium text-[rgba(232,234,230,0.72)]">
                       {late > 0 && <span className="text-[#C07676] font-semibold">{late} overdue</span>}
                       {late > 0 && (due > 0 || open.length > 0) && " · "}
                       {due > 0 && <span>{due} due today</span>}
@@ -1940,7 +1940,7 @@ export default function App() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setFilterOverdueOnly(!filterOverdueOnly)}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer active:scale-95 transition-all ${
+                  className={`px-3 py-2 rounded-lg border text-[13px] font-semibold cursor-pointer active:scale-95 transition-all ${
                     filterOverdueOnly
                       ? "bg-[#FF6B6B]/15 border-[#FF6B6B]/30 text-[#FF6B6B]"
                       : "bg-[#0B0F17]/3 border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
@@ -1951,10 +1951,10 @@ export default function App() {
                 <button 
                   onClick={handleAutoAssign} 
                   disabled={isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-cyan-500/10 ${
+                  className={`px-3 py-2 rounded-lg border text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-cyan-500/10 ${
                     isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)
                       ? "bg-[#0B0F17]/3 border-white/5 text-[rgba(232,234,230,0.72)] cursor-not-allowed"
-                      : "bg-[#22d3ee]/15 border-[#22d3ee]/30 text-[#67e8f9] hover:bg-[#22d3ee]/25 hover:border-[#22d3ee]/50"
+                      : "bg-[#4FE3DC]/15 border-[#4FE3DC]/30 text-[#67e8f9] hover:bg-[#4FE3DC]/25 hover:border-[#4FE3DC]/50"
                   }`}
                 >
                   <Sparkles size={14} className={isAutoAssigning ? "animate-pulse" : ""} />
@@ -1970,7 +1970,7 @@ export default function App() {
             <div className="flex gap-4 border-b border-white/5 pb-2">
               <button
                 onClick={() => setLeadCRMTab("kanban")}
-                className={`text-xs font-bold transition-all border-b-2 pb-1.5 cursor-pointer ${
+                className={`text-[13px] font-bold transition-all border-b-2 pb-2 cursor-pointer ${
                   leadCrmTab === "kanban" ? "text-white border-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[#E8EAE6]"
                 }`}
               >
@@ -1978,7 +1978,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setLeadCRMTab("list")}
-                className={`text-xs font-bold transition-all border-b-2 pb-1.5 cursor-pointer ${
+                className={`text-[13px] font-bold transition-all border-b-2 pb-2 cursor-pointer ${
                   leadCrmTab === "list" ? "text-white border-[#4FE3DC]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[#E8EAE6]"
                 }`}
               >
@@ -1999,9 +1999,9 @@ export default function App() {
                     <div key={stage} className="flex-1 min-w-[220px] max-w-[280px] bg-[#0B0F17]/2 rounded-xl p-3 flex flex-col gap-3 min-h-[460px] border border-white/5">
                       <div className="flex justify-between items-center border-b border-white/5 pb-1">
                         <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">{stage}</span>
-                        <span className="px-2 py-0.5 bg-[#0B0F17]/5 rounded-full text-[12px] font-bold text-[rgba(232,234,230,0.72)]">{filteredLeads.length}</span>
+                        <span className="px-2 py-0.5 bg-[#0B0F17]/5 rounded-full text-[13px] font-bold text-[rgba(232,234,230,0.72)]">{filteredLeads.length}</span>
                       </div>
-                      <div className="flex-1 flex flex-col gap-2.5">
+                      <div className="flex-1 flex flex-col gap-3">
                         {filteredLeads.map((l) => (
                           <div
                             key={l.id}
@@ -2009,17 +2009,17 @@ export default function App() {
                             className="pipeline-card p-3 flex flex-col gap-1 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-98"
                           >
                             <div className="flex justify-between items-start">
-                              <div className="font-bold text-xs text-[#E8EAE6]">{l.firstName} {l.lastName}</div>
+                              <div className="font-bold text-[13px] text-[#E8EAE6]">{l.firstName} {l.lastName}</div>
                               {l.digitalScore >= 80 ? (
-                                <span className="bg-[#FF6B6B]/15 text-[#FF6B6B] text-[12px] px-1.5 py-0.5 rounded font-semibold tracking-normal border border-[#FF6B6B]/20">Hot</span>
+                                <span className="bg-[#FF6B6B]/15 text-[#FF6B6B] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[#FF6B6B]/20">Hot</span>
                               ) : l.digitalScore >= 50 ? (
-                                <span className="bg-[#4FE3DC]/15 text-[#4FE3DC] text-[12px] px-1.5 py-0.5 rounded font-semibold tracking-normal border border-[#4FE3DC]/20">Warm</span>
+                                <span className="bg-[#4FE3DC]/15 text-[#4FE3DC] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[#4FE3DC]/20">Warm</span>
                               ) : (
-                                <span className="bg-[rgba(232,234,230,0.72)]/15 text-[rgba(232,234,230,0.72)] text-[12px] px-1.5 py-0.5 rounded font-semibold tracking-normal border border-[rgba(232,234,230,0.72)]/20">Cold</span>
+                                <span className="bg-[rgba(232,234,230,0.72)]/15 text-[rgba(232,234,230,0.72)] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[rgba(232,234,230,0.72)]/20">Cold</span>
                               )}
                             </div>
                             <div className="text-[13px] text-[rgba(232,234,230,0.72)] truncate">{getVehicleLabel(l.vehicleId)}</div>
-                            <div className="text-[12px] text-[rgba(232,234,230,0.55)] mt-1">{l.source}</div>
+                            <div className="text-[13px] text-[rgba(232,234,230,0.55)] mt-1">{l.source}</div>
 
                             {/* The next step, and whether it has slipped. This is the
                                 line a salesperson should be reading, so it gets the weight. */}
@@ -2027,21 +2027,21 @@ export default function App() {
                               const d = dueLabel(l);
                               if (!d) return null;
                               return (
-                                <div className={`text-[12px] mt-1.5 font-medium ${d.overdue ? "text-[#C07676]" : "text-[rgba(232,234,230,0.72)]"}`}>
+                                <div className={`text-[13px] mt-2 font-medium ${d.overdue ? "text-[#C07676]" : "text-[rgba(232,234,230,0.72)]"}`}>
                                   {d.overdue ? "● " : ""}{d.text}
                                 </div>
                               );
                             })()}
                             
                             <div className="flex justify-between items-center border-t border-white/3 pt-2 mt-2 gap-2">
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-2">
                                 <span className="text-[13px] text-[#4FE3DC] font-bold">Intent: {l.digitalScore}%</span>
                               </div>
-                              <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                 {l.phone && (
                                   <button
                                     type="button"
-                                    className="text-[12px] font-bold px-1.5 py-0.5 rounded bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"
+                                    className="text-[13px] font-bold px-2 py-0.5 rounded bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"
                                     title="WhatsApp this lead"
                                     onClick={() => {
                                       const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, "27");
@@ -2057,7 +2057,7 @@ export default function App() {
                                   <button
                                     type="button"
                                     title="Mark contacted and set the next step"
-                                    className="text-[12px] font-semibold px-1.5 py-0.5 rounded bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30"
+                                    className="text-[13px] font-semibold px-2 py-0.5 rounded bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30"
                                     onClick={() => advanceLead(l)}
                                   >
                                     Done
@@ -2075,15 +2075,15 @@ export default function App() {
             ) : (
               <div className="card">
                 <div className="card-body p-0 overflow-x-auto">
-                  <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                  <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
                     <thead>
-                      <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
-                        <th className="py-2.5 px-4 font-bold">Customer Name</th>
-                        <th className="py-2.5 px-4 font-bold">Focus Asset</th>
-                        <th className="py-2.5 px-4 font-bold">Origin</th>
-                        <th className="py-2.5 px-4 font-bold">CRM Status</th>
-                        <th className="py-2.5 px-4 font-bold">Agent assigned</th>
-                        <th className="py-2.5 px-4 font-bold text-right">Operation</th>
+                      <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[#0B0F17]/1">
+                        <th className="py-3 px-4 font-bold">Customer Name</th>
+                        <th className="py-3 px-4 font-bold">Focus Asset</th>
+                        <th className="py-3 px-4 font-bold">Origin</th>
+                        <th className="py-3 px-4 font-bold">CRM Status</th>
+                        <th className="py-3 px-4 font-bold">Agent assigned</th>
+                        <th className="py-3 px-4 font-bold text-right">Operation</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2097,17 +2097,17 @@ export default function App() {
                             </td>
                             <td className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
                             <td className="py-3 px-4">
-                              <span className="px-1.5 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[12px] font-bold tracking-normal">
+                              <span className="px-2 py-0.5 bg-[#4FE3DC]/15 text-[#7FF0EA] rounded text-[13px] font-bold tracking-normal">
                                 {l.source}
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              <span className="px-1.5 py-0.5 bg-[#4ADE9B]/10 text-[#4ADE9B] rounded text-[12px] font-bold tracking-normal">
+                              <span className="px-2 py-0.5 bg-[#4ADE9B]/10 text-[#4ADE9B] rounded text-[13px] font-bold tracking-normal">
                                 {l.status}
                               </span>
                             </td>
                             <td className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
-                            <td className="py-3 px-4 text-right flex justify-end gap-1.5">
+                            <td className="py-3 px-4 text-right flex justify-end gap-2">
                               {l.phone && (
                                 <button
                                   type="button"
@@ -2117,14 +2117,14 @@ export default function App() {
                                     const text = `Hi ${l.firstName}, following up from the dealership re ${interest}. When works for a chat?`;
                                     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
                                   }}
-                                  className="px-2.5 py-1.5 bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-bold"
+                                  className="px-3 py-2 bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-bold"
                                 >
                                   WhatsApp
                                 </button>
                               )}
                               <button
                                 onClick={() => setLeadDetailId(l.id)}
-                                className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white rounded-lg text-[13px] font-bold cursor-pointer transition-all shadow-md active:scale-95"
+                                className="px-4 py-2 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white rounded-lg text-[13px] font-bold cursor-pointer transition-all shadow-md active:scale-95"
                               >
                                 Review Profile
                               </button>
@@ -2144,7 +2144,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Lead scoring</h1>
-              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate intent and prioritization indices</p>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate intent and prioritization indices</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -2181,18 +2181,18 @@ export default function App() {
             {/* Matrix Card table */}
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Lead scores</h3>
+                <h3 className="font-semibold text-[16px]">Lead scores</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
-                      <th className="py-2.5 px-4 font-bold">Prospect</th>
-                      <th className="py-2.5 px-4 font-bold">Intent Score</th>
-                      <th className="py-2.5 px-4 font-bold">Rating Level</th>
-                      <th className="py-2.5 px-4 font-bold">Source</th>
-                      <th className="py-2.5 px-4 font-bold">Current Vehicle focus</th>
-                      <th className="py-2.5 px-4 font-bold text-right">Prioritization</th>
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[#0B0F17]/1">
+                      <th className="py-3 px-4 font-bold">Prospect</th>
+                      <th className="py-3 px-4 font-bold">Intent Score</th>
+                      <th className="py-3 px-4 font-bold">Rating Level</th>
+                      <th className="py-3 px-4 font-bold">Source</th>
+                      <th className="py-3 px-4 font-bold">Current Vehicle focus</th>
+                      <th className="py-3 px-4 font-bold text-right">Prioritization</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2202,9 +2202,9 @@ export default function App() {
                       return (
                         <tr key={l.id} className="border-b border-white/3 hover:bg-[#0B0F17]/1">
                           <td className="py-3 px-4 font-semibold text-[#E8EAE6]">{l.firstName} {l.lastName}</td>
-                          <td className="py-3 px-4 font-mono font-bold text-[#4FE3DC] text-sm">{l.digitalScore}%</td>
+                          <td className="py-3 px-4 font-mono font-bold text-[#4FE3DC] text-[16px]">{l.digitalScore}%</td>
                           <td className="py-3 px-4">
-                            <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                            <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                               hot ? "bg-[#FF6B6B]/15 text-[#FF6B6B]" : warm ? "bg-[#E8C468]/15 text-[#E8C468]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                             }`}>
                               {hot ? "Hot Target" : warm ? "Warm Prospect" : "Cold Prospect"}
@@ -2215,7 +2215,7 @@ export default function App() {
                           <td className="py-3 px-4 text-right">
                             <button
                               onClick={() => setLeadDetailId(l.id)}
-                              className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[#4FE3DC]/20 active:scale-95"
+                              className="px-4 py-2 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[#4FE3DC]/20 active:scale-95"
                             >
                               Analyze Intent
                             </button>
@@ -2237,7 +2237,7 @@ export default function App() {
             <div className="flex justify-between items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Invoices</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Track accounts receivable and sales transactions</p>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Track accounts receivable and sales transactions</p>
               </div>
               <button onClick={() => setIsInvoiceModalOpen(true)} className="btn btn-primary">
                 + Draft Invoice
@@ -2247,19 +2247,19 @@ export default function App() {
             {/* Invoices list */}
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Invoices</h3>
+                <h3 className="font-semibold text-[16px]">Invoices</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
-                      <th className="py-2.5 px-4 font-bold">Reference No</th>
-                      <th className="py-2.5 px-4 font-bold">Prospect Bill To</th>
-                      <th className="py-2.5 px-4 font-bold">Associated stock</th>
-                      <th className="py-2.5 px-4 font-bold">Total Amount</th>
-                      <th className="py-2.5 px-4 font-bold">Status</th>
-                      <th className="py-2.5 px-4 font-bold">Due Date</th>
-                      <th className="py-2.5 px-4 font-bold text-right">Operation</th>
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[#0B0F17]/1">
+                      <th className="py-3 px-4 font-bold">Reference No</th>
+                      <th className="py-3 px-4 font-bold">Prospect Bill To</th>
+                      <th className="py-3 px-4 font-bold">Associated stock</th>
+                      <th className="py-3 px-4 font-bold">Total Amount</th>
+                      <th className="py-3 px-4 font-bold">Status</th>
+                      <th className="py-3 px-4 font-bold">Due Date</th>
+                      <th className="py-3 px-4 font-bold text-right">Operation</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2270,20 +2270,20 @@ export default function App() {
                         <td className="py-3 px-4">{getVehicleLabel(inv.vehicleId)}</td>
                         <td className="py-3 px-4 font-mono font-bold text-[#7FF0EA]">
                           {formatZAR(inv.amount + (inv.additionalCharges || 0))}
-                          {inv.additionalCharges ? <span className="text-[12px] text-[rgba(232,234,230,0.72)] block">{inv.chargeDescription}</span> : null}
+                          {inv.additionalCharges ? <span className="text-[13px] text-[rgba(232,234,230,0.72)] block">{inv.chargeDescription}</span> : null}
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             inv.status === "Paid" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                           }`}>
                             {inv.status}
                           </span>
                         </td>
                         <td className="py-3 px-4 font-semibold">{inv.dueDate}</td>
-                        <td className="py-3 px-4 text-right flex justify-end gap-1.5">
+                        <td className="py-3 px-4 text-right flex justify-end gap-2">
                           <button
                             onClick={() => setActiveInvoiceId(inv.id)}
-                            className="px-4 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                            className="px-4 py-2 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
                           >
                             View Record
                           </button>
@@ -2294,7 +2294,7 @@ export default function App() {
                                 alert("Invoice cleared!");
                                 loadAllState();
                               }}
-                              className="px-4 py-1.5 bg-[#4ADE9B] hover:bg-[#4ADE9B]/90 text-white rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                              className="px-4 py-2 bg-[#4ADE9B] hover:bg-[#4ADE9B]/90 text-white rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
                             >
                               Finalize Payment
                             </button>
@@ -2324,7 +2324,7 @@ export default function App() {
             <div className="flex justify-between items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Signed agreements</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Signed documents</p>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Signed documents</p>
               </div>
               <button onClick={() => setIsAgreementModalOpen(true)} className="btn btn-primary">
                 + Start New Contract
@@ -2333,19 +2333,19 @@ export default function App() {
 
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Signed agreements</h3>
+                <h3 className="font-semibold text-[16px]">Signed agreements</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
-                      <th className="py-2.5 px-4 font-bold">Agreement ID</th>
-                      <th className="py-2.5 px-4 font-bold">Contract classification</th>
-                      <th className="py-2.5 px-4 font-bold">Customer account</th>
-                      <th className="py-2.5 px-4 font-bold">Subject Stock</th>
-                      <th className="py-2.5 px-4 font-bold">Value</th>
-                      <th className="py-2.5 px-4 font-bold">Signature Status</th>
-                      <th className="py-2.5 px-4 text-right font-bold">Operation</th>
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[#0B0F17]/1">
+                      <th className="py-3 px-4 font-bold">Agreement ID</th>
+                      <th className="py-3 px-4 font-bold">Contract classification</th>
+                      <th className="py-3 px-4 font-bold">Customer account</th>
+                      <th className="py-3 px-4 font-bold">Subject Stock</th>
+                      <th className="py-3 px-4 font-bold">Value</th>
+                      <th className="py-3 px-4 font-bold">Signature Status</th>
+                      <th className="py-3 px-4 text-right font-bold">Operation</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2357,7 +2357,7 @@ export default function App() {
                         <td className="py-3 px-4">{getVehicleLabel(agr.vehicleId)}</td>
                         <td className="py-3 px-4 font-mono font-bold text-[#7FF0EA]">{formatZAR(agr.purchasePrice)}</td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             agr.status === "Signed" || agr.status === "Completed" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : "bg-[#E8C468]/15 text-[#E8C468]"
                           }`}>
                             {agr.status}
@@ -2366,7 +2366,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setActiveAgreementId(agr.id)}
-                            className="px-3 py-1.5 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all shadow-md shadow-[#4FE3DC]/20"
+                            className="px-3 py-2 bg-[#4FE3DC] hover:bg-[#4FE3DC]/90 text-white rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all shadow-md shadow-[#4FE3DC]/20"
                           >
                             Open Contract Terms
                           </button>
@@ -2409,7 +2409,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Add a customer</h1>
-              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Use this form for remote customer registration.</p>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Use this form for remote customer registration.</p>
             </div>
             <div className="max-w-lg">
               <CustomerLeadForm dealershipId={dealershipId || "d1"} vehicles={filteredVehicles} onSuccess={() => alert("Lead Captured!")} />
@@ -2423,7 +2423,7 @@ export default function App() {
             <div className="flex justify-between items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Showroom Tasks</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Configure daily operational checklists & reconditioning items</p>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Configure daily operational checklists & reconditioning items</p>
               </div>
               <button onClick={() => setIsTaskModalOpen(true)} className="btn btn-primary">
                 + Log Directive Task
@@ -2433,18 +2433,18 @@ export default function App() {
             {/* Checklist records */}
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">Showroom Tasks</h3>
+                <h3 className="font-semibold text-[16px]">Showroom Tasks</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
-                      <th className="py-2.5 px-4 font-bold">Showroom Directive</th>
-                      <th className="py-2.5 px-4 font-bold">Priority</th>
-                      <th className="py-2.5 px-4 font-bold">Assigned Specialist</th>
-                      <th className="py-2.5 px-4 font-bold">Due Date</th>
-                      <th className="py-2.5 px-4 font-bold">Processing status</th>
-                      <th className="py-2.5 px-4 text-right font-bold">Operation</th>
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[#0B0F17]/1">
+                      <th className="py-3 px-4 font-bold">Showroom Directive</th>
+                      <th className="py-3 px-4 font-bold">Priority</th>
+                      <th className="py-3 px-4 font-bold">Assigned Specialist</th>
+                      <th className="py-3 px-4 font-bold">Due Date</th>
+                      <th className="py-3 px-4 font-bold">Processing status</th>
+                      <th className="py-3 px-4 text-right font-bold">Operation</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2457,7 +2457,7 @@ export default function App() {
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             t.priority === "Urgent" ? "bg-[#FF6B6B]/15 text-[#FF6B6B]" : t.priority === "High" ? "bg-[#E8C468]/15 text-[#E8C468]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                           }`}>
                             {t.priority}
@@ -2466,7 +2466,7 @@ export default function App() {
                         <td className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getUserLabel(t.assignedUserId)}</td>
                         <td className="py-3 px-4">{t.dueDate}</td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             t.status === "Completed" ? "bg-[#4ADE9B]/15 text-[#4ADE9B]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                           }`}>
                             {t.status}
@@ -2479,12 +2479,12 @@ export default function App() {
                                 await updateTask(t.id, { status: "Completed" });
                                 loadAllState();
                               }}
-                              className="px-2.5 py-1.5 bg-[#4ADE9B]/10 hover:bg-[#4ADE9B]/20 text-[#4ADE9B] rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all"
+                              className="px-3 py-2 bg-[#4ADE9B]/10 hover:bg-[#4ADE9B]/20 text-[#4ADE9B] rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all"
                             >
                               Resolve
                             </button>
                           ) : (
-                            <span className="text-[#4ADE9B] font-bold text-xs">Resolved</span>
+                            <span className="text-[#4ADE9B] font-bold text-[13px]">Resolved</span>
                           )}
                         </td>
                       </tr>
@@ -2502,7 +2502,7 @@ export default function App() {
             <div className="flex justify-between items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Team</h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
                   {activeSeats} {activeSeats === 1 ? "person" : "people"} with access
                 </p>
               </div>
@@ -2511,7 +2511,7 @@ export default function App() {
               </button>
             </div>
 
-            {seatError && <p className="text-xs text-[#FF6B6B]">{seatError}</p>}
+            {seatError && <p className="text-[13px] text-[#FF6B6B]">{seatError}</p>}
 
             {/* Who can sign in. Separate from the performance cards below, which
                 also cover people who no longer have access. */}
@@ -2521,14 +2521,14 @@ export default function App() {
                 <span className="text-[13px] text-[rgba(232,234,230,0.72)]">{activeSeats} active</span>
               </div>
               {seats.length === 0 ? (
-                <p className="text-xs text-[rgba(232,234,230,0.72)] py-2">
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] py-2">
                   Only you can sign in so far. Add your salespeople so each has their own code.
                 </p>
               ) : (
                 seats.map((s) => (
                   <div key={s.accountId} className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0">
                     <div className="min-w-0">
-                      <div className={`text-xs font-bold truncate ${s.isActive ? "text-[#E8EAE6]" : "text-[rgba(232,234,230,0.72)] line-through"}`}>
+                      <div className={`text-[13px] font-bold truncate ${s.isActive ? "text-[#E8EAE6]" : "text-[rgba(232,234,230,0.72)] line-through"}`}>
                         {s.name}
                       </div>
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">
@@ -2563,27 +2563,27 @@ export default function App() {
                 return (
                   <div key={u.id} className="card p-4 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#4FE3DC] to-[#4FE3DC] flex items-center justify-center font-bold text-xs text-white">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#4FE3DC] to-[#4FE3DC] flex items-center justify-center font-bold text-[13px] text-white">
                         {u.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-bold text-xs text-[#E8EAE6]">{u.name}</div>
+                        <div className="font-bold text-[13px] text-[#E8EAE6]">{u.name}</div>
                         <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">{u.role}</div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-center mt-1">
-                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-1.5">
-                        <div className="text-sm font-semibold text-white">{leadsAssigned}</div>
-                        <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Leads</div>
+                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-2">
+                        <div className="text-[16px] font-semibold text-white">{leadsAssigned}</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Leads</div>
                       </div>
-                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-1.5">
-                        <div className="text-sm font-semibold text-white">{dealsCompleted}</div>
-                        <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Sales</div>
+                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-2">
+                        <div className="text-[16px] font-semibold text-white">{dealsCompleted}</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Sales</div>
                       </div>
-                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-1.5">
-                        <div className="text-sm font-semibold text-white">{u.isActive ? "Online" : "Away"}</div>
-                        <div className="text-[12px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Status</div>
+                      <div className="bg-[#0B0F17]/2 border border-white/5 rounded p-2">
+                        <div className="text-[16px] font-semibold text-white">{u.isActive ? "Online" : "Away"}</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Status</div>
                       </div>
                     </div>
                   </div>
@@ -2603,17 +2603,17 @@ export default function App() {
             {/* Permissions list */}
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">System Access Roster</h3>
+                <h3 className="font-semibold text-[16px]">System Access Roster</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse min-w-[600px]">
+                <table className="w-full text-[13px] text-left border-collapse min-w-[600px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[12px] bg-[#0B0F17]/1">
-                      <th className="py-2.5 px-4 font-bold">Assigned Specialist</th>
-                      <th className="py-2.5 px-4 font-bold">Email</th>
-                      <th className="py-2.5 px-4 font-bold">System Role</th>
-                      <th className="py-2.5 px-4 font-bold">Contact Number</th>
-                      <th className="py-2.5 px-4 font-bold">Access permissions</th>
+                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[#0B0F17]/1">
+                      <th className="py-3 px-4 font-bold">Assigned Specialist</th>
+                      <th className="py-3 px-4 font-bold">Email</th>
+                      <th className="py-3 px-4 font-bold">System Role</th>
+                      <th className="py-3 px-4 font-bold">Contact Number</th>
+                      <th className="py-3 px-4 font-bold">Access permissions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2622,7 +2622,7 @@ export default function App() {
                         <td className="py-3 px-4 font-semibold text-[#E8EAE6]">{u.name}</td>
                         <td className="py-3 px-4 font-semibold">{u.email}</td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             u.role === "admin" ? "bg-[#FF6B6B]/15 text-[#FF6B6B]" : "bg-[#4FE3DC]/15 text-[#7FF0EA]"
                           }`}>
                             {u.role}
@@ -2630,7 +2630,7 @@ export default function App() {
                         </td>
                         <td className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{u.phone}</td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 bg-[#4ADE9B]/15 text-[#4ADE9B] rounded text-[12px] font-bold tracking-normal">
+                          <span className="px-2 py-0.5 bg-[#4ADE9B]/15 text-[#4ADE9B] rounded text-[13px] font-bold tracking-normal">
                             {u.isActive ? "Authorized Profile" : "Archived"}
                           </span>
                         </td>
@@ -2648,7 +2648,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Repayment calculator</h1>
-              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Model lease structures & monthly amortization schedules</p>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Model lease structures & monthly amortization schedules</p>
             </div>
             <AmortizationCalc initialPrice={state.vehicles[0]?.retailPrice || 485000} />
           </div>
@@ -2669,7 +2669,7 @@ export default function App() {
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6] flex items-center gap-2">
                   <Image size={24} className="text-[#4FE3DC]" /> Stock media & web readiness
                 </h1>
-                <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium max-w-xl">
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium max-w-xl">
                   Premium stores gallery + publish evidence. Capture is <b className="text-[#E8EAE6]">only in TruLens</b>.
                   Pipeline: Shoot → Export to DMS → refresh here → website feed.
                 </p>
@@ -2677,7 +2677,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => openTruLens()}
-                className="btn btn-primary text-xs font-bold flex items-center gap-2 px-4 py-2.5"
+                className="btn btn-primary text-[13px] font-bold flex items-center gap-2 px-4 py-3"
               >
                 <Camera size={14} /> Open TruLens capture
               </button>
@@ -2730,21 +2730,21 @@ export default function App() {
                         </div>
                       )}
                       <span
-                        className="absolute top-2 left-2 text-[12px] font-bold px-2 py-0.5 rounded border"
+                        className="absolute top-2 left-2 text-[13px] font-bold px-2 py-0.5 rounded border"
                         style={{ color: r.color, borderColor: r.color + "55", background: r.color + "22" }}
                         title={r.reasons.join(" · ")}
                       >
                         {r.label}
                       </span>
                       {r.photoCount > 0 && (
-                        <span className="absolute top-2 right-2 text-[12px] font-bold px-2 py-0.5 rounded bg-black/50 text-white">
+                        <span className="absolute top-2 right-2 text-[13px] font-bold px-2 py-0.5 rounded bg-black/50 text-white">
                           {r.photoCount} photos
                         </span>
                       )}
                     </div>
                     <div className="p-3 flex flex-col gap-2 flex-1">
                       <div>
-                        <div className="text-sm font-bold text-[#E8EAE6]">{v.year} {v.make} {v.model}</div>
+                        <div className="text-[16px] font-bold text-[#E8EAE6]">{v.year} {v.make} {v.model}</div>
                         <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{v.stockNumber}</div>
                       </div>
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)]">
@@ -2753,7 +2753,7 @@ export default function App() {
                           : "Not synced from TruLens yet"}
                       </div>
                       {r.reasons[0] && (
-                        <div className="text-[12px] text-[#E8C468]/90">{r.reasons[0]}</div>
+                        <div className="text-[13px] text-[#E8C468]/90">{r.reasons[0]}</div>
                       )}
                       <div className="mt-auto flex gap-2">
                         <button
@@ -2785,7 +2785,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#E8EAE6]">Settings</h1>
-              <p className="text-xs text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
                 {PRODUCT_NAME} — stock, CRM, media hub, full finance & website embeds
               </p>
             </div>
@@ -2793,37 +2793,37 @@ export default function App() {
             {/* Integration URLs + website kit */}
             <div className="card border-[#4FE3DC]/30">
               <div className="card-header border-b border-white/5 px-5 py-3">
-                <h3 className="font-bold text-sm text-white flex items-center gap-2">
+                <h3 className="font-bold text-[16px] text-white flex items-center gap-2">
                   <Code size={14} className="text-[#7FF0EA]" /> TruLens & website wiring
                 </h3>
               </div>
               <div className="card-body p-5 flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <label className="flex flex-col gap-1">
-                    <span className="text-[12px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">TruLens URL</span>
+                    <span className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">TruLens URL</span>
                     <input
                       value={trulensUrlInput}
                       onChange={(e) => setTrulensUrlInput(e.target.value)}
                       placeholder="http://localhost:3000 or https://… tunnel"
-                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-mono"
+                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] font-mono"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
-                    <span className="text-[12px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">Dealer slug (public stock)</span>
+                    <span className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">Dealer slug (public stock)</span>
                     <input
                       value={dealerSlugInput}
                       onChange={(e) => setDealerSlugInput(e.target.value)}
                       placeholder="mkr-autosales"
-                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-mono"
+                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] font-mono"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
-                    <span className="text-[12px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">Sales WhatsApp</span>
+                    <span className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">Sales WhatsApp</span>
                     <input
                       value={waNumberInput}
                       onChange={(e) => setWaNumberInput(e.target.value)}
                       placeholder="2766… (country code, no +)"
-                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-mono"
+                      className="bg-[#0B0F17] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] font-mono"
                     />
                   </label>
                 </div>
@@ -2833,7 +2833,7 @@ export default function App() {
                 </p>
                 <button
                   type="button"
-                  className="btn btn-primary self-start text-xs font-bold"
+                  className="btn btn-primary self-start text-[13px] font-bold"
                   onClick={() => {
                     setTruLensUrl(trulensUrlInput);
                     setDealerSlug(dealerSlugInput);
@@ -2844,7 +2844,7 @@ export default function App() {
                   Save integration settings
                 </button>
                 <div>
-                  <div className="text-[12px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider mb-1">Website stock widget (copy for web person)</div>
+                  <div className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider mb-1">Website stock widget (copy for web person)</div>
                   <pre className="text-[13px] bg-black/50 border border-white/10 rounded-xl p-3 overflow-x-auto text-[rgba(232,234,230,0.72)] font-mono whitespace-pre-wrap">
                     {stockWidgetSnippet(window.location.origin)}
                   </pre>
@@ -2869,12 +2869,12 @@ export default function App() {
               <div className="card-header border-b border-white/5 px-6 py-4 flex justify-between items-center">
                 <div>
                   <h3 className="font-bold text-base text-white flex items-center gap-2">
-                    <Sparkles size={16} className="text-[#4FE3DC] animate-pulse" />
+                    <Sparkles size={16} className="text-[#4FE3DC]" />
                     TruFlow Premium
                   </h3>
                   <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Full DMS · media hub · recon · website feed · TruLens export</p>
                 </div>
-                <span className="px-3 py-1 bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30 rounded-full text-[12px] font-semibold tracking-widest ">
+                <span className="px-3 py-1 bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30 rounded-full text-[13px] font-semibold tracking-widest ">
                   Premium
                 </span>
               </div>
@@ -2884,7 +2884,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">Dealer website</span>
+                    <span className="font-bold text-[16px] text-[#E8EAE6] block">Dealer website</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Full inventory showcase on your custom front-end portal www.trusaas.co.za.</span>
                   </div>
                 </div>
@@ -2894,7 +2894,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">Full DMS & CRM Logic</span>
+                    <span className="font-bold text-[16px] text-[#E8EAE6] block">Full DMS & CRM Logic</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Integrated Lead CRM, Lead scoring pipelines, tasks and automated AI lead assignments.</span>
                   </div>
                 </div>
@@ -2904,7 +2904,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">TrueAI VIR & Image Studio</span>
+                    <span className="font-bold text-[16px] text-[#E8EAE6] block">TrueAI VIR & Image Studio</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Generates automated visual inspection reports (VIR) and optimizes vehicle images using neural nets.</span>
                   </div>
                 </div>
@@ -2914,7 +2914,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">Smart Ledger & Recon</span>
+                    <span className="font-bold text-[16px] text-[#E8EAE6] block">Smart Ledger & Recon</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Automated expense matching and real-time reconciliation logs with dealer capital ledger.</span>
                   </div>
                 </div>
@@ -2924,7 +2924,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">AI Chatbot Co-Pilot</span>
+                    <span className="font-bold text-[16px] text-[#E8EAE6] block">AI Chatbot Co-Pilot</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Customer-facing conversational agent on the showroom floor to answer dealer or visitor queries.</span>
                   </div>
                 </div>
@@ -2934,7 +2934,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">Search optimisation</span>
+                    <span className="font-bold text-[16px] text-[#E8EAE6] block">Search optimisation</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Optimizes raw metadata, vehicle specifications, and pricing for Search and Answer Engines.</span>
                   </div>
                 </div>
@@ -2944,7 +2944,7 @@ export default function App() {
                     <Check size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-sm text-[#E8EAE6] block">Marketplace syndication</span>
+                    <span className="font-bold text-[16px] text-[#E8EAE6] block">Marketplace syndication</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Real-time syndication endpoints for synchronizing stock with AutoTrader, Cars.co.za and WordPress.</span>
                   </div>
                 </div>
@@ -2953,12 +2953,12 @@ export default function App() {
 
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-sm">System Actions</h3>
+                <h3 className="font-semibold text-[16px]">System Actions</h3>
               </div>
               <div className="card-body p-4 flex flex-col gap-3">
                 {getAccount()?.role === "admin" ? (
                   <>
-                    <p className="text-xs text-[rgba(232,234,230,0.72)]">
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
                       Deletes all stock, leads, invoices and signed documents for
                       <b className="text-[#E8EAE6]"> every dealership</b> on this instance and
                       restores the seed data. There is no backup.
@@ -2970,7 +2970,7 @@ export default function App() {
                     </div>
                   </>
                 ) : (
-                  <p className="text-xs text-[rgba(232,234,230,0.55)]">
+                  <p className="text-[13px] text-[rgba(232,234,230,0.55)]">
                     No system actions are available on this account.
                   </p>
                 )}
@@ -2981,7 +2981,7 @@ export default function App() {
       </main>
 
       {/* Side floating Copilot assistant chat widget */}
-      <PwaInstallBanner appName="TruFlow Premium" accent="#4D9BFF" dismissKey="truflow_premium_pwa_dismissed" />
+      <PwaInstallBanner appName="TruFlow Premium" accent="#8AA2B8" dismissKey="truflow_premium_pwa_dismissed" />
       <ChatWidget />
       
       {/* Website Chat Widget Simulation */}
@@ -3003,26 +3003,26 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">First Name</label>
-                  <input type="text" required value={newLeadForm.firstName} onChange={(e) => setNewLeadForm((p) => ({ ...p, firstName: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
+                  <input type="text" required value={newLeadForm.firstName} onChange={(e) => setNewLeadForm((p) => ({ ...p, firstName: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Last Name</label>
-                  <input type="text" required value={newLeadForm.lastName} onChange={(e) => setNewLeadForm((p) => ({ ...p, lastName: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
+                  <input type="text" required value={newLeadForm.lastName} onChange={(e) => setNewLeadForm((p) => ({ ...p, lastName: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Phone</label>
-                  <input type="text" required value={newLeadForm.phone} onChange={(e) => setNewLeadForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
+                  <input type="text" required value={newLeadForm.phone} onChange={(e) => setNewLeadForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Email</label>
-                  <input type="email" required value={newLeadForm.email} onChange={(e) => setNewLeadForm((p) => ({ ...p, email: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
+                  <input type="email" required value={newLeadForm.email} onChange={(e) => setNewLeadForm((p) => ({ ...p, email: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Select vehicle</label>
-                <select value={newLeadForm.vehicleId} onChange={(e) => setNewLeadForm((p) => ({ ...p, vehicleId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                <select value={newLeadForm.vehicleId} onChange={(e) => setNewLeadForm((p) => ({ ...p, vehicleId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                   {state.vehicles.map((v) => (
                     <option key={v.id} className="bg-[#0B0F17]" value={v.id}>{v.year} {v.make} {v.model}</option>
                   ))}
@@ -3030,7 +3030,7 @@ export default function App() {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Ad Source</label>
-                <select value={newLeadForm.source} onChange={(e) => setNewLeadForm((p) => ({ ...p, source: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                <select value={newLeadForm.source} onChange={(e) => setNewLeadForm((p) => ({ ...p, source: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                   <option className="bg-[#0B0F17]" value="Website">Website Form</option>
                   <option className="bg-[#0B0F17]" value="Walk-in">Walk-in Showroom</option>
                   <option className="bg-[#0B0F17]" value="Facebook">Facebook Lead Gen</option>
@@ -3039,7 +3039,7 @@ export default function App() {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Initial Requirement notes</label>
-                <textarea rows={2} value={newLeadForm.notes} onChange={(e) => setNewLeadForm((p) => ({ ...p, notes: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] font-sans"></textarea>
+                <textarea rows={2} value={newLeadForm.notes} onChange={(e) => setNewLeadForm((p) => ({ ...p, notes: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] font-sans"></textarea>
               </div>
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" onClick={() => setIsLeadModalOpen(false)} className="btn btn-secondary">Cancel</button>
@@ -3061,7 +3061,7 @@ export default function App() {
             <form onSubmit={handleCreateInvoiceSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Link to Lead Account</label>
-                <select value={newInvoiceForm.leadId} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                <select value={newInvoiceForm.leadId} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                   {state.leads.map((l) => (
                     <option key={l.id} className="bg-[#0B0F17]" value={l.id}>{l.firstName} {l.lastName}</option>
                   ))}
@@ -3075,7 +3075,7 @@ export default function App() {
                     const matchedVeh = state.vehicles.find((v) => v.id === e.target.value);
                     setNewInvoiceForm((p) => ({ ...p, vehicleId: e.target.value, amount: matchedVeh?.retailPrice || 0 }));
                   }}
-                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans"
+                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans"
                 >
                   {state.vehicles.map((v) => (
                     <option key={v.id} className="bg-[#0B0F17]" value={v.id}>{v.year} {v.make} {v.model}</option>
@@ -3085,16 +3085,16 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Amount (ZAR)</label>
-                  <input type="number" required value={newInvoiceForm.amount} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, amount: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
+                  <input type="number" required value={newInvoiceForm.amount} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, amount: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Due Date</label>
-                  <input type="date" required value={newInvoiceForm.dueDate} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] font-sans" />
+                  <input type="date" required value={newInvoiceForm.dueDate} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] font-sans" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Finance Category</label>
-                <select value={newInvoiceForm.paymentMethod} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, paymentMethod: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                <select value={newInvoiceForm.paymentMethod} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, paymentMethod: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                   <option className="bg-[#0B0F17]" value="Bank Transfer">Direct EFT / Bank Transfer</option>
                   <option className="bg-[#0B0F17]" value="Dealer Finance">Dealer Arranged Finance</option>
                   <option className="bg-[#0B0F17]" value="Cash">Cash Payment</option>
@@ -3120,7 +3120,7 @@ export default function App() {
             <form onSubmit={handleCreateAgreementSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Party Purchaser</label>
-                <select value={newAgreementForm.leadId} onChange={(e) => setNewAgreementForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                <select value={newAgreementForm.leadId} onChange={(e) => setNewAgreementForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                   {state.leads.map((l) => (
                     <option key={l.id} className="bg-[#0B0F17]" value={l.id}>{l.firstName} {l.lastName}</option>
                   ))}
@@ -3134,7 +3134,7 @@ export default function App() {
                     const matchedVeh = state.vehicles.find((v) => v.id === e.target.value);
                     setNewAgreementForm((p) => ({ ...p, vehicleId: e.target.value, purchasePrice: matchedVeh?.retailPrice || 0 }));
                   }}
-                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans"
+                  className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans"
                 >
                   {state.vehicles.map((v) => (
                     <option key={v.id} className="bg-[#0B0F17]" value={v.id}>{v.year} {v.make} {v.model}</option>
@@ -3144,16 +3144,16 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Negotiated Price</label>
-                  <input type="number" required value={newAgreementForm.purchasePrice} onChange={(e) => setNewAgreementForm((p) => ({ ...p, purchasePrice: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
+                  <input type="number" required value={newAgreementForm.purchasePrice} onChange={(e) => setNewAgreementForm((p) => ({ ...p, purchasePrice: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Deposit amount</label>
-                  <input type="number" required value={newAgreementForm.depositAmount} onChange={(e) => setNewAgreementForm((p) => ({ ...p, depositAmount: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
+                  <input type="number" required value={newAgreementForm.depositAmount} onChange={(e) => setNewAgreementForm((p) => ({ ...p, depositAmount: parseFloat(e.target.value) || 0 }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Contract Class</label>
-                <select value={newAgreementForm.type} onChange={(e) => setNewAgreementForm((p) => ({ ...p, type: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                <select value={newAgreementForm.type} onChange={(e) => setNewAgreementForm((p) => ({ ...p, type: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                   <option className="bg-[#0B0F17]" value="Vehicle Sale">Vehicle Purchase Deed</option>
                   <option className="bg-[#0B0F17]" value="Deposit Hold">Securing Holding Deposit</option>
                   <option className="bg-[#0B0F17]" value="Trade-In Transfer">Trade-In Exchange Agreement</option>
@@ -3179,12 +3179,12 @@ export default function App() {
             <form onSubmit={handleCreateTaskSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Task description header</label>
-                <input type="text" required placeholder="e.g. Call client back with rates" value={newTaskForm.title} onChange={(e) => setNewTaskForm((p) => ({ ...p, title: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6]" />
+                <input type="text" required placeholder="e.g. Call client back with rates" value={newTaskForm.title} onChange={(e) => setNewTaskForm((p) => ({ ...p, title: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Associate Lead</label>
-                  <select value={newTaskForm.leadId} onChange={(e) => setNewTaskForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <select value={newTaskForm.leadId} onChange={(e) => setNewTaskForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                     <option className="bg-[#0B0F17]" value="">None</option>
                     {state.leads.map((l) => (
                       <option key={l.id} className="bg-[#0B0F17]" value={l.id}>{l.firstName} {l.lastName}</option>
@@ -3193,7 +3193,7 @@ export default function App() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Associate Stock</label>
-                  <select value={newTaskForm.vehicleId} onChange={(e) => setNewTaskForm((p) => ({ ...p, vehicleId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <select value={newTaskForm.vehicleId} onChange={(e) => setNewTaskForm((p) => ({ ...p, vehicleId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                     <option className="bg-[#0B0F17]" value="">None</option>
                     {state.vehicles.map((v) => (
                       <option key={v.id} className="bg-[#0B0F17]" value={v.id}>{v.year} {v.make} {v.model}</option>
@@ -3204,7 +3204,7 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Assign to Rep</label>
-                  <select value={newTaskForm.assignedUserId} onChange={(e) => setNewTaskForm((p) => ({ ...p, assignedUserId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <select value={newTaskForm.assignedUserId} onChange={(e) => setNewTaskForm((p) => ({ ...p, assignedUserId: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                     {state.users.map((u) => (
                       <option key={u.id} className="bg-[#0B0F17]" value={u.id}>{u.name}</option>
                     ))}
@@ -3212,13 +3212,13 @@ export default function App() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Due Date Target</label>
-                  <input type="date" required value={newTaskForm.dueDate} onChange={(e) => setNewTaskForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6] font-sans" />
+                  <input type="date" required value={newTaskForm.dueDate} onChange={(e) => setNewTaskForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] font-sans" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Priority Rating</label>
-                  <select value={newTaskForm.priority} onChange={(e) => setNewTaskForm((p) => ({ ...p, priority: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <select value={newTaskForm.priority} onChange={(e) => setNewTaskForm((p) => ({ ...p, priority: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                     <option className="bg-[#0B0F17]" value="Normal">Normal</option>
                     <option className="bg-[#0B0F17]" value="High">High</option>
                     <option className="bg-[#0B0F17]" value="Urgent">Urgent</option>
@@ -3227,7 +3227,7 @@ export default function App() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Current State</label>
-                  <select value={newTaskForm.status} onChange={(e) => setNewTaskForm((p) => ({ ...p, status: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <select value={newTaskForm.status} onChange={(e) => setNewTaskForm((p) => ({ ...p, status: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                     <option className="bg-[#0B0F17]" value="Pending">Pending Assignment</option>
                     <option className="bg-[#0B0F17]" value="In Progress">In Progress</option>
                     <option className="bg-[#0B0F17]" value="Completed">Completed</option>
@@ -3257,7 +3257,7 @@ export default function App() {
             {/* Shown once. There is no way to read it back — only to issue a new one. */}
             {issuedCode ? (
               <div className="flex flex-col gap-3">
-                <p className="text-xs text-[rgba(232,234,230,0.72)] leading-relaxed">
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
                   Give this code to <b className="text-[#E8EAE6]">{issuedCode.name}</b>. It won't be
                   shown again — if it goes missing, issue a new one from the staff list.
                 </p>
@@ -3279,26 +3279,26 @@ export default function App() {
               </div>
             ) : (
             <form onSubmit={handleCreateUserSubmit} className="flex flex-col gap-3">
-              {seatError && <p className="text-xs text-[#FF6B6B]">{seatError}</p>}
+              {seatError && <p className="text-[13px] text-[#FF6B6B]">{seatError}</p>}
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Full Name</label>
-                <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6]" />
+                <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">E-mail Address</label>
-                <input type="email" required placeholder="aiden@true-cars.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-xs text-[#E8EAE6]" />
+                <input type="email" required placeholder="aiden@true-cars.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Account Role</label>
-                  <select value={newUserForm.role} onChange={(e) => setNewUserForm((p) => ({ ...p, role: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-1.5 text-xs text-[#E8EAE6] font-sans">
+                  <select value={newUserForm.role} onChange={(e) => setNewUserForm((p) => ({ ...p, role: e.target.value as any }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[#E8EAE6] font-sans">
                     <option className="bg-[#0B0F17]" value="salesperson">Salesperson</option>
                     <option className="bg-[#0B0F17]" value="manager">Manager</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Contact Number</label>
-                  <input type="text" required placeholder="082 111 2222" value={newUserForm.phone} onChange={(e) => setNewUserForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-2.5 py-1.5 text-xs text-[#E8EAE6]" />
+                  <input type="text" required placeholder="082 111 2222" value={newUserForm.phone} onChange={(e) => setNewUserForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[#0B0F17]/4 border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]" />
                 </div>
               </div>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
@@ -3379,7 +3379,7 @@ export default function App() {
               </div>
               <button 
                 onClick={() => setShowEODReport(false)} 
-                className="p-1.5 rounded-lg bg-[#0B0F17]/2 border border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer transition-colors"
+                className="p-2 rounded-lg bg-[#0B0F17]/2 border border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer transition-colors"
               >
                 <X size={16} />
               </button>
@@ -3388,33 +3388,33 @@ export default function App() {
             {/* Daily Summary Metrics Block */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[12px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Leads Worked</span>
+                <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Leads Worked</span>
                 <span className="text-lg font-semibold text-white">12 Leads</span>
-                <span className="text-[12px] text-[#4ADE9B]">Active response</span>
+                <span className="text-[13px] text-[#4ADE9B]">Active response</span>
               </div>
               <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[12px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Cars Moved Today</span>
+                <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Cars Moved Today</span>
                 <span className="text-lg font-semibold text-white">3 Units</span>
-                <span className="text-[12px] text-[#4ADE9B]">Closed Won status</span>
+                <span className="text-[13px] text-[#4ADE9B]">Closed Won status</span>
               </div>
               <div className="bg-[#4FE3DC]/10 border border-[#4FE3DC]/20 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[12px] font-bold text-[#7FF0EA]  font-mono">EOD Net Profit</span>
+                <span className="text-[13px] font-bold text-[#7FF0EA]  font-mono">EOD Net Profit</span>
                 <span className="text-lg font-semibold text-[#4FE3DC]">R 185,000</span>
-                <span className="text-[12px] text-[#22d3ee]">11.4% avg margin</span>
+                <span className="text-[13px] text-[#4FE3DC]">11.4% avg margin</span>
               </div>
             </div>
 
             {/* Financial and Recon Outlay Details */}
             <div className="bg-[#06080D] rounded-xl border border-white/5 p-4 flex flex-col gap-3">
-              <div className="flex justify-between items-center text-xs border-b border-white/3 pb-2.5">
+              <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Reconditioning Expenditures</span>
                 <span className="font-mono font-bold text-[#FF6B6B]">- R 18,500</span>
               </div>
-              <div className="flex justify-between items-center text-xs border-b border-white/3 pb-2.5">
+              <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Gross Dealership Revenue</span>
                 <span className="font-mono font-bold text-[#E8EAE6]">R 1,515,000</span>
               </div>
-              <div className="flex justify-between items-center text-xs">
+              <div className="flex justify-between items-center text-[13px]">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Unpaid invoices</span>
                 <span className="font-mono font-bold text-[#E8C468]">R {state.invoices.filter(i => i.status === 'Sent').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}</span>
               </div>
@@ -3422,19 +3422,19 @@ export default function App() {
 
             {/* Daily Sold Vehicles Details */}
             <div className="flex flex-col gap-2">
-              <span className="text-[12px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)] font-mono px-1">Sold today</span>
+              <span className="text-[13px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)] font-mono px-1">Sold today</span>
               <div className="flex flex-col gap-2">
-                <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl px-3 py-2.5 flex justify-between items-center text-xs">
+                <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl px-3 py-3 flex justify-between items-center text-[13px]">
                   <div>
                     <span className="font-bold text-[#E8EAE6] block">Toyota Hilux 2.8 GD-6 Legend</span>
-                    <span className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: CT-5112 | Closed by Aiden Fourie</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: CT-5112 | Closed by Aiden Fourie</span>
                   </div>
                   <span className="font-mono font-semibold text-[#4FE3DC]">R 115,000 profit</span>
                 </div>
-                <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl px-3 py-2.5 flex justify-between items-center text-xs">
+                <div className="bg-[#0B0F17]/2 border border-white/5 rounded-xl px-3 py-3 flex justify-between items-center text-[13px]">
                   <div>
                     <span className="font-bold text-[#E8EAE6] block">Volkswagen Golf 8 GTI</span>
-                    <span className="text-[12px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: JHB-8319 | Closed by Sipho Dlamini</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: JHB-8319 | Closed by Sipho Dlamini</span>
                   </div>
                   <span className="font-mono font-semibold text-[#4FE3DC]">R 70,000 profit</span>
                 </div>
@@ -3442,11 +3442,11 @@ export default function App() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end gap-2.5 border-t border-[#4FE3DC]/20 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 border-t border-[#4FE3DC]/20 pt-4">
               <button 
                 type="button" 
                 onClick={() => setShowEODReport(false)} 
-                className="px-4 py-2 bg-[#0B0F17]/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer active:scale-95 transition-all text-center"
+                className="px-4 py-2 bg-[#0B0F17]/5 hover:bg-white/10 rounded-xl text-[13px] font-semibold text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer active:scale-95 transition-all text-center"
               >
                 Close Report
               </button>
@@ -3457,7 +3457,7 @@ export default function App() {
                   addNotification("EOD Summary Dispatched", "The compiled daily operations summary has been securely emailed to dealers@real-cars.co.za and all stakeholders.", "info");
                   setShowEODReport(false);
                 }} 
-                className="px-4 py-2 bg-gradient-to-r from-[#4FE3DC]/15 to-[#4FE3DC]/30 border border-[#4FE3DC]/45 text-[#7FF0EA] hover:bg-[#4FE3DC]/40 rounded-xl text-xs font-bold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+                className="px-4 py-2 bg-gradient-to-r from-[#4FE3DC]/15 to-[#4FE3DC]/30 border border-[#4FE3DC]/45 text-[#7FF0EA] hover:bg-[#4FE3DC]/40 rounded-xl text-[13px] font-bold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
               >
                 📧 Email to Stakeholders
               </button>
@@ -3465,7 +3465,7 @@ export default function App() {
               <button 
                 type="button" 
                 onClick={handleExportCSV} 
-                className="px-4 py-2 bg-[#4FE3DC] text-[#06080D] font-semibold rounded-xl text-xs shadow-lg hover:bg-[#4FE3DC]/90 cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+                className="px-4 py-2 bg-[#4FE3DC] text-[#06080D] font-semibold rounded-xl text-[13px] shadow-lg hover:bg-[#4FE3DC]/90 cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
               >
                 ⬇️ Export Spreadsheet (CSV)
               </button>
@@ -3480,7 +3480,7 @@ export default function App() {
         {notifications.map(notif => (
           <div 
             key={notif.id} 
-            className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-xl animate-in slide-in-from-right-10 duration-500 flex flex-col gap-1.5 transition-all ${
+            className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-xl animate-in slide-in-from-right-10 duration-500 flex flex-col gap-2 transition-all ${
               notif.type === 'warning' 
                 ? 'bg-[#F59E0B]/20 border-[#F59E0B]/30 text-[#FBBF24]' 
                 : 'bg-[#4FE3DC]/20 border-[#4FE3DC]/30 text-[#60A5FA]'
@@ -3498,7 +3498,7 @@ export default function App() {
                 <X size={14} />
               </button>
             </div>
-            <div className="text-xs font-medium leading-relaxed text-white/90 pr-2">
+            <div className="text-[13px] font-medium leading-relaxed text-white/90 pr-2">
               {notif.message}
             </div>
             <div className="h-0.5 bg-[#0B0F17]/10 rounded-full overflow-hidden mt-1">

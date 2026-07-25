@@ -50,28 +50,28 @@
   --color-teal-800: #22807C;
   --color-teal-900: #175A57;
   --color-teal-950: #0C302E;
-  --color-sky-50: #EAF2FE;
-  --color-sky-100: #D2E4FD;
-  --color-sky-200: #A8CAFB;
-  --color-sky-300: #7DB0F9;
-  --color-sky-400: #4D9BFF;
-  --color-sky-500: #2B82F5;
-  --color-sky-600: #1466E0;
-  --color-sky-700: #1152B4;
-  --color-sky-800: #0D3E87;
-  --color-sky-900: #0A2C5F;
-  --color-sky-950: #061A3A;
-  --color-blue-50: #EAF2FE;
-  --color-blue-100: #D2E4FD;
-  --color-blue-200: #A8CAFB;
-  --color-blue-300: #7DB0F9;
-  --color-blue-400: #4D9BFF;
-  --color-blue-500: #2B82F5;
-  --color-blue-600: #1466E0;
-  --color-blue-700: #1152B4;
-  --color-blue-800: #0D3E87;
-  --color-blue-900: #0A2C5F;
-  --color-blue-950: #061A3A;
+  --color-sky-50: #EEF2F5;
+  --color-sky-100: #DCE3EA;
+  --color-sky-200: #BCC8D4;
+  --color-sky-300: #9FB0C0;
+  --color-sky-400: #8AA2B8;
+  --color-sky-500: #7A93AB;
+  --color-sky-600: #63798F;
+  --color-sky-700: #4C5D6E;
+  --color-sky-800: #36424E;
+  --color-sky-900: #242C34;
+  --color-sky-950: #161B20;
+  --color-blue-50: #EEF2F5;
+  --color-blue-100: #DCE3EA;
+  --color-blue-200: #BCC8D4;
+  --color-blue-300: #9FB0C0;
+  --color-blue-400: #8AA2B8;
+  --color-blue-500: #7A93AB;
+  --color-blue-600: #63798F;
+  --color-blue-700: #4C5D6E;
+  --color-blue-800: #36424E;
+  --color-blue-900: #242C34;
+  --color-blue-950: #161B20;
   --color-cyan-50: #EAFBFA;
   --color-cyan-100: #CFF6F3;
   --color-cyan-200: #A8EFEA;
@@ -167,10 +167,12 @@
   --color-rose-950: #241414;
 
   /* TruSaaS rebrand: cyan accent — remap legacy indigo/purple/violet utilities */
-  --color-indigo-50: #ecfeff; --color-indigo-100: #cffafe; --color-indigo-200: #a5f3fc;
-  --color-indigo-300: #67e8f9; --color-indigo-400: #22d3ee; --color-indigo-500: #06b6d4;
-  --color-indigo-600: #0891b2; --color-indigo-700: #0e7490; --color-indigo-800: #155e75;
-  --color-indigo-900: #164e63; --color-indigo-950: #083344;
+  /* Was still stock Tailwind cyan (#22d3ee), so indigo utilities rendered a
+     different accent from the cyan ones beside them. */
+  --color-indigo-50: #EAFBFA; --color-indigo-100: #CFF6F3; --color-indigo-200: #A8EFEA;
+  --color-indigo-300: #7FF0EA; --color-indigo-400: #4FE3DC; --color-indigo-500: #4FE3DC;
+  --color-indigo-600: #3ECFC8; --color-indigo-700: #2FB3AD; --color-indigo-800: #22807C;
+  --color-indigo-900: #175A57; --color-indigo-950: #0C302E;
   --color-purple-50: #EAFBFA; --color-purple-100: #CFF6F3; --color-purple-200: #A8EFEA;
   --color-purple-300: #7FF0EA; --color-purple-400: #4FE3DC; --color-purple-500: #4FE3DC;
   --color-purple-600: #3ECFC8; --color-purple-700: #2FB3AD; --color-purple-800: #22807C;
@@ -359,9 +361,11 @@ h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; 
   50% { opacity: .5; transform: scale(0.75); }
 }
 
-.animate-pulse-custom {
-  animation: demoPulse 1.8s ease-in-out infinite;
-}
+/* Was infinite. A desk app is stared at for a whole shift; a shape that never
+   settles is re-acquired by the eye all afternoon. Opt in with .is-working
+   where something is genuinely in progress. */
+.animate-pulse-custom { animation: none; }
+.animate-pulse-custom.is-working { animation: demoPulse 1.8s ease-in-out infinite; }
 
 @utility btn {
   @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-medium text-[13px] transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
@@ -460,4 +464,33 @@ select:focus-visible {
   color: var(--accent-hover);
   border-color: var(--accent);
   background: var(--accent-surface);
+}
+
+
+/* ── Text on an accent fill ──────────────────────────────────────────────
+   These ramp classes all resolve to brand cyan above, so they paint a LIGHT
+   surface; components put pale text on them, which lands near 1.3:1.
+   Unlayered so it beats the Tailwind text utility. Opacity variants such as
+   bg-cyan-600/20 are a different class token and correctly unmatched. */
+.bg-cyan-400, .bg-cyan-500, .bg-cyan-600,
+.bg-teal-400, .bg-teal-500, .bg-teal-600,
+.bg-emerald-400, .bg-emerald-500, .bg-emerald-600,
+.bg-green-400, .bg-green-500, .bg-green-600,
+.bg-indigo-400, .bg-indigo-500, .bg-indigo-600,
+.bg-purple-400, .bg-purple-500, .bg-purple-600,
+.bg-violet-400, .bg-violet-500, .bg-violet-600 {
+  color: var(--text-on-accent);
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────
+   Absent from this app entirely, in the product someone sits in front of all
+   day. Transitions stay near-instant rather than removed, so state changes
+   still register. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

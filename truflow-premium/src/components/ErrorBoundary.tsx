@@ -36,14 +36,14 @@ export default class ErrorBoundary extends Component<
         <div className="max-w-md w-full flex flex-col gap-4 rounded-[18px] border border-[rgba(232,234,230,0.14)] bg-[rgba(232,234,230,0.055)] p-6">
           <div>
             <h2 className="text-[20px] font-semibold tracking-[-0.01em]">Something went wrong</h2>
-            <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-1.5 leading-relaxed">
+            <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-2 leading-relaxed">
               This screen hit an error and stopped. Your data is safe — nothing was saved or
               changed. Reloading usually clears it.
             </p>
           </div>
 
           {/* The message, not the stack. Enough for you to tell us what broke. */}
-          <p className="text-[12px] font-mono text-[rgba(232,234,230,0.55)] bg-[#06080D] border border-[rgba(232,234,230,0.14)] rounded-lg px-3 py-2 break-words">
+          <p className="text-[13px] font-mono text-[rgba(232,234,230,0.55)] bg-[#06080D] border border-[rgba(232,234,230,0.14)] rounded-lg px-3 py-2 break-words">
             {error.message || "Unknown error"}
           </p>
 

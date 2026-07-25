@@ -46,10 +46,10 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
   return (
     <div className="card mt-6">
       <div className="card-header flex justify-between items-center px-4 py-3 border-b border-[rgba(126,164,214,0.1)]">
-        <h3 className="font-semibold text-sm">Interactive Live Document Preview</h3>
+        <h3 className="font-semibold text-[16px]">Interactive Live Document Preview</h3>
         <button
           onClick={handlePrint}
-          className="btn btn-secondary btn-sm flex items-center gap-1.5"
+          className="btn btn-secondary btn-sm flex items-center gap-2"
         >
           <Printer size={13} /> Print / Save PDF
         </button>
@@ -64,12 +64,12 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
             </div>
             <div className="text-right">
               <div className="text-lg font-semibold tracking-tight text-gray-900">TAX INVOICE</div>
-              <div className="text-xs font-mono font-bold text-gray-600">{invoice.invoiceNumber}</div>
+              <div className="text-[13px] font-mono font-bold text-gray-600">{invoice.invoiceNumber}</div>
             </div>
           </div>
 
           {/* Metadata Grid */}
-          <div className="grid grid-cols-3 gap-6 mb-8 text-xs text-gray-700">
+          <div className="grid grid-cols-3 gap-6 mb-8 text-[13px] text-gray-700">
             <div>
               <div className="font-bold text-gray-900 mb-1">Merchant Provider:</div>
               <div>Johannesburg Auto (Pty) Ltd</div>
@@ -98,7 +98,7 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
           </div>
 
           {/* Table */}
-          <table className="w-full border-collapse mb-6 text-xs text-gray-800">
+          <table className="w-full border-collapse mb-6 text-[13px] text-gray-800">
             <thead>
               <tr className="border-b-2 border-white/10 bg-gray-50">
                 <th className="text-left py-2 px-3 font-bold text-gray-700 text-[13px]">Asset Specifications Summary</th>
@@ -127,7 +127,7 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
           </table>
 
           {/* Totals */}
-          <div className="ml-auto w-64 text-right text-xs text-gray-700 flex flex-col gap-1.5 border-t border-gray-100 pt-4">
+          <div className="ml-auto w-64 text-right text-[13px] text-gray-700 flex flex-col gap-2 border-t border-gray-100 pt-4">
             <div className="flex justify-between">
               <span>Subtotal (Ex VAT):</span>
               <span className="font-mono">{formatZAR(exVat)}</span>

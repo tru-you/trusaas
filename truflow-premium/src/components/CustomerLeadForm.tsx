@@ -42,7 +42,7 @@ export default function CustomerLeadForm({ dealershipId, vehicles, onSuccess }: 
       <div className="card p-6 flex flex-col items-center justify-center text-center gap-4">
         <CheckCircle className="text-[#4ADE9B]" size={48} />
         <h2 className="text-xl font-bold text-white">Enquiry Received!</h2>
-        <p className="text-sm text-[rgba(232,234,230,0.72)]">Our sales team will get back to you shortly.</p>
+        <p className="text-[16px] text-[rgba(232,234,230,0.72)]">Our sales team will get back to you shortly.</p>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export default function CustomerLeadForm({ dealershipId, vehicles, onSuccess }: 
       </button>
       
       {status === 'error' && (
-        <div className="flex items-center gap-2 text-xs text-[#FF6B6B] mt-2">
+        <div className="flex items-center gap-2 text-[13px] text-[#FF6B6B] mt-2">
             <AlertTriangle size={14} /> Failed to send enquiry. Please try again.
         </div>
       )}
