@@ -96,12 +96,12 @@ services:
   #
   # truflow-light/ is still in the repo pending deletion.
 
-  # ── 2b. TruLive — live guided vehicle walkaround (WebRTC, no app for buyer) ─
+  # ── 2b. TruView — live guided vehicle walkthrough (WebRTC, no app for buyer) ─
   - type: web
     name: trusaas-live
     runtime: node
     plan: starter
-    rootDir: trulive
+    rootDir: truview
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
@@ -112,15 +112,15 @@ services:
       # local summary if unset. Set the key in the Render dashboard.
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: TRULIVE_MODEL
+      - key: TRUVIEW_MODEL
         value: claude-sonnet-5
 
-  # ── 2c. TruValue — live video trade-in appraisal (customer films, dealer prices)
+  # ── 2c. TruTrade — live video trade-in appraisal (customer films, dealer prices)
   - type: web
     name: trusaas-value
     runtime: node
     plan: starter
-    rootDir: truvalue
+    rootDir: trutrade
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
@@ -131,7 +131,7 @@ services:
       # write-up. Never prices a vehicle; the dealer sets the TP.
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: TRUVALUE_MODEL
+      - key: TRUTRADE_MODEL
         value: claude-sonnet-5
 
   # ── 3. TruFlow Premium — full DMS / media / recon ─────────────────────────

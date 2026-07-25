@@ -21,6 +21,7 @@ interface InventoryListProps {
   onDeleteVehicle: (id: string) => void;
   onExportToDms?: (vehicle: Vehicle) => Promise<DmsExportResult>;
   onOpenChecklist?: (vehicle: Vehicle) => void;
+  onTagDamage?: (vehicle: Vehicle) => void;
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
@@ -42,6 +43,7 @@ export default function InventoryList({
   onDeleteVehicle,
   onExportToDms,
   onOpenChecklist,
+  onTagDamage,
   onUpdateVehicle,
   syncStatus,
   onForceSync
@@ -852,10 +854,24 @@ export default function InventoryList({
                       {onOpenChecklist && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onOpenChecklist(vehicle); }}
-                          title="Inspector questionnaire — leaks, hidden dents, diagnostics, documents"
+                          title="Full inspection — rate every part, check what works, comment"
                           className="flex items-center gap-1 text-[13px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer whitespace-nowrap bg-cyan-500/10 px-2 py-1.5 rounded border border-cyan-500/20 transition-colors"
                         >
-                          <BookOpen size={10} /> Checklist
+                          <BookOpen size={10} /> Inspect
+                        </button>
+                      )}
+
+                      {takenCount > 0 && onTagDamage && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onTagDamage(vehicle); }}
+                          title="Tag damage directly on the photos — dent, scratch, rust with location and severity"
+                          className="flex items-center gap-1 text-[13px] font-bold text-amber-300 hover:text-amber-200 cursor-pointer whitespace-nowrap bg-amber-500/10 px-2 py-1.5 rounded border border-amber-500/25 transition-colors"
+                        >
+                          <AlertCircle size={10} /> Tag damage
+                          {(() => {
+                            const n = Object.values(vehicle.damageFindings || {}).reduce((a, l) => a + l.length, 0);
+                            return n > 0 ? <span className="ml-0.5">{n}</span> : null;
+                          })()}
                         </button>
                       )}
 
@@ -1149,25 +1165,25 @@ export default function InventoryList({
             {/* AI Core Tuning */}
             <div className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
               <div className="p-3 border-b border-neutral-850 bg-neutral-900/40 flex items-center justify-between">
-                <span className="text-[13px] font-bold text-neutral-400 ">AI Capture Intelligence</span>
-                <Sparkles size={11} className="text-indigo-400" />
+                <span className="text-[13px] font-bold text-neutral-400 ">Capture quality</span>
+                <Camera size={11} className="text-cyan-400" />
               </div>
               <div className="p-4 space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <p className="text-xs font-bold text-neutral-200">AI Quality Threshold</p>
-                    <span className="text-xs font-mono text-indigo-400 font-bold">{aiThreshold}%</span>
+                    <p className="text-xs font-bold text-neutral-200">Minimum photo quality</p>
+                    <span className="text-xs font-mono text-cyan-400 font-bold">{aiThreshold}%</span>
                   </div>
-                  <input 
-                    type="range" 
-                    min="50" 
-                    max="98" 
+                  <input
+                    type="range"
+                    min="50"
+                    max="98"
                     value={aiThreshold}
                     onChange={(e) => setAiThreshold(Number(e.target.value))}
-                    className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                   />
                   <p className="text-[12px] text-neutral-500 leading-relaxed italic">
-                    Images scoring below this threshold will be flagged for immediate re-capture. Higher thresholds ensure "Perfect" listings but may require more capture attempts.
+                    Photos that come out too dark or blurry to below this level get flagged for a re-take, so every shot on the report is clear.
                   </p>
                 </div>
               </div>
@@ -1225,7 +1241,7 @@ export default function InventoryList({
             </div>
 
             <div className="pt-8 pb-4 flex flex-col items-center opacity-40">
-              <span className="text-[12px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaas</span>
+              <span className="text-[12px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaaS</span>
             </div>
           </div>
         )}

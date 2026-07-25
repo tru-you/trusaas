@@ -34,6 +34,8 @@ import {
   MessageCircle,
   Copy,
   FileText,
+  Lock,
+  ArrowUpRight,
 } from "lucide-react";
 
 import {
@@ -86,6 +88,7 @@ import {
   stockWidgetSnippet,
 } from "./lib/productConfig";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
+import { TRUFLOW_PREMIUM_URL } from "./lib/ecosystem";
 import {
   getDealerWaNumber,
   setDealerWaNumber,
@@ -668,10 +671,10 @@ export default function App() {
             <img src={logo} alt="TruFlow Lite" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
           <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="font-mono text-[12px] text-[#4FE3DC] hover:underline tracking-widest mt-2 ">true-cars.co.za</a>
-          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[12px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 ">TruSaas platform</a>
+          <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="font-mono text-[12px] text-[#67e8f9]/90 hover:underline tracking-widest mt-1 ">TruSaaS platform</a>
           <div className="flex gap-2 mt-2">
             <a href="https://true-cars.co.za" target="_blank" rel="noopener noreferrer" className="text-[12px] font-mono  px-2 py-1 rounded-lg bg-[#4FE3DC]/12 text-[#4FE3DC] border border-[#4FE3DC]/25 hover:bg-[#4FE3DC]/2">Showroom</a>
-            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[12px] font-mono  px-2 py-1 rounded-lg bg-[#22D3EE]/15 text-[#67E8F9] border border-[#22D3EE]/30 hover:bg-[#22D3EE]/25">TruSaas</a>
+            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="text-[12px] font-mono  px-2 py-1 rounded-lg bg-[#22D3EE]/15 text-[#67E8F9] border border-[#22D3EE]/30 hover:bg-[#22D3EE]/25">TruSaaS</a>
           </div>
         </div>
 
@@ -2326,35 +2329,52 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4 opacity-50">
-                  <div className="p-2 rounded-lg bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10">
-                    <X size={16} />
+                <div className="feature-gated flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4">
+                  <div className="feature-gated-label p-2 rounded-lg bg-white/5 border border-white/10">
+                    <Lock size={16} />
                   </div>
                   <div>
                     <span className="font-bold text-sm text-[#E8EAE6] block">Not in Lite: Media hub</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Premium-only stock media & web readiness board.</span>
+                    <span className="feature-gated-label text-[13px] mt-0.5 block">Premium-only stock media & web readiness board.</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4 opacity-50">
-                  <div className="p-2 rounded-lg bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10">
-                    <X size={16} />
+                <div className="feature-gated flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4">
+                  <div className="feature-gated-label p-2 rounded-lg bg-white/5 border border-white/10">
+                    <Lock size={16} />
                   </div>
                   <div>
                     <span className="font-bold text-sm text-[#E8EAE6] block">Not in Lite: Full recon suite</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Deep accounting & multi-portal syndication → Premium.</span>
+                    <span className="feature-gated-label text-[13px] mt-0.5 block">Deep accounting & multi-portal syndication → Premium.</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4 md:col-span-2 opacity-50">
-                  <div className="p-2 rounded-lg bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10">
-                    <X size={16} />
+                <div className="feature-gated flex items-start gap-3 bg-[#0B0F17]/2 border border-white/5 rounded-xl p-4 md:col-span-2">
+                  <div className="feature-gated-label p-2 rounded-lg bg-white/5 border border-white/10">
+                    <Lock size={16} />
                   </div>
                   <div>
                     <span className="font-bold text-sm text-[#E8EAE6] block">Not in Lite: Portal syndication</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">AutoTrader / Cars.co.za multi-portal sync is Premium. Lite still has public stock API for your own site.</span>
+                    <span className="feature-gated-label text-[13px] mt-0.5 block">AutoTrader / Cars.co.za multi-portal sync is Premium. Lite still has public stock API for your own site.</span>
                   </div>
                 </div>
+              </div>
+
+              {/* The gated cards above are deliberately quiet. This is the one
+                  element in the section that earns the accent — §1.6. */}
+              <div className="card-footer border-t border-white/5 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                  Premium adds the media hub, full recon ledger and multi-portal syndication.
+                </p>
+                <a
+                  href={TRUFLOW_PREMIUM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="upgrade-cta inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-[13px] font-semibold whitespace-nowrap transition-colors cursor-pointer"
+                >
+                  Compare with Premium
+                  <ArrowUpRight size={14} />
+                </a>
               </div>
             </div>
 

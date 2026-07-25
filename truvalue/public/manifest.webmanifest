@@ -1,6 +1,6 @@
 {
-  "name": "TruValue — Trade-In Appraisal",
-  "short_name": "TruValue",
+  "name": "TruTrade — Trade-In Appraisal",
+  "short_name": "TruTrade",
   "description": "Live, guided vehicle walkthroughs over a secure link.",
   "start_url": "/",
   "scope": "/",

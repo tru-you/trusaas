@@ -1,3 +1,4 @@
+@import "../../packages/tokens/tru-tokens.css";
 @import "tailwindcss";
 @import "./brand.css";
 
@@ -192,45 +193,52 @@
   --font-serif: "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-bg: #070d15;
-  --color-card: #0f1826;
-  --color-card-hover: #16212f;
-  --color-border-tc: rgba(126, 164, 214, 0.10);
-  --color-border-tc-hover: rgba(126, 164, 214, 0.22);
-  --color-primary-tc: #0891b2;
-  --color-primary-light-tc: #22d3ee;
-  --color-secondary-tc: #C9A24B;
-  --color-accent-tc: #15C7C0;
-  --color-teal-tc: #15C7C0;
-  --color-teal-bright-tc: #4FE3DC;
-  --color-gold-tc: #C9A24B;
-  --color-gold-light-tc: #E7CD84;
-  --color-text-tc: #E8EEF6;
-  --color-text-dim-tc: #9DB0C6;
-  --color-text-faint-tc: #5F7590;
-  --color-success-tc: #35C46B;
-  --color-warning-tc: #E7B24B;
-  --color-danger-tc: #F0555A;
-  --color-info-tc: #4D9BFF;
+  /* Legacy names kept so existing utility classes resolve — all now point at
+     the single brand palette rather than the old gold/blue pairing. Matches
+     TruFlow Premium; Lite is the same app at a lower tier, not a fork. */
+  --color-bg: #06080D;
+  --color-card: #0B0F17;
+  --color-card-hover: #121826;
+  --color-border-tc: rgba(232, 234, 230, 0.14);
+  --color-border-tc-hover: rgba(79, 227, 220, 0.35);
+  --color-primary-tc: #4FE3DC;
+  --color-primary-light-tc: #7FF0EA;
+  --color-secondary-tc: #4FE3DC;
+  --color-accent-tc: #4FE3DC;
+  --color-teal-tc: #4FE3DC;
+  --color-teal-bright-tc: #7FF0EA;
+  --color-gold-tc: #4FE3DC;
+  --color-gold-light-tc: #7FF0EA;
+  --color-text-tc: #E8EAE6;
+  --color-text-dim-tc: rgba(232, 234, 230, 0.72);
+  --color-text-faint-tc: rgba(232, 234, 230, 0.55);
+  --color-success-tc: #4ADE9B;
+  --color-warning-tc: #E8C468;
+  --color-danger-tc: #FF6B6B;
+  --color-info-tc: #4FE3DC;
 }
 
+/* Legacy alias block. Still carried the pre-rebrand blue/gold pairing while
+   Premium's equivalent was migrated — same app, so it now matches Premium.
+   --accent is deliberately NOT redefined here: it is an L2 semantic token
+   owned by tru-tokens.css, and a local :root redeclaration silently shadows
+   every per-tier override. Alias it instead. */
 :root {
-  --bg: #070d15;
-  --card: #0f1826;
-  --card-hover: #16212f;
-  --border: rgba(126,164,214,0.10);
-  --border-hover: rgba(126,164,214,0.22);
-  --primary: #1466E0;
-  --primary-light: #4D9BFF;
-  --secondary: #C9A24B;
-  --accent: #15C7C0;
-  --teal: #15C7C0;
-  --teal-bright: #4FE3DC;
-  --gold: #C9A24B;
-  --gold-light: #E7CD84;
-  --text: #E8EEF6;
-  --text-dim: #9DB0C6;
-  --text-faint: #5F7590;
+  --bg: #06080D;
+  --card: #0B0F17;
+  --card-hover: #121826;
+  --border: rgba(232,234,230,0.14);
+  --border-hover: rgba(79,227,220,0.35);
+  --primary: #4FE3DC;
+  --primary-light: #7FF0EA;
+  --secondary: #4FE3DC;
+  --teal: #4FE3DC;
+  --teal-bright: #7FF0EA;
+  --gold: #4FE3DC;
+  --gold-light: #7FF0EA;
+  --text: #E8EAE6;
+  --text-dim: rgba(232, 234, 230, 0.72);
+  --text-faint: rgba(232, 234, 230, 0.55);
   --success: #35C46B;
   --success-bg: rgba(53,196,107,0.12);
   --warning: #E7B24B;
@@ -510,10 +518,39 @@ body::after {
 }
 
 /* Keyboard focus — was invisible across every button. */
-:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
-.btn-primary:focus-visible, .on-fill:focus-visible { outline-color: var(--white); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px; }
+.btn-primary:focus-visible, .on-fill:focus-visible { outline-color: var(--text-primary); }
 
 /* Text on a light/cyan fill: ink, with a letterpress lift. */
-.on-fill, .btn-primary { color: var(--ink) !important; text-shadow: 0 1px 0 rgba(255,255,255,0.38); }
+.on-fill, .btn-primary { color: var(--text-on-accent) !important; text-shadow: 0 1px 0 rgba(255,255,255,0.38); }
 
-body { background: var(--ink); color: var(--white); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+body { background: var(--bg-base); color: var(--text-primary); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+
+
+/* ── TruFlow tier gating (§1.6) ──────────────────────────────────────────
+   Premium is a feature tier of the same app, so Lite renders the same
+   surfaces with some of them closed off. Cyan is NOT used to mark a
+   locked feature — cyan means "you are here", and spending it on "you
+   cannot have this" destroys the only wayfinding signal the app has.
+   Locked reads as lock icon + muted + reduced opacity; the upgrade CTA
+   is the one thing here that earns the accent, because it genuinely is
+   where the eye should go next. */
+[data-app="truflow"] .feature-gated {
+  opacity: 0.35;
+  pointer-events: none;
+  position: relative;
+  user-select: none;
+}
+[data-app="truflow"] .feature-gated-label {
+  color: var(--text-muted);
+}
+[data-app="truflow"] .upgrade-cta {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: transparent;
+}
+[data-app="truflow"] .upgrade-cta:hover {
+  color: var(--accent-hover);
+  border-color: var(--accent);
+  background: var(--accent-surface);
+}

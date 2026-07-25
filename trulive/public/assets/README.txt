@@ -1,7 +1,7 @@
 TruLive brand assets
 ====================
 
-trusaas-lockup-dark.png   — shared TruSaas suite lockup (silver "Tru" + teal "Saas",
+trusaas-lockup-dark.png   — shared TruSaaS suite lockup (silver "Tru" + teal "Saas",
                             "Future Automotive"). Used in the page footers. Copied from
                             the TruInspect/TruLens apps — keep in sync with those.
 

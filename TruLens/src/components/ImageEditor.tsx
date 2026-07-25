@@ -33,6 +33,11 @@ export default function ImageEditor({
   const [maskThreshold, setMaskThreshold] = React.useState<number>(50); // Cutout sensitivity
   const [isMaskActive, setIsMaskActive] = React.useState<boolean>(false);
 
+  // Proofing toggle: cycle black (void) → grey (surround) → white (proof/buyer view)
+  const [proofMode, setProofMode] = React.useState<'surround' | 'void' | 'proof'>('surround');
+  const proofCycle: Record<string, 'void' | 'surround' | 'proof'> = { surround: 'proof', proof: 'void', void: 'surround' };
+  const proofLabel: Record<string, string> = { surround: 'Grey', proof: 'White · buyer view', void: 'Black' };
+
   // Gemini state
   const [isAnalyzing, setIsAnalyzing] = React.useState<boolean>(false);
   const [aiReport, setAiReport] = React.useState<QualityReport['aiAnalysis'] | null>(null);
@@ -242,20 +247,28 @@ export default function ImageEditor({
       {/* Primary Scrollable Workspace */}
       <div className="flex-1 overflow-y-auto pb-4 space-y-4">
         
-        {/* Render Canvas preview viewport */}
-        <div className="relative w-full aspect-[4/3] bg-neutral-950 flex items-center justify-center overflow-hidden border-b border-neutral-850">
-          <canvas 
-            ref={canvasRef} 
-            className="w-full h-full object-contain max-h-[300px]" 
+        {/* Render Canvas preview viewport — sterile zone, no cyan, no blur */}
+        <div
+          className="photo-review relative w-full aspect-[4/3] flex items-center justify-center overflow-hidden border-b border-neutral-850 transition-colors duration-200"
+          data-proof={proofMode}
+        >
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full object-contain max-h-[300px]"
           />
-          
-          <span className="absolute bottom-3 left-3 bg-neutral-950/80 px-2 py-1 rounded text-[12px] font-mono tracking-wider text-neutral-400 border border-neutral-800">
-            Preview Composite (Composite Mode)
-          </span>
 
-          {/* Quick Backdrop state badge */}
-          <span className="absolute bottom-3 right-3 bg-indigo-950/80 px-2 py-1 rounded text-[12px] font-bold tracking-wider text-indigo-400 border border-indigo-900 flex items-center gap-1 animate-pulse">
-            <Wand2 size={9} /> {selectedBgId === 'none' ? 'As shot' : selectedBgId === 'cutout' ? 'Cutout' : 'Studio backdrop'}
+          {/* Proofing toggle — top-right, outside the image frame */}
+          <button
+            type="button"
+            onClick={() => setProofMode(proofCycle[proofMode])}
+            title="Cycle proof background: grey → white (buyer view) → black"
+            className="absolute top-2 right-2 px-2 py-1 rounded text-[11px] font-mono bg-black/60 border border-white/20 text-white/70 hover:text-white transition-colors"
+          >
+            ◐ {proofLabel[proofMode]}
+          </button>
+
+          <span className="absolute bottom-3 left-3 bg-black/70 px-2 py-1 rounded text-[12px] font-mono tracking-wider text-neutral-400 border border-white/10">
+            Preview · {selectedBgId === 'none' ? 'As shot' : selectedBgId === 'cutout' ? 'Cutout' : 'Studio backdrop'}
           </span>
         </div>
 

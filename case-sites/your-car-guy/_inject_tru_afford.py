@@ -24,7 +24,7 @@ CONFIGS = [
 ]
 
 SNIP = """
-<!-- TruAfford · soft affordability (TrueSaas) — all showrooms -->
+<!-- TruAfford · soft affordability (TruSaaS) — all showrooms -->
 <script
   src="{src}"
   data-dealer="{dealer}"

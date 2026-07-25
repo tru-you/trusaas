@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-app="trutrade">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no" />
-<title>TruValue — Live Video Trade-In Appraisal</title>
+<title>TruTrade — Live Video Trade-In Appraisal</title>
+<link rel="stylesheet" href="/tru-tokens.css">
 <link rel="manifest" href="/manifest.webmanifest" />
 <meta name="theme-color" content="#0a0a0a" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="TruValue" />
+<meta name="apple-mobile-web-app-title" content="TruTrade" />
 <link rel="icon" href="/icon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -245,6 +246,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   .po-foot{margin-top:20px;padding-top:9px;border-top:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;font-size:9.5px;color:#777;font-family:'JetBrains Mono',monospace}
   .po-foot img{height:20px;width:auto}
 }
+/* ── Live tier stream-surface (§1.4) — token-driven ── */
+.stream-surface{background:var(--video-surround,#1a1a1a);backdrop-filter:none;-webkit-backdrop-filter:none}
+.stream-surface :where(*){--accent:transparent}
+.stream-surface--fullscreen{background:var(--video-void,#000)}
+.degraded-banner{display:none;position:absolute;top:56px;left:12px;right:12px;background:rgba(13,10,4,.93);border:1px solid var(--state-degraded,var(--amber));border-radius:10px;padding:8px 13px;font-size:12.5px;color:var(--state-degraded,var(--amber));z-index:20;text-align:center;pointer-events:none}
+.degraded-banner.show{display:block}
 </style>
 </head>
 <body>
@@ -252,7 +259,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
   <!-- LANDING (dealer) -->
   <section class="screen active landing" id="s-landing">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruValue" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Value</span></h1></div></div>
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
     <p class="tag">Live video trade-in appraisals. The customer shows you their car, you ask the questions, and issue a trade price — subject to viewing.</p>
     <div class="pill-row">
       <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Secure link</div>
@@ -264,7 +271,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <div><h3>Start a trade-in appraisal</h3><p>Send the customer a link and appraise live</p></div>
       <div class="arrow"><svg width="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
     </button>
-    <div class="foot"><img class="suite-lockup" src="/assets/trusaas-lockup.png" alt="TruSaas" onerror="this.style.display='none'"><div class="label" style="margin-top:8px">Secured by <b>AI Audit Core</b></div></div>
+    <div class="foot"><img class="suite-lockup" src="/assets/trusaas-lockup.png" alt="TruSaaS" onerror="this.style.display='none'"><div class="label" style="margin-top:8px">Secured by <b>AI Audit Core</b></div></div>
   </section>
 
   <!-- SETUP (dealer) -->
@@ -294,7 +301,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
   <!-- JOIN (customer) -->
   <section class="screen join" id="s-join">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruValue" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Value</span></h1></div></div>
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
     <p class="tag" style="margin-top:-4px">The dealer would like to appraise your vehicle over a short video call:</p>
     <div class="veh-card">
       <div class="vt" id="j-veh">Loading…</div>
@@ -303,7 +310,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     </div>
     <div class="secured"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Secure single-use link · opens right here in your browser, nothing to install</div>
     <button class="go-btn" onclick="beginSession('customer')"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.4"><path d="M23 7l-7 5 7 5V7Z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Start the call</button>
-    <div class="foot"><img class="suite-lockup" src="/assets/trusaas-lockup.png" alt="TruSaas" onerror="this.style.display='none'"></div>
+    <div class="foot"><img class="suite-lockup" src="/assets/trusaas-lockup.png" alt="TruSaaS" onerror="this.style.display='none'"></div>
   </section>
 
   <!-- LIVE -->
@@ -314,8 +321,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <button class="tab" id="tab-q" onclick="openSheet('questions')"><svg width="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>Questions <span class="n" id="q-count">0/9</span></button>
       <button class="tab" id="tab-d" onclick="openSheet('defects')"><svg width="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>Defects <span class="n" id="d-count">0</span></button>
     </div>
-    <div class="stage">
+    <div class="stage stream-surface">
       <video id="mainVideo" autoplay playsinline></video>
+      <div class="degraded-banner" id="degraded-banner">Connection quality reduced — request a still photo for detail.</div>
       <div class="novid" id="novid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M23 7l-7 5 7 5V7Z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div style="font-size:13px" id="novid-txt">Starting camera…</div></div>
       <div class="conn" id="conn"><div class="cd"></div><span id="conn-txt">Connecting…</span></div>
       <div class="pip"><video id="pipVideo" autoplay playsinline muted></video><div class="lab" id="pip-lab">YOU</div></div>
@@ -360,7 +368,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     </div>
     <div class="field"><span class="label">Offer valid for (days)</span><input id="in-valid" type="number" value="7" min="1" max="60" /></div>
     <div class="field"><span class="label">Conditions</span><textarea id="in-cond" rows="4">Subject to physical viewing and verification. Assumes no undisclosed accident damage, mechanical faults or outstanding finance beyond that disclosed. Subject to roadworthy inspection and confirmation of service history and settlement figure.</textarea></div>
-    <div class="priv" style="color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>You set this price. TruValue never estimates or suggests a value.</div>
+    <div class="priv" style="color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>You set this price. TruTrade never estimates or suggests a value.</div>
     <button class="go-btn" onclick="issueOffer()"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Issue offer</button>
   </section>
 
@@ -391,8 +399,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <!-- PRINTABLE OFFER -->
 <div id="print-offer">
   <div class="po-head">
-    <img src="/assets/trusaas-lockup-dark.png" alt="TruSaas" onerror="this.style.display='none'">
-    <div class="po-kicker">TruValue Trade-In Offer<br><span id="po-date"></span></div>
+    <img src="/assets/trusaas-lockup-dark.png" alt="TruSaaS" onerror="this.style.display='none'">
+    <div class="po-kicker">TruTrade Trade-In Offer<br><span id="po-date"></span></div>
   </div>
   <div class="po-title">Trade-In Offer</div>
   <div class="po-veh" id="po-veh"></div>
@@ -406,7 +414,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <h2>Conditions</h2>
   <div class="po-text" id="po-cond"></div>
   <div id="po-snaps-wrap"><h2>Captured evidence</h2><div class="po-snaps" id="po-snaps"></div></div>
-  <div class="po-foot"><span>Issued via TruValue · a TruSaas module · not a binding offer until physical inspection</span><img src="/assets/trusaas-lockup-dark.png" alt="TruSaas" onerror="this.style.display='none'"></div>
+  <div class="po-foot"><span>Issued via TruTrade · a TruSaaS module · not a binding offer until physical inspection</span><img src="/assets/trusaas-lockup-dark.png" alt="TruSaaS" onerror="this.style.display='none'"></div>
 </div>
 
 <canvas id="snapCanvas" style="display:none"></canvas>
@@ -516,6 +524,7 @@ function newPC(){
     setPeer(true);
   };
   pc.onconnectionstatechange=()=>{if(['failed','disconnected'].includes(pc.connectionState))setPeer(false);};
+  pc.oniceconnectionstatechange=()=>{const b=document.getElementById('degraded-banner');if(b)b.classList.toggle('show',['disconnected','checking'].includes(pc.iceConnectionState)&&peerConnected);};
 }
 async function makeOffer(){if(!pc)newPC();const o=await pc.createOffer();await pc.setLocalDescription(o);sig({type:'offer',sdp:o});}
 async function onOffer(sdp){if(!pc)newPC();await pc.setRemoteDescription(sdp);const a=await pc.createAnswer();await pc.setLocalDescription(a);sig({type:'answer-sdp',sdp:a});}
@@ -717,7 +726,7 @@ function offerText(){
   L.push('CONDITIONS');
   L.push(conditions);
   L.push('');
-  L.push('Issued via TruValue · a TruSaas module. Not binding until physical inspection.');
+  L.push('Issued via TruTrade · a TruSaaS module. Not binding until physical inspection.');
   return L.join('\n');
 }
 function offerPrint(){buildPrintOffer();window.print();}
@@ -727,7 +736,7 @@ function offerEmail(){
 }
 function offerWA(){window.open('https://wa.me/?text='+encodeURIComponent(offerText()),'_blank');}
 </script>
-<script>window.TRU_INSTALL={appName:"TruValue",accent:"#4FE3DC",key:"truvalue"};</script>
+<script>window.TRU_INSTALL={appName:"TruTrade",accent:"#4FE3DC",key:"trutrade"};</script>
 <script src="/install-banner.js" defer></script>
 </body>
 </html>

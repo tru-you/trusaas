@@ -1,3 +1,4 @@
+@import "../../packages/tokens/tru-tokens.css";
 @import "./brand.css";
 @import "tailwindcss";
 
@@ -214,7 +215,8 @@
   --primary: #4FE3DC;
   --primary-light: #7FF0EA;
   --secondary: #4FE3DC;
-  --accent: #4FE3DC;
+  /* --accent intentionally omitted — it is an L2 semantic token owned by
+     tru-tokens.css. Redeclaring it here shadows every per-tier override. */
   --teal: #4FE3DC;
   --teal-bright: #7FF0EA;
   --gold: #4FE3DC;
@@ -286,8 +288,8 @@ h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; 
 /* The sidebar sits *under* the content, so it reads darker than the page —
    ink-2 made it the lighter surface, which inverted the hierarchy. */
 .glass-sidebar {
-  background: #03050A;
-  border-right: 1px solid rgba(232,234,230,0.07) !important;
+  background: var(--bg-base);
+  border-right: 1px solid var(--glass-border) !important;
 }
 
 .glass-nav-item {
@@ -314,7 +316,7 @@ h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; 
    that used to mould these are gone. */
 .btn-primary {
   background: var(--cyan) !important;
-  color: var(--ink) !important;
+  color: var(--text-on-accent) !important;
   border: 1px solid transparent !important;
   box-shadow: none !important;
   font-weight: var(--w-semibold) !important;
@@ -399,7 +401,7 @@ h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; 
    the lettering off the fill without resorting to a drop shadow. */
 .on-fill,
 .btn-primary {
-  color: var(--ink) !important;
+  color: var(--text-on-accent) !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
   font-weight: var(--w-semibold);
 }
@@ -413,25 +415,49 @@ h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; 
    gave no indication of position. :focus-visible (not :focus) means mouse
    users never see it — only keyboard navigation. */
 :focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: 4px;
 }
 button:focus-visible,
 a:focus-visible,
 [role="button"]:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
   border-color: transparent;
 }
 /* Skip the ring on a cyan fill — it disappears into the button. */
 .btn-primary:focus-visible,
 .on-fill:focus-visible {
-  outline-color: var(--white);
+  outline-color: var(--text-primary);
+}
+
+/* §1.6 — workstation tier: premium feature gating */
+[data-app="truflow"] .feature-gated,
+[data-app="trucrm"] .feature-gated {
+  opacity: 0.35;
+  pointer-events: none;
+  position: relative;
+  user-select: none;
+}
+[data-app="truflow"] .feature-gated-label,
+[data-app="trucrm"] .feature-gated-label {
+  color: var(--text-muted);
+}
+[data-app="truflow"] .upgrade-cta,
+[data-app="trucrm"] .upgrade-cta {
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+[data-app="truflow"] .upgrade-cta:hover,
+[data-app="trucrm"] .upgrade-cta:hover {
+  color: var(--accent-hover);
+  border-color: var(--accent);
+  background: var(--accent-surface);
 }

@@ -439,54 +439,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     e?.preventDefault?.();
     e?.stopPropagation?.();
 
-    // If it is 360 Video, trigger active recording animation
-    if (activeSlot.id === 'video_360' && !isRecording360) {
-      setIsRecording360(true);
-      setRecordingProgress(0);
-      
-      let prog = 0;
-      const interval = setInterval(() => {
-        prog += 5;
-        setRecordingProgress(prog);
-        
-        // Spin the simulated vehicle smoothly
-        setSimRotation((prev) => (prev + 18) % 360);
-        
-        if (prog >= 100) {
-          clearInterval(interval);
-          setIsRecording360(false);
-          
-          // Capture final spin frame
-          const canvas = canvasRef.current;
-          if (canvas) {
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              if (isCameraActive && videoRef.current) {
-                drawViewfinderFrame(ctx, canvas, videoRef.current);
-              } else {
-                canvas.width = 1080;
-                canvas.height = 720;
-                drawSimulatedCarScene(ctx, canvas.width, canvas.height);
-              }
-              
-              // Draw a "360° Video Walkaround" stamp
-              ctx.save();
-              ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-              ctx.fillRect(40, 40, 260, 60);
-              ctx.strokeStyle = '#4FE3DC';
-              ctx.lineWidth = 2;
-              ctx.strokeRect(40, 40, 260, 60);
-              
-              ctx.fillStyle = '#ffffff';
-              ctx.font = 'bold 16px monospace';
-              ctx.fillText('● 360° VIDEO RECORDED', 60, 75);
-              ctx.restore();
-              
-              finalizeCapture(canvas);
-            }
-          }
-        }
-      }, 150);
+    // 360 walkaround is being rebuilt as a genuine video recording. Until then
+    // we do NOT fabricate a spin — a graded report only carries real captures.
+    if (activeSlot.id === 'video_360') {
+      setCaptureHint('360 walkaround is being rebuilt — capture the real photos for now.');
+      setTimeout(() => setCaptureHint(null), 2800);
       return;
     }
 
@@ -519,12 +476,12 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
       return;
     }
 
-    // PC / no camera: still produce a usable frame from the guide view (user can re-upload)
-    // Do NOT navigate away or open Settings.
-    canvas.width = 1080;
-    canvas.height = 720;
-    drawSimulatedCarScene(ctx, canvas.width, canvas.height);
-    finalizeCapture(canvas);
+    // No live camera and no real photo yet — this report is graded on facts, so
+    // we NEVER fabricate an image. Send the inspector to the phone camera / file
+    // picker to capture a real photo instead.
+    setCaptureHint('Take a real photo or upload one — nothing is auto-generated.');
+    setTimeout(() => setCaptureHint(null), 2600);
+    singleUploadRef.current?.click();
   };
 
   // Helper to finalize captured image & trigger callback
@@ -601,107 +558,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     prevPhotoCount.current = count;
   }, [photos]);
 
-  // Draw simulated car inside the canvas for instant testing without camera
-  const drawSimulatedCarScene = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    // 1. Solid backdrop base
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, '#0f172a'); // Slate dark sky
-    grad.addColorStop(0.6, '#1e293b'); // Horizon
-    grad.addColorStop(0.61, '#475569'); // Concrete deck
-    grad.addColorStop(1, '#0f172a');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
-
-    // 2. Concrete perspective guidelines
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 2;
-    for (let i = -10; i <= 10; i++) {
-      ctx.beginPath();
-      ctx.moveTo(width / 2, height * 0.6);
-      ctx.lineTo(width / 2 + i * 150, height);
-      ctx.stroke();
-    }
-
-    // 3. Draw a gorgeous high-fidelity wireframe car
-    ctx.save();
-    ctx.translate(width / 2, height * 0.65);
-    
-    // Scale car based on height
-    const scale = 2.4;
-    ctx.scale(scale, scale);
-
-    // Dynamic coloring based on user color selection
-    ctx.fillStyle = simColor;
-    ctx.strokeStyle = '#ffffff';
-
-    // Shadow blob
-    ctx.beginPath();
-    ctx.ellipse(0, 22, 110, 15, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fill();
-
-    // Adjust drawing lines depending on Simulated Yaw (rotation)
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-
-    // Chassis Silhouette Base
-    ctx.beginPath();
-    ctx.moveTo(-100, 15);
-    ctx.lineTo(-95, 0);
-    ctx.lineTo(-60, -8);
-    ctx.lineTo(-30, -32);
-    ctx.lineTo(25, -32);
-    ctx.lineTo(65, -8);
-    ctx.lineTo(95, 0);
-    ctx.lineTo(100, 15);
-    ctx.closePath();
-    ctx.fillStyle = simColor;
-    ctx.fill();
-    ctx.stroke();
-
-    // Greenhouse Cabin / Windows
-    ctx.beginPath();
-    ctx.moveTo(-45, -8);
-    ctx.lineTo(-25, -28);
-    ctx.lineTo(20, -28);
-    ctx.lineTo(40, -8);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(15,23,42,0.8)';
-    ctx.fill();
-    ctx.stroke();
-
-    // Side details / Wheel arches
-    ctx.beginPath();
-    ctx.arc(-65, 15, 14, Math.PI, 0, false);
-    ctx.arc(65, 15, 14, Math.PI, 0, false);
-    ctx.fillStyle = '#090d16';
-    ctx.fill();
-    ctx.stroke();
-
-    // Chrome Wheels
-    ctx.beginPath();
-    ctx.arc(-65, 15, 10, 0, Math.PI * 2);
-    ctx.arc(65, 15, 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#e2e8f0';
-    ctx.fill();
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = '#334155';
-    ctx.stroke();
-
-    // Headlights (glowing yellow based on brightness)
-    ctx.beginPath();
-    ctx.arc(92, 6, 4, 0, Math.PI * 2);
-    ctx.fillStyle = simBrightness > 150 ? '#fef08a' : '#94a3b8';
-    ctx.fill();
-
-    ctx.restore();
-
-    // 4. Glare effect text
-    ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    ctx.font = 'bold 36px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('LOT CAMERA OVERLAY', width / 2, height / 3);
-  };
 
   // Render SVG guide overlay path lines
   const renderGuideOverlay = () => {
@@ -1108,7 +964,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
       </div>
 
       {/* Viewfinder Main View */}
-      <div className="relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
+      <div className="capture-preview relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
@@ -1180,8 +1036,13 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </div>
         )}
 
-        {/* Dynamic SVG Guide Silhouette */}
-        {renderGuideOverlay()}
+        {/* No car-shaped overlay — a purple silhouette over a real car never
+            lines up and just gets in the way. The frame stays clean. */}
+
+        {/* Small in-frame label so the shooter always knows what this shot is. */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-black/70 border border-white/15 px-3 py-1 rounded-full text-[12px] font-bold tracking-wide text-[#E8EAE6] pointer-events-none uppercase">
+          {activeSlot.name}
+        </div>
 
         {/* Recording Overlay for 360 Walkaround */}
         {isRecording360 && (
@@ -1274,20 +1135,20 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 key={slot.id}
                 type="button"
                 onClick={() => setSelectedSlotId(slot.id)}
-                className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap border cursor-pointer flex items-center gap-1.5 transition-all ${
+                className={`slot-state px-3 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-1.5 transition-all ${
                   isSelected
-                    ? 'bg-indigo-600 border-indigo-400 text-[#E8EAE6] shadow-md shadow-indigo-600/30'
+                    ? 'slot-state--active'
                     : isTaken
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    ? 'slot-state--captured'
                     : isNext
-                    ? 'bg-amber-500/10 border-amber-400/40 text-amber-200'
-                    : 'bg-neutral-950 border-neutral-800 text-neutral-300 hover:border-neutral-600'
+                    ? 'slot-state--next'
+                    : 'slot-state--idle'
                 }`}
               >
                 {isTaken ? (
-                  <Check size={10} className="text-emerald-400 font-semibold" />
+                  <Check size={10} className="font-semibold" />
                 ) : isNext ? (
-                  <span className="text-[12px] font-semibold text-amber-400">NEXT</span>
+                  <span className="text-[12px] font-semibold">NEXT</span>
                 ) : null}
                 {slot.name} {slot.required && !isTaken ? '*' : ''}
               </button>

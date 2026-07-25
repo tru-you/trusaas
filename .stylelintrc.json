@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "color-no-hex": [true, {
+      "ignoreFiles": ["**/tru-tokens.css", "**/brand.css"]
+    }],
+    "declaration-property-value-disallowed-list": {
+      "/^(color|background|background-color|border-color)$/": ["/^#/", "/^rgb/"]
+    }
+  }
+}

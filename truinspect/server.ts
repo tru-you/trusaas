@@ -798,7 +798,7 @@ app.post('/api/inspect/damage', async (req, res) => {
 Examine this photo (capture slot: "${slotName || slotId || 'unspecified'}") of a ${vehicleInfo?.year || ''} ${vehicleInfo?.make || ''} ${vehicleInfo?.model || ''}.
 List ONLY clearly visible damage or defects: scratches, dents, stone chips, rust, cracks (glass/lights/trim), hail damage, paint defects (fade, overspray, mismatch), abnormal wear (seats, pedals, steering wheel), or missing parts.
 Do NOT report reflections, dirt, water drops, shadows, or normal styling lines as damage. If the photo shows no damage, return an empty list.
-For each finding give: panel (e.g. "front bumper", "driver door", "windscreen"), damageType (scratch|dent|chip|rust|crack|hail|paint|wear|missing|other), severity 1-5 (1 = minor cosmetic blemish, 3 = clearly visible defect a buyer would query, 5 = structural or safety concern), confidence 0-1, location words (e.g. "lower left corner"), and a short factual note with approximate size where visible.`;
+For each finding give: panel (e.g. "front bumper", "driver door", "windscreen"), damageType (scratch|dent|chip|rust|crack|hail|paint|wear|missing|other), severity 1-5 (1 = minor cosmetic blemish, 3 = clearly visible defect a buyer would query, 5 = structural or safety concern), confidence 0-1, location words (e.g. "lower left corner"), a short factual note with approximate size where visible (e.g. "~15cm scratch through clearcoat"), and x and y — the centre of the damage as a fraction of the image (0-1, x from left, y from top).`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-flash-latest',
@@ -822,6 +822,8 @@ For each finding give: panel (e.g. "front bumper", "driver door", "windscreen"),
                   confidence: { type: Type.NUMBER },
                   location: { type: Type.STRING },
                   note: { type: Type.STRING },
+                  x: { type: Type.NUMBER },
+                  y: { type: Type.NUMBER },
                 },
                 required: ['panel', 'damageType', 'severity', 'confidence', 'note'],
               },
@@ -833,17 +835,25 @@ For each finding give: panel (e.g. "front bumper", "driver door", "windscreen"),
     });
 
     const parsed = JSON.parse(response.text || '{"findings":[]}');
+    const clamp01 = (n: any) => Math.min(1, Math.max(0, Number(n)));
     const findings = (Array.isArray(parsed.findings) ? parsed.findings : [])
       .filter((f: any) => f && f.panel && f.note)
-      .map((f: any) => ({
-        panel: String(f.panel),
-        damageType: String(f.damageType || 'other'),
-        severity: Math.min(5, Math.max(1, Math.round(Number(f.severity) || 1))),
-        confidence: Math.min(1, Math.max(0, Number(f.confidence) || 0.5)),
-        location: f.location ? String(f.location) : undefined,
-        note: String(f.note),
-        status: 'ai',
-      }));
+      .map((f: any, i: number) => {
+        const loc = f.location ? String(f.location) : '';
+        return {
+          id: `ai_${Date.now().toString(36)}_${i}`,
+          panel: String(f.panel),
+          damageType: String(f.damageType || 'other'),
+          severity: Math.min(5, Math.max(1, Math.round(Number(f.severity) || 1))),
+          // Fold the model's location words into the note so the human sees them;
+          // the client type carries no separate confidence/location field.
+          note: loc ? `${String(f.note)} (${loc})` : String(f.note),
+          x: Number.isFinite(Number(f.x)) ? clamp01(f.x) : 0.5,
+          y: Number.isFinite(Number(f.y)) ? clamp01(f.y) : 0.5,
+          source: 'ai',
+          confirmed: false,
+        };
+      });
 
     res.json({ aiMode: true, slotId: slotId || null, findings });
   } catch (error: any) {

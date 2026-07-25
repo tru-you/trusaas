@@ -2,11 +2,12 @@ import React from 'react';
 import MobileDevice from './components/MobileDevice';
 import InventoryList from './components/InventoryList';
 import CameraGuide from './components/CameraGuide';
-import ImageEditor from './components/ImageEditor';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
-import InspectionChecklist from './components/InspectionChecklist';
-import { Vehicle, QualityReport, DmsExportResult, DamageFinding, PHOTO_SLOTS } from './types';
+import SlotReview from './components/SlotReview';
+import InspectionSheet from './components/InspectionSheet';
+import DamageTagger from './components/DamageTagger';
+import { Vehicle, QualityReport, DmsExportResult, PointResult, PHOTO_SLOTS } from './types';
 import { useAuth } from './contexts/AuthContext';
 
 /** Keep client state crash-safe even if API returns partial records. */
@@ -61,7 +62,7 @@ export default function App() {
   const { user, loading } = useAuth();
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
-  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist'>('inventory');
+  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist' | 'damage'>('inventory');
   const [loadError, setLoadError] = React.useState<string | null>(null);
   
   // Editor view states
@@ -291,50 +292,6 @@ export default function App() {
   };
 
   /** Latest damage findings per vehicle — survives async scan races */
-  const damageMapRef = React.useRef<Record<string, Record<string, DamageFinding[]>>>({});
-
-  /** TruInspect: run AI damage detection on a saved photo, then persist findings.
-      Never blocks the shooting flow — errors are logged and the slot just has no findings. */
-  const analyzeDamageForSlot = async (
-    vehicle: Vehicle,
-    slotId: string,
-    base64Image: string,
-    token: string,
-  ) => {
-    try {
-      const slot = PHOTO_SLOTS.find(s => s.id === slotId);
-      const res = await fetch('/api/inspect/damage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          base64Image,
-          slotId,
-          slotName: slot?.name,
-          vehicleInfo: { year: vehicle.year, make: vehicle.make, model: vehicle.model },
-        }),
-      });
-      const data = await res.json();
-      if (!Array.isArray(data.findings)) return;
-      const findings = data.findings as DamageFinding[];
-
-      // Accumulate via ref so concurrent per-slot scans never clobber each other
-      const cur = damageMapRef.current[vehicle.id] || vehicle.damageFindings || {};
-      const merged = { ...cur, [slotId]: findings };
-      damageMapRef.current[vehicle.id] = merged;
-
-      setVehicles(prev => prev.map(v =>
-        v.id === vehicle.id ? { ...v, damageFindings: merged } : v
-      ));
-      await fetch('/api/inventory', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id: vehicle.id, damageFindings: merged }),
-      });
-    } catch (e) {
-      console.warn('Damage scan failed for slot', slotId, e);
-    }
-  };
-
   // Trigger when photo is captured in viewfinder
   const handlePhotoCaptured = (slotId: string, base64Image: string, qualityReport: QualityReport) => {
     setActiveSlotId(slotId);
@@ -372,9 +329,6 @@ export default function App() {
         setVehicles(prev => prev.map(v => v.id === activeVehicleId ? saved : v));
         setSyncStatus('synced');
 
-        // TruInspect: fire-and-forget AI damage scan on the freshly saved photo
-        analyzeDamageForSlot(saved, activeSlotId, processedImage, token);
-
         // Go back to camera; keep shooting flow tight (next empty required slot preferred)
         setActiveView('camera');
         setActiveImageSrc(null);
@@ -385,6 +339,54 @@ export default function App() {
       }
     } catch (e) {
       console.error('Failed to upload photo:', e);
+      setSyncStatus('error');
+    }
+  };
+
+  // Capture-time review: save the real photo AND the condition/note/close-ups
+  // assessed the moment it was taken.
+  const handleSaveSlotReview = async (
+    mainImage: string,
+    assessment: PointResult,
+    closeups: string[],
+  ) => {
+    if (!activeVehicleId || !activeSlotId || !user) return;
+    const slotId = activeSlotId;
+    setSyncStatus('syncing');
+    try {
+      const token = await user.getIdToken();
+      const report: QualityReport = activeQualityReport || {
+        overallScore: 100,
+        lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: 'Captured.' },
+        angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Captured.' },
+      };
+      const res = await fetch('/api/inventory/upload-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ vehicleId: activeVehicleId, slotId, base64Image: mainImage, qualityReport: report }),
+      });
+      if (!res.ok) { setSyncStatus('error'); return; }
+      const result = await res.json();
+      const saved = normalizeVehicle(result.vehicle);
+
+      // Merge the assessment + close-ups for this slot onto the saved vehicle.
+      const hasAssessment = !!(assessment.rating || assessment.comment);
+      const nextAssessment = { ...(saved.slotAssessment || {}) };
+      if (hasAssessment) nextAssessment[slotId] = assessment; else delete nextAssessment[slotId];
+      const nextCloseups = { ...(saved.closeups || {}) };
+      if (closeups.length) nextCloseups[slotId] = closeups; else delete nextCloseups[slotId];
+
+      const merged: Vehicle = { ...saved, slotAssessment: nextAssessment, closeups: nextCloseups };
+      setVehicles((prev) => prev.map((v) => (v.id === saved.id ? merged : v)));
+      setSyncStatus('synced');
+      await handleUpdateVehicle(saved, { slotAssessment: nextAssessment, closeups: nextCloseups });
+
+      setActiveView('camera');
+      setActiveImageSrc(null);
+      setActiveSlotId(null);
+      setActiveQualityReport(null);
+    } catch (e) {
+      console.error('Failed to save reviewed shot:', e);
       setSyncStatus('error');
     }
   };
@@ -446,6 +448,13 @@ export default function App() {
     setLoadError(null);
   };
 
+  // Open the photo damage tagger for a vehicle
+  const handleOpenDamage = (vehicle: Vehicle) => {
+    setActiveVehicleId(vehicle.id);
+    setActiveView('damage');
+    setLoadError(null);
+  };
+
   // Open the inspection Report for a vehicle
   const handleViewReport = (vehicle: Vehicle) => {
     try {
@@ -463,7 +472,7 @@ export default function App() {
   // If camera/report was opened but vehicle disappeared, bounce home instead of blank/error
   React.useEffect(() => {
     if (
-      (activeView === 'camera' || activeView === 'report' || activeView === 'editor') &&
+      (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage') &&
       activeVehicleId &&
       !vehicles.find((v) => v.id === activeVehicleId)
     ) {
@@ -507,6 +516,7 @@ export default function App() {
                 onAddVehicle={handleAddVehicle}
                 onDeleteVehicle={handleDeleteVehicle}
                 onOpenChecklist={handleOpenChecklist}
+                onTagDamage={handleOpenDamage}
                 onUpdateVehicle={handleUpdateVehicle}
                 syncStatus={syncStatus}
                 onForceSync={fetchInventory}
@@ -515,11 +525,22 @@ export default function App() {
           )}
 
           {activeView === 'checklist' && activeVehicle && (
-            <InspectionChecklist
+            <InspectionSheet
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
-              onSave={async (answers) => {
-                await handleUpdateVehicle(activeVehicle, { inspectionChecklist: answers });
+              onSave={async (points) => {
+                await handleUpdateVehicle(activeVehicle, { inspectionPoints: points });
+              }}
+              onTagDamage={() => setActiveView('damage')}
+            />
+          )}
+
+          {activeView === 'damage' && activeVehicle && (
+            <DamageTagger
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onSave={async (damageFindings) => {
+                await handleUpdateVehicle(activeVehicle, { damageFindings });
               }}
             />
           )}
@@ -548,19 +569,18 @@ export default function App() {
             />
           )}
 
-          {activeView === 'editor' && activeVehicle && activeSlotId && activeImageSrc && activeQualityReport && (
-            <ImageEditor
+          {activeView === 'editor' && activeVehicle && activeSlotId && activeImageSrc && (
+            <SlotReview
               vehicle={activeVehicle}
               slotId={activeSlotId}
               imageSrc={activeImageSrc}
-              qualityReport={activeQualityReport}
               onBack={() => {
                 setActiveView('camera');
                 setActiveImageSrc(null);
                 setActiveSlotId(null);
                 setActiveQualityReport(null);
               }}
-              onSave={handleSaveProcessedImage}
+              onSave={handleSaveSlotReview}
             />
           )}
         </>
