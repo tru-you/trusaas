@@ -280,7 +280,10 @@ h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; 
 
 .card, .v-card, .pipeline-card, .stat-card, .glass-panel {
   position: relative;
-  background: var(--glass);
+  /* --glass is a light wash, so on a near-black page it lifted every card to a
+     grey slab. --ink-2 is the darker of the two brand surfaces: separation now
+     comes from the hairline border and shadow rather than from brightness. */
+  background: var(--ink-2);
   border: 1px solid var(--glass-line);
   border-radius: var(--r-card);
   box-shadow: var(--shadow-card);
