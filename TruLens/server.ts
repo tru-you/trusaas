@@ -22,7 +22,11 @@ const DEFAULT_DMS_URL =
   process.env.TRUFLOW_DMS_URL ||
   process.env.DMS_URL ||
   (process.env.NODE_ENV === 'production'
-    ? 'https://lens.tru-saas.com'
+    // TruFlow, not TruLens. This read lens.tru-saas.com — TruLens's own host —
+    // so with TRUFLOW_DMS_URL unset the app exported to itself and the dealer
+    // picker would find no dealerships. render.yaml does set it, so production
+    // is unaffected; this is the fallback being honest.
+    ? 'https://flow.tru-saas.com'
     : 'http://localhost:3001');
 // Which dealer owns captures made before dealer tagging existed (matches
 // TruFlow Premium's DEFAULT_DEALERSHIP_ID = d1 = mkr-autosales).
@@ -622,6 +626,38 @@ app.get('/api/public/web3d/:stockNumber', (req, res) => {
 });
 
 // GET /api/public/stock — website feed from TruLens (lens-only dealers)
+/**
+ * The dealership list the picker shows, proxied from TruFlow.
+ *
+ * It used to be a hardcoded array in DealerSelect.tsx, which meant onboarding a
+ * dealer needed a TruLens release on top of a TruFlow one — and while that list
+ * was hand-maintained it drifted, carrying three sample dealerships whose slugs
+ * TruFlow did not know. Picking one saved a capture with no dealership, and the
+ * public feed reads untagged stock as the pilot dealer, so a shooter could put
+ * cars on someone else's website by choosing the wrong row.
+ *
+ * Proxied rather than fetched straight from the phone: it keeps the DMS URL
+ * server-side and avoids relying on TruFlow's CORS for a screen that has to
+ * work before anything else does.
+ */
+app.get('/api/dealerships', async (_req, res) => {
+  try {
+    const r = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/public/dealerships`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) throw new Error(`DMS responded ${r.status}`);
+    const list = await r.json();
+    if (!Array.isArray(list)) throw new Error('DMS returned an unexpected shape');
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(list);
+  } catch (err: any) {
+    /* The phone falls back to its cached copy. Say so plainly rather than
+       returning an empty list, which would read as "no dealerships exist". */
+    console.warn('[dealerships] could not reach the DMS:', err?.message || err);
+    res.status(503).json({ error: 'Could not reach the DMS to load dealerships.' });
+  }
+});
+
 app.get('/api/public/stock', async (req, res) => {
   try {
     const dealer = String(req.query.dealer || 'demo');

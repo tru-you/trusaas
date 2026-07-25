@@ -13,29 +13,63 @@ import trulensLogo from '../assets/images/trulens-wordmark.png';
  * choice with no default — you cannot capture until you've picked.
  */
 
+type Dealership = { slug: string; name: string; location: string };
+
 /**
- * Only real dealerships belong here.
+ * The list comes from TruFlow, never from here.
  *
- * Demo Motors, Summit Auto and Karoo Cars used to pad this list so it "looked
- * lived-in" for demos. Their slugs have no mapping in TruFlow's
- * DEALER_SLUG_TO_ID, so a capture made under one saved with no dealershipId —
- * and the public feed reads untagged stock as the default dealership, MKR. A
- * shooter picking the wrong row from a list of decoys put cars on another
- * dealer's website, silently.
+ * It used to be a hardcoded array, which meant onboarding a dealer needed a
+ * TruLens release on top of a TruFlow one. Worse, a hand-maintained list
+ * drifts: this one carried three sample dealerships — Demo Motors, Summit
+ * Auto, Karoo Cars — whose slugs TruFlow did not know. A capture made under
+ * one saved with no dealership, and the public feed reads untagged stock as
+ * the pilot dealer, so picking the wrong row of five put a dealer's cars on
+ * someone else's website with nothing to notice.
  *
- * Every entry must have a matching slug in TruFlow's DEALER_SLUG_TO_ID before
- * it appears here.
+ * Cached because this is a yard phone. If the DMS cannot be reached we show
+ * the last known list and say it is offline — but we never fall back to a
+ * built-in list, because a wrong list is what caused the problem.
  */
-export const DEALERSHIPS: { slug: string; name: string; location: string }[] = [
-  { slug: 'cars-on-caledon', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape' },
-  { slug: 'mkr-autosales', name: 'MKR Auto Sales', location: 'Johannesburg' },
-];
+const CACHE_KEY = 'trulens_dealerships_v1';
+
+function readCache(): Dealership[] {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function DealerSelect({ onSelected }: { onSelected: (slug: string, name: string) => void }) {
   const [choice, setChoice] = React.useState<string | null>(null);
+  const [dealerships, setDealerships] = React.useState<Dealership[]>(() => readCache());
+  const [loading, setLoading] = React.useState(true);
+  const [stale, setStale] = React.useState(false);
+
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/dealerships', { cache: 'no-store' });
+      if (!res.ok) throw new Error(String(res.status));
+      const list = (await res.json()) as Dealership[];
+      if (!Array.isArray(list) || list.length === 0) throw new Error('empty');
+      setDealerships(list);
+      setStale(false);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(list)); } catch { /* private mode */ }
+    } catch {
+      // Keep whatever was cached and say so, rather than showing nothing.
+      setStale(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => { load(); }, [load]);
 
   const confirm = () => {
-    const d = DEALERSHIPS.find((x) => x.slug === choice);
+    const d = dealerships.find((x) => x.slug === choice);
     if (!d) return;
     onSelected(d.slug, d.name);
   };
@@ -55,7 +89,7 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
       </p>
 
       <div className="flex flex-col gap-3">
-        {DEALERSHIPS.map((d) => {
+        {dealerships.map((d) => {
           const active = choice === d.slug;
           return (
             <button
@@ -76,7 +110,30 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
             </button>
           );
         })}
+
+        {dealerships.length === 0 && (
+          <div className="px-4 py-6 rounded-2xl border border-white/10 bg-white/[0.03] text-center">
+            <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
+              {loading ? 'Loading dealerships…' : 'Could not load the dealership list.'}
+            </p>
+            {!loading && (
+              <button
+                type="button"
+                onClick={load}
+                className="mt-3 text-[13px] font-semibold text-[#4FE3DC] underline underline-offset-4"
+              >
+                Try again
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {stale && dealerships.length > 0 && (
+        <p className="mt-3 text-[11px] text-center text-[rgba(232,234,230,0.55)]">
+          Offline — showing the last known list.
+        </p>
+      )}
 
       <button
         type="button"
