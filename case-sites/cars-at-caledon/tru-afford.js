@@ -73,9 +73,9 @@
     };
   }
 
-  /* TrueSaas brand: signal purple → indigo → blue + teal trust */
+  /* TruSaaS brand: signal purple → indigo → blue + teal trust */
   var CSS = [
-    "#" + ID + "-root{",
+    "#" + ID + "-root{all:initial;",
     "--ta-signal:#7C3AED;--ta-signal-bright:#A78BFA;--ta-signal-deep:#5B21B6;",
     "--ta-blue:#3B82F6;--ta-blue-bright:#60A5FA;--ta-blue-deep:#1D4ED8;",
     "--ta-teal:#14B8A6;--ta-teal-bright:#5EEAD4;",
@@ -230,7 +230,7 @@
     document.head.appendChild(style);
 
     var root = el(
-      '<div id="' + ID + '-root" aria-live="polite">' +
+      '<div id="' + ID + '-root" data-app="truafford" aria-live="polite">' +
         '<div class="ta-panel" role="dialog" aria-label="Check affordability" aria-hidden="true">' +
           '<div class="ta-head">' +
             '<div class="ta-ico" style="width:36px;height:36px">' +
@@ -243,7 +243,7 @@
             '<div class="ta-step-dot on"></div><div class="ta-step-dot"></div><div class="ta-step-dot"></div><div class="ta-step-dot"></div>' +
           "</div>" +
           '<div class="ta-body" id="' + ID + '-body"></div>' +
-          '<div class="ta-foot">Powered by <b>TrueSaas TruAfford</b> · Soft estimate only · Not a credit bureau check</div>' +
+          '<div class="ta-foot">Powered by <b>TruSaaS TruAfford</b> · Soft estimate only · Not a credit bureau check</div>' +
         "</div>" +
         '<button type="button" class="ta-launcher" id="' + ID + '-open" aria-label="Check affordability">' +
           '<span class="ta-ico">' +
