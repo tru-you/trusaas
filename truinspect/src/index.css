@@ -354,13 +354,13 @@
 
 
 /* Keyboard focus — was invisible across every button. */
-:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
-.btn-primary:focus-visible, .on-fill:focus-visible { outline-color: var(--white); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px; }
+.btn-primary:focus-visible, .on-fill:focus-visible { outline-color: var(--text-primary); }
 
 /* Text on a light/cyan fill: ink, with a letterpress lift. */
-.on-fill, .btn-primary { color: var(--ink) !important; text-shadow: 0 1px 0 rgba(255,255,255,0.38); }
+.on-fill, .btn-primary { color: var(--text-on-accent) !important; text-shadow: 0 1px 0 rgba(255,255,255,0.38); }
 
-body { background: var(--ink); color: var(--white); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+body { background: var(--bg-base); color: var(--text-primary); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
 
 /* ── TruInspect · Field-Assessment sterile zones ────────────────────────────
    §1.3 / §1.10: same neutrality rule as TruLens — inspector must see the

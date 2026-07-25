@@ -22,10 +22,21 @@
   --tru-cyan-500: #3ECFC8;   /* hover / pressed (dark) */
   --tru-cyan-600: #06B6D4;   /* accent — light surfaces only */
   --tru-cyan-700: #0891B2;   /* hover / pressed (light) */
+  --tru-cyan-800: #22807C;   /* deep cyan — tinted fills, never text */
 
   --tru-amber-500: #F59E0B;  /* attention / retake — NOT error */
   --tru-red-500:   #EF4444;  /* system error · LIVE recording */
   --tru-green-500: #10B981;  /* connected; otherwise sparing */
+
+  /* Channel forms. Glows, scrims and tinted gradients need an alpha the
+     ramp cannot express as a flat hex. Consume as rgb(var(--x) / 0.45)
+     so there is still exactly one place the colour is defined. */
+  --tru-cyan-300-rgb: 127 240 234;
+  --tru-cyan-400-rgb: 79 227 220;
+  --tru-cyan-600-rgb: 6 182 212;
+  --tru-cyan-800-rgb: 34 128 124;
+  --tru-paper-rgb:    232 234 230;
+  --tru-ink-900-rgb:  6 8 13;
 
   /* ---------- L2 · SEMANTIC (components use these) ---------- */
   --bg-base:       var(--tru-ink-900);
@@ -42,8 +53,10 @@
 
   --accent:         var(--tru-cyan-400);
   --accent-hover:   var(--tru-cyan-500);
-  --accent-surface: rgba(79, 227, 220, 0.10);
-  --accent-border:  rgba(79, 227, 220, 0.35);
+  --accent-rgb:     var(--tru-cyan-400-rgb);
+  --accent-surface: rgb(var(--accent-rgb) / 0.10);
+  --accent-border:  rgb(var(--accent-rgb) / 0.35);
+  --accent-glow:    rgb(var(--accent-rgb) / 0.45);
   --focus-ring:     var(--tru-cyan-400);
 
   --state-attention: var(--tru-amber-500);
@@ -148,8 +161,10 @@
 
   --accent:         var(--tru-cyan-600);
   --accent-hover:   var(--tru-cyan-700);
-  --accent-surface: rgba(6, 182, 212, 0.08);
-  --accent-border:  rgba(6, 182, 212, 0.30);
+  --accent-rgb:     var(--tru-cyan-600-rgb);
+  /* Lighter tints than dark tiers — the same alpha reads twice as loud on paper. */
+  --accent-surface: rgb(var(--accent-rgb) / 0.08);
+  --accent-border:  rgb(var(--accent-rgb) / 0.30);
   --focus-ring:     var(--tru-cyan-600);
 
   --glass-bg:     rgba(255, 255, 255, 0.65);
@@ -168,6 +183,7 @@
   --text-on-accent: var(--tru-ink-900);
   --accent:        var(--tru-cyan-400);
   --accent-hover:  var(--tru-cyan-500);
+  --accent-rgb:    var(--tru-cyan-400-rgb);
   --focus-ring:    var(--tru-cyan-400);
   --glass-bg:     rgba(255, 255, 255, 0.04);
   --glass-border: rgba(255, 255, 255, 0.08);

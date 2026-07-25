@@ -193,26 +193,29 @@
   --font-serif: "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-bg: #070d15;
-  --color-card: #0f1826;
-  --color-card-hover: #16212f;
-  --color-border-tc: rgba(126, 164, 214, 0.10);
-  --color-border-tc-hover: rgba(126, 164, 214, 0.22);
-  --color-primary-tc: #0891b2;
-  --color-primary-light-tc: #22d3ee;
-  --color-secondary-tc: #C9A24B;
-  --color-accent-tc: #15C7C0;
-  --color-teal-tc: #15C7C0;
-  --color-teal-bright-tc: #4FE3DC;
-  --color-gold-tc: #C9A24B;
-  --color-gold-light-tc: #E7CD84;
-  --color-text-tc: #E8EEF6;
-  --color-text-dim-tc: #9DB0C6;
-  --color-text-faint-tc: #5F7590;
-  --color-success-tc: #35C46B;
-  --color-warning-tc: #E7B24B;
-  --color-danger-tc: #F0555A;
-  --color-info-tc: #4D9BFF;
+  /* Legacy names kept so existing utility classes resolve — all now point at
+     the single brand palette rather than the old gold/blue pairing. Matches
+     TruFlow Premium; Lite is the same app at a lower tier, not a fork. */
+  --color-bg: #06080D;
+  --color-card: #0B0F17;
+  --color-card-hover: #121826;
+  --color-border-tc: rgba(232, 234, 230, 0.14);
+  --color-border-tc-hover: rgba(79, 227, 220, 0.35);
+  --color-primary-tc: #4FE3DC;
+  --color-primary-light-tc: #7FF0EA;
+  --color-secondary-tc: #4FE3DC;
+  --color-accent-tc: #4FE3DC;
+  --color-teal-tc: #4FE3DC;
+  --color-teal-bright-tc: #7FF0EA;
+  --color-gold-tc: #4FE3DC;
+  --color-gold-light-tc: #7FF0EA;
+  --color-text-tc: #E8EAE6;
+  --color-text-dim-tc: rgba(232, 234, 230, 0.72);
+  --color-text-faint-tc: rgba(232, 234, 230, 0.55);
+  --color-success-tc: #4ADE9B;
+  --color-warning-tc: #E8C468;
+  --color-danger-tc: #FF6B6B;
+  --color-info-tc: #4FE3DC;
 }
 
 :root {
@@ -511,10 +514,10 @@ body::after {
 }
 
 /* Keyboard focus — was invisible across every button. */
-:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
-.btn-primary:focus-visible, .on-fill:focus-visible { outline-color: var(--white); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: 4px; }
+.btn-primary:focus-visible, .on-fill:focus-visible { outline-color: var(--text-primary); }
 
 /* Text on a light/cyan fill: ink, with a letterpress lift. */
-.on-fill, .btn-primary { color: var(--ink) !important; text-shadow: 0 1px 0 rgba(255,255,255,0.38); }
+.on-fill, .btn-primary { color: var(--text-on-accent) !important; text-shadow: 0 1px 0 rgba(255,255,255,0.38); }
 
-body { background: var(--ink); color: var(--white); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+body { background: var(--bg-base); color: var(--text-primary); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
