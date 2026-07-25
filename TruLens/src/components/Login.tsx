@@ -1,6 +1,6 @@
 import React from 'react';
-import { LogIn, Lock, User, Sparkles, AlertCircle, Loader2, UserPlus, Monitor } from 'lucide-react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { LogIn, Lock, User, Sparkles, AlertCircle, Loader2, Monitor } from 'lucide-react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import trulensLogo from '../assets/images/trulens-wordmark.png';
@@ -14,7 +14,6 @@ export default function Login() {
   const [password, setPassword] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [mode, setMode] = React.useState<'login' | 'signup'>('login');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,11 +21,7 @@ export default function Login() {
     setError(null);
 
     try {
-      if (mode === 'login') {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (err: any) {
       console.error('Auth error:', err);
       let message = 'An error occurred during authentication.';
@@ -69,10 +64,10 @@ export default function Login() {
 
         <div className="text-center space-y-1 mb-8">
           <h1 className="text-xl font-semibold text-[#E8EAE6] tracking-tight ">
-            {mode === 'login' ? 'Inspector Login' : 'Create Account'}
+            Inspector Login
           </h1>
-          <p className="text-neutral-500 text-[13px] font-medium  tracking-widest">
-            {mode === 'login' ? 'Securing your lot data' : 'Join TruSaaS Network'}
+          <p className="text-neutral-400 text-[13px] font-medium  tracking-widest">
+            Securing your lot data
           </p>
         </div>
 
@@ -131,8 +126,8 @@ export default function Login() {
               </div>
             ) : (
               <>
-                {mode === 'login' ? <LogIn size={14} /> : <UserPlus size={14} />}
-                <span>{mode === 'login' ? 'Initialize Session' : 'Create Account'}</span>
+                <LogIn size={14} />
+                <span>Initialize Session</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
               </>
             )}
@@ -180,17 +175,19 @@ export default function Login() {
           </span>
         </form>
 
-        <button 
-          onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-          className="mt-6 text-[12px] font-semibold text-neutral-500  tracking-[0.2em] hover:text-indigo-400 transition-colors"
-        >
-          {mode === 'login' ? "New Inspector? Sign Up" : "Back to Login"}
-        </button>
+        {/* There is no self-signup. Access is a code issued per dealership —
+            the old "New Inspector? Sign Up" toggle created a Firebase account
+            that the server never honours, because it gates on the dealership
+            code, so anyone following it got an account granting nothing. */}
+        <p className="mt-6 max-w-[260px] text-center text-[12px] leading-relaxed text-neutral-400">
+          Access is issued per dealership. Ask your dealer principal for the
+          code, or contact TruSaaS to set your yard up.
+        </p>
 
         {/* Footer Info — ecosystem links */}
         <div className="mt-12 flex flex-col items-center space-y-4">
           <div className="flex items-center gap-3">
-            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
+            <a href="https://tru-saas.com" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
               <span className="text-[12px] text-neutral-600  tracking-tighter">Powered By</span>
               <span className="text-[12px] font-bold text-cyan-300 underline underline-offset-2">TruSaaS</span>
             </a>

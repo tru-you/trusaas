@@ -1298,11 +1298,16 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
           </button>
         </div>
 
-        {/* Diagnostic Guide Tip box */}
-        <div className="flex gap-2 bg-indigo-950/20 p-2.5 rounded-xl border border-indigo-950/30">
+        {/* Guidance for the panel being shot right now. This was a single
+            hardcoded sentence repeated on all 26 slots, so it stopped being
+            read after the first one. Every slot already carries a description
+            written for it — show that instead. Body copy is neutral, not cyan:
+            cyan is reserved for where the eye should go next. */}
+        <div className="flex gap-2 bg-neutral-900/60 p-2.5 rounded-xl border border-neutral-800">
           <Sparkles className="text-[#4FE3DC] shrink-0" size={13} />
-          <p className="text-[12px] text-indigo-300 leading-normal">
-            <strong>Lot Photographer Tip:</strong> Align the vehicle tires with guidelines. Use <strong>Bulk Roll</strong> to upload multiple photos at once.
+          <p className="text-[12px] text-neutral-300 leading-normal">
+            <strong className="text-neutral-100">{activeSlot.name}:</strong>{' '}
+            {activeSlot.description || 'Frame the panel inside the guide outline before capturing.'}
           </p>
         </div>
 
