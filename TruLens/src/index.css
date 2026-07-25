@@ -401,3 +401,38 @@ select:focus-visible {
 .on-fill:focus-visible {
   outline-color: var(--white);
 }
+
+/* ── TruLens · Field-Capture sterile zones ──────────────────────────────────
+   §1.3: zero saturation, zero blur around every image. The shooter's eye
+   adapts to any cast in peripheral UI — a subtle cyan surround biases their
+   white-balance judgement and the fault shows on white dealer sites.          */
+[data-app="trulens"] .capture-preview,
+[data-app="trulens"] .photo-review,
+[data-app="trulens"] .panel-thumb {
+  background: var(--photo-surround);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+/* Suppress accent inside the sterile zone entirely. */
+[data-app="trulens"] .photo-review :where(*) { --accent: transparent; }
+/* Full-bleed proof: true void, no chrome. */
+[data-app="trulens"] .photo-review--fullscreen { background: var(--photo-void); }
+
+/* Proofing toggle — cycles photo-void / photo-surround / photo-proof.
+   Applied as data-proof on the .photo-review container. */
+[data-app="trulens"] .photo-review[data-proof="void"]    { background: var(--photo-void); }
+[data-app="trulens"] .photo-review[data-proof="surround"] { background: var(--photo-surround); }
+[data-app="trulens"] .photo-review[data-proof="proof"]   { background: var(--photo-proof); }
+
+/* ── TruLens · Field-Capture state indicators (§1.10) ───────────────────────
+   Quiet pass / amber retake / red for system errors only. Success is silent. */
+[data-app="trulens"] .slot-state--idle       { outline: 1px solid var(--border-subtle); }
+[data-app="trulens"] .slot-state--active     { outline: 2px solid var(--accent); animation: tl-ring-pulse 1.5s ease-in-out infinite; }
+[data-app="trulens"] .slot-state--captured   { background: var(--bg-overlay); } /* neutral pass */
+[data-app="trulens"] .slot-state--retake     { outline: 2px solid var(--state-attention); } /* amber — NOT red */
+[data-app="trulens"] .slot-state--error      { outline: 2px solid var(--state-error); }
+
+@keyframes tl-ring-pulse {
+  0%, 100% { outline-offset: 0; }
+  50%       { outline-offset: 3px; }
+}
