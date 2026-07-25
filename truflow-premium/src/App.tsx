@@ -977,6 +977,16 @@ export default function App() {
           <div className="w-full flex items-center justify-center px-1">
             <img src={logo} alt="TruFlow Premium" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
+          {/* Whose floor this is, and who is signed in — stated once, here,
+              directly under the mark rather than repeated across the top bar. */}
+          <div className="mt-3 flex flex-col items-center text-center">
+            <span className="text-[13px] font-semibold text-[color:var(--white)] leading-tight">
+              {account?.label || 'Signed in'}
+            </span>
+            <span className="text-[length:var(--t-micro)] text-[color:var(--cyan)] font-semibold">
+              {selectedRole === 'owner' ? 'Owner' : selectedRole === 'manager' ? 'Manager' : 'Salesperson'}
+            </span>
+          </div>
           {/* The dealer's OWN showroom. This was hardcoded to true-cars.co.za,
               so every dealership's sidebar linked to our consumer site instead
               of to their website. */}
@@ -1050,13 +1060,7 @@ export default function App() {
       {/* Main Panel */}
       <main className="flex-1 md:ml-[240px] min-h-screen px-4 py-6 md:px-8 md:py-8 z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
         {/* Top Profile Bar - Hidden on mobile */}
-        <div className="hidden md:flex justify-between items-center gap-4 border-b border-white/5 pb-4">
-           {/* The dealership, at a glance. Role comes from the login, not a toggle. */}
-           <div>
-             <h2 className="text-[16px] font-semibold text-[color:var(--white)]">{account?.label || 'TruFlow'}</h2>
-             <span className="text-[13px] text-[rgba(232,234,230,0.55)]">Signed in</span>
-           </div>
-
+        <div className="hidden md:flex justify-end items-center gap-4 border-b border-white/5 pb-4">
            <div className="flex items-center gap-2">
              <button
                type="button"
@@ -1067,12 +1071,8 @@ export default function App() {
                <Sparkles size={14} />
                Dealer Assist
              </button>
-             <div className="flex items-center gap-3 bg-[color:var(--ink-2)] border border-white/5 rounded-full pl-3 pr-3 py-2">
-               <div className="flex flex-col items-end">
-                 <span className="text-[13px] font-bold text-[color:var(--white)]">{account?.label || 'Signed in'}</span>
-                 <span className="text-[13px] text-[color:var(--cyan)] font-semibold">{selectedRole === 'owner' ? 'Owner' : selectedRole === 'manager' ? 'Manager' : 'Salesperson'}</span>
-               </div>
-             </div>
+             {/* Who is signed in now lives under the sidebar logo — it was
+                 repeated three times across the top bar. */}
              <button
                type="button"
                onClick={handleLogout}
