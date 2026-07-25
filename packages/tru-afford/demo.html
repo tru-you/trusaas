@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TruAfford — theming harness</title>
+<!--
+  Local QA harness for the TruAfford widget (brief §1.5 / §3.2).
+
+  Two things need proving before the widget ships to a dealer:
+    1. the accent genuinely drives every shade, glow and tint
+    2. the host page cannot leak into the widget, and vice versa
+
+  The "hostile host" CSS below is deliberate sabotage — broad selectors of the
+  kind real dealer themes ship. If the widget still renders correctly with
+  these active, all:initial is doing its job.
+-->
+<style>
+  :root { --demo-bg:#f4f5f7; --demo-fg:#11151c; --demo-card:#fff; --demo-line:rgba(0,0,0,.12); }
+  body.dark { --demo-bg:#0a0c12; --demo-fg:#e8eae6; --demo-card:#131722; --demo-line:rgba(255,255,255,.14); }
+  body {
+    margin:0; padding:32px 24px 120px;
+    font:15px/1.6 system-ui,-apple-system,sans-serif;
+    background:var(--demo-bg); color:var(--demo-fg);
+    transition:background .25s,color .25s;
+  }
+  .wrap { max-width:760px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; letter-spacing:-.02em; }
+  .lede { opacity:.7; font-size:14px; margin:0 0 24px; }
+  .panel { background:var(--demo-card); border:1px solid var(--demo-line); border-radius:14px; padding:18px; margin-bottom:16px; }
+  .panel h2 { font-size:13px; text-transform:uppercase; letter-spacing:.1em; opacity:.6; margin:0 0 12px; }
+  .swatches { display:flex; flex-wrap:wrap; gap:8px; }
+  .sw { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:100px;
+        border:1px solid var(--demo-line); background:transparent; color:inherit;
+        font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  .sw:hover { border-color:currentColor; }
+  .sw[aria-pressed="true"] { outline:2px solid currentColor; outline-offset:2px; }
+  .dot { width:14px; height:14px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,.25); }
+  code { font-family:ui-monospace,monospace; font-size:12.5px; background:rgba(127,127,127,.14); padding:2px 6px; border-radius:5px; }
+  .hint { font-size:13px; opacity:.7; margin:12px 0 0; }
+
+  /* ---- hostile host styles: what a badly-scoped dealer theme looks like ---- */
+  * { letter-spacing:.01em; }
+  div { border-radius:0; }
+  button { background:#ff00ff !important; color:#00ff00 !important; font-family:"Comic Sans MS",cursive !important; }
+  input, select { border:4px dashed #ff0000 !important; background:yellow !important; }
+  svg { transform:rotate(180deg); }
+  b, strong { font-style:italic; text-transform:lowercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>TruAfford — theming harness</h1>
+  <p class="lede">
+    Pick a dealer accent and a host theme, then open the widget bottom-right.
+    Every shade, glow, ring and tint should follow the accent.
+  </p>
+
+  <div class="panel">
+    <h2>Dealer accent</h2>
+    <div class="swatches" id="accents"></div>
+    <p class="hint">Only <code>data-accent</code> is set — bright/deep shades, glows, focus rings and result tints all derive from it.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Host page theme</h2>
+    <div class="swatches">
+      <button class="sw" id="t-light" aria-pressed="true"><span class="dot" style="background:#fff"></span>Light host</button>
+      <button class="sw" id="t-dark" aria-pressed="false"><span class="dot" style="background:#0a0c12"></span>Dark host</button>
+    </div>
+    <p class="hint">The widget is dark by design on both — it must stay legible over either.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Isolation check</h2>
+    <p class="hint" style="margin-top:0">
+      This page ships deliberately hostile global CSS: magenta buttons in Comic Sans,
+      dashed-red yellow inputs, upside-down SVGs, lowercase italic <b>bold text</b>.
+      Those rules hit this panel — look at the buttons above. If anything inside the
+      widget picks them up, <code>all:initial</code> has a hole in it.
+    </p>
+  </div>
+</div>
+
+<script>
+  var ACCENTS = [
+    { name: "TruSaaS (default)", hex: "#4FE3DC" },
+    { name: "Cars on Caledon",   hex: "#e30613" },
+    { name: "Your Car Guy",      hex: "#e30613" },
+    { name: "MKR Auto",          hex: "#0B5BD7" },
+    { name: "Deep green",        hex: "#1B7F4C" },
+    { name: "Amber",             hex: "#F59E0B" }
+  ];
+
+  var params = new URLSearchParams(location.search);
+  var current = params.get("accent") || ACCENTS[0].hex;
+  var theme = params.get("theme") || "light";
+
+  if (theme === "dark") {
+    document.body.classList.add("dark");
+    document.getElementById("t-light").setAttribute("aria-pressed", "false");
+    document.getElementById("t-dark").setAttribute("aria-pressed", "true");
+  }
+
+  var host = document.getElementById("accents");
+  ACCENTS.forEach(function (a) {
+    var b = document.createElement("button");
+    b.className = "sw";
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(a.hex.toLowerCase() === current.toLowerCase()));
+    b.innerHTML = '<span class="dot" style="background:' + a.hex + '"></span>' + a.name;
+    b.addEventListener("click", function () { go(a.hex, theme); });
+    host.appendChild(b);
+  });
+
+  document.getElementById("t-light").addEventListener("click", function () { go(current, "light"); });
+  document.getElementById("t-dark").addEventListener("click", function () { go(current, "dark"); });
+
+  function go(accent, th) {
+    location.search = "?accent=" + encodeURIComponent(accent) + "&theme=" + th;
+  }
+
+  // The widget guards against double-load, so it is injected once with the
+  // chosen accent rather than re-themed in place.
+  var s = document.createElement("script");
+  s.src = "tru-afford.js";
+  s.setAttribute("data-dealer", "Demo Motors");
+  s.setAttribute("data-wa", "27000000000");
+  s.setAttribute("data-accent", current);
+  s.setAttribute("data-bottom", "24px");
+  document.body.appendChild(s);
+</script>
+</body>
+</html>
