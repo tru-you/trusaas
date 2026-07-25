@@ -362,7 +362,7 @@
         '<button type="button" class="ta-btn ta-btn-wa" id="ta-wa">WhatsApp result</button>' +
         "</div>" +
         '<p class="ta-fine">Estimate only. Final rate, term and approval subject to bank / FSP credit assessment. ' +
-        cfg.dealer + " and TrueSaas are not offering credit by this tool alone. Illustrative rate " +
+        cfg.dealer + " and TruSaaS are not offering credit by this tool alone. Illustrative rate " +
         (cfg.rate * 100).toFixed(2) + "% linked, excl. fees & insurance.</p>" +
         "</div>";
     }
