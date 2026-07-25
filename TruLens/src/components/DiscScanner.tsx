@@ -282,7 +282,7 @@ export default function DiscScanner({
               {hint || 'Tap “Take a photo” and fill the frame with just the barcode.'}
             </p>
             {diag && (
-              <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[10px] font-mono text-[rgba(232,234,230,0.4)]">
+              <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[11px] font-mono text-[rgba(232,234,230,0.4)]">
                 {diag}
               </span>
             )}
@@ -327,7 +327,7 @@ export default function DiscScanner({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={reading}
-            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2.5 font-semibold text-sm bg-[#4FE3DC] text-[#06080D] active:scale-[0.98] transition-all disabled:opacity-60"
+            className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-semibold text-[16px] bg-[#4FE3DC] text-[#06080D] active:scale-[0.98] transition-all disabled:opacity-60"
           >
             {reading ? <><Loader2 size={18} className="animate-spin" /> Reading…</> : <><Camera size={18} strokeWidth={2.5} /> Take a photo of the barcode</>}
           </button>
@@ -336,7 +336,7 @@ export default function DiscScanner({
               type="button"
               onClick={captureAndRead}
               disabled={reading}
-              className="w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-semibold text-[13px] bg-white/5 border border-white/15 text-[#E8EAE6] active:scale-[0.98] transition-all disabled:opacity-60"
+              className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-semibold text-[13px] bg-white/5 border border-white/15 text-[#E8EAE6] active:scale-[0.98] transition-all disabled:opacity-60"
             >
               <ScanLine size={16} /> Or read from live view
             </button>
@@ -346,7 +346,7 @@ export default function DiscScanner({
           <button
             type="button"
             onClick={onClose}
-            className={`w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-semibold text-[13px] active:scale-[0.98] transition-all ${
+            className={`w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-semibold text-[13px] active:scale-[0.98] transition-all ${
               hint
                 ? 'bg-[#4FE3DC] text-[#06080D]'
                 : 'text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]'

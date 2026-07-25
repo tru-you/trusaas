@@ -49,12 +49,12 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
     <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       {/* Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-sm font-bold tracking-tight flex items-center gap-1.5 font-display">
+            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2 font-display">
               <ClipboardList size={15} className="text-cyan-400" /> Inspection checklist
             </h1>
             <p className="text-[13px] text-neutral-400">
@@ -93,7 +93,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <p className="text-[11.5px] font-medium text-neutral-200 leading-snug flex-1">
+                      <p className="text-[11px] font-medium text-neutral-200 leading-snug flex-1">
                         {item.q}
                       </p>
                       {isFlagged
@@ -102,13 +102,13 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
                           ? <CheckCircle2 size={13} className="text-emerald-400 shrink-0 mt-0.5" />
                           : null}
                     </div>
-                    <div className="flex gap-1.5 mt-2.5">
+                    <div className="flex gap-2 mt-3">
                       {ANSWER_OPTIONS.map(opt => (
                         <button
                           key={opt.value}
                           type="button"
                           onClick={() => setAnswer(item.id, opt.value)}
-                          className={`flex-1 py-1.5 rounded-lg text-[13px] font-semibold tracking-normal border transition-colors ${
+                          className={`flex-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal border transition-colors ${
                             a?.answer === opt.value
                               ? opt.value === item.flagWhen
                                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'

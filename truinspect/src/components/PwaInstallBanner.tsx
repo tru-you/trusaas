@@ -87,9 +87,9 @@ export default function PwaInstallBanner() {
 
   return (
     <div className="absolute bottom-3 left-2 right-2 z-[100] pointer-events-auto">
-      <div className="rounded-2xl border border-indigo-500/40 bg-neutral-950/95 backdrop-blur-md shadow-2xl shadow-indigo-900/40 px-3 py-2.5">
-        <div className="flex items-start gap-2.5">
-          <div className="mt-0.5 p-1.5 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 shrink-0">
+      <div className="rounded-2xl border border-indigo-500/40 bg-neutral-950/95 backdrop-blur-md shadow-2xl shadow-indigo-900/40 px-3 py-3">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 p-2 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 shrink-0">
             <Smartphone size={16} />
           </div>
           <div className="flex-1 min-w-0">
@@ -120,7 +120,7 @@ export default function PwaInstallBanner() {
               <button
                 type="button"
                 onClick={handleInstall}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[13px] font-semibold tracking-normal"
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[13px] font-semibold tracking-normal"
               >
                 <Download size={12} />
                 {deferred ? 'Install app' : isIosSafari() ? (iosHelp ? 'Got it' : 'How to install') : 'Install'}

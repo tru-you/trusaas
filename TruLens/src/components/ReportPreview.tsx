@@ -227,50 +227,50 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   return (
     <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100">
       <div className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-white/10 no-print">
-        <div className="max-w-5xl mx-auto px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-[#E8EAE6] text-sm font-medium">
+        <div className="max-w-5xl mx-auto px-3 py-3 flex flex-wrap items-center justify-between gap-2">
+          <button onClick={onBack} className="flex items-center gap-2 text-slate-300 hover:text-[#E8EAE6] text-[16px] font-medium">
             <ArrowLeft size={16} /> Back
           </button>
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
             <span
-              className="text-[12px] font-bold px-2 py-1 rounded-full border"
+              className="text-[13px] font-bold px-2 py-1 rounded-full border"
               style={{ color: readiness.color, borderColor: readiness.color + '55', background: readiness.color + '18' }}
             >
               {readiness.label}
             </span>
-            <button onClick={handleCopyWa} className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[13px] font-bold text-emerald-300">
+            <button onClick={handleCopyWa} className="flex items-center gap-1 px-3 py-2 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[13px] font-bold text-emerald-300">
               {waCopied ? <Check size={12} /> : <MessageCircle size={12} />} WhatsApp blurb
             </button>
             <button
               type="button"
               onClick={handleTogglePublish}
               disabled={publishBusy}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-sky-600/20 border border-sky-500/30 rounded-lg text-[13px] font-bold text-sky-300 disabled:opacity-50"
+              className="flex items-center gap-1 px-3 py-2 bg-sky-600/20 border border-sky-500/30 rounded-lg text-[13px] font-bold text-sky-300 disabled:opacity-50"
             >
               {publishBusy ? '…' : vehicle.showOnWebsite ? 'Unpublish web' : 'Publish to web'}
             </button>
             <button onClick={handleExportWeb3d} disabled={web3dBusy}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-[13px] font-bold text-cyan-300 disabled:opacity-50">
+              className="flex items-center gap-1 px-3 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-[13px] font-bold text-cyan-300 disabled:opacity-50">
               <Box size={12} /> {web3dBusy ? 'Building 3D…' : 'Export web 3D'}
             </button>
             {embedUrl && (
               <button
                 type="button"
                 onClick={() => window.open(embedUrl, '_blank')}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200"
+                className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200"
               >
                 Open 3D viewer
               </button>
             )}
             <button onClick={() => runPdf('sales')} disabled={!!generating}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
+              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Share2 size={12} /> {generating === 'sales' ? '…' : 'Sales PDF'}
             </button>
-            <button onClick={() => window.print()} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
+            <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
               style={{ background: 'linear-gradient(120deg, #4FE3DC, #4FE3DC)' }}>
               <Download size={12} /> {generating === 'full' ? '…' : 'Full VIR PDF'}
             </button>
@@ -287,8 +287,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[13px]">
           <div className="flex justify-between gap-2">
             <div>
-              <div className="text-[12px] tracking-normal text-slate-500 font-bold">Web readiness</div>
-              <div className="font-bold text-sm" style={{ color: readiness.color }}>{readiness.label}</div>
+              <div className="text-[13px] tracking-normal text-slate-500 font-bold">Web readiness</div>
+              <div className="font-bold text-[16px]" style={{ color: readiness.color }}>{readiness.label}</div>
               <div className="text-slate-400 mt-1">
                 Required {readiness.requiredTaken}/{readiness.requiredTotal}
                 {readiness.overallScore != null ? ` · VIR ${readiness.overallScore}/100` : ''}

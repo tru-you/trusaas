@@ -24,9 +24,9 @@ export default function Login() {
             alt="TruLens Logo" 
             className="w-48 object-contain mx-auto [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
           />
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 whitespace-nowrap">
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 whitespace-nowrap">
             <span className="text-[13px] font-semibold text-indigo-400  tracking-[0.3em] font-sans">Vision for Growth</span>
-            <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+            <div className="w-1 h-1 rounded-full bg-indigo-500" />
           </div>
         </div>
 
@@ -72,16 +72,16 @@ export default function Login() {
             autoComplete="off"
             className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-[13px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
           />
-          {codeError && <p className="text-[12px] text-[#C07676]">{codeError}</p>}
+          {codeError && <p className="text-[13px] text-[#C07676]">{codeError}</p>}
           <button
             type="submit"
             disabled={codeBusy || !deviceCode.trim()}
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#4FE3DC] disabled:opacity-50 text-[#06080D] font-semibold rounded-xl text-[13px] transition-all"
+            className="w-full flex items-center justify-center gap-2 py-4 bg-[#4FE3DC] disabled:opacity-50 text-[#06080D] font-semibold rounded-xl text-[13px] transition-all"
           >
             <Monitor size={14} />
             {codeBusy ? 'Checking…' : 'Use this device'}
           </button>
-          <span className="text-[12px] text-neutral-500 text-center">
+          <span className="text-[13px] text-neutral-500 text-center">
             Signs this phone in for 30 days · full photo → export → web flow
           </span>
         </form>
@@ -90,7 +90,7 @@ export default function Login() {
             the old "New Inspector? Sign Up" toggle created a Firebase account
             that the server never honours, because it gates on the dealership
             code, so anyone following it got an account granting nothing. */}
-        <p className="mt-6 max-w-[260px] text-center text-[12px] leading-relaxed text-neutral-400">
+        <p className="mt-6 max-w-[260px] text-center text-[13px] leading-relaxed text-neutral-400">
           Access is issued per dealership. Ask your dealer principal for the
           code, or contact TruSaaS to set your yard up.
         </p>
@@ -99,13 +99,13 @@ export default function Login() {
         <div className="mt-12 flex flex-col items-center space-y-4">
           <div className="flex items-center gap-3">
             <a href="https://tru-saas.com" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
-              <span className="text-[12px] text-neutral-600  tracking-tighter">Powered By</span>
-              <span className="text-[12px] font-bold text-cyan-300 underline underline-offset-2">TruSaaS</span>
+              <span className="text-[13px] text-neutral-600  tracking-tighter">Powered By</span>
+              <span className="text-[13px] font-bold text-cyan-300 underline underline-offset-2">TruSaaS</span>
             </a>
             <div className="w-[1px] h-6 bg-neutral-800" />
             <div className="flex flex-col items-start">
-              <span className="text-[12px] text-neutral-600  tracking-tighter">Secured By</span>
-              <span className="text-[12px] font-bold text-indigo-400 flex items-center gap-1">
+              <span className="text-[13px] text-neutral-600  tracking-tighter">Secured By</span>
+              <span className="text-[13px] font-bold text-indigo-400 flex items-center gap-1">
                 AI Audit Core <Sparkles size={10} />
               </span>
             </div>
@@ -120,11 +120,11 @@ export default function Login() {
             true-cars.co.za showroom
           </a>
           
-          <p className="text-[12px] text-neutral-700 max-w-[200px] text-center leading-relaxed">
+          <p className="text-[13px] text-neutral-700 max-w-[200px] text-center leading-relaxed">
             By initializing, you agree to the Automated Photography & AI Processing Terms of Service.
           </p>
           <div className="pt-4 flex flex-col items-center">
-            <span className="text-[7px] text-neutral-800  tracking-[0.2em]">TruLens v1.0</span>
+            <span className="text-[11px] text-neutral-800  tracking-[0.2em]">TruLens v1.0</span>
           </div>
         </div>
       </div>

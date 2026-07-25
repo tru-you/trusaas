@@ -121,6 +121,10 @@ export default function InventoryList({
   React.useEffect(() => {
     const root = document.getElementById('inventory-list-container');
     if (!root) return;
+    /* Desktop only. The glow it drives is behind @media (hover: hover), so on a
+       phone this listener fired through every scroll and wrote CSS custom
+       properties on cards for an effect that device can never show. */
+    if (!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches) return;
     const onMove = (e: PointerEvent) => {
       const card = (e.target as HTMLElement)?.closest?.('.tl-card-lift') as HTMLElement | null;
       if (!card) return;
@@ -390,7 +394,7 @@ export default function InventoryList({
     <div id="inventory-list-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       
       {/* App Header */}
-      <div className="tl-glass px-3 py-2.5 border-b border-neutral-800 flex items-center gap-3 shrink-0">
+      <div className="tl-glass px-3 py-3 border-b border-neutral-800 flex items-center gap-3 shrink-0">
         {/* Was a wordmark, a wide gap, and two buttons. The gap now carries the
             two things that matter on a yard phone: whose vehicles these are, and
             how much is left.
@@ -398,7 +402,7 @@ export default function InventoryList({
             The "Sync" button is gone. It was wired to fetchInventory — a local
             refetch, not a cloud sync — and TruInspect is standalone, so a cloud
             icon labelled Sync described something that never happened. */}
-        <div className="font-display font-semibold text-[15px] tracking-tight shrink-0">
+        <div className="font-display font-semibold text-[16px] tracking-tight shrink-0">
           <span className="text-neutral-200">Tru</span><span className="text-[#4FE3DC]">Inspect</span>
         </div>
 
@@ -419,12 +423,12 @@ export default function InventoryList({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center justify-center gap-1 min-h-[44px] min-w-[44px] px-3 rounded bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-[12px] text-red-300 font-semibold tracking-normal transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center justify-center gap-1 min-h-[44px] min-w-[44px] px-3 rounded bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-[13px] text-red-300 font-semibold tracking-normal transition-all cursor-pointer disabled:opacity-50"
             title={user?.email ? `Log out (${user.email})` : 'Log out of TruInspect'}
           >
             <LogOut size={13} />
@@ -434,11 +438,11 @@ export default function InventoryList({
       </div>
 
       {/* Tab Switcher — equal tabs so Settings is not mistaken for a camera FAB */}
-      <div className="flex bg-black/40 p-1.5 border-b border-cyan-500/15 shrink-0 gap-1 backdrop-blur-md">
+      <div className="flex bg-black/40 p-2 border-b border-cyan-500/15 shrink-0 gap-1 backdrop-blur-md">
         <button
           type="button"
           onClick={() => setCurrentTab('catalog')}
-          className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             currentTab === 'catalog'
               ? 'tl-glass text-trulens-purple shadow-lg shadow-cyan-600/20 border border-trulens-purple/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
@@ -450,7 +454,7 @@ export default function InventoryList({
         <button
           type="button"
           onClick={() => setCurrentTab('dashboard')}
-          className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             currentTab === 'dashboard'
               ? 'tl-glass text-trulens-blue shadow-lg shadow-blue-600/20 border border-trulens-blue/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
@@ -462,7 +466,7 @@ export default function InventoryList({
         <button
           type="button"
           onClick={() => setCurrentTab('settings')}
-          className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 text-[13px] tracking-normal font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             currentTab === 'settings'
               ? 'tl-glass text-[#E8EAE6] shadow-lg border border-neutral-500/40'
               : 'text-neutral-400 hover:text-neutral-200 border border-transparent hover:bg-white/5'
@@ -477,17 +481,17 @@ export default function InventoryList({
       {/* Analytics Row */}
       <div className="grid grid-cols-3 gap-2 p-3 bg-neutral-950/40 border-b border-neutral-850 shrink-0">
         <div className="bg-neutral-950/70 p-2 rounded-lg border border-neutral-800/60 flex flex-col">
-          <span className="text-[12px] text-neutral-400  font-bold tracking-wider">Total Catalogue</span>
+          <span className="text-[13px] text-neutral-400  font-bold tracking-wider">Total Catalogue</span>
           <span className="text-base font-semibold text-[#E8EAE6] mt-0.5">{vehicles.length}</span>
         </div>
         <div className="bg-neutral-950/70 p-2 rounded-lg border border-neutral-800/60 flex flex-col">
-          <span className="text-[12px] text-amber-400  font-bold tracking-wider">Shooting</span>
+          <span className="text-[13px] text-amber-400  font-bold tracking-wider">Shooting</span>
           <span className="text-base font-semibold text-amber-400 mt-0.5">
             {vehicles.filter(v => v.status === 'In-Progress').length}
           </span>
         </div>
         <div className="bg-neutral-950/70 p-2 rounded-lg border border-neutral-800/60 flex flex-col">
-          <span className="text-[12px] text-emerald-400  font-bold tracking-wider">Ready (Web)</span>
+          <span className="text-[13px] text-emerald-400  font-bold tracking-wider">Ready (Web)</span>
           <span className="text-base font-semibold text-emerald-400 mt-0.5">
             {vehicles.filter(v => v.status === 'Ready' || v.status === 'Listed').length}
           </span>
@@ -521,15 +525,15 @@ export default function InventoryList({
 
         {/* Add Vehicle Form Box */}
         {showAddForm && (
-          <form onSubmit={handleSubmit} className="bg-neutral-950 border border-neutral-800 rounded-xl p-3.5 space-y-3.5 shadow-xl animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-neutral-850 pb-1.5">
-              <span className="text-xs font-bold text-neutral-300 flex items-center gap-1.5">
+          <form onSubmit={handleSubmit} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 space-y-4 shadow-xl animate-in fade-in duration-200">
+            <div className="flex items-center justify-between border-b border-neutral-850 pb-2">
+              <span className="text-[13px] font-bold text-neutral-300 flex items-center gap-2">
                 <Plus size={14} className="text-trulens-purple" /> New Inventory Vehicle
               </span>
               <button 
                 type="button" 
                 onClick={handleAutoGenerateData} 
-                className="text-[12px] text-trulens-blue hover:text-trulens-blue/80 underline"
+                className="text-[13px] text-trulens-blue hover:text-trulens-blue/80 underline"
               >
                 Auto-Fill VIN & Stock
               </button>
@@ -537,92 +541,92 @@ export default function InventoryList({
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Make *</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Make *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g., Ford"
                   value={make}
                   onChange={(e) => setMake(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Model *</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Model *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g., Mustang"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Year</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Year</label>
                 <input
                   type="number"
                   placeholder="2024"
                   value={year}
                   onChange={(e) => setYear(Number(e.target.value))}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Trim</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Trim</label>
                 <input
                   type="text"
                   placeholder="GT Premium"
                   value={trim}
                   onChange={(e) => setTrim(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Price (R)</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Price (R)</label>
                 <input
                   type="number"
                   placeholder="35000"
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Stock #</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Stock #</label>
                 <input
                   type="text"
                   placeholder="STK-10293"
                   value={stockNumber}
                   onChange={(e) => setStockNumber(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Color</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Color</label>
                 <input
                   type="text"
                   placeholder="Magnetic Gray"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Vehicle Type</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Vehicle Type</label>
                 <select
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 >
                   <option value="Sedan">Sedan</option>
                   <option value="SUV">SUV</option>
@@ -634,11 +638,11 @@ export default function InventoryList({
                 </select>
               </div>
               <div>
-                <label className="text-[12px] text-neutral-400 font-bold block mb-1">Status</label>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'In-Progress' | 'Ready')}
-                  className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 >
                   <option value="In-Progress">In-Progress</option>
                   <option value="Ready">Ready</option>
@@ -647,13 +651,13 @@ export default function InventoryList({
             </div>
 
             <div>
-              <label className="text-[12px] text-neutral-400 font-bold block mb-1">VIN (17 characters)</label>
+              <label className="text-[13px] text-neutral-400 font-bold block mb-1">VIN (17 characters)</label>
               <input
                 type="text"
                 placeholder="Auto-generate or enter VIN"
                 value={vin}
                 onChange={(e) => setVin(e.target.value.toUpperCase())}
-                className="w-full bg-neutral-900 text-xs px-2 py-1.5 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
               />
             </div>
 
@@ -661,13 +665,13 @@ export default function InventoryList({
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="flex-1 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-xs font-bold cursor-pointer"
+                className="flex-1 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-[13px] font-bold cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 py-2 bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] rounded-lg text-xs font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
+                className="flex-1 py-2 bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
               >
                 <Plus size={14} /> Add Vehicle
               </button>
@@ -692,13 +696,13 @@ export default function InventoryList({
         {deepLinkBanner && (
           <div className="flex items-start justify-between gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 py-2">
             <div className="min-w-0">
-              <p className="text-[12px] font-semibold tracking-normal text-cyan-300">Opened from Flow</p>
+              <p className="text-[13px] font-semibold tracking-normal text-cyan-300">Opened from Flow</p>
               <p className="text-[13px] text-neutral-200 mt-0.5 font-mono truncate">{deepLinkBanner}</p>
             </div>
             <button
               type="button"
               onClick={() => { setDeepLinkBanner(null); setHighlightStock(null); setSearchTerm(''); }}
-              className="text-[12px] font-bold text-cyan-300 hover:text-[#E8EAE6] shrink-0"
+              className="text-[13px] font-bold text-cyan-300 hover:text-[#E8EAE6] shrink-0"
             >
               Clear
             </button>
@@ -723,7 +727,7 @@ export default function InventoryList({
         </div>
 
         {/* Readiness quick filter — useful for "what still needs a shoot?" */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {([
             { id: 'ALL' as const, label: 'All readiness' },
             { id: 'NEEDS' as const, label: 'Needs shots' },
@@ -733,7 +737,7 @@ export default function InventoryList({
               key={f.id}
               type="button"
               onClick={() => setReadinessFilter(f.id)}
-              className={`flex-1 flex items-center justify-center min-h-[42px] rounded-lg text-[12px] font-bold tracking-normal border transition-all ${
+              className={`flex-1 flex items-center justify-center min-h-[42px] rounded-lg text-[13px] font-bold tracking-normal border transition-all ${
                 readinessFilter === f.id
                   ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
                   : 'bg-neutral-950 text-neutral-500 border-neutral-800 hover:text-neutral-300'
@@ -745,16 +749,16 @@ export default function InventoryList({
         </div>
 
         {/* Vehicles Inventory List */}
-        <div className="space-y-2.5 pb-4">
+        <div className="space-y-3 pb-4">
           {filteredVehicles.length === 0 ? (
             <div className="text-center py-10 bg-gradient-to-b from-neutral-950/80 to-neutral-900/40 rounded-xl border border-dashed border-indigo-500/20 flex flex-col items-center justify-center p-5">
               <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-3">
                 <Camera size={22} className="text-indigo-400" />
               </div>
-              <p className="text-sm text-[#E8EAE6] font-bold">
+              <p className="text-[16px] text-[#E8EAE6] font-bold">
                 {searchTerm || readinessFilter !== 'ALL' || activeFilter !== 'All' ? 'No matches' : 'No vehicles yet'}
               </p>
-              <p className="text-[13px] text-neutral-500 mt-1.5 max-w-[220px] leading-relaxed">
+              <p className="text-[13px] text-neutral-500 mt-2 max-w-[220px] leading-relaxed">
                 {searchTerm
                   ? `Nothing matched “${searchTerm}”. Clear search or add the unit to inspect.`
                   : 'Add a vehicle, take the guided shots, answer the checklist, then issue the report.'}
@@ -771,7 +775,7 @@ export default function InventoryList({
                     setShowAddForm(true);
                   }
                 }}
-                className="mt-4 px-4 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[13px] font-semibold tracking-normal flex items-center gap-1.5"
+                className="mt-4 px-4 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[13px] font-semibold tracking-normal flex items-center gap-2"
               >
                 <Plus size={12} />{' '}
                 {searchTerm || readinessFilter !== 'ALL' || activeFilter !== 'All' ? 'Clear filters' : 'Add first vehicle'}
@@ -804,7 +808,7 @@ export default function InventoryList({
                   }`}
                 >
                   <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-2.5">
+                    <div className="flex items-start gap-3">
                       {/* Photo Preview Miniature Thumbnail or Car icon */}
                       <div className="w-12 h-12 bg-neutral-900 rounded-lg border border-neutral-800 flex items-center justify-center overflow-hidden shrink-0 relative">
                         {thumb ? (
@@ -817,17 +821,20 @@ export default function InventoryList({
                         ) : (
                           <Car size={20} className="text-neutral-600" />
                         )}
-                        <span className="absolute bottom-0 right-0 bg-black/80 px-1 text-[12px] font-mono font-bold text-neutral-300">
+                        <span className="absolute bottom-0 right-0 bg-black/80 px-1 text-[13px] font-mono font-bold text-neutral-300">
                           {takenCount}/{totalCount}
                         </span>
                       </div>
 
                       {/* Details */}
                       <div>
-                        <h3 className="text-xs font-bold text-[#E8EAE6] flex items-center gap-1">
+                        {/* The one thing scanned for on this screen, so it takes
+                            the top of the scale. Everything else on the card was
+                            the same 13px, which is why the list read as a wall. */}
+                        <h3 className="text-[20px] font-bold text-[#E8EAE6] leading-tight tracking-[-0.01em] flex items-center gap-2">
                           {vehicle.year} {vehicle.make} {vehicle.model}
                           {isHighlighted && (
-                            <span className="text-[12px] font-semibold tracking-normal text-cyan-300 bg-cyan-500/20 border border-cyan-500/40 px-1.5 py-0.5 rounded">
+                            <span className="text-[13px] font-semibold tracking-normal text-cyan-300 bg-cyan-500/20 border border-cyan-500/40 px-2 py-0.5 rounded">
                               From Flow
                             </span>
                           )}
@@ -836,20 +843,20 @@ export default function InventoryList({
                           {vehicle.trim || 'Standard Trim'} • <span className="text-neutral-300">R {priceLabel}</span>
                         </p>
                         
-                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               if (vehicle.stockNumber) copyStockNumber(vehicle.stockNumber, vehicle.id);
                             }}
-                            className="text-[12px] font-mono bg-neutral-900 px-2 min-h-[36px] rounded text-neutral-400 border border-neutral-800 hover:border-indigo-500/50 hover:text-indigo-300 flex items-center gap-1.5"
+                            className="text-[13px] font-mono bg-neutral-900 px-2 min-h-[36px] rounded text-neutral-400 border border-neutral-800 hover:border-indigo-500/50 hover:text-indigo-300 flex items-center gap-2"
                             title="Copy stock number"
                           >
                             STK {vehicle.stockNumber}
                             {copiedStockId === vehicle.id ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                           </button>
-                          <span className={`text-[12px] font-bold px-1.5 py-0.5 rounded border ${
+                          <span className={`text-[13px] font-bold px-2 py-0.5 rounded border ${
                             vehicle.status === 'Listed'
                               ? 'bg-sky-500/15 text-sky-400 border-sky-500/20'
                               : vehicle.status === 'Ready' 
@@ -863,12 +870,12 @@ export default function InventoryList({
                               : 'Capture Mode'}
                           </span>
                           {vehicle.inspectionChecklist && Object.keys(vehicle.inspectionChecklist).length > 0 && (
-                            <span className="text-[12px] font-bold px-1.5 py-0.5 rounded border bg-cyan-500/10 text-cyan-400 border-cyan-500/20">
+                            <span className="text-[13px] font-bold px-2 py-0.5 rounded border bg-cyan-500/10 text-cyan-400 border-cyan-500/20">
                               Checklist {Object.keys(vehicle.inspectionChecklist).length}
                             </span>
                           )}
                           <span
-                            className="text-[12px] font-bold px-1.5 py-0.5 rounded border"
+                            className="text-[13px] font-bold px-2 py-0.5 rounded border"
                             style={{ color: readiness.color, borderColor: readiness.color + '40', background: readiness.color + '14' }}
                             title={readiness.reasons.join(' · ') || readiness.label}
                           >
@@ -896,7 +903,7 @@ export default function InventoryList({
                   {/* Progress Indicators */}
                   <div className="mt-1 pt-2 border-t border-neutral-900 flex flex-col gap-3">
                     <div className="flex-1">
-                      <div className="flex justify-between text-[12px] text-neutral-400 mb-1 font-mono">
+                      <div className="flex justify-between text-[13px] text-neutral-400 mb-1 font-mono">
                         <span>Required Guide Completion:</span>
                         <span className="font-bold text-neutral-200">
                           {requiredTaken} of {totalRequired} ({Math.round((requiredTaken / totalRequired) * 100)}%)
@@ -916,7 +923,7 @@ export default function InventoryList({
                       <button
                         type="button"
                         onClick={() => onSelectVehicle(vehicle)}
-                        className="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 text-[13px] font-semibold  tracking-wide text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-3 min-h-[44px] rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
+                        className="flex-1 min-w-[110px] flex items-center justify-center gap-2 text-[13px] font-semibold  tracking-wide text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-3 min-h-[44px] rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
                         title="Open camera guide and take pictures"
                       >
                         <Camera size={12} /> Take pictures
@@ -993,7 +1000,7 @@ export default function InventoryList({
                               ? 'Remove from public website stock feed'
                               : 'One-tap publish to dealer website stock feed'
                           }
-                          className={`flex items-center gap-1 text-[13px] font-bold cursor-pointer whitespace-nowrap px-2 py-1.5 rounded border transition-colors disabled:opacity-50 ${
+                          className={`flex items-center gap-1 text-[13px] font-bold cursor-pointer whitespace-nowrap px-2 py-2 rounded border transition-colors disabled:opacity-50 ${
                             vehicle.showOnWebsite
                               ? 'bg-sky-500/15 text-sky-300 border-sky-500/30 hover:bg-sky-500/25'
                               : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/25 hover:bg-cyan-500/20'
@@ -1021,17 +1028,17 @@ export default function InventoryList({
             {/* Dashboard Heading & Revenue Overview */}
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <BarChart3 size={15} className="text-indigo-400" />
-                  <span className="text-xs font-bold text-neutral-200 tracking-normal">Inventory Dashboard</span>
+                  <span className="text-[13px] font-bold text-neutral-200 tracking-normal">Inventory Dashboard</span>
                 </div>
-                <p className="text-[12px] text-neutral-500 mt-0.5">Real-time photography & readiness audit</p>
+                <p className="text-[13px] text-neutral-500 mt-0.5">Real-time photography & readiness audit</p>
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-[13px] font-bold text-emerald-400">
                   R {vehicles.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0).toLocaleString()} Ready
                 </span>
-                <span className="text-[12px] text-neutral-500">
+                <span className="text-[13px] text-neutral-500">
                   R {vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0).toLocaleString()} Pending
                 </span>
               </div>
@@ -1040,20 +1047,20 @@ export default function InventoryList({
             {/* Performance KPIs */}
             <div className="grid grid-cols-4 gap-2">
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[12px] text-neutral-500  font-bold">Catalogue</span>
-                <span className="text-sm font-semibold text-[#E8EAE6]">{vehicles.length}</span>
+                <span className="text-[13px] text-neutral-500  font-bold">Catalogue</span>
+                <span className="text-[16px] font-semibold text-[#E8EAE6]">{vehicles.length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[12px] text-emerald-500  font-bold">Ready</span>
-                <span className="text-sm font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready').length}</span>
+                <span className="text-[13px] text-emerald-500  font-bold">Ready</span>
+                <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready').length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[12px] text-amber-500  font-bold">Pending</span>
-                <span className="text-sm font-semibold text-amber-400">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
+                <span className="text-[13px] text-amber-500  font-bold">Pending</span>
+                <span className="text-[16px] font-semibold text-amber-400">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[12px] text-indigo-500  font-bold">Capture Rate</span>
-                <span className="text-sm font-semibold text-indigo-400">
+                <span className="text-[13px] text-indigo-500  font-bold">Capture Rate</span>
+                <span className="text-[16px] font-semibold text-indigo-400">
                   {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * PHOTO_SLOTS.length || 1)) * 100)}%
                 </span>
               </div>
@@ -1063,7 +1070,7 @@ export default function InventoryList({
             <div className="grid grid-cols-2 gap-2">
               {/* Readiness Distribution */}
               <div className="bg-neutral-950 border border-neutral-850 rounded-xl p-3 h-48 flex flex-col">
-                <span className="text-[12px] font-bold text-neutral-400  mb-2">Readiness Distribution</span>
+                <span className="text-[13px] font-bold text-neutral-400  mb-2">Readiness Distribution</span>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -1089,7 +1096,7 @@ export default function InventoryList({
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex justify-center gap-4 text-[12px] text-neutral-500 font-bold ">
+                <div className="flex justify-center gap-4 text-[13px] text-neutral-500 font-bold ">
                   <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"/> Ready</span>
                   <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"/> Pending</span>
                 </div>
@@ -1097,7 +1104,7 @@ export default function InventoryList({
 
               {/* Weekly Capture Volume */}
               <div className="bg-neutral-950 border border-neutral-850 rounded-xl p-3 h-48 flex flex-col">
-                <span className="text-[12px] font-bold text-neutral-400  mb-2">Weekly Activity</span>
+                <span className="text-[13px] font-bold text-neutral-400  mb-2">Weekly Activity</span>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={[
@@ -1126,13 +1133,13 @@ export default function InventoryList({
             {/* Critical Action Items */}
             <div className="bg-neutral-950 border border-neutral-850 rounded-xl p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px] font-bold text-neutral-400 ">Attention Required</span>
-                <span className="text-[12px] text-amber-500 font-bold">Action Needed</span>
+                <span className="text-[13px] font-bold text-neutral-400 ">Attention Required</span>
+                <span className="text-[13px] text-amber-500 font-bold">Action Needed</span>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {vehicles.filter(v => v.status === 'In-Progress').length === 0 ? (
                   <div className="text-center py-2">
-                    <p className="text-[12px] text-neutral-500 font-medium">All clear! Your inventory is fully documented.</p>
+                    <p className="text-[13px] text-neutral-500 font-medium">All clear! Your inventory is fully documented.</p>
                   </div>
                 ) : (
                   vehicles.filter(v => v.status === 'In-Progress').slice(0, 3).map(v => {
@@ -1145,12 +1152,12 @@ export default function InventoryList({
                           </div>
                           <div>
                             <p className="text-[13px] font-bold text-neutral-200">{v.year} {v.make}</p>
-                            <p className="text-[12px] text-neutral-500">Missing {missingCount} required shots</p>
+                            <p className="text-[13px] text-neutral-500">Missing {missingCount} required shots</p>
                           </div>
                         </div>
                         <button 
                           onClick={() => onSelectVehicle(v)}
-                          className="text-[12px] font-bold text-indigo-400 hover:text-indigo-300"
+                          className="text-[13px] font-bold text-indigo-400 hover:text-indigo-300"
                         >
                           Complete →
                         </button>
@@ -1162,20 +1169,20 @@ export default function InventoryList({
             </div>
 
             {/* Next action — computed from the fleet, not asserted. */}
-            <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-3.5 flex items-start gap-3">
+            <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-4 flex items-start gap-3">
               <div className="p-2 rounded-lg bg-[#4FE3DC]/12 text-[#4FE3DC] shrink-0">
                 <Lightbulb size={14} />
               </div>
               <div className="flex-1 min-w-0">
                 <span className="text-[11px] font-bold text-neutral-400 tracking-widest">DO NEXT</span>
-                <p className="text-[15px] font-semibold text-[#E8EAE6] leading-snug mt-1">
+                <p className="text-[16px] font-semibold text-[#E8EAE6] leading-snug mt-1">
                   {nextAction.head}
                 </p>
                 <p className="text-[13px] text-neutral-300 leading-snug mt-0.5">
                   {nextAction.body}
                 </p>
                 {fleet.total > 0 && (
-                  <div className="mt-2.5 flex items-center gap-2">
+                  <div className="mt-3 flex items-center gap-2">
                     <div className="h-1.5 flex-1 rounded-full bg-neutral-800 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-[#4FE3DC] transition-all duration-500"
@@ -1193,9 +1200,9 @@ export default function InventoryList({
         ) : (
           <div className="space-y-6 pb-6 animate-in slide-in-from-right-4 duration-500">
             {/* Settings Heading */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Sliders size={15} className="text-indigo-400" />
-              <span className="text-xs font-bold text-neutral-200 tracking-normal">Organisation Settings</span>
+              <span className="text-[13px] font-bold text-neutral-200 tracking-normal">Organisation Settings</span>
             </div>
 
             {/* Profile Section */}
@@ -1204,22 +1211,22 @@ export default function InventoryList({
                 <span className="text-[13px] font-bold text-neutral-400 ">Organisation Profile</span>
               </div>
               <div className="p-4 space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[12px] text-neutral-500  font-bold">Organisation Name</label>
+                <div className="space-y-2">
+                  <label className="text-[13px] text-neutral-500  font-bold">Organisation Name</label>
                   <input 
                     type="text" 
                     value={dealershipName}
                     onChange={(e) => setDealershipName(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[12px] text-neutral-500  font-bold">Active Branch</label>
+                <div className="space-y-2">
+                  <label className="text-[13px] text-neutral-500  font-bold">Active Branch</label>
                   <input 
                     type="text" 
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -1233,13 +1240,13 @@ export default function InventoryList({
               <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <p className="text-xs font-bold text-neutral-200">Currency Preference</p>
-                    <p className="text-[12px] text-neutral-500">Global display currency for valuations</p>
+                    <p className="text-[13px] font-bold text-neutral-200">Currency Preference</p>
+                    <p className="text-[13px] text-neutral-500">Global display currency for valuations</p>
                   </div>
                   <select 
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs text-[#E8EAE6]"
+                    className="bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-[13px] text-[#E8EAE6]"
                   >
                     <option value="ZAR">South African Rand (R)</option>
                     <option value="USD">US Dollar ($)</option>
@@ -1258,8 +1265,8 @@ export default function InventoryList({
               <div className="p-4 space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <p className="text-xs font-bold text-neutral-200">Minimum photo quality</p>
-                    <span className="text-xs font-mono text-cyan-400 font-bold">{aiThreshold}%</span>
+                    <p className="text-[13px] font-bold text-neutral-200">Minimum photo quality</p>
+                    <span className="text-[13px] font-mono text-cyan-400 font-bold">{aiThreshold}%</span>
                   </div>
                   <input
                     type="range"
@@ -1269,7 +1276,7 @@ export default function InventoryList({
                     onChange={(e) => setAiThreshold(Number(e.target.value))}
                     className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                   />
-                  <p className="text-[12px] text-neutral-500 leading-relaxed italic">
+                  <p className="text-[13px] text-neutral-500 leading-relaxed italic">
                     Photos that come out too dark or blurry to below this level get flagged for a re-take, so every shot on the report is clear.
                   </p>
                 </div>
@@ -1279,12 +1286,12 @@ export default function InventoryList({
             {/* Data Management */}
             <div className="pt-2 space-y-2">
               <label className="block space-y-1">
-                <span className="text-[12px] tracking-normal text-neutral-500 font-bold">WhatsApp sales number</span>
+                <span className="text-[13px] tracking-normal text-neutral-500 font-bold">WhatsApp sales number</span>
                 <input
                   value={dealerWhatsApp}
                   onChange={(e) => setDealerWhatsApp(e.target.value)}
                   placeholder="+27 …"
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-[#E8EAE6]"
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]"
                 />
               </label>
               <button
@@ -1301,13 +1308,13 @@ export default function InventoryList({
                   setTimeout(() => setExportToast(null), 2800);
                   setTimeout(() => setDmsUrlSaved(false), 1600);
                 }}
-                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
+                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-bold py-3 rounded-xl text-[13px] transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
               >
                 Save Configuration
               </button>
 
               <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 space-y-2">
-                <div className="text-[12px] tracking-normal text-red-300/80 font-bold">Session</div>
+                <div className="text-[13px] tracking-normal text-red-300/80 font-bold">Session</div>
                 <p className="text-[13px] text-neutral-400 leading-relaxed">
                   {isDemo
                     ? 'Signed in as demo inspector (offline). Log out returns to the login screen.'
@@ -1319,7 +1326,7 @@ export default function InventoryList({
                   type="button"
                   onClick={handleLogout}
                   disabled={loggingOut}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold tracking-normal text-red-200 bg-red-500/15 border border-red-500/35 hover:bg-red-500/25 transition-all disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-semibold tracking-normal text-red-200 bg-red-500/15 border border-red-500/35 hover:bg-red-500/25 transition-all disabled:opacity-50"
                 >
                   <LogOut size={14} />
                   {loggingOut ? 'Signing out…' : 'Log out'}
@@ -1328,7 +1335,7 @@ export default function InventoryList({
             </div>
 
             <div className="pt-8 pb-4 flex flex-col items-center opacity-40">
-              <span className="text-[12px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaaS</span>
+              <span className="text-[13px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaaS</span>
             </div>
           </div>
         )}

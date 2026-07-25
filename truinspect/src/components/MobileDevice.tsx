@@ -48,7 +48,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
       <div className="relative flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-neutral-950 text-[#E8EAE6] font-sans select-none overflow-hidden">
         {/* Thin status strip only when not installed (browser chrome already there when not standalone) */}
         {!isStandaloneDisplay() && (
-          <div className="h-10 shrink-0 bg-neutral-950 text-[#E8EAE6] px-4 flex items-center justify-between text-[12px] font-semibold tracking-wider border-b border-neutral-900">
+          <div className="h-10 shrink-0 bg-neutral-950 text-[#E8EAE6] px-4 flex items-center justify-between text-[13px] font-semibold tracking-wider border-b border-neutral-900">
             <span className="text-neutral-300">TruInspect</span>
             <div className="flex items-center gap-2 text-neutral-400">
               <Wifi size={13} className="text-indigo-400" />
@@ -69,8 +69,8 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
   // ── Desktop demo: phone frame ─────────────────────────────────────
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-4 md:p-8 select-none font-sans overflow-hidden">
-      <div className="relative w-full max-w-[412px] md:max-w-[500px] lg:max-w-[550px] aspect-[9/19.5] bg-neutral-950 rounded-[52px] p-3.5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.05),0_0_40px_10px_rgba(30,58,138,0.25)] border border-neutral-800 flex flex-col justify-stretch">
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 w-32 h-6.5 bg-neutral-950 rounded-full z-50 flex items-center justify-between px-3.5 border border-neutral-800 shadow-inner">
+      <div className="relative w-full max-w-[412px] md:max-w-[500px] lg:max-w-[550px] aspect-[9/19.5] bg-neutral-950 rounded-[52px] p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.05),0_0_40px_10px_rgba(30,58,138,0.25)] border border-neutral-800 flex flex-col justify-stretch">
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 w-32 h-6.5 bg-neutral-950 rounded-full z-50 flex items-center justify-between px-4 border border-neutral-800 shadow-inner">
           <div className="w-2.5 h-2.5 rounded-full bg-neutral-900 border border-blue-900 flex items-center justify-center">
             <div className="w-1 h-1 rounded-full bg-blue-500 opacity-60"></div>
           </div>
@@ -88,7 +88,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
         <div className="relative w-full h-full bg-neutral-950 rounded-[40px] overflow-hidden flex flex-col border border-neutral-800 shadow-2xl">
           <div className="h-12 bg-neutral-950 text-[#E8EAE6] px-7 flex items-center justify-between text-[13px] font-semibold tracking-wider z-40 shrink-0">
             <span className="text-neutral-200">{time}</span>
-            <div className="flex items-center gap-1.5 text-neutral-300">
+            <div className="flex items-center gap-2 text-neutral-300">
               <Signal size={12} className="text-neutral-400" />
               <span className="text-[13px] text-neutral-400 font-bold">5G</span>
               <Wifi size={12} className="text-indigo-400" />
@@ -107,8 +107,8 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
         </div>
       </div>
 
-      <p className="mt-4 text-xs font-mono text-slate-500 flex items-center gap-1.5 max-w-md text-center">
-        <Sparkles size={12} className="text-indigo-400 animate-pulse shrink-0" />
+      <p className="mt-4 text-[13px] font-mono text-slate-500 flex items-center gap-2 max-w-md text-center">
+        <Sparkles size={12} className="text-indigo-400 shrink-0" />
         Desktop preview · On a phone, open this URL and install TruInspect to Home Screen
       </p>
     </div>

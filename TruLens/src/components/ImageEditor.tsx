@@ -238,7 +238,7 @@ export default function ImageEditor({
         <button
           type="button"
           onClick={handleSaveChanges}
-          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-[13px] font-semibold  tracking-wide text-[#E8EAE6] flex items-center gap-1 cursor-pointer transition-colors shadow-md shadow-emerald-600/20"
+          className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-[13px] font-semibold  tracking-wide text-[#E8EAE6] flex items-center gap-1 cursor-pointer transition-colors shadow-md shadow-emerald-600/20"
         >
           <Save size={12} /> Save shot
         </button>
@@ -267,22 +267,22 @@ export default function ImageEditor({
             ◐ {proofLabel[proofMode]}
           </button>
 
-          <span className="absolute bottom-3 left-3 bg-black/70 px-2 py-1 rounded text-[12px] font-mono tracking-wider text-neutral-400 border border-white/10">
+          <span className="absolute bottom-3 left-3 bg-black/70 px-2 py-1 rounded text-[13px] font-mono tracking-wider text-neutral-400 border border-white/10">
             Preview · {selectedBgId === 'none' ? 'As shot' : selectedBgId === 'cutout' ? 'Cutout' : 'Studio backdrop'}
           </span>
         </div>
 
         {/* Studio Background Selector Row */}
         <div className="px-4">
-          <span className="text-[12px]  font-bold text-neutral-400 tracking-wider flex items-center gap-1.5 mb-2">
+          <span className="text-[13px]  font-bold text-neutral-400 tracking-wider flex items-center gap-2 mb-2">
             <ImageIcon size={12} className="text-indigo-400" /> Professional Dealer Backdrops
           </span>
-          <div className="grid grid-cols-5 gap-1.5">
+          <div className="grid grid-cols-5 gap-2">
             {STUDIO_BACKGROUNDS.map(bg => (
               <button
                 key={bg.id}
                 onClick={() => setSelectedBgId(bg.id)}
-                className={`p-1.5 rounded-lg border flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                   selectedBgId === bg.id
                     ? 'border-indigo-500 bg-indigo-550/10 text-indigo-400'
                     : 'border-neutral-800 bg-neutral-950/60 text-neutral-400 hover:border-neutral-700'
@@ -295,7 +295,7 @@ export default function ImageEditor({
                 >
                   {bg.id === 'none' && <ImageIcon size={12} className="text-neutral-500" />}
                 </div>
-                <span className="text-[12px] font-semibold truncate w-full">{bg.name.split(' ')[0]}</span>
+                <span className="text-[13px] font-semibold truncate w-full">{bg.name.split(' ')[0]}</span>
               </button>
             ))}
           </div>
@@ -303,22 +303,22 @@ export default function ImageEditor({
 
         {/* Quality Audit Progress Metrics (Gemini / Simulated metrics) */}
         <div className="px-4">
-          <div className="bg-neutral-950 rounded-xl border border-neutral-850 p-3.5 space-y-3 shadow-sm">
+          <div className="bg-neutral-950 rounded-xl border border-neutral-850 p-4 space-y-3 shadow-sm">
             <div className="flex justify-between items-center pb-2 border-b border-neutral-900">
-              <span className="text-xs font-bold text-neutral-200 flex items-center gap-1.5">
+              <span className="text-[13px] font-bold text-neutral-200 flex items-center gap-2">
                 <Sparkles size={14} className="text-indigo-400" /> AI Automotive Quality Report
               </span>
               <button 
                 onClick={handleRunGeminiAudit}
                 disabled={isAnalyzing}
-                className="text-[12px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 disabled:opacity-50"
+                className="text-[13px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 disabled:opacity-50"
               >
                 {isAnalyzing ? <Loader2 size={10} className="animate-spin" /> : <Wand2 size={10} />} Re-Audit
               </button>
               {fullReport.overallScore < 95 && (
                 <button 
                   onClick={handleAutoFix}
-                  className="text-[12px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                  className="text-[13px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
                 >
                   <Sparkles size={10} /> Auto-fix
                 </button>
@@ -328,7 +328,7 @@ export default function ImageEditor({
             <div className="flex gap-4 items-center">
               {/* Radial Rating Circle */}
               <div className="relative w-14 h-14 rounded-full border-4 border-neutral-900 flex items-center justify-center shrink-0">
-                <span className="text-sm font-semibold text-[#E8EAE6]">
+                <span className="text-[16px] font-semibold text-[#E8EAE6]">
                   {isAnalyzing ? '...' : `${Math.round(fullReport.overallScore)}%`}
                 </span>
                 <div className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" style={{ animationDuration: isAnalyzing ? '1.5s' : '0s' }}></div>
@@ -357,9 +357,9 @@ export default function ImageEditor({
 
             {/* AI Generated Marketplace Title & Description */}
             {aiReport && (
-              <div className="pt-2 border-t border-neutral-900 space-y-2.5">
+              <div className="pt-2 border-t border-neutral-900 space-y-3">
                 <div>
-                  <span className="text-[12px] font-bold  text-neutral-400 tracking-wider flex items-center justify-between">
+                  <span className="text-[13px] font-bold  text-neutral-400 tracking-wider flex items-center justify-between">
                     <span>Generated Listing Title (Gemini)</span>
                     <button 
                       onClick={() => copyToClipboard(aiReport.suggestedTitle || '', 'title')}
@@ -368,11 +368,11 @@ export default function ImageEditor({
                       <Copy size={10} /> {copiedText === 'title' ? 'copied!' : 'copy'}
                     </button>
                   </span>
-                  <p className="text-xs font-semibold text-[#E8EAE6] mt-0.5">{aiReport.suggestedTitle}</p>
+                  <p className="text-[13px] font-semibold text-[#E8EAE6] mt-0.5">{aiReport.suggestedTitle}</p>
                 </div>
 
                 <div>
-                  <span className="text-[12px] font-bold  text-neutral-400 tracking-wider flex items-center justify-between">
+                  <span className="text-[13px] font-bold  text-neutral-400 tracking-wider flex items-center justify-between">
                     <span>Automated Marketplace Copy (Gemini)</span>
                     <button 
                       onClick={() => copyToClipboard(aiReport.suggestedDescription || '', 'desc')}
@@ -395,11 +395,11 @@ export default function ImageEditor({
                       : [];
                   if (!issues.length) return null;
                   return (
-                  <div className="bg-amber-950/20 border border-amber-900/30 p-2 rounded flex gap-1.5 items-start">
+                  <div className="bg-amber-950/20 border border-amber-900/30 p-2 rounded flex gap-2 items-start">
                     <AlertCircle size={12} className="text-amber-400 shrink-0 mt-0.5" />
-                    <div className="text-[12px] text-amber-300">
+                    <div className="text-[13px] text-amber-300">
                       <p className="font-bold">Lot Photographer Warning:</p>
-                      <ul className="list-disc pl-3.5 space-y-0.5 mt-0.5">
+                      <ul className="list-disc pl-4 space-y-0.5 mt-0.5">
                         {issues.map((issue, idx) => (
                           <li key={idx}>{issue}</li>
                         ))}
@@ -415,14 +415,14 @@ export default function ImageEditor({
 
         {/* Studio Masking and Enhancer Filters Sliders */}
         <div className="px-4">
-          <div className="bg-neutral-950 rounded-xl border border-neutral-850 p-3.5 space-y-3.5">
-            <span className="text-xs font-bold text-neutral-200 flex items-center justify-between">
-              <span className="flex items-center gap-1.5"><Sliders size={14} className="text-indigo-400" /> Composite Studio Adjuster</span>
+          <div className="bg-neutral-950 rounded-xl border border-neutral-850 p-4 space-y-4">
+            <span className="text-[13px] font-bold text-neutral-200 flex items-center justify-between">
+              <span className="flex items-center gap-2"><Sliders size={14} className="text-indigo-400" /> Composite Studio Adjuster</span>
               
               {/* Toggle manual mask */}
               <button 
                 onClick={() => setIsMaskActive(!isMaskActive)}
-                className={`px-2 py-0.5 rounded text-[12px] font-bold tracking-wider  border transition-all ${
+                className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-wider  border transition-all ${
                   isMaskActive || selectedBgId !== 'none'
                     ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
                     : 'bg-neutral-900 border-neutral-850 text-neutral-400'
@@ -437,7 +437,7 @@ export default function ImageEditor({
               {/* Mask Threshold Slider */}
               {(isMaskActive || selectedBgId !== 'none') && (
                 <div>
-                  <label className="text-[12px] text-neutral-400 flex justify-between font-mono">
+                  <label className="text-[13px] text-neutral-400 flex justify-between font-mono">
                     <span>Auto Background Subtraction Mask Depth</span>
                     <span className="font-bold text-neutral-200">{maskThreshold}%</span>
                   </label>
@@ -454,7 +454,7 @@ export default function ImageEditor({
 
               {/* Brightness */}
               <div>
-                <label className="text-[12px] text-neutral-400 flex justify-between font-mono">
+                <label className="text-[13px] text-neutral-400 flex justify-between font-mono">
                   <span>Exposure Brightness</span>
                   <span className="font-bold text-neutral-200">{brightness}%</span>
                 </label>
@@ -470,7 +470,7 @@ export default function ImageEditor({
 
               {/* Contrast */}
               <div>
-                <label className="text-[12px] text-neutral-400 flex justify-between font-mono">
+                <label className="text-[13px] text-neutral-400 flex justify-between font-mono">
                   <span>Contrast & Highlights</span>
                   <span className="font-bold text-neutral-200">{contrast}%</span>
                 </label>
@@ -486,7 +486,7 @@ export default function ImageEditor({
 
               {/* Saturation */}
               <div>
-                <label className="text-[12px] text-neutral-400 flex justify-between font-mono">
+                <label className="text-[13px] text-neutral-400 flex justify-between font-mono">
                   <span>Color Saturation</span>
                   <span className="font-bold text-neutral-200">{saturation}%</span>
                 </label>
@@ -508,14 +508,14 @@ export default function ImageEditor({
           <button
             type="button"
             onClick={handleSaveChanges}
-            className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-2xl text-sm font-semibold tracking-normal text-[#E8EAE6] flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-900/30"
+            className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-2xl text-[16px] font-semibold tracking-normal text-[#E8EAE6] flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-900/30"
           >
             <Save size={16} /> Save & next shot
           </button>
           <button
             type="button"
             onClick={handleDownload}
-            className="w-full py-2.5 bg-neutral-950 border border-neutral-800 hover:bg-neutral-900 rounded-xl text-[13px] font-bold text-neutral-300 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3 bg-neutral-950 border border-neutral-800 hover:bg-neutral-900 rounded-xl text-[13px] font-bold text-neutral-300 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Download size={14} className="text-indigo-400" /> Download PNG only
           </button>

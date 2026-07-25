@@ -274,13 +274,9 @@
   z-index: 0;
 }
 .tl-card-lift:hover {
-  transform: translateY(-3px) scale(1.01);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.1) inset,
     0 20px 40px -16px var(--accent-glow);
-}
-.tl-card-lift:hover::before {
-  opacity: 1;
 }
 .tl-card-lift > * {
   position: relative;
@@ -355,8 +351,12 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
 }
+/* Was `tl-float 4s infinite`. Motion is pre-attentive — you cannot choose to
+   ignore it — so a shape that never lands is re-acquired by the eye every few
+   seconds for the length of a shift. Retained as a one-shot settle so the
+   element still arrives with life, then stops. */
 .tl-float {
-  animation: tl-float 4s ease-in-out infinite;
+  animation: tl-float 900ms cubic-bezier(.22,1,.36,1) 1;
 }
 
 /* Progress sheen */
@@ -364,12 +364,16 @@
   0% { transform: translateX(-120%); }
   100% { transform: translateX(120%); }
 }
+.tl-progress-sheen.is-working::after { animation: tl-sheen 1.6s ease-in-out infinite; }
 .tl-progress-sheen::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
-  animation: tl-sheen 1.6s ease-in-out infinite;
+  /* Was infinite. A highlight sweeping across the bar every 1.6 seconds is
+     fine in a demo and exhausting by mid-afternoon. It now runs only while
+     something is genuinely in progress — add .is-working to animate. */
+  animation: none;
 }
 
 
@@ -506,4 +510,35 @@ select:focus-visible {
 .bg-purple-400, .bg-purple-500, .bg-purple-600,
 .bg-violet-400, .bg-violet-500, .bg-violet-600 {
   color: var(--text-on-accent);
+}
+
+
+/* ── Hover effects are desktop-only ──────────────────────────────────────
+   .tl-card-lift tracks the pointer with a radial glow and lifts on hover.
+   This is a touch-first app: hover does not exist on the device it is used
+   on, and the pointermove listener that drives it fires throughout every
+   scroll — paying scroll cost on a phone for an effect nobody there can see.
+   Gated so touch devices skip it entirely. */
+@media (hover: hover) and (pointer: fine) {
+  .tl-card-lift:hover {
+    transform: translateY(-3px) scale(1.01);
+  }
+  .tl-card-lift:hover::before { opacity: 1; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────
+   Neither field app honoured this, while the TruAfford widget and the chat
+   pages both did — so the two apps people hold for a whole shift were the
+   two ignoring the setting. Transitions are kept near-instant rather than
+   removed, so state changes still register. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .tl-card-lift:hover { transform: none; }
 }

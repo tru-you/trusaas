@@ -317,7 +317,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 if (v !== (vehicle.inspectorName || '')) onVehicleUpdated?.({ ...vehicle, inspectorName: v });
               }}
               placeholder="Inspector name"
-              className="w-full px-3 py-2.5 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
+              className="w-full px-3 py-3 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
             />
             <input
               type="text"
@@ -327,11 +327,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 if (v !== (vehicle.inspectorRole || '')) onVehicleUpdated?.({ ...vehicle, inspectorRole: v });
               }}
               placeholder="Designation (e.g. Workshop Manager)"
-              className="w-full px-3 py-2.5 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
+              className="w-full px-3 py-3 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
             />
           </div>
           {(!vehicle.inspectorName || !vehicle.vin) && (
-            <p className="text-[11.5px] text-amber-300/90 mt-2">
+            <p className="text-[11px] text-amber-300/90 mt-2">
               {!vehicle.vin && !vehicle.inspectorName
                 ? 'No VIN and no inspector recorded — both print blank on the report.'
                 : !vehicle.vin
@@ -343,13 +343,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       </div>
 
       <div className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-white/10 no-print">
-        <div className="max-w-5xl mx-auto px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
-          <button onClick={onBack} className="flex items-center gap-1.5 text-slate-300 hover:text-[#E8EAE6] text-sm font-medium">
+        <div className="max-w-5xl mx-auto px-3 py-3 flex flex-wrap items-center justify-between gap-2">
+          <button onClick={onBack} className="flex items-center gap-2 text-slate-300 hover:text-[#E8EAE6] text-[16px] font-medium">
             <ArrowLeft size={16} /> Back
           </button>
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`text-[12px] font-bold px-2 py-1 rounded-full border ${
+              className={`text-[13px] font-bold px-2 py-1 rounded-full border ${
                 condition.stars >= 3.5
                   ? 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10'
                   : condition.stars >= 2.5
@@ -359,14 +359,14 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             >
               Condition {condition.stars.toFixed(1)}/5
             </span>
-            <button onClick={exportHtml} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
+            <button onClick={exportHtml} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <FileText size={12} /> HTML
             </button>
-            <button onClick={() => window.print()} className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
+            <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
               style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}>
               <Download size={12} /> {generating === 'full' ? '…' : 'Inspection PDF'}
             </button>
@@ -380,8 +380,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[13px]">
           <div className="flex justify-between gap-2">
             <div>
-              <div className="text-[12px] tracking-normal text-slate-500 font-bold">Inspection status</div>
-              <div className="font-bold text-sm text-cyan-300">{condition.label}</div>
+              <div className="text-[13px] tracking-normal text-slate-500 font-bold">Inspection status</div>
+              <div className="font-bold text-[16px] text-cyan-300">{condition.label}</div>
               <div className="text-slate-400 mt-1">
                 Photos {readiness.requiredTaken}/{readiness.requiredTotal}
                 {readiness.overallScore != null ? ` · Capture quality ${readiness.overallScore}/100` : ''}

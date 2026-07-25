@@ -42,12 +42,12 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
       />
 
       <h1 className="text-[20px] font-semibold tracking-[-0.01em] text-center">Which dealership?</h1>
-      <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center mt-1.5 mb-6 leading-relaxed">
+      <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center mt-2 mb-6 leading-relaxed">
         Everything you photograph on this phone is filed to this dealership. Pick yours — you can
         change it later in Settings.
       </p>
 
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-3">
         {DEALERSHIPS.map((d) => {
           const active = choice === d.slug;
           return (
@@ -55,15 +55,15 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
               key={d.slug}
               type="button"
               onClick={() => setChoice(d.slug)}
-              className={`flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl border text-left transition-colors ${
+              className={`flex items-center justify-between gap-3 px-4 py-4 rounded-2xl border text-left transition-colors ${
                 active
                   ? 'bg-[#4FE3DC]/10 border-[#4FE3DC]/50'
                   : 'bg-white/[0.03] border-white/10 hover:border-white/20'
               }`}
             >
               <div className="min-w-0">
-                <div className="text-[14px] font-semibold text-[#E8EAE6]">{d.name}</div>
-                <div className="text-[12px] text-[rgba(232,234,230,0.55)]">{d.location}</div>
+                <div className="text-[16px] font-semibold text-[#E8EAE6]">{d.name}</div>
+                <div className="text-[13px] text-[rgba(232,234,230,0.55)]">{d.location}</div>
               </div>
               {active && <Check size={18} className="text-[#4FE3DC] shrink-0" />}
             </button>
@@ -75,7 +75,7 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
         type="button"
         disabled={!choice}
         onClick={confirm}
-        className="mt-6 w-full py-3.5 rounded-2xl bg-[#4FE3DC] text-[#06080D] font-semibold text-sm disabled:opacity-40 transition-opacity"
+        className="mt-6 w-full py-4 rounded-2xl bg-[#4FE3DC] text-[#06080D] font-semibold text-[16px] disabled:opacity-40 transition-opacity"
       >
         Continue
       </button>

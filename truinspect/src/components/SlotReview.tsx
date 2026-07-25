@@ -55,12 +55,12 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
         </button>
         <div className="text-center min-w-0">
           <p className="text-[13px] font-bold tracking-wide text-cyan-400 truncate">{slot?.name || 'Review shot'}</p>
-          <p className="text-[12px] text-neutral-400">Assess it now — condition & note</p>
+          <p className="text-[13px] text-neutral-400">Assess it now — condition & note</p>
         </div>
         <button
           type="button"
           onClick={save}
-          className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-[13px] font-semibold text-[#06080D] flex items-center gap-1"
+          className="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-[13px] font-semibold text-[#06080D] flex items-center gap-1"
         >
           <Check size={13} /> Keep
         </button>
@@ -81,8 +81,8 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
         <div className="p-4 space-y-4">
           {/* Condition score */}
           <div>
-            <p className="text-[12px] text-neutral-500 font-bold mb-1.5">Condition of this part</p>
-            <div className="flex gap-1.5">
+            <p className="text-[13px] text-neutral-500 font-bold mb-2">Condition of this part</p>
+            <div className="flex gap-2">
               {([['ok', 'OK', Check, 'emerald'], ['note', 'Note', MinusCircle, 'amber'], ['damage', 'Damage', AlertTriangle, 'rose']] as const).map(([val, label, Icon, tone]) => {
                 const active = rating === val;
                 return (
@@ -90,7 +90,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
                     key={val}
                     type="button"
                     onClick={() => setRating(val)}
-                    className={`flex-1 py-2.5 rounded-xl text-[13px] font-semibold border flex items-center justify-center gap-1.5 transition-colors ${
+                    className={`flex-1 py-3 rounded-xl text-[13px] font-semibold border flex items-center justify-center gap-2 transition-colors ${
                       active
                         ? tone === 'emerald'
                           ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
@@ -109,20 +109,20 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
 
           {/* Note */}
           <div>
-            <p className="text-[12px] text-neutral-500 font-bold mb-1.5">Note</p>
+            <p className="text-[13px] text-neutral-500 font-bold mb-2">Note</p>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="What you see — e.g. 15cm scratch, lower door"
-              className="w-full px-3 py-2.5 bg-neutral-900 border border-neutral-800 rounded-xl text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+              className="w-full px-3 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
             />
           </div>
 
           {/* Damage → close-ups */}
           {isDamage && (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 space-y-2.5">
-              <p className="text-[12px] font-semibold text-rose-300 flex items-center gap-1.5">
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 space-y-3">
+              <p className="text-[13px] font-semibold text-rose-300 flex items-center gap-2">
                 <AlertTriangle size={13} /> Add a close-up of the damage
               </p>
               <div className="flex flex-wrap gap-2">
@@ -145,7 +145,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
                   className="w-16 h-16 rounded-lg border-2 border-dashed border-rose-500/40 text-rose-300 flex flex-col items-center justify-center gap-0.5"
                 >
                   <Camera size={16} />
-                  <span className="text-[12px] font-bold">Close-up</span>
+                  <span className="text-[13px] font-bold">Close-up</span>
                 </button>
               </div>
               <input

@@ -70,12 +70,12 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
     <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       {/* Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
           <div className="min-w-0">
-            <h1 className="text-sm font-bold tracking-tight flex items-center gap-1.5">
+            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2">
               <ClipboardCheck size={15} className="text-cyan-400" /> Inspection
             </h1>
             <p className="text-[13px] text-neutral-400 truncate">
@@ -95,7 +95,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
       <button
         type="button"
         onClick={onTagDamage}
-        className="mx-4 mt-3 py-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2"
+        className="mx-4 mt-3 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2"
       >
         <Camera size={15} /> Tag damage on the photos
       </button>
@@ -118,8 +118,8 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-[12.5px] font-semibold text-neutral-100 leading-snug">{p.name}</p>
-                        {p.hint && <p className="text-[12px] text-neutral-500 mt-0.5">{p.hint}</p>}
+                        <p className="text-[13px] font-semibold text-neutral-100 leading-snug">{p.name}</p>
+                        {p.hint && <p className="text-[13px] text-neutral-500 mt-0.5">{p.hint}</p>}
                       </div>
                       {hasPhoto && (
                         <img src={vehicle.photos[p.photoSlotId!]} alt="" className="w-10 h-8 rounded object-cover border border-neutral-800 shrink-0" />
@@ -128,7 +128,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
 
                     {/* Condition rating OR works check */}
                     {p.kind === 'condition' ? (
-                      <div className="flex gap-1.5 mt-2.5">
+                      <div className="flex gap-2 mt-3">
                         {([['ok', 'OK', 'emerald'], ['note', 'Note', 'amber'], ['damage', 'Damage', 'rose']] as const).map(([val, label, tone]) => {
                           const active = r.rating === val;
                           return (
@@ -152,7 +152,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                         })}
                       </div>
                     ) : (
-                      <div className="flex gap-1.5 mt-2.5">
+                      <div className="flex gap-2 mt-3">
                         {([['yes', 'Works', Check], ['no', 'Faulty', AlertTriangle], ['na', 'N/A', MinusCircle]] as const).map(([val, label, Icon]) => {
                           const active = r.works === val;
                           const faulty = val === 'no';
@@ -161,7 +161,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                               key={val}
                               type="button"
                               onClick={() => set(p.id, { works: val })}
-                              className={`flex-1 min-h-[44px] rounded-lg text-[13px] font-semibold border flex items-center justify-center gap-1.5 transition-colors ${
+                              className={`flex-1 min-h-[44px] rounded-lg text-[13px] font-semibold border flex items-center justify-center gap-2 transition-colors ${
                                 active
                                   ? faulty
                                     ? 'bg-rose-500/15 border-rose-500/50 text-rose-300'
@@ -193,7 +193,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                         type="button"
                         onClick={onTagDamage}
                         disabled={!hasPhoto}
-                        className="mt-2 min-h-[36px] text-[12px] text-neutral-500 hover:text-cyan-300 disabled:hover:text-neutral-500 disabled:cursor-default flex items-center gap-1.5"
+                        className="mt-2 min-h-[36px] text-[13px] text-neutral-500 hover:text-cyan-300 disabled:hover:text-neutral-500 disabled:cursor-default flex items-center gap-2"
                       >
                         <Camera size={13} />
                         {hasPhoto

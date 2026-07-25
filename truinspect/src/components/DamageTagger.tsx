@@ -151,11 +151,11 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
   if (!shotSlots.length) {
     return (
       <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6]">
-        <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center gap-2.5 shrink-0">
+        <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center gap-3 shrink-0">
           <button onClick={onBack} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
-          <h1 className="text-sm font-bold">Tag damage</h1>
+          <h1 className="text-[16px] font-bold">Tag damage</h1>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-2 px-8 text-center text-neutral-400">
           <AlertTriangle size={22} className="text-amber-400" />
@@ -169,12 +169,12 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
     <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       {/* Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
           <div className="min-w-0">
-            <h1 className="text-sm font-bold tracking-tight flex items-center gap-1.5">
+            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2">
               <AlertTriangle size={15} className="text-cyan-400" /> Tag damage
             </h1>
             <p className="text-[13px] text-neutral-400 truncate">
@@ -184,7 +184,7 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
         </div>
         <div className="text-right shrink-0">
           <div className="text-[13px] font-bold text-neutral-300">{totalTags} tag{totalTags === 1 ? '' : 's'}</div>
-          <div className="text-[12px] text-neutral-500">across {shotSlots.length} photos</div>
+          <div className="text-[13px] text-neutral-500">across {shotSlots.length} photos</div>
         </div>
       </div>
 
@@ -201,9 +201,9 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
               className={`relative shrink-0 w-16 rounded-lg overflow-hidden border-2 ${active ? 'border-cyan-400' : 'border-neutral-800'}`}
             >
               <img src={vehicle.photos[s.id]} alt={s.name} className="w-16 h-12 object-cover" />
-              <span className="block text-[12px] leading-tight px-1 py-0.5 text-neutral-300 truncate bg-neutral-900">{s.name}</span>
+              <span className="block text-[13px] leading-tight px-1 py-0.5 text-neutral-300 truncate bg-neutral-900">{s.name}</span>
               {count > 0 && (
-                <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-[12px] font-bold text-black flex items-center justify-center">{count}</span>
+                <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-[13px] font-bold text-black flex items-center justify-center">{count}</span>
               )}
             </button>
           );
@@ -232,14 +232,14 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
                   borderColor: meta.color, background: `${meta.color}22`,
                   borderStyle: prov ? 'dashed' : 'solid',
                 }}
-                className={`absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 flex items-center justify-center text-[12px] font-bold text-white ${isEditing ? 'ring-2 ring-white' : ''} ${prov ? 'animate-pulse' : ''}`}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 flex items-center justify-center text-[13px] font-bold text-white ${isEditing ? 'ring-2 ring-white' : ''} ${prov ? 'animate-pulse' : ''}`}
               >
                 {i + 1}
               </button>
             );
           })}
           {!slotTags.length && (
-            <div className="absolute inset-x-0 bottom-0 p-2 text-center text-[12px] text-[#E8EAE6] bg-black/50">
+            <div className="absolute inset-x-0 bottom-0 p-2 text-center text-[13px] text-[#E8EAE6] bg-black/50">
               Tap the photo where the damage is
             </div>
           )}
@@ -249,10 +249,10 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
         {editing && (
           <div className="p-4 space-y-3 border-t border-neutral-900">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] font-bold text-neutral-300 flex items-center gap-1.5">
+              <span className="text-[13px] font-bold text-neutral-300 flex items-center gap-2">
                 Mark on {editing.panel}
                 {editing.source === 'ai' && !editing.confirmed && (
-                  <span className="text-[12px] font-bold text-cyan-300 border border-cyan-500/40 rounded px-1.5 py-0.5 flex items-center gap-1">
+                  <span className="text-[13px] font-bold text-cyan-300 border border-cyan-500/40 rounded px-2 py-0.5 flex items-center gap-1">
                     <Sparkles size={9} /> AI suggested
                   </span>
                 )}
@@ -260,26 +260,26 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
               <button
                 type="button"
                 onClick={() => removeTag(editing.id)}
-                className="flex items-center gap-1 text-[12px] text-[#C07676] hover:text-red-400"
+                className="flex items-center gap-1 text-[13px] text-[#C07676] hover:text-red-400"
               >
                 <Trash2 size={13} /> Remove
               </button>
             </div>
             {editing.source === 'ai' && !editing.confirmed && (
-              <p className="text-[12px] text-cyan-300/80 leading-relaxed">
+              <p className="text-[13px] text-cyan-300/80 leading-relaxed">
                 The model flagged this. Check it against the photo — drag isn’t needed, just confirm what’s real. Only confirmed marks reach the buyer’s report.
               </p>
             )}
 
             <div>
-              <label className="text-[12px] text-neutral-500 font-bold block mb-1.5">Type</label>
-              <div className="flex flex-wrap gap-1.5">
+              <label className="text-[13px] text-neutral-500 font-bold block mb-2">Type</label>
+              <div className="flex flex-wrap gap-2">
                 {TYPES.map((t) => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => updateTag(editing.id, { damageType: t })}
-                    className={`px-2.5 py-1 rounded-full text-[12px] font-semibold border capitalize ${
+                    className={`px-3 py-1 rounded-full text-[13px] font-semibold border capitalize ${
                       editing.damageType === t
                         ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-300'
                         : 'bg-neutral-900 border-neutral-800 text-neutral-400'
@@ -292,8 +292,8 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
             </div>
 
             <div>
-              <label className="text-[12px] text-neutral-500 font-bold block mb-1.5">Severity</label>
-              <div className="flex gap-1.5">
+              <label className="text-[13px] text-neutral-500 font-bold block mb-2">Severity</label>
+              <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((n) => {
                   const meta = SEVERITY_META[n];
                   const active = editing.severity === n;
@@ -303,9 +303,9 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
                       type="button"
                       onClick={() => updateTag(editing.id, { severity: n as DamageFinding['severity'] })}
                       style={active ? { background: `${meta.color}22`, borderColor: meta.color, color: meta.color } : undefined}
-                      className={`flex-1 py-1.5 rounded-lg text-[12px] font-bold border ${active ? '' : 'bg-neutral-900 border-neutral-800 text-neutral-400'}`}
+                      className={`flex-1 py-2 rounded-lg text-[13px] font-bold border ${active ? '' : 'bg-neutral-900 border-neutral-800 text-neutral-400'}`}
                     >
-                      {n}<span className="block text-[12px] font-medium">{meta.label}</span>
+                      {n}<span className="block text-[13px] font-medium">{meta.label}</span>
                     </button>
                   );
                 })}
@@ -313,7 +313,7 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
             </div>
 
             <div>
-              <label className="text-[12px] text-neutral-500 font-bold block mb-1.5">Note (what / where / size)</label>
+              <label className="text-[13px] text-neutral-500 font-bold block mb-2">Note (what / where / size)</label>
               <input
                 type="text"
                 value={editing.note}
@@ -327,7 +327,7 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
               <button
                 type="button"
                 onClick={() => { updateTag(editing.id, { confirmed: true }); setEditingId(null); }}
-                className="w-full py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-[13px] font-semibold text-white flex items-center justify-center gap-1.5"
+                className="w-full py-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-[13px] font-semibold text-white flex items-center justify-center gap-2"
               >
                 <Check size={14} /> Confirm — this damage is real
               </button>
@@ -335,7 +335,7 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
               <button
                 type="button"
                 onClick={() => setEditingId(null)}
-                className="w-full py-2 rounded-lg bg-neutral-900 border border-neutral-800 text-[13px] font-semibold text-neutral-300 flex items-center justify-center gap-1.5"
+                className="w-full py-2 rounded-lg bg-neutral-900 border border-neutral-800 text-[13px] font-semibold text-neutral-300 flex items-center justify-center gap-2"
               >
                 <Check size={14} /> Done with this mark
               </button>
@@ -344,7 +344,7 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
         )}
 
         {!editing && (
-          <p className="px-4 py-3 text-[12px] text-neutral-500 flex items-center gap-1.5">
+          <p className="px-4 py-3 text-[13px] text-neutral-500 flex items-center gap-2">
             <Plus size={13} /> Tap the photo to add a mark, or tap an existing mark to edit it.
           </p>
         )}
@@ -353,13 +353,13 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
       {/* Save bar */}
       <div className="shrink-0 p-3 border-t border-neutral-900 bg-neutral-950/95 space-y-2">
         {scanMsg && (
-          <p className="text-[12px] text-cyan-300/90 text-center leading-snug">{scanMsg}</p>
+          <p className="text-[13px] text-cyan-300/90 text-center leading-snug">{scanMsg}</p>
         )}
         <button
           type="button"
           onClick={scanWithAI}
           disabled={scanning || !photo}
-          className="w-full py-2.5 rounded-xl bg-neutral-900 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full py-3 rounded-xl bg-neutral-900 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {scanning ? <><Loader2 size={14} className="animate-spin" /> Scanning this photo…</> : <><Sparkles size={14} /> Scan this photo with AI</>}
         </button>

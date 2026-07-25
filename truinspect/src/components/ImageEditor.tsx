@@ -49,12 +49,12 @@ export default function ImageEditor({
         </button>
         <div className="text-center">
           <p className="text-[13px] font-bold tracking-wide text-cyan-400">Review shot</p>
-          <p className="text-[12px] text-neutral-400">Keep it or retake — nothing is altered</p>
+          <p className="text-[13px] text-neutral-400">Keep it or retake — nothing is altered</p>
         </div>
         <button
           type="button"
           onClick={save}
-          className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-[13px] font-semibold text-[#06080D] flex items-center gap-1"
+          className="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-[13px] font-semibold text-[#06080D] flex items-center gap-1"
         >
           <Check size={13} /> Keep
         </button>
