@@ -258,7 +258,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                       <td className="py-3 px-4 text-right flex justify-end gap-2">
                         <button
                           onClick={() => { setActiveDocId(doc.id); setTypedName(""); }}
-                          className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                          className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
                         >
                           {doc.status === "Signed" ? "View" : "View & Sign"}
                         </button>
@@ -405,7 +405,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                   <button
                     onClick={handleSignSubmit}
                     disabled={submitting}
-                    className="mt-1 py-3 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] rounded-lg text-[13px] font-bold tracking-normal cursor-pointer disabled:opacity-50"
+                    className="mt-1 py-3 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-bold tracking-normal cursor-pointer disabled:opacity-50"
                   >
                     {submitting ? "Saving…" : "Save Signature"}
                   </button>

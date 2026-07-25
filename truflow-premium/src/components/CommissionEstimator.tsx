@@ -286,7 +286,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                 className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 cursor-pointer hover:bg-[color:var(--glass)] transition-all select-none"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] flex items-center justify-center font-bold text-[13px] text-[color:var(--white)]">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] flex items-center justify-center font-bold text-[13px] text-[color:var(--ink)]">
                     {rep.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div>

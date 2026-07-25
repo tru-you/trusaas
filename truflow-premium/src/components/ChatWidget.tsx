@@ -134,7 +134,7 @@ export default function ChatWidget() {
             <button aria-label="Send message"
               type="submit"
               disabled={loading}
-              className="bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] disabled:opacity-50 text-[color:var(--white)] rounded-lg p-2 flex items-center justify-center cursor-pointer transition-all active:scale-95"
+              className="bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] disabled:opacity-50 text-[color:var(--ink)] rounded-lg p-2 flex items-center justify-center cursor-pointer transition-all active:scale-95"
             >
               <Send size={14} />
             </button>
@@ -146,7 +146,7 @@ export default function ChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 bg-[color:var(--cyan)] hover:bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--white)] rounded-full flex items-center justify-center shadow-lg hover:shadow-[color:var(--cyan-soft)] transition-all cursor-pointer active:scale-95 group"
+          className="w-14 h-14 bg-[color:var(--cyan)] hover:bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)] rounded-full flex items-center justify-center shadow-lg hover:shadow-[color:var(--cyan-soft)] transition-all cursor-pointer active:scale-95 group"
         >
           <MessageSquare className="w-6 h-6 group-hover:scale-110 transition-transform" />
         </button>

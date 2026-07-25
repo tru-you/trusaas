@@ -174,7 +174,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
             <button aria-label="Send message"
               type="submit"
               disabled={loading || showLeadForm}
-              className="bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] disabled:opacity-50 text-[color:var(--white)] rounded-full w-8 h-8 flex items-center justify-center cursor-pointer transition-all active:scale-95 animate-none"
+              className="bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] disabled:opacity-50 text-[color:var(--ink)] rounded-full w-8 h-8 flex items-center justify-center cursor-pointer transition-all active:scale-95 animate-none"
             >
               <Send size={12} />
             </button>
@@ -189,7 +189,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
             Chat with us live!
             <div className="absolute -bottom-1 left-4 w-2 h-2 bg-[color:var(--ink-2)] border-b border-r border-white/5 transform rotate-45"></div>
           </div>
-          <button aria-label="Open chat" className="w-14 h-14 bg-gradient-to-r from-blue-600 to-[color:var(--cyan)] text-[color:var(--white)] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
+          <button aria-label="Open chat" className="w-14 h-14 bg-gradient-to-r from-blue-600 to-[color:var(--cyan)] text-[color:var(--ink)] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
             <MessageCircle className="w-6 h-6" />
           </button>
         </div>

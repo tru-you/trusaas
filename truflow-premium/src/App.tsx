@@ -555,6 +555,28 @@ export default function App() {
   const soldUnitsCount = state.vehicles.filter((v) => v.status === "SOLD").length;
   const totalRevenue = state.invoices.filter((i) => i.status === "Paid").reduce((sum, i) => sum + i.amount, 0);
 
+  /* Leads waiting on a first reply ------------------------------------------
+     The number that actually decides whether a lead converts is how long it
+     sat before anyone answered it — pipeline value can't be acted on at 9am,
+     but "3 people are waiting, one since yesterday" can. A lead counts as
+     waiting when it is still open and has never been contacted. */
+  const openLeads = state.leads.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost");
+  const awaitingReply = openLeads.filter((l) => !l.lastContactedAt);
+  const oldestWaitMs = awaitingReply.reduce((worst, l) => {
+    const waited = Date.now() - new Date(l.createdAt).getTime();
+    return Number.isFinite(waited) && waited > worst ? waited : worst;
+  }, 0);
+  /** "4h" / "2d" / "18m" — the shape a dealer reads at a glance. */
+  const formatWait = (ms: number) => {
+    const mins = Math.floor(ms / 60000);
+    if (mins < 60) return `${Math.max(mins, 1)}m`;
+    const hrs = Math.floor(mins / 60);
+    return hrs < 24 ? `${hrs}h` : `${Math.floor(hrs / 24)}d`;
+  };
+  // Anything unanswered for more than an hour is the one thing on this screen
+  // allowed to draw the eye. Under an hour the dealer is on top of it.
+  const replyIsLate = oldestWaitMs > 60 * 60 * 1000;
+
   // Grouped menu sections for elegant layout
   const groupedNavigation = [
     {
@@ -1067,15 +1089,35 @@ export default function App() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Needs a reply — deliberately first. This is the only number on
+                  the overview that is actionable the moment the dealer opens
+                  the app, so it leads and it is the only one allowed to go red. */}
+              <button
+                onClick={() => navigateTo("leads")}
+                className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
+              >
+                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Needs a reply</div>
+                <div
+                  className={`text-2xl font-serif font-semibold mt-1 ${
+                    replyIsLate ? "text-[color:var(--danger)]" : "text-[color:var(--white)]"
+                  }`}
+                >
+                  <Counter value={awaitingReply.length} />
+                </div>
+                <div
+                  className={`text-[13px] font-semibold mt-1 ${
+                    replyIsLate ? "text-[color:var(--danger)]" : "text-[color:var(--cyan)]"
+                  }`}
+                >
+                  {awaitingReply.length === 0
+                    ? `All ${unresolvedLeadsCount} open leads answered`
+                    : `Oldest waiting ${formatWait(oldestWaitMs)} · ${unresolvedLeadsCount} open`}
+                </div>
+              </button>
               <div className="stat-card p-4">
                 <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Cars in stock</div>
                 <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
                 <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Ready for viewing</div>
-              </div>
-              <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Open leads</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1"><Counter value={unresolvedLeadsCount} /></div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">High conversion rating</div>
               </div>
               <div className="stat-card p-4">
                 <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Units Sold</div>
@@ -1105,7 +1147,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => setShowEODReport(true)}
-                  className="px-5 py-3 bg-gradient-to-r from-[color:var(--cyan-soft)] to-[color:var(--cyan)] hover:from-[color:var(--cyan)] hover:to-[color:var(--cyan)] text-[color:var(--white)] rounded-xl text-[13px] font-bold shadow-lg shadow-[color:var(--cyan-faint)] hover:shadow-[color:var(--cyan-soft)] cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
+                  className="px-5 py-3 bg-gradient-to-r from-[color:var(--cyan-soft)] to-[color:var(--cyan)] hover:from-[color:var(--cyan)] hover:to-[color:var(--cyan)] text-[color:var(--ink)] rounded-xl text-[13px] font-bold shadow-lg shadow-[color:var(--cyan-faint)] hover:shadow-[color:var(--cyan-soft)] cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
                 >
                   <Sparkles size={14} className="animate-pulse" />
                   Compile EOD Summary
@@ -1222,7 +1264,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setLeadDetailId(l.id)}
-                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
+                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
                           >
                             Review File
                           </button>
@@ -1408,7 +1450,7 @@ export default function App() {
                         {v.images && v.images.length > 0 ? (
                           <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                         ) : (
-                          <div className="w-14 h-14 bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] rounded-xl flex items-center justify-center text-[color:var(--white)] font-semibold text-xl shadow-lg">
+                          <div className="w-14 h-14 bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] rounded-xl flex items-center justify-center text-[color:var(--ink)] font-semibold text-xl shadow-lg">
                             {(v.make || "??").slice(0, 2).toUpperCase()}
                           </div>
                         )}
@@ -2124,7 +2166,7 @@ export default function App() {
                               )}
                               <button
                                 onClick={() => setLeadDetailId(l.id)}
-                                className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] rounded-lg text-[13px] font-bold cursor-pointer transition-all shadow-md active:scale-95"
+                                className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-bold cursor-pointer transition-all shadow-md active:scale-95"
                               >
                                 Review Profile
                               </button>
@@ -2215,7 +2257,7 @@ export default function App() {
                           <td className="py-3 px-4 text-right">
                             <button
                               onClick={() => setLeadDetailId(l.id)}
-                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
+                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
                             >
                               Analyze Intent
                             </button>
@@ -2283,7 +2325,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right flex justify-end gap-2">
                           <button
                             onClick={() => setActiveInvoiceId(inv.id)}
-                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
                           >
                             View Record
                           </button>
@@ -2294,7 +2336,7 @@ export default function App() {
                                 alert("Invoice cleared!");
                                 loadAllState();
                               }}
-                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
                             >
                               Finalize Payment
                             </button>
@@ -2366,7 +2408,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setActiveAgreementId(agr.id)}
-                            className="px-3 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all shadow-md shadow-[color:var(--cyan-faint)]"
+                            className="px-3 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all shadow-md shadow-[color:var(--cyan-faint)]"
                           >
                             Open Contract Terms
                           </button>
@@ -2563,7 +2605,7 @@ export default function App() {
                 return (
                   <div key={u.id} className="card p-4 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] flex items-center justify-center font-bold text-[13px] text-[color:var(--white)]">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] flex items-center justify-center font-bold text-[13px] text-[color:var(--ink)]">
                         {u.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div>

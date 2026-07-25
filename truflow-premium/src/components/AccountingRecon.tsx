@@ -305,7 +305,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <button
             onClick={() => setActiveTab("pl")}
             className={`px-4 py-2 text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "pl" ? "bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--white)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+              activeTab === "pl" ? "bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
             }`}
           >
             <Activity size={13} />
@@ -314,7 +314,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <button
             onClick={() => setActiveTab("recon")}
             className={`px-4 py-2 text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "recon" ? "bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--white)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+              activeTab === "recon" ? "bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
             }`}
           >
             <Wrench size={13} />
@@ -323,7 +323,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <button
             onClick={() => setActiveTab("bank")}
             className={`px-4 py-2 text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "bank" ? "bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--white)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+              activeTab === "bank" ? "bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
             }`}
           >
             <Sliders size={13} />
@@ -936,7 +936,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             <button
               onClick={handleReconcileMatch}
               disabled={!selectedLedgerId || !selectedBankTxId}
-              className="px-6 py-3 bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--white)] hover:brightness-115 disabled:opacity-40 rounded-xl font-bold text-[13px] flex items-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)] hover:brightness-115 disabled:opacity-40 rounded-xl font-bold text-[13px] flex items-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer disabled:cursor-not-allowed"
             >
               <Check size={14} /> Link & Reconcile Transaction Match
             </button>

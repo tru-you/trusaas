@@ -364,7 +364,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
               <button
                 onClick={handleSignSubmit}
                 disabled={submitting}
-                className="w-full py-3 bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--white)] hover:brightness-110 active:scale-95 transition-all text-[13px] font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)] hover:brightness-110 active:scale-95 transition-all text-[13px] font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 disabled:opacity-50"
               >
                 {submitting ? "Processing E-Sign..." : "Affix Binding Signature"}
               </button>

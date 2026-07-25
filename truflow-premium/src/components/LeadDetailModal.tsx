@@ -1108,7 +1108,7 @@ export default function LeadDetailModal({
                           setGeneratingDoc(false);
                         }
                       }}
-                      className="w-full py-3 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--white)] font-bold text-[13px] tracking-normal rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
+                      className="w-full py-3 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] font-bold text-[13px] tracking-normal rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
                     >
                       <FileSignature size={12} /> {generatingDoc ? "Drafting legal terms..." : "Generate Digital Document"}
                     </button>
