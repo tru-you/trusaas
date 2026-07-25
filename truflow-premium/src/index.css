@@ -215,7 +215,8 @@
   --primary: #4FE3DC;
   --primary-light: #7FF0EA;
   --secondary: #4FE3DC;
-  --accent: #4FE3DC;
+  /* --accent intentionally omitted — it is an L2 semantic token owned by
+     tru-tokens.css. Redeclaring it here shadows every per-tier override. */
   --teal: #4FE3DC;
   --teal-bright: #7FF0EA;
   --gold: #4FE3DC;
