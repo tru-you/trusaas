@@ -36,6 +36,8 @@ import {
   MessageCircle,
   Copy,
   FileText,
+  MessageSquare,
+  CalendarClock,
 } from "lucide-react";
 
 import {
@@ -206,7 +208,7 @@ const AGE_BANDS = [
   { key: "0-30",  label: "Under 30 days", min: 0,  max: 30,       tone: "var(--cyan)" },
   { key: "31-60", label: "31 to 60 days", min: 31, max: 60,       tone: "var(--cyan-bright)" },
   { key: "61-90", label: "61 to 90 days", min: 61, max: 90,       tone: "var(--warning)" },
-  { key: "90+",   label: "Over 90 days",  min: 91, max: Infinity, tone: "var(--danger)" },
+  { key: "90+",   label: "Over 90 days",  min: 91, max: Infinity, tone: "var(--muted)" },
 ];
 function ageBand(days: number) {
   return AGE_BANDS.find((b) => days >= b.min && days <= b.max) || AGE_BANDS[0];
@@ -505,7 +507,7 @@ export default function App() {
   if (loadError) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-[color:var(--white)] font-sans">
-        <div className="text-red-500 mb-4 font-mono text-[16px] border border-red-500/20 bg-red-500/10 p-4 rounded-lg">
+        <div className="text-[color:var(--muted)] mb-4 font-mono text-[16px] border border-[color:var(--glass-line)] bg-[color:var(--glass)] p-4 rounded-lg">
           Connection Error: {loadError}
         </div>
         <button 
@@ -600,6 +602,34 @@ export default function App() {
   const outstandingRevenue = state.invoices
     .filter((i) => i.status !== "Paid")
     .reduce((sum, i) => sum + i.amount, 0);
+
+  /* The morning strip -------------------------------------------------------
+     What a dealer needs to know before the doors open, in the order it costs
+     money: who has been left hanging, what was promised for today, and what
+     has to physically leave the yard. Kept in the chrome so it follows you
+     off the dashboard — the numbers are useless on a screen you've navigated
+     away from. */
+  const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date(startOfToday); endOfToday.setDate(endOfToday.getDate() + 1);
+  const isToday = (d?: string | null) => {
+    if (!d) return false;
+    const t = new Date(d).getTime();
+    return t >= startOfToday.getTime() && t < endOfToday.getTime();
+  };
+  // Anything promised for today — an open task, or a lead's next action.
+  const dueTodayCount =
+    state.tasks.filter((t) => t.status !== "Completed" && isToday(t.dueDate)).length +
+    openLeads.filter((l) => isToday(l.nextActionAt)).length;
+  // Overdue is worse than due: it was promised and the day has passed.
+  const overdueCount =
+    state.tasks.filter(
+      (t) => t.status !== "Completed" && t.dueDate && new Date(t.dueDate) < startOfToday
+    ).length +
+    openLeads.filter(
+      (l) => l.nextActionAt && new Date(l.nextActionAt) < startOfToday
+    ).length;
+  // Sold but not yet handed over — these have a customer expecting a date.
+  const inPrepCount = state.vehicles.filter((v) => v.status === "PENDING").length;
 
   // Grouped menu sections for elegant layout
   const groupedNavigation = [
@@ -1048,7 +1078,7 @@ export default function App() {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-[13px] font-bold tracking-normal text-red-300 bg-red-500/10 border border-red-500/25 hover:bg-red-500/20 hover:text-red-200 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-[13px] font-bold tracking-normal text-[color:var(--white-dim)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] hover:bg-[color:var(--glass)] hover:text-[color:var(--white-dim)] transition-all cursor-pointer"
             title="Sign out of TruFlow"
           >
             <LogOut size={14} />
@@ -1060,8 +1090,58 @@ export default function App() {
       {/* Main Panel */}
       <main className="flex-1 md:ml-[240px] min-h-screen px-4 py-6 md:px-8 md:py-8 z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
         {/* Top Profile Bar - Hidden on mobile */}
-        <div className="hidden md:flex justify-end items-center gap-4 border-b border-white/5 pb-4">
-           <div className="flex items-center gap-2">
+        <div className="hidden md:flex justify-between items-center gap-4 border-b border-white/5 pb-4">
+           {/* Morning strip — the floor at a glance, on every screen. Only the
+               unanswered-lead figure is allowed to go red; if everything shouts,
+               nothing does. */}
+           <div className="flex items-center gap-2 flex-wrap">
+             <button
+               type="button"
+               onClick={() => navigateTo("leads")}
+               className={`flex items-center gap-2 h-9 px-3 rounded-full border transition-colors cursor-pointer text-[13px] ${
+                 replyIsLate
+                   ? "bg-[color:var(--glass)] text-[color:var(--muted)] border-[color:var(--glass-line)] hover:bg-[color:var(--glass)]"
+                   : "bg-[color:var(--glass)] text-[rgba(232,234,230,0.72)] border-[color:var(--glass-line)] hover:text-[color:var(--white)]"
+               }`}
+               title="Leads that have never been replied to"
+             >
+               <MessageSquare size={14} />
+               <span className="font-semibold">{awaitingReply.length}</span>
+               <span>waiting</span>
+               {awaitingReply.length > 0 && (
+                 <span className="opacity-70">· {formatWait(oldestWaitMs)}</span>
+               )}
+             </button>
+
+             <button
+               type="button"
+               onClick={() => navigateTo("tasks")}
+               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] transition-colors cursor-pointer text-[13px]"
+               title="Promised for today, and anything already past its date"
+             >
+               <CalendarClock size={14} />
+               <span className="font-semibold">{dueTodayCount}</span>
+               <span>due today</span>
+               {overdueCount > 0 && (
+                 <span className="text-[color:var(--muted)] font-semibold">
+                   · {overdueCount} late
+                 </span>
+               )}
+             </button>
+
+             <button
+               type="button"
+               onClick={() => navigateTo("inventory")}
+               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] transition-colors cursor-pointer text-[13px]"
+               title="Sold, not yet handed over"
+             >
+               <Car size={14} />
+               <span className="font-semibold">{inPrepCount}</span>
+               <span>going out</span>
+             </button>
+           </div>
+
+           <div className="flex items-center gap-2 shrink-0">
              <button
                type="button"
                onClick={() => setAssistOpen(true)}
@@ -1076,7 +1156,7 @@ export default function App() {
              <button
                type="button"
                onClick={handleLogout}
-               className="flex items-center gap-2 h-9 px-3 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 text-[13px] font-bold tracking-normal"
+               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] hover:bg-[color:var(--glass)] hover:text-[color:var(--white-dim)] transition-all cursor-pointer border border-[color:var(--glass-line)] text-[13px] font-bold tracking-normal"
                title="Log out"
              >
                <LogOut size={14} />
@@ -1109,7 +1189,7 @@ export default function App() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-1 h-8 px-3 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 cursor-pointer text-[13px] font-bold "
+              className="flex items-center gap-1 h-8 px-3 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] cursor-pointer text-[13px] font-bold "
               title="Log out"
             >
               <LogOut size={14} />
@@ -1162,14 +1242,14 @@ export default function App() {
                 <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Needs a reply</div>
                 <div
                   className={`text-2xl font-serif font-semibold mt-1 ${
-                    replyIsLate ? "text-[color:var(--danger)]" : "text-[color:var(--white)]"
+                    replyIsLate ? "text-[color:var(--white)]" : "text-[color:var(--muted)]"
                   }`}
                 >
                   <Counter value={awaitingReply.length} />
                 </div>
                 <div
                   className={`text-[13px] font-semibold mt-1 ${
-                    replyIsLate ? "text-[color:var(--danger)]" : "text-[color:var(--cyan)]"
+                    replyIsLate ? "text-[color:var(--white-dim)]" : "text-[color:var(--muted)]"
                   }`}
                 >
                   {awaitingReply.length === 0
@@ -1237,7 +1317,7 @@ export default function App() {
             <div className="card p-6">
               <div className="flex items-center justify-between mb-4 gap-2">
                 <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Website analytics</div>
-                <span className="text-[13px] font-semibold tracking-normal px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
+                <span className="text-[13px] font-semibold tracking-normal px-2 py-0.5 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)]">
                   Sample / demo data
                 </span>
               </div>
@@ -1516,7 +1596,7 @@ export default function App() {
                   const readiness = computeDmsGalleryReadiness(v as any);
                   const days = Number(v.daysInInventory) || 0;
                   const ageTone =
-                    days >= 90 ? "text-[color:var(--danger)]" : days >= 60 ? "text-[color:var(--warning)]" : days >= 30 ? "text-[color:var(--cyan-bright)]" : "text-[color:var(--white)]";
+                    days >= 90 ? "text-[color:var(--muted)]" : days >= 60 ? "text-[color:var(--warning)]" : days >= 30 ? "text-[color:var(--cyan-bright)]" : "text-[color:var(--white)]";
                   return (
                     <div
                       key={v.id}
@@ -1533,7 +1613,7 @@ export default function App() {
                           </div>
                         )}
                         <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[13px] font-bold font-mono tracking-wider  ${
-                          v.status === "INVENTORY" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : v.status === "PENDING" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--danger)] text-[color:var(--danger)]"
+                          v.status === "INVENTORY" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : v.status === "PENDING" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--glass)] text-[color:var(--muted)]"
                         }`}>
                           {v.status === "INVENTORY" ? "Showroom Floor" : v.status === "PENDING" ? "Sale Pending" : "Delivered"}
                         </span>
@@ -1960,7 +2040,7 @@ export default function App() {
                 ].map((c) => (
                   <div key={c.label} className="card p-4 flex flex-col gap-1">
                     <span className="text-[13px] text-[rgba(232,234,230,0.55)]">{c.label}</span>
-                    <span className={`text-[20px] font-semibold tracking-tight ${c.warn ? "text-[color:var(--danger)]" : "text-[color:var(--white)]"}`}>{c.value}</span>
+                    <span className={`text-[20px] font-semibold tracking-tight ${c.warn ? "text-[color:var(--muted)]" : "text-[color:var(--white)]"}`}>{c.value}</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.55)]">{c.sub}</span>
                   </div>
                 ))}
@@ -2021,7 +2101,7 @@ export default function App() {
                             <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.costPrice || 0)}</td>
                             <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
                             <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.retailPrice || 0)}</td>
-                            <td className={`px-4 py-3 text-right font-medium ${m.rand < 0 ? "text-[color:var(--danger)]" : "text-[color:var(--white)]"}`}>
+                            <td className={`px-4 py-3 text-right font-medium ${m.rand < 0 ? "text-[color:var(--muted)]" : "text-[color:var(--white)]"}`}>
                               {formatZAR(m.rand)}
                               <span className="text-[13px] text-[rgba(232,234,230,0.55)] ml-1.5">{m.pct.toFixed(0)}%</span>
                             </td>
@@ -2048,7 +2128,7 @@ export default function App() {
                   const due  = open.filter((l) => l.nextActionAt === today() && !leadOverdue(l)).length;
                   return (
                     <p className="text-[13px] mt-0.5 font-medium text-[rgba(232,234,230,0.72)]">
-                      {late > 0 && <span className="text-[color:var(--danger)] font-semibold">{late} overdue</span>}
+                      {late > 0 && <span className="text-[color:var(--muted)] font-semibold">{late} overdue</span>}
                       {late > 0 && (due > 0 || open.length > 0) && " · "}
                       {due > 0 && <span>{due} due today</span>}
                       {due > 0 && " · "}
@@ -2062,7 +2142,7 @@ export default function App() {
                   onClick={() => setFilterOverdueOnly(!filterOverdueOnly)}
                   className={`px-3 py-2 rounded-lg border text-[13px] font-semibold cursor-pointer active:scale-95 transition-all ${
                     filterOverdueOnly
-                      ? "bg-[color:var(--danger)] border-[color:var(--danger)] text-[color:var(--danger)]"
+                      ? "bg-[color:var(--glass)] border-[color:var(--glass-line)] text-[color:var(--muted)]"
                       : "bg-[color:var(--glass)] border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
                   }`}
                 >
@@ -2131,7 +2211,7 @@ export default function App() {
                             <div className="flex justify-between items-start">
                               <div className="font-bold text-[13px] text-[color:var(--white)]">{l.firstName} {l.lastName}</div>
                               {l.digitalScore >= 80 ? (
-                                <span className="bg-[color:var(--danger)] text-[color:var(--danger)] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[color:var(--danger)]">Hot</span>
+                                <span className="bg-[color:var(--glass)] text-[color:var(--muted)] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[color:var(--glass-line)]">Hot</span>
                               ) : l.digitalScore >= 50 ? (
                                 <span className="bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[color:var(--cyan-faint)]">Warm</span>
                               ) : (
@@ -2147,7 +2227,7 @@ export default function App() {
                               const d = dueLabel(l);
                               if (!d) return null;
                               return (
-                                <div className={`text-[13px] mt-2 font-medium ${d.overdue ? "text-[color:var(--danger)]" : "text-[rgba(232,234,230,0.72)]"}`}>
+                                <div className={`text-[13px] mt-2 font-medium ${d.overdue ? "text-[color:var(--muted)]" : "text-[rgba(232,234,230,0.72)]"}`}>
                                   {d.overdue ? "● " : ""}{d.text}
                                 </div>
                               );
@@ -2270,7 +2350,7 @@ export default function App() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               <div className="stat-card p-4">
                 <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Hot Targets</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--danger)] mt-1">
+                <div className="text-2xl font-serif font-semibold text-[color:var(--muted)] mt-1">
                   {state.leads.filter((l) => l.digitalScore >= 75).length}
                 </div>
                 <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">High purchase velocity</div>
@@ -2325,7 +2405,7 @@ export default function App() {
                           <td className="py-3 px-4 font-mono font-bold text-[color:var(--cyan)] text-[16px]">{l.digitalScore}%</td>
                           <td className="py-3 px-4">
                             <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
-                              hot ? "bg-[color:var(--danger)] text-[color:var(--danger)]" : warm ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
+                              hot ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : warm ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                             }`}>
                               {hot ? "Hot Target" : warm ? "Warm Prospect" : "Cold Prospect"}
                             </span>
@@ -2578,7 +2658,7 @@ export default function App() {
                         </td>
                         <td className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
-                            t.priority === "Urgent" ? "bg-[color:var(--danger)] text-[color:var(--danger)]" : t.priority === "High" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
+                            t.priority === "Urgent" ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : t.priority === "High" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {t.priority}
                           </span>
@@ -2631,7 +2711,7 @@ export default function App() {
               </button>
             </div>
 
-            {seatError && <p className="text-[13px] text-[color:var(--danger)]">{seatError}</p>}
+            {seatError && <p className="text-[13px] text-[color:var(--muted)]">{seatError}</p>}
 
             {/* Who can sign in. Separate from the performance cards below, which
                 also cover people who no longer have access. */}
@@ -2665,7 +2745,7 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => handleToggleSeat(s.userId, !s.isActive)}
-                        className={`text-[13px]  font-bold cursor-pointer ${s.isActive ? "text-[color:var(--danger)] hover:opacity-80" : "text-[color:var(--cyan)] hover:opacity-80"}`}
+                        className={`text-[13px]  font-bold cursor-pointer ${s.isActive ? "text-[color:var(--muted)] hover:opacity-80" : "text-[color:var(--cyan)] hover:opacity-80"}`}
                       >
                         {s.isActive ? "Remove access" : "Restore"}
                       </button>
@@ -2743,7 +2823,7 @@ export default function App() {
                         <td className="py-3 px-4 font-semibold">{u.email}</td>
                         <td className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
-                            u.role === "admin" ? "bg-[color:var(--danger)] text-[color:var(--danger)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
+                            u.role === "admin" ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {u.role}
                           </span>
@@ -3084,7 +3164,7 @@ export default function App() {
                       restores the seed data. There is no backup.
                     </p>
                     <div>
-                      <button onClick={handleResetState} className="btn bg-[color:var(--danger)] text-[color:var(--danger)] hover:bg-[color:var(--danger)] border border-[color:var(--danger)] cursor-pointer">
+                      <button onClick={handleResetState} className="btn bg-[color:var(--glass)] text-[color:var(--muted)] hover:bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer">
                         Reset all data
                       </button>
                     </div>
@@ -3400,7 +3480,7 @@ export default function App() {
               </div>
             ) : (
             <form onSubmit={handleCreateUserSubmit} className="flex flex-col gap-3">
-              {seatError && <p className="text-[13px] text-[color:var(--danger)]">{seatError}</p>}
+              {seatError && <p className="text-[13px] text-[color:var(--muted)]">{seatError}</p>}
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Full Name</label>
                 <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
@@ -3529,7 +3609,7 @@ export default function App() {
             <div className="bg-[color:var(--ink)] rounded-xl border border-white/5 p-4 flex flex-col gap-3">
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Reconditioning Expenditures</span>
-                <span className="font-mono font-bold text-[color:var(--danger)]">- R 18,500</span>
+                <span className="font-mono font-bold text-[color:var(--muted)]">- R 18,500</span>
               </div>
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Gross Dealership Revenue</span>

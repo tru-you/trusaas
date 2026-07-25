@@ -166,7 +166,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           {vehicle.images && vehicle.images.length > 0 && (
             <button
               onClick={() => handleDeletePhoto(activeImageIndex)}
-              className="absolute top-4 right-4 z-10 bg-red-600/80 hover:bg-red-600 text-[color:var(--white)] p-2 rounded-lg transition-all cursor-pointer shadow-md"
+              className="absolute top-4 right-4 z-10 bg-[color:var(--glass)] hover:bg-[color:var(--ink-2)] text-[color:var(--white)] p-2 rounded-lg transition-all cursor-pointer shadow-md"
               title="Delete Photo"
             >
               <Trash2 size={14} />
@@ -453,7 +453,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                 </button>
                                 <button
                                   onClick={() => setRemarketingCopy("")}
-                                  className="px-3 py-2 bg-[color:var(--glass)] border border-white/5 text-red-400 hover:bg-red-500/10 font-bold text-[13px] rounded-lg cursor-pointer transition-all "
+                                  className="px-3 py-2 bg-[color:var(--glass)] border border-white/5 text-[color:var(--muted)] hover:bg-[color:var(--glass)] font-bold text-[13px] rounded-lg cursor-pointer transition-all "
                                 >
                                   Clear
                                 </button>
@@ -615,7 +615,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         </div>
                         <div className="border-l border-white/5 pl-2">
                           <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Expected Margin</div>
-                          <div className={`font-semibold mt-0.5 ${isBelowTarget ? "text-red-400" : "text-[color:var(--cyan)]"}`}>
+                          <div className={`font-semibold mt-0.5 ${isBelowTarget ? "text-[color:var(--muted)]" : "text-[color:var(--cyan)]"}`}>
                             {formatZAR(profit)} ({marginPercent.toFixed(1)}%)
                           </div>
                         </div>
@@ -623,8 +623,8 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
                       {/* Profitability Warning Alert with Quick Price Adjust */}
                       {isBelowTarget && (
-                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex flex-col gap-2 animate-pulse-subtle">
-                          <div className="flex items-start gap-2 text-[13px] text-red-400">
+                        <div className="bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-xl p-3 flex flex-col gap-2 animate-pulse-subtle">
+                          <div className="flex items-start gap-2 text-[13px] text-[color:var(--muted)]">
                             <AlertCircle size={15} className="mt-0.5 shrink-0" />
                             <div>
                               <span className="font-bold block">Profitability Target Violation</span>
@@ -638,7 +638,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                               await onUpdateVehicle(vehicle.id, { retailPrice: suggestedHealthyPrice });
                               alert(`Retail price adjusted to R ${suggestedHealthyPrice.toLocaleString("en-ZA")}! Target profit margin of 15% is now secured.`);
                             }}
-                            className="w-full py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold text-[13px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 "
+                            className="w-full py-2 bg-[color:var(--glass)] hover:bg-[color:var(--glass)] text-[color:var(--muted)] font-bold text-[13px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 "
                           >
                             <Zap size={10} /> Quick Adjust Price to {formatZAR(suggestedHealthyPrice)} (15% Margin)
                           </button>
@@ -686,7 +686,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                 </button>
                                 <button
                                   onClick={() => handleDeleteTask(task.id)}
-                                  className="p-1 hover:bg-white/5 text-[rgba(232,234,230,0.72)] hover:text-red-500 rounded cursor-pointer transition-all"
+                                  className="p-1 hover:bg-white/5 text-[rgba(232,234,230,0.72)] hover:text-[color:var(--muted)] rounded cursor-pointer transition-all"
                                   title="Remove"
                                 >
                                   <Trash2 size={11} />

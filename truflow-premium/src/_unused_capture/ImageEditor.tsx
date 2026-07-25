@@ -140,7 +140,7 @@ export default function ImageEditor({
           ctx.fillStyle = 'var(--ink-2)';
         } else if (currentBg.id === 'outdoor_sunset') {
           const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          grad.addColorStop(0, 'var(--danger)');
+          grad.addColorStop(0, 'var(--muted)');
           grad.addColorStop(0.4, 'var(--warning)');
           grad.addColorStop(1, 'var(--blue)');
           ctx.fillStyle = grad;
@@ -237,7 +237,7 @@ export default function ImageEditor({
         {/* Save & Sync action */}
         <button
           onClick={handleSaveChanges}
-          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-[13px] font-bold text-[color:var(--white)] flex items-center gap-1 cursor-pointer transition-colors"
+          className="px-2.5 py-1 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan)] rounded-lg text-[13px] font-bold text-[color:var(--white)] flex items-center gap-1 cursor-pointer transition-colors"
         >
           <Save size={12} /> Sync to Lot
         </button>
@@ -309,7 +309,7 @@ export default function ImageEditor({
               {fullReport.overallScore < 95 && (
                 <button 
                   onClick={handleAutoFix}
-                  className="text-[12px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                  className="text-[12px] text-[color:var(--cyan)] hover:text-[color:var(--cyan)] flex items-center gap-1"
                 >
                   <Sparkles size={10} /> Auto-fix
                 </button>
@@ -328,7 +328,7 @@ export default function ImageEditor({
               {/* Quality details summary */}
               <div className="space-y-1 text-[13px] leading-relaxed">
                 <p className="text-neutral-300 font-medium">
-                  <strong>Lighting Level:</strong> <span className={fullReport.lightingCheck.status === 'Perfect' ? 'text-emerald-400' : 'text-amber-400'}>
+                  <strong>Lighting Level:</strong> <span className={fullReport.lightingCheck.status === 'Perfect' ? 'text-[color:var(--cyan)]' : 'text-[color:var(--muted)]'}>
                     {fullReport.lightingCheck.status}
                   </span>
                 </p>
@@ -336,7 +336,7 @@ export default function ImageEditor({
                   {fullReport.lightingCheck.feedback}
                 </p>
                 <p className="text-neutral-300 font-medium mt-1">
-                  <strong>Angle Frame:</strong> <span className={fullReport.angleCheck.status === 'Perfect' ? 'text-emerald-400' : 'text-amber-400'}>
+                  <strong>Angle Frame:</strong> <span className={fullReport.angleCheck.status === 'Perfect' ? 'text-[color:var(--cyan)]' : 'text-[color:var(--muted)]'}>
                     {fullReport.angleCheck.status}
                   </span>
                 </p>
@@ -379,9 +379,9 @@ export default function ImageEditor({
 
                 {/* Detected Issues warnings */}
                 {aiReport.detectedIssues && aiReport.detectedIssues.length > 0 && (
-                  <div className="bg-amber-950/20 border border-amber-900/30 p-2 rounded flex gap-1.5 items-start">
-                    <AlertCircle size={12} className="text-amber-400 shrink-0 mt-0.5" />
-                    <div className="text-[12px] text-amber-300">
+                  <div className="bg-[color:var(--glass)] border border-[color:var(--glass-line)] p-2 rounded flex gap-1.5 items-start">
+                    <AlertCircle size={12} className="text-[color:var(--muted)] shrink-0 mt-0.5" />
+                    <div className="text-[12px] text-[color:var(--muted)]">
                       <p className="font-bold">Lot Photographer Warning:</p>
                       <ul className="list-disc pl-3.5 space-y-0.5 mt-0.5">
                         {aiReport.detectedIssues.map((issue, idx) => (

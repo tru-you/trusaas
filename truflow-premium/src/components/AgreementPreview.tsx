@@ -274,7 +274,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                       <img src={agreement.signature} alt="Client Signature" className="max-h-12 object-contain" />
                     )
                   ) : (
-                    <span className="text-amber-500 text-[13px]  font-semibold tracking-widest font-mono">Waiting for signature</span>
+                    <span className="text-[color:var(--muted)] text-[13px]  font-semibold tracking-widest font-mono">Waiting for signature</span>
                   )}
                 </div>
                 <div className="font-semibold text-gray-900 mt-2">Signature of Purchaser</div>

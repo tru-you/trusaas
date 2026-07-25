@@ -62,7 +62,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
               <Signal size={12} className="text-neutral-400" />
               <span className="text-[13px] text-neutral-400 font-bold">5G</span>
               <Wifi size={12} className="text-indigo-400" />
-              <Battery size={14} className="text-emerald-400 fill-emerald-500/20" />
+              <Battery size={14} className="text-[color:var(--cyan)] fill-emerald-500/20" />
             </div>
           </div>
 

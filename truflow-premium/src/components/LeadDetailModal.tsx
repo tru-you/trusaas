@@ -479,7 +479,7 @@ export default function LeadDetailModal({
                     
                     {/* Dynamic Hot/Warm/Cold Rating Badge */}
                     {lead.digitalScore >= 75 ? (
-                      <span className="flex items-center gap-2 px-3 py-1 bg-red-500/15 text-red-400 text-[13px] font-semibold tracking-normal rounded-lg border border-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.2)] font-mono">
+                      <span className="flex items-center gap-2 px-3 py-1 bg-[color:var(--glass)] text-[color:var(--muted)] text-[13px] font-semibold tracking-normal rounded-lg border border-[color:var(--glass-line)] shadow-[0_0_12px_rgba(239,68,68,0.2)] font-mono">
                         Hot 🔥 (High Intent: {lead.digitalScore}%)
                       </span>
                     ) : lead.digitalScore >= 50 ? (
@@ -561,8 +561,8 @@ export default function LeadDetailModal({
 
               {/* Alerts */}
               {!lead.lastContactedAt && (
-                <div className="bg-[color:var(--danger)] border border-[color:var(--danger)] rounded-xl p-4 text-[13px] text-[color:var(--danger)] font-medium leading-relaxed flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[color:var(--danger)] flex items-center justify-center font-bold text-[16px]">!</span>
+                <div className="bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-xl p-4 text-[13px] text-[color:var(--muted)] font-medium leading-relaxed flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[color:var(--glass)] flex items-center justify-center font-bold text-[16px]">!</span>
                   <span>Alert: This lead is currently uncontacted. Direct follow-up or automated introductory welcome email dispatch is highly advised.</span>
                 </div>
               )}
@@ -984,7 +984,7 @@ export default function LeadDetailModal({
                               </span>
                               <div className="flex items-center gap-2 mt-1">
                                 <span className="text-[13px] text-[rgba(232,234,230,0.72)] flex items-center gap-1"><Calendar size={10} /> {task.dueDate}</span>
-                                {task.priority === "High" && <span className="text-[13px] bg-[color:var(--danger)] text-[color:var(--danger)] px-2 py-0.5 rounded font-bold tracking-normal">High</span>}
+                                {task.priority === "High" && <span className="text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] px-2 py-0.5 rounded font-bold tracking-normal">High</span>}
                               </div>
                             </div>
                           </div>
@@ -1143,7 +1143,7 @@ export default function LeadDetailModal({
                           <span className={`text-[13px] font-bold px-2 py-0.5 rounded  ${
                             ag.status === "Signed" 
                               ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" 
-                              : "bg-red-500/10 text-red-400 animate-pulse"
+                              : "bg-[color:var(--glass)] text-[color:var(--muted)] animate-pulse"
                           }`}>
                             {ag.status}
                           </span>
@@ -1201,7 +1201,7 @@ export default function LeadDetailModal({
         <div className="px-6 py-4 border-t border-[rgba(126,164,214,0.1)] flex justify-between items-center bg-[color:var(--glass)]">
           <button
             onClick={handleDelete}
-            className="px-3 py-2 rounded-lg border border-[color:var(--danger)] text-[color:var(--danger)] bg-[color:var(--danger)] text-[13px] font-semibold cursor-pointer active:scale-95 transition-all hover:bg-[color:var(--danger)]"
+            className="px-3 py-2 rounded-lg border border-[color:var(--glass-line)] text-[color:var(--muted)] bg-[color:var(--glass)] text-[13px] font-semibold cursor-pointer active:scale-95 transition-all hover:bg-[color:var(--glass)]"
           >
             Delete Lead File
           </button>

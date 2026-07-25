@@ -387,7 +387,7 @@ export default function WordPressIntegration({ onRefresh }: WordPressIntegration
                   </div>
                 ) : (
                   syncLogs.map((log, index) => (
-                    <div key={index} className={log.includes("OK") ? "text-[color:var(--cyan)]" : log.includes("ERROR") ? "text-red-400 font-bold" : ""}>
+                    <div key={index} className={log.includes("OK") ? "text-[color:var(--cyan)]" : log.includes("ERROR") ? "text-[color:var(--muted)] font-bold" : ""}>
                       {log}
                     </div>
                   ))

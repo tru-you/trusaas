@@ -269,7 +269,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                               if (activeDocId === doc.id) setActiveDocId(null);
                             }
                           }}
-                          className="p-2 text-[rgba(232,234,230,0.72)] hover:text-red-400 rounded hover:bg-white/5 cursor-pointer"
+                          className="p-2 text-[rgba(232,234,230,0.72)] hover:text-[color:var(--muted)] rounded hover:bg-white/5 cursor-pointer"
                           title="Delete document"
                         >
                           <Trash2 size={13} />

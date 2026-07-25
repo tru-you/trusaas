@@ -290,7 +290,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     ctx.strokeRect(40, 40, 1000, 640);
 
     // Text details
-    ctx.fillStyle = 'var(--danger)';
+    ctx.fillStyle = 'var(--muted)';
     ctx.font = 'bold 24px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('LOT PHOTO RECORDING ENGINE • COMPULSORY BYPASS', 540, 180);
@@ -299,7 +299,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     ctx.font = 'bold 46px sans-serif';
     ctx.fillText('SERVICE HISTORY BOOKLET', 540, 310);
 
-    ctx.fillStyle = 'var(--danger)';
+    ctx.fillStyle = 'var(--muted)';
     ctx.font = 'bold 36px sans-serif';
     ctx.fillText('MARKED: "NONE" (NOT PRESENT WITH VEHICLE)', 540, 410);
 
@@ -729,7 +729,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         );
       case 'vehicle_damage':
         return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-red-400/60" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <svg className="absolute inset-0 w-full h-full pointer-events-none text-[color:var(--muted)]" viewBox="0 0 100 100" preserveAspectRatio="none">
             {/* Target crosshair box for damages */}
             <circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" strokeWidth="1.2" />
             <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2,4" />
@@ -837,7 +837,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         );
       case 'recon_damage':
         return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-red-400/60" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <svg className="absolute inset-0 w-full h-full pointer-events-none text-[color:var(--muted)]" viewBox="0 0 100 100" preserveAspectRatio="none">
             <circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" strokeWidth="1.2" />
             <rect x="25" y="25" width="50" height="50" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="1,5" />
             <text x="50" y="21" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">RECON / DAMAGE DETAIL</text>
@@ -870,9 +870,9 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
   // Determine lighting quality for prompt advice
   const getLightingAdvice = () => {
-    if (simBrightness < 80) return { title: 'Viewfinder Dark', color: 'text-red-400', desc: 'Turn on overhead studio spots.' };
-    if (simBrightness > 210) return { title: 'Overexposed Glare', color: 'text-amber-400', desc: 'Avoid direct midday sun.' };
-    return { title: 'Lighting Perfect', color: 'text-emerald-400', desc: 'Ready for studio background extraction.' };
+    if (simBrightness < 80) return { title: 'Viewfinder Dark', color: 'text-[color:var(--muted)]', desc: 'Turn on overhead studio spots.' };
+    if (simBrightness > 210) return { title: 'Overexposed Glare', color: 'text-[color:var(--muted)]', desc: 'Avoid direct midday sun.' };
+    return { title: 'Lighting Perfect', color: 'text-[color:var(--cyan)]', desc: 'Ready for studio background extraction.' };
   };
 
   const lightingAdvice = getLightingAdvice();
@@ -951,7 +951,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 <div className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'scale-110' : 'opacity-50 group-hover:opacity-100'}`}>
                    <div className={`w-4 h-4 rounded-full flex items-center justify-center border transition-colors ${
                      status.completed 
-                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)]' 
+                      ? 'bg-[color:var(--cyan-faint)] border-[color:var(--cyan-soft)] text-[color:var(--cyan)] shadow-[0_0_8px_rgba(16,185,129,0.2)]' 
                       : isActive 
                       ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400 shadow-[0_0_8px_rgba(6,182,212,0.2)]' 
                       : 'bg-neutral-900 border-neutral-800 text-neutral-500'
@@ -1008,12 +1008,12 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         {/* Recording Overlay for 360 Walkaround */}
         {isRecording360 && (
           <div className="absolute inset-0 bg-neutral-950/85 z-30 flex flex-col items-center justify-center p-6 space-y-4 animate-in fade-in duration-200">
-            <div className="w-16 h-16 rounded-full border-4 border-red-500/20 flex items-center justify-center relative">
-              <div className="w-8 h-8 rounded-full bg-red-600 animate-ping absolute"></div>
-              <div className="w-6 h-6 rounded-full bg-red-600 relative z-10"></div>
+            <div className="w-16 h-16 rounded-full border-4 border-[color:var(--glass-line)] flex items-center justify-center relative">
+              <div className="w-8 h-8 rounded-full bg-[color:var(--ink-2)] animate-ping absolute"></div>
+              <div className="w-6 h-6 rounded-full bg-[color:var(--ink-2)] relative z-10"></div>
             </div>
             <div className="text-center space-y-1.5">
-              <p className="text-sm font-semibold text-red-500 tracking-widest animate-pulse ">● RECORDING 360° WALK VIDEO</p>
+              <p className="text-sm font-semibold text-[color:var(--muted)] tracking-widest animate-pulse ">● RECORDING 360° WALK VIDEO</p>
               <p className="text-xs text-neutral-400 font-mono">Simulating continuous 360° loop... keep camera steady</p>
             </div>
             
@@ -1025,7 +1025,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               </div>
               <div className="w-full h-1.5 bg-neutral-900 rounded-full overflow-hidden border border-neutral-800">
                 <div 
-                  className="h-full bg-red-600 rounded-full transition-all duration-150"
+                  className="h-full bg-[color:var(--ink-2)] rounded-full transition-all duration-150"
                   style={{ width: `${recordingProgress}%` }}
                 ></div>
               </div>
@@ -1042,7 +1042,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               {/* Center Bubble bubble level */}
               <div 
                 className={`w-2 h-2 rounded-full absolute transition-all duration-100 ${
-                  angleCorrect ? 'bg-emerald-400 shadow-md shadow-emerald-500/50 scale-110' : 'bg-red-400'
+                  angleCorrect ? 'bg-[color:var(--cyan)] shadow-md shadow-emerald-500/50 scale-110' : 'bg-red-400'
                 }`}
                 style={{
                   transform: `translate(${Math.max(-10, Math.min(10, simRoll * 2.5))}px, ${Math.max(-10, Math.min(10, (simPitch - activeSlot.idealAngle.pitch) * 1.5))}px)`
@@ -1051,7 +1051,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             </div>
             <div className="text-[12px] font-mono">
               <p className="text-[7px]  text-neutral-400 tracking-wider">Level Target</p>
-              <p className={angleCorrect ? 'text-emerald-400 font-bold' : 'text-neutral-300'}>
+              <p className={angleCorrect ? 'text-[color:var(--cyan)] font-bold' : 'text-neutral-300'}>
                 {angleCorrect ? '0.0° LOCKED' : `${simRoll.toFixed(1)}° Roll`}
               </p>
             </div>
@@ -1099,7 +1099,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                     : 'bg-neutral-950 border-neutral-850 text-neutral-300 hover:border-neutral-700'
                 }`}
               >
-                {isTaken && <Check size={10} className="text-emerald-400 font-semibold" />}
+                {isTaken && <Check size={10} className="text-[color:var(--cyan)] font-semibold" />}
                 {slot.name} {slot.required && '*'}
               </button>
             );
@@ -1148,7 +1148,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <button
               type="button"
               onClick={handleMarkNoServiceBook}
-              className="w-full py-2 bg-red-950/40 border border-red-500/30 text-red-400 hover:bg-red-950/60 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all tracking-normal mb-1"
+              className="w-full py-2 bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[color:var(--muted)] hover:bg-[color:var(--glass)] rounded-xl text-[13px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all tracking-normal mb-1"
             >
               <X size={12} className="stroke-[3]" /> No booklet with vehicle? Mark "None" (Exempt)
             </button>
@@ -1188,7 +1188,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             disabled={isRecording360}
             className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer shadow-lg active:scale-95 transition-all shrink-0 ${
               activeSlot.id === 'video_360'
-                ? 'bg-gradient-to-tr from-red-600 to-rose-500 border-2 border-white text-[color:var(--white)]'
+                ? 'bg-gradient-to-tr from-[color:var(--ink-2)] to-rose-500 border-2 border-white text-[color:var(--white)]'
                 : 'bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-[color:var(--white)]'
             }`}
             title={activeSlot.id === 'video_360' ? 'Record Walkaround' : 'Take Photo'}
@@ -1259,11 +1259,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                       <span>Syncing bulk photos to Lot ({bulkProgress.current} / {bulkProgress.total})</span>
                     </>
                   ) : bulkProgress.status === 'done' ? (
-                    <span className="text-emerald-400 flex items-center gap-1.5 font-bold">
+                    <span className="text-[color:var(--cyan)] flex items-center gap-1.5 font-bold">
                       <Check size={14} className="font-semibold" /> All photos bulk-synced successfully!
                     </span>
                   ) : (
-                    <span className="text-red-400">Error syncing photos. Try again.</span>
+                    <span className="text-[color:var(--muted)]">Error syncing photos. Try again.</span>
                   )}
                 </span>
                 <span className="text-[13px] font-mono text-neutral-400">
@@ -1272,7 +1272,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               </div>
               <div className="w-full bg-neutral-900 rounded-full h-1.5 overflow-hidden">
                 <div 
-                  className={`h-full transition-all duration-300 ${bulkProgress.status === 'done' ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                  className={`h-full transition-all duration-300 ${bulkProgress.status === 'done' ? 'bg-[color:var(--cyan)]' : 'bg-indigo-500'}`}
                   style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
                 />
               </div>
@@ -1327,7 +1327,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
                       {/* Info / Overwrite alert helper */}
                       {isTaken && (
-                        <p className="text-[12px] text-amber-400 font-medium flex items-center gap-1 mt-1 font-sans">
+                        <p className="text-[12px] text-[color:var(--muted)] font-medium flex items-center gap-1 mt-1 font-sans">
                           <AlertCircle size={9} /> Already has a photo. This will replace it.
                         </p>
                       )}
@@ -1339,7 +1339,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                         onClick={() => {
                           setBulkItems(prev => prev.filter(p => p.id !== item.id));
                         }}
-                        className="p-1.5 bg-red-950/20 hover:bg-red-950/40 text-red-400 border border-red-950/40 rounded-lg cursor-pointer shrink-0"
+                        className="p-1.5 bg-[color:var(--glass)] hover:bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] rounded-lg cursor-pointer shrink-0"
                         title="Remove photo"
                       >
                         <Trash2 size={13} />

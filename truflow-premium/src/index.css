@@ -256,9 +256,13 @@ body {
 
 /* Headings tighten as they grow, and stop at 600 — nothing here needs 900. */
 h1, h2, h3, h4 { font-weight: var(--w-semibold); color: var(--white); }
-h1 { font-size: var(--t-h1); letter-spacing: var(--track-h1); line-height: 1.1; }
-h2 { font-size: var(--t-h2); letter-spacing: var(--track-h2); line-height: 1.18; }
-h3 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.3; }
+/* The brand scale tops out at 38px, which suits a marketing page or a field
+   app read at arm's length. TruFlow is a desk tool with a lot on screen, so
+   each heading steps down one rung — the hierarchy is unchanged, it just
+   stops shouting. Tracking still tightens as size grows. */
+h1 { font-size: var(--t-h2); letter-spacing: var(--track-h2); line-height: 1.15; }
+h2 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.25; }
+h3 { font-size: var(--t-lead); letter-spacing: var(--track-h3); line-height: 1.35; }
 
 /* A single faint cyan wash at the top. The grid plus four radial blobs it
    replaced were doing a lot of work for no information. */

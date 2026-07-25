@@ -71,7 +71,7 @@ export default function CustomerLeadForm({ dealershipId, vehicles, onSuccess }: 
       </button>
       
       {status === 'error' && (
-        <div className="flex items-center gap-2 text-[13px] text-[color:var(--danger)] mt-2">
+        <div className="flex items-center gap-2 text-[13px] text-[color:var(--muted)] mt-2">
             <AlertTriangle size={14} /> Failed to send enquiry. Please try again.
         </div>
       )}

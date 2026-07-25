@@ -345,7 +345,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             
             <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
               <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Cost of Sales (COGS)</span>
-              <span className="text-lg font-mono text-[color:var(--danger)] font-bold">{formatZAR(totalCostOfSales)}</span>
+              <span className="text-lg font-mono text-[color:var(--muted)] font-bold">{formatZAR(totalCostOfSales)}</span>
               <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Units cost + Complete Recon</span>
             </div>
 
@@ -357,13 +357,13 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
             <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
               <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Showroom Expenditures</span>
-              <span className="text-lg font-mono text-[color:var(--danger)] font-bold">{formatZAR(totalOperatingExpenses)}</span>
+              <span className="text-lg font-mono text-[color:var(--muted)] font-bold">{formatZAR(totalOperatingExpenses)}</span>
               <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Marketing, rent & operations</span>
             </div>
 
             <div className="bg-gradient-to-br from-[color:var(--cyan-faint)] to-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-4 flex flex-col gap-2 col-span-2 md:col-span-1">
               <span className="text-[13px] text-[color:var(--cyan)]  font-semibold tracking-wider">Showroom Net Income</span>
-              <span className={`text-lg font-mono font-bold ${netProfit >= 0 ? "text-[color:var(--cyan)]" : "text-[color:var(--danger)]"}`}>
+              <span className={`text-lg font-mono font-bold ${netProfit >= 0 ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"}`}>
                 {formatZAR(netProfit)}
               </span>
               <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Bottom-line performance</span>
@@ -409,7 +409,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                       <td className="py-3 font-mono text-[13px] text-[rgba(232,234,230,0.72)]">
                         {e.referenceId ? e.referenceId : "Showroom Direct"}
                       </td>
-                      <td className="py-3 text-right font-mono font-bold text-[color:var(--white)] group-hover:text-[color:var(--danger)] transition-all">
+                      <td className="py-3 text-right font-mono font-bold text-[color:var(--white)] group-hover:text-[color:var(--muted)] transition-all">
                         {formatZAR(e.amount)}
                       </td>
                       <td className="py-3 text-center">
@@ -418,7 +418,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                             <Check size={8} /> Reconciled
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--danger)] text-[color:var(--danger)] border border-[color:var(--danger)] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] font-bold">
                             <AlertCircle size={8} /> Unreconciled
                           </span>
                         )}
@@ -620,7 +620,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                                       ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]"
                                       : st === "In Progress"
                                       ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]"
-                                      : "bg-[color:var(--danger)] text-[color:var(--danger)] border border-[color:var(--danger)]"
+                                      : "bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)]"
                                     : "bg-[color:var(--glass)] text-[rgba(232,234,230,0.72)] border border-transparent hover:text-[color:var(--white)]"
                                 }`}
                               >
@@ -814,7 +814,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <div className="lg:col-span-6 card p-5 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-2">
               <h3 className="font-bold text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal">1. Showroom Ledger Entries</h3>
-              <span className="text-[13px] bg-[color:var(--danger)] text-[color:var(--danger)] font-bold px-2 py-0.5 rounded border border-[color:var(--danger)]">Reconciliation Required</span>
+              <span className="text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] font-bold px-2 py-0.5 rounded border border-[color:var(--glass-line)]">Reconciliation Required</span>
             </div>
 
             <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1">
@@ -837,7 +837,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     </div>
                   </div>
                   <div className="text-right flex flex-col gap-1">
-                    <span className="text-[13px] font-mono font-bold text-[color:var(--danger)]">{formatZAR(-e.amount)}</span>
+                    <span className="text-[13px] font-mono font-bold text-[color:var(--muted)]">{formatZAR(-e.amount)}</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Internal Debit</span>
                   </div>
                 </button>
@@ -872,7 +872,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           <div className="lg:col-span-6 card p-5 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-2">
               <h3 className="font-bold text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal">2. Live Corporate Bank Feed</h3>
-              <span className="text-[13px] bg-emerald-500/10 text-[color:var(--cyan)] font-mono px-2 py-0.5 rounded border border-[color:var(--cyan-faint)] font-bold">Bank feed</span>
+              <span className="text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] font-mono px-2 py-0.5 rounded border border-[color:var(--cyan-faint)] font-bold">Bank feed</span>
             </div>
 
             <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1">
@@ -899,7 +899,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                   </div>
 
                   <div className="text-right flex flex-col items-end gap-1">
-                    <span className={`text-[13px] font-mono font-semibold ${tx.amount > 0 ? "text-[color:var(--cyan)]" : "text-[color:var(--danger)]"}`}>
+                    <span className={`text-[13px] font-mono font-semibold ${tx.amount > 0 ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"}`}>
                       {tx.amount > 0 ? "+" : ""}{formatZAR(tx.amount)}
                     </span>
                     {tx.matched ? (
