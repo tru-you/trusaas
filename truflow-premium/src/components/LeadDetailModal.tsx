@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Lead, Vehicle, User, Communication, Task, Agreement } from "../types";
 import { getAccount } from "../lib/session";
-import { updateLead, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
+import { fetchState, updateLead, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
 import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature } from "lucide-react";
 import AgreementPreview from "./AgreementPreview";
 
@@ -91,10 +91,13 @@ export default function LeadDetailModal({
   const [aiGeneratingReply, setAiGeneratingReply] = useState(false);
 
   const loadLocalLead = () => {
-    fetch(`/api/state`)
-      .then((res) => res.json())
-      .then((state) => {
-        const found = state.leads.find((l: Lead) => l.id === leadId);
+    // This called `fetch("/api/state")` directly, bypassing the api helpers and
+    // so sending no session token. It 401'd every time, `lead` stayed null, and
+    // the early return below rendered nothing — clicking a lead did nothing at
+    // all. Go through fetchState so the token is attached like everywhere else.
+    fetchState()
+      .then((state: any) => {
+        const found = (state?.leads || []).find((l: Lead) => l.id === leadId);
         if (found) {
           setLead(found);
           setLeadStatus(found.status);

@@ -480,6 +480,21 @@ export async function deleteLead(id: string): Promise<void> {
   await updateState(s => { s.leads = s.leads.filter(l => l.id !== id); });
 }
 
+/**
+ * Round-robin unassigned "New" leads across the active salespeople.
+ * Goes through authFetch — calling /api/leads/auto-assign with a bare fetch
+ * sent no session token and 401'd, which surfaced as "Failed to auto-assign".
+ */
+export async function autoAssignLeads(): Promise<{ message: string; assignments: any[] }> {
+  const res = await authFetch("/api/leads/auto-assign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || `Auto-assign failed (${res.status})`);
+  return data;
+}
+
 export async function updateAgreement(id: string, updates: Partial<Agreement>): Promise<Agreement> {
   let updated;
   await updateState(s => {

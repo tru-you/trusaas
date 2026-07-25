@@ -48,6 +48,8 @@ import {
   createVehicle,
   updateVehicle,
   createLead,
+  updateLead,
+  autoAssignLeads,
   createTask,
   updateTask,
   createInvoice,
@@ -393,22 +395,22 @@ export default function App() {
   const handleAutoAssign = async () => {
     setIsAutoAssigning(true);
     try {
-      const res = await fetch("/api/leads/auto-assign", { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      });
-      const data = await res.json();
-      if (res.ok) {
-        // Refresh state
-        const stateRes = await fetch("/api/state");
-        const newState = await stateRes.json();
-        setState(newState);
-      } else {
-        alert(data.error || "Failed to auto-assign leads.");
-      }
-    } catch (err) {
+      // Both calls used a bare fetch, so neither carried the session token and
+      // both 401'd — the button always reported failure.
+      const data = await autoAssignLeads();
+      setState(await fetchState());
+      addNotification(
+        "Leads assigned",
+        data?.message || "Leads shared out across the team.",
+        "info"
+      );
+    } catch (err: any) {
       console.error(err);
-      alert("Network error during auto-assignment.");
+      addNotification(
+        "Could not assign leads",
+        err?.message || "Something went wrong sharing the leads out.",
+        "warning"
+      );
     } finally {
       setIsAutoAssigning(false);
     }
@@ -3516,8 +3518,12 @@ export default function App() {
         </div>
       )}
 
-      {/* --- DETAIL MODALS --- */}
+      {/* --- DETAIL MODALS ---
+          Both of these are lazy(), so they must sit inside a Suspense boundary.
+          Without one, clicking a lead or a vehicle threw on render and the
+          error boundary swallowed it — the row simply did nothing. */}
       {leadDetailId && (
+        <Suspense fallback={<div className="fixed inset-0 z-[400] grid place-items-center bg-black/60 text-[13px] text-[rgba(232,234,230,0.72)]">Opening…</div>}>
         <LeadDetailModal
           leadId={leadDetailId}
           vehicles={state.vehicles}
@@ -3539,9 +3545,11 @@ export default function App() {
             />
           }
         />
+        </Suspense>
       )}
 
       {selectedDetailVehicle && (
+        <Suspense fallback={<div className="fixed inset-0 z-[400] grid place-items-center bg-black/60 text-[13px] text-[rgba(232,234,230,0.72)]">Opening…</div>}>
         <VehicleDetailModal
           vehicle={state.vehicles.find((v) => v.id === selectedDetailVehicle.id) || selectedDetailVehicle}
           isOpen={true}
@@ -3561,6 +3569,7 @@ export default function App() {
             />
           }
         />
+        </Suspense>
       )}
 
       {/* EOD REPORT MODAL */}

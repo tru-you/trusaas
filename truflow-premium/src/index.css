@@ -242,6 +242,18 @@
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
+/* Native controls follow the OS, not the page. A <select> styled dark still
+   dropped a white popup, so its light option text vanished into it. Declaring
+   the scheme makes the browser render the popup, scrollbars, date pickers and
+   the rest to match; the option colours are belt and braces for Windows. */
+:root { color-scheme: dark; }
+
+select option,
+select optgroup {
+  background-color: var(--ink-2);
+  color: var(--white);
+}
+
 body {
   font-family: var(--sans);
   background: var(--ink);
