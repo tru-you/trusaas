@@ -964,7 +964,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
       </div>
 
       {/* Viewfinder Main View */}
-      <div className="relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
+      <div className="capture-preview relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}

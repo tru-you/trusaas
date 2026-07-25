@@ -68,7 +68,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
 
       <div className="flex-1 overflow-y-auto">
         {/* The real photo */}
-        <div className="bg-black flex items-center justify-center p-3" style={{ minHeight: 200 }}>
+        <div className="photo-review bg-black flex items-center justify-center p-3" style={{ minHeight: 200 }}>
           <img
             src={imageSrc}
             alt={slot?.name}
