@@ -317,3 +317,27 @@
   .no-print { display: none !important; }
   @page { margin: 12mm; }
 }
+
+/* §1.6 — workstation tier: premium feature gating */
+[data-app="truflow"] .feature-gated,
+[data-app="trucrm"] .feature-gated {
+  opacity: 0.35;
+  pointer-events: none;
+  position: relative;
+  user-select: none;
+}
+[data-app="truflow"] .feature-gated-label,
+[data-app="trucrm"] .feature-gated-label {
+  color: var(--text-muted);
+}
+[data-app="truflow"] .upgrade-cta,
+[data-app="trucrm"] .upgrade-cta {
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+[data-app="truflow"] .upgrade-cta:hover,
+[data-app="trucrm"] .upgrade-cta:hover {
+  color: var(--accent-hover);
+  border-color: var(--accent);
+  background: var(--accent-surface);
+}
