@@ -134,7 +134,7 @@ export default function InventoryList({
   
   // Settings state (persisted for VIR / share branding)
   const [dealershipName, setDealershipName] = React.useState(
-    () => localStorage.getItem('trulens_dealer_name') || 'TruLens South Africa'
+    () => localStorage.getItem('trulens_dealer_name') || 'TruInspect South Africa'
   );
   const [branch, setBranch] = React.useState(
     () => localStorage.getItem('trulens_dealer_branch') || 'Johannesburg Central'
@@ -342,7 +342,7 @@ export default function InventoryList({
         <div className="flex items-center gap-1.5">
           <button
             onClick={onForceSync}
-            className="flex items-center gap-1.5 px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-[13px] text-neutral-300 transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] px-3 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-[13px] text-neutral-300 transition-colors cursor-pointer"
             title="Force Cloud Sync"
           >
             {getSyncIcon()}
@@ -354,10 +354,10 @@ export default function InventoryList({
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-[12px] text-red-300 font-semibold tracking-normal transition-all cursor-pointer disabled:opacity-50"
-            title={user?.email ? `Log out (${user.email})` : 'Log out of TruLens'}
+            className="flex items-center justify-center gap-1 min-h-[44px] min-w-[44px] px-3 rounded bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-[12px] text-red-300 font-semibold tracking-normal transition-all cursor-pointer disabled:opacity-50"
+            title={user?.email ? `Log out (${user.email})` : 'Log out of TruInspect'}
           >
-            <LogOut size={11} />
+            <LogOut size={13} />
             {loggingOut ? '…' : 'Out'}
           </button>
         </div>
@@ -437,14 +437,15 @@ export default function InventoryList({
               placeholder="Search VIN, Stock, Make..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-neutral-950 text-xs text-neutral-200 pl-8 pr-3 py-2 rounded-lg border border-neutral-850 focus:border-indigo-500 outline-none placeholder-neutral-500 font-mono"
+              className="w-full bg-neutral-950 text-[13px] text-neutral-200 pl-9 pr-3 min-h-[44px] rounded-lg border border-neutral-850 focus:border-indigo-500 outline-none placeholder-neutral-500 font-mono"
             />
           </div>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="p-2 rounded-lg bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
+            aria-label={showAddForm ? 'Close new vehicle form' : 'Add a vehicle'}
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 rounded-lg bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
           >
-            <Plus size={16} />
+            <Plus size={18} />
           </button>
         </div>
 
@@ -640,7 +641,7 @@ export default function InventoryList({
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`flex-1 text-center py-1.5 rounded-md text-[13px] font-bold tracking-normal cursor-pointer transition-all ${
+              className={`flex-1 flex items-center justify-center min-h-[42px] rounded-md text-[13px] font-bold tracking-normal cursor-pointer transition-all ${
                 activeFilter === filter
                   ? 'bg-neutral-800 text-indigo-400 shadow-sm'
                   : 'text-neutral-400 hover:text-neutral-200'
@@ -662,7 +663,7 @@ export default function InventoryList({
               key={f.id}
               type="button"
               onClick={() => setReadinessFilter(f.id)}
-              className={`flex-1 py-1.5 rounded-lg text-[12px] font-bold tracking-normal border transition-all ${
+              className={`flex-1 flex items-center justify-center min-h-[42px] rounded-lg text-[12px] font-bold tracking-normal border transition-all ${
                 readinessFilter === f.id
                   ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
                   : 'bg-neutral-950 text-neutral-500 border-neutral-800 hover:text-neutral-300'
@@ -772,11 +773,11 @@ export default function InventoryList({
                               e.stopPropagation();
                               if (vehicle.stockNumber) copyStockNumber(vehicle.stockNumber, vehicle.id);
                             }}
-                            className="text-[12px] font-mono bg-neutral-900 px-1.5 py-0.5 rounded text-neutral-400 border border-neutral-800 hover:border-indigo-500/50 hover:text-indigo-300 flex items-center gap-1"
+                            className="text-[12px] font-mono bg-neutral-900 px-2 min-h-[36px] rounded text-neutral-400 border border-neutral-800 hover:border-indigo-500/50 hover:text-indigo-300 flex items-center gap-1.5"
                             title="Copy stock number"
                           >
                             STK {vehicle.stockNumber}
-                            {copiedStockId === vehicle.id ? <Check size={9} className="text-emerald-400" /> : <Copy size={9} />}
+                            {copiedStockId === vehicle.id ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                           </button>
                           <span className={`text-[12px] font-bold px-1.5 py-0.5 rounded border ${
                             vehicle.status === 'Listed'
@@ -792,12 +793,12 @@ export default function InventoryList({
                               : 'Capture Mode'}
                           </span>
                           {vehicle.inspectionChecklist && Object.keys(vehicle.inspectionChecklist).length > 0 && (
-                            <span className="text-[7px] font-bold px-1.5 py-0.5 rounded border bg-cyan-500/10 text-cyan-400 border-cyan-500/20">
+                            <span className="text-[12px] font-bold px-1.5 py-0.5 rounded border bg-cyan-500/10 text-cyan-400 border-cyan-500/20">
                               Checklist {Object.keys(vehicle.inspectionChecklist).length}
                             </span>
                           )}
                           <span
-                            className="text-[7px] font-bold px-1.5 py-0.5 rounded border"
+                            className="text-[12px] font-bold px-1.5 py-0.5 rounded border"
                             style={{ color: readiness.color, borderColor: readiness.color + '40', background: readiness.color + '14' }}
                             title={readiness.reasons.join(' · ') || readiness.label}
                           >
@@ -815,10 +816,10 @@ export default function InventoryList({
                           onDeleteVehicle(vehicle.id);
                         }
                       }}
-                      className="p-1 text-neutral-600 hover:text-red-400 rounded hover:bg-neutral-900 cursor-pointer"
+                      className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 text-neutral-600 hover:text-red-400 rounded hover:bg-neutral-900 cursor-pointer"
                       title="Delete Listing"
                     >
-                      <Trash2 size={13} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
 
@@ -845,7 +846,7 @@ export default function InventoryList({
                       <button
                         type="button"
                         onClick={() => onSelectVehicle(vehicle)}
-                        className="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 text-[13px] font-semibold  tracking-wide text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-2 py-2 rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
+                        className="flex-1 min-w-[110px] flex items-center justify-center gap-1.5 text-[13px] font-semibold  tracking-wide text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-3 min-h-[44px] rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
                         title="Open camera guide and take pictures"
                       >
                         <Camera size={12} /> Take pictures
@@ -855,7 +856,7 @@ export default function InventoryList({
                         <button
                           onClick={(e) => { e.stopPropagation(); onOpenChecklist(vehicle); }}
                           title="Full inspection — rate every part, check what works, comment"
-                          className="flex items-center gap-1 text-[13px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer whitespace-nowrap bg-cyan-500/10 px-2 py-1.5 rounded border border-cyan-500/20 transition-colors"
+                          className="flex items-center gap-1 text-[13px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer whitespace-nowrap bg-cyan-500/10 px-3 min-h-[44px] rounded border border-cyan-500/20 transition-colors"
                         >
                           <BookOpen size={10} /> Inspect
                         </button>
@@ -865,7 +866,7 @@ export default function InventoryList({
                         <button
                           onClick={(e) => { e.stopPropagation(); onTagDamage(vehicle); }}
                           title="Tag damage directly on the photos — dent, scratch, rust with location and severity"
-                          className="flex items-center gap-1 text-[13px] font-bold text-amber-300 hover:text-amber-200 cursor-pointer whitespace-nowrap bg-amber-500/10 px-2 py-1.5 rounded border border-amber-500/25 transition-colors"
+                          className="flex items-center gap-1 text-[13px] font-bold text-amber-300 hover:text-amber-200 cursor-pointer whitespace-nowrap bg-amber-500/10 px-3 min-h-[44px] rounded border border-amber-500/25 transition-colors"
                         >
                           <AlertCircle size={10} /> Tag damage
                           {(() => {
@@ -882,7 +883,7 @@ export default function InventoryList({
                             onViewReport(vehicle);
                           }}
                           title="Open inspection report with score, findings & damage photos"
-                          className="flex items-center justify-center gap-1 text-[13px] font-bold text-[#E8EAE6] cursor-pointer whitespace-nowrap px-2 py-1.5 rounded transition-colors shadow-sm"
+                          className="flex items-center justify-center gap-1 text-[13px] font-bold text-[#E8EAE6] cursor-pointer whitespace-nowrap px-3 min-h-[44px] rounded transition-colors shadow-sm"
                           style={{ background: 'linear-gradient(120deg, #4FE3DC, #4D9BFF)' }}
                         >
                           Report <FileText size={10} />
@@ -969,19 +970,19 @@ export default function InventoryList({
             {/* Performance KPIs */}
             <div className="grid grid-cols-4 gap-2">
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[7px] text-neutral-500  font-bold">Catalogue</span>
+                <span className="text-[12px] text-neutral-500  font-bold">Catalogue</span>
                 <span className="text-sm font-semibold text-[#E8EAE6]">{vehicles.length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[7px] text-emerald-500  font-bold">Ready</span>
+                <span className="text-[12px] text-emerald-500  font-bold">Ready</span>
                 <span className="text-sm font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready').length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[7px] text-amber-500  font-bold">Pending</span>
+                <span className="text-[12px] text-amber-500  font-bold">Pending</span>
                 <span className="text-sm font-semibold text-amber-400">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[7px] text-indigo-500  font-bold">Capture Rate</span>
+                <span className="text-[12px] text-indigo-500  font-bold">Capture Rate</span>
                 <span className="text-sm font-semibold text-indigo-400">
                   {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * PHOTO_SLOTS.length || 1)) * 100)}%
                 </span>

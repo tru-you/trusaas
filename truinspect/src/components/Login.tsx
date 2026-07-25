@@ -157,7 +157,7 @@ export default function Login() {
         {/* Footer Info — ecosystem links */}
         <div className="mt-12 flex flex-col items-center space-y-4">
           <div className="flex items-center gap-3">
-            <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
+            <a href="https://tru-saas.com" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
               <span className="text-[12px] text-neutral-600  tracking-tighter">Powered By</span>
               <span className="text-[12px] font-bold text-cyan-300 underline underline-offset-2">TruSaaS</span>
             </a>
@@ -183,7 +183,7 @@ export default function Login() {
             By signing in, you agree to the Inspection & Data Terms of Service.
           </p>
           <div className="pt-4 flex flex-col items-center">
-            <span className="text-[7px] text-neutral-800  tracking-[0.2em]">TruLens v1.0</span>
+            <span className="text-[12px] text-neutral-800  tracking-[0.2em]">TruInspect v1.0</span>
           </div>
         </div>
       </div>

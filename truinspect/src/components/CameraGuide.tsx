@@ -943,7 +943,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 
                 {/* Status Indicator */}
                 <div className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'scale-110' : 'opacity-50 group-hover:opacity-100'}`}>
-                   <div className={`w-4 h-4 rounded-full flex items-center justify-center border transition-colors ${
+                   <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
                      status.completed 
                       ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)]' 
                       : isActive 
@@ -951,9 +951,9 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                       : 'bg-neutral-900 border-neutral-800 text-neutral-500'
                    }`}>
                       {status.completed ? (
-                        <Check size={9} className="stroke-[4]" />
+                        <Check size={12} className="stroke-[4]" />
                       ) : (
-                        <span className="text-[7px] font-semibold">{status.phase}</span>
+                        <span className="text-[12px] font-semibold">{status.phase}</span>
                       )}
                    </div>
                 </div>
@@ -1089,7 +1089,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               ></div>
             </div>
             <div className="text-[12px] font-mono">
-              <p className="text-[7px]  text-neutral-400 tracking-wider">Level Target</p>
+              <p className="text-[12px]  text-neutral-400 tracking-wider">Level Target</p>
               <p className={angleCorrect ? 'text-emerald-400 font-bold' : 'text-neutral-300'}>
                 {angleCorrect ? '0.0° LOCKED' : `${simRoll.toFixed(1)}° Roll`}
               </p>
@@ -1101,7 +1101,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         <div className="absolute left-4 top-4 bg-neutral-950/75 border border-neutral-800 p-2 rounded-xl z-10 flex items-center gap-2 shadow-lg">
           <Sun size={14} className={lightingAdvice.color} />
           <div className="text-[12px] font-mono">
-            <p className="text-[7px]  text-neutral-400 tracking-wider">Lighting Guide</p>
+            <p className="text-[12px]  text-neutral-400 tracking-wider">Lighting Guide</p>
             <p className={`font-bold ${lightingAdvice.color}`}>{lightingAdvice.title}</p>
           </div>
         </div>
@@ -1295,11 +1295,16 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </button>
         </div>
 
-        {/* Diagnostic Guide Tip box */}
-        <div className="flex gap-2 bg-indigo-950/20 p-2.5 rounded-xl border border-indigo-950/30">
-          <Sparkles className="text-indigo-400 shrink-0" size={13} />
-          <p className="text-[12px] text-indigo-300 leading-normal">
-            <strong>Lot Photographer Tip:</strong> Align the vehicle tires with guidelines. Use <strong>Bulk Roll</strong> to upload multiple photos at once.
+        {/* Guidance for the panel being assessed right now. This was a single
+            hardcoded sentence repeated on every slot, so it stopped being read
+            after the first one. Every slot already carries a description
+            written for it — show that instead. Body copy is neutral, not cyan:
+            cyan is reserved for where the eye should go next. */}
+        <div className="flex gap-2 bg-neutral-900/60 p-2.5 rounded-xl border border-neutral-800">
+          <Sparkles className="text-[#4FE3DC] shrink-0" size={13} />
+          <p className="text-[12px] text-neutral-300 leading-normal">
+            <strong className="text-neutral-100">{activeSlot.name}:</strong>{' '}
+            {activeSlot.description || 'Frame the panel inside the guide outline before capturing.'}
           </p>
         </div>
 
@@ -1381,7 +1386,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                         className="w-full h-full object-cover" 
                         referrerPolicy="no-referrer"
                       />
-                      <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[7px] text-center font-mono py-0.5 truncate px-1 text-neutral-300">
+                      <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[12px] text-center font-mono py-0.5 truncate px-1 text-neutral-300">
                         {item.fileName}
                       </span>
                     </div>

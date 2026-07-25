@@ -109,7 +109,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
 
       <p className="mt-4 text-xs font-mono text-slate-500 flex items-center gap-1.5 max-w-md text-center">
         <Sparkles size={12} className="text-indigo-400 animate-pulse shrink-0" />
-        Desktop preview · On a phone, open this URL and install TruLens to Home Screen
+        Desktop preview · On a phone, open this URL and install TruInspect to Home Screen
       </p>
     </div>
   );

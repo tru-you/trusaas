@@ -81,7 +81,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
         <div className="p-4 space-y-4">
           {/* Condition score */}
           <div>
-            <p className="text-[11px] text-neutral-500 font-bold mb-1.5">Condition of this part</p>
+            <p className="text-[12px] text-neutral-500 font-bold mb-1.5">Condition of this part</p>
             <div className="flex gap-1.5">
               {([['ok', 'OK', Check, 'emerald'], ['note', 'Note', MinusCircle, 'amber'], ['damage', 'Damage', AlertTriangle, 'rose']] as const).map(([val, label, Icon, tone]) => {
                 const active = rating === val;
@@ -109,7 +109,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
 
           {/* Note */}
           <div>
-            <p className="text-[11px] text-neutral-500 font-bold mb-1.5">Note</p>
+            <p className="text-[12px] text-neutral-500 font-bold mb-1.5">Note</p>
             <input
               type="text"
               value={note}
@@ -145,7 +145,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
                   className="w-16 h-16 rounded-lg border-2 border-dashed border-rose-500/40 text-rose-300 flex flex-col items-center justify-center gap-0.5"
                 >
                   <Camera size={16} />
-                  <span className="text-[9px] font-bold">Close-up</span>
+                  <span className="text-[12px] font-bold">Close-up</span>
                 </button>
               </div>
               <input

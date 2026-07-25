@@ -71,7 +71,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
       {/* Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
-          <button onClick={() => handleSave(true)} className="p-1.5 -ml-1 rounded-lg hover:bg-white/5" aria-label="Back">
+          <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
           <div className="min-w-0">
@@ -119,7 +119,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="text-[12.5px] font-semibold text-neutral-100 leading-snug">{p.name}</p>
-                        {p.hint && <p className="text-[11px] text-neutral-500 mt-0.5">{p.hint}</p>}
+                        {p.hint && <p className="text-[12px] text-neutral-500 mt-0.5">{p.hint}</p>}
                       </div>
                       {hasPhoto && (
                         <img src={vehicle.photos[p.photoSlotId!]} alt="" className="w-10 h-8 rounded object-cover border border-neutral-800 shrink-0" />
@@ -136,7 +136,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                               key={val}
                               type="button"
                               onClick={() => set(p.id, { rating: val })}
-                              className={`flex-1 py-1.5 rounded-lg text-[12px] font-semibold border transition-colors ${
+                              className={`flex-1 min-h-[44px] rounded-lg text-[13px] font-semibold border transition-colors ${
                                 active
                                   ? tone === 'emerald'
                                     ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
@@ -161,7 +161,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                               key={val}
                               type="button"
                               onClick={() => set(p.id, { works: val })}
-                              className={`flex-1 py-1.5 rounded-lg text-[12px] font-semibold border flex items-center justify-center gap-1 transition-colors ${
+                              className={`flex-1 min-h-[44px] rounded-lg text-[13px] font-semibold border flex items-center justify-center gap-1.5 transition-colors ${
                                 active
                                   ? faulty
                                     ? 'bg-rose-500/15 border-rose-500/50 text-rose-300'
@@ -171,7 +171,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                                   : 'bg-neutral-950 border-neutral-800 text-neutral-400'
                               }`}
                             >
-                              <Icon size={12} /> {label}
+                              <Icon size={14} /> {label}
                             </button>
                           );
                         })}
@@ -192,9 +192,10 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                       <button
                         type="button"
                         onClick={onTagDamage}
-                        className="mt-2 text-[11px] text-neutral-500 hover:text-cyan-300 flex items-center gap-1"
+                        disabled={!hasPhoto}
+                        className="mt-2 min-h-[36px] text-[12px] text-neutral-500 hover:text-cyan-300 disabled:hover:text-neutral-500 disabled:cursor-default flex items-center gap-1.5"
                       >
-                        <Camera size={11} />
+                        <Camera size={13} />
                         {hasPhoto
                           ? tags > 0 ? `${tags} damage tag${tags === 1 ? '' : 's'} on this photo` : 'Tag damage on this photo'
                           : 'No photo yet — capture it to tag damage'}

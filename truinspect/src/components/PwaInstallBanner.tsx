@@ -94,7 +94,7 @@ export default function PwaInstallBanner() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-[#E8EAE6] tracking-wide ">
-              Install TruLens
+              Install TruInspect
             </p>
             <p className="text-[13px] text-neutral-400 leading-snug mt-0.5">
               {isIosSafari()
@@ -112,7 +112,7 @@ export default function PwaInstallBanner() {
                   Scroll and tap <b>Add to Home Screen</b>
                 </li>
                 <li>
-                  Tap <b>Add</b> — open TruLens from your home screen
+                  Tap <b>Add</b> — open TruInspect from your home screen
                 </li>
               </ol>
             )}

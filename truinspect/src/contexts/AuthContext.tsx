@@ -8,7 +8,7 @@ const DEMO_KEY = 'trulens_demo_session';
 export function createDemoUser(): User {
   return {
     uid: 'local-demo-user',
-    email: 'demo@trulens.local',
+    email: 'demo@truinspect.local',
     emailVerified: true,
     isAnonymous: false,
     displayName: 'Demo Inspector',

@@ -101,13 +101,13 @@ export function whatsAppSalesBlurb(
     `*${vehicle.year} ${vehicle.make} ${vehicle.model}*\n` +
     `${vehicle.trim || 'Standard'} · ${vehicle.color || ''}\n` +
     `Stock *${vehicle.stockNumber}* · R ${price}\n` +
-    `TruLens VIR: ${score} · ${readiness.label}\n` +
+    `TruInspect VIR: ${score} · ${readiness.label}\n` +
     `Photos: ${readiness.requiredTaken}/${readiness.requiredTotal} required\n` +
     `\n${dealer}` +
     (opts?.waNumber || vehicle.dealerWhatsApp
       ? `\nWhatsApp: ${opts?.waNumber || vehicle.dealerWhatsApp}`
       : '') +
-    `\n— TruLens inspection pack`
+    `\n— TruInspect inspection pack`
   );
 }
 

@@ -50,7 +50,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
       {/* Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <button onClick={() => handleSave(true)} className="p-1.5 -ml-1 rounded-lg hover:bg-white/5" aria-label="Back">
+          <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
           <div>

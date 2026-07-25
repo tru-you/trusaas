@@ -163,10 +163,14 @@
   --color-neutral-100: #DDE0DB;
   --color-neutral-200: #C2C6C0;
   --color-neutral-300: #A6ABA4;
-  --color-neutral-400: rgba(232,234,230,0.55);
-  --color-neutral-500: rgba(232,234,230,0.45);
-  --color-neutral-600: rgba(232,234,230,0.30);
-  --color-neutral-700: rgba(232,234,230,0.18);
+  /* Field-tier contrast floor — same lift as TruLens. On black, 0.45 lands
+     near 3.9:1 and 0.18 near 1.5:1, below the 4.5:1 WCAG minimum before
+     sunlight is even a factor. 800/850 are surfaces and borders, not text,
+     so they stay put. */
+  --color-neutral-400: rgba(232,234,230,0.78);
+  --color-neutral-500: rgba(232,234,230,0.68);
+  --color-neutral-600: rgba(232,234,230,0.55);
+  --color-neutral-700: rgba(232,234,230,0.42);
   --color-neutral-800: rgba(232,234,230,0.10);
   --color-neutral-850: rgba(232,234,230,0.07);
   --color-neutral-900: #0B0F17;
@@ -288,8 +292,14 @@
    Plain (unlayered) CSS, so these win over the Tailwind bg-* utilities on the
    same element without needing the classNames stripped. */
 .tl-btn-3d {
-  background: linear-gradient(180deg, #6ceaff 0%, #22d3ee 40%, #0aa8cc 100%);
+  /* Was still on stock Tailwind cyan (#22d3ee) — this one never got the
+     rebrand that TruLens had, so the two field apps shipped different accents. */
+  background: linear-gradient(180deg, var(--tru-cyan-300) 0%, var(--tru-cyan-400) 40%, var(--tru-cyan-500) 100%);
   border: 1px solid rgba(255,255,255,0.22);
+  /* Ink, not paper. Callers pass text-[#E8EAE6], which on this fill is ~1.3:1.
+     The letterpress shadow below was always written for dark type on a light
+     fill; the utility class was quietly winning. */
+  color: var(--text-on-accent);
   text-shadow: 0 1px 0 rgba(255,255,255,0.35);
   box-shadow:
     inset 0 1.5px 0 rgba(255,255,255,0.8),
