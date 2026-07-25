@@ -246,6 +246,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   .po-foot{margin-top:20px;padding-top:9px;border-top:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;font-size:9.5px;color:#777;font-family:'JetBrains Mono',monospace}
   .po-foot img{height:20px;width:auto}
 }
+/* ── Live tier stream-surface (§1.4) — token-driven ── */
+.stream-surface{background:var(--video-surround,#1a1a1a);backdrop-filter:none;-webkit-backdrop-filter:none}
+.stream-surface :where(*){--accent:transparent}
+.stream-surface--fullscreen{background:var(--video-void,#000)}
+.degraded-banner{display:none;position:absolute;top:56px;left:12px;right:12px;background:rgba(13,10,4,.93);border:1px solid var(--state-degraded,var(--amber));border-radius:10px;padding:8px 13px;font-size:12.5px;color:var(--state-degraded,var(--amber));z-index:20;text-align:center;pointer-events:none}
+.degraded-banner.show{display:block}
 </style>
 </head>
 <body>
@@ -315,8 +321,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <button class="tab" id="tab-q" onclick="openSheet('questions')"><svg width="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>Questions <span class="n" id="q-count">0/9</span></button>
       <button class="tab" id="tab-d" onclick="openSheet('defects')"><svg width="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>Defects <span class="n" id="d-count">0</span></button>
     </div>
-    <div class="stage">
+    <div class="stage stream-surface">
       <video id="mainVideo" autoplay playsinline></video>
+      <div class="degraded-banner" id="degraded-banner">Connection quality reduced — request a still photo for detail.</div>
       <div class="novid" id="novid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M23 7l-7 5 7 5V7Z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div style="font-size:13px" id="novid-txt">Starting camera…</div></div>
       <div class="conn" id="conn"><div class="cd"></div><span id="conn-txt">Connecting…</span></div>
       <div class="pip"><video id="pipVideo" autoplay playsinline muted></video><div class="lab" id="pip-lab">YOU</div></div>
@@ -517,6 +524,7 @@ function newPC(){
     setPeer(true);
   };
   pc.onconnectionstatechange=()=>{if(['failed','disconnected'].includes(pc.connectionState))setPeer(false);};
+  pc.oniceconnectionstatechange=()=>{const b=document.getElementById('degraded-banner');if(b)b.classList.toggle('show',['disconnected','checking'].includes(pc.iceConnectionState)&&peerConnected);};
 }
 async function makeOffer(){if(!pc)newPC();const o=await pc.createOffer();await pc.setLocalDescription(o);sig({type:'offer',sdp:o});}
 async function onOffer(sdp){if(!pc)newPC();await pc.setRemoteDescription(sdp);const a=await pc.createAnswer();await pc.setLocalDescription(a);sig({type:'answer-sdp',sdp:a});}
