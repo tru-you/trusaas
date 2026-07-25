@@ -84,3 +84,41 @@
   --r-card: 18px;
   --r-pill: 100px;
 }
+
+/* ============================================================================
+   Guardrails
+   ----------------------------------------------------------------------------
+   The tokens above describe the system; these four rules ENFORCE it. Without
+   them the rules live only in whoever is writing the markup, and they drift
+   back within a session — a `font-bold` here, a `text-[10px]` label there.
+
+   Three properties are what made the apps read as generated: 8–10px type,
+   700–900 weights, and caps-with-tracking on every label. Everything else in
+   the refresh was downstream of those.
+
+   DELIBERATELY UNLAYERED. Tailwind puts its utilities in `@layer utilities`,
+   and in the cascade an unlayered rule beats any layered one regardless of
+   source order. Putting these inside `@layer base` looks correct and silently
+   does nothing — a stray `font-bold` still wins.
+
+   Consequence worth knowing: this flattens every existing `font-bold` to 600
+   at once. That is the intent (hierarchy comes from size, colour and space,
+   not from weight), but in markup authored around 400-vs-700 contrast it can
+   read flat until headings are given their proper sizes. Sweep an app's
+   markup rather than deleting these rules.
+   ========================================================================== */
+
+/* The 12px floor. Arbitrary-value classes have to be listed explicitly, so the
+   range starts at 6px — TruLens had text-[7px] readiness chips that an 8px
+   floor sailed straight past. */
+.text-\[6px\], .text-\[7px\], .text-\[8px\], .text-\[9px\],
+.text-\[10px\], .text-\[11px\], .text-xs {
+  font-size: var(--t-micro);
+}
+
+/* No uppercase anywhere, and none of the tracking that comes with it. */
+.uppercase { text-transform: none; letter-spacing: normal; }
+.tracking-wider, .tracking-widest { letter-spacing: normal; }
+
+/* 600 is the heaviest weight in normal use. */
+.font-bold, .font-extrabold, .font-black { font-weight: var(--w-semibold); }
