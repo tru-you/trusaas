@@ -13,15 +13,22 @@ import trulensLogo from '../assets/images/trulens-wordmark.png';
  * choice with no default — you cannot capture until you've picked.
  */
 
+/**
+ * Only real dealerships belong here.
+ *
+ * Demo Motors, Summit Auto and Karoo Cars used to pad this list so it "looked
+ * lived-in" for demos. Their slugs have no mapping in TruFlow's
+ * DEALER_SLUG_TO_ID, so a capture made under one saved with no dealershipId —
+ * and the public feed reads untagged stock as the default dealership, MKR. A
+ * shooter picking the wrong row from a list of decoys put cars on another
+ * dealer's website, silently.
+ *
+ * Every entry must have a matching slug in TruFlow's DEALER_SLUG_TO_ID before
+ * it appears here.
+ */
 export const DEALERSHIPS: { slug: string; name: string; location: string }[] = [
-  // Real dealers first.
   { slug: 'cars-on-caledon', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape' },
   { slug: 'mkr-autosales', name: 'MKR Auto Sales', location: 'Johannesburg' },
-  // Sample dealers so the picker looks lived-in for demos and testing. These
-  // slugs have no DMS mapping, so their stock scopes to nothing real.
-  { slug: 'demo-motors', name: 'Demo Motors', location: 'Cape Town' },
-  { slug: 'summit-auto', name: 'Summit Auto', location: 'Durban' },
-  { slug: 'karoo-cars', name: 'Karoo Cars', location: 'Bloemfontein' },
 ];
 
 export default function DealerSelect({ onSelected }: { onSelected: (slug: string, name: string) => void }) {
