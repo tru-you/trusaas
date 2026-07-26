@@ -1,0 +1,141 @@
+/* ==========================================================
+   TRU DEVICE FRAME — desktop-only phone bezel for the vanilla apps
+   (TruLive, TruTrade). Mirrors TruLens/TruInspect's MobileDevice:
+   on a real phone / installed PWA the app is full-bleed; on a wide
+   desktop viewport it is presented inside a phone mock for demos.
+   Shared file — keep byte-identical across the sister apps.
+   ========================================================== */
+
+/* Mobile / installed PWA (default): pass through, app owns the screen. */
+.device-status, .device-home, .device-caption { display: none; }
+
+@media (min-width: 760px) and (display-mode: browser) {
+  html, body { height: auto; min-height: 100%; overflow: auto; }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 28px 16px;
+    background:
+      radial-gradient(120% 90% at 50% -10%, #101d33 0%, transparent 55%),
+      radial-gradient(90% 60% at 50% 110%, rgba(34,211,238,.05), transparent 60%),
+      #070b12;
+  }
+
+  /* Outer bezel */
+  .device {
+    position: relative;
+    width: 100%;
+    max-width: 412px;
+    height: min(880px, 92dvh);
+    background: #0a0a0a;
+    border-radius: 52px;
+    padding: 13px;
+    border: 1px solid #21262D;
+    box-shadow:
+      0 25px 60px -15px rgba(0,0,0,.9),
+      0 0 0 1px rgba(255,255,255,.05),
+      0 0 46px 10px rgba(30,58,138,.28);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Notch — centred, so the edge-aligned status text clears it */
+  .device::before {
+    content: "";
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 116px;
+    height: 26px;
+    background: #0a0a0a;
+    border: 1px solid #1c1c20;
+    border-radius: 999px;
+    z-index: 60;
+  }
+
+  /* Faux status strip (clock left, signal right) */
+  .device-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 30px;
+    flex: 0 0 auto;
+    padding: 0 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: #b1bac4;
+    background: #0a0a0a;
+    border-radius: 40px 40px 0 0;
+    z-index: 40;
+  }
+  .device-status .sig { display: flex; align-items: center; gap: 7px; color: #8a8a93; }
+  .device-status .sig b { color: #22d3ee; font-weight: 600; }
+  .device-status .sig .bat {
+    width: 22px; height: 11px; border: 1px solid #6E7681; border-radius: 3px;
+    position: relative; display: inline-block;
+  }
+  .device-status .sig .bat::before {
+    content: ""; position: absolute; inset: 1.5px; right: 6px; background: #10b981; border-radius: 1px;
+  }
+  .device-status .sig .bat::after {
+    content: ""; position: absolute; right: -3px; top: 3px; width: 2px; height: 5px;
+    background: #6E7681; border-radius: 0 1px 1px 0;
+  }
+
+  /* The app fills the space between the strips; frame's overflow clips it */
+  .device .app {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+    box-shadow: none;
+  }
+
+  /* Home indicator */
+  .device-home {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    flex: 0 0 auto;
+    background: #0a0a0a;
+    border-radius: 0 0 40px 40px;
+    z-index: 40;
+  }
+  .device-home::before {
+    content: "";
+    width: 116px;
+    height: 4px;
+    background: #30363D;
+    border-radius: 999px;
+  }
+
+  /* Caption under the phone */
+  .device-caption {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .02em;
+    color: #6E7681;
+    text-align: center;
+    max-width: 420px;
+  }
+  .device-caption svg { width: 13px; height: 13px; color: #22d3ee; flex: 0 0 auto; }
+
+  /* Keep fixed overlays (toast) inside the phone, not the browser window */
+  .toast { position: absolute; }
+}
