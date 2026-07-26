@@ -1,5 +1,5 @@
 /**
- * Closable "install this app" prompt for the vanilla apps (TruLive, TruValue).
+ * Closable "install this app" prompt for the vanilla apps (TruLive, TruTrade).
  *
  * Same behaviour as the React banner in Premium/Lite/TruLens: Android and
  * Chrome fire beforeinstallprompt so we can install programmatically; iOS

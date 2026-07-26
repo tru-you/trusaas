@@ -94,7 +94,7 @@
 }
 
 /* ---------- LIVE TIER ----------
-   TruView (buyer viewing) · TruTrade (seller appraisal).
+   TruLive (buyer walkaround) · TruTrade (seller appraisal).
    Real-time video of a vehicle drives a money decision.
    Dark UI, zero saturation around the stream. */
 [data-app="truview"],

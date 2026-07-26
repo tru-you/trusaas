@@ -8,7 +8,7 @@
 #                                   → flow.tru-saas.com     (canonical)
 #                                   → premium.tru-saas.com  (alias, legacy embeds)
 #   trusaas-live.onrender.com     → TruLive          (trulive)  → live.tru-saas.com
-#   trusaas-value.onrender.com    → TruValue         (truvalue) → value.tru-saas.com
+#   trusaas-trade.onrender.com    → TruTrade         (trutrade) → trade.tru-saas.com
 #
 # TruFlow Lite retired 2026-07-25 — see the note where its block used to be.
 #
@@ -127,15 +127,15 @@ services:
       # local summary if unset. Set the key in the Render dashboard.
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: TRUVIEW_MODEL
+      - key: TRULIVE_MODEL
         value: claude-sonnet-5
 
   # ── 2c. TruTrade — live video trade-in appraisal (customer films, dealer prices)
   - type: web
-    name: trusaas-value
+    name: trusaas-trade
     runtime: node
     plan: starter
-    rootDir: truvalue
+    rootDir: trutrade
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health

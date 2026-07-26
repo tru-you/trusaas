@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no" />
-<title>TruView — Live Vehicle Walkthrough</title>
+<title>TruLive — Live Vehicle Walkthrough</title>
 <link rel="stylesheet" href="/tru-tokens.css">
+<link rel="stylesheet" href="/device-frame.css">
 <link rel="manifest" href="/manifest.webmanifest" />
 <meta name="theme-color" content="#0a0a0a" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="TruView" />
+<meta name="apple-mobile-web-app-title" content="TruLive" />
 <link rel="icon" href="/icon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,9 +19,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0a0a;--panel:#111113;--panel-2:#161619;--line:#26262b;--line-soft:#1c1c20;
-  --text:#f5f5f5;--muted:#8a8a93;--dim:#5a5a63;--cyan:#22d3ee;--cyan-600:#0891b2;
-  --emerald:#10b981;--amber:#f59e0b;--red:#f43f5e;--glow:rgba(30,58,138,0.25);--radius:16px;
+  --bg:var(--bg-base);--panel:var(--bg-raised);--panel-2:var(--bg-overlay);--line:var(--border-subtle);--line-soft:var(--bg-inset);
+  --text:var(--text-primary);--muted:var(--text-muted);--dim:#5a5a63;--cyan:var(--accent);--cyan-600:var(--accent-hover);
+  --emerald:var(--state-success);--amber:var(--state-attention);--red:var(--state-error);--glow:rgba(30,58,138,0.25);--radius:16px;
   /* Spacing scale — 4px rhythm. Use these, don't hand-tune. */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px;
   /* Radius scale: xs=chips/tags · sm=inputs, buttons, cards · lg=panels/overlays */
@@ -350,11 +351,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 </style>
 </head>
 <body>
+<div class="device">
+<div class="device-status"><span id="dev-clock">9:41</span><span class="sig">5G&nbsp;·&nbsp;<b>TruSaaS</b><span class="bat"></span></span></div>
 <div class="app" id="app">
 
   <!-- LANDING (dealer) -->
   <section class="screen active landing" id="s-landing">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruView" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>View</span></h1></div></div>
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruLive" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>View</span></h1></div></div>
     <p class="tag">Live, guided vehicle walkthroughs. A dealer and buyer inspect the car together over a secure video link — section by section, nothing skipped.</p>
     <div class="pill-row">
       <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Encrypted</div>
@@ -398,7 +401,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
   <!-- BUYER JOIN -->
   <section class="screen join" id="s-join">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruView" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>View</span></h1></div></div>
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruLive" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>View</span></h1></div></div>
     <p class="tag" style="margin-top:-6px">You've been invited to a live walkthrough of:</p>
     <div class="veh-card">
       <div class="vt" id="j-veh">Loading…</div>
@@ -468,12 +471,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   </section>
 
   <div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg><span id="toast-txt">Done</span></div>
-</div>
+</div><!-- /.app -->
+<div class="device-home"></div>
+</div><!-- /.device -->
+<p class="device-caption"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>Desktop preview · open this link on a phone and Add to Home Screen</p>
+
 <!-- ===== PRINTABLE REPORT ===== -->
 <div id="print-report">
   <div class="pr-head">
     <img src="/assets/trusaas-lockup-dark.png" alt="TruSaaS" onerror="this.style.display='none'">
-    <div class="pr-kicker">TruView Walkthrough Report<br><span id="pr-date"></span></div>
+    <div class="pr-kicker">TruLive Walkthrough Report<br><span id="pr-date"></span></div>
   </div>
   <div class="pr-title">Live Vehicle Walkthrough</div>
   <div class="pr-veh" id="pr-veh"></div>
@@ -491,7 +498,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <ul class="pr-list pr-sections" id="pr-sections"></ul>
   <div id="pr-snaps-wrap"><h2>Captured snapshots</h2><div class="pr-snaps" id="pr-snaps"></div></div>
   <div class="pr-foot">
-    <span>Generated by TruView · a TruSaaS module</span>
+    <span>Generated by TruLive · a TruSaaS module</span>
     <img src="/assets/trusaas-lockup-dark.png" alt="TruSaaS" onerror="this.style.display='none'">
   </div>
 </div>
@@ -549,7 +556,7 @@ async function createSession(){
 }
 function fullLink(){return document.getElementById('link-url').textContent;}
 function copyLink(){navigator.clipboard?.writeText(fullLink()).catch(()=>{});toast('Link copied');}
-function shareWA(){const msg=encodeURIComponent(`Hi 👋 Here's your live TruView walkthrough of the ${vehName}. Tap to join in your browser when you're ready:\n${fullLink()}\n\n(Secure single-use link — no app needed)`);window.open('https://wa.me/?text='+msg,'_blank');}
+function shareWA(){const msg=encodeURIComponent(`Hi 👋 Here's your live TruLive walkthrough of the ${vehName}. Tap to join in your browser when you're ready:\n${fullLink()}\n\n(Secure single-use link — no app needed)`);window.open('https://wa.me/?text='+msg,'_blank');}
 
 // --- networking ---
 function connect(){
@@ -764,7 +771,7 @@ function buildPrintReport(){
 function buildReportText(){
   const secs=sectionsCovered();
   const L=[];
-  L.push('*TruView Walkthrough Report*');
+  L.push('*TruLive Walkthrough Report*');
   L.push(vehName+(vehPrice?' — '+vehPrice:''));
   L.push(reportDate());
   L.push('');
@@ -781,14 +788,14 @@ function buildReportText(){
   L.push('SECTIONS COVERED ('+secs.length+'/'+SECTIONS.length+')');
   secs.forEach(s=>L.push('• '+s.name+' — '+s.done+'/'+s.total+' confirmed'));
   L.push('');
-  L.push('Generated by TruView · a TruSaaS module');
+  L.push('Generated by TruLive · a TruSaaS module');
   return L.join('\n');
 }
 
 function reportPrint(){ buildPrintReport(); window.print(); }
 
 function reportEmail(){
-  const subject='TruView Walkthrough Report — '+(vehName||'Vehicle');
+  const subject='TruLive Walkthrough Report — '+(vehName||'Vehicle');
   const body=buildReportText().replace(/\*/g,'');
   window.location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
 }
@@ -797,7 +804,9 @@ function reportWA(){
   window.open('https://wa.me/?text='+encodeURIComponent(buildReportText()),'_blank');
 }
 </script>
-<script>window.TRU_INSTALL={appName:"TruView",accent:"#4D9BFF",key:"truview"};</script>
+<script>window.TRU_INSTALL={appName:"TruLive",accent:"#4D9BFF",key:"truview"};</script>
+<script>/* faux status-bar clock for the desktop phone frame */
+(function(){var el=document.getElementById('dev-clock');if(!el)return;function t(){var d=new Date(),h=d.getHours(),m=d.getMinutes();el.textContent=((h%12)||12)+':'+(m<10?'0':'')+m;}t();setInterval(t,10000);})();</script>
 <script src="/install-banner.js" defer></script>
 </body>
 </html>
