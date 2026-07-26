@@ -1648,16 +1648,56 @@ const SLOT_TO_CATEGORY: Record<string, string> = {
   video_360: "extrasPhotos",
 };
 
-function mapAutoLensPhotos(photos: Record<string, string>) {
+/**
+ * Sort a capture's slots into the DMS's photo arrays — and pull the walkaround
+ * out of them.
+ *
+ * The 360 slot used to map into extrasPhotos, which the public feed merges into
+ * `images`, so dealer sites rendered a video file inside an <img> and showed a
+ * broken thumbnail. Nothing needed to change in the payload to fix it: the data
+ * URI already declares itself as `data:video/…`, so the type is recoverable
+ * here without TruLens sending anything extra.
+ *
+ * Detection is by MIME prefix rather than by slot id, so a video arriving in
+ * any slot is handled — an older client that files it somewhere else, or a
+ * future slot nobody has added to SLOT_TO_CATEGORY yet.
+ */
+function mapAutoLensPhotos(photos: Record<string, string>): {
+  images: string[];
+  damagePhotos: string[];
+  vinPhotos: string[];
+  serviceBookPhotos: string[];
+  extrasPhotos: string[];
+  walkaroundVideo?: string;
+  videoPoster?: string;
+} {
   const mapped: Record<string, string[]> = {
     images: [], damagePhotos: [], vinPhotos: [],
     serviceBookPhotos: [], extrasPhotos: [],
   };
+  let walkaroundVideo: string | undefined;
+
   for (const [slotId, base64] of Object.entries(photos)) {
+    if (typeof base64 === "string" && /^data:video\//i.test(base64)) {
+      // Keep the first if a capture somehow carries more than one.
+      walkaroundVideo = walkaroundVideo || base64;
+      continue;
+    }
     const category = SLOT_TO_CATEGORY[slotId] || "extrasPhotos";
     mapped[category].push(base64);
   }
-  return mapped;
+
+  // First exterior shot doubles as the poster frame; falls back to any image.
+  const poster = mapped.images[0] || mapped.extrasPhotos[0];
+  return {
+    images: mapped.images,
+    damagePhotos: mapped.damagePhotos,
+    vinPhotos: mapped.vinPhotos,
+    serviceBookPhotos: mapped.serviceBookPhotos,
+    extrasPhotos: mapped.extrasPhotos,
+    walkaroundVideo,
+    videoPoster: walkaroundVideo ? poster : undefined,
+  };
 }
 
 // Pull photos from AutoLens Firestore for a vehicle matched by stockNumber
@@ -1722,6 +1762,16 @@ app.post("/api/sync/pull-photos", async (req, res) => {
     state.vehicles[idx].vinPhotos = mapped.vinPhotos;
     state.vehicles[idx].serviceBookPhotos = mapped.serviceBookPhotos;
     state.vehicles[idx].extrasPhotos = mapped.extrasPhotos;
+    // Only when this capture carried one — a later stills-only re-push must not
+    // wipe a walkaround the dealer already has.
+    if (mapped.walkaroundVideo) {
+      state.vehicles[idx].walkaroundVideo = mapped.walkaroundVideo;
+      state.vehicles[idx].videoPoster = mapped.videoPoster;
+    }
+    // A re-shoot changes the score, so this refreshes where the specs above
+    // deliberately do not — the DMS owns those once the car exists.
+    if (typeof lensVehicle?.vir === "number") state.vehicles[idx].vir = lensVehicle.vir;
+    if (Array.isArray(lensVehicle?.inspection)) state.vehicles[idx].virReport = lensVehicle.inspection;
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     writeState(state);
 
@@ -1780,6 +1830,10 @@ app.post("/api/sync/pull-all", async (req, res) => {
       state.vehicles[idx].vinPhotos = mapped.vinPhotos;
       state.vehicles[idx].serviceBookPhotos = mapped.serviceBookPhotos;
       state.vehicles[idx].extrasPhotos = mapped.extrasPhotos;
+      if (mapped.walkaroundVideo) {
+        state.vehicles[idx].walkaroundVideo = mapped.walkaroundVideo;
+        state.vehicles[idx].videoPoster = mapped.videoPoster;
+      }
       (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
       syncedCount++;
       results.push({ stockNumber: lensVehicle.stockNumber, status: "synced" });
@@ -1883,9 +1937,15 @@ app.post("/api/sync/push-photos", (req, res) => {
         status: "INVENTORY",
         retailPrice: parseFloat(vehicleMeta.price ?? vehicleMeta.retailPrice) || 0,
         costPrice: parseFloat(vehicleMeta.costPrice) || 0,
+        /* TruLens now captures and sends all three. The fallbacks are kept for
+           an older phone that has not updated yet — but note they are guesses,
+           and a guess published to a dealer's website reads as a fact, so the
+           capture form makes mileage required rather than relying on this. */
         mileage: parseInt(vehicleMeta.mileage, 10) || 0,
         transmission: vehicleMeta.transmission || "Automatic",
         fuelType: vehicleMeta.fuelType || "Petrol",
+        vir: typeof vehicleMeta.vir === "number" ? vehicleMeta.vir : undefined,
+        virReport: Array.isArray(vehicleMeta.inspection) ? vehicleMeta.inspection : undefined,
         stockNumber:
           matchStock ||
           "STK-" + Math.floor(Math.random() * 900000 + 100000),
@@ -1898,6 +1958,8 @@ app.post("/api/sync/push-photos", (req, res) => {
         engine: vehicleMeta.engine || "",
         vin: vehicleMeta.vin || "",
         color: vehicleMeta.color || "",
+        walkaroundVideo: mapped.walkaroundVideo,
+        videoPoster: mapped.videoPoster,
         images: mapped.images,
         damagePhotos: mapped.damagePhotos,
         vinPhotos: mapped.vinPhotos,
@@ -2086,9 +2148,21 @@ const CATEGORY_VALUES = ["used", "select", "performance"];
 
 /** Canonical public vehicle shape for HTML dealer websites + embed widget */
 function toPublicVehicle(v: any, source: string = "premium") {
-  const images = Array.isArray(v.images) ? v.images.filter(Boolean) : [];
-  const extras = Array.isArray(v.extrasPhotos) ? v.extrasPhotos.filter(Boolean) : [];
+  /* Anything that is actually a video is stripped out of the image arrays.
+     Captures taken before the walkaround was split out still have it sitting in
+     extrasPhotos, and publishing that into `images` is what made dealer sites
+     render a broken thumbnail. Belt and braces with mapAutoLensPhotos, which
+     now keeps new captures out of here in the first place. */
+  const notVideo = (s: any) => typeof s === "string" && !/^data:video\//i.test(s);
+  const images = Array.isArray(v.images) ? v.images.filter(notVideo) : [];
+  const extras = Array.isArray(v.extrasPhotos) ? v.extrasPhotos.filter(notVideo) : [];
   const allImages = [...images, ...extras];
+  /* A pre-split capture keeps its walkaround in extrasPhotos — recover it so
+     those cars publish a video too, rather than waiting for a re-shoot. */
+  const legacyVideo = [
+    ...(Array.isArray(v.images) ? v.images : []),
+    ...(Array.isArray(v.extrasPhotos) ? v.extrasPhotos : []),
+  ].find((s: any) => typeof s === "string" && /^data:video\//i.test(s));
   // Hide vehicles explicitly unpublished; default = show if INVENTORY
   const published = v.showOnWebsite !== false && v.status === "INVENTORY";
   if (!published) return null;
@@ -2119,6 +2193,27 @@ function toPublicVehicle(v: any, source: string = "premium") {
     images: allImages,
     heroImage: allImages[0] || null,
     photoCount: allImages.length,
+    /* The 360 walkaround, published as a video rather than smuggled into
+       `images`. The name is deliberate: MKR's site already probes for
+       `walkaroundVideo` (among several guesses it makes), so it renders with no
+       change to the site.
+
+       Absent — not null, not "" — when the car has no walkaround, so a site
+       branches on presence and falls back to the still:
+
+           v.walkaroundVideo
+             ? <video poster={v.videoPoster} src={v.walkaroundVideo} …/>
+             : <img src={v.heroImage} …/>
+
+       videoPoster is always populated when a video exists, and heroImage is
+       always the first photo, so there is never a case with nothing to show. */
+    walkaroundVideo: v.walkaroundVideo || legacyVideo || undefined,
+    videoPoster: v.videoPoster || allImages[0] || undefined,
+    /** TruLens inspection score 0–100, absent when the car was never scored. */
+    vir: typeof v.vir === "number" ? v.vir : undefined,
+    /* Findings per section. Absent — not [] — when the car was never
+       inspected, so a site renders the report block only when there is one. */
+    virReport: Array.isArray(v.virReport) && v.virReport.length ? v.virReport : undefined,
     daysInStock: v.daysInInventory ?? null,
     source: v.source || source,
     updatedAt: v.lastPhotoSync || v.updatedAt || null,

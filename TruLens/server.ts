@@ -1053,6 +1053,30 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       });
     }
 
+    /* Vehicle-level inspection score. TruLens scores each slot as it is shot
+       and has never sent any of it on, so the DMS and the dealer's website had
+       no idea a car had been inspected at all. There is no single score on the
+       vehicle — it is the mean of the per-slot reports, rounded. */
+    const slotScores = Object.values(vehicle.quality || {})
+      .map((q: any) => (typeof q?.overallScore === 'number' ? q.overallScore : null))
+      .filter((n): n is number => n !== null);
+    const vir = slotScores.length
+      ? Math.round(slotScores.reduce((a, b) => a + b, 0) / slotScores.length)
+      : undefined;
+
+    /* The report itself, per section, so the dealer's website can render it
+       rather than link out to an app the buyer cannot open. Sent as data and
+       not as HTML on purpose — each dealer site is hand-built, so the layout
+       belongs to the site and only the findings belong here.
+       80+ reads as a pass; below that the section is worth a look. */
+    const inspection = Object.entries(vehicle.quality || {})
+      .map(([slotId, q]: [string, any]) => ({
+        section: slotId,
+        score: typeof q?.overallScore === 'number' ? q.overallScore : null,
+        status: typeof q?.overallScore === 'number' && q.overallScore >= 80 ? 'Pass' : 'Attention',
+      }))
+      .filter((r) => r.score !== null);
+
     const dmsBase = String(dmsUrlOverride || DEFAULT_DMS_URL).replace(/\/$/, '');
     const pushUrl = `${dmsBase}/api/sync/push-photos`;
 
@@ -1078,6 +1102,15 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
         color: vehicle.color,
         price: vehicle.price,
         vehicleType: vehicle.vehicleType,
+        /* TruFlow's importer has always read mileage/transmission/fuelType off
+           this payload and fallen back to 0/"Automatic"/"Petrol" when absent —
+           and they were always absent, so every car created from a capture was
+           published to the dealer's website with invented specs. */
+        mileage: vehicle.mileage,
+        transmission: vehicle.transmission,
+        fuelType: vehicle.fuelType,
+        vir,
+        inspection: inspection.length ? inspection : undefined,
         description: vehicle.aiListingDescription || undefined,
       },
       photos,

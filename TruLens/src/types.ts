@@ -42,6 +42,14 @@ export interface Vehicle {
   color: string;
   price: number;
   vehicleType?: string; // Bakkie, Sedan, SUV, etc.
+  /* Captured here because the dealer's website shows all three on every card,
+     and nothing else in the chain knows them. TruFlow's importer has always
+     read these off the export, but TruLens never sent them — so every car
+     created from a capture reached the website as "0 km · Automatic · Petrol",
+     whatever it actually was. Optional so an older capture still imports. */
+  mileage?: number;
+  transmission?: 'Automatic' | 'Manual';
+  fuelType?: 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric';
   status: 'In-Progress' | 'Ready' | 'Listed';
   createdAt: string;
   updatedAt: string;

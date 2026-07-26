@@ -62,6 +62,22 @@ export interface Vehicle {
    *  as published by the feed, which is why the TruLens Publish toggle has to
    *  send `false` explicitly rather than omitting the field. */
   showOnWebsite?: boolean;
+
+  /** The 360 walkaround, as a data URI (`data:video/webm;base64,…`).
+   *
+   *  TruLens records a real video via MediaRecorder, but the export mapped its
+   *  slot into extrasPhotos — so it was merged into the image gallery and the
+   *  dealer sites rendered it inside an <img>, which shows a broken thumbnail.
+   *  Held separately so the feed can publish it as a video. */
+  walkaroundVideo?: string;
+  /** Still shown before the walkaround plays. First exterior shot. */
+  videoPoster?: string;
+  /** TruLens inspection score, 0–100. Computed at capture and, until now,
+   *  never sent anywhere. */
+  vir?: number;
+  /** The inspection findings per section, so a dealer site can render the
+   *  report instead of linking a buyer into an app they cannot open. */
+  virReport?: { section: string; score: number; status: 'Pass' | 'Attention' }[];
 }
 
 export type LeadStatus = 'New' | 'Contacted' | 'Test Drive Scheduled' | 'Negotiating' | 'Closed Won' | 'Closed Lost';

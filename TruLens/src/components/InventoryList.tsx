@@ -260,6 +260,11 @@ export default function InventoryList({
   const [color, setColor] = React.useState('');
   const [price, setPrice] = React.useState(24995);
   const [vehicleType, setVehicleType] = React.useState('SUV');
+  /* Shown on every dealer website card. Mileage starts empty rather than 0 so
+     the field reads as "not filled in" instead of a car with no kilometres. */
+  const [mileage, setMileage] = React.useState('');
+  const [transmission, setTransmission] = React.useState<'Automatic' | 'Manual'>('Manual');
+  const [fuelType, setFuelType] = React.useState<'Petrol' | 'Diesel' | 'Hybrid' | 'Electric'>('Petrol');
   const [status, setStatus] = React.useState<'In-Progress' | 'Ready'>('In-Progress');
   const [scanningDisc, setScanningDisc] = React.useState(false);
   const [scanNote, setScanNote] = React.useState<string | null>(null);
@@ -284,8 +289,14 @@ export default function InventoryList({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!make || !model) return;
-    
+    /* Mileage is required alongside make/model. It could have been optional and
+       carried through as "unknown", but that means three systems each deciding
+       how to render a missing number, and the DMS schema has mileage as a
+       plain number with no null. The odometer is in front of whoever is
+       standing at the car, so ask once here and the rest of the chain can
+       trust it. */
+    if (!make || !model || !mileage.trim()) return;
+
     onAddVehicle({
       make,
       model,
@@ -296,6 +307,9 @@ export default function InventoryList({
       color: color.trim(),
       price: Number(price),
       vehicleType,
+      mileage: Number(mileage),
+      transmission,
+      fuelType,
       status
     });
 
@@ -309,6 +323,9 @@ export default function InventoryList({
     setColor('');
     setPrice(24995);
     setVehicleType('SUV');
+    setMileage('');
+    setTransmission('Manual');
+    setFuelType('Petrol');
     setStatus('In-Progress');
     setShowAddForm(false);
   };
@@ -640,6 +657,46 @@ export default function InventoryList({
                   <option value="Crossover">Crossover</option>
                   <option value="Coupe">Coupe</option>
                   <option value="Convertible">Convertible</option>
+                </select>
+              </div>
+              {/* Mileage / transmission / fuel — the three the dealer's website
+                  prints on every card, and the three nothing else in the chain
+                  can supply. inputMode numeric so a yard phone opens the number
+                  pad rather than a full keyboard. */}
+              <div>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Mileage (km) *</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  required
+                  value={mileage}
+                  onChange={(e) => setMileage(e.target.value.replace(/[^\d]/g, ''))}
+                  placeholder="e.g. 78400"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                />
+              </div>
+              <div>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Transmission</label>
+                <select
+                  value={transmission}
+                  onChange={(e) => setTransmission(e.target.value as 'Automatic' | 'Manual')}
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                >
+                  <option value="Manual">Manual</option>
+                  <option value="Automatic">Automatic</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Fuel</label>
+                <select
+                  value={fuelType}
+                  onChange={(e) => setFuelType(e.target.value as 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric')}
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                >
+                  <option value="Petrol">Petrol</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="Electric">Electric</option>
                 </select>
               </div>
               <div>
