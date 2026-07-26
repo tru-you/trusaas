@@ -997,16 +997,27 @@ function buildDmsBreakdown(photos: Record<string, string>) {
   const counts: Record<string, number> = {
     images: 0, extrasPhotos: 0, damagePhotos: 0, vinPhotos: 0, serviceBookPhotos: 0,
   };
-  for (const slotId of Object.keys(photos || {})) {
+  /* The walkaround is counted separately, and by its MIME rather than by which
+     slot it came from. It used to be lumped in with the photo count, so an
+     export that silently carried no video was indistinguishable from one that
+     did — the only way to find out was to read the dealer's public feed
+     afterwards. Detecting on data:video/ also catches a clip filed in the wrong
+     slot, which is the case a slot-based count would miss. */
+  let walkaround = 0;
+  for (const [slotId, data] of Object.entries(photos || {})) {
+    if (typeof data === 'string' && /^data:video\//i.test(data)) { walkaround++; continue; }
     const cat = SLOT_TO_DMS_CATEGORY[slotId] || 'extrasPhotos';
     counts[cat] = (counts[cat] || 0) + 1;
   }
+  const stills = Object.keys(photos || {}).length - walkaround;
   return {
     mainImages: counts.images,
     extras: counts.extrasPhotos,
     damage: counts.damagePhotos,
     vin: counts.vinPhotos,
     serviceBook: counts.serviceBookPhotos,
+    walkaround,
+    stills,
     total: Object.keys(photos || {}).length,
   };
 }
@@ -1172,7 +1183,15 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       success: true,
       synced: !!dmsData.synced,
       created: !!dmsData.created,
-      message: dmsData.message || `Exported ${photoCount} photos to TruFlow DMS`,
+      message:
+        dmsData.message ||
+        // Names the walkaround explicitly, so "no walkaround" is visible at the
+        // moment of export rather than discovered later in the public feed.
+        `Exported ${buildDmsBreakdown(photos).stills} photos` +
+        (buildDmsBreakdown(photos).walkaround
+          ? ' and the 360 walkaround'
+          : ' — no 360 walkaround in this capture') +
+        ' to TruFlow DMS',
       breakdown: buildDmsBreakdown(photos),
       dmsUrl: pushUrl,
       dmsVehicle: dmsData.vehicle || null,
