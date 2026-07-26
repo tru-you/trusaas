@@ -48,12 +48,12 @@
   }
 
   function boot() {
-    if (!window.TruChatQualifier || !window.TruChatUI || !window.TRUECARS_TRUCHAT_CONFIG) {
-      console.error("[TruChat True-Cars] Load qualifier.js, chat-core.js, and true-cars/config.js before widget.js");
+    if (!window.TruChatQualifier || !window.TruChatUI || !window.COC_TRUCHAT_CONFIG) {
+      console.error("[TruChat True-Cars] Load qualifier.js, chat-core.js, and coc/config.js before widget.js");
       return;
     }
 
-    var CFG = window.TRUECARS_TRUCHAT_CONFIG;
+    var CFG = window.COC_TRUCHAT_CONFIG;
     var fabIcon = resolveAsset(CFG.fabIconUrl || CFG.logoUrl || "assets/truecars-mark.jpg");
     var logoResolved = resolveAsset(CFG.logoUrl || CFG.fabIconUrl || "assets/truecars-mark.jpg");
     var CFG_UI = Object.assign({}, CFG, { logoUrl: logoResolved, fabIconUrl: fabIcon });

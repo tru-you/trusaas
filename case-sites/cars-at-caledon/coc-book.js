@@ -226,7 +226,11 @@
     return [
       "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Cars on Caledon//Booking//EN",
       "BEGIN:VEVENT",
-      "UID:mkr-" + f(se[0]) + "-" + Math.abs(hashStr(title)) + "@mkrautosales.co.za",
+      // Was "mkr-…@mkrautosales.co.za" — a competitor's domain stamped on every
+      // viewing invite Caledon sent, visible in the event properties in Outlook
+      // and Google Calendar. The surrounding PRODID and description were already
+      // branded correctly; only this line was missed.
+      "UID:coc-" + f(se[0]) + "-" + Math.abs(hashStr(title)) + "@carsoncaledon.co.za",
       "DTSTAMP:" + f(new Date()),
       "DTSTART:" + f(se[0]),
       "DTEND:" + f(se[1]),

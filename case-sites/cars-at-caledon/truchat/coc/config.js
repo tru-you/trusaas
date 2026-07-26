@@ -7,7 +7,7 @@ window.COC_TRUCHAT_CONFIG = {
   dealerName: "Cars on Caledon",
   brandLine: "Cars on Caledon · Quality Pre-Owned · Kariega",
   address: "257 Caledon Street, Kariega, Eastern Cape",
-  siteUrl: "https://carsoncaledon.co.za",
+  siteUrl: "https://www.carsoncaledon.co.za",
 
   logoUrl: "../../coc-mark.svg",
   fabIconUrl: "../../coc-mark.svg",
@@ -28,10 +28,15 @@ window.COC_TRUCHAT_CONFIG = {
   leadStorageKey: "coc_truchat_leads_v1",
   portalPin: "",
 
-  stockApi: "https://trusaas-premium.onrender.com/api/public/stock?dealer=cars-on-caledon",
+  /* Branded hosts, matching every other tenant. This was the only config still
+     pointing at raw *.onrender.com origins, so the chatbot's stock knowledge sat
+     on different infrastructure from the showroom grid — it could go stale or
+     cold-start while the page itself kept working, with nothing to show for it.
+     The "caledon-cars" fallback slug is dropped: it does not exist in TruFlow,
+     so it only ever bought a timeout. */
+  stockApi: "https://flow.tru-saas.com/api/public/stock?dealer=cars-on-caledon",
   stockApiFallback: [
-    "https://trusaas-flow.onrender.com/api/public/stock?dealer=cars-on-caledon",
-    "https://trusaas-flow.onrender.com/api/public/stock?dealer=caledon-cars"
+    "https://premium.tru-saas.com/api/public/stock?dealer=cars-on-caledon"
   ],
 
   greeting:
@@ -59,12 +64,12 @@ window.COC_TRUCHAT_CONFIG = {
     rs3: "AUDI"
   },
 
-  catalog: [
-    { id: "ranger-wildtrak", brand: "FORD", model: "Ranger 3.2 TDCi Wildtrak 4x4", year: 2019, price: 419900, km: "115 000 km", fuel: "Diesel" },
-    { id: "polo-gti", brand: "VOLKSWAGEN", model: "Polo GTI 2.0 TSI", year: 2021, price: 384900, km: "46 500 km", fuel: "Petrol" },
-    { id: "golf-gti", brand: "VOLKSWAGEN", model: "Golf 7.5 GTI 2.0 TSI", year: 2020, price: 429900, km: "62 000 km", fuel: "Petrol" },
-    { id: "fortuner-epic", brand: "TOYOTA", model: "Fortuner 2.8 GD-6 4x4 Epic", year: 2021, price: 539900, km: "88 000 km", fuel: "Diesel" },
-    { id: "a45-amg", brand: "MERCEDES-AMG", model: "A45 4Matic", year: 2018, price: 479900, km: "71 000 km", fuel: "Petrol" },
-    { id: "hilux-legend", brand: "TOYOTA", model: "Hilux 2.8 GD-6 Legend RS", year: 2022, price: 619900, km: "52 000 km", fuel: "Diesel" }
-  ],
+  /* Deliberately empty. This was six exotics — an AMG A45, two GTIs, a Fortuner,
+     a Wildtrak and a Hilux Legend — used as the fallback whenever the stock API
+     was slow or down. The bot quoted them as if they were on the floor, which
+     contradicts both this yard's positioning and its own R100k-R700k range, and
+     invented inventory is worse than admitting the list is loading. chat-core
+     only calls setCatalog() on a successful fetch, so with this empty the bot
+     falls back to "let me check what is on the floor" instead of making cars up. */
+  catalog: [],
 };

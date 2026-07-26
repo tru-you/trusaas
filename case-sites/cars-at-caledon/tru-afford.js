@@ -1,6 +1,6 @@
 /**
  * TruAfford — soft affordability / pre-qual widget (TruSaaS)
- * Drop-in: <script src="tru-afford.js" data-dealer="Your Car Guy" data-wa="27834659921" data-brand="ycg"></script>
+ * Drop-in: <script src="tru-afford.js" data-dealer="Cars on Caledon" data-wa="27618759389" data-brand="coc"></script>
  * Soft estimate only — not a hard credit bureau check.
  */
 (function () {
@@ -9,10 +9,14 @@
   window.__TruAffordLoaded = true;
 
   var scr = document.currentScript || document.querySelector("script[src*='tru-afford']");
+  /* These defaults only apply if the script-tag lookup above returns null.
+     They used to be another dealer's name and live WhatsApp number, so a failed
+     lookup on this site would have quietly sent Caledon's finance enquiries to
+     Your Car Guy. A fallback should fail towards the dealer whose site this is. */
   var cfg = {
-    dealer: (scr && scr.getAttribute("data-dealer")) || "Your Car Guy",
-    wa: (scr && scr.getAttribute("data-wa")) || "27834659921",
-    brand: (scr && scr.getAttribute("data-brand")) || "ycg",
+    dealer: (scr && scr.getAttribute("data-dealer")) || "Cars on Caledon",
+    wa: (scr && scr.getAttribute("data-wa")) || "27618759389",
+    brand: (scr && scr.getAttribute("data-brand")) || "coc",
     rate: parseFloat((scr && scr.getAttribute("data-rate")) || "0.1175"),
     position: (scr && scr.getAttribute("data-position")) || "right", // right | left
     offsetBottom: (scr && scr.getAttribute("data-bottom")) || "88px", // clear WhatsApp FAB

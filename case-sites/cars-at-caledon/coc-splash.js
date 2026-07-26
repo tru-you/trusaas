@@ -134,8 +134,29 @@
       setTimeout(function(){el.remove();}, 800);
     }
 
+    /* Holding mode. House standard is that a showroom goes live at 5 cars on the
+       feed; under that, this splash IS the site's front door rather than an
+       overture into a near-empty grid. It stops auto-advancing when the clip
+       ends, and the button stops promising a showroom that is not ready.
+       It stays dismissible on purpose — trade-in, finance, hours and WhatsApp
+       all work with no stock, and trapping someone behind a video would cost
+       leads the yard can still service today.
+       window.COC_HOLDING is set by index.html once it knows the stock count;
+       it is undefined here until then, so we re-check at dismiss time. */
+    function holding(){ return window.COC_HOLDING === true; }
+    function applyHolding(){
+      if(!holding()) return;
+      skip.innerHTML = 'Talk to us about what is coming in'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+      var tag = el.querySelector(".coc-splash-tag");
+      if(tag) tag.textContent = "New stock landing now · Kariega";
+    }
+    // The count arrives asynchronously with the stock feed, so check twice.
+    setTimeout(applyHolding, 1200);
+    setTimeout(applyHolding, 4000);
+
     skip.addEventListener("click", dismiss);
-    vid.addEventListener("ended", dismiss);
+    vid.addEventListener("ended", function(){ if(!holding()) dismiss(); });
     vid.addEventListener("error", dismiss);
     vid.addEventListener("timeupdate", function(){
       if(vid.duration) bar.style.width = (vid.currentTime/vid.duration*100)+"%";

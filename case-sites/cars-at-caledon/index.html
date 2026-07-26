@@ -13,34 +13,34 @@
      fails to resolve and the share card falls back to nothing.
      >>> If the live domain is not carsoncaledon.co.za, change it in the 4
          places below (og:url, og:image, twitter:image, canonical).          -->
-<link rel="canonical" href="https://carsoncaledon.co.za/">
+<link rel="canonical" href="https://www.carsoncaledon.co.za/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Cars on Caledon">
 <meta property="og:locale" content="en_ZA">
-<meta property="og:url" content="https://carsoncaledon.co.za/">
+<meta property="og:url" content="https://www.carsoncaledon.co.za/">
 <meta property="og:title" content="Cars on Caledon — Quality Pre-Owned · Kariega">
 <meta property="og:description" content="Hand-picked pre-owned vehicles in Kariega, Eastern Cape. Inspected stock, bank finance, trade-ins welcome. WhatsApp us.">
-<meta property="og:image" content="https://carsoncaledon.co.za/og-card.jpg">
+<meta property="og:image" content="https://www.carsoncaledon.co.za/og-card.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Cars on Caledon — quality pre-owned vehicles, Kariega, Eastern Cape">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Cars on Caledon — Quality Pre-Owned · Kariega">
 <meta name="twitter:description" content="Hand-picked pre-owned vehicles in Kariega, Eastern Cape. Inspected stock, bank finance, trade-ins welcome.">
-<meta name="twitter:image" content="https://carsoncaledon.co.za/og-card.jpg">
+<meta name="twitter:image" content="https://www.carsoncaledon.co.za/og-card.jpg">
 <!-- Local-SEO structured data. Every value here is already stated on the page —
      do not add claims (ratings, review counts) that aren't real. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "AutoDealer",
-  "@id": "https://carsoncaledon.co.za/#dealer",
+  "@id": "https://www.carsoncaledon.co.za/#dealer",
   "name": "Cars on Caledon",
   "alternateName": "Caledon Cars",
   "description": "Independent family-run dealership offering quality pre-owned vehicles, bank finance and trade-ins in Kariega, Eastern Cape.",
-  "url": "https://carsoncaledon.co.za/",
-  "logo": "https://carsoncaledon.co.za/caledon-logo.png",
-  "image": "https://carsoncaledon.co.za/og-card.jpg",
+  "url": "https://www.carsoncaledon.co.za/",
+  "logo": "https://www.carsoncaledon.co.za/caledon-logo.png",
+  "image": "https://www.carsoncaledon.co.za/og-card.jpg",
   "telephone": "+27618759389",
   "email": "lance@carsoncaledon.co.za",
   "priceRange": "R100 000 - R700 000",
@@ -1447,10 +1447,20 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 <script>
 /* ── Config ── */
 const WA = "27618759389";
-const DEALER_SLUGS = ["cars-on-caledon","caledon-cars","caledon","cars-on-caledon-sa"];
+/* One slug, one primary host. This was 4 slugs x 2 hosts x 2 attempts at an 18s
+   timeout each — up to 16 sequential requests and well over a minute of hanging
+   before the page gave up. Only "cars-on-caledon" exists in TruFlow; the other
+   three never resolved and only ever bought timeouts. */
+/* House standard: a showroom goes live once the yard has this many cars on the
+   feed. Below it the section holds instead of publishing a thin grid — two cars
+   and a filter row reads as a yard going out of business, not a yard opening.
+   Everything else on the page (trade-in, finance, hours, WhatsApp) stays live
+   throughout, because those are useful with no stock at all. */
+const MIN_LIVE_STOCK = 5;
+const DEALER_SLUGS = ["cars-on-caledon"];
 const STOCK_APIS = [
-  "https://premium.tru-saas.com/api/public/stock?dealer=",
-  "https://flow.tru-saas.com/api/public/stock?dealer="
+  "https://flow.tru-saas.com/api/public/stock?dealer=",
+  "https://premium.tru-saas.com/api/public/stock?dealer="
 ];
 
 /* ── Fallback stock — shown only until live DMS stock loads. ──
@@ -1459,17 +1469,15 @@ const STOCK_APIS = [
    (heroImage / images[]) once stock is loaded there. Do not present these as real units. */
 // truPrice = an honest per-vehicle market-value benchmark (hand-set, same
 // approach as True-Cars/MKR). Independent of price — never derived from it.
-const MOCK_STOCK = [
- {yr:2019,make:"Volkswagen",name:"Polo Vivo 1.4 Trendline",variant:"5-Door · One Owner",body:"Hatchback",perf:false,km:"78 400 km",tr:"Manual",fuel:"Petrol",price:179900,truPrice:189500,tag:"Popular",hot:true,img:"https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80"},
- {yr:2020,make:"Toyota",name:"Hilux 2.4 GD-6 SRX",variant:"Single Cab · Full Service History",body:"Bakkie",perf:false,km:"112 000 km",tr:"Manual",fuel:"Diesel",price:379900,truPrice:399000,tag:"Workhorse",img:"https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1000&q=80"},
- {yr:2021,make:"Volkswagen",name:"Polo 1.0 TSI Comfortline",variant:"Balance of Service Plan",body:"Hatchback",perf:false,km:"52 300 km",tr:"Manual",fuel:"Petrol",price:269900,truPrice:284000,tag:"Low KM",hot:true,img:"https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1000&q=80"},
- {yr:2018,make:"Ford",name:"EcoSport 1.5 TiVCT Ambiente",variant:"Auto · Rear Sensors",body:"SUV",perf:false,km:"96 800 km",tr:"Auto",fuel:"Petrol",price:199900,truPrice:209500,tag:"Family SUV",img:"https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1000&q=80"},
- {yr:2017,make:"Toyota",name:"Etios 1.5 Xs Sedan",variant:"Aircon · Ideal First Car",body:"Sedan",perf:false,km:"121 000 km",tr:"Manual",fuel:"Petrol",price:129900,truPrice:136500,tag:"Budget Buy",img:"https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80"},
- {yr:2019,make:"Nissan",name:"NP200 1.6 Safety Pack",variant:"Canopy Fitted · Aircon",body:"Bakkie",perf:false,km:"88 500 km",tr:"Manual",fuel:"Petrol",price:159900,truPrice:168000,tag:"Half-Ton",img:"https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1000&q=80"},
- {yr:2020,make:"Hyundai",name:"Grand i10 1.0 Motion",variant:"Hatch · Low Mileage",body:"Hatchback",perf:false,km:"63 200 km",tr:"Manual",fuel:"Petrol",price:174900,truPrice:183000,tag:"Economical",img:"https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&w=1000&q=80"},
- {yr:2021,make:"Toyota",name:"Urban Cruiser 1.5 Xi",variant:"Full Toyota History",body:"SUV",perf:false,km:"44 700 km",tr:"Manual",fuel:"Petrol",price:249900,truPrice:263000,tag:"Just Arrived",img:"https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1000&q=80"}
-];
+const MOCK_STOCK = [];
 
+
+/* MOCK_STOCK is now empty and STOCK starts empty with it.
+   It used to hold eight invented cars with Unsplash photography, and the site
+   painted them on first load and left them there whenever the feed failed —
+   still captioned "8 vehicles in stock". Buyers were WhatsApping about cars
+   that had never been on the floor. An empty showroom that says so is worth
+   more than a full one that is fiction. */
 let STOCK = MOCK_STOCK.slice();
 let stockLive = false;
 let activeChip = "";
@@ -1541,14 +1549,26 @@ function favSync(){
 let io;
 function observeAll(){io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{threshold:.1});document.querySelectorAll(".rv:not(.in)").forEach(el=>io.observe(el));}
 
+/* One place decides what the stock pill says, so the live and failed paths can
+   never disagree. Below the go-live threshold it deliberately does not publish a
+   count — "2 vehicles in stock" is a worse advert than saying stock is landing. */
+function stockLabel(){
+  if(STOCK.length >= MIN_LIVE_STOCK) return STOCK.length+" vehicles in stock";
+  if(STOCK.length > 0)               return "New stock arriving — call 061 875 9389";
+  return "Stock loading — call us on 061 875 9389";
+}
 function setStockSource(live, label){
   stockLive = !!live;
+  /* Tell the splash whether the yard is live yet. It reads this to decide
+     between "Enter showroom" and holding as the front door. Set here because
+     this is the one function every stock path already calls. */
+  window.COC_HOLDING = STOCK.length < MIN_LIVE_STOCK;
   const el = document.getElementById("stockSource");
   const lbl = document.getElementById("stockSourceLbl");
   if(el) el.classList.toggle("live", live);
   if(lbl) lbl.textContent = label;
   const badge = document.querySelector(".hero-badge");
-  if(badge && live) badge.innerHTML = "<i></i> "+STOCK.length+" vehicles · Kariega, Eastern Cape";
+  if(badge && live) badge.innerHTML = "<i></i> "+STOCK.length+(STOCK.length===1?" vehicle":" vehicles")+" · Kariega, Eastern Cape";
   syncCounts();
   syncFilters();
 }
@@ -1576,20 +1596,27 @@ function syncFilters(){
   // Chips mirror real stock too — a filter that can only return "no matches" is noise.
   const chipWrap = document.getElementById("chips");
   if(chipWrap){
-    const bodies = new Set(STOCK.map(c => c.body).filter(Boolean));
+    /* Chips are BUILT from the stock, not hidden from a hardcoded list.
+       They used to be fixed at Hatchback/SUV/Bakkie/Coupe and matched with
+       c.body === chip, an exact string compare. TruLens sends its own body
+       types — "Bakkie / Truck", "Crossover", "Convertible" — so "Bakkie"
+       never equalled "Bakkie / Truck" and every one of those chips hid itself,
+       leaving a filter row with nothing in it but All. Deriving them means the
+       chip set always matches whatever the yard actually has, including body
+       types nobody has thought of yet. */
+    const bodies = [...new Set(STOCK.map(c => c.body).filter(Boolean))]
+                     .filter(b => b !== "Vehicle")   // DMS placeholder
+                     .sort((a,b) => a.localeCompare(b));
     const anyPerf = STOCK.some(c => c.perf);
-    chipWrap.querySelectorAll(".chip").forEach(ch=>{
-      const f = ch.dataset.f;
-      if(!f) return;
-      const show = f === "perf" ? anyPerf : bodies.has(f);
-      ch.style.display = show ? "" : "none";
-      if(!show && ch.classList.contains("on")){
-        ch.classList.remove("on");
-        const all = chipWrap.querySelector('.chip[data-f=""]');
-        if(all) all.classList.add("on");
-        activeChip = "";
-      }
-    });
+    const esc = t => String(t).replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+    chipWrap.innerHTML =
+      '<button type="button" class="chip" data-f="">All</button>'
+      + bodies.map(b => '<button type="button" class="chip" data-f="'+esc(b)+'">'+esc(b)+'</button>').join("")
+      + (anyPerf ? '<button type="button" class="chip" data-f="perf">Performance</button>' : "");
+    // Keep the active chip lit if it still exists, otherwise fall back to All.
+    const stillThere = chipWrap.querySelector('.chip[data-f="'+String(activeChip).replace(/"/g,'')+'"]');
+    if(activeChip && stillThere) stillThere.classList.add("on");
+    else { activeChip = ""; chipWrap.querySelector('.chip[data-f=""]').classList.add("on"); }
   }
 
   // Price bands that actually divide the stock — never a band above the top price.
@@ -1631,7 +1658,24 @@ function syncCounts(){
 }
 
 const grid=document.getElementById("invgrid");
+function renderHolding(){
+  /* Deliberately not a car grid. It names the yard, says stock is arriving, and
+     keeps the one action that always works — WhatsApp — rather than showing a
+     near-empty showroom or, worse, invented stock. */
+  const chipWrap = document.getElementById("chips");
+  if(chipWrap) chipWrap.style.display = "none";
+  grid.innerHTML =
+    '<div style="grid-column:1/-1;text-align:center;padding:56px 20px;">'
+    + '<p style="font-size:20px;font-weight:700;margin:0 0 8px;">New stock arriving now</p>'
+    + '<p style="font-size:14px;color:var(--grey);margin:0 0 20px;line-height:1.6;">'
+    + 'We are photographing and inspecting the current floor. Tell us what you are '
+    + 'looking for and we will send you matches before they go up.</p>'
+    + '<a class="btn btn-dark" target="_blank" rel="noopener" href="https://wa.me/27618759389?text='
+    + encodeURIComponent("Hi Caledon Cars, what do you have coming in? I am looking for:")
+    + '">WhatsApp us what you need &rarr;</a></div>';
+}
 function render(list){
+  if(STOCK.length < MIN_LIVE_STOCK){ renderHolding(); return; }
   const show = list.length ? list : STOCK.slice(0,10);
   window.COC_SHOWN = show;
   grid.innerHTML=show.map((c,i)=>{
@@ -1675,11 +1719,29 @@ function isJunkApi(v){
   if(v.make && String(v.make).length<=2 && /ddas|test|xxx/i.test(String(v.model||""))) return true;
   return false;
 }
+function normaliseBody(raw){
+  const b = String(raw || "").trim();
+  if(!b) return "Vehicle";                       // DMS placeholder, filtered out downstream
+  const k = b.toLowerCase();
+  if(/bakkie|truck|pick.?up/.test(k)) return "Bakkie";
+  if(/crossover|suv|4x4/.test(k))     return "SUV";
+  if(/hatch/.test(k))                 return "Hatchback";
+  if(/sedan|saloon/.test(k))          return "Sedan";
+  if(/coupe|convertible|cabrio/.test(k)) return "Coupe";
+  return b;
+}
 function mapApiVehicle(v){
   if(isJunkApi(v)) return null;
   const price = Number(v.price)||0;
   const km = v.mileage != null ? (Number(v.mileage).toLocaleString("en-ZA")+" km") : (v.km||"—");
-  const body = v.bodyType || v.body || "Vehicle";
+  /* Normalise the DMS body type to the categories this page is built around.
+     TruLens offers "Bakkie / Truck", "Crossover" and "Convertible"; the
+     showroom tiles are hand-drawn for Hatchback / SUV / Bakkie / Coupe / Sedan
+     and matched by exact string, so "Bakkie / Truck" silently matched nothing
+     and a bakkie fell out of the bakkie tile. Anything unrecognised passes
+     through untouched — the chips are derived from real stock, so a new body
+     type still gets its own filter without a code change. */
+  const body = normaliseBody(v.bodyType || v.body);
   const name = [v.model, v.trim].filter(Boolean).join(" ") || v.make || "Vehicle";
   const img = v.heroImage || (Array.isArray(v.images)&&v.images[0]) || "";
   // TruPrice: prefer the real benchmark the dealer set in the DMS; only
@@ -1704,7 +1766,23 @@ function mapApiVehicle(v){
     // No stand-in car photo: showing an unrelated stock vehicle misrepresents the unit.
     // Empty -> the card renders a branded "photo on request" panel instead.
     img: img || "",
-    virLabel: "Inspected"
+    /* The full gallery, not just the first frame. This kept images[0] only, so
+       every car looked like a one-photo listing no matter how many were shot. */
+    images: Array.isArray(v.images) ? v.images.filter(Boolean) : [],
+    /* The 360 walkaround. coc-media.js has always read these names, but nothing
+       ever populated them — so the switcher could not fire and the promise at
+       the top of the showroom ("full VIR report and 360° walkaround") was one
+       the page could not keep. The feed publishes them as of today.
+       Absent when the car has no walkaround, so the media switcher falls back
+       to the stills rather than rendering an empty video frame. */
+    walkaroundVideo: v.walkaroundVideo || "",
+    videoPoster: v.videoPoster || img || "",
+    /* Inspection. vir is the score, virReport the per-section findings.
+       virLabel was hardcoded "Inspected" on every car including ones that had
+       never been looked at — now it reflects whether a score actually exists. */
+    vir: (typeof v.vir === "number") ? v.vir : null,
+    virReport: Array.isArray(v.virReport) ? v.virReport : [],
+    virLabel: (typeof v.vir === "number") ? ("Inspected · " + v.vir + "/100") : ""
   };
 }
 
@@ -1725,20 +1803,20 @@ async function tryLoadLiveStock(){
           const mapped = list.map(mapApiVehicle).filter(Boolean);
           if(!mapped.length) continue;
           STOCK = mapped;
-          setStockSource(true, STOCK.length+" vehicles in stock");
+          setStockSource(true, stockLabel());
           applyFilters();
           return true;
         }catch(e){ if(attempt===0) await new Promise(r=>setTimeout(r,1500)); }
       }
     }
   }
-  setStockSource(false, STOCK.length+" vehicles in stock");
+  setStockSource(false, stockLabel());
   return false;
 }
 
 /* Show mock stock immediately; swap if yard feed is available (no dealer-tool UI) */
 render(STOCK.slice(0,10));
-setStockSource(false, STOCK.length+" vehicles in stock");
+setStockSource(false, stockLabel());
 tryLoadLiveStock();
 
 document.getElementById("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));b.classList.add("on");activeChip=b.dataset.f;applyFilters();});
@@ -1889,8 +1967,12 @@ observeAll();
 <script src="truchat/shared/qualifier.js"></script>
 <script src="truchat/shared/chat-core.js"></script>
 <script src="truchat/coc/config.js"></script>
-<script>if(window.COC_TRUCHAT_CONFIG){window.TRUECARS_TRUCHAT_CONFIG=window.COC_TRUCHAT_CONFIG;}</script>
-<script src="truchat/true-cars/widget.js?v=5" data-bottom="24px" data-position="right" data-z="999990" defer></script>
+<!-- Caledon's own widget. This used to load true-cars/widget.js and alias
+     COC_TRUCHAT_CONFIG onto window.TRUECARS_TRUCHAT_CONFIG, which meant another
+     dealer's whole tenant folder had to stay deployed on this domain — phone
+     numbers and demo pages included — for the chat to work at all. The widget
+     is now Caledon's, so those folders can go. -->
+<script src="truchat/coc/widget.js?v=6" data-bottom="24px" data-position="right" data-z="999990" defer></script>
 
 <!-- TruAfford · soft affordability (TruSaaS) — all showrooms -->
 <script
