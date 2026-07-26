@@ -85,6 +85,12 @@ export interface DmsExportResult {
     damage: number;
     vin: number;
     serviceBook: number;
+    /** The 360 walkaround, counted apart from the stills. It used to fall into
+     *  `extras`, which made an export carrying no video indistinguishable from
+     *  one that did. */
+    walkaround: number;
+    /** Everything except the walkaround. */
+    stills: number;
     total: number;
   };
   dmsUrl?: string;

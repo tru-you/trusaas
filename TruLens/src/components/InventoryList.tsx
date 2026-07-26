@@ -390,6 +390,12 @@ export default function InventoryList({
       const result = await onExportToDms(vehicle);
       if (result.success) {
         const b = result.breakdown;
+        /* The walkaround is called out on its own, and its ABSENCE is stated
+           rather than left blank. Every other entry here is omitted when zero,
+           which is right for photo categories — but a missing 360 is the one
+           thing worth saying out loud. An export that silently carried no video
+           read exactly like one that did, and the only way to tell them apart
+           was to go and read the dealer's public feed afterwards. */
         const parts = b
           ? [
               b.mainImages ? `${b.mainImages} main` : null,
@@ -397,6 +403,7 @@ export default function InventoryList({
               b.damage ? `${b.damage} damage` : null,
               b.vin ? `${b.vin} VIN` : null,
               b.serviceBook ? `${b.serviceBook} service` : null,
+              b.walkaround ? '360 walkaround ✓' : 'no 360 walkaround',
             ].filter(Boolean).join(', ')
           : `${takenCount} photos`;
         setExportToast({
