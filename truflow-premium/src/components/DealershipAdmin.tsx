@@ -80,6 +80,14 @@ export default function DealershipAdmin({
   const [issued, setIssued] = useState<Record<string, string>>({});
   const [issuing, setIssuing] = useState<string | null>(null);
 
+  /* Which dealerships already have a login code, and how much stock each is
+     actually publishing. Onboarding used to be four steps with no way to see
+     which of them you had done — you found out a dealer was half set up when
+     they phoned. /api/auth/codes cannot return the codes themselves (they are
+     hashed) but it does say who has one, which is the part worth knowing. */
+  const [hasCode, setHasCode] = useState<Record<string, boolean>>({});
+  const [stock, setStock] = useState<Record<string, number | null>>({});
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -87,7 +95,29 @@ export default function DealershipAdmin({
       const res = await authFetch("/api/dealerships");
       if (res.status === 403) throw new Error("Admin only — sign in with the master admin code.");
       if (!res.ok) throw new Error(`Server responded ${res.status}`);
-      setRows(await res.json());
+      const list: Dealership[] = await res.json();
+      setRows(list);
+
+      /* Best-effort. A failure here must not blank the dealership list, so
+         each lookup degrades to "unknown" rather than throwing. */
+      authFetch("/api/auth/codes")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((body) => {
+          if (!body?.accounts) return;
+          const map: Record<string, boolean> = {};
+          for (const a of body.accounts) if (a.dealershipId) map[a.dealershipId] = true;
+          setHasCode(map);
+        })
+        .catch(() => { /* leave unknown */ });
+
+      // The public feed is what the dealer's website sees, so ask it the same
+      // way the website does rather than counting rows in the DMS.
+      list.forEach((d) => {
+        fetch(`/api/public/stock?dealer=${encodeURIComponent(d.slug)}`, { cache: "no-store" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((body) => setStock((p) => ({ ...p, [d.id]: typeof body?.count === "number" ? body.count : null })))
+          .catch(() => setStock((p) => ({ ...p, [d.id]: null })));
+      });
     } catch (err: any) {
       setError(err?.message || "Could not load dealerships.");
     } finally {
@@ -158,9 +188,15 @@ export default function DealershipAdmin({
   };
 
   /* Step 3 of onboarding is a Render env var, and getting it wrong is the
-     failure that files a dealer's cars into someone else's yard. Building the
-     whole line here beats retyping it per dealer. */
-  const dealerCodesLine = rows.map((d) => `${d.slug}:CODE`).join(",");
+     failure that files a dealer's cars into someone else's yard.
+     Real codes are substituted for any dealer whose code was issued in this
+     session — that is the only moment the plaintext exists, and having to
+     hand-merge it into a template afterwards is exactly where a slug and a
+     code get mismatched. Anything not issued here stays as CODE. */
+  const dealerCodesLine = rows
+    .map((d) => `${d.slug}:${issued[d.id] || "CODE"}`)
+    .join(",");
+  const codesLineIsComplete = rows.length > 0 && rows.every((d) => issued[d.id]);
 
   return (
     <div className="card border-[color:var(--cyan-soft)]">
@@ -227,6 +263,36 @@ export default function DealershipAdmin({
                   <CopyButton value={issued[d.id]} label="Copy code" />
                 </div>
               )}
+
+              {/* Setup state at a glance. Two of the three can be answered from
+                  here; TruLens pinning lives in a Render env var this app
+                  cannot read, so it is listed as a step to confirm rather than
+                  reported as done — claiming it was done would be worse than
+                  saying nothing. */}
+              <div className="flex items-center gap-3 flex-wrap text-[13px]">
+                <span
+                  className={
+                    hasCode[d.id]
+                      ? "text-[color:var(--cyan)]"
+                      : "text-[color:var(--muted)]"
+                  }
+                >
+                  {hasCode[d.id] ? "✓" : "○"} Login code
+                </span>
+                <span className="text-[color:var(--muted)]">○ Pinned in TruLens (check Render)</span>
+                <span
+                  className={
+                    stock[d.id] ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"
+                  }
+                >
+                  {stock[d.id] ? "✓" : "○"}{" "}
+                  {stock[d.id] === null || stock[d.id] === undefined
+                    ? "Stock unknown"
+                    : stock[d.id] === 0
+                    ? "No stock live yet"
+                    : `${stock[d.id]} live on site`}
+                </span>
+              </div>
 
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono break-all min-w-0">
@@ -336,15 +402,22 @@ export default function DealershipAdmin({
               A dealership added here shows up in the TruLens picker straight away. To pin a phone to
               a dealership server-side — so a wrong tap cannot file cars into another yard — set{" "}
               <span className="font-mono text-[color:var(--cyan-bright)]">TRULENS_DEALER_CODES</span>{" "}
-              on the <span className="font-mono">trusaas-lens</span> service. Replace each{" "}
-              <span className="font-mono">CODE</span> with what you gave that dealer. This one needs a
+              on the <span className="font-mono">trusaas-lens</span> service. This one needs a
               restart.
+            </p>
+            <p className="text-[13px] text-[color:var(--muted)] leading-relaxed">
+              {codesLineIsComplete
+                ? "Every code below was issued in this session, so this line is ready to paste as-is."
+                : "Codes issued in this session are filled in below. Any that still read CODE belong to a dealer whose code was issued earlier — a code can only be read once, so either use the one you saved or issue a fresh one above."}
             </p>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="font-mono text-[13px] text-[color:var(--white)] break-all min-w-0">
                 {dealerCodesLine}
               </div>
-              <CopyButton value={dealerCodesLine} label="Copy template" />
+              <CopyButton
+                value={dealerCodesLine}
+                label={codesLineIsComplete ? "Copy line" : "Copy template"}
+              />
             </div>
           </div>
         )}
