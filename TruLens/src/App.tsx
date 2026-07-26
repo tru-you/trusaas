@@ -335,8 +335,21 @@ export default function App() {
   // A kept shot saves immediately — no detour through the editor. Redo happens
   // in the camera before this is ever called; polishing is opt-in afterwards.
   const handlePhotoCaptured = (slotId: string, base64Image: string, qualityReport: QualityReport) => {
-    setActiveSlotId(slotId);
-    void handleSaveProcessedImage(base64Image, qualityReport, slotId);
+    // Optimistic: update local state immediately so the UI advances without waiting for the server.
+    setVehicles(prev => prev.map(v => {
+      if (v.id !== activeVehicleId) return v;
+      return {
+        ...v,
+        photos: { ...(v.photos || {}), [slotId]: base64Image },
+        quality: { ...(v.quality || {}), [slotId]: qualityReport },
+      };
+    }));
+    setActiveView('camera');
+    setActiveImageSrc(null);
+    setActiveSlotId(null);
+    setActiveQualityReport(null);
+    // Fire-and-forget the server upload
+    void uploadPhotoToServer(activeVehicleId!, slotId, base64Image, qualityReport);
   };
 
   /** Open the editor for a slot on demand (the optional "Edit" button). */
@@ -351,38 +364,43 @@ export default function App() {
   const handleSaveProcessedImage = async (processedImage: string, updatedReport: QualityReport, slotId?: string) => {
     const targetSlot = slotId || activeSlotId;
     if (!activeVehicleId || !targetSlot || !user) return;
+
+    // Optimistic local update
+    setVehicles(prev => prev.map(v => {
+      if (v.id !== activeVehicleId) return v;
+      return {
+        ...v,
+        photos: { ...(v.photos || {}), [targetSlot]: processedImage },
+        quality: { ...(v.quality || {}), [targetSlot]: updatedReport },
+      };
+    }));
+    setActiveView('camera');
+    setActiveImageSrc(null);
+    setActiveSlotId(null);
+    setActiveQualityReport(null);
+
+    await uploadPhotoToServer(activeVehicleId, targetSlot, processedImage, updatedReport);
+  };
+
+  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport: QualityReport) => {
+    if (!user) return;
     setSyncStatus('syncing');
     setUploadError(null);
-
     try {
       const token = await user.getIdToken();
       const res = await fetch('/api/inventory/upload-photo', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          vehicleId: activeVehicleId,
-          slotId: targetSlot,
-          base64Image: processedImage,
-          qualityReport: updatedReport
-        })
+        body: JSON.stringify({ vehicleId, slotId, base64Image, qualityReport }),
       });
-
       if (res.ok) {
         const result = await res.json();
         const saved = normalizeVehicle(result.vehicle);
-        
-        // Update local vehicles state
-        setVehicles(prev => prev.map(v => v.id === activeVehicleId ? saved : v));
+        setVehicles(prev => prev.map(v => v.id === vehicleId ? saved : v));
         setSyncStatus('synced');
-        
-        // Go back to camera; keep shooting flow tight (next empty required slot preferred)
-        setActiveView('camera');
-        setActiveImageSrc(null);
-        setActiveSlotId(null);
-        setActiveQualityReport(null);
       } else {
         setSyncStatus('error');
         setUploadError(`Could not save that photo (server said ${res.status}). It has NOT been kept — try again.`);

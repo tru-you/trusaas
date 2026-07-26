@@ -303,37 +303,43 @@ export default function App() {
   // Trigger when composite photo is saved in the editor
   const handleSaveProcessedImage = async (processedImage: string, updatedReport: QualityReport) => {
     if (!activeVehicleId || !activeSlotId || !user) return;
-    setSyncStatus('syncing');
+    const slotToSave = activeSlotId;
 
+    // Optimistic: update local state immediately so the UI advances without waiting for the server.
+    setVehicles(prev => prev.map(v => {
+      if (v.id !== activeVehicleId) return v;
+      return {
+        ...v,
+        photos: { ...(v.photos || {}), [slotToSave]: processedImage },
+        quality: { ...(v.quality || {}), [slotToSave]: updatedReport },
+      };
+    }));
+    setActiveView('camera');
+    setActiveImageSrc(null);
+    setActiveSlotId(null);
+    setActiveQualityReport(null);
+
+    await uploadPhotoToServer(activeVehicleId, slotToSave, processedImage, updatedReport);
+  };
+
+  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport: QualityReport) => {
+    if (!user) return;
+    setSyncStatus('syncing');
     try {
       const token = await user.getIdToken();
       const res = await fetch('/api/inventory/upload-photo', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          vehicleId: activeVehicleId,
-          slotId: activeSlotId,
-          base64Image: processedImage,
-          qualityReport: updatedReport
-        })
+        body: JSON.stringify({ vehicleId, slotId, base64Image, qualityReport }),
       });
-
       if (res.ok) {
         const result = await res.json();
         const saved = normalizeVehicle(result.vehicle);
-
-        // Update local vehicles state
-        setVehicles(prev => prev.map(v => v.id === activeVehicleId ? saved : v));
+        setVehicles(prev => prev.map(v => v.id === vehicleId ? saved : v));
         setSyncStatus('synced');
-
-        // Go back to camera; keep shooting flow tight (next empty required slot preferred)
-        setActiveView('camera');
-        setActiveImageSrc(null);
-        setActiveSlotId(null);
-        setActiveQualityReport(null);
       } else {
         setSyncStatus('error');
       }
@@ -352,39 +358,56 @@ export default function App() {
   ) => {
     if (!activeVehicleId || !activeSlotId || !user) return;
     const slotId = activeSlotId;
+    const vehicleId = activeVehicleId;
+    const report: QualityReport = activeQualityReport || {
+      overallScore: 100,
+      lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: 'Captured.' },
+      angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Captured.' },
+    };
+
+    // Optimistic: merge photo + assessment + close-ups into local state immediately
+    const hasAssessment = !!(assessment.rating || assessment.comment);
+    setVehicles(prev => prev.map(v => {
+      if (v.id !== vehicleId) return v;
+      const nextAssessment = { ...(v.slotAssessment || {}) };
+      if (hasAssessment) nextAssessment[slotId] = assessment; else delete nextAssessment[slotId];
+      const nextCloseups = { ...(v.closeups || {}) };
+      if (closeups.length) nextCloseups[slotId] = closeups; else delete nextCloseups[slotId];
+      return {
+        ...v,
+        photos: { ...(v.photos || {}), [slotId]: mainImage },
+        quality: { ...(v.quality || {}), [slotId]: report },
+        slotAssessment: nextAssessment,
+        closeups: nextCloseups,
+      };
+    }));
+    setActiveView('camera');
+    setActiveImageSrc(null);
+    setActiveSlotId(null);
+    setActiveQualityReport(null);
+
+    // Background server sync
     setSyncStatus('syncing');
     try {
       const token = await user.getIdToken();
-      const report: QualityReport = activeQualityReport || {
-        overallScore: 100,
-        lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: 'Captured.' },
-        angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Captured.' },
-      };
       const res = await fetch('/api/inventory/upload-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ vehicleId: activeVehicleId, slotId, base64Image: mainImage, qualityReport: report }),
+        body: JSON.stringify({ vehicleId, slotId, base64Image: mainImage, qualityReport: report }),
       });
       if (!res.ok) { setSyncStatus('error'); return; }
       const result = await res.json();
       const saved = normalizeVehicle(result.vehicle);
 
-      // Merge the assessment + close-ups for this slot onto the saved vehicle.
-      const hasAssessment = !!(assessment.rating || assessment.comment);
-      const nextAssessment = { ...(saved.slotAssessment || {}) };
-      if (hasAssessment) nextAssessment[slotId] = assessment; else delete nextAssessment[slotId];
-      const nextCloseups = { ...(saved.closeups || {}) };
-      if (closeups.length) nextCloseups[slotId] = closeups; else delete nextCloseups[slotId];
+      const nextAss = { ...(saved.slotAssessment || {}) };
+      if (hasAssessment) nextAss[slotId] = assessment; else delete nextAss[slotId];
+      const nextCl = { ...(saved.closeups || {}) };
+      if (closeups.length) nextCl[slotId] = closeups; else delete nextCl[slotId];
 
-      const merged: Vehicle = { ...saved, slotAssessment: nextAssessment, closeups: nextCloseups };
+      const merged: Vehicle = { ...saved, slotAssessment: nextAss, closeups: nextCl };
       setVehicles((prev) => prev.map((v) => (v.id === saved.id ? merged : v)));
       setSyncStatus('synced');
-      await handleUpdateVehicle(saved, { slotAssessment: nextAssessment, closeups: nextCloseups });
-
-      setActiveView('camera');
-      setActiveImageSrc(null);
-      setActiveSlotId(null);
-      setActiveQualityReport(null);
+      void handleUpdateVehicle(saved, { slotAssessment: nextAss, closeups: nextCl });
     } catch (e) {
       console.error('Failed to save reviewed shot:', e);
       setSyncStatus('error');
