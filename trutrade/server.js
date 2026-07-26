@@ -1,4 +1,4 @@
-// TruValue — live video trade-in appraisal: signalling + session server.
+// TruTrade — live video trade-in appraisal: signalling + session server.
 // The CUSTOMER shows their own car on camera; the DEALER guides, questions and
 // records findings, then issues a trade price (TP) subject to physical viewing.
 // The dealer always sets the price — nothing here prices a vehicle.
@@ -23,7 +23,7 @@ const newId = () => randomBytes(6).toString('hex');
 
 // --- Health (Render + suite monitoring convention) ---
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, product: 'truvalue', uptimeSec: Math.round(process.uptime()), ts: new Date().toISOString() });
+  res.json({ ok: true, product: 'trutrade', uptimeSec: Math.round(process.uptime()), ts: new Date().toISOString() });
 });
 
 // --- Dealer opens an appraisal, gets a single-use customer link ---
@@ -165,4 +165,4 @@ setInterval(() => {
   for (const [id, r] of rooms) if (now - r.created > LINK_TTL_MS) rooms.delete(id);
 }, 60 * 60 * 1000);
 
-server.listen(PORT, () => console.log(`TruValue on :${PORT}`));
+server.listen(PORT, () => console.log(`TruTrade on :${PORT}`));
