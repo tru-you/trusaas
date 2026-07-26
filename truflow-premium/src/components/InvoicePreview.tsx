@@ -45,7 +45,7 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
 
   return (
     <div className="card mt-6">
-      <div className="card-header flex justify-between items-center px-4 py-3 border-b border-[rgba(126,164,214,0.1)]">
+      <div className="card-header flex justify-between items-center px-4 py-3 border-b border-[rgba(138,162,184,0.1)]">
         <h3 className="font-semibold text-[16px]">Interactive Live Document Preview</h3>
         <button
           onClick={handlePrint}

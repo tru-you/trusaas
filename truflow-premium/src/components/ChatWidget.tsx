@@ -91,9 +91,9 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
     <div className="fixed bottom-5 right-5 z-[1000] font-sans">
       {/* Chat Panel */}
       {isOpen && (
-        <div className="flex flex-col w-[350px] h-[480px] bg-[color:var(--ink-2)] border border-[rgba(126,164,214,0.15)] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="flex flex-col w-[350px] h-[480px] bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.15)] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
-          <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(126,164,214,0.1)] bg-[linear-gradient(90deg,rgba(20,102,224,0.1),rgba(21,199,192,0.05))]">
+          <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(138,162,184,0.1)] bg-[linear-gradient(90deg,rgba(20,102,224,0.1),rgba(21,199,192,0.05))]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[color:var(--cyan)] shadow-[var(--glow-cyan)]"></span>
               <span className="font-bold text-[16px] text-[color:var(--white)]">Dealer Assist</span>
@@ -136,14 +136,14 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
           {/* Input Form */}
           <form
             onSubmit={handleSend}
-            className="p-3 border-t border-[rgba(126,164,214,0.1)] flex gap-2"
+            className="p-3 border-t border-[rgba(138,162,184,0.1)] flex gap-2"
           >
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Query stock, sales stats, hot prospects..."
-              className="flex-1 bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[color:var(--cyan)] focus:bg-[color:var(--cyan-faint)] transition-all"
+              className="flex-1 bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[color:var(--cyan)] focus:bg-[color:var(--cyan-faint)] transition-all"
             />
             <button aria-label="Send message"
               type="submit"

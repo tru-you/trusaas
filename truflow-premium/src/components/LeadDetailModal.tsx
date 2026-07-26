@@ -327,13 +327,13 @@ export default function LeadDetailModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-      <div className="bg-[color:var(--ink-2)] border border-[rgba(126,164,214,0.22)] rounded-2xl w-full max-w-[720px] max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl relative font-sans animate-in zoom-in-95 duration-150">
+      <div className="bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.22)] rounded-2xl w-full max-w-[720px] max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl relative font-sans animate-in zoom-in-95 duration-150">
         
         {/* Border strip */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[color:var(--cyan)] via-[color:var(--cyan)] to-[color:var(--cyan)]"></div>
 
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-4 border-b border-[rgba(126,164,214,0.1)]">
+        <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-[rgba(138,162,184,0.1)]">
           <div>
             <span className="text-[13px] font-bold text-[color:var(--cyan)]  tracking-widest font-mono">CRM Pipeline Lead Folder</span>
             <h3 className="font-serif text-lg font-semibold text-[color:var(--white)] mt-0.5">
@@ -351,10 +351,10 @@ export default function LeadDetailModal({
         {/* Body */}
         <div className="p-6 flex-1 overflow-y-auto min-h-0 flex flex-col gap-4">
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-[rgba(126,164,214,0.1)] pb-2">
+          <div className="flex gap-2 border-b border-[rgba(138,162,184,0.1)] pb-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "overview"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -364,7 +364,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("journey")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "journey"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -374,7 +374,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("comm")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "comm"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -384,7 +384,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("history")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "history"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -394,7 +394,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("tasks")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "tasks"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -404,7 +404,7 @@ export default function LeadDetailModal({
             </button>
              <button
               onClick={() => setActiveTab("finance")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1 ${
                 activeTab === "finance"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -610,7 +610,7 @@ export default function LeadDetailModal({
                     <select
                       value={commTemplate}
                       onChange={(e) => handleTemplateChange(e.target.value)}
-                      className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
+                      className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
                     >
                       <option className="bg-[color:var(--ink-2)]" value="custom">Custom (No template)</option>
                       <option className="bg-[color:var(--ink-2)]" value="welcome">Welcome Pre-Owned Introduction</option>
@@ -624,7 +624,7 @@ export default function LeadDetailModal({
                     <select
                       value={commChannel}
                       onChange={(e) => setCommChannel(e.target.value as any)}
-                      className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
+                      className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
                     >
                       <option className="bg-[color:var(--ink-2)]" value="email">Email preview</option>
                       <option className="bg-[color:var(--ink-2)]" value="sms">SMS text network</option>
@@ -644,7 +644,7 @@ export default function LeadDetailModal({
                         value={emailSubject}
                         onChange={(e) => setEmailSubject(e.target.value)}
                         placeholder="Subject..."
-                        className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
+                        className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
                       />
                     </div>
                     <div className="flex flex-col gap-1 relative">
@@ -663,7 +663,7 @@ export default function LeadDetailModal({
                         value={emailBody}
                         onChange={(e) => setEmailBody(e.target.value)}
                         placeholder="Type email body contents..."
-                        className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-sans"
+                        className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-sans"
                       ></textarea>
                     </div>
                   </div>
@@ -687,7 +687,7 @@ export default function LeadDetailModal({
                       value={smsBody}
                       onChange={(e) => setSmsBody(e.target.value)}
                       placeholder="Type SMS text..."
-                      className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-sans"
+                      className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-sans"
                     ></textarea>
                   </div>
                 )}
@@ -714,7 +714,7 @@ export default function LeadDetailModal({
                         value={whatsappBody}
                         onChange={(e) => setWhatsappBody(e.target.value)}
                         placeholder="Type WhatsApp content or load a template..."
-                        className="bg-[color:var(--ink-2)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-sans resize-none leading-relaxed"
+                        className="bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-sans resize-none leading-relaxed"
                       ></textarea>
 
                       {/* Launch Real Deep Link Button */}
@@ -782,7 +782,7 @@ export default function LeadDetailModal({
                           type="number"
                           value={callDuration}
                           onChange={(e) => setCallDuration(parseInt(e.target.value) || 0)}
-                          className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
+                          className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
@@ -790,7 +790,7 @@ export default function LeadDetailModal({
                         <select
                           value={callOutcome}
                           onChange={(e) => setCallOutcome(e.target.value)}
-                          className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
+                          className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
                         >
                           <option className="bg-[color:var(--ink-2)]" value="Reached">Reached client directly</option>
                           <option className="bg-[color:var(--ink-2)]" value="No Answer">No Answer / Left Voicemail</option>
@@ -805,7 +805,7 @@ export default function LeadDetailModal({
                         value={callNotes}
                         onChange={(e) => setCallNotes(e.target.value)}
                         placeholder="Log what was discussed or agreed..."
-                        className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-sans"
+                        className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-sans"
                       ></textarea>
                     </div>
                   </div>
@@ -932,7 +932,7 @@ export default function LeadDetailModal({
                         placeholder="Task Description..."
                         value={newTaskTitle}
                         onChange={(e) => setNewTaskTitle(e.target.value)}
-                        className="w-full bg-[color:var(--ink)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none placeholder:text-[rgba(232,234,230,0.72)]"
+                        className="w-full bg-[color:var(--ink)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none placeholder:text-[rgba(232,234,230,0.72)]"
                         required
                       />
                     </div>
@@ -941,14 +941,14 @@ export default function LeadDetailModal({
                         type="date"
                         value={newTaskDate}
                         onChange={(e) => setNewTaskDate(e.target.value)}
-                        className="w-full bg-[color:var(--ink)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
+                        className="w-full bg-[color:var(--ink)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
                       />
                     </div>
                     <div className="col-span-6 md:col-span-2">
                       <select
                         value={newTaskPriority}
                         onChange={(e) => setNewTaskPriority(e.target.value as any)}
-                        className="w-full bg-[color:var(--ink)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
+                        className="w-full bg-[color:var(--ink)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
                       >
                         <option value="High">High Priority</option>
                         <option value="Normal">Normal</option>
@@ -1201,15 +1201,20 @@ export default function LeadDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[rgba(126,164,214,0.1)] flex justify-between items-center bg-[color:var(--glass)]">
+        {/* Stacks under 640px. Side by side, Delete and the status group were
+            fighting over 358px and both wrapped — "Delete Lead File" rendered
+            44px wide and 78px tall, a column of letters. col-reverse puts the
+            status control above Delete on a phone, so the destructive action
+            sits last rather than first under the thumb. */}
+        <div className="px-4 sm:px-6 py-4 border-t border-[rgba(138,162,184,0.1)] flex flex-col-reverse sm:flex-row gap-3 sm:justify-between sm:items-center bg-[color:var(--glass)]">
           <button
             onClick={handleDelete}
-            className="px-3 py-2 rounded-lg border border-[color:var(--glass-line)] text-[color:var(--muted)] bg-[color:var(--glass)] text-[13px] font-semibold cursor-pointer active:scale-95 transition-all hover:bg-[color:var(--glass)]"
+            className="w-full sm:w-auto whitespace-nowrap px-3 py-2 rounded-lg border border-[color:var(--glass-line)] text-[color:var(--muted)] bg-[color:var(--glass)] text-[13px] font-semibold cursor-pointer active:scale-95 transition-all hover:bg-[color:var(--glass)]"
           >
             Delete Lead File
           </button>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             {leadStatus === "Closed Won" && (
               <label className="flex items-center gap-2 text-[13px] text-[color:var(--white)] cursor-pointer bg-[color:var(--glass)] px-2 py-2 rounded-lg">
                 <input type="checkbox" checked={crmSetupFee} onChange={(e) => setCrmSetupFee(e.target.checked)} />
@@ -1219,7 +1224,7 @@ export default function LeadDetailModal({
             <select
               value={leadStatus}
               onChange={(e) => setLeadStatus(e.target.value)}
-              className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
+              className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
             >
               <option className="bg-[color:var(--ink-2)]" value="New">New</option>
               <option className="bg-[color:var(--ink-2)]" value="Contacted">Contacted</option>
@@ -1230,7 +1235,7 @@ export default function LeadDetailModal({
             </select>
             <button
               onClick={handleSaveStatus}
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-sm shrink-0 whitespace-nowrap"
             >
               Save Status Changes
             </button>

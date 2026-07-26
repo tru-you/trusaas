@@ -98,9 +98,9 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
     <div className="fixed bottom-5 left-5 z-[1000] font-sans">
       {/* Chat Panel */}
       {isOpen && (
-        <div className="flex flex-col w-[350px] h-[480px] bg-[color:var(--ink-2)] border border-[rgba(126,164,214,0.15)] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="flex flex-col w-[350px] h-[480px] bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.15)] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
-          <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(126,164,214,0.1)] bg-[linear-gradient(90deg,rgba(21,199,192,0.1),rgba(20,102,224,0.05))]">
+          <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(138,162,184,0.1)] bg-[linear-gradient(90deg,rgba(21,199,192,0.1),rgba(20,102,224,0.05))]">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[color:var(--cyan)] shadow-[var(--glow-cyan)]"></span>
               <div className="flex flex-col">
@@ -162,7 +162,7 @@ export default function WebsiteChatWidget({ onLeadCapture }: { onLeadCapture: (n
           {/* Input Form */}
           <form
             onSubmit={handleSend}
-            className="p-3 border-t border-[rgba(126,164,214,0.1)] bg-[color:var(--ink-2)] flex gap-2"
+            className="p-3 border-t border-[rgba(138,162,184,0.1)] bg-[color:var(--ink-2)] flex gap-2"
           >
             <input
               type="text"

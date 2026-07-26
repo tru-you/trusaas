@@ -53,7 +53,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Inputs */}
       <div className="card">
-        <div className="card-header border-b border-[rgba(126,164,214,0.1)] px-4 py-3">
+        <div className="card-header border-b border-[rgba(138,162,184,0.1)] px-4 py-3">
           <h3 className="font-semibold text-[13px] text-[color:var(--white)]">Finance Amortization Inputs</h3>
         </div>
         <div className="card-body p-4 flex flex-col gap-3">
@@ -63,7 +63,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
               type="number"
               value={price}
               onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-              className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
+              className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
             />
           </div>
 
@@ -73,7 +73,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
               type="number"
               value={deposit}
               onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)}
-              className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
+              className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
             />
           </div>
 
@@ -84,7 +84,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
               step="0.1"
               value={interestRate}
               onChange={(e) => setInterestRate(parseFloat(e.target.value) || 0)}
-              className="bg-[color:var(--glass)] border border-[rgba(126,164,214,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
+              className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
             />
           </div>
 
@@ -124,7 +124,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
 
       {/* Outputs / Calculations summary */}
       <div className="card">
-        <div className="card-header border-b border-[rgba(126,164,214,0.1)] px-4 py-3">
+        <div className="card-header border-b border-[rgba(138,162,184,0.1)] px-4 py-3">
           <h3 className="font-semibold text-[13px] text-[color:var(--white)]">Monthly Amortization Schedule</h3>
         </div>
         <div className="card-body p-6 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
@@ -133,19 +133,19 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
           <div className="text-[13px] text-[rgba(232,234,230,0.72)] mb-6">Structured interest at {interestRate}% over {term} months term limit</div>
 
           <div className="grid grid-cols-2 gap-3 w-full text-left">
-            <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
+            <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(138,162,184,0.06)]">
               <div className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Net Principal</div>
               <div className="text-[16px] font-bold text-[color:var(--white)] mt-0.5">{formatZAR(netPrincipal)}</div>
             </div>
-            <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
+            <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(138,162,184,0.06)]">
               <div className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Aggregate Interest</div>
               <div className="text-[16px] font-bold text-[color:var(--white)] mt-0.5">{formatZAR(totalInterest)}</div>
             </div>
-            <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
+            <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(138,162,184,0.06)]">
               <div className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Balloon Value</div>
               <div className="text-[16px] font-bold text-[color:var(--white)] mt-0.5">{formatZAR(balloonAmount)}</div>
             </div>
-            <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(126,164,214,0.06)]">
+            <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(138,162,184,0.06)]">
               <div className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Lifetime Total Cost</div>
               <div className="text-[16px] font-bold text-[color:var(--white)] mt-0.5">{formatZAR(lifetimeCost)}</div>
             </div>
