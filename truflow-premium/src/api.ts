@@ -406,6 +406,12 @@ export async function createCommunication(comm: Omit<Communication, "id" | "sent
 }
 
 export async function deleteLead(id: string): Promise<void> {
+  // Same bug as deleteVehicle had: local-only, so the lead came back on refresh.
+  const res = await authFetch(`/api/leads/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 404) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error || `Could not delete lead (server said ${res.status}).`);
+  }
   await updateState(s => { s.leads = s.leads.filter(l => l.id !== id); });
 }
 
@@ -448,6 +454,9 @@ export async function updateInvoice(id: string, updates: Partial<Invoice>): Prom
   return updated as Invoice;
 }
 
+/* NOTE: the server has no DELETE /api/tasks/:id, so this genuinely is
+   local-only and a deleted task reappears on refresh. Left as-is rather than
+   faking it — the route needs adding server-side first. */
 export async function deleteTask(id: string): Promise<void> {
   await updateState(s => { s.tasks = s.tasks.filter(t => t.id !== id); });
 }
@@ -473,6 +482,19 @@ export async function reconcileExpense(id: string, reconciled: boolean): Promise
 }
 
 export async function deleteVehicle(id: string): Promise<void> {
+  /* Delete on the server FIRST, exactly as createVehicle and updateVehicle
+     already do. This function alone still went through updateState, which only
+     writes localStorage — so the row vanished from the screen, the next
+     fetchState() pulled server truth back, and the car returned. Deleting it
+     "again" did the same thing forever. DELETE /api/inventory/:id existed the
+     whole time; nothing called it. */
+  const res = await authFetch(`/api/inventory/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 404) {
+    // 404 means it is already gone, which is the outcome we wanted anyway.
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error || `Could not delete vehicle (server said ${res.status}).`);
+  }
+  // Keep the cached copy in step so the UI does not show it until the next fetch.
   await updateState(s => { s.vehicles = s.vehicles.filter(v => v.id !== id); });
 }
 

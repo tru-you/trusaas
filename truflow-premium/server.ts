@@ -986,16 +986,34 @@ app.post("/api/inventory", (req, res) => {
 });
 
 // Update vehicle status/details
-app.put("/api/inventory/:id", (req, res) => {
+/** May this session act on this vehicle? Admin may touch anything; everyone
+ *  else is confined to their own dealership.
+ *
+ *  Reads were scoped by scopeToDealer from the start, but these two writes were
+ *  not, and vehicle ids are guessable — v1, v2, v3. A signed-in principal at one
+ *  dealership could PUT or DELETE another dealership's stock by id alone. */
+function mayTouchVehicle(v: any, auth: any): boolean {
+  if (!auth || auth.role === "admin") return true;
+  return (v?.dealershipId || DEFAULT_DEALERSHIP_ID) === auth.dealershipId;
+}
+
+app.put("/api/inventory/:id", (req: any, res) => {
   const state = readState();
   const index = state.vehicles.findIndex(v => v.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: "Vehicle not found" });
   }
+  // 404, not 403: a dealer should not be able to probe which ids exist elsewhere.
+  if (!mayTouchVehicle(state.vehicles[index], req.auth)) {
+    return res.status(404).json({ error: "Vehicle not found" });
+  }
 
   state.vehicles[index] = {
     ...state.vehicles[index],
-    ...req.body
+    ...req.body,
+    // The owner is never taken from the request body — otherwise an edit could
+    // move a car into another dealership's stock.
+    dealershipId: state.vehicles[index].dealershipId,
   };
 
   writeState(state);
@@ -1003,15 +1021,17 @@ app.put("/api/inventory/:id", (req, res) => {
 });
 
 // Delete vehicle
-app.delete("/api/inventory/:id", (req, res) => {
+app.delete("/api/inventory/:id", (req: any, res) => {
   const state = readState();
-  const originalLength = state.vehicles.length;
-  state.vehicles = state.vehicles.filter(v => v.id !== req.params.id);
+  const target = state.vehicles.find((v: any) => v.id === req.params.id);
 
-  if (state.vehicles.length === originalLength) {
+  // Same 404 for "does not exist" and "not yours", so a dealer cannot discover
+  // another dealership's stock ids by watching which ones come back 403.
+  if (!target || !mayTouchVehicle(target, req.auth)) {
     return res.status(404).json({ error: "Vehicle not found" });
   }
 
+  state.vehicles = state.vehicles.filter((v: any) => v.id !== req.params.id);
   writeState(state);
   res.json({ message: "Vehicle deleted successfully." });
 });
