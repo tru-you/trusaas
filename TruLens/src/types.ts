@@ -67,6 +67,12 @@ export interface Vehicle {
   lastDmsExportStatus?: string;
   lastDmsVehicleId?: string | null;
   lastDmsStockNumber?: string;
+  /** Damage tagged by hand on a captured photo, keyed by photo slot id.
+   *  Ported from TruInspect so a TruLens capture can carry real condition
+   *  findings through to the dealer's website — Caledon's coc-media.js already
+   *  reads car.damage / car.damageTags / car.findings and has never had
+   *  anything to show. */
+  damageFindings?: Record<string, DamageFinding[]>;
   /** Last web 3D / spin package export */
   lastWeb3dExportAt?: string;
   web3dPublicPath?: string;
@@ -96,6 +102,30 @@ export interface DmsExportResult {
   dmsUrl?: string;
   dmsVehicle?: { id?: string; stockNumber?: string; images?: string[] } | null;
   vehicle?: Vehicle;
+}
+
+/**
+ * A defect the inspector tags by hand on a real photo. Every field is entered
+ * by a person — nothing inferred — because this ends up on a report a buyer
+ * relies on. `x`/`y` pin the mark to the exact spot on the photo it belongs to.
+ */
+export interface DamageFinding {
+  /** Stable id for editing/removing a tag */
+  id: string;
+  /** Panel / area, e.g. "front bumper", "driver door" (defaults from the slot) */
+  panel: string;
+  damageType: 'scratch' | 'dent' | 'chip' | 'rust' | 'crack' | 'hail' | 'paint' | 'wear' | 'missing' | 'other';
+  /** 1 = cosmetic blemish … 5 = structural / safety concern */
+  severity: 1 | 2 | 3 | 4 | 5;
+  /** Inspector's note, e.g. "20cm scratch through clearcoat" */
+  note: string;
+  /** Position of the mark on the photo, 0–1 relative to width/height */
+  x: number;
+  y: number;
+  /** Who created it: the inspector by hand, or a real vision model as a suggestion */
+  source?: 'manual' | 'ai';
+  /** AI suggestions start false; only a human-confirmed tag reaches the report */
+  confirmed?: boolean;
 }
 
 export const PHOTO_SLOTS: PhotoSlot[] = [

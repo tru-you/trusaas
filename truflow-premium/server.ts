@@ -1772,6 +1772,7 @@ app.post("/api/sync/pull-photos", async (req, res) => {
     // deliberately do not — the DMS owns those once the car exists.
     if (typeof lensVehicle?.vir === "number") state.vehicles[idx].vir = lensVehicle.vir;
     if (Array.isArray(lensVehicle?.inspection)) state.vehicles[idx].virReport = lensVehicle.inspection;
+    if (Array.isArray(lensVehicle?.damage)) state.vehicles[idx].damage = lensVehicle.damage;
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     writeState(state);
 
@@ -1946,6 +1947,7 @@ app.post("/api/sync/push-photos", (req, res) => {
         fuelType: vehicleMeta.fuelType || "Petrol",
         vir: typeof vehicleMeta.vir === "number" ? vehicleMeta.vir : undefined,
         virReport: Array.isArray(vehicleMeta.inspection) ? vehicleMeta.inspection : undefined,
+        damage: Array.isArray(vehicleMeta.damage) ? vehicleMeta.damage : undefined,
         stockNumber:
           matchStock ||
           "STK-" + Math.floor(Math.random() * 900000 + 100000),
@@ -2214,6 +2216,10 @@ function toPublicVehicle(v: any, source: string = "premium") {
     /* Findings per section. Absent — not [] — when the car was never
        inspected, so a site renders the report block only when there is one. */
     virReport: Array.isArray(v.virReport) && v.virReport.length ? v.virReport : undefined,
+    /* Damage pins. Absent when none were tagged, so a site renders the layer
+       only when there is something to show. Caledon's coc-media.js already
+       reads car.damage and has never had anything to read. */
+    damage: Array.isArray(v.damage) && v.damage.length ? v.damage : undefined,
     daysInStock: v.daysInInventory ?? null,
     source: v.source || source,
     updatedAt: v.lastPhotoSync || v.updatedAt || null,

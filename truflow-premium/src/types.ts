@@ -78,6 +78,12 @@ export interface Vehicle {
   /** The inspection findings per section, so a dealer site can render the
    *  report instead of linking a buyer into an app they cannot open. */
   virReport?: { section: string; score: number; status: 'Pass' | 'Attention' }[];
+  /** Damage tagged by hand in TruLens, pinned to a point on a specific photo.
+   *  Only human-confirmed findings ever arrive here. */
+  damage?: {
+    slotId: string; panel: string; type: string;
+    severity: number; note: string; x: number; y: number;
+  }[];
 }
 
 export type LeadStatus = 'New' | 'Contacted' | 'Test Drive Scheduled' | 'Negotiating' | 'Closed Won' | 'Closed Lost';

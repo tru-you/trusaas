@@ -1122,6 +1122,27 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
         fuelType: vehicle.fuelType,
         vir,
         inspection: inspection.length ? inspection : undefined,
+        /* Hand-tagged damage, flattened out of its per-slot map. Only confirmed
+           findings travel: an AI suggestion starts confirmed:false and must be
+           accepted by a person before it can reach a buyer-facing report. The
+           x/y stay attached so a site can plot the mark on the same photo. */
+        damage: (() => {
+          const bySlot = (vehicle as any).damageFindings || {};
+          const flat = Object.entries(bySlot).flatMap(([slotId, list]: [string, any]) =>
+            (Array.isArray(list) ? list : [])
+              .filter((f: any) => f && f.confirmed !== false)
+              .map((f: any) => ({
+                slotId,
+                panel: f.panel,
+                type: f.damageType,
+                severity: f.severity,
+                note: f.note,
+                x: f.x,
+                y: f.y,
+              })),
+          );
+          return flat.length ? flat : undefined;
+        })(),
         description: vehicle.aiListingDescription || undefined,
       },
       photos,

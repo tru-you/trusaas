@@ -5,6 +5,7 @@ import CameraGuide from './components/CameraGuide';
 import ImageEditor from './components/ImageEditor';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
+import DamageTagger from './components/DamageTagger';
 import { Vehicle, QualityReport, DmsExportResult } from './types';
 import { useAuth } from './contexts/AuthContext';
 import DealerSelect from './components/DealerSelect';
@@ -94,7 +95,7 @@ export default function App() {
   }, [user]);
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
-  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report'>('inventory');
+  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'damage'>('inventory');
   const [loadError, setLoadError] = React.useState<string | null>(null);
   
   // Editor view states
@@ -472,7 +473,7 @@ export default function App() {
   // If camera/report was opened but vehicle disappeared, bounce home instead of blank/error
   React.useEffect(() => {
     if (
-      (activeView === 'camera' || activeView === 'report' || activeView === 'editor') &&
+      (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage') &&
       activeVehicleId &&
       !vehicles.find((v) => v.id === activeVehicleId)
     ) {
@@ -539,6 +540,7 @@ export default function App() {
                 vehicles={vehicles}
                 onSelectVehicle={handleSelectVehicle}
                 onViewReport={handleViewReport}
+                onTagDamage={(v) => { setActiveVehicleId(v.id); setActiveView('damage'); }}
                 onAddVehicle={handleAddVehicle}
                 onDeleteVehicle={handleDeleteVehicle}
                 onExportToDms={handleExportToDms}
@@ -557,6 +559,26 @@ export default function App() {
                 const saved = await handleUpdateVehicle(activeVehicle, v);
                 if (!saved) {
                   setVehicles((prev) => prev.map((x) => (x.id === v.id ? normalizeVehicle(v) : x)));
+                }
+              }}
+            />
+          )}
+
+          {activeView === 'damage' && activeVehicle && (
+            <DamageTagger
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onSave={async (damageFindings) => {
+                /* Persisted through the same upsert every other vehicle change
+                   uses — POST /api/inventory merges the body over the stored
+                   record, so no new endpoint is needed. The optimistic fallback
+                   matches ReportPreview: if the save fails we still show what
+                   the inspector entered rather than silently dropping it. */
+                const saved = await handleUpdateVehicle(activeVehicle, { damageFindings });
+                if (!saved) {
+                  setVehicles((prev) =>
+                    prev.map((x) => (x.id === activeVehicle.id ? { ...x, damageFindings } : x)),
+                  );
                 }
               }}
             />

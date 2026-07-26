@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
+  Car, Plus, Search, CheckCircle2, AlertCircle, AlertTriangle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
   FileText, Settings, Camera, LogOut, ScanLine, Loader2} from 'lucide-react';
@@ -19,6 +19,8 @@ interface InventoryListProps {
   vehicles: Vehicle[];
   onSelectVehicle: (vehicle: Vehicle) => void;
   onViewReport?: (vehicle: Vehicle) => void;
+  /** Open the damage tagger for this vehicle. */
+  onTagDamage?: (vehicle: Vehicle) => void;
   onAddVehicle: (newVehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => void;
   onDeleteVehicle: (id: string) => void;
   onExportToDms?: (vehicle: Vehicle) => Promise<DmsExportResult>;
@@ -40,6 +42,7 @@ export default function InventoryList({
   vehicles,
   onSelectVehicle,
   onViewReport,
+  onTagDamage,
   onAddVehicle,
   onDeleteVehicle,
   onExportToDms,
@@ -1049,6 +1052,20 @@ export default function InventoryList({
                           that catches this only lists the solid bg-cyan-* utilities, and
                           a gradient paints background-IMAGE, so nothing matched it.
                           .on-fill is the system's answer for type on an accent fill. */}
+                      {/* Damage tagging needs a real photo to pin a mark to, so
+                          it appears on the same condition as the report. */}
+                      {takenCount > 0 && onTagDamage && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTagDamage(vehicle);
+                          }}
+                          title="Tag damage on the captured photos"
+                          className="flex items-center justify-center gap-1 text-[13px] font-bold cursor-pointer whitespace-nowrap px-2 py-2 rounded transition-colors bg-neutral-900 border border-neutral-800 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
+                        >
+                          Damage <AlertTriangle size={10} />
+                        </button>
+                      )}
                       {takenCount > 0 && onViewReport && (
                         <button
                           onClick={(e) => {
