@@ -112,7 +112,10 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     if (!navigator.mediaDevices?.getUserMedia) {
       setHasCamPermission(false);
       setIsCameraActive(false);
-      setCameraError('This browser has no camera API. Use Upload / Bulk Roll on PC.');
+      // These messages named tiles that no longer exist ("Bulk Roll"), told a
+      // phone user to "click", and described the device as a PC. Each one now
+      // names the control on screen and the tap that fixes it.
+      setCameraError('This browser cannot open the camera. Add photos with One photo or Many photos below.');
       setCameraRetrying(false);
       return;
     }
@@ -154,14 +157,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     const name = (lastErr as any)?.name || '';
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
       setCameraError(
-        'Camera blocked by the browser. Click the camera icon in the address bar → Allow, then tap Retry. Or use Upload / Bulk Roll (works fully on PC).'
+        'The browser is blocking the camera. Allow it from the camera icon in the address bar, then tap Retry live camera — or add photos from below.'
       );
     } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
-      setCameraError('No webcam found on this PC. Use Upload Photo or Bulk Roll instead — that path is fully supported.');
+      setCameraError('No camera on this device. Add photos with One photo or Many photos below — the rest of the inspection works the same.');
     } else if (name === 'NotReadableError' || name === 'TrackStartError') {
-      setCameraError('Camera is in use by another app (Zoom, Teams, etc.). Close it and tap Retry, or use Upload.');
+      setCameraError('Another app is using the camera. Close it and tap Retry live camera, or add a photo from below.');
     } else {
-      setCameraError('Live camera unavailable on this device. Upload / Bulk Roll still works for every shot.');
+      setCameraError('The live camera is not available here. One photo and Many photos still work for every shot.');
     }
     setCameraRetrying(false);
   }, []);
@@ -893,11 +896,15 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         >
           <ChevronLeft size={20} />
         </button>
-        <div className="text-center">
-          <p className="text-[13px]  font-bold tracking-widest text-indigo-400">Guide Overlay View</p>
-          <p className="text-[13px] text-neutral-300 font-semibold truncate max-w-[200px]">
+        {/* The vehicle is what the inspector needs to confirm they are on, so it
+            leads. "Guide Overlay View" led instead — a name for a screen you are
+            already looking at, set in wide-tracked bold, which is the loudest
+            thing on the page saying the least. */}
+        <div className="text-center min-w-0">
+          <p className="text-[15px] text-[#E8EAE6] font-semibold truncate max-w-[220px]">
             {vehicle.year} {vehicle.make} {vehicle.model}
           </p>
+          <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Viewfinder</p>
         </div>
         <HelpCircle size={16} className="text-neutral-500 cursor-pointer" />
       </div>
@@ -907,10 +914,13 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
             <Sparkles size={10} className="text-indigo-400" />
-            <span className="text-[13px] font-semibold text-neutral-200  tracking-[0.15em]">Capture Workflow</span>
+            {/* "Capture Workflow" / "Lot Readiness" — two pieces of product
+                vocabulary for "the list of shots" and "how many are done".
+                Neither is what anyone in the yard calls them. */}
+            <span className="text-[13px] font-semibold text-neutral-200">Shot list</span>
           </div>
           <div className="flex items-center gap-2">
-             <div className="text-[13px] font-mono text-neutral-500 ">Lot Readiness:</div>
+             <div className="text-[13px] font-mono text-neutral-500 ">Done</div>
              <div className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
                 <span className="text-[13px] font-bold text-indigo-400">{progressPercentage}%</span>
              </div>
@@ -998,32 +1008,26 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <div className="space-y-2 max-w-[260px]">
               <p className="text-[16px] font-bold text-[#E8EAE6]">Ready to shoot this slot</p>
               <p className="text-[13px] text-neutral-400 leading-relaxed">
-                {cameraError ||
-                  'Use the big Take picture button below. On PC you can also Upload a file first, then confirm.'}
+                {cameraError || 'Take the shot with the button below, or pick a file you already have.'}
               </p>
             </div>
+            {/* This panel used to repeat two controls that are already on screen:
+                a "Take picture" button sitting directly above the much larger
+                shutter, and "Or upload from PC" next to the "Upload file" tile in
+                the same console. Six controls on this screen meant "put an image
+                in this slot", which is five more than the shooter needs.
+
+                Retrying the camera is the only action here that is not available
+                anywhere else — it is also the actual fix for the state that put
+                this panel on screen — so it is the only one left. */}
             <div className="flex flex-col gap-2 w-full max-w-[220px] pt-1">
-              <button
-                type="button"
-                onClick={(e) => handleCapture(e)}
-                className="w-full py-3 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[13px] font-semibold tracking-normal flex items-center justify-center gap-2 shadow-lg"
-              >
-                <Camera size={14} /> Take picture
-              </button>
-              <button
-                type="button"
-                onClick={() => singleUploadRef.current?.click()}
-                className="w-full py-2 rounded-xl bg-emerald-600/20 border border-emerald-500/40 hover:bg-emerald-600/30 text-emerald-300 text-[13px] font-bold flex items-center justify-center gap-2"
-              >
-                <Upload size={12} /> Or upload from PC
-              </button>
               <button
                 type="button"
                 onClick={() => startCamera()}
                 disabled={cameraRetrying}
-                className="w-full py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 text-[13px] font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 text-[13px] font-bold flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <Camera size={12} />
+                <Camera size={14} />
                 {cameraRetrying ? 'Trying camera…' : 'Retry live camera'}
               </button>
             </div>
@@ -1088,10 +1092,12 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 }}
               ></div>
             </div>
+            {/* These two readouts are glanced at, never read. One word each, and
+                "LOCKED" no longer shouts — the colour already carries it. */}
             <div className="text-[13px] font-mono">
-              <p className="text-[13px]  text-neutral-400 tracking-wider">Level Target</p>
+              <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Level</p>
               <p className={angleCorrect ? 'text-emerald-400 font-bold' : 'text-neutral-300'}>
-                {angleCorrect ? '0.0° LOCKED' : `${simRoll.toFixed(1)}° Roll`}
+                {angleCorrect ? 'Level' : `${simRoll.toFixed(1)}° roll`}
               </p>
             </div>
           </div>
@@ -1101,7 +1107,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         <div className="absolute left-4 top-4 bg-neutral-950/75 border border-neutral-800 p-2 rounded-xl z-10 flex items-center gap-2 shadow-lg">
           <Sun size={14} className={lightingAdvice.color} />
           <div className="text-[13px] font-mono">
-            <p className="text-[13px]  text-neutral-400 tracking-wider">Lighting Guide</p>
+            <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Light</p>
             <p className={`font-bold ${lightingAdvice.color}`}>{lightingAdvice.title}</p>
           </div>
         </div>
@@ -1237,30 +1243,36 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         {/* Secondary tools */}
         <div className="flex items-center justify-between gap-2">
           {/* Native camera fallback — capture attr skips the gallery picker when the
-              in-app live camera is blocked (e.g. PWA denied getUserMedia) */}
-          <label className={`flex-1 py-2 rounded-xl text-[13px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
-            !isCameraActive
-              ? 'bg-amber-600/20 border-amber-500/40 text-amber-300 hover:bg-amber-600/30'
-              : 'bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-neutral-300'
-          }`}>
-            <Camera size={13} className={!isCameraActive ? 'text-amber-400' : 'text-neutral-400'} />
-            Take Photo
-            <input
-              type="file"
-              accept={activeSlot.id === 'video_360' ? 'video/*' : 'image/*'}
-              capture="environment"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </label>
+              in-app live camera is blocked (e.g. PWA denied getUserMedia).
+
+              Only shown when that has actually happened. With the live camera
+              running this was a second shutter sitting beside the real one, in a
+              row already four tiles wide on a 360px screen, and the two do the
+              same thing from the shooter's side. */}
+          {!isCameraActive && (
+            <label className="flex-1 py-2 rounded-xl text-[13px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors bg-amber-600/20 border-amber-500/40 text-amber-300 hover:bg-amber-600/30">
+              <Camera size={13} className="text-amber-400" />
+              Phone camera
+              <input
+                type="file"
+                accept={activeSlot.id === 'video_360' ? 'video/*' : 'image/*'}
+                capture="environment"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+          )}
 
           <label className={`flex-1 py-2 rounded-xl text-[13px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
             !isCameraActive
               ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-600/30'
               : 'bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-neutral-300'
           }`}>
+            {/* "Upload file" vs "Bulk Roll" vs "Take Photo" — three tiles that
+                all add photos, named in three different registers. One photo or
+                many is the only distinction that matters here. */}
             <Upload size={13} className={!isCameraActive ? 'text-emerald-400' : 'text-neutral-400'} />
-            Upload file
+            One photo
             <input
               ref={singleUploadRef}
               type="file"
@@ -1272,7 +1284,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
           <label className="flex-1 py-2 bg-indigo-950/40 border border-indigo-900/50 hover:bg-indigo-900/40 rounded-xl text-[13px] font-bold text-indigo-400 flex flex-col items-center justify-center gap-1 cursor-pointer text-center relative">
             <Images size={13} className="text-indigo-400" />
-            <span>Bulk Roll</span>
+            <span>Many photos</span>
             <input
               type="file"
               accept="image/*"

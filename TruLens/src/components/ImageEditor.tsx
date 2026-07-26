@@ -455,7 +455,7 @@ export default function ImageEditor({
               {/* Brightness */}
               <div>
                 <label className="text-[13px] text-neutral-400 flex justify-between font-mono">
-                  <span>Exposure Brightness</span>
+                  <span>Exposure</span>
                   <span className="font-bold text-neutral-200">{brightness}%</span>
                 </label>
                 <input 
@@ -487,7 +487,7 @@ export default function ImageEditor({
               {/* Saturation */}
               <div>
                 <label className="text-[13px] text-neutral-400 flex justify-between font-mono">
-                  <span>Color Saturation</span>
+                  <span>Colour saturation</span>
                   <span className="font-bold text-neutral-200">{saturation}%</span>
                 </label>
                 <input 

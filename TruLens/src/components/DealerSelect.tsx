@@ -112,18 +112,33 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
         })}
 
         {dealerships.length === 0 && (
+          /* Still no invented list here — a wrong list is what put a dealer's
+             cars on someone else's website, and that rule does not bend.
+
+             But "Could not load the dealership list." over a dead Try again and
+             a Continue that can never enable is a dead end with nothing to act
+             on. The list comes from TruFlow via GET /api/dealerships, so the
+             thing that has gone wrong is nearly always that endpoint — say so,
+             and say what unblocks it. */
           <div className="px-4 py-6 rounded-2xl border border-white/10 bg-white/[0.03] text-center">
             <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
               {loading ? 'Loading dealerships…' : 'Could not load the dealership list.'}
             </p>
             {!loading && (
-              <button
-                type="button"
-                onClick={load}
-                className="mt-3 text-[13px] font-semibold text-[#4FE3DC] underline underline-offset-4"
-              >
-                Try again
-              </button>
+              <>
+                <p className="mt-2 text-[13px] text-[rgba(232,234,230,0.55)] leading-relaxed">
+                  The list comes from TruFlow, never from this phone — so there is
+                  nothing to pick until it answers. Check the connection, or ask
+                  whoever runs the server to check <span className="font-mono text-[12px]">/api/dealerships</span>.
+                </p>
+                <button
+                  type="button"
+                  onClick={load}
+                  className="mt-3 text-[13px] font-semibold text-[#4FE3DC] underline underline-offset-4"
+                >
+                  Try again
+                </button>
+              </>
             )}
           </div>
         )}

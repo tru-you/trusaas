@@ -465,7 +465,22 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
 .bg-green-400, .bg-green-500, .bg-green-600,
 .bg-indigo-400, .bg-indigo-500, .bg-indigo-600,
 .bg-purple-400, .bg-purple-500, .bg-purple-600,
-.bg-violet-400, .bg-violet-500, .bg-violet-600 {
+.bg-violet-400, .bg-violet-500, .bg-violet-600,
+/* The brand cyans written as arbitrary values. The list above only ever
+   covered the named ramp, so `bg-[#4FE3DC]` — the same colour, reached a
+   different way — slipped past it and kept whatever light text it was given. */
+.bg-\[\#4FE3DC\], .bg-\[\#7FF0EA\], .bg-\[\#3ECFC8\], .bg-\[\#A8EFEA\] {
+  color: var(--text-on-accent);
+}
+
+/* A gradient paints background-image, not background-color, so none of the
+   rules above can see it — the Report button on every vehicle card was
+   near-white on a #7FF0EA→#4FE3DC fill, about 1.3:1, and was reported from
+   the yard as unreadable. CSS cannot detect a light inline gradient, so the
+   rule is: any element whose fill is an accent gradient gets .on-fill. These
+   two cover the Tailwind gradient utilities; inline style needs the class. */
+[class*="from-[#4FE3DC]"], [class*="from-[#7FF0EA]"],
+[class*="to-[#4FE3DC]"], [class*="to-[#7FF0EA]"] {
   color: var(--text-on-accent);
 }
 
@@ -499,3 +514,217 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
   }
   .tl-card-lift:hover { transform: none; }
 }
+
+/* ══ Mobile field hardening ══════════════════════════════════════════════
+   Everything below assumes the real device: a phone, held in one hand,
+   outdoors, often with a glove or a wet thumb. Desktop is the demo; this is
+   the product. */
+
+/* The grey flash Android and iOS paint on every tap is not ours, lands a beat
+   late, and boxes the element in a colour that is not in the palette. Our own
+   :active states below do the job on time. */
+* { -webkit-tap-highlight-color: transparent; }
+
+html {
+  /* iOS inflates text when the phone turns, which silently rewrites the type
+     scale the whole system is built on. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Rubber-band and pull-to-refresh both fire mid-capture — one bounces the
+   viewfinder, the other can reload the app with shots unsaved. */
+html, body { overscroll-behavior: none; }
+
+/* Scroll panels keep their momentum but stop handing the overscroll up to the
+   page, so flicking a chip row or a card list never moves the app behind it. */
+.overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ── Touch targets ───────────────────────────────────────────────────────
+   Apple and Google both put the floor at 44px. This app had 79 buttons and
+   16 of them said so; the rest landed wherever padding put them — the phase
+   nav on the capture screen was 20px tall, which is a target you aim at
+   rather than press.
+
+   Deliberately NOT gated behind (pointer: coarse). The desktop view is a phone
+   mock used to demo the app to dealers — gating would make the demo show
+   controls the inspector never gets, and it is the one place these sizes are
+   easy to eyeball. Same reason the numbers are min-* and not fixed: a control
+   that already exceeds 44px is left alone. */
+button,
+[role="button"],
+a[href],
+select,
+textarea,
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]),
+label:has(> input[type="file"]) {
+  min-height: 44px;
+}
+
+/* Icon buttons need the width too — a 44px-tall, 21px-wide delete is still a
+   miss. Matching "contains an icon" rather than "is only an icon" on purpose:
+   several of these carry a label that is hidden at phone width, so they LOOK
+   like text buttons in the markup and collapse to 32px on the device. A button
+   that genuinely has a visible label is already past 44px, so this only ever
+   raises the ones that need it. */
+button:has(svg),
+[role="button"]:has(svg) {
+  min-width: 44px;
+}
+
+/* Pins, badges and overlay chips sit at coordinates on top of a photo. Growing
+   the box would cover the damage the pin is pointing at, so these keep their
+   drawn size and grow an invisible target around it instead. */
+button.absolute,
+[role="button"].absolute {
+  min-height: 0;
+  min-width: 0;
+}
+.tap-pin { position: relative; }
+button.absolute::after,
+[role="button"].absolute::after,
+.tap-pin::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: inherit;
+}
+
+/* Inline text buttons inside a sentence must not become 44px blocks — they
+   are links in prose, and the surrounding line already gives them room. */
+p button, p a[href], .inline-action {
+  min-height: 0;
+  min-width: 0;
+}
+
+/* ── App bar / bottom nav ────────────────────────────────────────────────
+   The header was .tl-glass over bg-neutral-950 — glass tinted the same value
+   as the thing behind it, plus a neutral-800 hairline. With nothing lighter
+   than the page in it, it read as a flat band rather than a surface sitting
+   above the list.
+
+   brand.css says the whole depth vocabulary is "a lit top hairline and a soft
+   shadow", so that is all this is: light landing on the top edge, the surface
+   falling away down the bar, and a shadow cast onto the content below. The one
+   piece of colour is a cyan hairline along the bottom, which also marks where
+   the fixed chrome stops and the scrolling list starts. */
+.tl-appbar {
+  position: relative;
+  background:
+    linear-gradient(180deg,
+      rgba(232, 234, 230, 0.06) 0%,
+      rgba(232, 234, 230, 0.022) 55%,
+      rgba(232, 234, 230, 0) 100%),
+    #0B0F17;
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  border-bottom: 1px solid rgba(232, 234, 230, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(232, 234, 230, 0.13),
+    0 1px 0 rgba(0, 0, 0, 0.55),
+    0 14px 30px -20px rgba(0, 0, 0, 0.95);
+  z-index: 20;
+}
+.tl-appbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(79, 227, 220, 0.38), transparent);
+  pointer-events: none;
+}
+
+/* The same surface mirrored: light on its top edge, shadow thrown upward, so
+   the nav reads as sitting over the list rather than printed on it. */
+.tl-bottomnav {
+  position: relative;
+  background:
+    linear-gradient(0deg,
+      rgba(232, 234, 230, 0.05) 0%,
+      rgba(232, 234, 230, 0.018) 60%,
+      rgba(232, 234, 230, 0) 100%),
+    #0B0F17;
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  border-top: 1px solid rgba(232, 234, 230, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(232, 234, 230, 0.10),
+    0 -14px 30px -20px rgba(0, 0, 0, 0.95);
+  z-index: 20;
+}
+
+/* ── Range sliders ───────────────────────────────────────────────────────
+   The quality threshold slider is drawn 4px tall, so the whole control was a
+   4px-high strip to aim at. Excluded from the blanket min-height above because
+   raising the element would have thickened the bar; instead the element gets
+   the 44px of grabbable height and the track is redrawn thin inside it, which
+   keeps the design and gives the thumb somewhere to be caught. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(232, 234, 230, 0.16);
+}
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(232, 234, 230, 0.16);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: var(--tru-cyan-400);
+  border: 2px solid #06080D;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--tru-cyan-400);
+  border: 2px solid #06080D;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Press feedback, since the platform highlight is gone. Weight it on the
+   element rather than a colour change so it reads through sunlight. */
+button:active,
+[role="button"]:active,
+label:has(> input[type="file"]):active {
+  transform: scale(0.97);
+  transition: transform 60ms ease-out;
+}
+.tl-btn-3d:active,
+.tl-btn-3d-dark:active,
+button.absolute:active { transform: translateY(2px); }
+@media (prefers-reduced-motion: reduce) {
+  button:active, [role="button"]:active { transform: none; }
+}
+
+/* ── Type floor ──────────────────────────────────────────────────────────
+   brand.css sets the floor at 12px and says why. Six labels here still ship
+   at 11px — all of them status text on the busiest screens, which is exactly
+   the text someone squints at across a windscreen. */
+.text-\[11px\] { font-size: 12px; }

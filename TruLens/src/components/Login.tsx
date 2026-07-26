@@ -1,123 +1,221 @@
 import React from 'react';
-import { Lock, Sparkles, AlertCircle, Loader2, Monitor } from 'lucide-react';
+import { Lock, AlertCircle, Loader2, Monitor, ShieldOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import trulensLogo from '../assets/images/trulens-wordmark.png';
 
+/**
+ * One field: the access code issued for this dealership.
+ *
+ * The Firebase email/password form that used to lead this screen could never
+ * work in production — TruLens runs LOCAL_MODE=1 with no Firebase credentials,
+ * so the server never starts the verifier and every request 401'd after a
+ * apparently successful sign-in. There is no self-signup either: access is a
+ * code issued per dealership.
+ *
+ * ── The dead end this screen used to be ────────────────────────────────────
+ * The code is checked by POST /api/auth/device, and the first thing that route
+ * does is refuse everything with 503 when neither TRULENS_ACCESS_CODE nor
+ * TRULENS_DEALER_CODES is set. On an instance where nobody has set either —
+ * every fresh checkout, and any deploy that missed the env var — this screen
+ * showed a code field that could not succeed no matter what was typed into it,
+ * and said only "no access on this server".
+ *
+ * So the screen now asks GET /api/health first. It answers accessCodeConfigured
+ * and dealerCodesConfigured (booleans and a count, never values) and exists
+ * precisely so this can be checked from outside. When both come back empty the
+ * code field is replaced with an explanation and the offline route the server
+ * is currently allowing anyway — no bypass, because the API only honours the
+ * offline token while no code is configured. Set either variable and both the
+ * notice and the offline button disappear on their own.
+ */
+
+type ServerState = 'checking' | 'secured' | 'unconfigured' | 'unreachable';
+
 export default function Login() {
-  const { signInWithCode } = useAuth();
+  const { signInWithCode, enterDemoMode } = useAuth();
   const [deviceCode, setDeviceCode] = React.useState('');
   const [codeBusy, setCodeBusy] = React.useState(false);
   const [codeError, setCodeError] = React.useState<string | null>(null);
+  const [server, setServer] = React.useState<ServerState>('checking');
+
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/health', { cache: 'no-store' });
+        if (!res.ok) throw new Error(String(res.status));
+        const d = await res.json();
+        const configured = !!d?.accessCodeConfigured || Number(d?.dealerCodesConfigured) > 0;
+        if (alive) setServer(configured ? 'secured' : 'unconfigured');
+      } catch {
+        // Offline or the server is down. Keep the code field — a cached PWA
+        // opening in a dead spot should still let someone try the code they
+        // were given, rather than being told the yard is misconfigured.
+        if (alive) setServer('unreachable');
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (codeBusy) return;
+    setCodeBusy(true);
+    setCodeError(null);
+    try {
+      await signInWithCode(deviceCode.trim());
+    } catch (err: any) {
+      setCodeError(err?.message || 'Could not sign in on this device.');
+      // The server may have come up unconfigured since the health check.
+      if (/no access code configured/i.test(err?.message || '')) setServer('unconfigured');
+    } finally {
+      setCodeBusy(false);
+    }
+  };
+
   return (
-    <div className="h-full w-full bg-black flex flex-col items-center justify-center p-8 relative overflow-hidden">
-      {/* Background Glow effects */}
-      <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-cyan-600/10 blur-[100px] rounded-full pointer-events-none" />
+    <div className="h-full w-full overflow-y-auto bg-[#06080D] flex flex-col items-center justify-center px-6 py-10 relative">
+      {/* Two soft pools of light rather than a flat black field. Kept well under
+          the type so nothing sits on a gradient edge. */}
+      <div className="absolute top-[-12%] right-[-18%] w-72 h-72 bg-[#4FE3DC]/[0.07] blur-[110px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-12%] left-[-18%] w-72 h-72 bg-[#4FE3DC]/[0.05] blur-[110px] rounded-full pointer-events-none" />
 
-      <div
-        className="w-full max-w-sm z-10 flex flex-col items-center"
-      >
-        {/* TruLens Logo */}
-        <div className="mb-12 relative">
-          <img 
-            src={trulensLogo} 
-            alt="TruLens Logo" 
-            className="w-48 object-contain mx-auto [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
+      <div className="w-full max-w-sm z-10 flex flex-col items-center">
+
+        {/* The tagline under the mark used to be 13px with 0.3em of tracking,
+            which is a lot of work to read at that size, and it was absolutely
+            positioned into the gap below the logo where it could collide. */}
+        <div className="text-center mb-10">
+          <img
+            src={trulensLogo}
+            alt="TruLens"
+            className="w-44 max-w-full object-contain mx-auto [filter:brightness(2.1)_contrast(0.95)_saturate(1.05)]"
           />
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 whitespace-nowrap">
-            <span className="text-[13px] font-semibold text-indigo-400  tracking-[0.3em] font-sans">Vision for Growth</span>
-            <div className="w-1 h-1 rounded-full bg-indigo-500" />
-          </div>
+          <p className="mt-3 text-[12px] text-[rgba(232,234,230,0.55)] tracking-[0.08em]">
+            Dealer photo studio
+          </p>
         </div>
 
-        <div className="text-center space-y-1 mb-8">
-          <h1 className="text-xl font-semibold text-[#E8EAE6] tracking-tight ">
-            Inspector Login
+        <div className="text-center mb-7">
+          <h1 className="text-[20px] font-semibold text-[#E8EAE6] tracking-[-0.01em]">
+            Sign in this phone
           </h1>
-          <p className="text-neutral-400 text-[13px] font-medium  tracking-widest">
-            Securing your lot data
+          <p className="mt-1.5 text-[13px] text-[rgba(232,234,230,0.55)]">
+            Signs in for 30 days · photo → export → web
           </p>
         </div>
 
-        {/* The Firebase email/password form lived here. It could never work in
-            production: TruLens runs LOCAL_MODE=1 with no Firebase credentials, so
-            the server never starts the verifier — a dealer signed in on the phone
-            and then every request 401'd. It was also the most prominent thing on
-            the screen. The access code below is the only real way in. */}
-
-        {/* Sign this phone in with the dealership's access code. It replaced a
-            "Start on this PC" button that sent the literal string
-            'local-demo-token' — which the server accepted from anyone, so the
-            captured stock and photos were readable by the whole internet. */}
-        <form
-          className="mt-4 w-full flex flex-col gap-2"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            if (codeBusy) return;
-            setCodeBusy(true); setCodeError(null);
-            try {
-              await signInWithCode(deviceCode.trim());
-            } catch (err: any) {
-              setCodeError(err?.message || 'Could not sign in on this device.');
-            } finally {
-              setCodeBusy(false);
-            }
-          }}
-        >
-          <input
-            type="password"
-            value={deviceCode}
-            onChange={(e) => setDeviceCode(e.target.value)}
-            placeholder="Dealership access code"
-            autoComplete="off"
-            className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-[13px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC]"
-          />
-          {codeError && <p className="text-[13px] text-[#C07676]">{codeError}</p>}
-          <button
-            type="submit"
-            disabled={codeBusy || !deviceCode.trim()}
-            className="w-full flex items-center justify-center gap-2 py-4 bg-[#4FE3DC] disabled:opacity-50 text-[#06080D] font-semibold rounded-xl text-[13px] transition-all"
-          >
-            <Monitor size={14} />
-            {codeBusy ? 'Checking…' : 'Use this device'}
-          </button>
-          <span className="text-[13px] text-neutral-500 text-center">
-            Signs this phone in for 30 days · full photo → export → web flow
-          </span>
-        </form>
-
-        {/* There is no self-signup. Access is a code issued per dealership —
-            the old "New Inspector? Sign Up" toggle created a Firebase account
-            that the server never honours, because it gates on the dealership
-            code, so anyone following it got an account granting nothing. */}
-        <p className="mt-6 max-w-[260px] text-center text-[13px] leading-relaxed text-neutral-400">
-          Access is issued per dealership. Ask your dealer principal for the
-          code, or contact TruSaaS to set your yard up.
-        </p>
-
-        {/* Footer Info — ecosystem links */}
-        <div className="mt-12 flex flex-col items-center space-y-4">
-          <div className="flex items-center gap-3">
-            <a href="https://tru-saas.com" target="_blank" rel="noopener noreferrer" className="flex flex-col items-end hover:opacity-90">
-              <span className="text-[13px] text-neutral-600  tracking-tighter">Powered By</span>
-              <span className="text-[13px] font-bold text-cyan-300 underline underline-offset-2">TruSaaS</span>
-            </a>
-            <div className="w-[1px] h-6 bg-neutral-800" />
-            <div className="flex flex-col items-start">
-              <span className="text-[13px] text-neutral-600  tracking-tighter">Secured By</span>
-              <span className="text-[13px] font-bold text-indigo-400 flex items-center gap-1">
-                AI Audit Core <Sparkles size={10} />
-              </span>
+        {server === 'unconfigured' ? (
+          /* No code is set on this instance, so there is nothing to type. Say
+             that plainly and offer the only route the server currently accepts,
+             instead of a field that silently cannot work. */
+          <div className="w-full space-y-4">
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.07] p-4">
+              <div className="flex items-start gap-2.5">
+                <ShieldOff size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-amber-300">
+                    No access code is set on this server
+                  </p>
+                  <p className="mt-1 text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
+                    Until one is, sign-in codes cannot be checked and this instance
+                    holds local data only.
+                  </p>
+                  <p className="mt-2 text-[12px] font-mono text-[rgba(232,234,230,0.55)] break-all">
+                    TRULENS_ACCESS_CODE
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
 
-          
-          <p className="text-[13px] text-neutral-700 max-w-[200px] text-center leading-relaxed">
-            By initializing, you agree to the Automated Photography & AI Processing Terms of Service.
-          </p>
-          <div className="pt-4 flex flex-col items-center">
-            <span className="text-[11px] text-neutral-800  tracking-[0.2em]">TruLens v1.0</span>
+            <button
+              type="button"
+              onClick={enterDemoMode}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl tl-btn-3d text-[15px] font-semibold tracking-normal"
+            >
+              <Monitor size={16} />
+              Continue offline
+            </button>
+
+            <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center leading-relaxed">
+              Captures stay on this device and this server. Set the access code to
+              sign in properly — this notice goes away on its own.
+            </p>
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="w-full space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="dealer-code" className="block text-[12px] font-semibold text-[rgba(232,234,230,0.72)] ml-1">
+                Dealership access code
+              </label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[rgba(232,234,230,0.42)] group-focus-within:text-[#4FE3DC] transition-colors">
+                  <Lock size={15} />
+                </div>
+                {/* 16px is not a style choice: below it, Safari zooms the whole
+                    page in when the field takes focus and the layout jumps. */}
+                <input
+                  id="dealer-code"
+                  type="password"
+                  value={deviceCode}
+                  onChange={(e) => setDeviceCode(e.target.value)}
+                  placeholder="Access code"
+                  autoComplete="one-time-code"
+                  className="block w-full pl-11 pr-3.5 py-3.5 bg-white/[0.04] border border-white/10 rounded-xl text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] focus:outline-none focus:border-[#4FE3DC]/60 focus:bg-white/[0.06] transition-all"
+                  required
+                />
+              </div>
+            </div>
+
+            {codeError && (
+              <div className="bg-[#B86A6A]/12 border border-[#B86A6A]/35 p-3 rounded-xl flex items-start gap-2">
+                <AlertCircle size={14} className="text-[#C07676] shrink-0 mt-0.5" />
+                <p className="text-[13px] font-medium text-[#DFB6B6] leading-snug">{codeError}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={codeBusy || server === 'checking' || !deviceCode.trim()}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl tl-btn-3d text-[15px] font-semibold tracking-normal disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {codeBusy ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Checking code…
+                </>
+              ) : (
+                <>
+                  <Monitor size={16} />
+                  Use this device
+                </>
+              )}
+            </button>
+          </form>
+        )}
+
+        {server !== 'unconfigured' && (
+          <p className="mt-6 text-[13px] text-[rgba(232,234,230,0.55)] text-center leading-relaxed">
+            Access is issued per dealership. Ask your dealer principal for the code,
+            or contact TruSaaS to set your yard up — there is no self-signup.
+          </p>
+        )}
+
+        {/* Footer. Was four separate 13px items plus a version line at 10%
+            opacity — 1.2:1, i.e. not visible at all. One quiet line instead. */}
+        <div className="mt-10 flex items-center gap-2 text-[12px] text-[rgba(232,234,230,0.55)]">
+          <a
+            href="https://tru-saas.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[rgba(232,234,230,0.72)] hover:text-[#4FE3DC] transition-colors"
+          >
+            TruSaaS
+          </a>
+          <span aria-hidden="true">·</span>
+          <span>Guided capture</span>
+          <span aria-hidden="true">·</span>
+          <span>v1.0</span>
         </div>
       </div>
     </div>

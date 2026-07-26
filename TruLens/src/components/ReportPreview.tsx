@@ -45,7 +45,7 @@ function scoreForSlots(vehicle: Vehicle, slots: PhotoSlot[]): number | null {
 }
 
 function gradeFor(score: number | null) {
-  if (score === null) return { grade: '—', label: 'Not captured', color: 'rgba(232,234,230,0.55)', bg: 'rgba(148,163,184,0.10)', sales: 'Incomplete' };
+  if (score === null) return { grade: '—', label: 'Not captured', color: '#475569', bg: 'rgba(148,163,184,0.10)', sales: 'Incomplete' };
   if (score >= 90) return { grade: 'A',  label: 'Excellent', color: '#4ADE9B', bg: 'rgba(34,197,94,0.14)', sales: 'List with confidence' };
   if (score >= 80) return { grade: 'A-', label: 'Very good', color: '#4ADE9B', bg: 'rgba(34,197,94,0.12)', sales: 'List with confidence' };
   if (score >= 70) return { grade: 'B',  label: 'Good', color: '#EAB308', bg: 'rgba(234,179,8,0.14)', sales: 'List after light polish' };
@@ -307,14 +307,14 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-sales .band { background: linear-gradient(120deg,#0B0F17,#1E3A5F); color:#fff; padding:20px 22px; }
             .tl-sales .grid2 { display:grid; grid-template-columns:1.1fr .9fr; gap:16px; padding:18px 22px; }
             .tl-sales h1 { font-size:22px; font-weight:800; margin:0 0 4px; letter-spacing:-.02em; }
-            .tl-sales .muted { color:rgba(232,234,230,0.45); font-size:12px; }
+            .tl-sales .muted { color:#64748B; font-size:12px; }
             .tl-sales .price { font-size:26px; font-weight:900; color:#0B5BD7; margin:10px 0; }
             .tl-sales .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:; }
             .tl-sales .hero { width:100%; border-radius:12px; object-fit:cover; aspect-ratio:16/10; background:#F1F5F9; }
             .tl-sales .box { border:1px solid #E8EAE6; border-radius:12px; padding:12px; }
-            .tl-sales .k { font-size:9px; letter-spacing:.12em; text-transform:; color:rgba(232,234,230,0.55); font-weight:700; }
+            .tl-sales .k { font-size:9px; letter-spacing:.12em; text-transform:; color:#475569; font-weight:700; }
             .tl-sales .v { font-size:13px; font-weight:700; margin-top:3px; }
-            .tl-sales .foot { border-top:1px solid #E8EAE6; padding:12px 22px; font-size:10px; color:rgba(232,234,230,0.55); display:flex; justify-content:space-between; }
+            .tl-sales .foot { border-top:1px solid #E8EAE6; padding:12px 22px; font-size:10px; color:#475569; display:flex; justify-content:space-between; }
           `}</style>
           <div className="band">
             <div style={{ display:'flex', justifyContent:'space-between', gap:12 }}>
@@ -378,6 +378,19 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
         {/* ── FULL VIR ── */}
         <div ref={reportRef} className="tl-report">
+          {/* ── Palette warning ──────────────────────────────────────────────
+              This document is WHITE paper (#FFFFFF, ink #0B0F17). The app around
+              it is near-black. A rebrand sweep had put the app's paper token —
+              rgba(232,234,230,·), which is a near-WHITE — on 14 pieces of text
+              inside this white page, including the customer-facing .tl-sales
+              summary: its muted lines, its key labels and its footer. Measured
+              1.2:1. On the printed sheet a dealer hands to a buyer, those lines
+              were blank paper.
+
+              On this component the muted colours are slate ink, not the app's
+              paper token: #334155 / #475569 / #64748B. The only place a light
+              colour is correct is .cover and .band, which paint a dark gradient
+              behind themselves and use the #F8FAFC family. */}
           <style>{`
             .tl-report {
               width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0B0F17;
@@ -415,8 +428,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .cap { padding:8px 10px; font-size:11px; }
             .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; }
             .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; }
-            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:; color:rgba(232,234,230,0.55); }
-            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:rgba(232,234,230,0.45); text-transform:; letter-spacing:.08em; font-family:ui-monospace,monospace; }
+            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:; color:#475569; }
+            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; text-transform:; letter-spacing:.08em; font-family:ui-monospace,monospace; }
             @media print {
               .no-print { display:none !important; }
               .tl-sales { break-after: page; }
@@ -481,7 +494,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   <div className="grade" key={p.id} style={{ background: g.bg, borderColor: g.color + '40' }}>
                     <div className="v" style={{ color: g.color }}>{g.grade}</div>
                     <div className="n"><Icon size={11} style={{display:'inline',verticalAlign:'-2px',marginRight:4,color:g.color}}/>{p.name}</div>
-                    <div style={{ fontSize:10, color:'rgba(232,234,230,0.55)', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
+                    <div style={{ fontSize:10, color:'#475569', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
                   </div>
                 );
               })}
@@ -533,7 +546,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                     <img src={src} alt={slot.name} />
                     <div className="cap">
                       <b>{slot.name}</b>
-                      <div style={{ color:'rgba(232,234,230,0.45)', marginTop:3 }}>
+                      <div style={{ color:'#64748B', marginTop:3 }}>
                         {Array.isArray(quality?.aiAnalysis?.detectedIssues)
                           ? quality!.aiAnalysis!.detectedIssues![0]
                           : 'Documented area'}
@@ -561,21 +574,21 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <h2><Award size={16} /> Dealer & digital readiness</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Dealership</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'#475569' }}>Dealership</div>
                 <div style={{ fontWeight:700, marginTop:4 }}>{dealerName}</div>
-                {dealerBranch ? <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>{dealerBranch}</div> : null}
+                {dealerBranch ? <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{dealerBranch}</div> : null}
                 {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Digital assets</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'#475569' }}>Digital assets</div>
                 <div style={{ fontWeight:700, marginTop:4, color: readiness.color }}>{readiness.label}</div>
-                <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:4 }}>
+                <div style={{ fontSize:12, color:'#64748B', marginTop:4 }}>
                   Website: {vehicle.showOnWebsite ? 'Published' : 'Not published'}
                 </div>
-                <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>
+                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>
                   Web 3D: {vehicle.lastWeb3dExportAt ? `Exported ${new Date(vehicle.lastWeb3dExportAt).toLocaleDateString('en-ZA')}` : 'Not exported yet'}
                 </div>
-                <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>
+                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>
                   DMS: {vehicle.lastDmsExportAt ? `Synced ${new Date(vehicle.lastDmsExportAt).toLocaleDateString('en-ZA')}` : 'Not exported'}
                 </div>
               </div>

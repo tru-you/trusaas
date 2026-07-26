@@ -67,7 +67,7 @@ const CONDITION_SCALE = [
  * confusion this report used to ship.
  */
 function captureBand(score: number | null) {
-  if (score === null) return { label: 'Not captured', color: 'rgba(232,234,230,0.55)', bg: 'rgba(148,163,184,0.10)' };
+  if (score === null) return { label: 'Not captured', color: '#475569', bg: 'rgba(148,163,184,0.10)' };
   if (score >= 80) return { label: 'Good', color: '#16A34A', bg: 'rgba(34,197,94,0.12)' };
   if (score >= 60) return { label: 'Usable', color: '#CA8A04', bg: 'rgba(234,179,8,0.14)' };
   return { label: 'Re-shoot', color: '#DC2626', bg: 'rgba(239,68,68,0.14)' };
@@ -75,7 +75,7 @@ function captureBand(score: number | null) {
 
 function conditionBand(stars: number | null) {
   if (stars === null) {
-    return { label: 'Not yet inspected', meaning: 'No inspector findings recorded.', color: 'rgba(232,234,230,0.55)' };
+    return { label: 'Not yet inspected', meaning: 'No inspector findings recorded.', color: '#475569' };
   }
   return CONDITION_SCALE.find(b => stars >= b.min) ?? CONDITION_SCALE[CONDITION_SCALE.length - 1];
 }
@@ -85,8 +85,8 @@ function severityMeta(sev: number) {
   if (sev >= 5) return { label: 'Critical', color: '#DC2626', bg: '#FEE2E2' };
   if (sev >= 4) return { label: 'Major', color: '#EA580C', bg: '#FFEDD5' };
   if (sev >= 3) return { label: 'Moderate', color: '#CA8A04', bg: '#FEF9C3' };
-  if (sev >= 2) return { label: 'Minor', color: 'rgba(232,234,230,0.45)', bg: '#F1F5F9' };
-  return { label: 'Cosmetic', color: 'rgba(232,234,230,0.55)', bg: '#F8FAFC' };
+  if (sev >= 2) return { label: 'Minor', color: '#64748B', bg: '#F1F5F9' };
+  return { label: 'Cosmetic', color: '#475569', bg: '#F8FAFC' };
 }
 
 /**
@@ -396,6 +396,19 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         </div>
 
         <div ref={reportRef} className="tl-report">
+          {/* ── Palette warning ──────────────────────────────────────────────
+              This document is WHITE paper (#FFFFFF, ink #0B0F17). The app around
+              it is near-black. A rebrand sweep had put the app's paper token —
+              rgba(232,234,230,·), which is a near-WHITE — on 21 pieces of text
+              inside this white page: the checklist headers, the footer, every
+              "Inspected by" / "Vehicle identity" / "Condition scale" label, and
+              the condition score itself. Measured 1.2:1. On the printed VIR that
+              a dealer hands to a customer, those lines were blank paper.
+
+              On this component the muted colours are slate ink, not the app's
+              paper token: #334155 / #475569 / #64748B. The only place a light
+              colour is correct is .cover and .band, which paint a dark gradient
+              behind themselves and use the #F8FAFC family. */}
           <style>{`
             .tl-report {
               width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0B0F17;
@@ -433,8 +446,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .cap { padding:8px 10px; font-size:11px; }
             .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; }
             .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; }
-            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:; color:rgba(232,234,230,0.55); }
-            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:rgba(232,234,230,0.45); text-transform:; letter-spacing:.08em; font-family:ui-monospace,monospace; }
+            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:; color:#475569; }
+            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; text-transform:; letter-spacing:.08em; font-family:ui-monospace,monospace; }
             @media print {
               .no-print { display:none !important; }
               .tl-sales { break-after: page; }
@@ -509,7 +522,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   <div className="grade" key={p.id} style={{ background: g.bg, borderColor: g.color + '40' }}>
                     <div className="v" style={{ color: g.color, fontSize:15 }}>{g.label}</div>
                     <div className="n"><Icon size={11} style={{display:'inline',verticalAlign:'-2px',marginRight:4,color:g.color}}/>{p.name}</div>
-                    <div style={{ fontSize:10, color:'rgba(232,234,230,0.55)', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
+                    <div style={{ fontSize:10, color:'#475569', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
                   </div>
                 );
               })}
@@ -542,11 +555,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <h2><AlertTriangle size={16} /> Damage tagged by inspector</h2>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, padding:'10px 14px', background:'#F8FAFC', border:'1px solid #E8EAE6', borderRadius:12 }}>
               <div style={{ fontWeight:800, fontSize:24, color: condition.stars >= 3.5 ? '#16A34A' : condition.stars >= 2.5 ? '#CA8A04' : '#DC2626' }}>
-                {condition.stars.toFixed(1)}<span style={{ fontSize:12, color:'rgba(232,234,230,0.55)' }}>/5</span>
+                {condition.stars.toFixed(1)}<span style={{ fontSize:12, color:'#475569' }}>/5</span>
               </div>
               <div>
                 <div style={{ fontWeight:700, fontSize:13 }}>Condition score</div>
-                <div style={{ fontSize:11.5, color:'rgba(232,234,230,0.45)' }}>{condition.label} · {condition.findings.length} tag{condition.findings.length === 1 ? '' : 's'} across {Object.keys(vehicle.damageFindings || {}).length} photos</div>
+                <div style={{ fontSize:11.5, color:'#64748B' }}>{condition.label} · {condition.findings.length} tag{condition.findings.length === 1 ? '' : 's'} across {Object.keys(vehicle.damageFindings || {}).length} photos</div>
               </div>
             </div>
             {condition.findings.length === 0 ? (
@@ -562,7 +575,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                     </div>
                     <div className="l" style={{ color:'#334155' }}>
                       {f.note || 'Tagged by inspector'}
-                      <span style={{ color:'rgba(232,234,230,0.55)' }}> — {slot?.name || f.slotId}</span>
+                      <span style={{ color:'#475569' }}> — {slot?.name || f.slotId}</span>
                     </div>
                   </div>
                 );
@@ -612,7 +625,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 .filter(({ r }) => r && (r.rating || r.works || r.comment));
               if (!rows.length) {
                 return (
-                  <div style={{ fontSize:12, color:'rgba(232,234,230,0.55)', fontStyle:'italic' }}>
+                  <div style={{ fontSize:12, color:'#475569', fontStyle:'italic' }}>
                     Inspection not completed for this vehicle.
                   </div>
                 );
@@ -650,9 +663,9 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                         const isFlag = r?.rating === 'note' || r?.rating === 'damage' || r?.works === 'no';
                         return (
                           <tr key={p.id} style={isFlag ? { background:'#FFFBEB' } : undefined}>
-                            <td><span style={{ color:'rgba(232,234,230,0.55)', fontSize:9, letterSpacing:'.08em' }}>{p.group}</span><br/>{p.name}</td>
+                            <td><span style={{ color:'#475569', fontSize:9, letterSpacing:'.08em' }}>{p.group}</span><br/>{p.name}</td>
                             <td style={{ fontWeight:700, color: s.c }}>{s.t}</td>
-                            <td style={{ color:'rgba(232,234,230,0.45)' }}>{r?.comment || '—'}</td>
+                            <td style={{ color:'#64748B' }}>{r?.comment || '—'}</td>
                           </tr>
                         );
                       })}
@@ -672,7 +685,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                     <img src={src} alt={slot.name} />
                     <div className="cap">
                       <b>{slot.name}</b>
-                      <div style={{ color:'rgba(232,234,230,0.45)', marginTop:3 }}>
+                      <div style={{ color:'#64748B', marginTop:3 }}>
                         {(vehicle.damageFindings?.[slot.id]?.length ?? 0) > 0
                           ? `${vehicle.damageFindings![slot.id].length} tag${vehicle.damageFindings![slot.id].length === 1 ? '' : 's'}`
                           : 'Documented area'}
@@ -700,13 +713,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <h2><Award size={16} /> Inspection summary</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Inspected by</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'#475569' }}>Inspected by</div>
                 <div style={{ fontWeight:700, marginTop:4 }}>{dealerName}</div>
-                {dealerBranch ? <div style={{ fontSize:12, color:'rgba(232,234,230,0.45)', marginTop:2 }}>{dealerBranch}</div> : null}
+                {dealerBranch ? <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{dealerBranch}</div> : null}
                 {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'rgba(232,234,230,0.55)' }}>Work done</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'#475569' }}>Work done</div>
                 <div style={{ fontSize:12, color:'#334155', marginTop:4 }}>
                   Photos captured: {Object.keys(vehicle.photos || {}).length}
                 </div>
@@ -723,7 +736,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 dealers in this system — the VIN is what ties this document to
                 one vehicle. */}
             <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
-              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'rgba(232,234,230,0.55)' }}>Vehicle identity</div>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Vehicle identity</div>
               <div style={{ fontSize:12, color:'#334155', marginTop:4 }}>
                 VIN <b style={{ fontFamily:'ui-monospace, monospace' }}>{vehicle.vin || '— not recorded —'}</b>
               </div>
@@ -738,7 +751,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             {/* The scale, printed. A number a reader has to interpret is a
                 number they will interpret wrongly. */}
             <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
-              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'rgba(232,234,230,0.55)' }}>Condition scale</div>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Condition scale</div>
               <div style={{ marginTop:6 }}>
                 {CONDITION_SCALE.map(b => (
                   <div key={b.label} style={{ display:'flex', gap:8, fontSize:11.5, color:'#334155', marginTop:3 }}>
@@ -757,7 +770,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             {/* Scope. What was looked at, and — the part that matters in a
                 dispute — what was not. */}
             <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
-              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'rgba(232,234,230,0.55)' }}>Scope of this inspection</div>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Scope of this inspection</div>
               <div style={{ fontSize:11.5, color:'#334155', marginTop:6 }}>
                 <b>Covered —</b> a visual inspection of the vehicle's exterior panels,
                 interior, engine bay and documents, carried out with the vehicle
@@ -787,7 +800,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 inspector, and a document that lands with a finance house
                 should carry the name of whoever stands behind it. */}
             <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
-              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'rgba(232,234,230,0.55)' }}>Inspected by</div>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Inspected by</div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginTop:10 }}>
                 <div>
                   <div style={{ borderBottom:'1px solid #94A3B8', height:26 }}>

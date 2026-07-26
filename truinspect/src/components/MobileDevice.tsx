@@ -46,16 +46,14 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
   if (nativeMode) {
     return (
       <div className="relative flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-neutral-950 text-[#E8EAE6] font-sans select-none overflow-hidden">
-        {/* Thin status strip only when not installed (browser chrome already there when not standalone) */}
-        {!isStandaloneDisplay() && (
-          <div className="h-10 shrink-0 bg-neutral-950 text-[#E8EAE6] px-4 flex items-center justify-between text-[13px] font-semibold tracking-wider border-b border-neutral-900">
-            <span className="text-neutral-300">TruInspect</span>
-            <div className="flex items-center gap-2 text-neutral-400">
-              <Wifi size={13} className="text-indigo-400" />
-              <span className="text-[13px]">Yard mode</span>
-            </div>
-          </div>
-        )}
+        {/* A 40px strip used to sit here whenever the app was open in a browser
+            rather than installed. It carried the wordmark and the words "Yard
+            mode" — the wordmark is repeated in the header directly below it, and
+            "Yard mode" is not a state the app can leave. On a 640px Android that
+            was 6% of the screen spent saying the name of the app twice.
+
+            The install prompt it sat above is PwaInstallBanner, which is still
+            rendered below and says something actionable. */}
         <div className="relative flex-1 min-h-0 w-full overflow-hidden flex flex-col">
           {children}
           <PwaInstallBanner />
