@@ -55,7 +55,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
   const [customFile, setCustomFile] = React.useState<string | null>(null);
 
   // Auto-level assistant toggle
-  const [autoLevelOn, setAutoLevelOn] = React.useState(true);
 
   // Bulk upload state variables
   interface BulkImageItem {
@@ -937,7 +936,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
       </div>
 
       {/* Viewfinder Main View */}
-      <div className="capture-preview relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
+      {/* min-h gives the viewfinder a floor instead of leaving it whatever the
+          chrome does not use. As flex-1 alone it was competing with a shot-list
+          header, a phase strip, a slot row, a three-button utility row and a hint
+          panel, and lost — the preview came out a letterbox strip about a third
+          of a phone screen, which is not enough to frame a car in.
+          svh not vh: the mobile address bar collapses on scroll, and vh would
+          change the framing mid-shoot. */}
+      <div className="capture-preview relative flex-1 min-h-[52svh] bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
@@ -1032,39 +1038,12 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
         )}
 
         {/* Real-time Gyro / Bubble Level Circle Overlay */}
-        {autoLevelOn && (
-          <div className="absolute right-4 top-4 bg-neutral-950/75 border border-neutral-800 px-3 py-2 rounded-xl flex items-center gap-2 z-10 shadow-lg">
-            <div className="relative w-8 h-8 rounded-full border-2 border-neutral-700/60 flex items-center justify-center">
-              {/* Leveled target ring */}
-              <div className="w-2.5 h-2.5 rounded-full border border-neutral-600"></div>
-              {/* Center Bubble bubble level */}
-              <div 
-                className={`w-2 h-2 rounded-full absolute transition-all duration-100 ${
-                  angleCorrect ? 'bg-emerald-400 shadow-md shadow-emerald-500/50 scale-110' : 'bg-red-400'
-                }`}
-                style={{
-                  transform: `translate(${Math.max(-10, Math.min(10, simRoll * 2.5))}px, ${Math.max(-10, Math.min(10, (simPitch - activeSlot.idealAngle.pitch) * 1.5))}px)`
-                }}
-              ></div>
-            </div>
-            <div className="text-[13px] font-mono">
-              <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Level</p>
-              <p className={angleCorrect ? 'text-emerald-400 font-bold' : 'text-neutral-300'}>
-                {angleCorrect ? '0.0° LOCKED' : `${simRoll.toFixed(1)}° Roll`}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Lighting status warning flag */}
-        <div className="absolute left-4 top-4 bg-neutral-950/75 border border-neutral-800 p-2 rounded-xl z-10 flex items-center gap-2 shadow-lg">
-          <Sun size={14} className={lightingAdvice.color} />
-          <div className="text-[13px] font-mono">
-            <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Light</p>
-            <p className={`font-bold ${lightingAdvice.color}`}>{lightingAdvice.title}</p>
-          </div>
-        </div>
-
+        {/* The level bubble and the lighting readout were removed from the
+            viewfinder. Both were simulated rather than measured — the roll and
+            pitch come from simRoll/simPitch, and "Lighting Perfect" was a fixed
+            verdict, so they reported confidence they did not have. They also sat
+            on top of the only region that has to stay readable while framing a
+            car, on a screen that is already too short. */}
         {/* Quick Camera Source Helper overlay if webcam unavailable */}
         {!isCameraActive && !customFile && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded text-[13px] tracking-wide text-neutral-400 flex items-center gap-1">
@@ -1296,17 +1275,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
             />
           </label>
 
-          <button
-            type="button"
-            onClick={() => setAutoLevelOn(!autoLevelOn)}
-            className={`flex-1 py-2 border rounded-xl text-[13px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${
-              autoLevelOn
-                ? 'bg-indigo-500/10 border-indigo-500/30 text-[#4FE3DC]'
-                : 'bg-neutral-900 border-neutral-800 text-neutral-400'
-            }`}
-          >
-            <Smartphone size={13} /> Level
-          </button>
         </div>
 
         {/* Guidance for the panel being shot right now. This was a single
