@@ -86,19 +86,15 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
           </button>
         </form>
 
-        <button
-          type="button"
-          disabled={demoBusy}
-          onClick={async () => {
-            setDemoBusy(true); setError('');
-            try { await enterDemo(); onLogin(); }
-            catch (err: any) { setError(err?.message || 'Demo is unavailable right now.'); }
-            finally { setDemoBusy(false); }
-          }}
-          className="mt-3 w-full py-3 rounded-xl border border-[rgba(232,234,230,0.14)] text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:border-[color:var(--cyan-soft)] transition-colors disabled:opacity-60"
-        >
-          {demoBusy ? 'Opening demo…' : 'Explore the demo — no login needed'}
-        </button>
+        {/* The demo button that used to sit here is gone. A dealer signing in on
+            their own DMS should not be offered a way into someone else's sample
+            data, and it read as though the product were a sandbox. The ?demo=1
+            route above still works, so the "Try it" links on tru-saas.com take a
+            prospect straight in — they just no longer land on a dealer's login
+            screen as an option. */}
+        {demoBusy && (
+          <p className="mt-3 text-center text-[13px] text-[rgba(232,234,230,0.72)]">Opening demo…</p>
+        )}
 
         <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center gap-2">
           <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[color:var(--cyan-bright)] hover:underline inline-flex items-center gap-1">

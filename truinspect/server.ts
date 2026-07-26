@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
@@ -24,6 +25,54 @@ const hasAdc =
   !!process.env.FIREBASE_SERVICE_ACCOUNT ||
   !!process.env.GOOGLE_CLOUD_PROJECT;
 const LOCAL_MODE = !FORCE_CLOUD; // default ON for PC friendliness
+
+/**
+ * Inspector access code — the same shape TruInspect's sibling TruLens uses.
+ *
+ * Without one this API was open to anyone who knew the URL: `Bearer demo`, any
+ * token starting with `local-`, and — because LOCAL_MODE is on in production —
+ * literally any bearer string at all were each accepted, so inspection reports
+ * and their photos could be read, created or deleted by a stranger.
+ *
+ * Set TRUINSPECT_ACCESS_CODE and the app exchanges it for a signed token that
+ * every request must then carry. Left unset, the old behaviour stands, which is
+ * what keeps local development and an un-migrated instance working.
+ */
+const ACCESS_CODE = process.env.TRUINSPECT_ACCESS_CODE || '';
+const TOKEN_SECRET =
+  process.env.TRUINSPECT_TOKEN_SECRET ||
+  crypto.createHash('sha256').update(ACCESS_CODE || 'truinspect-dev').digest('hex');
+const DEVICE_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // a month on the yard phone
+
+/** Constant-time compare, so a wrong code can't be found one character at a time. */
+function codeMatches(given: string, expected: string): boolean {
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+function signDeviceToken(): string {
+  const payload = Buffer.from(
+    JSON.stringify({ k: 'device', exp: Date.now() + DEVICE_TOKEN_TTL_MS })
+  ).toString('base64url');
+  const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
+}
+
+function verifyDeviceToken(token: string): boolean {
+  try {
+    const [payload, sig] = String(token).split('.');
+    if (!payload || !sig) return false;
+    const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
+    const a = Buffer.from(sig);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return false;
+    const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
+    return claims.k === 'device' && claims.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
 
 const LOCAL_DATA_DIR = path.join(process.cwd(), 'data');
 const LOCAL_DATA_FILE = path.join(LOCAL_DATA_DIR, 'local-inventory.json');
@@ -177,11 +226,20 @@ const authenticate = async (req: any, res: any, next: any) => {
 
   const idToken = authHeader.split('Bearer ')[1];
 
-  // Explicit demo / local tokens from the frontend offline login
+  // A signed device token, issued by POST /api/auth/device in exchange for the
+  // inspector access code.
+  if (ACCESS_CODE && verifyDeviceToken(idToken)) {
+    req.user = { uid: 'device', email: 'device@truinspect.local', local: true };
+    return next();
+  }
+
+  // Explicit demo / local tokens from the frontend offline login. These are an
+  // unconditional way in, so they only survive while no access code is
+  // configured — i.e. local development. With one set, `Bearer demo` is just a
+  // wrong token.
   if (
-    idToken === 'local-demo-token' ||
-    idToken === 'demo' ||
-    idToken.startsWith('local-')
+    !ACCESS_CODE &&
+    (idToken === 'local-demo-token' || idToken === 'demo' || idToken.startsWith('local-'))
   ) {
     req.user = { uid: 'local-demo-user', email: 'demo@trulens.local', local: true };
     return next();
@@ -206,8 +264,11 @@ const authenticate = async (req: any, res: any, next: any) => {
     }
   }
 
-  // Local PC: accept any Bearer JWT and extract uid, or use demo user
-  if (LOCAL_MODE) {
+  // Local PC: accept any Bearer JWT and extract uid, or use demo user.
+  // LOCAL_MODE is on in production too (there is no Firestore there), so this
+  // branch accepted ANY bearer string — it has to close as soon as an access
+  // code exists, or configuring one would change nothing.
+  if (LOCAL_MODE && !ACCESS_CODE) {
     const payload = decodeJwtPayload(idToken);
     req.user = {
       uid: payload?.user_id || payload?.sub || payload?.uid || 'local-demo-user',
@@ -308,11 +369,30 @@ async function deleteVehicle(id: string): Promise<boolean> {
 
 // Health / mode check (no auth) + keep-alive pings
 const STARTED_AT = Date.now();
+/**
+ * Exchange the inspector access code for a signed device token.
+ * Mirrors TruLens's /api/auth/device so both yard apps sign in the same way.
+ */
+app.post('/api/auth/device', (req, res) => {
+  if (!ACCESS_CODE) {
+    return res.status(503).json({ error: 'No access code configured on this server.' });
+  }
+  const given = String(req.body?.code || '');
+  if (!codeMatches(given, ACCESS_CODE)) {
+    return res.status(401).json({ error: 'That code is not recognised.' });
+  }
+  res.json({ token: signDeviceToken(), expiresInDays: 30 });
+});
+
 app.get('/api/health', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.json({
     ok: true,
     product: 'truinspect',
+    // A boolean, never the value — lets you confirm from outside that the env
+    // var reached the process, which is otherwise invisible until someone
+    // tries a bypass and gets in.
+    accessCodeConfigured: !!ACCESS_CODE,
     mode: LOCAL_MODE ? 'local' : 'cloud',
     dmsUrl: DEFAULT_DMS_URL,
     port: PORT,

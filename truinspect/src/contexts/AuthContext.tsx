@@ -3,6 +3,9 @@ import { onAuthStateChanged, signOut as firebaseSignOut, User } from 'firebase/a
 import { auth } from '../lib/firebase';
 
 const DEMO_KEY = 'trulens_demo_session';
+/* The signed device token from POST /api/auth/device. Held here rather than in
+   memory so an installed PWA stays signed in for the month the token lasts. */
+const DEVICE_TOKEN_KEY = 'truinspect_device_token';
 
 /** Minimal User-like object for offline / PC demo mode */
 export function createDemoUser(): User {
@@ -20,10 +23,12 @@ export function createDemoUser(): User {
     refreshToken: '',
     tenantId: null,
     delete: async () => {},
-    getIdToken: async () => 'local-demo-token',
+    /* Falls back to the legacy literal only while no access code is set on the
+       server — with one configured that string is simply a wrong token. */
+    getIdToken: async () => localStorage.getItem(DEVICE_TOKEN_KEY) || 'local-demo-token',
     getIdTokenResult: async () =>
       ({
-        token: 'local-demo-token',
+        token: localStorage.getItem(DEVICE_TOKEN_KEY) || 'local-demo-token',
         claims: { uid: 'local-demo-user' },
         authTime: new Date().toISOString(),
         issuedAtTime: new Date().toISOString(),
@@ -41,6 +46,7 @@ interface AuthContextType {
   loading: boolean;
   isDemo: boolean;
   enterDemoMode: () => void;
+  signInWithCode: (code: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -49,6 +55,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isDemo: false,
   enterDemoMode: () => {},
+  signInWithCode: async () => {},
   signOut: async () => {},
 });
 
@@ -66,8 +73,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   };
 
+  /** Swap the inspector access code for a signed device token. */
+  const signInWithCode = async (code: string) => {
+    const res = await fetch('/api/auth/device', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || 'Could not sign in on this device.');
+    localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
+    // Reuses the offline session shape — the difference is the token it now
+    // carries, which is the thing the server actually checks.
+    enterDemoMode();
+  };
+
   const signOut = async () => {
     localStorage.removeItem(DEMO_KEY);
+    localStorage.removeItem(DEVICE_TOKEN_KEY);
     setIsDemo(false);
     setUser(null);
     try {
@@ -101,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, isDemo, enterDemoMode, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isDemo, enterDemoMode, signInWithCode, signOut }}>
       {!loading && children}
     </AuthContext.Provider>
   );
