@@ -129,6 +129,18 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
+  const exportHtml = () => {
+    const el = reportRef.current;
+    if (!el) return;
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TruLens Report · ${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.stockNumber || ''}</title><style>*{box-sizing:border-box}body{margin:0;background:#F1F5F9;padding:16px;overflow-x:hidden}</style></head><body>${el.outerHTML}</body></html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `TruLens_Report_${vehicle.stockNumber || 'draft'}.html`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  };
+
   const runPdf = async () => {
     const el = reportRef.current;
     if (!el) return;
@@ -276,6 +288,9 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 Open 3D
               </button>
             )}
+            <button onClick={exportHtml} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
+              <FileText size={12} /> HTML
+            </button>
             <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
@@ -315,35 +330,45 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report {
               width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0B0F17;
               font-family: Inter, system-ui, sans-serif; border-radius: 12px; overflow: hidden;
+              box-sizing: border-box;
             }
-            .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; }
-            .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; }
-            .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; }
-            .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; }
+            .tl-report *, .tl-report *::before, .tl-report *::after { box-sizing: border-box; }
+            .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; overflow:hidden; }
+            .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
+            .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; min-width:0; }
+            .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; overflow-wrap:break-word; }
             .tl-report .subhead { font-size:13px; color:rgba(248,250,252,.72); margin-bottom:18px; }
             .tl-report .score-strip { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-            .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; }
-            .tl-report .score-ring { width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+            .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; min-width:0; }
+            .tl-report .score-ring { width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
             .tl-report .vehicle-facts { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
             .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
-            .tl-report .vehicle-facts .v { font-weight:700; font-size:13px; margin-top:2px; }
-            .tl-report section { padding: 12mm 16mm; }
+            .tl-report .vehicle-facts .v { font-weight:700; font-size:13px; margin-top:2px; overflow-wrap:break-word; word-break:break-all; }
+            .tl-report section { padding: 12mm 16mm; overflow:hidden; }
             .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
             .tl-report .grades { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
-            .tl-report .grade { border:1px solid #E8EAE6; border-radius:12px; padding:12px 8px; text-align:center; }
+            @media (max-width:600px) {
+              .tl-report .grades { grid-template-columns:repeat(3,1fr); }
+              .tl-report .score-strip { grid-template-columns:1fr; }
+              .tl-report .cover { padding: 10mm 5mm 8mm; }
+              .tl-report section { padding: 8mm 5mm; }
+              .tl-report .foot { padding: 14px 5mm; }
+              .tl-report .photo-grid { grid-template-columns:1fr 1fr; }
+            }
+            .tl-report .grade { border:1px solid #E8EAE6; border-radius:12px; padding:12px 8px; text-align:center; overflow:hidden; }
             .tl-report .grade .v { font-weight:800; font-size:22px; }
             .tl-report .grade .n { font-size:10px; color:#475569; margin-top:6px; font-weight:600; }
-            .tl-report .finding { background:#FEF3C7; border-left:4px solid #F59E0B; border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; }
+            .tl-report .finding { background:#FEF3C7; border-left:4px solid #F59E0B; border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; overflow-wrap:break-word; }
             .tl-report .finding .h { font-size:10px; letter-spacing:.1em; color:#B45309; font-family:ui-monospace,monospace; }
             .tl-report .finding .l { font-size:12.5px; color:#78350F; margin-top:4px; font-weight:500; }
             .tl-report .no-issues { background:#DCFCE7; border-left:4px solid #22C55E; border-radius:0 10px 10px 0; padding:12px 14px; color:#166534; font-weight:600; font-size:13px; }
-            .tl-report .damage-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-            .tl-report .photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+            .tl-report .damage-grid, .tl-report .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+            .tl-report .photo-grid { grid-template-columns:repeat(3,1fr); }
             .tl-report .damage-card, .tl-report .photo-tile { border:1px solid #E8EAE6; border-radius:12px; overflow:hidden; }
             .tl-report .damage-card img, .tl-report .photo-tile img { width:100%; height:auto; max-height:150px; object-fit:cover; display:block; }
-            .tl-report .cap { padding:8px 10px; font-size:11px; }
-            .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; }
-            .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; }
+            .tl-report .cap { padding:8px 10px; font-size:11px; overflow-wrap:break-word; }
+            .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; table-layout:fixed; }
+            .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; overflow-wrap:break-word; }
             .tl-report .checklist th { font-size:9px; letter-spacing:.1em; color:#475569; }
             .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; letter-spacing:.08em; font-family:ui-monospace,monospace; }
             .tl-report .damage-pin { position:absolute; width:20px; height:20px; border-radius:50%; border:2px solid #fff; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#fff; box-shadow:0 1px 4px rgba(0,0,0,.4); }
