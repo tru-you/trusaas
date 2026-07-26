@@ -1094,7 +1094,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
                 key={slot.id}
                 type="button"
                 onClick={() => setSelectedSlotId(slot.id)}
-                className={`slot-state px-3 py-2 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-2 transition-all ${
+                /* shrink-0 is load-bearing: the row is overflow-x-auto, but flex children
+                   shrink by default, so without it the chips compressed instead of
+                   scrolling — and whitespace-nowrap then pushed each label out of its
+                   own box and onto the next chip. */
+                className={`slot-state shrink-0 px-3 py-2 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-2 transition-all ${
                   isSelected
                     ? 'slot-state--active'
                     : isTaken

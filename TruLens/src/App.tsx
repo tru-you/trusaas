@@ -104,6 +104,10 @@ export default function App() {
   
   // Sync status state
   const [syncStatus, setSyncStatus] = React.useState<'synced' | 'syncing' | 'error'>('synced');
+  /* Why the last save failed, in words. syncStatus alone only ever said "error"
+     somewhere in the chrome, which is not enough to act on when the shot you
+     just took has silently disappeared. */
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
 
   // Load inventory from server
   const fetchInventory = async () => {
@@ -347,6 +351,7 @@ export default function App() {
     const targetSlot = slotId || activeSlotId;
     if (!activeVehicleId || !targetSlot || !user) return;
     setSyncStatus('syncing');
+    setUploadError(null);
 
     try {
       const token = await user.getIdToken();
@@ -378,11 +383,25 @@ export default function App() {
         setActiveSlotId(null);
         setActiveQualityReport(null);
       } else {
+        /* Say what went wrong. This used to set an error flag and nothing else,
+           while the caller had already cleared the pending shot — so a failed
+           save looked exactly like a successful one: the clip vanished, the app
+           carried on, and the only way to discover the loss was to read the
+           dealer's public feed days later. A 360 walkaround is ~20MB against
+           ~60KB for a still, so it is the one that hits a size ceiling, and a
+           desktop webcam can ignore the bitrate hint and record far larger. */
         setSyncStatus('error');
+        const sizeMb = Math.round(processedImage.length / 1024 / 1024);
+        setUploadError(
+          res.status === 413 || sizeMb > 45
+            ? `That clip is ${sizeMb}MB — too large to save. Record a shorter walkaround (under 20 seconds) and keep it again.`
+            : `Could not save that ${processedImage.startsWith('data:video') ? 'walkaround' : 'photo'} (server said ${res.status}). It has NOT been kept — try again.`,
+        );
       }
     } catch (e) {
       console.error('Failed to upload photo:', e);
       setSyncStatus('error');
+      setUploadError('Could not reach the server to save that shot. It has NOT been kept — check signal and try again.');
     }
   };
 
@@ -495,6 +514,24 @@ export default function App() {
                     onClick={() => { setLoadError(null); fetchInventory(); }}
                   >
                     Retry
+                  </button>
+                </div>
+              )}
+              {/* A failed save has to be seen. The pending shot is already gone
+                  by the time this renders, so without it the loss is invisible
+                  and the dealer keeps shooting into a void. */}
+              {uploadError && (
+                <div
+                  role="alert"
+                  className="mb-3 rounded-xl border border-[#B86A6A]/40 bg-[#B86A6A]/[0.12] px-4 py-3 flex items-start gap-3"
+                >
+                  <p className="text-[13px] text-[#DFB6B6] leading-snug flex-1">{uploadError}</p>
+                  <button
+                    type="button"
+                    onClick={() => setUploadError(null)}
+                    className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] shrink-0"
+                  >
+                    Dismiss
                   </button>
                 </div>
               )}
