@@ -2100,25 +2100,26 @@ function isJunkPublicVehicle(v: any): boolean {
   return false;
 }
 
-// Slugs that intentionally see the FULL cross-dealer catalogue (the True-Cars
-// consumer showroom aggregates every dealer on this instance — not a leak).
-/* Only the True-Cars consumer showroom aggregates every dealer. "demo" used to
-   be in here too, which meant ?dealer=demo returned every dealership's stock in
-   one public response under a guessable slug — a real leak once there is more
-   than one dealer. It is now an isolated tenant like any other. */
-const AGGREGATE_SLUGS = new Set(["true-cars"]);
+/* There is no cross-dealer view any more.
+ *
+ * "true-cars" used to aggregate every dealership on the instance for the
+ * consumer showroom. With one demo dealer that was harmless; with real clients
+ * on the box it published their stock — MKR's and Cars on Caledon's cars were
+ * being served, unauthenticated, under a guessable slug, to anyone who asked.
+ * "demo" had already been removed from the same set for the same reason.
+ *
+ * Every slug is now a single tenant, so the only way onto a public feed is to
+ * be the dealership that owns the car. The showroom gets its stock by being a
+ * dealership like any other. */
 
 function buildPublicStock(state: any, dealerSlug: string, source: string) {
-  // A named single-dealer site must only ever see ITS OWN stock. A slug with
-  // no mapping and not an aggregate view gets an empty result rather than
-  // leaking another dealer's inventory (was previously returning everything
-  // to everyone regardless of the ?dealer= value).
+  // A named single-dealer site must only ever see ITS OWN stock. A slug with no
+  // mapping gets an empty result rather than leaking another dealer's inventory
+  // (this once returned everything to everyone regardless of ?dealer=).
   const wantedId = dealerIdForSlug(dealerSlug, state);
   const rawVehicles = state.vehicles || [];
   const scoped = wantedId
     ? rawVehicles.filter((v: any) => (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId)
-    : AGGREGATE_SLUGS.has(dealerSlug)
-    ? rawVehicles
     : [];
   const vehicles = scoped
     .map((v: any) => toPublicVehicle(v, source))
@@ -2157,16 +2158,21 @@ app.get("/api/public/stock", (req, res) => {
    PE-1042, DEMO-100 — so any dealer's vehicle could be read by anyone who
    guessed one. */
 app.get("/api/feed/vehicle/:stockNumber", (req, res) => {
+  /* `state` was read AFTER being passed to dealerIdForSlug — a const in its
+     temporal dead zone, so every single call threw and this route answered 500
+     in production rather than the 400/404/200 it looks like it returns. Read it
+     first. */
+  const state = readState();
   const dealerSlug = String(req.query.dealer || "");
   const wantedId = dealerIdForSlug(dealerSlug, state);
-  if (!wantedId && !AGGREGATE_SLUGS.has(dealerSlug)) {
+  // No aggregate escape hatch any more: an unknown slug is refused outright.
+  if (!wantedId) {
     return res.status(400).json({ error: "A known ?dealer= is required." });
   }
 
-  const state = readState();
   const v = state.vehicles.find(
     (v: any) =>
-      (!wantedId || (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId) &&
+      (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId &&
       (v.stockNumber === req.params.stockNumber || v.id === req.params.stockNumber)
   );
   if (!v) return res.status(404).json({ error: "Vehicle not found" });
