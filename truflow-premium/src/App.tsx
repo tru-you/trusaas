@@ -95,7 +95,6 @@ import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
 import LoginSplash from "./components/LoginSplash";
 import { hasValidSession, clearSession, getAccount, SESSION_EXPIRED_EVENT } from "./lib/session";
-import DemoBanner from "./components/DemoBanner";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
   PRODUCT_NAME,
@@ -224,10 +223,51 @@ function ageBand(days: number) {
 /** A flat segmented filter — replaces the row of rounded <select> boxes, which
  *  hid their options behind a click and gave no sense of what was set. Here the
  *  choices are visible and the active one reads in the accent. */
+/**
+ * The add-vehicle form.
+ *
+ * fuelType and transmission were `as any` in the useState initialiser, which
+ * switched off checking for the two fields most likely to be typo'd — every
+ * <option> already emits exactly the values Vehicle allows, so the cast was
+ * hiding nothing but itself.
+ *
+ * category is the form's own type, not Vehicle's: the select offers an "Auto —
+ * decide from price & model" choice whose value is "", and Vehicle has no such
+ * member. "" is translated to undefined at the API boundary rather than being
+ * sent as an empty string the website would have to special-case.
+ */
+type NewVehicleForm = {
+  year: number;
+  make: string;
+  model: string;
+  trim: string;
+  engine: string;
+  fuelType: Vehicle["fuelType"];
+  transmission: Vehicle["transmission"];
+  bodyType: string;
+  retailPrice: number;
+  costPrice: number;
+  mileage: number;
+  stockNumber: string;
+  description: string;
+  dealershipId: string;
+  category: NonNullable<Vehicle["category"]> | "";
+};
+
+/**
+ * NoInfer on options is what makes T come from `value`.
+ *
+ * Without it TypeScript infers T from both `value` and `options`, and the
+ * option literals widen to plain string — so T became string, and passing a
+ * setState for a narrow union like "ALL" | "NEEDS" | "PARTIAL" | "READY" was an
+ * error. The practical cost was worse than the error: with T widened, a typo in
+ * an option value type-checked fine and silently set a filter to a state the
+ * reducer never matches.
+ */
 function Segmented<T extends string>({ value, onChange, options }: {
   value: T;
-  onChange: (v: T) => void;
-  options: { value: T; label: string }[];
+  onChange: (v: NoInfer<T>) => void;
+  options: { value: NoInfer<T>; label: string }[];
 }) {
   return (
     <div className="inline-flex items-center rounded-lg border border-white/10 bg-[color:var(--ink-2)] p-0.5 gap-0.5">
@@ -236,7 +276,7 @@ function Segmented<T extends string>({ value, onChange, options }: {
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`px-3 py-1 rounded-md text-[13px] font-medium transition-colors cursor-pointer ${
+          className={`px-3 py-1 rounded-lg text-[13px] font-medium transition-colors cursor-pointer ${
             value === o.value
               ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]"
               : "text-[rgba(232,234,230,0.55)] hover:text-[color:var(--white)]"
@@ -312,6 +352,24 @@ export default function App() {
   const [selectedDetailVehicle, setSelectedDetailVehicle] = useState<Vehicle | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leadDetailId, setLeadDetailId] = useState<string | null>(null);
+
+  // The mobile drawer had no way out except picking a nav item: no scrim, no
+  // Escape, and the page kept scrolling underneath it (2 800px of dashboard
+  // sliding about behind a menu that looked modal). Escape closes it, and the
+  // body is pinned while it is open so the drawer is the only thing that moves.
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSidebarOpen(false); };
+    // Preserve whatever overflow the body already had rather than assuming
+    // it was the default — a modal opened over the drawer sets it too.
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [sidebarOpen]);
   // The view follows the logged-in account. This was a "simulated role
   // selector" pill that let anyone flip to Dealer Owner regardless of their
   // real login — a permissions hole now that seats are live. principal/admin
@@ -442,7 +500,7 @@ export default function App() {
   const [seatError, setSeatError] = useState("");
   /** A freshly issued code, shown once. Never fetched back from the server. */
   const [issuedCode, setIssuedCode] = useState<{ name: string; code: string } | null>(null);
-  const [newVehicleForm, setNewVehicleForm] = useState({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel" as any, transmission: "Automatic" as any, bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: "d1", category: "" });
+  const [newVehicleForm, setNewVehicleForm] = useState<NewVehicleForm>({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel", transmission: "Automatic", bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: "d1", category: "" });
 
   const [vinInput, setVinInput] = useState("");
   const [vinDecoding, setVinDecoding] = useState(false);
@@ -562,15 +620,38 @@ export default function App() {
 
   const activeVehiclesCount = state.vehicles.filter((v) => v.status !== "SOLD").length;
   const unresolvedLeadsCount = state.leads.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost").length;
-  const mockDailySummary = {
-    visits: 51,
-    uniqueVisitors: 48,
-    actions: 57,
-    actionsPerVisit: 1.1,
-    avgVisitDuration: "3s",
-    bounceRate: "94%",
-    maxActions: 4
-  };
+  /**
+   * Stock that cannot sell yet, because it isn't online.
+   *
+   * This replaced a "Website analytics" card of hardcoded numbers (51 visits,
+   * 94% bounce) that were never wired to anything. A car in stock with no
+   * photos is dead capital — it is paying floorplan and cannot be shopped —
+   * and nothing in the app put that number in front of the dealer daily.
+   * Stock health already owns the money view; this owns the "why isn't it
+   * moving" view, and every figure comes from the same readiness helper the
+   * Stock media page scores each vehicle with.
+   */
+  const notOnline = (() => {
+    const inStock = filteredVehicles.filter((v) => v.status !== "SOLD");
+    const graded = inStock.map((v) => ({ v, r: computeDmsGalleryReadiness(v as any) }));
+    const noPhotos = graded.filter((g) => g.r.level === "capture");
+    const incomplete = graded.filter((g) => g.r.level === "partial");
+    const blocked = [...noPhotos, ...incomplete];
+    // Worst offender by age, because "4 cars need photos" is a chore whereas
+    // "one has been sitting 34 days" is a decision.
+    const oldest = blocked.reduce<(typeof blocked)[number] | null>(
+      (worst, g) => (!worst || (g.v.daysInInventory || 0) > (worst.v.daysInInventory || 0) ? g : worst),
+      null,
+    );
+    return {
+      inStock: inStock.length,
+      blocked: blocked.length,
+      noPhotos: noPhotos.length,
+      incomplete: incomplete.length,
+      ready: graded.filter((g) => g.r.webReady).length,
+      oldest,
+    };
+  })();
 
   const soldUnitsCount = state.vehicles.filter((v) => v.status === "SOLD").length;
   const totalRevenue = state.invoices.filter((i) => i.status === "Paid").reduce((sum, i) => sum + i.amount, 0);
@@ -972,13 +1053,19 @@ export default function App() {
   const handlePublishVehicle = async (e: React.FormEvent) => {
     e.preventDefault();
     // Metadata only — gallery comes from TruLens Export to DMS
+    const { category, ...vehicleFields } = newVehicleForm;
     await createVehicle({
-      ...newVehicleForm,
-      images: [],
-      damagePhotos: [],
-      vinPhotos: [],
-      serviceBookPhotos: [],
-      extrasPhotos: [],
+      ...vehicleFields,
+      // "" is the form's "Auto" choice, not a category. Sending it would put an
+      // empty string on the record and leave the website matching against a
+      // tier that doesn't exist; omitting the key lets it fall back to guessing
+      // from price and model, which is what "Auto" promises.
+      ...(category ? { category } : {}),
+      images: [] as string[],
+      damagePhotos: [] as string[],
+      vinPhotos: [] as string[],
+      serviceBookPhotos: [] as string[],
+      extrasPhotos: [] as string[],
     });
     const stock = newVehicleForm.stockNumber;
     addNotification(
@@ -1002,6 +1089,10 @@ export default function App() {
       stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000),
       description: "Immaculate condition. Full service history. Active info display cockpit.",
       dealershipId: "d1",
+      // Was missing, so after publishing a car the form kept the previous
+      // showroom tier while the select showed "Auto" — the next vehicle
+      // silently inherited it.
+      category: "",
     });
     loadAllState();
     if (confirm("Stock created. Open TruLens now to shoot this unit?")) {
@@ -1050,16 +1141,36 @@ export default function App() {
       <LoginSplash onLogin={handleLogin} />
     ) : (
       <div className="min-h-screen bg-[color:var(--ink)] text-[color:var(--white)] flex relative select-none perspective-scene">
-        <DemoBanner productName={PRODUCT_NAME} />
         {/* Scroll indicator */}
         <div className="scroll-progress transition-transform" />
 
       {/* Grid Pattern overlays */}
       <div className="bg-grid" />
 
+      {/* Scrim. The drawer is a fixed panel over the page, so without something
+          behind it the dashboard stayed lit, tappable and scrolling — and the
+          only way to dismiss the menu was to navigate somewhere. Tapping off it
+          is the gesture everyone tries first. md:hidden because from 768px the
+          sidebar is permanent and has nothing to dismiss. */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-[170] bg-black/60 backdrop-blur-[2px] md:hidden animate-in fade-in duration-200"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar - Desktop & Mobile Drawer */}
       <aside
-        className={`glass-sidebar fixed left-0 top-0 bottom-0 w-[240px] p-5 flex flex-col z-[180] transition-transform duration-300 md:translate-x-0 ${
+        /* aria-hidden when closed so a screen reader doesn't read out ten nav
+           items that are parked off-screen. */
+        aria-hidden={!sidebarOpen && typeof window !== "undefined" && window.innerWidth < 768}
+        style={{
+          paddingTop: "calc(1.25rem + var(--safe-t))",
+          paddingBottom: "calc(1.25rem + var(--safe-b))",
+          paddingLeft: "calc(1.25rem + var(--safe-l))",
+        }}
+        className={`glass-sidebar fixed left-0 top-0 bottom-0 w-[240px] pr-5 flex flex-col z-[180] transition-transform duration-300 md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -1143,7 +1254,15 @@ export default function App() {
       {/* Main Panel */}
       <main className="flex-1 md:ml-[240px] min-h-screen px-4 py-6 md:px-8 md:py-8 z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
         {/* Top Profile Bar - Hidden on mobile */}
-        <div className="hidden md:flex justify-between items-center gap-4 border-b border-white/5 pb-4">
+        {/* The top bar was a row of pills on a hairline with nothing behind it,
+            so it read as the first row of content rather than as chrome. It now
+            uses the same surface vocabulary as .card — ink-2, a lit top
+            hairline, one soft shadow — and sticks, which also keeps the three
+            counters reachable instead of only true at the top of the page.
+            Inset rather than full-bleed on purpose: negative margins to reach
+            the page edge would push past main's max-width and introduce a
+            horizontal scrollbar at wide viewports. */}
+        <div className="hidden md:flex justify-between items-center gap-4 sticky top-3 z-[60] rounded-xl px-4 py-2.5 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]">
            {/* Morning strip — the floor at a glance, on every screen. Only the
                unanswered-lead figure is allowed to go red; if everything shouts,
                nothing does. */}
@@ -1218,35 +1337,84 @@ export default function App() {
            </div>
         </div>
 
-        {/* Mobile Header Bar & Role Selector */}
-        <div className="flex flex-col gap-2 md:hidden border-b border-white/5 pb-3">
-          <div className="flex justify-between items-center">
+        {/* Mobile Header Bar */}
+        {/* Same treatment on the phone. top offset clears the notch on an
+            installed PWA and falls back to 0.5rem everywhere else. */}
+        <div
+          style={{ top: "calc(0.5rem + var(--safe-t))" }}
+          className="flex flex-col gap-3 md:hidden sticky z-[60] rounded-xl px-3 py-2.5 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]"
+        >
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="text-[color:var(--white)] p-2 hover:bg-white/5 rounded-lg cursor-pointer"
+              aria-label="Open menu"
+              aria-expanded={sidebarOpen}
+              className="text-[color:var(--white)] h-11 w-11 shrink-0 grid place-items-center hover:bg-white/5 rounded-lg cursor-pointer"
             >
               <Menu size={20} />
             </button>
-            <img src={logo} alt="TruFlow Premium" className="h-9 w-auto max-w-[180px] object-contain logo-float" />
+            <img src={logo} alt="TruFlow Premium" className="h-9 w-auto max-w-[150px] object-contain logo-float" />
             {/* The desktop top bar is hidden on mobile, so the assistant needs
-                its own way in here or phone users lose it entirely. */}
+                its own way in here or phone users lose it entirely.
+                Log out used to sit here too — four controls on a 390px row left
+                the logo 90px and both pills under the 44px touch floor. It is
+                already the last item in the drawer, which is where a
+                once-a-day action belongs. */}
             <button
               type="button"
               onClick={() => setAssistOpen(true)}
-              className="flex items-center gap-1 h-8 px-3 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] cursor-pointer text-[13px] font-semibold ml-auto mr-2"
+              className="flex items-center gap-1.5 h-11 px-4 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] cursor-pointer text-[13px] font-semibold ml-auto shrink-0"
               title="Ask Dealer Assist"
             >
               <Sparkles size={14} />
               Assist
             </button>
+          </div>
+
+          {/* The morning strip, which was desktop-only. These three counts are
+              the most glanceable thing in the app and a phone is exactly where
+              someone checks them — walking the floor, not at the desk. Scrolls
+              sideways rather than wrapping so the row stays one line deep. */}
+          {/* -mx/px match the bar's own padding so the row scrolls edge to edge
+              without escaping its rounded border. */}
+          <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               type="button"
-              onClick={handleLogout}
-              className="flex items-center gap-1 h-8 px-3 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] cursor-pointer text-[13px] font-bold "
-              title="Log out"
+              onClick={() => navigateTo("leads")}
+              className="flex items-center gap-2 h-10 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[13px] shrink-0"
+              title="Leads that have never been replied to"
             >
-              <LogOut size={14} />
-              Out
+              <MessageSquare size={14} />
+              <span className="font-semibold">{awaitingReply.length}</span>
+              <span>waiting</span>
+              {awaitingReply.length > 0 && (
+                <span className="opacity-70">· {formatWait(oldestWaitMs)}</span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigateTo("tasks")}
+              className="flex items-center gap-2 h-10 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[13px] shrink-0"
+              title="Promised for today, and anything already past its date"
+            >
+              <CalendarClock size={14} />
+              <span className="font-semibold">{dueTodayCount}</span>
+              <span>due today</span>
+              {overdueCount > 0 && (
+                <span className="text-[color:var(--muted)] font-semibold">· {overdueCount} late</span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigateTo("inventory")}
+              className="flex items-center gap-2 h-10 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[13px] shrink-0"
+              title="Sold, not yet handed over"
+            >
+              <Car size={14} />
+              <span className="font-semibold">{inPrepCount}</span>
+              <span>going out</span>
             </button>
           </div>
         </div>
@@ -1292,16 +1460,16 @@ export default function App() {
                 onClick={() => navigateTo("leads")}
                 className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
               >
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Needs a reply</div>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Needs a reply</div>
                 <div
-                  className={`text-2xl font-serif font-semibold mt-1 ${
+                  className={`text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] mt-1 ${
                     replyIsLate ? "text-[color:var(--white)]" : "text-[color:var(--muted)]"
                   }`}
                 >
                   <Counter value={awaitingReply.length} />
                 </div>
                 <div
-                  className={`text-[13px] font-semibold mt-1 ${
+                  className={`text-[13px] font-normal mt-1 ${
                     replyIsLate ? "text-[color:var(--white-dim)]" : "text-[color:var(--muted)]"
                   }`}
                 >
@@ -1314,17 +1482,17 @@ export default function App() {
                 onClick={() => navigateTo("inventory")}
                 className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
               >
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Cars in stock</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
-                <div className="text-[13px] font-semibold mt-1 text-[rgba(232,234,230,0.55)]">
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cars in stock</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
+                <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
                   {agedStockCount > 0
                     ? `${agedStockCount} over ${AGED_DAYS} days`
                     : `None over ${AGED_DAYS} days`}
                 </div>
               </button>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Units sold</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1"><Counter value={soldUnitsCount} /></div>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Units sold</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={soldUnitsCount} /></div>
                 <div className="text-[13px] text-[rgba(232,234,230,0.55)] font-semibold mt-1">
                   {activeVehiclesCount + soldUnitsCount > 0
                     ? `${Math.round((soldUnitsCount / (activeVehiclesCount + soldUnitsCount)) * 100)}% of the floor moved`
@@ -1332,9 +1500,9 @@ export default function App() {
                 </div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Banked</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--cyan-bright)] mt-1"><Counter value={totalRevenue} prefix="R " /></div>
-                <div className="text-[13px] font-semibold mt-1 text-[rgba(232,234,230,0.55)]">
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Banked</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--cyan-bright)] mt-1"><Counter value={totalRevenue} prefix="R " /></div>
+                <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
                   {outstandingRevenue > 0
                     ? `R${outstandingRevenue.toLocaleString("en-ZA")} still owed`
                     : "Nothing outstanding"}
@@ -1366,32 +1534,73 @@ export default function App() {
               </div>
             )}
 
-            {/* Daily Analytics — sample until live site analytics connected */}
-            <div className="card p-6">
+            {/* Stock that can't sell yet — see the notOnline note above. */}
+            <div className="card p-5 md:p-6">
               <div className="flex items-center justify-between mb-4 gap-2">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Website analytics</div>
-                <span className="text-[13px] font-semibold tracking-normal px-2 py-0.5 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)]">
-                  Sample / demo data
-                </span>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">
+                  Not online yet
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigateTo("media_web")}
+                  className="btn btn-secondary btn-sm shrink-0"
+                >
+                  Stock media
+                </button>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                 <div className="bg-[color:var(--glass)] rounded-lg p-3">
-                   <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Visits</div>
-                   <div className="text-lg font-bold text-[color:var(--white)]">{mockDailySummary.visits}</div>
-                 </div>
-                 <div className="bg-[color:var(--glass)] rounded-lg p-3">
-                   <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Unique Visitors</div>
-                   <div className="text-lg font-bold text-[color:var(--white)]">{mockDailySummary.uniqueVisitors}</div>
-                 </div>
-                 <div className="bg-[color:var(--glass)] rounded-lg p-3">
-                   <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Avg Duration</div>
-                   <div className="text-lg font-bold text-[color:var(--white)]">{mockDailySummary.avgVisitDuration}</div>
-                 </div>
-                 <div className="bg-[color:var(--glass)] rounded-lg p-3">
-                   <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Bounce Rate</div>
-                   <div className="text-lg font-bold text-[color:var(--white)]">{mockDailySummary.bounceRate}</div>
-                 </div>
-              </div>
+
+              {notOnline.blocked === 0 ? (
+                /* An all-clear is worth stating plainly — a card that vanishes
+                   when there is nothing wrong just reads as broken. */
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                  {notOnline.inStock > 0 ? (
+                    <>
+                      All <span className="text-[color:var(--cyan)] font-semibold">{notOnline.inStock}</span>{" "}
+                      {notOnline.inStock === 1 ? "car" : "cars"} in stock {notOnline.inStock === 1 ? "has" : "have"} a
+                      web-ready gallery.
+                    </>
+                  ) : (
+                    "No cars in stock."
+                  )}
+                </p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                    <span className="text-[38px] leading-none font-semibold tracking-[-0.022em] text-[color:var(--white)]">
+                      {notOnline.blocked}
+                    </span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                      of {notOnline.inStock} in stock can&apos;t be shopped yet
+                    </span>
+                  </div>
+
+                  {/* Two states, not a five-colour ramp: nothing shot at all, and
+                      shot but short of a full gallery. */}
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg p-3">
+                      <div className="text-[13px] text-[rgba(232,234,230,0.72)]">No photos</div>
+                      <div className="text-lg font-semibold text-[color:var(--white)]">{notOnline.noPhotos}</div>
+                    </div>
+                    <div className="bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg p-3">
+                      <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Gallery short</div>
+                      <div className="text-lg font-semibold text-[color:var(--white)]">{notOnline.incomplete}</div>
+                    </div>
+                  </div>
+
+                  {notOnline.oldest && (
+                    <p className="text-[13px] text-[color:var(--muted)]">
+                      Longest waiting:{" "}
+                      <span className="text-[color:var(--white-dim)]">
+                        {notOnline.oldest.v.year} {notOnline.oldest.v.make} {notOnline.oldest.v.model}
+                      </span>
+                      {typeof notOnline.oldest.v.daysInInventory === "number" && (
+                        <> — {notOnline.oldest.v.daysInInventory} days in stock</>
+                      )}
+                      {notOnline.ready > 0 && <> · {notOnline.ready} web-ready</>}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Featured Catalog list */}
@@ -1442,15 +1651,15 @@ export default function App() {
                 </button>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-[13px] text-left border-collapse min-w-[600px]">
+                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[600px]">
                   <thead>
                     <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-bold">Prospect</th>
-                      <th className="py-3 px-4 font-bold">Model Focus</th>
-                      <th className="py-3 px-4 font-bold">Channel</th>
-                      <th className="py-3 px-4 font-bold">Stage Status</th>
-                      <th className="py-3 px-4 font-bold">Responsible Agent</th>
-                      <th className="py-3 px-4 font-bold text-right">Action</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Channel</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Stage</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Agent</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1460,18 +1669,18 @@ export default function App() {
                           {l.firstName} {l.lastName}
                           <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{l.phone}</span>
                         </td>
-                        <td className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
-                        <td className="py-3 px-4">
+                        <td data-label="Model" className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
+                        <td data-label="Channel" className="py-3 px-4">
                           <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-bold tracking-normal">
                             {l.source}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td data-label="Stage" className="py-3 px-4">
                           <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-bold tracking-normal">
                             {l.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
+                        <td data-label="Agent" className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setLeadDetailId(l.id)}
@@ -1499,25 +1708,25 @@ export default function App() {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Monthly Page Views</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1">12,847</div>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Monthly Page Views</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1">12,847</div>
                 <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">+24% traffic growth</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Filter views</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1">8,432</div>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Filter views</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1">8,432</div>
                 <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">+18% high-intent actions</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Lead Conversion Rate</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1">
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Lead Conversion Rate</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1">
                   {Math.round((state.leads.length / 8432) * 1000) / 10}%
                 </div>
                 <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Standard industry index</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Average View Time</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--white)] mt-1">2m 14s</div>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Average View Time</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1">2m 14s</div>
                 <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Normal retention</div>
               </div>
             </div>
@@ -1873,7 +2082,7 @@ export default function App() {
                     <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Showroom Category</label>
                     <select
                       value={newVehicleForm.category}
-                      onChange={(e) => setNewVehicleForm((p) => ({ ...p, category: e.target.value }))}
+                      onChange={(e) => setNewVehicleForm((p) => ({ ...p, category: e.target.value as NewVehicleForm["category"] }))}
                       className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                     >
                       <option value="">Auto — decide from price &amp; model</option>
@@ -1940,7 +2149,7 @@ export default function App() {
                         <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Transmission</label>
                         <select
                           value={newVehicleForm.transmission}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, transmission: e.target.value as any }))}
+                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, transmission: e.target.value as NewVehicleForm["transmission"] }))}
                           className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
                         >
                           <option className="bg-[color:var(--ink-2)]" value="Automatic">Automatic</option>
@@ -1951,7 +2160,7 @@ export default function App() {
                         <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Fuel Type</label>
                         <select
                           value={newVehicleForm.fuelType}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, fuelType: e.target.value as any }))}
+                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, fuelType: e.target.value as NewVehicleForm["fuelType"] }))}
                           className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
                         >
                           <option className="bg-[color:var(--ink-2)]" value="Diesel">Diesel</option>
@@ -2331,15 +2540,15 @@ export default function App() {
             ) : (
               <div className="card">
                 <div className="card-body p-0 overflow-x-auto">
-                  <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
+                  <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
                     <thead>
                       <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                        <th className="py-3 px-4 font-bold">Customer Name</th>
-                        <th className="py-3 px-4 font-bold">Focus Asset</th>
-                        <th className="py-3 px-4 font-bold">Origin</th>
-                        <th className="py-3 px-4 font-bold">CRM Status</th>
-                        <th className="py-3 px-4 font-bold">Agent assigned</th>
-                        <th className="py-3 px-4 font-bold text-right">Operation</th>
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Origin</th>
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Status</th>
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Agent</th>
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2351,18 +2560,18 @@ export default function App() {
                               {l.firstName} {l.lastName}
                               <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{l.phone} / {l.email}</span>
                             </td>
-                            <td className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
-                            <td className="py-3 px-4">
+                            <td data-label="Asset" className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
+                            <td data-label="Origin" className="py-3 px-4">
                               <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-bold tracking-normal">
                                 {l.source}
                               </span>
                             </td>
-                            <td className="py-3 px-4">
+                            <td data-label="Status" className="py-3 px-4">
                               <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-bold tracking-normal">
                                 {l.status}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
+                            <td data-label="Agent" className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
                             <td className="py-3 px-4 text-right flex justify-end gap-2">
                               {l.phone && (
                                 <button
@@ -2405,29 +2614,29 @@ export default function App() {
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Hot Targets</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--muted)] mt-1">
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Hot Targets</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--muted)] mt-1">
                   {state.leads.filter((l) => l.digitalScore >= 75).length}
                 </div>
                 <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">High purchase velocity</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Warm prospects</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--warning)] mt-1">
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Warm prospects</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--warning)] mt-1">
                   {state.leads.filter((l) => l.digitalScore >= 50 && l.digitalScore < 75).length}
                 </div>
                 <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Nurturing schedule</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Cold prospects</div>
-                <div className="text-2xl font-serif font-semibold text-[rgba(232,234,230,0.72)] mt-1">
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cold prospects</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[rgba(232,234,230,0.72)] mt-1">
                   {state.leads.filter((l) => l.digitalScore < 50).length}
                 </div>
                 <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Inactive page views</div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Average lead score</div>
-                <div className="text-2xl font-serif font-semibold text-[color:var(--cyan)] mt-1">
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Average lead score</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--cyan)] mt-1">
                   {Math.round(state.leads.reduce((sum, l) => sum + l.digitalScore, 0) / state.leads.length)}%
                 </div>
                 <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Very interested</div>
@@ -2440,15 +2649,15 @@ export default function App() {
                 <h3 className="font-semibold text-[16px]">Lead scores</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
+                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
                     <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-bold">Prospect</th>
-                      <th className="py-3 px-4 font-bold">Intent Score</th>
-                      <th className="py-3 px-4 font-bold">Rating Level</th>
-                      <th className="py-3 px-4 font-bold">Source</th>
-                      <th className="py-3 px-4 font-bold">Current Vehicle focus</th>
-                      <th className="py-3 px-4 font-bold text-right">Prioritization</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Score</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Rating</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Source</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right">Priority</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2458,16 +2667,16 @@ export default function App() {
                       return (
                         <tr key={l.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
                           <td className="py-3 px-4 font-semibold text-[color:var(--white)]">{l.firstName} {l.lastName}</td>
-                          <td className="py-3 px-4 font-mono font-bold text-[color:var(--cyan)] text-[16px]">{l.digitalScore}%</td>
-                          <td className="py-3 px-4">
+                          <td data-label="Intent score" className="py-3 px-4 font-mono font-bold text-[color:var(--cyan)] text-[16px]">{l.digitalScore}%</td>
+                          <td data-label="Rating" className="py-3 px-4">
                             <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                               hot ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : warm ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                             }`}>
                               {hot ? "Hot Target" : warm ? "Warm Prospect" : "Cold Prospect"}
                             </span>
                           </td>
-                          <td className="py-3 px-4">{l.source}</td>
-                          <td className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getVehicleLabel(l.vehicleId)}</td>
+                          <td data-label="Source" className="py-3 px-4">{l.source}</td>
+                          <td data-label="Vehicle" className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getVehicleLabel(l.vehicleId)}</td>
                           <td className="py-3 px-4 text-right">
                             <button
                               onClick={() => setLeadDetailId(l.id)}
@@ -2506,36 +2715,36 @@ export default function App() {
                 <h3 className="font-semibold text-[16px]">Invoices</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
+                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
                     <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-bold">Reference No</th>
-                      <th className="py-3 px-4 font-bold">Prospect Bill To</th>
-                      <th className="py-3 px-4 font-bold">Associated stock</th>
-                      <th className="py-3 px-4 font-bold">Total Amount</th>
-                      <th className="py-3 px-4 font-bold">Status</th>
-                      <th className="py-3 px-4 font-bold">Due Date</th>
-                      <th className="py-3 px-4 font-bold text-right">Operation</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Reference</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Total</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Status</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Due Date</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {state.invoices.map((inv) => (
                       <tr key={inv.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
                         <td className="py-3 px-4 font-mono font-bold text-[color:var(--white)]">{inv.invoiceNumber}</td>
-                        <td className="py-3 px-4 font-semibold">{getLeadLabel(inv.leadId)}</td>
-                        <td className="py-3 px-4">{getVehicleLabel(inv.vehicleId)}</td>
-                        <td className="py-3 px-4 font-mono font-bold text-[color:var(--cyan-bright)]">
+                        <td data-label="Bill to" className="py-3 px-4 font-semibold">{getLeadLabel(inv.leadId)}</td>
+                        <td data-label="Stock" className="py-3 px-4">{getVehicleLabel(inv.vehicleId)}</td>
+                        <td data-label="Total" className="py-3 px-4 font-mono font-bold text-[color:var(--cyan-bright)]">
                           {formatZAR(inv.amount + (inv.additionalCharges || 0))}
                           {inv.additionalCharges ? <span className="text-[13px] text-[rgba(232,234,230,0.72)] block">{inv.chargeDescription}</span> : null}
                         </td>
-                        <td className="py-3 px-4">
+                        <td data-label="Status" className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             inv.status === "Paid" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {inv.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-semibold">{inv.dueDate}</td>
+                        <td data-label="Due" className="py-3 px-4 font-semibold">{inv.dueDate}</td>
                         <td className="py-3 px-4 text-right flex justify-end gap-2">
                           <button
                             onClick={() => setActiveInvoiceId(inv.id)}
@@ -2592,27 +2801,27 @@ export default function App() {
                 <h3 className="font-semibold text-[16px]">Signed agreements</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
+                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
                     <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-bold">Agreement ID</th>
-                      <th className="py-3 px-4 font-bold">Contract classification</th>
-                      <th className="py-3 px-4 font-bold">Customer account</th>
-                      <th className="py-3 px-4 font-bold">Subject Stock</th>
-                      <th className="py-3 px-4 font-bold">Value</th>
-                      <th className="py-3 px-4 font-bold">Signature Status</th>
-                      <th className="py-3 px-4 text-right font-bold">Operation</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Agreement ID</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Type</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Value</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Signed</th>
+                      <th className="py-3 px-4 text-right font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {state.agreements.map((agr) => (
                       <tr key={agr.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
                         <td className="py-3 px-4 font-mono font-bold text-[color:var(--white)]">{agr.agreementNumber}</td>
-                        <td className="py-3 px-4 font-semibold">{agr.type}</td>
-                        <td className="py-3 px-4">{getLeadLabel(agr.leadId)}</td>
-                        <td className="py-3 px-4">{getVehicleLabel(agr.vehicleId)}</td>
-                        <td className="py-3 px-4 font-mono font-bold text-[color:var(--cyan-bright)]">{formatZAR(agr.purchasePrice)}</td>
-                        <td className="py-3 px-4">
+                        <td data-label="Type" className="py-3 px-4 font-semibold">{agr.type}</td>
+                        <td data-label="Customer" className="py-3 px-4">{getLeadLabel(agr.leadId)}</td>
+                        <td data-label="Stock" className="py-3 px-4">{getVehicleLabel(agr.vehicleId)}</td>
+                        <td data-label="Value" className="py-3 px-4 font-mono font-bold text-[color:var(--cyan-bright)]">{formatZAR(agr.purchasePrice)}</td>
+                        <td data-label="Signature" className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             agr.status === "Signed" || agr.status === "Completed" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--glass)] text-[color:var(--warning)]"
                           }`}>
@@ -2692,15 +2901,15 @@ export default function App() {
                 <h3 className="font-semibold text-[16px]">Showroom Tasks</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
+                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
                     <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-bold">Showroom Directive</th>
-                      <th className="py-3 px-4 font-bold">Priority</th>
-                      <th className="py-3 px-4 font-bold">Assigned Specialist</th>
-                      <th className="py-3 px-4 font-bold">Due Date</th>
-                      <th className="py-3 px-4 font-bold">Processing status</th>
-                      <th className="py-3 px-4 text-right font-bold">Operation</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Task</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Priority</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Assigned to</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Due Date</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Status</th>
+                      <th className="py-3 px-4 text-right font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2712,16 +2921,16 @@ export default function App() {
                             Focus: {getVehicleLabel(t.vehicleId || "")} / Lead: {getLeadLabel(t.leadId || "")}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td data-label="Priority" className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             t.priority === "Urgent" ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : t.priority === "High" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {t.priority}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getUserLabel(t.assignedUserId)}</td>
-                        <td className="py-3 px-4">{t.dueDate}</td>
-                        <td className="py-3 px-4">
+                        <td data-label="Assigned" className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getUserLabel(t.assignedUserId)}</td>
+                        <td data-label="Due" className="py-3 px-4">{t.dueDate}</td>
+                        <td data-label="Status" className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             t.status === "Completed" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
@@ -2862,30 +3071,30 @@ export default function App() {
                 <h3 className="font-semibold text-[16px]">System Access Roster</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
-                <table className="w-full text-[13px] text-left border-collapse min-w-[600px]">
+                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[600px]">
                   <thead>
                     <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-bold">Assigned Specialist</th>
-                      <th className="py-3 px-4 font-bold">Email</th>
-                      <th className="py-3 px-4 font-bold">System Role</th>
-                      <th className="py-3 px-4 font-bold">Contact Number</th>
-                      <th className="py-3 px-4 font-bold">Access permissions</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Assigned to</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Email</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Role</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Phone</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Access</th>
                     </tr>
                   </thead>
                   <tbody>
                     {state.users.map((u) => (
                       <tr key={u.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
                         <td className="py-3 px-4 font-semibold text-[color:var(--white)]">{u.name}</td>
-                        <td className="py-3 px-4 font-semibold">{u.email}</td>
-                        <td className="py-3 px-4">
+                        <td data-label="Email" className="py-3 px-4 font-semibold">{u.email}</td>
+                        <td data-label="Role" className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                             u.role === "admin" ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {u.role}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{u.phone}</td>
-                        <td className="py-3 px-4">
+                        <td data-label="Contact" className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{u.phone}</td>
+                        <td data-label="Access" className="py-3 px-4">
                           <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-bold tracking-normal">
                             {u.isActive ? "Authorized Profile" : "Archived"}
                           </span>

@@ -129,7 +129,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
         </div>
         <div className="card-body p-6 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
           <div className="text-[13px] text-[rgba(232,234,230,0.72)]  tracking-widest font-mono mb-2">Monthly Installment Payment</div>
-          <div className="text-4xl font-serif font-semibold text-[color:var(--cyan-bright)] mb-2">{formatZAR(monthlyInstallment)}</div>
+          <div className="text-4xl font-semibold text-[color:var(--cyan-bright)] mb-2">{formatZAR(monthlyInstallment)}</div>
           <div className="text-[13px] text-[rgba(232,234,230,0.72)] mb-6">Structured interest at {interestRate}% over {term} months term limit</div>
 
           <div className="grid grid-cols-2 gap-3 w-full text-left">

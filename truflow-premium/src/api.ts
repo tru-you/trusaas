@@ -193,15 +193,28 @@ export async function updateReconTask(vehicleId: string, taskId: string, updates
   return updated;
 }
 
-export async function createLead(lead: Omit<Lead, "id" | "createdAt" | "lastContactedAt" | "status" | "assignedUserId" | "digitalScore">): Promise<Lead> {
-  const newL = { 
-    ...lead, 
-    id: 'l' + Date.now(), 
-    createdAt: new Date().toISOString(), 
+/**
+ * digitalScore is optional rather than omitted, and the caller's value now
+ * wins. It used to be excluded from the parameter type *and* hardcoded to 50
+ * here, so both callers — the new-lead modal and the website capture form —
+ * computed a score that was silently discarded, and every lead created through
+ * this path scored exactly 50. The server's POST /api/leads has always honoured
+ * req.body.digitalScore, so the two paths disagreed.
+ */
+export async function createLead(
+  lead: Omit<Lead, "id" | "createdAt" | "lastContactedAt" | "status" | "assignedUserId" | "digitalScore">
+    & { digitalScore?: number },
+): Promise<Lead> {
+  const newL = {
+    ...lead,
+    id: 'l' + Date.now(),
+    createdAt: new Date().toISOString(),
     lastContactedAt: new Date().toISOString(),
     status: 'New' as const,
     assignedUserId: 'u1',
-    digitalScore: 50
+    // Same fallback the server uses, so a lead scores the same whichever path
+    // created it.
+    digitalScore: lead.digitalScore ?? Math.floor(Math.random() * 41) + 50,
   } as Lead;
   await updateState(s => s.leads.push(newL));
   return newL;

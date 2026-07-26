@@ -2,7 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 
 export default function Counter({ value, prefix = "" }: { value: number; prefix?: string }) {
   const [displayValue, setDisplayValue] = useState(0);
-  const rafRef = useRef<number>();
+  // React 19's types require an explicit initial value — useRef<number>() with
+  // no argument is an error rather than an implicit undefined.
+  const rafRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const start = displayValue;

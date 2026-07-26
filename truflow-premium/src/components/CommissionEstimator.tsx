@@ -328,7 +328,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                           <table className="w-full text-left text-[13px] border-collapse">
                             <thead>
                               <tr className="text-[rgba(232,234,230,0.72)]  tracking-widest text-[13px] border-b border-white/5">
-                                <th className="py-2 px-3">Vehicle Details</th>
+                                <th className="py-2 px-3">Vehicle</th>
                                 <th className="py-2 px-3 text-right">Retail Price</th>
                                 <th className="py-2 px-3 text-right">Cost Price</th>
                                 <th className="py-2 px-3 text-right">Gross profit</th>

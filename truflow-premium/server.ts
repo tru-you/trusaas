@@ -7,6 +7,20 @@ import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import { initializeApp as initFirebaseAdmin, getApps as getFirebaseApps } from "firebase-admin/app";
 import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
+/**
+ * The state shape is shared with the client rather than inferred here.
+ *
+ * DEFAULT_MOCK_STATE was an unannotated literal and readState() returned
+ * `typeof DEFAULT_MOCK_STATE`, so the API's idea of its own data was whatever
+ * the seed happened to contain. No seed row carries dealershipId, so the field
+ * every scoping check depends on did not exist on the type — which is most of
+ * the 62 errors this file had, and meant the one thing standing between two
+ * dealers' records was unchecked.
+ *
+ * `import type` is erased at compile time, so this adds no runtime dependency
+ * on the client bundle.
+ */
+import type { DMSState, Vehicle, Lead, User, DealerDocument } from "./src/types";
 
 dotenv.config();
 
@@ -434,7 +448,9 @@ app.post("/api/auth/users", (req: any, res) => {
   }
 
   const state = readState();
-  const user = {
+  // Annotated so the role ternary keeps its literal types instead of widening
+  // to string — this is the value that decides what a new seat can see.
+  const user: User = {
     id: "u_" + Date.now(),
     name: String(name).trim(),
     email: email || "",
@@ -607,7 +623,7 @@ app.get("/api/auth/codes", (req: any, res) => {
 });
 
 // Default high-fidelity seed data
-const DEFAULT_MOCK_STATE = {
+const DEFAULT_MOCK_STATE: DMSState = {
   // Every dealer live on this instance needs an entry, and its id must match
   // its slug below — that pairing is what keeps each dealer's stock
   // on their own website only.
@@ -712,19 +728,27 @@ const DEFAULT_MOCK_STATE = {
     { id: 'exp-3', description: 'Sutherland Detailing Equipment', amount: 4800, date: '2026-07-08', category: 'Operations', referenceId: 'PE-1042', reconciled: false },
     { id: 'exp-4', description: 'Eskom Electricity Grid Levy', amount: 8400, date: '2026-07-12', category: 'Utilities', referenceId: '', reconciled: false }
   ],
+  // Matches PLAN_DEFAULTS.premium in src/types.ts. tier, truLens, truInspect
+  // and multiPortalSync were absent, so a fresh instance booted with the four
+  // flags that gate the capture app, the inspection module and portal sync all
+  // undefined — falsy, and therefore off, on the premium product.
   settings: {
+    tier: 'premium',
+    truLens: true,
+    truInspect: true,
     websitePortal: true,
+    multiPortalSync: true,
     trueAI: true,
     smartLedger: true,
     chatbot: true,
+    liveReceptionist: true,
     seoAeo: true,
     syndication: true,
-    liveReceptionist: true
   }
 };
 
 // State Helper Functions
-function readState(): typeof DEFAULT_MOCK_STATE {
+function readState(): DMSState {
   try {
     // Prefer the live file on the disk; fall back to the repo seed on first boot.
     const src = fs.existsSync(DATA_FILE) ? DATA_FILE : SEED_FILE;
@@ -734,9 +758,15 @@ function readState(): typeof DEFAULT_MOCK_STATE {
       if (!parsed.expenses) {
         parsed.expenses = DEFAULT_MOCK_STATE.expenses;
       }
-      if (!parsed.settings) {
-        parsed.settings = DEFAULT_MOCK_STATE.settings;
-      }
+      // Merged, not all-or-nothing. settings gained tier, truLens, truInspect
+      // and multiPortalSync after existing state files were written, and an
+      // `if (!parsed.settings)` check never fires for a file that already has
+      // the older six keys — so those four stayed undefined, which is falsy,
+      // and this instance ran the premium product with the capture app,
+      // inspections and portal sync all gated off. Seed first so anything the
+      // dealer has actually chosen still wins. Same shape as the dealerships
+      // backfill below.
+      parsed.settings = { ...DEFAULT_MOCK_STATE.settings, ...(parsed.settings || {}) };
       if (!parsed.documents) {
         parsed.documents = [];
       }
@@ -995,7 +1025,11 @@ app.get("/api/leads", (req: any, res) => {
 // WordPress / External Site Form submissions hit this route!
 app.post("/api/leads", (req: any, res) => {
   const state = readState();
-  const newLead = {
+  // Annotated because every value here comes off req.body as `any`. Without it
+  // "New" widened to string and the whole literal was pushed into Lead[]
+  // unchecked — this route is public (the WordPress form posts to it), so it is
+  // the last place that should be taking the request's word for the shape.
+  const newLead: Lead = {
     id: "l_" + Date.now(),
     // Tag the lead to a dealer, or it defaults to the pilot dealership and one
     // yard ends up working another yard's customers. A signed-in dealer can
@@ -1196,7 +1230,7 @@ app.post("/api/documents", (req: any, res) => {
   if (!fileName || !fileData) {
     return res.status(400).json({ error: "fileName and fileData are required" });
   }
-  const newDoc = {
+  const newDoc: DealerDocument = {
     id: "doc_" + Date.now(),
     fileName,
     mimeType: mimeType || "application/octet-stream",
@@ -1776,8 +1810,12 @@ app.post("/api/sync/push-photos", (req, res) => {
       photos = {},
     } = req.body || {};
 
+    // A type predicate rather than a plain boolean: the filter already proves
+    // every value is a non-empty string, but TypeScript cannot carry that
+    // through a destructured callback, so fromEntries produced unknown values.
     const photoEntries = Object.entries(photos || {}).filter(
-      ([, v]) => typeof v === "string" && v.length > 0
+      (entry): entry is [string, string] =>
+        typeof entry[1] === "string" && entry[1].length > 0
     );
     if (photoEntries.length === 0) {
       return res.status(400).json({
@@ -1836,7 +1874,7 @@ app.post("/api/sync/push-photos", (req, res) => {
       }
 
       const now = new Date().toISOString().slice(0, 10);
-      const newVehicle = {
+      const newVehicle: Vehicle = {
         id: "v_lens_" + Date.now(),
         year: parseInt(vehicleMeta.year, 10) || new Date().getFullYear(),
         make: vehicleMeta.make || "Unknown",
@@ -2449,7 +2487,7 @@ app.post("/api/integration/webhook-lead", (req, res) => {
 
   try {
     const state = readState();
-    const newLead = {
+    const newLead: Lead = {
       id: "lead_" + Date.now(),
       // Which dealer's website sent this. Unset means it lands with the pilot
       // dealership, so every site posting here must identify itself.
@@ -2458,7 +2496,12 @@ app.post("/api/integration/webhook-lead", (req, res) => {
       lastName: lastName || "",
       phone,
       email: email || "",
-      status: "New Lead",
+      // Was "New Lead", which is not a LeadStatus — the union is
+      // New | Contacted | Test Drive Scheduled | Negotiating | Closed Won |
+      // Closed Lost. Every enquiry from a dealer's WordPress site therefore
+      // arrived in a stage the pipeline has no column for: not in the kanban,
+      // not matched by the status filters, and not counted as awaiting a reply.
+      status: "New",
       nextAction: "First contact",
       nextActionAt: new Date().toISOString().slice(0, 10),
       stageChangedAt: new Date().toISOString().slice(0, 10),

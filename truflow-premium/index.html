@@ -2,16 +2,30 @@
 <html lang="en" data-app="truflow" data-tier="premium">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover is what makes env(safe-area-inset-*) resolve to real
+         numbers. Without it the insets are all 0, so the black-translucent
+         status bar below drew the app *under* the notch and the home indicator
+         sat on top of the sidebar's log-out button. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>TruFlow</title>
       <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
       <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#4D9BFF" />
+    <!-- Was #4D9BFF — the blue brand.css retired ("glared on black"). A dark app
+         wants its top surface here, not an accent: this paints the Android
+         status bar the same near-black as the page, so the chrome disappears
+         instead of capping the app with a bright bar. Matches background_color. -->
+    <meta name="theme-color" content="#06080D" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="TruFlow" />
+    <!-- There was no favicon at all — the tab showed a blank page glyph, and
+         the manifest pointed at /icons/* which did not exist, so the PWA had
+         no icon and Chrome's install criteria could not be met. SVG first for
+         any modern browser (sharp at every size), 32px PNG as the fallback. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   </head>
   <body>

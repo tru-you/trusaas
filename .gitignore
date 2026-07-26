@@ -59,3 +59,7 @@ Proposals/
 
 # Marketing-site Netlify drop
 _deploy/
+
+# Timestamped copies of the runtime auth store. Same hashed codes as
+# auth.json, but the name does not match the **/auth.json rule above.
+**/auth.json.backup-*

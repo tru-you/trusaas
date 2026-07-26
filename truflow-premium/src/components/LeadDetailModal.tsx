@@ -421,7 +421,7 @@ export default function LeadDetailModal({
                 {/* Profile Card */}
                 <div className="card !bg-[color:var(--glass)]">
                   <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Contact Details</div>
+                    <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Contact Details</div>
                     <div className="text-base font-bold text-[color:var(--white)]">{lead.firstName} {lead.lastName}</div>
                     <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-col gap-2 mt-1">
                       <span className="flex items-center gap-2"><Phone size={13} className="text-[color:var(--cyan)]" /> {lead.phone}</span>
@@ -436,7 +436,7 @@ export default function LeadDetailModal({
                 {/* Session Card */}
                 <div className="card !bg-[color:var(--glass)]">
                   <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Session Attributes</div>
+                    <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Session Attributes</div>
                     <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-col gap-2 leading-relaxed">
                       <div><span className="font-bold text-[color:var(--white)]">Ad Source:</span> <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-bold tracking-normal">{lead.source}</span></div>
                       <div><span className="font-bold text-[color:var(--white)]">Creation Stamp:</span> <span>{lead.createdAt}</span></div>
@@ -455,7 +455,7 @@ export default function LeadDetailModal({
                 <div className="card !bg-[color:var(--glass)]">
                   <div className="card-body p-4 flex items-center justify-between">
                     <div>
-                      <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-1">Subject Vehicle Focus</div>
+                      <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-1">Subject Vehicle Focus</div>
                       <div className="text-[16px] font-bold text-[color:var(--white)]">{vehicle.year} {vehicle.make} {vehicle.model}</div>
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Stock No: {vehicle.stockNumber} / Price: R {vehicle.retailPrice.toLocaleString()}</div>
                     </div>
@@ -510,7 +510,7 @@ export default function LeadDetailModal({
 
                   {/* Suggested Smart Actions Grid */}
                   <div className="space-y-2 mt-1">
-                    <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono block">Dealer Assist suggestions:</span>
+                    <span className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono block">Dealer Assist suggestions:</span>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       
                       {/* Suggestion 1: Book Test Drive / Call Now */}
@@ -576,7 +576,7 @@ export default function LeadDetailModal({
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
               <div className="card !bg-[color:var(--glass)]">
                 <div className="card-body p-4">
-                  <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-4">Website Pre-Enquiry Analytics Activity Log</div>
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-4">Website Pre-Enquiry Analytics Activity Log</div>
                   <div className="relative border-l border-white/10 pl-6 flex flex-col gap-6 ml-2">
                     {(lead.journey || []).map((j, idx) => {
                       const Icon = j.action.includes('Viewed') ? Eye : j.action.includes('Requested') ? Sparkles : ShoppingCart;
@@ -823,14 +823,14 @@ export default function LeadDetailModal({
 
               {/* Dispatch logs */}
               <div className="mt-4 border-t border-white/5 pt-4">
-                <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-2">Communications Outbound logs</div>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-2">Communications Outbound logs</div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-[13px] text-[rgba(232,234,230,0.72)] text-left border-collapse">
                     <thead>
                       <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
                         <th className="py-2 font-bold tracking-normal text-[13px]">Date</th>
                         <th className="py-2 font-bold tracking-normal text-[13px]">Type</th>
-                        <th className="py-2 font-bold tracking-normal text-[13px]">Subject discussion</th>
+                        <th className="py-2 font-bold tracking-normal text-[13px]">Subject</th>
                         <th className="py-2 font-bold tracking-normal text-[13px]">Sent by</th>
                       </tr>
                     </thead>
@@ -867,14 +867,14 @@ export default function LeadDetailModal({
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
               <div className="card !bg-[color:var(--glass)]">
                 <div className="card-body p-4">
-                  <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-2">DMS Lifecycle events</div>
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-2">DMS Lifecycle events</div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-[13px] text-[rgba(232,234,230,0.72)] border-collapse">
                       <thead>
                         <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
-                          <th className="py-2 font-bold tracking-normal text-[13px]">Date Stamp</th>
+                          <th className="py-2 font-bold tracking-normal text-[13px]">Date</th>
                           <th className="py-2 font-bold tracking-normal text-[13px]">Who</th>
-                          <th className="py-2 font-bold tracking-normal text-[13px]">System Action</th>
+                          <th className="py-2 font-bold tracking-normal text-[13px]">Action</th>
                           <th className="py-2 font-bold tracking-normal text-[13px]">Outcome</th>
                         </tr>
                       </thead>
@@ -904,7 +904,7 @@ export default function LeadDetailModal({
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
               <div className="card !bg-[color:var(--glass)]">
                 <div className="card-body p-4 flex flex-col gap-3">
-                  <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono mb-1 border-b border-white/5 pb-2">Schedule Follow-up</div>
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-1 border-b border-white/5 pb-2">Schedule Follow-up</div>
                   
                   {/* Task Suggestion (based on time since last contact or no contact) */}
                   {(!lead.lastContactedAt || new Date().getTime() - new Date(lead.lastContactedAt).getTime() > 24 * 60 * 60 * 1000) && (
@@ -966,7 +966,7 @@ export default function LeadDetailModal({
 
               <div className="card !bg-[color:var(--glass)]">
                 <div className="card-body p-4 flex flex-col gap-3">
-                  <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono border-b border-white/5 pb-2">Active Tasks</div>
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono border-b border-white/5 pb-2">Active Tasks</div>
                   <div className="flex flex-col gap-2 mt-2">
                     {tasks.length === 0 ? (
                       <div className="text-center py-6 text-[13px] text-[rgba(232,234,230,0.72)]">No tasks scheduled for this lead.</div>
@@ -1121,7 +1121,7 @@ export default function LeadDetailModal({
                 {/* 3. Generated Documents list */}
                 <div className="card !bg-[color:var(--glass)] border border-white/5">
                   <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal font-mono">
+                    <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">
                       Draft Folders ({agreements.length})
                     </div>
                     <div className="flex flex-col gap-2 mt-1">

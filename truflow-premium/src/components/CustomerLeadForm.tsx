@@ -26,7 +26,9 @@ export default function CustomerLeadForm({ dealershipId, vehicles, onSuccess }: 
       await createLead({
         ...formData,
         source: "Website Contact Form",
-        status: "New",
+        // status was passed as "New" here, but both createLead and the server's
+        // POST /api/leads set it unconditionally — the value never reached
+        // anything. Dropped rather than left looking load-bearing.
         dealershipId,
         digitalScore: 50, // Default initial score
       });

@@ -101,10 +101,10 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
           <table className="w-full border-collapse mb-6 text-[13px] text-gray-800">
             <thead>
               <tr className="border-b-2 border-white/10 bg-gray-50">
-                <th className="text-left py-2 px-3 font-bold text-gray-700 text-[13px]">Asset Specifications Summary</th>
+                <th className="text-left py-2 px-3 font-bold text-gray-700 text-[13px]">Vehicle</th>
                 <th className="text-center py-2 px-3 font-bold text-gray-700 text-[13px] w-12">Qty</th>
-                <th className="text-right py-2 px-3 font-bold text-gray-700 text-[13px] w-36">Unit Price Ex VAT</th>
-                <th className="text-right py-2 px-3 font-bold text-gray-700 text-[13px] w-36">Total ZAR</th>
+                <th className="text-right py-2 px-3 font-bold text-gray-700 text-[13px] w-36">Unit price ex VAT</th>
+                <th className="text-right py-2 px-3 font-bold text-gray-700 text-[13px] w-36">Total</th>
               </tr>
             </thead>
             <tbody>

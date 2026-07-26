@@ -149,7 +149,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
               <Shield size={16} /> SECURED BY TRUECAR DMS SIGN-OFF
             </div>
 
-            <h1 className="text-center font-serif text-xl font-semibold text-[color:var(--ink-2)] tracking-tight ">
+            <h1 className="text-center text-xl font-semibold text-[color:var(--ink-2)] tracking-tight ">
               {agreement.type === "Offer to Purchase" ? "Offer to Purchase (OTP)" :
                agreement.type === "Finance Application" ? "Pre-Approval Credit Finance Application" :
                agreement.type === "Trade-In Transfer" ? "Trade-In Exchange Agreement" :
@@ -305,7 +305,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
               <div className="flex bg-[color:var(--glass)] rounded-lg p-0.5 border border-white/5">
                 <button
                   onClick={() => setSignMode("draw")}
-                  className={`flex-1 text-center py-1 text-[13px] font-bold rounded-md transition-all ${
+                  className={`flex-1 text-center py-1 text-[13px] font-bold rounded-lg transition-all ${
                     signMode === "draw" ? "bg-[color:var(--cyan)] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
                   }`}
                 >
@@ -313,7 +313,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 </button>
                 <button
                   onClick={() => setSignMode("type")}
-                  className={`flex-1 text-center py-1 text-[13px] font-bold rounded-md transition-all ${
+                  className={`flex-1 text-center py-1 text-[13px] font-bold rounded-lg transition-all ${
                     signMode === "type" ? "bg-[color:var(--cyan)] on-fill" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
                   }`}
                 >
@@ -339,7 +339,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                     />
                     <button
                       onClick={clearCanvas}
-                      className="absolute bottom-2 right-2 p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-all flex items-center gap-1 text-[13px] font-bold"
+                      className="absolute bottom-2 right-2 p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all flex items-center gap-1 text-[13px] font-bold"
                     >
                       <RotateCcw size={10} /> Clear Pad
                     </button>

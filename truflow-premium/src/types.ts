@@ -49,6 +49,19 @@ export interface Vehicle {
    *  Public sites show "R below TruPrice" from the delta, so it is only worth
    *  anything if a person stands behind the number. */
   truPrice?: number;
+
+  /* The four below are already written by the TruLens sync and already present
+     on every vehicle in data.json — they were simply never declared here, so
+     the one route that creates stock from a capture could not be type-checked
+     at all. */
+  vin?: string;
+  color?: string;
+  /** Where the record came from, e.g. "trulens". */
+  source?: string;
+  /** Whether the dealer's public feed may show this unit. Undefined is treated
+   *  as published by the feed, which is why the TruLens Publish toggle has to
+   *  send `false` explicitly rather than omitting the field. */
+  showOnWebsite?: boolean;
 }
 
 export type LeadStatus = 'New' | 'Contacted' | 'Test Drive Scheduled' | 'Negotiating' | 'Closed Won' | 'Closed Lost';
@@ -196,8 +209,13 @@ export interface DMSState {
   communications: Communication[];
   expenses: Expense[];
   dealerships: Dealership[];
-  digitalProducts: DigitalProduct[];
-  digitalSales: DigitalSale[];
+  /** Vestigial. Neither the server seed nor the live data.json has ever
+   *  carried these, and nothing reads them — api.ts just defaults them to [].
+   *  Optional so the server's state can be typed against this interface
+   *  honestly, rather than seeding two empty arrays to satisfy a shape that
+   *  does not describe the data. */
+  digitalProducts?: DigitalProduct[];
+  digitalSales?: DigitalSale[];
   settings?: PremiumSettings;
 }
 

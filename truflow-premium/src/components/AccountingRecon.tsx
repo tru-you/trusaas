@@ -392,7 +392,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     <th className="pb-3 font-bold tracking-normal text-[13px]">Category</th>
                     <th className="pb-3 font-bold tracking-normal text-[13px]">Reference</th>
                     <th className="pb-3 font-bold tracking-normal text-[13px] text-right">Amount</th>
-                    <th className="pb-3 font-bold tracking-normal text-[13px] text-center">Audit Status</th>
+                    <th className="pb-3 font-bold tracking-normal text-[13px] text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -615,7 +615,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                               <button
                                 key={st}
                                 onClick={() => toggleReconTaskStatus(selectedVehicle.id, task.id, st)}
-                                className={`px-2 py-1 text-[13px] font-semibold tracking-wider  rounded-md transition-all cursor-pointer ${
+                                className={`px-2 py-1 text-[13px] font-semibold tracking-wider  rounded-lg transition-all cursor-pointer ${
                                   task.status === st
                                     ? st === "Completed"
                                       ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]"

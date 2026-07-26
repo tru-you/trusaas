@@ -224,14 +224,14 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
               No documents uploaded yet. Tap <b>Upload document</b> to add the first one.
             </div>
           ) : (
-            <table className="w-full text-[13px] text-left border-collapse min-w-[700px]">
+            <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                  <th className="py-3 px-4 font-bold">File</th>
-                  <th className="py-3 px-4 font-bold">Linked to</th>
-                  <th className="py-3 px-4 font-bold">Uploaded</th>
-                  <th className="py-3 px-4 font-bold">Status</th>
-                  <th className="py-3 px-4 font-bold text-right">Operation</th>
+                  <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">File</th>
+                  <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Linked to</th>
+                  <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Uploaded</th>
+                  <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Status</th>
+                  <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right"></th>
                 </tr>
               </thead>
               <tbody>
@@ -246,9 +246,9 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                       <td className="py-3 px-4 font-semibold text-[color:var(--white)] flex items-center gap-2">
                         <Icon size={14} className="text-[rgba(232,234,230,0.72)] shrink-0" /> {doc.fileName}
                       </td>
-                      <td className="py-3 px-4">{linked}</td>
-                      <td className="py-3 px-4 font-mono text-[13px]">{formatDate(doc.uploadedAt)}</td>
-                      <td className="py-3 px-4">
+                      <td data-label="Linked to" className="py-3 px-4">{linked}</td>
+                      <td data-label="Uploaded" className="py-3 px-4 font-mono text-[13px]">{formatDate(doc.uploadedAt)}</td>
+                      <td data-label="Status" className="py-3 px-4">
                         <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
                           doc.status === "Signed" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--glass)] text-[color:var(--warning)]"
                         }`}>

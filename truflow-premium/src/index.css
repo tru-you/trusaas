@@ -306,7 +306,15 @@ h3 { font-size: var(--t-lead); letter-spacing: var(--track-h3); line-height: 1.3
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.card:hover, .v-card:hover, .stat-card:hover, .glass-panel:hover {
+/* Only things you can actually click respond to hover. This was on every
+   .card in the app, so static panels — the stat tiles that aren't buttons, the
+   analytics panel, half the settings cards — lit up cyan and promised a click
+   that never came. A hover state is a claim about behaviour; making it on
+   every surface is what makes the real affordances stop meaning anything. */
+button.card:hover, a.card:hover, [role="button"].card:hover,
+button.v-card:hover, a.v-card:hover, [role="button"].v-card:hover,
+button.stat-card:hover, a.stat-card:hover, [role="button"].stat-card:hover,
+button.glass-panel:hover, a.glass-panel:hover, [role="button"].glass-panel:hover {
   border-color: var(--cyan-soft);
   box-shadow: var(--shadow-lift);
 }
@@ -516,5 +524,226 @@ select:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ── Safe area ───────────────────────────────────────────────────────────
+   index.html declares apple-mobile-web-app-status-bar-style: black-translucent,
+   which means an installed iOS app draws its own content under the status bar
+   and under the home indicator. Nothing here compensated for it, so the mobile
+   header sat beneath the clock and the sidebar's log-out button sat beneath the
+   home bar. These are 0 on every device without a notch, so they cost nothing
+   elsewhere. Paired with viewport-fit=cover in index.html — without that meta
+   the insets resolve to 0 and none of this applies. */
+:root {
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+}
+
+/* ── Touch targets ───────────────────────────────────────────────────────
+   Measured on a 390px viewport: 19 of 26 interactive elements were under 44px,
+   with the sidebar nav rows at 37px and the header pills at 32px. 44px is the
+   Apple HIG floor and roughly the width of an adult fingertip; below it the
+   miss rate on a phone climbs sharply.
+
+   Gated on "small viewport OR touch pointer" rather than pointer alone: a
+   touch tablet at 1024px genuinely wants fat targets, and a desktop window
+   dragged down to phone width is how this layout actually gets checked — a
+   pointer-only rule is invisible there and silently untested. The desk
+   experience at full width keeps its density, which matters in a tool someone
+   sits in front of all day. min-height (not height) means nothing that has
+   already grown past 44px is clamped back down to it. */
+@media (max-width: 767px), (pointer: coarse) {
+  button,
+  [role="button"],
+  a[href],
+  select,
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea {
+    min-height: 44px;
+  }
+
+  /* Icon-only controls need the width too — a 36px square hamburger is as hard
+     to hit as a 36px tall one. Text links are exempt: forcing 44px on an inline
+     <a> inside a sentence would blow the line height apart, so they get a
+     vertical hit area via padding instead of a min-height. */
+  button:not(:has(> :not(svg))),
+  [role="button"]:not(:has(> :not(svg))) {
+    min-width: 44px;
+  }
+
+  a[href]:not([class*="btn"]):not([class*="rounded"]) {
+    min-height: 0;
+    display: inline-block;
+    padding-block: 6px;
+  }
+
+  /* Table rows are tap targets in every list view in this app. */
+  td, th { padding-block: 12px; }
+}
+
+/* ── Depth on controls ───────────────────────────────────────────────────
+   The brand vocabulary is "a lit top hairline and one soft shadow" and cards
+   already get it — buttons were explicitly stripped to box-shadow: none, which
+   left the primary action reading as a flat cyan sticker and the secondary
+   buttons as barely-there outlines. These use the *same* two ingredients as
+   .card rather than inventing a new treatment, so nothing here is a glow and
+   no colour changes. */
+.btn-primary {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.30) inset,
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 6px 16px -8px rgba(0, 0, 0, 0.75) !important;
+}
+.btn-primary:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.38) inset,
+    0 2px 4px rgba(0, 0, 0, 0.45),
+    0 10px 22px -10px rgba(0, 0, 0, 0.8) !important;
+}
+.btn-primary:active {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5) inset !important;
+}
+
+/* Secondary / ghost buttons: the lit top edge alone is enough to read them as
+   raised. Matched on the glass background they already use, so this needs no
+   markup changes. */
+button[class*="bg-[color:var(--glass)]"],
+a[class*="bg-[color:var(--glass)]"] {
+  box-shadow:
+    0 1px 0 rgba(232, 234, 230, 0.07) inset,
+    0 2px 8px -4px rgba(0, 0, 0, 0.6);
+}
+button[class*="bg-[color:var(--glass)]"]:active,
+a[class*="bg-[color:var(--glass)]"]:active {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) inset;
+}
+
+/* ── Wide tables on a phone ──────────────────────────────────────────────
+   Eight tables carry min-w-[600px]/[700px] inside an overflow-x-auto wrapper,
+   so on a 390px screen they scroll sideways with nothing to say so — the
+   right-hand columns simply look absent. A right-edge fade is the cheapest
+   honest signal that there is more content that way; it disappears once the
+   scroll reaches the end. Kept off pointer:fine, where the table usually fits. */
+/* ── Stacked tables ──────────────────────────────────────────────────────
+   Eight tables carried min-w-[600–700px], so on a 390px screen the right-hand
+   columns were simply off-screen behind a sideways scroll nobody discovers.
+   Under 768px each row becomes its own card: the first cell is the title, the
+   rest become label/value pairs reading down.
+
+   The label comes from data-label on each <td> rather than from the <thead>,
+   because CSS cannot reach across the table to read a header cell. <thead> is
+   visually hidden rather than display:none so screen readers and the table
+   semantics survive — a stacked table is still a table.
+
+   Opt-in via .stack-mobile so a table this doesn't suit keeps scrolling. */
+@media (max-width: 767px) {
+  table.stack-mobile { min-width: 0 !important; display: block; }
+
+  table.stack-mobile thead {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  table.stack-mobile tbody { display: block; }
+
+  table.stack-mobile tbody tr {
+    display: block;
+    border: 1px solid var(--glass-line);
+    border-radius: var(--r-sm);
+    background: var(--ink-2);
+    margin: 0 0.75rem 0.625rem;
+    padding: 0.25rem 0;
+    overflow: hidden;
+  }
+  table.stack-mobile tbody tr:first-child { margin-top: 0.75rem; }
+
+  table.stack-mobile tbody td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    width: auto;
+    text-align: right !important;
+    border: 0 !important;
+    padding: 0.375rem 0.875rem !important;
+  }
+
+  table.stack-mobile tbody td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    text-align: left;
+    color: var(--muted);
+    font-weight: var(--w-regular);
+    /* Long labels shouldn't crush the value they describe. */
+    max-width: 45%;
+  }
+
+  /* First cell is the row's identity, so it reads as a card heading rather
+     than as another label/value pair. */
+  table.stack-mobile tbody td:first-child {
+    display: block;
+    text-align: left !important;
+    padding: 0.625rem 0.875rem !important;
+    margin-bottom: 0.125rem;
+    border-bottom: 1px solid var(--glass-line) !important;
+    background: var(--glass);
+  }
+  table.stack-mobile tbody td:first-child::before { content: none; }
+
+  /* Anything without a data-label is an action cell — one button or several.
+     Keying off the attribute rather than enumerating button arrangements means
+     a table that grows a second button doesn't quietly sprout an empty label.
+
+     :not(:first-child) matters — the title cell is also unlabelled, and without
+     it this rule wins on source order and lays the title out as a flex row,
+     putting the phone number beside the name instead of beneath it. */
+  table.stack-mobile tbody td:not([data-label]):not(:first-child) {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0.875rem 0.625rem !important;
+  }
+  table.stack-mobile tbody td:not([data-label])::before { content: none; }
+  /* Full width to press, split evenly when there are two. */
+  table.stack-mobile tbody td:not([data-label]) > button { flex: 1 1 0; width: auto; }
+
+  /* Empty cells would otherwise render a lone floating label. */
+  table.stack-mobile tbody td:empty { display: none; }
+}
+
+@media (max-width: 767px), (pointer: coarse) {
+  /* :has(table) so this lands on the eight table wrappers and not on every
+     incidental horizontal scroller — the header's counter strip is also an
+     .overflow-x-auto and does not want a fade over its last pill.
+     A stacked table no longer scrolls, so it must not keep the fade. */
+  .overflow-x-auto:has(table.stack-mobile) { background-image: none; }
+
+  .overflow-x-auto:has(table):not(:has(table.stack-mobile)) {
+    background-image: linear-gradient(
+      to right, transparent calc(100% - 44px), rgba(6, 8, 13, 0.9) 100%
+    );
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: 100% 100%;
+    background-attachment: local;
+  }
+  .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+}
+
+/* ── Page gutters on a notched phone ─────────────────────────────────────
+   <main> carries px-4; in landscape on a notched device that 16px sits under
+   the camera cutout. max() keeps the existing gutter everywhere else and only
+   grows it where the inset is real, so portrait is untouched. */
+@media (max-width: 767px) {
+  main {
+    padding-left: max(1rem, var(--safe-l));
+    padding-right: max(1rem, var(--safe-r));
+    padding-bottom: max(1.5rem, var(--safe-b));
   }
 }

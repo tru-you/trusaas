@@ -210,7 +210,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               <button
                 key={idx}
                 onClick={() => setActiveImageIndex(idx)}
-                className={`w-16 h-12 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
+                className={`w-16 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
                   idx === activeImageIndex ? "border-[color:var(--cyan)]" : "border-transparent opacity-60 hover:opacity-100"
                 }`}
               >
@@ -351,13 +351,13 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         <button
                           onClick={handleSaveTruPrice}
                           disabled={savingTruPrice}
-                          className="flex-1 py-2 bg-[color:var(--cyan)] hover:bg-opacity-90 disabled:opacity-60 on-fill font-semibold  text-[13px] rounded-md cursor-pointer"
+                          className="flex-1 py-2 bg-[color:var(--cyan)] hover:bg-opacity-90 disabled:opacity-60 on-fill font-semibold  text-[13px] rounded-lg cursor-pointer"
                         >
                           {savingTruPrice ? "Saving…" : "Save benchmark"}
                         </button>
                         <button
                           onClick={() => setEditingTruPrice(false)}
-                          className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-[rgba(232,234,230,0.72)] font-bold  text-[13px] rounded-md cursor-pointer"
+                          className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-[rgba(232,234,230,0.72)] font-bold  text-[13px] rounded-lg cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -674,7 +674,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                                 {task.photo ? (
                                   <div className="relative w-10 h-10 rounded overflow-hidden border border-white/5 shrink-0">
                                     <img src={task.photo} alt={task.name} className="w-full h-full object-cover" />
-                                    <span className="absolute bottom-0 right-0 bg-black/70 text-[11px] text-[color:var(--cyan)] px-0.5 font-bold font-mono">IMG</span>
+                                    <span className="absolute bottom-0 right-0 bg-black/70 text-[length:var(--t-micro)] text-[color:var(--cyan)] px-0.5 font-bold font-mono">IMG</span>
                                   </div>
                                 ) : (
                                   <div className="w-10 h-10 rounded bg-[color:var(--glass)] border border-dashed border-white/10 flex items-center justify-center text-gray-400 shrink-0">
@@ -798,7 +798,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
                         <button
                           type="submit"
-                          className="w-full py-2 bg-[color:var(--cyan)] hover:bg-opacity-90 on-fill font-bold text-[13px] rounded-md transition-all cursor-pointer flex items-center justify-center gap-1 "
+                          className="w-full py-2 bg-[color:var(--cyan)] hover:bg-opacity-90 on-fill font-bold text-[13px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 "
                         >
                           <Plus size={11} /> Save & Log Prep Directive
                         </button>
