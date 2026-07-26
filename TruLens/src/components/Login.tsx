@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import trulensLogo from '../assets/images/trulens-wordmark.png';
 
 export default function Login() {
-  const { enterDemoMode, signInWithCode } = useAuth();
+  const { signInWithCode } = useAuth();
   const [deviceCode, setDeviceCode] = React.useState('');
   const [codeBusy, setCodeBusy] = React.useState(false);
   const [codeError, setCodeError] = React.useState<string | null>(null);
@@ -111,14 +111,6 @@ export default function Login() {
             </div>
           </div>
 
-          <a
-            href="https://true-cars.co.za"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[13px] font-bold text-emerald-400/90  tracking-widest hover:text-emerald-300 underline underline-offset-2"
-          >
-            true-cars.co.za showroom
-          </a>
           
           <p className="text-[13px] text-neutral-700 max-w-[200px] text-center leading-relaxed">
             By initializing, you agree to the Automated Photography & AI Processing Terms of Service.

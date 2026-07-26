@@ -64,6 +64,34 @@ export default function App() {
   const [dealerConfirmed, setDealerConfirmed] = React.useState<boolean>(
     () => !!localStorage.getItem('trulens_dealer_confirmed'),
   );
+
+  /* This initialiser runs once, at mount — which is BEFORE anyone has signed
+     in, so it always read false. Signing in with a per-dealership code sets
+     the flag (the code carries the yard, so there is nothing left to choose),
+     but the already-initialised state never looked again and the picker asked
+     anyway. Re-read once the user arrives. */
+  React.useEffect(() => {
+    if (!user) return;
+    if (localStorage.getItem('trulens_dealer_confirmed')) setDealerConfirmed(true);
+  }, [user]);
+
+  /* Warm the dealership list once signed in.
+     Only the picker used to fetch it, so a phone pinned by a per-dealership
+     code — which skips the picker entirely — had nothing cached, and Settings
+     could only show the raw slug where the dealer's name belongs. Failure is
+     silent on purpose: this is a display nicety, not something to block on. */
+  React.useEffect(() => {
+    if (!user) return;
+    if (localStorage.getItem('trulens_dealerships_v1')) return;
+    fetch('/api/dealerships', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((list) => {
+        if (Array.isArray(list) && list.length) {
+          localStorage.setItem('trulens_dealerships_v1', JSON.stringify(list));
+        }
+      })
+      .catch(() => undefined);
+  }, [user]);
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
   const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report'>('inventory');

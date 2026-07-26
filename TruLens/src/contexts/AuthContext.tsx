@@ -90,6 +90,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (data.dealerSlug) {
       localStorage.setItem('trulens_dealer_slug', data.dealerSlug);
       localStorage.setItem('trulens_dealer_confirmed', '1');
+      /* Pinned by the code itself. The server takes the dealership from the
+         token regardless of what this phone sends, so Settings must show it as
+         fixed rather than offering a choice that would be ignored. */
+      localStorage.setItem('trulens_dealer_pinned', '1');
+    } else {
+      localStorage.removeItem('trulens_dealer_pinned');
     }
 
     enterDemoMode();
@@ -98,6 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     localStorage.removeItem(DEMO_KEY);
     localStorage.removeItem(DEVICE_TOKEN_KEY);
+    localStorage.removeItem('trulens_dealer_pinned');
     setIsDemo(false);
     setUser(null);
     try {

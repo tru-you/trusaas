@@ -1,7 +1,7 @@
 import logo from "../assets/truflow-logo.png";
 import React, { useState } from 'react';
-import { Lock, ExternalLink } from 'lucide-react';
-import { TRUE_CARS_URL, TRUESAAS_URL } from '../lib/ecosystem';
+import { Lock } from 'lucide-react';
+import { TRUESAAS_URL } from '../lib/ecosystem';
 import { login, enterDemo } from '../lib/session';
 
 export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
@@ -97,9 +97,6 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
         )}
 
         <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center gap-2">
-          <a href={TRUE_CARS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[color:var(--cyan-bright)] hover:underline inline-flex items-center gap-1">
-            true-cars.co.za showroom <ExternalLink size={10} />
-          </a>
           <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[color:var(--cyan-bright)] hover:underline">
             TruSaaS platform
           </a>

@@ -187,9 +187,52 @@ export default function InventoryList({
       must match a slug the DMS's public website feed knows how to isolate.
       A phone used on Caledon's floor should be set to "cars-on-caledon" so
       captures never default to (and leak onto) MKR's site. */
-  const [dealerSlug, setDealerSlug] = React.useState(
-    () => localStorage.getItem('trulens_dealer_slug') || ''
+  /* Read-only now: the access code sets this, not the phone. */
+  const dealerSlug = localStorage.getItem('trulens_dealer_slug') || '';
+  /** True when the access code itself carried the dealership, in which case the
+      server enforces it and nothing on this phone can override it. */
+  const dealerPinned = localStorage.getItem('trulens_dealer_pinned') === '1';
+  /** Name for the current slug. Starts from the list the picker cached, then
+      asks the server if that misses — a phone pinned by a per-dealership code
+      never runs the picker, so the cache may not be warm yet and this rendered
+      the raw slug where the dealer's name belongs. State, not useMemo: the
+      cache is written asynchronously and a memo keyed on the slug would never
+      recompute when it landed. */
+  const nameFromCache = React.useCallback((slug: string): string => {
+    try {
+      const cached = JSON.parse(localStorage.getItem('trulens_dealerships_v1') || '[]');
+      const hit = Array.isArray(cached) ? cached.find((d: any) => d?.slug === slug) : null;
+      return hit?.name || '';
+    } catch {
+      return '';
+    }
+  }, []);
+
+  const [dealerDisplayName, setDealerDisplayName] = React.useState(
+    () => nameFromCache(dealerSlug) || dealerSlug || ''
   );
+
+  React.useEffect(() => {
+    if (!dealerSlug) return;
+    const cached = nameFromCache(dealerSlug);
+    if (cached) {
+      setDealerDisplayName(cached);
+      return;
+    }
+    let cancelled = false;
+    fetch('/api/dealerships', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((list) => {
+        if (cancelled || !Array.isArray(list)) return;
+        localStorage.setItem('trulens_dealerships_v1', JSON.stringify(list));
+        const hit = list.find((d: any) => d?.slug === dealerSlug);
+        if (hit?.name) setDealerDisplayName(hit.name);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [dealerSlug, nameFromCache]);
   const [dealerWhatsApp, setDealerWhatsApp] = React.useState(
     () => localStorage.getItem('trulens_dealer_wa') || ''
   );
@@ -1224,18 +1267,26 @@ export default function InventoryList({
                     className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
                   />
                 </div>
+                {/* Not a choice any more.
+                    This was a <select> carrying a hardcoded two-dealer list, and
+                    for a phone signed in with a per-dealership code the server
+                    takes the dealership from the token and ignores whatever the
+                    phone claims — so changing it did nothing while looking like
+                    it did something. The code decides; this reports it. */}
                 <div className="space-y-2">
                   <label className="text-[13px] text-neutral-500  font-bold">Dealership (DMS tagging)</label>
-                  <select
-                    value={dealerSlug}
-                    onChange={(e) => setDealerSlug(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="mkr-autosales">MKR Auto Sales</option>
-                    <option value="cars-on-caledon">Cars on Caledon</option>
-                  </select>
+                  <div className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-3">
+                    <div className="text-[15px] font-semibold text-[#E8EAE6]">
+                      {dealerDisplayName || 'Not set'}
+                    </div>
+                    {dealerSlug && (
+                      <div className="text-[13px] font-mono text-[#4FE3DC] mt-0.5">{dealerSlug}</div>
+                    )}
+                  </div>
                   <p className="text-[13px] text-neutral-600 leading-relaxed">
-                    This phone's captures export to the DMS tagged to this dealer — keeps every dealer's stock on their own website only.
+                    {dealerPinned
+                      ? 'Set by the access code this phone signed in with, and enforced by the server — captures cannot file to another dealer, whatever this phone sends. To change it, sign out and sign in with that dealership’s code.'
+                      : 'Chosen when this phone signed in. To change it, sign out and sign in again — or ask TruSaaS for a dealership code, which pins it server-side so a wrong pick cannot put cars in another dealer’s stock.'}
                   </p>
                 </div>
               </div>

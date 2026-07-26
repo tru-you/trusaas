@@ -119,10 +119,6 @@ function deviceTokenClaims(token: string): { dealerSlug?: string } | null {
   } catch { return null; }
 }
 
-function verifyDeviceToken(token: string): boolean {
-  return deviceTokenClaims(token) !== null;
-}
-
 const LENS_DEFAULT_DEALER_SLUG = process.env.LENS_DEFAULT_DEALER_SLUG || 'mkr-autosales';
 
 // Local PC mode: no Google Cloud credentials needed. Stores inventory in data/local-inventory.json

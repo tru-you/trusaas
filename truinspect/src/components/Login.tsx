@@ -128,14 +128,6 @@ export default function Login() {
             </div>
           </div>
 
-          <a
-            href="https://true-cars.co.za"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[13px] font-bold text-emerald-400/90  tracking-widest hover:text-emerald-300 underline underline-offset-2"
-          >
-            true-cars.co.za showroom
-          </a>
           
           <p className="text-[13px] text-neutral-700 max-w-[200px] text-center leading-relaxed">
             By signing in, you agree to the Inspection & Data Terms of Service.
