@@ -83,7 +83,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
     'Engine & Mechanical',
     'Recon / Work',
     'Documents',
-    '360 Walkaround'
+    'Tru Orbit'
   ];
 
   // Progress tracker calculation
@@ -225,8 +225,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
             // straight to Redo/Keep as a genuine video for the 360 slot.
             const report: QualityReport = {
               overallScore: 100,
-              lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: '360° walkaround video uploaded.' },
-              angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Uploaded walkaround — review below, then keep or redo.' },
+              lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: 'Tru Orbit clip uploaded.' },
+              angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Uploaded Tru Orbit — review below, then keep or redo.' },
             };
             setPendingShot({ slotId: 'video_360', base64: dataUri, report, kind: 'video' });
           } else {
@@ -1225,7 +1225,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
               ? 'bg-[#B86A6A] text-[#06080D] border border-transparent'
               : 'bg-[#4FE3DC] text-[#06080D] border border-transparent'
           }`}
-          title={activeSlot.id === 'video_360' ? 'Record 360 walkaround' : 'Take picture for this slot'}
+          title={activeSlot.id === 'video_360' ? 'Record Tru Orbit' : 'Take picture for this slot'}
         >
           {activeSlot.id === 'video_360' ? (
             <>

@@ -538,7 +538,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   // Phase 7: 360 Walkaround Video (Lens Folder: 360 Video -> TruFlow: Main media / video field)
   {
     id: 'video_360',
-    name: '360° Video Walkaround',
+    name: 'Tru Orbit',
     description: 'Capture a complete 360-degree high-fidelity continuous walkaround video.',
     overlaySvgPath: 'video_360',
     required: true,

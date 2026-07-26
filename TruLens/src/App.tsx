@@ -394,8 +394,8 @@ export default function App() {
         const sizeMb = Math.round(processedImage.length / 1024 / 1024);
         setUploadError(
           res.status === 413 || sizeMb > 45
-            ? `That clip is ${sizeMb}MB — too large to save. Record a shorter walkaround (under 20 seconds) and keep it again.`
-            : `Could not save that ${processedImage.startsWith('data:video') ? 'walkaround' : 'photo'} (server said ${res.status}). It has NOT been kept — try again.`,
+            ? `That clip is ${sizeMb}MB — too large to save. Record a shorter Tru Orbit (under 20 seconds) and keep it again.`
+            : `Could not save that ${processedImage.startsWith('data:video') ? 'Tru Orbit' : 'photo'} (server said ${res.status}). It has NOT been kept — try again.`,
         );
       }
     } catch (e) {

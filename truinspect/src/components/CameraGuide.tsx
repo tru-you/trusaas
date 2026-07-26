@@ -74,7 +74,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     'Engine & Mechanical',
     'Recon / Work',
     'Documents',
-    '360 Walkaround'
+    'Tru Orbit'
   ];
 
   // Progress tracker calculation
@@ -445,7 +445,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     // 360 walkaround is being rebuilt as a genuine video recording. Until then
     // we do NOT fabricate a spin — a graded report only carries real captures.
     if (activeSlot.id === 'video_360') {
-      setCaptureHint('360 walkaround is being rebuilt — capture the real photos for now.');
+      setCaptureHint('Tru Orbit is being rebuilt — capture the real photos for now.');
       setTimeout(() => setCaptureHint(null), 2800);
       return;
     }
@@ -1221,7 +1221,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               ? 'bg-gradient-to-r from-red-600 to-rose-500 text-[#E8EAE6] border border-red-400/40'
               : 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-cyan-600 text-[#E8EAE6] border border-indigo-400/30'
           }`}
-          title={activeSlot.id === 'video_360' ? 'Record 360 walkaround' : 'Take picture for this slot'}
+          title={activeSlot.id === 'video_360' ? 'Record Tru Orbit' : 'Take picture for this slot'}
         >
           {activeSlot.id === 'video_360' ? (
             <>

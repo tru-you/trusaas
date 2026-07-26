@@ -403,7 +403,7 @@ export default function InventoryList({
               b.damage ? `${b.damage} damage` : null,
               b.vin ? `${b.vin} VIN` : null,
               b.serviceBook ? `${b.serviceBook} service` : null,
-              b.walkaround ? '360 walkaround ✓' : 'no 360 walkaround',
+              b.walkaround ? 'Tru Orbit ✓' : 'no Tru Orbit',
             ].filter(Boolean).join(', ')
           : `${takenCount} photos`;
         setExportToast({
