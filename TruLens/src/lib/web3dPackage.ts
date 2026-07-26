@@ -53,6 +53,11 @@ const ORBIT_SLOTS = [
   { id: 'rear_3_4', azimuth: 0.45 },
   { id: 'rear_straight', azimuth: 0.5 },
   { id: 'side_driver', azimuth: 0.75 },
+  { id: 'roof_view', azimuth: 0.0 },
+  { id: 'wheels_all', azimuth: 0.8 },
+  { id: 'badges_detail', azimuth: 0.1 },
+  { id: 'lights_detail', azimuth: 0.15 },
+  { id: 'mirrors_handles', azimuth: 0.35 },
 ];
 
 /**
@@ -183,28 +188,21 @@ export async function buildWeb3DPackage(vehicle: Vehicle): Promise<Web3DPackage>
     });
   }
 
-  // If few orbit frames, fill from any exterior
-  if (frames.length < 3) {
-    for (const slot of PHOTO_SLOTS.filter((s) => s.phase === 1)) {
-      if (frames.some((f) => f.slotId === slot.id)) continue;
-      const src = photos[slot.id];
-      if (!src) continue;
-      const cut = await approxBackgroundless(src);
-      frames.push({
-        index: frames.length,
-        slotId: slot.id,
-        name: slot.name,
-        azimuth: frames.length / 8,
-        image: cut.image,
-        background: cut.mode,
-      });
-    }
+  // Also pick up any remaining phase-1 (exterior) slots not in ORBIT_SLOTS
+  for (const slot of PHOTO_SLOTS.filter((s) => s.phase === 1)) {
+    if (frames.some((f) => f.slotId === slot.id)) continue;
+    const src = photos[slot.id];
+    if (!src) continue;
+    const cut = await approxBackgroundless(src);
+    frames.push({
+      index: frames.length,
+      slotId: slot.id,
+      name: slot.name,
+      azimuth: frames.length / (frames.length + 4),
+      image: cut.image,
+      background: cut.mode,
+    });
   }
-
-  const videoSrc = photos.video_360;
-  const isVideo =
-    typeof videoSrc === 'string' &&
-    (videoSrc.startsWith('data:video') || videoSrc.includes('video'));
 
   return {
     version: 1,
@@ -219,12 +217,12 @@ export async function buildWeb3DPackage(vehicle: Vehicle): Promise<Web3DPackage>
       price: vehicle.price,
     },
     createdAt: new Date().toISOString(),
-    mode: isVideo ? 'video+tags' : 'spin-frames',
+    mode: 'spin-frames',
     background: frames.some((f) => f.background === 'transparent-approx')
       ? 'transparent-approx'
       : 'original',
     frames,
-    video: isVideo && videoSrc ? { src: videoSrc, mime: 'video/mp4' } : null,
+    video: null,
     damageTags: collectDamageTags(vehicle),
     web: {
       embedPath: `/embed/web3d-viewer.html?stock=${encodeURIComponent(vehicle.stockNumber)}`,

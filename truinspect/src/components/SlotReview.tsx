@@ -57,13 +57,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
           <p className="text-[13px] font-bold tracking-wide text-cyan-400 truncate">{slot?.name || 'Review shot'}</p>
           <p className="text-[13px] text-neutral-400">Assess it now — condition & note</p>
         </div>
-        <button
-          type="button"
-          onClick={save}
-          className="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-[13px] font-semibold text-[#06080D] flex items-center gap-1"
-        >
-          <Check size={13} /> Keep
-        </button>
+        <div className="w-10" />
       </div>
 
       <div className="flex-1 overflow-y-auto">

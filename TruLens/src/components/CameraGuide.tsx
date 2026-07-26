@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Camera, Sliders, ChevronLeft, ChevronRight, Sun, Volume2, Sparkles, AlertCircle, 
+  Camera, Sliders, ChevronLeft, ChevronRight, Sun, Sparkles, AlertCircle,
   Check, RefreshCw, Upload, Smartphone, HelpCircle, Eye, Images, Loader2, Trash2, X,
   Circle, CheckCircle2, RotateCcw} from 'lucide-react';
 import { Vehicle, PhotoSlot, QualityReport, PHOTO_SLOTS } from '../types';
@@ -31,16 +31,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
   const [captureHint, setCaptureHint] = React.useState<string | null>(null);
   const singleUploadRef = React.useRef<HTMLInputElement>(null);
   
-  // Genuine 360 walkaround video recording (MediaRecorder on the live stream)
-  const MAX_360_SECONDS = 30;
-  const [isRecording360, setIsRecording360] = React.useState(false);
-  const [recordingProgress, setRecordingProgress] = React.useState(0);
-  const [recordingSeconds, setRecordingSeconds] = React.useState(0);
-  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = React.useRef<Blob[]>([]);
-  const rec360TimerRef = React.useRef<number | null>(null);
-  const rec360MimeRef = React.useRef<string>('video/webm');
-
   // Real-time camera & canvas references
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -214,29 +204,15 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const isVideo = file.type.startsWith('video/');
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
           const dataUri = event.target.result as string;
-          if (isVideo) {
-            // A video can't go through the image-canvas shutter path — hand it
-            // straight to Redo/Keep as a genuine video for the 360 slot.
-            const report: QualityReport = {
-              overallScore: 100,
-              lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: 'Tru Orbit clip uploaded.' },
-              angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Uploaded Tru Orbit — review below, then keep or redo.' },
-            };
-            setPendingShot({ slotId: 'video_360', base64: dataUri, report, kind: 'video' });
-          } else {
-            setCustomFile(dataUri);
-            // Uploaded image becomes the live viewfinder — ready for shutter / AI
-            setIsCameraActive(false);
-          }
+          setCustomFile(dataUri);
+          setIsCameraActive(false);
         }
       };
       reader.readAsDataURL(file);
-      // Allow re-selecting the same file later
       e.target.value = '';
     }
   };
@@ -461,128 +437,9 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
   // Capture Photo action — always take/confirm a shot (never navigates elsewhere)
   // Pick a container/codec this browser can actually record. iOS Safari only
   // does mp4; Android/desktop Chrome prefer webm. Fall back to plain webm.
-  const pick360Mime = (): string => {
-    const candidates = [
-      'video/mp4',
-      'video/webm;codecs=vp9',
-      'video/webm;codecs=vp8',
-      'video/webm',
-    ];
-    for (const m of candidates) {
-      try {
-        if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(m)) return m;
-      } catch { /* ignore */ }
-    }
-    return 'video/webm';
-  };
-
-  const blobToBase64 = (blob: Blob): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-
-  const clearRec360Timer = () => {
-    if (rec360TimerRef.current != null) {
-      clearInterval(rec360TimerRef.current);
-      rec360TimerRef.current = null;
-    }
-  };
-
-  const start360Recording = () => {
-    const stream = streamRef.current;
-    if (!stream || !isCameraActive) {
-      setCaptureHint('Start the live camera first — tap Retry, or upload a video.');
-      setTimeout(() => setCaptureHint(null), 2600);
-      return;
-    }
-    let recorder: MediaRecorder;
-    try {
-      const mime = pick360Mime();
-      rec360MimeRef.current = mime;
-      recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
-    } catch {
-      setCaptureHint('This browser can’t record video — upload a clip instead.');
-      setTimeout(() => setCaptureHint(null), 2800);
-      return;
-    }
-
-    recordedChunksRef.current = [];
-    recorder.ondataavailable = (ev) => {
-      if (ev.data && ev.data.size > 0) recordedChunksRef.current.push(ev.data);
-    };
-    recorder.onstop = async () => {
-      clearRec360Timer();
-      const blob = new Blob(recordedChunksRef.current, { type: rec360MimeRef.current });
-      recordedChunksRef.current = [];
-      setIsRecording360(false);
-      if (!blob.size) {
-        setCaptureHint('Nothing recorded — try again.');
-        setTimeout(() => setCaptureHint(null), 2400);
-        return;
-      }
-      try { if (navigator.vibrate) navigator.vibrate(12); } catch { /* ignore */ }
-      const dataUri = await blobToBase64(blob);
-      const report: QualityReport = {
-        overallScore: 100,
-        lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: '360° walkaround video captured.' },
-        angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Continuous walkaround — review below, then keep or redo.' },
-      };
-      setPendingShot({ slotId: 'video_360', base64: dataUri, report, kind: 'video' });
-    };
-
-    mediaRecorderRef.current = recorder;
-    recorder.start();
-    setIsRecording360(true);
-    setRecordingProgress(0);
-    setRecordingSeconds(0);
-    try { if (navigator.vibrate) navigator.vibrate(20); } catch { /* ignore */ }
-
-    // Tick the timer / progress and hard-stop at the max length.
-    const startedAt = Date.now();
-    clearRec360Timer();
-    rec360TimerRef.current = window.setInterval(() => {
-      const secs = (Date.now() - startedAt) / 1000;
-      setRecordingSeconds(secs);
-      setRecordingProgress(Math.min(100, Math.round((secs / MAX_360_SECONDS) * 100)));
-      if (secs >= MAX_360_SECONDS) stop360Recording();
-    }, 200);
-  };
-
-  const stop360Recording = () => {
-    clearRec360Timer();
-    const rec = mediaRecorderRef.current;
-    if (rec && rec.state !== 'inactive') {
-      try { rec.stop(); } catch { /* onstop still fires */ }
-    } else {
-      setIsRecording360(false);
-    }
-  };
-
-  // Stop recording + release the timer if the screen unmounts mid-capture.
-  React.useEffect(() => {
-    return () => {
-      clearRec360Timer();
-      const rec = mediaRecorderRef.current;
-      if (rec && rec.state !== 'inactive') {
-        try { rec.stop(); } catch { /* ignore */ }
-      }
-    };
-  }, []);
-
   const handleCapture = (e?: React.MouseEvent) => {
     e?.preventDefault?.();
     e?.stopPropagation?.();
-
-    // 360 walkaround: record the live camera for real (start, or stop if already
-    // rolling — the button toggles).
-    if (activeSlot.id === 'video_360') {
-      if (isRecording360) stop360Recording();
-      else start360Recording();
-      return;
-    }
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1012,31 +869,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
         {/* Dynamic SVG Guide Silhouette */}
         {renderGuideOverlay()}
 
-        {/* Live recording HUD — deliberately NOT opaque, so the shooter sees the
-            camera while walking around the car. */}
-        {isRecording360 && (
-          <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between p-4 animate-in fade-in duration-200">
-            <div className="flex items-center gap-2 self-start bg-neutral-950/70 border border-red-500/40 px-3 py-2 rounded-full">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
-              <span className="text-[13px] font-semibold text-red-400 tracking-wide">REC</span>
-              <span className="text-[13px] font-mono text-[#E8EAE6]">
-                {recordingSeconds.toFixed(0)}s / {MAX_360_SECONDS}s
-              </span>
-            </div>
-            <div className="space-y-2">
-              <p className="text-center text-[13px] text-[#E8EAE6] bg-neutral-950/60 rounded-lg py-2 px-3 mx-auto w-fit">
-                Walk slowly all the way around the car — tap Stop when you’re back.
-              </p>
-              <div className="w-full h-1.5 bg-neutral-900/70 rounded-full overflow-hidden border border-neutral-800">
-                <div
-                  className="h-full bg-red-600 rounded-full transition-all duration-150"
-                  style={{ width: `${recordingProgress}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Real-time Gyro / Bubble Level Circle Overlay */}
         {/* The level bubble and the lighting readout were removed from the
             viewfinder. Both were simulated rather than measured — the roll and
@@ -1122,7 +954,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
           </p>
 
           <button
-            disabled={currentPhase === 7}
+            disabled={currentPhase === 6}
             onClick={() => {
               const newPhase = currentPhase + 1;
               setCurrentPhase(newPhase);
@@ -1153,17 +985,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
         )}
 
         {pendingShot ? (
-          /* Shoot → glance → Redo or Keep. Keep saves and auto-advances to the
-             next empty slot; Edit is there if a shot genuinely needs it. */
           <div className="flex flex-col gap-2">
-            {pendingShot.kind === 'video' && (
-              <video
-                src={pendingShot.base64}
-                controls
-                playsInline
-                className="w-full max-h-64 rounded-2xl bg-black object-contain border border-white/10"
-              />
-            )}
             <div className="flex gap-2">
               <button
                 type="button"
@@ -1204,28 +1026,15 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
         <button
           type="button"
           onClick={handleCapture}
-          className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-semibold text-[16px] tracking-normal disabled:opacity-60 ${
-            activeSlot.id === 'video_360'
-              ? 'bg-[#B86A6A] text-[#06080D] border border-transparent'
-              : 'bg-[#4FE3DC] text-[#06080D] border border-transparent'
-          }`}
-          title={activeSlot.id === 'video_360' ? 'Record Tru Orbit' : 'Take picture for this slot'}
+          className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-semibold text-[16px] tracking-normal disabled:opacity-60 bg-[#4FE3DC] text-[#06080D] border border-transparent"
+          title="Take picture for this slot"
         >
-          {activeSlot.id === 'video_360' ? (
-            <>
-              <span className={`w-3.5 h-3.5 bg-white ${isRecording360 ? 'rounded-sm' : 'rounded-full'} animate-pulse`} />
-              {isRecording360 ? `Stop · ${recordingSeconds.toFixed(0)}s` : 'Record 360 video'}
-            </>
-          ) : (
-            <>
-              <Camera size={20} strokeWidth={2.5} />
-              {isCameraActive
-                ? 'Take picture'
-                : customFile
-                  ? 'Use this photo'
-                  : 'Take picture'}
-            </>
-          )}
+          <Camera size={20} strokeWidth={2.5} />
+          {isCameraActive
+            ? 'Take picture'
+            : customFile
+              ? 'Use this photo'
+              : 'Take picture'}
         </button>
         )}
 
@@ -1244,7 +1053,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
               Phone camera
               <input
                 type="file"
-                accept={activeSlot.id === 'video_360' ? 'video/*' : 'image/*'}
+                accept="image/*"
                 capture="environment"
                 onChange={handleFileUpload}
                 className="hidden"
@@ -1262,7 +1071,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
             <input
               ref={singleUploadRef}
               type="file"
-              accept={activeSlot.id === 'video_360' ? 'video/*,image/*' : 'image/*'}
+              accept="image/*"
               onChange={handleFileUpload}
               className="hidden"
             />
