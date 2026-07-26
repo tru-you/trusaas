@@ -943,7 +943,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
           of a phone screen, which is not enough to frame a car in.
           svh not vh: the mobile address bar collapses on scroll, and vh would
           change the framing mid-shoot. */}
-      <div className="capture-preview relative flex-1 min-h-[52svh] bg-black flex flex-col justify-center overflow-hidden">
+      <div className="capture-preview relative flex-1 min-h-[46svh] bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
@@ -1051,6 +1051,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
           </div>
         )}
       </div>
+
+      {/* Below-viewfinder chrome: scrolls when the viewfinder's min-h
+          leaves less than the chrome needs. min-h-0 is required — without it
+          a flex child won't shrink below its content size. */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
 
       {/* Guide Slots Carousel Picker */}
       <div className="bg-neutral-900 border-t border-neutral-850 p-2 shrink-0 z-10">
@@ -1291,6 +1296,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
         </div>
 
       </div>
+
+      </div>{/* end below-viewfinder scroll wrapper */}
 
       {/* Bulk Importer Overlay Modal */}
       {isBulkModalOpen && (

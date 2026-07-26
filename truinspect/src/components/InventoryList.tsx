@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
-  FileText, Settings, Camera, LogOut, Loader2, ScanLine
+  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -63,6 +63,7 @@ export default function InventoryList({
   /** Extra filter: web readiness for floor managers */
   const [readinessFilter, setReadinessFilter] = React.useState<'ALL' | 'NEEDS' | 'READY'>('ALL');
   const [showAddForm, setShowAddForm] = React.useState(false);
+  const [editingVehicle, setEditingVehicle] = React.useState<Vehicle | null>(null);
   const [currentTab, setCurrentTab] = React.useState<'catalog' | 'dashboard' | 'settings'>('catalog');
   const [exportingId, setExportingId] = React.useState<string | null>(null);
   const [publishingId, setPublishingId] = React.useState<string | null>(null);
@@ -234,6 +235,9 @@ export default function InventoryList({
   const [color, setColor] = React.useState('');
   const [price, setPrice] = React.useState(24995);
   const [vehicleType, setVehicleType] = React.useState('SUV');
+  const [mileage, setMileage] = React.useState('');
+  const [transmission, setTransmission] = React.useState<'Automatic' | 'Manual'>('Manual');
+  const [fuelType, setFuelType] = React.useState<'Petrol' | 'Diesel' | 'Hybrid' | 'Electric'>('Petrol');
   const [status, setStatus] = React.useState<'In-Progress' | 'Ready'>('In-Progress');
 
   /* Licence-disc scan — same component and parser as TruLens. An inspector
@@ -273,24 +277,64 @@ export default function InventoryList({
     setStockNumber(mockStock);
   };
 
+  const startEditing = (v: Vehicle) => {
+    setEditingVehicle(v);
+    setMake(v.make);
+    setModel(v.model);
+    setYear(v.year);
+    setTrim(v.trim || '');
+    setVin(v.vin || '');
+    setStockNumber(v.stockNumber || '');
+    setColor(v.color || '');
+    setPrice(v.price || 24995);
+    setVehicleType(v.vehicleType || 'SUV');
+    setMileage(v.mileage != null ? String(v.mileage) : '');
+    setTransmission(v.transmission || 'Manual');
+    setFuelType(v.fuelType || 'Petrol');
+    setStatus(v.status === 'Listed' ? 'Ready' : v.status);
+    setShowAddForm(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!make || !model) return;
-    
-    onAddVehicle({
-      make,
-      model,
-      year: Number(year),
-      trim,
-      vin: vin || 'VIN-PENDING-' + Math.floor(1000 + Math.random() * 9000),
-      stockNumber: stockNumber || 'STK-' + Math.floor(10000 + Math.random() * 90000),
-      color: color || 'Black',
-      price: Number(price),
-      vehicleType,
-      status
-    });
+
+    if (editingVehicle && onUpdateVehicle) {
+      onUpdateVehicle(editingVehicle, {
+        make,
+        model,
+        year: Number(year),
+        trim,
+        vin: vin.trim(),
+        stockNumber: stockNumber.trim(),
+        color: color.trim(),
+        price: Number(price),
+        vehicleType,
+        mileage: mileage.trim() ? Number(mileage) : undefined,
+        transmission,
+        fuelType,
+        status,
+      });
+    } else {
+      onAddVehicle({
+        make,
+        model,
+        year: Number(year),
+        trim,
+        vin: vin || 'VIN-PENDING-' + Math.floor(1000 + Math.random() * 9000),
+        stockNumber: stockNumber || 'STK-' + Math.floor(10000 + Math.random() * 90000),
+        color: color || 'Black',
+        price: Number(price),
+        vehicleType,
+        mileage: mileage.trim() ? Number(mileage) : undefined,
+        transmission,
+        fuelType,
+        status
+      });
+    }
 
     // Reset form
+    setEditingVehicle(null);
     setMake('');
     setModel('');
     setYear(new Date().getFullYear());
@@ -300,6 +344,9 @@ export default function InventoryList({
     setColor('');
     setPrice(24995);
     setVehicleType('SUV');
+    setMileage('');
+    setTransmission('Manual');
+    setFuelType('Petrol');
     setStatus('In-Progress');
     setShowAddForm(false);
   };
@@ -481,7 +528,7 @@ export default function InventoryList({
           reaches. See the nav below the scroll area. */}
 
       {/* Main Panel Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+      <div id="inventory-scroll-container" className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {currentTab === 'catalog' ? (
           <>
             {/* Search & Add New Toggle */}
@@ -497,7 +544,7 @@ export default function InventoryList({
             />
           </div>
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
+            onClick={() => { setEditingVehicle(null); setShowAddForm(!showAddForm); }}
             aria-label={showAddForm ? 'Close new vehicle form' : 'Add a vehicle'}
             className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 rounded-lg bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
           >
@@ -514,7 +561,9 @@ export default function InventoryList({
           <form onSubmit={handleSubmit} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 space-y-4 shadow-xl animate-in fade-in duration-200">
             <div className="flex items-center justify-between border-b border-neutral-850 pb-2 gap-2">
               <span className="text-[13px] font-bold text-neutral-300 flex items-center gap-2 shrink-0">
-                <Plus size={14} className="text-trulens-purple" /> New vehicle
+                {editingVehicle
+                  ? <><Pencil size={14} className="text-trulens-purple" /> Edit vehicle</>
+                  : <><Plus size={14} className="text-trulens-purple" /> New vehicle</>}
               </span>
               <button
                 type="button"
@@ -650,6 +699,44 @@ export default function InventoryList({
               </div>
             </div>
 
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Mileage (km)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={mileage}
+                  onChange={(e) => setMileage(e.target.value.replace(/[^\d]/g, ''))}
+                  placeholder="e.g. 78400"
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                />
+              </div>
+              <div>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Transmission</label>
+                <select
+                  value={transmission}
+                  onChange={(e) => setTransmission(e.target.value as 'Automatic' | 'Manual')}
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                >
+                  <option value="Manual">Manual</option>
+                  <option value="Automatic">Automatic</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Fuel</label>
+                <select
+                  value={fuelType}
+                  onChange={(e) => setFuelType(e.target.value as 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric')}
+                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                >
+                  <option value="Petrol">Petrol</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="Electric">Electric</option>
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="text-[13px] text-neutral-400 font-bold block mb-1">VIN (17 characters)</label>
               <input
@@ -664,7 +751,7 @@ export default function InventoryList({
             <div className="flex gap-2 pt-1 border-t border-neutral-850">
               <button
                 type="button"
-                onClick={() => setShowAddForm(false)}
+                onClick={() => { setShowAddForm(false); setEditingVehicle(null); }}
                 className="flex-1 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-[13px] font-bold cursor-pointer"
               >
                 Cancel
@@ -673,7 +760,7 @@ export default function InventoryList({
                 type="submit"
                 className="flex-1 py-2 bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
               >
-                <Plus size={14} /> Add vehicle
+                {editingVehicle ? <><Pencil size={14} /> Save changes</> : <><Plus size={14} /> Add vehicle</>}
               </button>
             </div>
           </form>
@@ -908,19 +995,31 @@ export default function InventoryList({
                       </div>
                     </div>
 
-                    {/* Delete action */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm(`Remove ${vehicle.year} ${vehicle.make} from the catalogue?`)) {
-                          onDeleteVehicle(vehicle.id);
-                        }
-                      }}
-                      className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 text-neutral-600 hover:text-red-400 rounded hover:bg-neutral-900 cursor-pointer"
-                      title="Delete vehicle"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEditing(vehicle);
+                          document.getElementById('inventory-scroll-container')?.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 text-neutral-600 hover:text-[#4FE3DC] rounded hover:bg-neutral-900 cursor-pointer"
+                        title="Edit vehicle details"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Remove ${vehicle.year} ${vehicle.make} from the catalogue?`)) {
+                            onDeleteVehicle(vehicle.id);
+                          }
+                        }}
+                        className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 text-neutral-600 hover:text-red-400 rounded hover:bg-neutral-900 cursor-pointer"
+                        title="Delete vehicle"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Progress Indicators */}

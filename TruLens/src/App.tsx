@@ -384,20 +384,8 @@ export default function App() {
         setActiveSlotId(null);
         setActiveQualityReport(null);
       } else {
-        /* Say what went wrong. This used to set an error flag and nothing else,
-           while the caller had already cleared the pending shot — so a failed
-           save looked exactly like a successful one: the clip vanished, the app
-           carried on, and the only way to discover the loss was to read the
-           dealer's public feed days later. A 360 walkaround is ~20MB against
-           ~60KB for a still, so it is the one that hits a size ceiling, and a
-           desktop webcam can ignore the bitrate hint and record far larger. */
         setSyncStatus('error');
-        const sizeMb = Math.round(processedImage.length / 1024 / 1024);
-        setUploadError(
-          res.status === 413 || sizeMb > 45
-            ? `That clip is ${sizeMb}MB — too large to save. Record a shorter Tru Orbit (under 20 seconds) and keep it again.`
-            : `Could not save that ${processedImage.startsWith('data:video') ? 'Tru Orbit' : 'photo'} (server said ${res.status}). It has NOT been kept — try again.`,
-        );
+        setUploadError(`Could not save that photo (server said ${res.status}). It has NOT been kept — try again.`);
       }
     } catch (e) {
       console.error('Failed to upload photo:', e);

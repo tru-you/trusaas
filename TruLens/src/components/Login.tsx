@@ -246,7 +246,7 @@ export default function Login() {
 
         {/* Footer. Was four separate 13px items plus a version line at 10%
             opacity — 1.2:1, i.e. not visible at all. One quiet line instead. */}
-        <div className="mt-10 flex items-center gap-2 text-[12px] text-[rgba(232,234,230,0.55)]">
+        <div className="mt-10 flex items-center justify-center flex-wrap gap-2 text-[12px] text-[rgba(232,234,230,0.55)]">
           <a
             href="https://tru-saas.com"
             target="_blank"

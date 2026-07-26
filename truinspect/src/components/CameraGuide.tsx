@@ -974,7 +974,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
       </div>
 
       {/* Viewfinder Main View */}
-      <div className="capture-preview relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
+      <div className="capture-preview relative flex-1 min-h-[46svh] bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
@@ -1076,41 +1076,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </div>
         )}
 
-        {/* Real-time Gyro / Bubble Level Circle Overlay */}
-        {autoLevelOn && (
-          <div className="absolute right-4 top-4 bg-neutral-950/75 border border-neutral-800 px-3 py-2 rounded-xl flex items-center gap-2 z-10 shadow-lg">
-            <div className="relative w-8 h-8 rounded-full border-2 border-neutral-700/60 flex items-center justify-center">
-              {/* Leveled target ring */}
-              <div className="w-2.5 h-2.5 rounded-full border border-neutral-600"></div>
-              {/* Center Bubble bubble level */}
-              <div 
-                className={`w-2 h-2 rounded-full absolute transition-all duration-100 ${
-                  angleCorrect ? 'bg-emerald-400 shadow-md shadow-emerald-500/50 scale-110' : 'bg-red-400'
-                }`}
-                style={{
-                  transform: `translate(${Math.max(-10, Math.min(10, simRoll * 2.5))}px, ${Math.max(-10, Math.min(10, (simPitch - activeSlot.idealAngle.pitch) * 1.5))}px)`
-                }}
-              ></div>
-            </div>
-            {/* These two readouts are glanced at, never read. One word each, and
-                "LOCKED" no longer shouts — the colour already carries it. */}
-            <div className="text-[13px] font-mono">
-              <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Level</p>
-              <p className={angleCorrect ? 'text-emerald-400 font-bold' : 'text-neutral-300'}>
-                {angleCorrect ? 'Level' : `${simRoll.toFixed(1)}° roll`}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Lighting status warning flag */}
-        <div className="absolute left-4 top-4 bg-neutral-950/75 border border-neutral-800 p-2 rounded-xl z-10 flex items-center gap-2 shadow-lg">
-          <Sun size={14} className={lightingAdvice.color} />
-          <div className="text-[13px] font-mono">
-            <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Light</p>
-            <p className={`font-bold ${lightingAdvice.color}`}>{lightingAdvice.title}</p>
-          </div>
-        </div>
+        {/* Simulated AI overlays (bubble level, lighting pill) removed —
+            they showed fake sensor data and cluttered the viewfinder. */}
 
         {/* Quick Camera Source Helper overlay if webcam unavailable */}
         {!isCameraActive && !customFile && (
@@ -1119,6 +1086,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </div>
         )}
       </div>
+
+      {/* Below-viewfinder chrome: scrolls when the viewfinder's min-h
+          leaves less than the chrome needs. min-h-0 is required — without it
+          a flex child won't shrink below its content size. */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
 
       {/* Guide Slots Carousel Picker */}
       <div className="bg-neutral-900 border-t border-neutral-850 p-2 shrink-0 z-10">
@@ -1141,7 +1113,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 key={slot.id}
                 type="button"
                 onClick={() => setSelectedSlotId(slot.id)}
-                className={`slot-state px-3 py-2 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-2 transition-all ${
+                className={`slot-state shrink-0 px-3 py-2 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-2 transition-all ${
                   isSelected
                     ? 'slot-state--active'
                     : isTaken
@@ -1294,17 +1266,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             />
           </label>
 
-          <button
-            type="button"
-            onClick={() => setAutoLevelOn(!autoLevelOn)}
-            className={`flex-1 py-2 border rounded-xl text-[13px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${
-              autoLevelOn
-                ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
-                : 'bg-neutral-900 border-neutral-800 text-neutral-400'
-            }`}
-          >
-            <Smartphone size={13} /> Level
-          </button>
+          {/* Level toggle removed — the overlay it controlled was simulated, not measured */}
         </div>
 
         {/* Guidance for the panel being assessed right now. This was a single
@@ -1321,6 +1283,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         </div>
 
       </div>
+
+      </div>{/* end below-viewfinder scroll wrapper */}
 
       {/* Bulk Importer Overlay Modal */}
       {isBulkModalOpen && (

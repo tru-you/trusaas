@@ -1,9 +1,9 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, Download, Printer, Share2, Award, AlertTriangle, CheckCircle2,
-  Camera, FileText, Wrench, ClipboardList, Clock, Copy, Check, MessageCircle, Box,
+  ArrowLeft, Download, Printer, Award, AlertTriangle, CheckCircle2,
+  Camera, FileText, Wrench, ClipboardList, Clock, Check, MessageCircle, Box,
 } from 'lucide-react';
-import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport } from '../types';
+import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, DamageFinding } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
@@ -17,25 +17,50 @@ interface ReportPreviewProps {
   onVehicleUpdated?: (v: Vehicle) => void;
 }
 
-function computeOverallScore(vehicle: Vehicle) {
-  const req = PHOTO_SLOTS.filter(s => s.required);
-  const opt = PHOTO_SLOTS.filter(s => !s.required);
-  let totalWeight = 0, weightedScore = 0;
-  let capturedReq = 0, capturedOpt = 0;
+const CONDITION_SCALE = [
+  { min: 4.5, band: '5.0 – 4.5', label: 'Excellent', meaning: 'Minor blemishes only. Retail ready.', color: '#16A34A' },
+  { min: 3.5, band: '4.4 – 3.5', label: 'Good', meaning: 'Light cosmetic wear consistent with age.', color: '#65A30D' },
+  { min: 2.5, band: '3.4 – 2.5', label: 'Fair', meaning: 'Visible defects recorded. Attention advised.', color: '#CA8A04' },
+  { min: 0,   band: '2.4 – 1.0', label: 'Poor', meaning: 'Significant damage documented below.', color: '#DC2626' },
+];
 
-  req.forEach(slot => {
-    const q = vehicle.quality?.[slot.id];
-    if (q) { weightedScore += q.overallScore * 2; capturedReq++; }
-    else   { weightedScore += 30 * 2; }
-    totalWeight += 2;
-  });
-  opt.forEach(slot => {
-    const q = vehicle.quality?.[slot.id];
-    if (q) { weightedScore += q.overallScore * 1; capturedOpt++; totalWeight += 1; }
-  });
+function conditionBand(stars: number | null) {
+  if (stars === null) {
+    return { label: 'Not yet assessed', meaning: 'No damage findings recorded.', color: '#475569' };
+  }
+  return CONDITION_SCALE.find(b => stars >= b.min) ?? CONDITION_SCALE[CONDITION_SCALE.length - 1];
+}
 
-  const score = totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 0;
-  return { score, captured: capturedReq + capturedOpt, required: req.length, optional: opt.length };
+function severityMeta(sev: number) {
+  if (sev >= 5) return { label: 'Critical', color: '#DC2626', bg: '#FEE2E2' };
+  if (sev >= 4) return { label: 'Major', color: '#EA580C', bg: '#FFEDD5' };
+  if (sev >= 3) return { label: 'Moderate', color: '#CA8A04', bg: '#FEF9C3' };
+  if (sev >= 2) return { label: 'Minor', color: '#64748B', bg: '#F1F5F9' };
+  return { label: 'Cosmetic', color: '#475569', bg: '#F8FAFC' };
+}
+
+function computeCondition(vehicle: Vehicle) {
+  const all = Object.entries(vehicle.damageFindings || {}).flatMap(([slotId, list]) =>
+    (list || []).filter(f => f.confirmed !== false).map(f => ({ ...f, slotId }))
+  );
+  const penalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
+  const penalty = all.reduce((s, f) => s + (penalties[f.severity] ?? 0.3), 0);
+  const stars = Math.max(1, Math.round((5 - Math.min(4, penalty)) * 10) / 10);
+  const hasInput = all.length > 0;
+  const label =
+    !hasInput ? 'Not yet assessed' :
+    stars >= 4.5 ? 'Excellent — minor blemishes only' :
+    stars >= 3.5 ? 'Good — light cosmetic wear' :
+    stars >= 2.5 ? 'Fair — visible defects to address' :
+    'Poor — significant damage documented';
+  return { stars, label, findings: all, hasInput };
+}
+
+function captureBand(score: number | null) {
+  if (score === null) return { label: 'Not captured', color: '#475569', bg: 'rgba(148,163,184,0.10)' };
+  if (score >= 80) return { label: 'Good', color: '#16A34A', bg: 'rgba(34,197,94,0.12)' };
+  if (score >= 60) return { label: 'Usable', color: '#CA8A04', bg: 'rgba(234,179,8,0.14)' };
+  return { label: 'Re-shoot', color: '#DC2626', bg: 'rgba(239,68,68,0.14)' };
 }
 
 function scoreForSlots(vehicle: Vehicle, slots: PhotoSlot[]): number | null {
@@ -44,30 +69,19 @@ function scoreForSlots(vehicle: Vehicle, slots: PhotoSlot[]): number | null {
   return Math.round(captured.reduce((sum, q) => sum + q.overallScore, 0) / captured.length);
 }
 
-function gradeFor(score: number | null) {
-  if (score === null) return { grade: '—', label: 'Not captured', color: '#475569', bg: 'rgba(148,163,184,0.10)', sales: 'Incomplete' };
-  if (score >= 90) return { grade: 'A',  label: 'Excellent', color: '#4ADE9B', bg: 'rgba(34,197,94,0.14)', sales: 'List with confidence' };
-  if (score >= 80) return { grade: 'A-', label: 'Very good', color: '#4ADE9B', bg: 'rgba(34,197,94,0.12)', sales: 'List with confidence' };
-  if (score >= 70) return { grade: 'B',  label: 'Good', color: '#EAB308', bg: 'rgba(234,179,8,0.14)', sales: 'List after light polish' };
-  if (score >= 60) return { grade: 'C',  label: 'Fair · attend', color: '#F97316', bg: 'rgba(249,115,22,0.14)', sales: 'Recon before web' };
-  return { grade: 'D', label: 'Substantial issues', color: '#EF4444', bg: 'rgba(239,68,68,0.16)', sales: 'Do not publish yet' };
-}
-
 const PHASES = [
-  { id: 1, name: 'Exterior', key: 'exterior', icon: Camera },
-  { id: 3, name: 'Interior', key: 'interior', icon: ClipboardList },
-  { id: 4, name: 'Engine', key: 'engine', icon: Wrench },
-  { id: 5, name: 'Damage', key: 'damage', icon: AlertTriangle },
-  { id: 6, name: 'Documents', key: 'documents', icon: FileText },
+  { id: 1, name: 'Exterior', icon: Camera },
+  { id: 3, name: 'Interior', icon: ClipboardList },
+  { id: 4, name: 'Engine', icon: Wrench },
+  { id: 5, name: 'Damage', icon: AlertTriangle },
+  { id: 6, name: 'Documents', icon: FileText },
 ];
 
 export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
-  const salesRef = useRef<HTMLDivElement>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
   const [waCopied, setWaCopied] = useState(false);
-  const [generating, setGenerating] = useState<'sales' | 'full' | null>(null);
+  const [generating, setGenerating] = useState<'full' | null>(null);
   const [web3dBusy, setWeb3dBusy] = useState(false);
   const [web3dMsg, setWeb3dMsg] = useState<string | null>(null);
   const [publishBusy, setPublishBusy] = useState(false);
@@ -85,17 +99,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     '';
 
   const brandedVehicle = useMemo(
-    () => ({
-      ...vehicle,
-      dealerName,
-      dealerWhatsApp: dealerWa || vehicle.dealerWhatsApp,
-    }),
+    () => ({ ...vehicle, dealerName, dealerWhatsApp: dealerWa || vehicle.dealerWhatsApp }),
     [vehicle, dealerName, dealerWa]
   );
 
   const readiness = useMemo(() => computeWebReadiness(brandedVehicle), [brandedVehicle]);
-  const overall = useMemo(() => computeOverallScore(vehicle), [vehicle]);
-  const overallGrade = gradeFor(overall.score);
+  const condition = useMemo(() => computeCondition(vehicle), [vehicle]);
+  const band = conditionBand(condition.hasInput ? condition.stars : null);
   const waBlurb = useMemo(
     () => whatsAppSalesBlurb(brandedVehicle, readiness, { dealerName, waNumber: dealerWa || undefined }),
     [brandedVehicle, readiness, dealerName, dealerWa]
@@ -110,44 +120,25 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     return { ...p, slots, score: scoreForSlots(vehicle, slots) };
   });
 
-  const allFindings = useMemo(() => {
-    const set = new Set<string>();
-    const bySlot: { slotId: string; slotName: string; issues: string[] }[] = [];
-    PHOTO_SLOTS.forEach(slot => {
-      const raw: unknown = vehicle.quality?.[slot.id]?.aiAnalysis?.detectedIssues;
-      let issues: string[] = [];
-      if (Array.isArray(raw)) {
-        issues = raw.map(String).filter((s) => s.trim());
-      } else if (typeof raw === 'string' && raw.trim()) {
-        issues = [raw.trim()];
-      }
-      if (issues.length) {
-        bySlot.push({ slotId: slot.id, slotName: slot.name, issues });
-        issues.forEach(i => set.add(String(i).trim().toLowerCase()));
-      }
-    });
-    return { unique: Array.from(set), bySlot };
-  }, [vehicle]);
+  const capturedPhotos = PHOTO_SLOTS.filter(s => vehicle.photos?.[s.id]);
+  const requiredSlots = PHOTO_SLOTS.filter(s => s.required);
+  const requiredTaken = requiredSlots.filter(s => vehicle.photos?.[s.id]).length;
 
-  const damagePhotos = PHOTO_SLOTS.filter(s => s.phase === 5)
-    .map(s => ({ slot: s, src: vehicle.photos?.[s.id], quality: vehicle.quality?.[s.id] }))
-    .filter(p => !!p.src);
-
-  const reportId = `TL-${vehicle.stockNumber || vehicle.id.slice(0, 6).toUpperCase()}-${Date.now().toString(36).slice(-5).toUpperCase()}`;
+  const reportId = `TL-${(vehicle.stockNumber || vehicle.id).toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
   const generatedAt = new Date().toLocaleString('en-ZA', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
-  const runPdf = async (mode: 'sales' | 'full') => {
-    const el = mode === 'sales' ? salesRef.current : reportRef.current;
+  const runPdf = async () => {
+    const el = reportRef.current;
     if (!el) return;
-    setGenerating(mode);
+    setGenerating('full');
     try {
       const html2pdf = (await import('html2pdf.js')).default;
       await html2pdf()
         .set({
-          margin: mode === 'sales' ? [6, 8, 6, 8] : [8, 8, 8, 8],
-          filename: `TruLens_${mode === 'sales' ? 'SalesPack' : 'VIR'}_${vehicle.stockNumber || 'draft'}.pdf`,
+          margin: [8, 8, 8, 8],
+          filename: `TruLens_Report_${vehicle.stockNumber || 'draft'}.pdf`,
           image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -226,6 +217,29 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
   return (
     <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100">
+      {/* Signed off by — on-screen only, value prints on the report footer */}
+      <div className="no-print bg-slate-950/60 border-b border-white/10">
+        <div className="max-w-5xl mx-auto px-3 py-3">
+          <div className="text-[11px] font-bold tracking-widest text-neutral-400 mb-2">SIGNED OFF BY</div>
+          <input
+            type="text"
+            defaultValue={vehicle.capturedBy || ''}
+            onBlur={(e) => {
+              const v = e.target.value.trim();
+              if (v !== (vehicle.capturedBy || '')) onVehicleUpdated?.({ ...vehicle, capturedBy: v });
+            }}
+            placeholder="Name of person signing off this report"
+            className="w-full px-3 py-3 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
+          />
+          {!vehicle.capturedBy && (
+            <p className="text-[11px] text-amber-300/90 mt-2">
+              No name recorded — the signature line prints blank on the report.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Action bar */}
       <div className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-white/10 no-print">
         <div className="max-w-5xl mx-auto px-3 py-3 flex flex-wrap items-center justify-between gap-2">
           <button onClick={onBack} className="flex items-center gap-2 text-slate-300 hover:text-[#E8EAE6] text-[16px] font-medium">
@@ -234,12 +248,12 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="flex flex-wrap items-center gap-2">
             <span
               className="text-[13px] font-bold px-2 py-1 rounded-full border"
-              style={{ color: readiness.color, borderColor: readiness.color + '55', background: readiness.color + '18' }}
+              style={{ color: band.color, borderColor: band.color + '55', background: band.color + '18' }}
             >
-              {readiness.label}
+              {condition.hasInput ? `${condition.stars.toFixed(1)}/5` : 'No findings'}
             </span>
             <button onClick={handleCopyWa} className="flex items-center gap-1 px-3 py-2 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[13px] font-bold text-emerald-300">
-              {waCopied ? <Check size={12} /> : <MessageCircle size={12} />} WhatsApp blurb
+              {waCopied ? <Check size={12} /> : <MessageCircle size={12} />} WhatsApp
             </button>
             <button
               type="button"
@@ -247,11 +261,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               disabled={publishBusy}
               className="flex items-center gap-1 px-3 py-2 bg-sky-600/20 border border-sky-500/30 rounded-lg text-[13px] font-bold text-sky-300 disabled:opacity-50"
             >
-              {publishBusy ? '…' : vehicle.showOnWebsite ? 'Unpublish web' : 'Publish to web'}
+              {publishBusy ? '…' : vehicle.showOnWebsite ? 'Unpublish' : 'Publish'}
             </button>
             <button onClick={handleExportWeb3d} disabled={web3dBusy}
               className="flex items-center gap-1 px-3 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg text-[13px] font-bold text-cyan-300 disabled:opacity-50">
-              <Box size={12} /> {web3dBusy ? 'Building 3D…' : 'Export web 3D'}
+              <Box size={12} /> {web3dBusy ? '…' : '3D'}
             </button>
             {embedUrl && (
               <button
@@ -259,20 +273,16 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 onClick={() => window.open(embedUrl, '_blank')}
                 className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200"
               >
-                Open 3D viewer
+                Open 3D
               </button>
             )}
-            <button onClick={() => runPdf('sales')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
-              <Share2 size={12} /> {generating === 'sales' ? '…' : 'Sales PDF'}
-            </button>
             <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
-            <button onClick={() => runPdf('full')} disabled={!!generating}
+            <button onClick={runPdf} disabled={!!generating}
               className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
               style={{ background: 'linear-gradient(120deg, #4FE3DC, #4FE3DC)' }}>
-              <Download size={12} /> {generating === 'full' ? '…' : 'Full VIR PDF'}
+              <Download size={12} /> {generating ? '…' : 'PDF'}
             </button>
           </div>
         </div>
@@ -281,116 +291,26 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         )}
       </div>
 
-      {/* Hidden-on-screen sales pack used only for PDF (also shown in print if user wants) */}
       <div className="max-w-5xl mx-auto p-3 space-y-4">
-        {/* On-screen readiness card */}
+        {/* On-screen summary card */}
         <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[13px]">
           <div className="flex justify-between gap-2">
             <div>
-              <div className="text-[13px] tracking-normal text-slate-500 font-bold">Web readiness</div>
-              <div className="font-bold text-[16px]" style={{ color: readiness.color }}>{readiness.label}</div>
+              <div className="text-[13px] tracking-normal text-slate-500 font-bold">Condition report</div>
+              <div className="font-bold text-[16px]" style={{ color: band.color }}>{condition.label}</div>
               <div className="text-slate-400 mt-1">
-                Required {readiness.requiredTaken}/{readiness.requiredTotal}
-                {readiness.overallScore != null ? ` · VIR ${readiness.overallScore}/100` : ''}
+                Photos {requiredTaken}/{requiredSlots.length} required
+                {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
               </div>
             </div>
             <div className="text-right text-slate-500 text-[13px] max-w-[200px]">
-              {readiness.reasons.length ? readiness.reasons.join(' · ') : 'Meets publish rules for website + DMS.'}
+              {readiness.reasons.length ? readiness.reasons.join(' · ') : 'Ready for website.'}
             </div>
           </div>
         </div>
 
-        {/* ── SALES PACK (1 page) ── */}
-        <div ref={salesRef} className="tl-sales bg-white text-slate-900 rounded-xl overflow-hidden shadow-xl">
-          <style>{`
-            .tl-sales { font-family: Inter, system-ui, sans-serif; }
-            .tl-sales .band { background: linear-gradient(120deg,#0B0F17,#1E3A5F); color:#fff; padding:20px 22px; }
-            .tl-sales .grid2 { display:grid; grid-template-columns:1.1fr .9fr; gap:16px; padding:18px 22px; }
-            .tl-sales h1 { font-size:22px; font-weight:800; margin:0 0 4px; letter-spacing:-.02em; }
-            .tl-sales .muted { color:#64748B; font-size:12px; }
-            .tl-sales .price { font-size:26px; font-weight:900; color:#0B5BD7; margin:10px 0; }
-            .tl-sales .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:; }
-            .tl-sales .hero { width:100%; border-radius:12px; object-fit:cover; aspect-ratio:16/10; background:#F1F5F9; }
-            .tl-sales .box { border:1px solid #E8EAE6; border-radius:12px; padding:12px; }
-            .tl-sales .k { font-size:9px; letter-spacing:.12em; text-transform:; color:#475569; font-weight:700; }
-            .tl-sales .v { font-size:13px; font-weight:700; margin-top:3px; }
-            .tl-sales .foot { border-top:1px solid #E8EAE6; padding:12px 22px; font-size:10px; color:#475569; display:flex; justify-content:space-between; }
-          `}</style>
-          <div className="band">
-            <div style={{ display:'flex', justifyContent:'space-between', gap:12 }}>
-              <div>
-                <div style={{ fontSize:10, letterSpacing:'.16em', textTransform:'', opacity:.7 }}>
-                  {dealerName}{dealerBranch ? ` · ${dealerBranch}` : ''} · Sales pack
-                </div>
-                <div style={{ fontSize:18, fontWeight:800, marginTop:4 }}>{vehicle.year} {vehicle.make} {vehicle.model}</div>
-                <div style={{ opacity:.75, fontSize:12 }}>{vehicle.trim} · Stock {vehicle.stockNumber}</div>
-                {dealerWa ? (
-                  <div style={{ opacity:.7, fontSize:11, marginTop:6 }}>WhatsApp {dealerWa}</div>
-                ) : null}
-              </div>
-              <div style={{ textAlign:'right' }}>
-                <div className="pill" style={{ background: overallGrade.color + '33', color:'#fff', border:`1px solid ${overallGrade.color}` }}>
-                  {overallGrade.grade} · {overall.score}/100
-                </div>
-                <div style={{ fontSize:11, marginTop:8, opacity:.85 }}>{overallGrade.sales}</div>
-                <div style={{ fontSize:10, marginTop:6, opacity:.7 }}>
-                  {vehicle.showOnWebsite ? 'Live on website' : readiness.label}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="grid2">
-            <div>
-              {hero ? <img className="hero" src={hero} alt="Hero" /> : <div className="hero" />}
-              <div className="muted" style={{ marginTop:8 }}>
-                Required photos {readiness.requiredTaken}/{readiness.requiredTotal}
-                {vehicle.lastWeb3dExportAt ? ' · Web 3D package available' : ''}
-              </div>
-            </div>
-            <div>
-              <div className="price">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</div>
-              <div className="box" style={{ marginBottom:10 }}>
-                <div className="k">Sales verdict</div>
-                <div className="v">{overallGrade.sales}</div>
-                <div className="muted" style={{ marginTop:6 }}>
-                  {allFindings.unique.length
-                    ? `${allFindings.unique.length} note(s) for recon / disclosure`
-                    : 'No material issues flagged on captured shots'}
-                </div>
-              </div>
-              <div className="box" style={{ marginBottom:10 }}>
-                <div className="k">VIN</div>
-                <div className="v" style={{ fontFamily:'ui-monospace,monospace', fontSize:11 }}>{vehicle.vin || '—'}</div>
-                <div className="k" style={{ marginTop:8 }}>Colour · type</div>
-                <div className="v">{vehicle.color || '—'} · {vehicle.vehicleType || '—'}</div>
-              </div>
-              <div className="box">
-                <div className="k">WhatsApp paste</div>
-                <div style={{ whiteSpace:'pre-wrap', fontSize:11, marginTop:6, lineHeight:1.45 }}>{waBlurb}</div>
-              </div>
-            </div>
-          </div>
-          <div className="foot">
-            <span>Not a mechanical guarantee — visual inspection pack</span>
-            <span>{reportId}</span>
-          </div>
-        </div>
-
-        {/* ── FULL VIR ── */}
+        {/* ── PRINTABLE CONDITION REPORT ── */}
         <div ref={reportRef} className="tl-report">
-          {/* ── Palette warning ──────────────────────────────────────────────
-              This document is WHITE paper (#FFFFFF, ink #0B0F17). The app around
-              it is near-black. A rebrand sweep had put the app's paper token —
-              rgba(232,234,230,·), which is a near-WHITE — on 14 pieces of text
-              inside this white page, including the customer-facing .tl-sales
-              summary: its muted lines, its key labels and its footer. Measured
-              1.2:1. On the printed sheet a dealer hands to a buyer, those lines
-              were blank paper.
-
-              On this component the muted colours are slate ink, not the app's
-              paper token: #334155 / #475569 / #64748B. The only place a light
-              colour is correct is .cover and .band, which paint a dark gradient
-              behind themselves and use the #F8FAFC family. */}
           <style>{`
             .tl-report {
               width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0B0F17;
@@ -398,10 +318,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             }
             .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; }
             .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; }
-            .tl-report .brand { display:flex; align-items:center; gap:12px; }
-            .tl-report .brand .mark { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#4FE3DC,#4FE3DC); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; }
-            .tl-report .brand .txt { font-weight:800; font-size:20px; }
-            .tl-report .brand .txt em { font-style:normal; color:#93C5FD; }
             .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; }
             .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; }
             .tl-report .subhead { font-size:13px; color:rgba(248,250,252,.72); margin-bottom:18px; }
@@ -409,7 +325,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; }
             .tl-report .score-ring { width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
             .tl-report .vehicle-facts { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
-            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; text-transform:; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
+            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
             .tl-report .vehicle-facts .v { font-weight:700; font-size:13px; margin-top:2px; }
             .tl-report section { padding: 12mm 16mm; }
             .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
@@ -418,81 +334,188 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .grade .v { font-weight:800; font-size:22px; }
             .tl-report .grade .n { font-size:10px; color:#475569; margin-top:6px; font-weight:600; }
             .tl-report .finding { background:#FEF3C7; border-left:4px solid #F59E0B; border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; }
-            .tl-report .finding .h { font-size:10px; letter-spacing:.1em; text-transform:; color:#B45309; font-family:ui-monospace,monospace; }
+            .tl-report .finding .h { font-size:10px; letter-spacing:.1em; color:#B45309; font-family:ui-monospace,monospace; }
             .tl-report .finding .l { font-size:12.5px; color:#78350F; margin-top:4px; font-weight:500; }
-            .tl-report .no-issues { background:#DCFCE7; border-left:4px solid #4ADE9B; border-radius:0 10px 10px 0; padding:12px 14px; color:#166534; font-weight:600; font-size:13px; }
-            .tl-report .damage-grid, .tl-report .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-            .tl-report .photo-grid { grid-template-columns:repeat(3,1fr); }
+            .tl-report .no-issues { background:#DCFCE7; border-left:4px solid #22C55E; border-radius:0 10px 10px 0; padding:12px 14px; color:#166534; font-weight:600; font-size:13px; }
+            .tl-report .damage-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+            .tl-report .photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
             .tl-report .damage-card, .tl-report .photo-tile { border:1px solid #E8EAE6; border-radius:12px; overflow:hidden; }
             .tl-report .damage-card img, .tl-report .photo-tile img { width:100%; height:auto; max-height:150px; object-fit:cover; display:block; }
             .tl-report .cap { padding:8px 10px; font-size:11px; }
             .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; }
             .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; }
-            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; text-transform:; color:#475569; }
-            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; text-transform:; letter-spacing:.08em; font-family:ui-monospace,monospace; }
+            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; color:#475569; }
+            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; letter-spacing:.08em; font-family:ui-monospace,monospace; }
+            .tl-report .damage-pin { position:absolute; width:20px; height:20px; border-radius:50%; border:2px solid #fff; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#fff; box-shadow:0 1px 4px rgba(0,0,0,.4); }
             @media print {
               .no-print { display:none !important; }
-              .tl-sales { break-after: page; }
               body { background:#fff !important; }
             }
           `}</style>
 
+          {/* Cover */}
           <div className="cover">
             <div className="cover-head">
-              <div className="brand">
-                <div className="txt">
-                  <img src={trulensLockup} alt="TruLens" style={{ height:30, width:'auto', display:'block', marginBottom:4 }} />
-                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', textTransform:'', color:'rgba(248,250,252,.85)' }}>
-                    Full Vehicle Inspection Report
-                  </div>
-                  <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
+              <div>
+                <img src={trulensLockup} alt="TruLens" style={{ height:30, width:'auto', display:'block', marginBottom:4 }} />
+                <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', color:'rgba(248,250,252,.85)' }}>
+                  Vehicle Condition Report
                 </div>
+                <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
               </div>
               <div className="meta-row">
                 <img src={trusaasLogo} alt="TruSaaS" style={{ height:34, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
-                <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
+                <div><b style={{color:'#fff'}}>Report</b> · {reportId}</div>
                 <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
-                <div>Web: {readiness.label}</div>
                 {dealerBranch ? <div>{dealerBranch}</div> : null}
               </div>
             </div>
             <h1>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
-            <div className="subhead">{vehicle.trim} · {vehicle.color} · Stock <b>{vehicle.stockNumber}</b></div>
+            <div className="subhead">
+              {vehicle.trim} · {vehicle.color}
+              {vehicle.mileage ? ` · ${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : ''}
+              {vehicle.transmission ? ` · ${vehicle.transmission}` : ''}
+              {vehicle.fuelType ? ` · ${vehicle.fuelType}` : ''}
+              {' · Stock '}<b>{vehicle.stockNumber}</b>
+            </div>
             <div className="score-strip">
               <div className="score-big">
-                <div className="score-ring" style={{ background: `conic-gradient(${overallGrade.color} ${overall.score * 3.6}deg, rgba(255,255,255,.08) 0)` }}>
+                <div className="score-ring" style={{ background: `conic-gradient(${band.color} ${(condition.hasInput ? condition.stars / 5 : 0) * 360}deg, rgba(255,255,255,.08) 0)` }}>
                   <div style={{ background:'#1E293B', borderRadius:'50%', width:70, height:70, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
-                    <div style={{ fontWeight:800, fontSize:28, color: overallGrade.color }}>{overall.score}</div>
-                    <div style={{ fontSize:9, opacity:.7 }}>/ 100</div>
+                    <div style={{ fontWeight:800, fontSize:28, color: band.color }}>{condition.hasInput ? condition.stars.toFixed(1) : '—'}</div>
+                    <div style={{ fontSize:9, opacity:.7 }}>/ 5</div>
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'', opacity:.55 }}>Overall condition</div>
-                  <div style={{ fontWeight:800, fontSize:20, color: overallGrade.color, marginTop:4 }}>{overallGrade.grade} · {overallGrade.label}</div>
-                  <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{overallGrade.sales}</div>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', opacity:.55 }}>Vehicle condition</div>
+                  <div style={{ fontWeight:800, fontSize:20, color: band.color, marginTop:4 }}>{band.label}</div>
+                  <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{band.meaning}</div>
                   <div style={{ fontSize:11, opacity:.65, marginTop:6 }}>
-                    {overall.captured} captured · {readiness.requiredTaken}/{readiness.requiredTotal} required
+                    Photos {capturedPhotos.length} captured · {requiredTaken}/{requiredSlots.length} required
+                    {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
                   </div>
                 </div>
               </div>
               <div className="vehicle-facts">
                 <div><div className="k">VIN</div><div className="v">{vehicle.vin || '—'}</div></div>
                 <div><div className="k">Type</div><div className="v">{vehicle.vehicleType || '—'}</div></div>
-                <div><div className="k">Status</div><div className="v">{vehicle.status}</div></div>
+                <div><div className="k">Mileage</div><div className="v">{vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : '—'}</div></div>
+                <div><div className="k">Transmission</div><div className="v">{vehicle.transmission || '—'}</div></div>
+                <div><div className="k">Fuel</div><div className="v">{vehicle.fuelType || '—'}</div></div>
                 <div><div className="k">List price</div><div className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</div></div>
               </div>
             </div>
           </div>
 
+          {/* Hero photo */}
+          {hero && (
+            <section style={{ paddingBottom:0 }}>
+              <img src={hero} alt="Hero" style={{ width:'100%', borderRadius:12, objectFit:'cover', aspectRatio:'16/10', background:'#F1F5F9' }} />
+            </section>
+          )}
+
+          {/* Damage findings */}
           <section>
-            <h2><Award size={16} /> Grades by section</h2>
+            <h2><AlertTriangle size={16} /> Damage & condition findings</h2>
+            {condition.hasInput && (
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, padding:'10px 14px', background:'#F8FAFC', border:'1px solid #E8EAE6', borderRadius:12 }}>
+                <div style={{ fontWeight:800, fontSize:24, color: band.color }}>
+                  {condition.stars.toFixed(1)}<span style={{ fontSize:12, color:'#475569' }}>/5</span>
+                </div>
+                <div>
+                  <div style={{ fontWeight:700, fontSize:13 }}>Condition score</div>
+                  <div style={{ fontSize:11.5, color:'#64748B' }}>
+                    {condition.label} · {condition.findings.length} tag{condition.findings.length === 1 ? '' : 's'}
+                    {' across '}{Object.keys(vehicle.damageFindings || {}).length} photo{Object.keys(vehicle.damageFindings || {}).length === 1 ? '' : 's'}
+                  </div>
+                </div>
+              </div>
+            )}
+            {condition.findings.length === 0 ? (
+              <div className="no-issues"><CheckCircle2 size={14} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> No damage tagged on captured photos.</div>
+            ) : (
+              condition.findings.map((f, i) => {
+                const sev = severityMeta(f.severity);
+                const slot = PHOTO_SLOTS.find(s => s.id === f.slotId);
+                return (
+                  <div className="finding" key={i} style={{ background: sev.bg, borderLeftColor: sev.color }}>
+                    <div className="h" style={{ color: sev.color }}>
+                      {sev.label} · {f.damageType} · {f.panel}
+                    </div>
+                    <div className="l" style={{ color:'#334155' }}>
+                      {f.note || 'Tagged during capture'}
+                      <span style={{ color:'#475569' }}> — {slot?.name || f.slotId}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </section>
+
+          {/* Damage photos with pins */}
+          {(() => {
+            const slotsWithDamage = Object.entries(vehicle.damageFindings || {})
+              .filter(([, list]) => list && list.some(f => f.confirmed !== false))
+              .map(([slotId, list]) => ({
+                slot: PHOTO_SLOTS.find(s => s.id === slotId),
+                src: vehicle.photos?.[slotId],
+                findings: (list || []).filter(f => f.confirmed !== false),
+              }))
+              .filter(d => d.src && d.slot);
+            if (!slotsWithDamage.length) return null;
+            return (
+              <section>
+                <h2><Camera size={16} /> Damage locations</h2>
+                <div className="damage-grid">
+                  {slotsWithDamage.map(({ slot, src, findings }) => (
+                    <div className="damage-card" key={slot!.id} style={{ position:'relative' }}>
+                      <div style={{ position:'relative' }}>
+                        <img src={src} alt={slot!.name} />
+                        {findings.map((f, i) => {
+                          const sev = severityMeta(f.severity);
+                          return (
+                            <div
+                              key={f.id || i}
+                              className="damage-pin"
+                              style={{
+                                position:'absolute',
+                                left: `${f.x * 100}%`,
+                                top: `${f.y * 100}%`,
+                                background: sev.color,
+                              }}
+                            >
+                              {f.severity}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="cap">
+                        <b>{slot!.name}</b>
+                        <div style={{ color:'#64748B', marginTop:3 }}>
+                          {findings.length} tag{findings.length === 1 ? '' : 's'}
+                          {findings.length === 1 ? ` · ${findings[0].damageType}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })()}
+
+          {/* Photo capture quality */}
+          <section>
+            <h2><Award size={16} /> Photo capture quality</h2>
+            <div style={{ fontSize:11, color:'#475569', marginTop:-4, marginBottom:8 }}>
+              How well each section was photographed — this describes the images, not the vehicle.
+            </div>
             <div className="grades">
               {phaseScores.map(p => {
-                const g = gradeFor(p.score);
+                const g = captureBand(p.score);
                 const Icon = p.icon;
                 return (
                   <div className="grade" key={p.id} style={{ background: g.bg, borderColor: g.color + '40' }}>
-                    <div className="v" style={{ color: g.color }}>{g.grade}</div>
+                    <div className="v" style={{ color: g.color, fontSize:15 }}>{g.label}</div>
                     <div className="n"><Icon size={11} style={{display:'inline',verticalAlign:'-2px',marginRight:4,color:g.color}}/>{p.name}</div>
                     <div style={{ fontSize:10, color:'#475569', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
                   </div>
@@ -501,14 +524,15 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </div>
           </section>
 
+          {/* Required photo checklist */}
           <section>
-            <h2><ClipboardList size={16} /> Required photo checklist</h2>
+            <h2><ClipboardList size={16} /> Required photos</h2>
             <table className="checklist">
               <thead>
-                <tr><th>Slot</th><th>Status</th><th>Score</th></tr>
+                <tr><th>Shot</th><th>Status</th><th>Quality</th></tr>
               </thead>
               <tbody>
-                {PHOTO_SLOTS.filter(s => s.required).map(s => {
+                {requiredSlots.map(s => {
                   const has = !!vehicle.photos?.[s.id];
                   const q = vehicle.quality?.[s.id];
                   return (
@@ -523,88 +547,89 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </table>
           </section>
 
-          <section>
-            <h2><AlertTriangle size={16} /> Findings & disclosure</h2>
-            {allFindings.bySlot.length === 0 ? (
-              <div className="no-issues"><CheckCircle2 size={14} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> No issues flagged on captured photos.</div>
-            ) : (
-              allFindings.bySlot.map(({ slotId, slotName, issues }) => (
-                <div className="finding" key={slotId}>
-                  <div className="h">{slotName}</div>
-                  <div className="l">{issues.join(' · ')}</div>
-                </div>
-              ))
-            )}
-          </section>
-
-          {damagePhotos.length > 0 && (
+          {/* Gallery */}
+          {capturedPhotos.length > 0 && (
             <section>
-              <h2><AlertTriangle size={16} /> Damage & recon</h2>
-              <div className="damage-grid">
-                {damagePhotos.map(({ slot, src, quality }) => (
-                  <div className="damage-card" key={slot.id}>
-                    <img src={src} alt={slot.name} />
-                    <div className="cap">
-                      <b>{slot.name}</b>
-                      <div style={{ color:'#64748B', marginTop:3 }}>
-                        {Array.isArray(quality?.aiAnalysis?.detectedIssues)
-                          ? quality!.aiAnalysis!.detectedIssues![0]
-                          : 'Documented area'}
-                      </div>
-                    </div>
+              <h2><Camera size={16} /> Gallery</h2>
+              <div className="photo-grid">
+                {capturedPhotos.slice(0, 15).map(slot => (
+                  <div className="photo-tile" key={slot.id}>
+                    <img src={vehicle.photos[slot.id]} alt={slot.name} />
+                    <div className="cap">{slot.name}</div>
                   </div>
                 ))}
               </div>
             </section>
           )}
 
+          {/* Dealer & vehicle identity */}
           <section>
-            <h2><Camera size={16} /> Gallery</h2>
-            <div className="photo-grid">
-              {PHOTO_SLOTS.filter(s => vehicle.photos?.[s.id]).slice(0, 12).map(slot => (
-                <div className="photo-tile" key={slot.id}>
-                  <img src={vehicle.photos[slot.id]} alt={slot.name} />
-                  <div className="cap">{slot.name}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h2><Award size={16} /> Dealer & digital readiness</h2>
+            <h2><Award size={16} /> Report details</h2>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'#475569' }}>Dealership</div>
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Dealership</div>
                 <div style={{ fontWeight:700, marginTop:4 }}>{dealerName}</div>
                 {dealerBranch ? <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{dealerBranch}</div> : null}
                 {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', textTransform:'', color:'#475569' }}>Digital assets</div>
-                <div style={{ fontWeight:700, marginTop:4, color: readiness.color }}>{readiness.label}</div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:4 }}>
-                  Website: {vehicle.showOnWebsite ? 'Published' : 'Not published'}
+                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Vehicle identity</div>
+                <div style={{ fontSize:12, color:'#334155', marginTop:4 }}>
+                  VIN <b style={{ fontFamily:'ui-monospace, monospace' }}>{vehicle.vin || '— not recorded —'}</b>
                 </div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>
-                  Web 3D: {vehicle.lastWeb3dExportAt ? `Exported ${new Date(vehicle.lastWeb3dExportAt).toLocaleDateString('en-ZA')}` : 'Not exported yet'}
+                <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
+                  Stock {vehicle.stockNumber || '—'} · {vehicle.year} {vehicle.make} {vehicle.model}
                 </div>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>
-                  DMS: {vehicle.lastDmsExportAt ? `Synced ${new Date(vehicle.lastDmsExportAt).toLocaleDateString('en-ZA')}` : 'Not exported'}
+                <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
+                  Captured {generatedAt}
                 </div>
               </div>
             </div>
-            {readiness.reasons.length > 0 && (
-              <div style={{ marginTop:10, fontSize:12, color:'#92400E', background:'#FFFBEB', borderRadius:10, padding:'10px 12px' }}>
-                Next steps: {readiness.reasons.join(' · ')}
+
+            {/* Condition scale legend */}
+            <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Condition scale</div>
+              <div style={{ marginTop:6 }}>
+                {CONDITION_SCALE.map(b => (
+                  <div key={b.label} style={{ display:'flex', gap:8, fontSize:11.5, color:'#334155', marginTop:3 }}>
+                    <b style={{ color:b.color, minWidth:64, fontFamily:'ui-monospace, monospace' }}>{b.band}</b>
+                    <b style={{ minWidth:64 }}>{b.label}</b>
+                    <span style={{ opacity:.85 }}>{b.meaning}</span>
+                  </div>
+                ))}
               </div>
-            )}
+              <div style={{ fontSize:11, color:'#475569', marginTop:8 }}>
+                Weighted from tagged damage severity. Not a mechanical assessment.
+              </div>
+            </div>
+          </section>
+
+          {/* Signature block */}
+          <section style={{ paddingTop:0 }}>
+            <div className="grade" style={{ textAlign:'left', padding:14 }}>
+              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Signed off by</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginTop:10 }}>
+                <div>
+                  <div style={{ borderBottom:'1px solid #94A3B8', height:26 }}>
+                    <span style={{ fontSize:12, color:'#334155' }}>{vehicle.capturedBy || ''}</span>
+                  </div>
+                  <div style={{ fontSize:9.5, color:'#475569', marginTop:3 }}>Name</div>
+                </div>
+                <div>
+                  <div style={{ borderBottom:'1px solid #94A3B8', height:26 }}>
+                    <span style={{ fontSize:12, color:'#334155' }}>{generatedAt}</span>
+                  </div>
+                  <div style={{ fontSize:9.5, color:'#475569', marginTop:3 }}>Date</div>
+                </div>
+              </div>
+            </div>
           </section>
 
           <div className="foot">
             <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruLens</b></div>
             <img src={trusaasLogoDark} alt="TruSaaS" style={{ height:16, width:'auto' }} />
             <div>{reportId}</div>
-            <div>Visual inspection at a moment in time — not a mechanical warranty</div>
+            <div>Visual condition at a moment in time — not a mechanical warranty</div>
           </div>
         </div>
       </div>

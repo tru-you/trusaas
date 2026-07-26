@@ -42,6 +42,9 @@ export interface Vehicle {
   color: string;
   price: number;
   vehicleType?: string; // Bakkie, Sedan, SUV, etc.
+  mileage?: number;
+  transmission?: 'Automatic' | 'Manual';
+  fuelType?: 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric';
   /** Who carried out the inspection. Printed on the VIR — the report lands with
    *  buyers and finance houses, and a dealership name is not an inspector. */
   inspectorName?: string;

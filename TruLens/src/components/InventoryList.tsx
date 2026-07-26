@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, AlertTriangle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
-  FileText, Settings, Camera, LogOut, ScanLine, Loader2} from 'lucide-react';
+  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil} from 'lucide-react';
 import trulensLogo from '../assets/images/trulens-wordmark.png';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -62,6 +62,7 @@ export default function InventoryList({
   /** Extra filter: web readiness for floor managers */
   const [readinessFilter, setReadinessFilter] = React.useState<'ALL' | 'NEEDS' | 'READY'>('ALL');
   const [showAddForm, setShowAddForm] = React.useState(false);
+  const [editingVehicle, setEditingVehicle] = React.useState<Vehicle | null>(null);
   const [currentTab, setCurrentTab] = React.useState<'catalog' | 'dashboard' | 'settings'>('catalog');
   const [exportingId, setExportingId] = React.useState<string | null>(null);
   const [publishingId, setPublishingId] = React.useState<string | null>(null);
@@ -290,6 +291,24 @@ export default function InventoryList({
     setTimeout(() => setScanNote(null), 5000);
   };
 
+  const startEditing = (v: Vehicle) => {
+    setEditingVehicle(v);
+    setMake(v.make);
+    setModel(v.model);
+    setYear(v.year);
+    setTrim(v.trim || '');
+    setVin(v.vin || '');
+    setStockNumber(v.stockNumber || '');
+    setColor(v.color || '');
+    setPrice(v.price || 24995);
+    setVehicleType(v.vehicleType || 'SUV');
+    setMileage(v.mileage != null ? String(v.mileage) : '');
+    setTransmission(v.transmission || 'Manual');
+    setFuelType(v.fuelType || 'Petrol');
+    setStatus(v.status === 'Listed' ? 'Ready' : v.status);
+    setShowAddForm(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     /* Mileage is required alongside make/model. It could have been optional and
@@ -300,23 +319,42 @@ export default function InventoryList({
        trust it. */
     if (!make || !model || !mileage.trim()) return;
 
-    onAddVehicle({
-      make,
-      model,
-      year: Number(year),
-      trim,
-      vin: vin.trim(),
-      stockNumber: stockNumber.trim(),
-      color: color.trim(),
-      price: Number(price),
-      vehicleType,
-      mileage: Number(mileage),
-      transmission,
-      fuelType,
-      status
-    });
+    if (editingVehicle && onUpdateVehicle) {
+      onUpdateVehicle(editingVehicle, {
+        make,
+        model,
+        year: Number(year),
+        trim,
+        vin: vin.trim(),
+        stockNumber: stockNumber.trim(),
+        color: color.trim(),
+        price: Number(price),
+        vehicleType,
+        mileage: Number(mileage),
+        transmission,
+        fuelType,
+        status,
+      });
+    } else {
+      onAddVehicle({
+        make,
+        model,
+        year: Number(year),
+        trim,
+        vin: vin.trim(),
+        stockNumber: stockNumber.trim(),
+        color: color.trim(),
+        price: Number(price),
+        vehicleType,
+        mileage: Number(mileage),
+        transmission,
+        fuelType,
+        status
+      });
+    }
 
     // Reset form
+    setEditingVehicle(null);
     setMake('');
     setModel('');
     setYear(new Date().getFullYear());
@@ -524,7 +562,7 @@ export default function InventoryList({
           reaches. See the nav below the scroll area. */}
 
       {/* Main Panel Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+      <div id="inventory-scroll-container" className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {currentTab === 'catalog' ? (
           <>
             {/* Search & Add New Toggle */}
@@ -540,7 +578,7 @@ export default function InventoryList({
             />
           </div>
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
+            onClick={() => { setEditingVehicle(null); setShowAddForm(!showAddForm); }}
             className="p-2 rounded-lg bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
           >
             <Plus size={16} />
@@ -556,7 +594,9 @@ export default function InventoryList({
           <form onSubmit={handleSubmit} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 space-y-4 shadow-xl animate-in fade-in duration-200">
             <div className="flex items-center justify-between border-b border-neutral-850 pb-2">
               <span className="text-[13px] font-bold text-neutral-300 flex items-center gap-2">
-                <Plus size={14} className="text-trulens-purple" /> New vehicle
+                {editingVehicle
+                  ? <><Pencil size={14} className="text-trulens-purple" /> Edit vehicle</>
+                  : <><Plus size={14} className="text-trulens-purple" /> New vehicle</>}
               </span>
               <button
                 type="button"
@@ -736,7 +776,7 @@ export default function InventoryList({
             <div className="flex gap-2 pt-1 border-t border-neutral-850">
               <button
                 type="button"
-                onClick={() => setShowAddForm(false)}
+                onClick={() => { setShowAddForm(false); setEditingVehicle(null); }}
                 className="flex-1 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-[13px] font-bold cursor-pointer"
               >
                 Cancel
@@ -745,7 +785,7 @@ export default function InventoryList({
                 type="submit"
                 className="flex-1 py-2 bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
               >
-                <Plus size={14} /> Add vehicle
+                {editingVehicle ? <><Pencil size={14} /> Save changes</> : <><Plus size={14} /> Add vehicle</>}
               </button>
             </div>
           </form>
@@ -979,19 +1019,31 @@ export default function InventoryList({
                       </div>
                     </div>
 
-                    {/* Delete action */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm(`Remove ${vehicle.year} ${vehicle.make} from the catalogue?`)) {
-                          onDeleteVehicle(vehicle.id);
-                        }
-                      }}
-                      className="p-1 text-neutral-600 hover:text-red-400 rounded hover:bg-neutral-900 cursor-pointer"
-                      title="Delete vehicle"
-                    >
-                      <Trash2 size={13} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEditing(vehicle);
+                          document.getElementById('inventory-scroll-container')?.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="p-1 text-neutral-600 hover:text-[#4FE3DC] rounded hover:bg-neutral-900 cursor-pointer"
+                        title="Edit vehicle details"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Remove ${vehicle.year} ${vehicle.make} from the catalogue?`)) {
+                            onDeleteVehicle(vehicle.id);
+                          }
+                        }}
+                        className="p-1 text-neutral-600 hover:text-red-400 rounded hover:bg-neutral-900 cursor-pointer"
+                        title="Delete vehicle"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Progress Indicators */}

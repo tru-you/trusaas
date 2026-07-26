@@ -73,6 +73,8 @@ export interface Vehicle {
    *  reads car.damage / car.damageTags / car.findings and has never had
    *  anything to show. */
   damageFindings?: Record<string, DamageFinding[]>;
+  /** Name of the person who captured / signed off on this vehicle */
+  capturedBy?: string;
   /** Last web 3D / spin package export */
   lastWeb3dExportAt?: string;
   web3dPublicPath?: string;
