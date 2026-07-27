@@ -1,4 +1,14 @@
 /**
+ * COPY. Canonical version lives in truflow-premium/photoStore.ts — edit there
+ * and copy across, the same convention this repo already uses for brand.css and
+ * assets/brand/tokens.css. The two apps build separately and there is no npm
+ * workspace, so a shared import is not available yet; extracting these into one
+ * package is Tier 4 work.
+ *
+ * Keep the two byte-identical below this header. A divergence here means the
+ * same photo could be addressed differently by each product.
+ */
+/**
  * Photos as files, not as database rows.
  *
  * Every photo in this system is currently a base64 data URI stored inside

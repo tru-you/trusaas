@@ -8,6 +8,15 @@ import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import crypto from 'crypto';
+import {
+  initPhotoStore,
+  mediaDir,
+  MEDIA_ROUTE,
+  put as putPhoto,
+  isStoredRef,
+  asDataUri,
+  stats as photoStats,
+} from './photoStore';
 
 // Load environment variables first
 dotenv.config();
@@ -135,10 +144,28 @@ const LOCAL_MODE = !FORCE_CLOUD; // default ON for PC friendliness
 const LOCAL_DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const LOCAL_DATA_FILE = path.join(LOCAL_DATA_DIR, 'local-inventory.json');
 
+/* Captures are stored as files rather than base64 inside local-inventory.json —
+   see photoStore.ts. Initialised before anything reads the store, and before the
+   /media route is registered, because express.static resolves its root when it
+   is constructed. */
+initPhotoStore(LOCAL_DATA_DIR);
+
 type LocalStore = { vehicles: any[] };
 
 function isValidPhotoData(value: unknown): value is string {
   if (typeof value !== 'string' || value.length < 32) return false;
+  /* A stored reference — "/media/<sha256>.jpg" — is a real photo, and is the
+     form every capture takes once it is on disk. It has to be named explicitly:
+     at ~75 characters it is far too short for the raw-base64 rule below and
+     carries no data:/http prefix, so without this it reads as junk and
+     normalizeVehicle drops it — silently deleting every photo on the vehicle's
+     next save. */
+  /* Held in a boolean rather than tested inline: isStoredRef is a `value is
+     string` predicate, and applying it to a value already known to be a string
+     narrows the *else* branch to `never`, so every check below it stops
+     compiling. */
+  const stored: boolean = isStoredRef(value);
+  if (stored) return true;
   // Real captures are data URLs or http(s); reject placeholders / truncated junk
   if (value.startsWith('data:image') || value.startsWith('data:video') || value.startsWith('http')) return true;
   // raw base64 (no data: prefix) — accept if long enough
@@ -223,6 +250,63 @@ function writeLocalStore(store: LocalStore) {
   }
 }
 
+/**
+ * Move any base64 still in the local store onto disk.
+ *
+ * Runs once at boot rather than inside readLocalStore, which is on every request
+ * path that touches inventory — converting there would re-scan every photo of
+ * every capture on every call, which is the cost this change removes.
+ *
+ * Idempotent: put() returns a stored reference unchanged, so a second run is a
+ * no-op and an interrupted run simply resumes. Firestore-backed instances are
+ * skipped: their documents are migrated as each vehicle is next saved, and
+ * rewriting an entire collection at boot is not something to do unattended.
+ */
+function migrateCapturesToFiles(): void {
+  if (!LOCAL_MODE) {
+    console.log('[photos] cloud mode — captures convert as vehicles are saved.');
+    return;
+  }
+  let store: LocalStore;
+  try {
+    store = readLocalStore();
+  } catch (err) {
+    console.error('[photos] migration could not read the local store:', err);
+    return;
+  }
+
+  let converted = 0;
+  let already = 0;
+  for (const v of store.vehicles || []) {
+    const photos = v?.photos;
+    if (!photos || typeof photos !== 'object') continue;
+    for (const [slotId, value] of Object.entries(photos)) {
+      if (isStoredRef(value)) { already++; continue; }
+      const ref = putPhoto(value);
+      if (ref) { photos[slotId] = ref; converted++; }
+    }
+  }
+
+  if (converted > 0) {
+    writeLocalStore(store);
+    const { files, bytes } = photoStats();
+    console.log(
+      `[photos] moved ${converted} capture photo(s) out of the store. ` +
+        `Media now holds ${files} file(s), ${(bytes / 1024 / 1024).toFixed(1)} MB.`
+    );
+  } else {
+    console.log(`[photos] nothing to migrate (${already} already stored as files).`);
+  }
+}
+
+try {
+  migrateCapturesToFiles();
+} catch (err) {
+  /* Never block boot: the read paths still understand base64, so an
+     un-migrated instance behaves exactly as it did before. */
+  console.error('[photos] capture migration failed, continuing with base64:', err);
+}
+
 // Initialize firebase-admin only when not forced local-only
 let fdb: Firestore | null = null;
 let fauth: ReturnType<typeof getAuth> | null = null;
@@ -254,6 +338,27 @@ const PORT = Number(process.env.PORT) || 3000;
 // Increase payload limits for Base64 vehicle photos
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+/* Captured photos, served as files.
+ *
+ * Immutable for a year, which is safe because the filename is the SHA-256 of
+ * the bytes — a path can never come to mean different content, so there is no
+ * cache to bust. This is what lets a dealer website fetch each photo once
+ * instead of pulling every photo of every car inside one JSON payload: the
+ * TruLens public feed carried 25 base64 images in a single response.
+ *
+ * Public and registered before authenticate: these are stock photos bound for
+ * public dealer websites, and the path is an opaque hash. */
+app.use(
+  MEDIA_ROUTE,
+  express.static(mediaDir(), {
+    immutable: true,
+    maxAge: '365d',
+    fallthrough: false,
+    index: false,
+    dotfiles: 'deny',
+  })
+);
 
 // Don't crash the process on unhandled Firebase ADC errors
 process.on('unhandledRejection', (reason) => {
@@ -400,8 +505,30 @@ async function getVehicle(id: string, userId?: string): Promise<any | null> {
   return doc.exists ? normalizeVehicle(doc.data()) : null;
 }
 
+/** Move a capture's photos onto disk, leaving references in the record.
+ *
+ *  Every write goes through saveVehicle, so this one place keeps image bytes out
+ *  of local-inventory.json and out of Firestore documents — the latter matters
+ *  more than it looks, because a Firestore document has a hard 1 MiB ceiling and
+ *  a couple of base64 photos will breach it.
+ *
+ *  Idempotent: put() hands back a reference unchanged, so re-saving a vehicle
+ *  that is already converted costs a map and nothing else. */
+function storeVehiclePhotos(vehicle: any): any {
+  const photos = vehicle?.photos;
+  if (!photos || typeof photos !== 'object') return vehicle;
+  const next: Record<string, string> = {};
+  for (const [slotId, value] of Object.entries(photos)) {
+    const ref = putPhoto(value);
+    /* Falls back to the original value when the store cannot take it, so a
+       capture is never silently lost — it simply stays base64. */
+    next[slotId] = ref || (value as string);
+  }
+  return { ...vehicle, photos: next };
+}
+
 async function saveVehicle(vehicle: any): Promise<any> {
-  const normalized = normalizeVehicle(vehicle);
+  const normalized = storeVehiclePhotos(normalizeVehicle(vehicle));
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
     const idx = store.vehicles.findIndex((v) => v.id === normalized.id);
@@ -538,19 +665,39 @@ function buildVirReport(damage: { panel?: string; severity: number }[]) {
   });
 }
 
-function toPublicFromLens(v: any) {
+/** Absolute origin of this instance, taken from the request.
+ *
+ *  Derived rather than configured so localhost, staging and production each
+ *  advertise URLs pointing at themselves with no env var to forget. Honours the
+ *  proxy headers Render sets, or the scheme comes back http behind its TLS
+ *  terminator and dealer sites end up fetching mixed content. */
+function originOf(req: any): string {
+  const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https')
+    .split(',')[0]
+    .trim();
+  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').trim();
+  return host ? `${proto}://${host}` : '';
+}
+
+function toPublicFromLens(v: any, origin: string = '') {
   const photos = v.photos && typeof v.photos === 'object' ? v.photos : {};
   // Prefer exterior hero order for website gallery
   const order = [
     'front_3_4', 'front_straight', 'side_driver', 'side_passenger',
     'rear_3_4', 'rear_straight', 'interior_dash', 'engine_bay',
   ];
+  /* Stored photos are served by this instance, but the sites reading this feed
+     are on their own domains — a relative "/media/…" would resolve against the
+     dealer's host and 404. Legacy base64 passes through untouched, so a feed
+     keeps working on an instance whose migration has not run. */
+  const abs = (s: string) => (isStoredRef(s) && origin ? `${origin}${s}` : s);
+
   const images: string[] = [];
   for (const id of order) {
-    if (typeof photos[id] === 'string' && photos[id].length > 32) images.push(photos[id]);
+    if (typeof photos[id] === 'string' && photos[id].length > 32) images.push(abs(photos[id]));
   }
   for (const [id, src] of Object.entries(photos)) {
-    if (!order.includes(id) && typeof src === 'string' && src.length > 32) images.push(src);
+    if (!order.includes(id) && typeof src === 'string' && src.length > 32) images.push(abs(src));
   }
 
   // Ready-for-web: required shots ideally full; allow publish if Ready/Listed or has solid gallery
@@ -634,8 +781,19 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
     ensureWeb3dDir();
     const safeStock = String(pkg.stockNumber).replace(/[^a-zA-Z0-9_-]/g, '_');
     const filePath = path.join(WEB3D_DIR, `${safeStock}.json`);
+    /* Frames onto disk, references into the package.
+       This is the single largest payload the system produces: the Yaris orbit
+       was 11 frames and 18.4 MB, ~10 seconds to fetch, against a client that
+       gives up after 12. Stored as files the package itself is a few KB and each
+       frame is fetched once and cached forever — and because they are content-
+       addressed, frames shared with the gallery are not stored twice. */
     const payload = {
       ...pkg,
+      frames: pkg.frames.map((f: any) => {
+        if (!f || typeof f !== 'object') return f;
+        const ref = putPhoto(f.image);
+        return ref ? { ...f, image: ref } : f;
+      }),
       savedAt: new Date().toISOString(),
       ownerId: req.user.uid,
     };
@@ -682,6 +840,15 @@ app.get('/api/public/web3d/:stockNumber', (req, res) => {
       return res.status(404).json({ success: false, error: 'No web 3D package for this stock number' });
     }
     const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    /* Frames stored as files are advertised as absolute URLs — the sites reading
+       this are on their own domains, so a relative path would 404 on theirs.
+       Packages written before the move still carry base64 and pass through. */
+    const origin = originOf(req);
+    if (Array.isArray(data?.frames)) {
+      data.frames = data.frames.map((f: any) =>
+        f && isStoredRef(f.image) && origin ? { ...f, image: `${origin}${f.image}` } : f
+      );
+    }
     res.json({ success: true, package: data });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
@@ -740,7 +907,7 @@ app.get('/api/public/stock', async (req, res) => {
         : vehicles.filter(
             (v: any) => (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealer
           );
-    const publicList = scoped.map(toPublicFromLens).filter(Boolean);
+    const publicList = scoped.map((v: any) => toPublicFromLens(v, originOf(req))).filter(Boolean);
     res.json({
       success: true,
       dealer,
@@ -1214,7 +1381,19 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const photos = vehicle.photos || {};
+    /* The wire format to TruFlow is still { slotId: dataUri }, so photos that
+       now live on disk are read back for the export. That keeps the two products
+       independent — TruFlow's own migration landed separately and neither had to
+       ship in lockstep with the other.
+       It does mean the upload is still large. Making the export post references
+       and having TruFlow fetch them is the next step, and the one that actually
+       shrinks what a phone sends over mobile data. */
+    const storedPhotos = vehicle.photos || {};
+    const photos: Record<string, string> = {};
+    for (const [slotId, value] of Object.entries(storedPhotos)) {
+      const uri = asDataUri(value);
+      if (uri) photos[slotId] = uri;
+    }
     const photoCount = Object.keys(photos).length;
     if (photoCount === 0) {
       return res.status(400).json({

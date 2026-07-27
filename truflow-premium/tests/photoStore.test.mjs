@@ -115,6 +115,23 @@ test("putAll converts an array and keeps order", () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+test("a stored photo reads back as the identical data URI", () => {
+  const dir = freshStore();
+  const ref = store.put(JPEG_URI);
+
+  /* The export between products still speaks base64: TruLens posts a
+     { slotId: dataUri } map to TruFlow's push-photos. Once the sender stores
+     files, the export has to reconstitute them — and if this round trip is not
+     exact, every capture reaching the DMS is silently corrupted. */
+  assert.equal(store.toDataUri(ref), JPEG_URI, "round trip must be byte-exact");
+  assert.equal(store.asDataUri(ref), JPEG_URI, "asDataUri resolves a reference");
+  assert.equal(store.asDataUri(JPEG_URI), JPEG_URI, "and passes a data URI through");
+  assert.equal(store.asDataUri("nonsense"), null);
+  assert.equal(store.toDataUri("/media/../data.json"), null, "must not read outside the store");
+
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test("isStoredRef distinguishes a stored file from a data URI", () => {
   freshStore();
   assert.equal(store.isStoredRef(`/media/${"a".repeat(64)}.jpg`), true);
