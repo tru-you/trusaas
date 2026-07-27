@@ -287,6 +287,7 @@ function isPublicPath(p: string): boolean {
 // shared key is configured on both services this stays open, so an unset key
 // can't silently break a dealer's photo export mid-capture.
 const SYNC_SERVICE_KEY = process.env.TRUFLOW_SYNC_KEY || "";
+const TRULENS_URL = (process.env.TRULENS_URL || "https://lens.tru-saas.com").replace(/\/$/, "");
 
 function requireAuth(req: any, res: any, next: any) {
   if (!req.path.startsWith("/api/") || isPublicPath(req.path)) return next();
@@ -1041,6 +1042,20 @@ app.delete("/api/inventory/:id", (req: any, res) => {
 
   state.vehicles = state.vehicles.filter((v: any) => v.id !== req.params.id);
   writeState(state);
+
+  // If this vehicle was imported from TruLens, tell TruLens to remove it too
+  // so the capture doesn't linger after the DMS record is gone.
+  if (target.source === "trulens" && target.stockNumber) {
+    fetch(`${TRULENS_URL}/api/sync/vehicle`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...(SYNC_SERVICE_KEY ? { "x-tru-sync-key": SYNC_SERVICE_KEY } : {}),
+      },
+      body: JSON.stringify({ stockNumber: target.stockNumber }),
+    }).catch((err) => console.warn("[sync] TruLens delete callback failed:", err?.message));
+  }
+
   res.json({ message: "Vehicle deleted successfully." });
 });
 

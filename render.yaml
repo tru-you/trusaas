@@ -176,6 +176,10 @@ services:
       # trusaas-lens. Set it here first, then on TruLens.
       - key: TRUFLOW_SYNC_KEY
         sync: false
+      # TruLens origin — used for sync-back (delete a capture when the DMS
+      # vehicle is removed). Falls back to https://lens.tru-saas.com.
+      - key: TRULENS_URL
+        value: https://lens.tru-saas.com
       # Set once, at first boot on a fresh disk, to choose the master admin code
       # instead of reading a generated one out of the service log. Ignored
       # afterwards — rotate through /api/auth/codes/rotate.

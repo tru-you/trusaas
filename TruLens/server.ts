@@ -822,6 +822,47 @@ app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
   }
 });
 
+// 4b. Service-to-service delete — TruFlow calls this when a synced vehicle is
+//     removed from the DMS, so the capture doesn't linger in TruLens.
+app.delete('/api/sync/vehicle', (req, res) => {
+  if (!SYNC_KEY) {
+    return res.status(503).json({ error: 'TRUFLOW_SYNC_KEY is not configured on this server.' });
+  }
+  if (req.headers['x-tru-sync-key'] !== SYNC_KEY) {
+    return res.status(401).json({ error: 'Invalid sync key.' });
+  }
+  const { stockNumber } = req.body || {};
+  if (!stockNumber) {
+    return res.status(400).json({ error: 'stockNumber is required.' });
+  }
+
+  (async () => {
+    try {
+      if (LOCAL_MODE || !fdb) {
+        const store = readLocalStore();
+        const before = store.vehicles.length;
+        store.vehicles = store.vehicles.filter((v: any) => v.stockNumber !== stockNumber);
+        writeLocalStore(store);
+        const removed = before - store.vehicles.length;
+        return res.json({ deleted: removed > 0, removed });
+      }
+      const snapshot = await fdb!.collection('vehicles')
+        .where('stockNumber', '==', stockNumber)
+        .get();
+      if (snapshot.empty) {
+        return res.json({ deleted: false, removed: 0 });
+      }
+      const batch = fdb!.batch();
+      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      return res.json({ deleted: true, removed: snapshot.size });
+    } catch (err: any) {
+      console.error('[sync] delete by stockNumber failed:', err);
+      return res.status(500).json({ error: err?.message || 'Delete failed.' });
+    }
+  })();
+});
+
 // 5. AI Photo Quality Inspection & Listing Description Writer (Gemini)
 app.post('/api/gemini/analyze', async (req, res) => {
   const { base64Image, slotName, vehicleInfo } = req.body;
