@@ -24,11 +24,19 @@ export const MIN_USEFUL_GALLERY = 6;
 
 export function computeDmsGalleryReadiness(v: {
   images?: string[] | null;
+  extrasPhotos?: string[] | null;
   status?: string;
   lastPhotoSync?: string;
   showOnWebsite?: boolean;
 }): DmsGalleryReadiness {
-  const photoCount = Array.isArray(v.images) ? v.images.filter(Boolean).length : 0;
+  /* The gallery is images + extrasPhotos, which is exactly what the public feed
+     publishes (toPublicVehicle concatenates the two). This counted `images`
+     alone — and mapAutoLensPhotos only files the eight exterior slots there,
+     sending every interior, engine, detail and document shot to extrasPhotos.
+     So a full 22-photo capture scored 8 against a target of 12 and could never
+     reach web-ready no matter how much the dealer shot. */
+  const count = (a?: string[] | null) => (Array.isArray(a) ? a.filter(Boolean).length : 0);
+  const photoCount = count(v.images) + count(v.extrasPhotos);
   const reasons: string[] = [];
 
   if (photoCount === 0) {

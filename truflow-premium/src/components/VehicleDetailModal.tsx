@@ -46,6 +46,7 @@ interface VehicleDetailModalProps {
 export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, settings, documentsPanel}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Elite DMS States
@@ -101,6 +102,10 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   );
 
   const photoCount = galleryPhotos.length;
+  /* Mirrors what readState does on the server: a row that predates the flag is
+     backfilled to true, so "not explicitly false" is genuinely published. The
+     public feed itself tests === true. */
+  const isPublished = vehicle.showOnWebsite !== false;
   const webReadyHint =
     photoCount >= 6
       ? { label: "Gallery ready for web", color: "var(--cyan)" }
@@ -180,13 +185,55 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               {photoCount} gallery photo{photoCount === 1 ? "" : "s"} · stock media only (no in-DMS camera)
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => openTruLens(vehicle.stockNumber)}
-            className="inline-flex items-center gap-2 text-[13px] font-bold px-3 py-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)] cursor-pointer"
-          >
-            <Camera size={12} /> Complete shoot in TruLens
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Publish lives here as well as in TruLens.
+                The flag decides whether the dealer's website shows the car, and
+                until now nothing in this app could set it — `showOnWebsite`
+                existed only as a type. A dealer running TruFlow as their DMS
+                had to open the capture app to put their own stock live, and a
+                car added here by hand could not be published at all. The public
+                feed requires showOnWebsite === true, so this is the switch that
+                decides it. */}
+            <button
+              type="button"
+              disabled={publishing}
+              onClick={async () => {
+                setPublishing(true);
+                try {
+                  await onUpdateVehicle(vehicle.id, {
+                    showOnWebsite: !isPublished,
+                  } as Partial<Vehicle>);
+                } finally {
+                  setPublishing(false);
+                }
+              }}
+              title={
+                isPublished
+                  ? "Remove this vehicle from the dealer website feed"
+                  : "Show this vehicle on the dealer website"
+              }
+              className={
+                "inline-flex items-center gap-2 text-[13px] font-bold px-3 py-2 rounded-lg border cursor-pointer disabled:opacity-50 " +
+                (isPublished
+                  ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
+                  : "bg-[color:var(--glass)] text-[color:var(--muted)] border-[color:var(--glass-line)] hover:text-[color:var(--white)]")
+              }
+            >
+              <Globe size={12} />
+              {publishing
+                ? "Saving…"
+                : isPublished
+                ? "On website"
+                : "Publish to website"}
+            </button>
+            <button
+              type="button"
+              onClick={() => openTruLens(vehicle.stockNumber)}
+              className="inline-flex items-center gap-2 text-[13px] font-bold px-3 py-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)] cursor-pointer"
+            >
+              <Camera size={12} /> Complete shoot in TruLens
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
