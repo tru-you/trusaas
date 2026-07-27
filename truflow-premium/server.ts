@@ -991,6 +991,68 @@ app.get("/api/admin/backup", (req: any, res) => {
   }
 });
 
+/** Restore a downloaded backup. Admin only.
+ *
+ *  The other half of /api/admin/backup, and the reason that one was not yet a
+ *  backup: this instance could be downloaded and could be wiped
+ *  (/api/state/reset), but nothing could put a file back. Restoring meant
+ *  writing to the mounted disk through the Render shell, so the recovery path
+ *  existed only for someone willing to do that under pressure.
+ *
+ *  Takes a snapshot of what is currently on disk before overwriting it, so a
+ *  restore of the wrong file is itself recoverable — the failure mode of a
+ *  restore feature is someone uploading last month's copy over this month's. */
+app.post("/api/admin/restore", (req: any, res) => {
+  if (req.auth?.role !== "admin") {
+    return res.status(403).json({ error: "Admin only." });
+  }
+  if (req.body?.confirm !== "RESTORE") {
+    return res.status(400).json({
+      error: "Confirmation required",
+      message: 'Send { "confirm": "RESTORE", "state": <backup> } to proceed.',
+    });
+  }
+
+  const incoming = req.body?.state;
+  /* Validate the shape before touching disk. An empty object is valid JSON and
+     would wipe the instance just as thoroughly as a reset, but silently and
+     while reporting success. */
+  if (!incoming || typeof incoming !== "object") {
+    return res.status(400).json({ error: "No state in payload." });
+  }
+  if (!Array.isArray(incoming.vehicles) || !Array.isArray(incoming.dealerships)) {
+    return res.status(400).json({
+      error: "That does not look like a TruFlow backup",
+      message: "Expected top-level 'vehicles' and 'dealerships' arrays.",
+    });
+  }
+
+  try {
+    let snapshot: string | null = null;
+    if (fs.existsSync(DATA_FILE)) {
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+      snapshot = path.join(DATA_DIR, `data.before-restore-${stamp}.json`);
+      fs.copyFileSync(DATA_FILE, snapshot);
+    }
+
+    writeState(incoming);
+
+    res.json({
+      message: "Restored.",
+      restored: {
+        dealerships: incoming.dealerships.length,
+        vehicles: incoming.vehicles.length,
+        leads: Array.isArray(incoming.leads) ? incoming.leads.length : 0,
+      },
+      // Named so it can be recovered from the shell if the wrong file went in.
+      previousStateSavedAs: snapshot ? path.basename(snapshot) : null,
+    });
+  } catch (err: any) {
+    console.error("restore failed", err);
+    res.status(500).json({ error: "Restore failed", details: err.message });
+  }
+});
+
 app.put("/api/settings", (req, res) => {
   const state = readState();
   state.settings = { ...state.settings, ...req.body };

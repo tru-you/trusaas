@@ -290,6 +290,7 @@ export default function App() {
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [backingUp, setBackingUp] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [lastBackupMb, setLastBackupMb] = useState<number | null>(null);
   // Lifted out of ChatWidget so the dashboard can open the assistant directly —
   // the floating bubble is easy to miss on a desk monitor.
@@ -3340,6 +3341,61 @@ export default function App() {
                     >
                       <Download size={14} /> {backingUp ? "Preparing…" : "Download full backup"}
                     </button>
+                    {/* The other half. Without it the backup above was a file
+                        nobody could put back: this instance could be downloaded
+                        and could be wiped, and restoring meant writing to the
+                        mounted disk through the Render shell. */}
+                    <label className="btn btn-secondary cursor-pointer">
+                      <Upload size={14} /> {restoring ? "Restoring…" : "Restore from backup…"}
+                      <input
+                        type="file"
+                        accept="application/json,.json"
+                        className="hidden"
+                        disabled={restoring}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = ""; // let the same file be picked twice
+                          if (!file) return;
+                          setRestoring(true);
+                          try {
+                            const parsed = JSON.parse(await file.text());
+                            const vehicles = Array.isArray(parsed?.vehicles) ? parsed.vehicles.length : null;
+                            const dealers = Array.isArray(parsed?.dealerships) ? parsed.dealerships.length : null;
+                            if (vehicles === null || dealers === null) {
+                              addNotification("Not a TruFlow backup", "No vehicles/dealerships arrays in that file.", "warning");
+                              return;
+                            }
+                            if (!confirm(
+                              `Replace EVERYTHING on this instance with this file?\n\n` +
+                              `${file.name}\n${dealers} dealerships, ${vehicles} vehicles\n\n` +
+                              `The current state is snapshotted on the server first, but every ` +
+                              `dealership on this instance is overwritten.`
+                            )) return;
+                            const res = await authFetch("/api/admin/restore", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ confirm: "RESTORE", state: parsed }),
+                            });
+                            const body = await res.json().catch(() => ({}));
+                            if (!res.ok) {
+                              addNotification("Restore failed", body?.message || body?.error || `HTTP ${res.status}`, "warning");
+                              return;
+                            }
+                            addNotification(
+                              "Restored",
+                              `${body.restored?.dealerships ?? 0} dealerships, ${body.restored?.vehicles ?? 0} vehicles. ` +
+                              `Previous state kept as ${body.previousStateSavedAs || "—"}.`,
+                              "info"
+                            );
+                            loadAllState();
+                          } catch (err: any) {
+                            addNotification("Restore failed", err?.message || "Could not read that file", "warning");
+                          } finally {
+                            setRestoring(false);
+                          }
+                        }}
+                      />
+                    </label>
                     {lastBackupMb !== null && (
                       <span className="text-[13px] font-mono text-[rgba(232,234,230,0.72)]">
                         last: {lastBackupMb.toFixed(1)} MB
