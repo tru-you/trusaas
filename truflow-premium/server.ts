@@ -955,6 +955,42 @@ app.get("/api/state", (req: any, res) => {
   });
 });
 
+/** Download the entire DMS as a file. Admin only.
+ *
+ *  The mounted disk holds the only copy of every dealer's photos, and taking a
+ *  copy previously meant finding the Render shell and cat-ing the file — which
+ *  is exactly the kind of chore that does not get done until the week after it
+ *  was needed. This is the same data /api/state already returns to an admin,
+ *  served with a filename so a browser saves it instead of rendering it.
+ *
+ *  Deliberately not public and deliberately not dealer-scoped: it is a whole-
+ *  instance backup, so it is the one endpoint that must refuse anyone who is
+ *  not an admin outright rather than quietly returning their own slice. */
+app.get("/api/admin/backup", (req: any, res) => {
+  if (req.auth?.role !== "admin") {
+    return res.status(403).json({ error: "Admin only." });
+  }
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="truflow-backup-${stamp}.json"`
+  );
+  /* Streamed from disk rather than re-serialised from readState(), so what
+     lands on the laptop is byte-for-byte what the service is running on —
+     including anything a migration has not yet rewritten. */
+  try {
+    if (!fs.existsSync(DATA_FILE)) {
+      return res.status(404).json({ error: "No state file on disk yet." });
+    }
+    fs.createReadStream(DATA_FILE).pipe(res);
+  } catch (err: any) {
+    console.error("backup failed", err);
+    res.status(500).json({ error: "Backup failed", details: err.message });
+  }
+});
+
 app.put("/api/settings", (req, res) => {
   const state = readState();
   state.settings = { ...state.settings, ...req.body };
