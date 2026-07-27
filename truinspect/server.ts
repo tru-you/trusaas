@@ -48,9 +48,32 @@ const LOCAL_MODE = !FORCE_CLOUD; // default ON for PC friendliness
  * what keeps local development and an un-migrated instance working.
  */
 const ACCESS_CODE = process.env.TRUINSPECT_ACCESS_CODE || '';
+
+/** Shared key for talking to TruFlow, which is where dealerships, codes and
+ *  entitlements live. Set it and this app stops needing codes of its own. */
+const SYNC_KEY = process.env.TRUFLOW_SYNC_KEY || '';
+
+/* The signing secret must be something an outsider cannot guess.
+ *
+ * It used to derive from ACCESS_CODE alone, falling back to the literal
+ * 'truinspect-dev' — so with no access code set the secret was a constant
+ * sitting in this file, and anyone could mint a valid device token. That was
+ * survivable only because a device token was refused outright unless
+ * ACCESS_CODE was set. Codes are verified against TruFlow now, so an instance
+ * can legitimately have no ACCESS_CODE at all, and the sync key becomes the
+ * secret in that case — it is already a shared secret and already required for
+ * central verification to work. */
 const TOKEN_SECRET =
   process.env.TRUINSPECT_TOKEN_SECRET ||
-  crypto.createHash('sha256').update(ACCESS_CODE || 'truinspect-dev').digest('hex');
+  crypto.createHash('sha256').update(ACCESS_CODE || SYNC_KEY || 'truinspect-dev').digest('hex');
+
+/** Whether the signing secret is actually secret. A device token is only
+ *  trusted when it is — otherwise the fallback constant above would make
+ *  forging one trivial. */
+const HAS_REAL_TOKEN_SECRET = Boolean(
+  process.env.TRUINSPECT_TOKEN_SECRET || ACCESS_CODE || SYNC_KEY
+);
+
 const DEVICE_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // a month on the yard phone
 
 /** Constant-time compare, so a wrong code can't be found one character at a time. */
@@ -60,28 +83,36 @@ function codeMatches(given: string, expected: string): boolean {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
-function signDeviceToken(): string {
-  const payload = Buffer.from(
-    JSON.stringify({ k: 'device', exp: Date.now() + DEVICE_TOKEN_TTL_MS })
-  ).toString('base64url');
+/** @param dealerSlug pins the token to one dealership, so a phone cannot later
+ *  claim to be a different yard. Absent for the legacy shared code, which
+ *  carries no dealership at all. */
+function signDeviceToken(dealerSlug?: string | null): string {
+  const claims: Record<string, unknown> = { k: 'device', exp: Date.now() + DEVICE_TOKEN_TTL_MS };
+  if (dealerSlug) claims.d = dealerSlug;
+  const payload = Buffer.from(JSON.stringify(claims)).toString('base64url');
   const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
   return `${payload}.${sig}`;
 }
 
-function verifyDeviceToken(token: string): boolean {
+/** The claims inside a device token, or null if the signature does not hold.
+ *  Replaces the old boolean verifyDeviceToken: callers now need the
+ *  dealership, not merely a yes/no. */
+function deviceTokenClaims(token: string): { dealerSlug?: string } | null {
   try {
     const [payload, sig] = String(token).split('.');
-    if (!payload || !sig) return false;
+    if (!payload || !sig) return null;
     const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
     const a = Buffer.from(sig);
     const b = Buffer.from(expected);
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return false;
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
     const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
-    return claims.k === 'device' && claims.exp > Date.now();
+    if (claims.k !== 'device' || !(claims.exp > Date.now())) return null;
+    return { dealerSlug: typeof claims.d === 'string' ? claims.d : undefined };
   } catch {
-    return false;
+    return null;
   }
 }
+
 
 /* Writable state lives under DATA_DIR so it can sit on a mounted Render disk
    and survive deploys and restarts. This was hardcoded to ./data with no env
@@ -339,10 +370,25 @@ const authenticate = async (req: any, res: any, next: any) => {
 
   const idToken = authHeader.split('Bearer ')[1];
 
-  // A signed device token, issued by POST /api/auth/device in exchange for the
-  // inspector access code.
-  if (ACCESS_CODE && verifyDeviceToken(idToken)) {
-    req.user = { uid: 'device', email: 'device@truinspect.local', local: true };
+  /* A signed device token, issued by POST /api/auth/device.
+   *
+   * The gate is whether the signing secret is genuinely secret, not whether
+   * ACCESS_CODE specifically is set. Those were the same thing while a local
+   * code was the only way in; now that codes are verified against TruFlow an
+   * instance can have no ACCESS_CODE at all, and testing for it would reject
+   * every centrally issued token. HAS_REAL_TOKEN_SECRET is what actually
+   * matters — without it the secret falls back to a constant in this file and a
+   * token could be forged. */
+  const claims = HAS_REAL_TOKEN_SECRET ? deviceTokenClaims(idToken) : null;
+  if (claims) {
+    /* The dealership rides on the token, so it is evidence rather than a claim
+       the client makes per request — the same reasoning TruLens applies. */
+    req.user = {
+      uid: 'device',
+      email: 'device@truinspect.local',
+      local: true,
+      dealerSlug: claims.dealerSlug,
+    };
     return next();
   }
 
@@ -351,7 +397,7 @@ const authenticate = async (req: any, res: any, next: any) => {
   // configured — i.e. local development. With one set, `Bearer demo` is just a
   // wrong token.
   if (
-    !ACCESS_CODE &&
+    !HAS_REAL_TOKEN_SECRET &&
     (idToken === 'local-demo-token' || idToken === 'demo' || idToken.startsWith('local-'))
   ) {
     req.user = { uid: 'local-demo-user', email: 'demo@trulens.local', local: true };
@@ -377,11 +423,20 @@ const authenticate = async (req: any, res: any, next: any) => {
     }
   }
 
-  // Local PC: accept any Bearer JWT and extract uid, or use demo user.
-  // LOCAL_MODE is on in production too (there is no Firestore there), so this
-  // branch accepted ANY bearer string — it has to close as soon as an access
-  // code exists, or configuring one would change nothing.
-  if (LOCAL_MODE && !ACCESS_CODE) {
+  /* Local PC: accept any Bearer JWT and extract uid, or use demo user.
+   *
+   * LOCAL_MODE is on in production too (there is no Firestore there), so this
+   * branch accepts ANY bearer string and must close the moment real
+   * authentication exists.
+   *
+   * The test was `!ACCESS_CODE`, which was the same thing while a local code was
+   * the only way in. It no longer is: an instance that verifies codes against
+   * TruFlow legitimately has no ACCESS_CODE, and this branch would then have
+   * left the whole API — every inspection and photo — open to any string at all,
+   * while the login screen looked perfectly secure. HAS_REAL_TOKEN_SECRET is
+   * true whenever an access code, a sync key or an explicit token secret is
+   * configured, which is exactly when this door has to be shut. */
+  if (LOCAL_MODE && !HAS_REAL_TOKEN_SECRET) {
     const payload = decodeJwtPayload(idToken);
     req.user = {
       uid: payload?.user_id || payload?.sub || payload?.uid || 'local-demo-user',
@@ -508,15 +563,83 @@ const STARTED_AT = Date.now();
  * Exchange the inspector access code for a signed device token.
  * Mirrors TruLens's /api/auth/device so both yard apps sign in the same way.
  */
-app.post('/api/auth/device', (req, res) => {
-  if (!ACCESS_CODE) {
-    return res.status(503).json({ error: 'No access code configured on this server.' });
+/**
+ * Ask TruFlow whether a code is real and whether it opens TruInspect.
+ *
+ * Dealerships, their codes and their entitlements live in one place. This app
+ * had no notion of a dealership at all: a single TRUINSPECT_ACCESS_CODE, shared
+ * by everyone, so every inspector on every yard signed in with the same string
+ * and nothing recorded which dealership an inspection belonged to. Onboarding a
+ * dealer meant handing them that one code; revoking meant changing it for
+ * everybody at once.
+ *
+ * Returns null on anything other than a clean yes, including an unreachable
+ * TruFlow, so the caller can fall back to the local code rather than stranding
+ * an inspector mid-job because the DMS was briefly down.
+ */
+async function verifyCodeWithTruFlow(
+  code: string
+): Promise<{ dealerSlug: string; dealerName?: string } | null> {
+  if (!SYNC_KEY) return null; // no shared key configured — nothing to ask with
+  try {
+    const res = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/auth/verify-code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-tru-sync-key': SYNC_KEY },
+      body: JSON.stringify({ code, product: 'inspect' }),
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) {
+      /* 403 is a real answer, not a failure: the code is valid but this
+         dealership is not set up for TruInspect. Logged so an onboarding
+         mistake is visible rather than looking like a wrong code. */
+      if (res.status === 403) {
+        const body = await res.json().catch(() => ({}));
+        console.warn(`[auth] TruFlow refused a code for inspect: ${body?.message || res.status}`);
+      }
+      return null;
+    }
+    const body = await res.json();
+    return body?.ok && body.dealerSlug
+      ? { dealerSlug: body.dealerSlug, dealerName: body.dealerName }
+      : null;
+  } catch (err: any) {
+    console.warn('[auth] could not reach TruFlow to verify a code:', err?.message || err);
+    return null;
   }
+}
+
+app.post('/api/auth/device', async (req, res) => {
   const given = String(req.body?.code || '');
-  if (!codeMatches(given, ACCESS_CODE)) {
-    return res.status(401).json({ error: 'That code is not recognised.' });
+
+  /* TruFlow first. A dealer onboarded there works here immediately, with no
+     environment variable to edit and no restart of this service — and the
+     inspection is tagged with the yard it was done for. */
+  const central = await verifyCodeWithTruFlow(given);
+  if (central) {
+    return res.json({
+      token: signDeviceToken(central.dealerSlug),
+      expiresInDays: 30,
+      dealerSlug: central.dealerSlug,
+      dealerName: central.dealerName,
+    });
   }
-  res.json({ token: signDeviceToken(), expiresInDays: 30 });
+
+  /* Then the local shared code. Kept so inspectors already signed in keep
+     working, and so a TruFlow outage cannot stop an inspection being recorded. */
+  if (ACCESS_CODE && codeMatches(given, ACCESS_CODE)) {
+    return res.json({ token: signDeviceToken(), expiresInDays: 30, dealerSlug: null });
+  }
+
+  /* Only now is "nothing is configured" worth reporting, and it is a different
+     complaint from a wrong code. */
+  if (!ACCESS_CODE && !SYNC_KEY) {
+    return res.status(503).json({
+      error: 'No way to verify codes on this server.',
+      message: 'Set TRUFLOW_SYNC_KEY so codes can be checked against TruFlow, or set TRUINSPECT_ACCESS_CODE.',
+    });
+  }
+
+  return res.status(401).json({ error: 'That code is not recognised.' });
 });
 
 app.get('/api/health', (_req, res) => {
@@ -1212,11 +1335,37 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
     const {
       vehicleId,
       dmsUrl: dmsUrlOverride,
+      dealerSlug: claimedDealerSlug,
       createIfMissing = true,
     } = req.body || {};
 
     if (!vehicleId) {
       return res.status(400).json({ error: 'vehicleId is required' });
+    }
+
+    /* The dealership on the token wins over anything the client says. The body
+       value is a claim; the token is evidence, because it was signed after
+       TruFlow confirmed the code. This is what stops a mis-set picker filing an
+       inspection against another dealer's yard. */
+    const dealerSlug = req.user?.dealerSlug || claimedDealerSlug;
+    if (req.user?.dealerSlug && claimedDealerSlug && claimedDealerSlug !== req.user.dealerSlug) {
+      console.warn(
+        `[export] device is signed in as "${req.user.dealerSlug}" but requested ` +
+        `"${claimedDealerSlug}" — using the signed-in dealership.`
+      );
+    }
+
+    /* TruFlow refuses a push with no dealership — an absent slug used to fall
+       through to its default dealership, which silently filed the car into
+       someone else's inventory. Fail here instead of building and uploading a
+       payload the DMS will reject. */
+    if (!dealerSlug) {
+      return res.status(400).json({
+        success: false,
+        error:
+          'No dealership on this device. Sign in with the dealership code so the ' +
+          'inspection files against the right yard.',
+      });
     }
 
     const vehicle = await getVehicle(vehicleId, userId);
@@ -1251,6 +1400,10 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       stockNumber: vehicle.stockNumber,
       vehicleId: vehicle.id,
       createIfMissing: createIfMissing !== false,
+      /* Names the yard. TruFlow refuses a push without it, because an absent
+         slug there used to fall through to its default dealership and file the
+         car into another dealer's inventory. */
+      dealerSlug,
       vehicle: {
         id: vehicle.id,
         make: vehicle.make,
@@ -1267,9 +1420,16 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       photos,
     };
 
+    /* Service-to-service auth for the DMS push. TruFlow gates
+       /api/sync/push-photos on this key, so without it every export comes back
+       401 — which reads as "the DMS is broken" rather than "this service was
+       never given the shared key". Same value on both services. */
     const dmsRes = await fetch(pushUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(SYNC_KEY ? { 'x-tru-sync-key': SYNC_KEY } : {}),
+      },
       body: JSON.stringify(payload),
     });
 
