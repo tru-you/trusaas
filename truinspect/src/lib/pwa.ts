@@ -1,4 +1,4 @@
-/** TruLens PWA helpers — install state + service worker registration */
+/** TruInspect PWA helpers — install state + service worker registration */
 
 export function isStandaloneDisplay(): boolean {
   if (typeof window === 'undefined') return false;
@@ -22,7 +22,7 @@ export function isMobileViewport(): boolean {
   return window.matchMedia('(max-width: 900px), (pointer: coarse)').matches || isStandaloneDisplay();
 }
 
-export async function registerTruLensServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+export async function registerTruInspectServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return null;
 
   // Dev on localhost is fine for testing install; still register so phone demos work over LAN HTTPS/tunnel
@@ -51,7 +51,7 @@ export async function registerTruLensServiceWorker(): Promise<ServiceWorkerRegis
     reg.update().catch(() => undefined);
     return reg;
   } catch (err) {
-    console.warn('[TruLens PWA] Service worker registration failed', err);
+    console.warn('[TruInspect PWA] Service worker registration failed', err);
     return null;
   }
 }

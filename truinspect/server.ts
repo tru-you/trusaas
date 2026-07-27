@@ -8,6 +8,15 @@ import dotenv from 'dotenv';
 import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
+import {
+  initPhotoStore,
+  mediaDir,
+  MEDIA_ROUTE,
+  put as putPhoto,
+  isStoredRef,
+  asDataUri,
+  stats as photoStats,
+} from './photoStore';
 
 // Load environment variables first
 dotenv.config();
@@ -74,13 +83,37 @@ function verifyDeviceToken(token: string): boolean {
   }
 }
 
-const LOCAL_DATA_DIR = path.join(process.cwd(), 'data');
+/* Writable state lives under DATA_DIR so it can sit on a mounted Render disk
+   and survive deploys and restarts. This was hardcoded to ./data with no env
+   override, and the service had no disk — so on Render it wrote to the
+   container filesystem and every deploy silently discarded every inspection a
+   dealer had recorded. TruLens carries the same warning in render.yaml; this
+   app simply never got the same treatment.
+   Unset (local dev) = ./data, exactly the old path. */
+const LOCAL_DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const LOCAL_DATA_FILE = path.join(LOCAL_DATA_DIR, 'local-inventory.json');
+
+/* Inspection photos are stored as files rather than base64 inside
+   local-inventory.json — see photoStore.ts. Initialised before anything reads
+   the store, and before the /media route below, because express.static resolves
+   its root when it is constructed. */
+initPhotoStore(LOCAL_DATA_DIR);
 
 type LocalStore = { vehicles: any[] };
 
 function isValidPhotoData(value: unknown): value is string {
   if (typeof value !== 'string' || value.length < 32) return false;
+  /* A stored reference — "/media/<sha256>.jpg" — is a real photo, and is the
+     form every inspection photo takes once it is on disk. Named explicitly
+     because at ~75 characters it fails the data:/http test and is far too short
+     for the raw-base64 rule below, so without this it reads as junk and
+     normalizeVehicle drops it — silently deleting every photo on the vehicle's
+     next save.
+     Held in a boolean rather than tested inline: isStoredRef is a `value is
+     string` predicate, and applying it to a value already known to be a string
+     narrows the else branch to `never`, so the checks below stop compiling. */
+  const stored: boolean = isStoredRef(value);
+  if (stored) return true;
   // Real captures are data URLs or http(s); reject placeholders / truncated junk
   if (value.startsWith('data:image') || value.startsWith('data:video') || value.startsWith('http')) return true;
   // raw base64 (no data: prefix) — accept if long enough
@@ -165,6 +198,66 @@ function writeLocalStore(store: LocalStore) {
   }
 }
 
+/**
+ * Move any base64 still in the local store onto disk.
+ *
+ * Runs once at boot rather than inside readLocalStore, which is on every
+ * request path that touches inventory — converting there would re-scan every
+ * photo of every inspection on every call, which is the cost this removes.
+ *
+ * Idempotent: put() returns a stored reference unchanged, so a second run is a
+ * no-op and an interrupted run resumes. Firestore-backed instances are skipped;
+ * their documents convert as each vehicle is next saved, and rewriting a whole
+ * collection at boot is not something to do unattended.
+ */
+function migrateInspectionPhotosToFiles(): void {
+  if (!LOCAL_MODE) {
+    console.log('[photos] cloud mode — inspection photos convert as vehicles are saved.');
+    return;
+  }
+  let store: LocalStore;
+  try {
+    store = readLocalStore();
+  } catch (err) {
+    console.error('[photos] migration could not read the local store:', err);
+    return;
+  }
+
+  let converted = 0;
+  let already = 0;
+  for (const v of store.vehicles || []) {
+    const photos = v?.photos;
+    if (!photos || typeof photos !== 'object') continue;
+    for (const [slotId, value] of Object.entries(photos)) {
+      if (isStoredRef(value)) { already++; continue; }
+      const ref = putPhoto(value);
+      if (ref) { photos[slotId] = ref; converted++; }
+    }
+  }
+
+  if (converted > 0) {
+    writeLocalStore(store);
+    const { files, bytes } = photoStats();
+    console.log(
+      `[photos] moved ${converted} inspection photo(s) out of the store. ` +
+        `Media now holds ${files} file(s), ${(bytes / 1024 / 1024).toFixed(1)} MB.`
+    );
+  } else {
+    console.log(`[photos] nothing to migrate (${already} already stored as files).`);
+  }
+}
+
+try {
+  migrateInspectionPhotosToFiles();
+  /* The orbit migration is NOT called here: it reads WEB3D_DIR, declared
+     several hundred lines below, so calling it now hits the temporal dead zone.
+     It runs immediately after that declaration. */
+} catch (err) {
+  /* Never block boot: the read paths still understand base64, so an
+     un-migrated instance behaves exactly as it did before. */
+  console.error('[photos] inspection migration failed, continuing with base64:', err);
+}
+
 // Initialize firebase-admin only when not forced local-only
 let fdb: Firestore | null = null;
 let fauth: ReturnType<typeof getAuth> | null = null;
@@ -183,7 +276,7 @@ if (!LOCAL_MODE || hasAdc) {
 
 if (LOCAL_MODE) {
   console.log('────────────────────────────────────────────');
-  console.log(' TruLens LOCAL PC MODE');
+  console.log(' TruInspect LOCAL PC MODE');
   console.log(' Inventory file: ' + LOCAL_DATA_FILE);
   console.log(' DMS export URL: ' + DEFAULT_DMS_URL);
   console.log(' Open: http://localhost:3000');
@@ -196,6 +289,26 @@ const PORT = Number(process.env.PORT) || 3000;
 // Increase payload limits for Base64 vehicle photos
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+/* Inspection photos, served as files.
+ *
+ * Immutable for a year, which is safe because the filename is the SHA-256 of
+ * the bytes — a path can never come to mean different content, so there is no
+ * cache to bust. A report page fetches each photo once instead of pulling every
+ * photo of every inspection inside a single JSON payload.
+ *
+ * Public and registered before authenticate: an inspection report is meant to
+ * be shown to a buyer, and the path is an opaque hash. */
+app.use(
+  MEDIA_ROUTE,
+  express.static(mediaDir(), {
+    immutable: true,
+    maxAge: '365d',
+    fallthrough: false,
+    index: false,
+    dotfiles: 'deny',
+  })
+);
 
 // Don't crash the process on unhandled Firebase ADC errors
 process.on('unhandledRejection', (reason) => {
@@ -339,8 +452,30 @@ async function getVehicle(id: string, userId?: string): Promise<any | null> {
   return doc.exists ? normalizeVehicle(doc.data()) : null;
 }
 
+/** Move an inspection's photos onto disk, leaving references in the record.
+ *
+ *  Every write goes through saveVehicle, so this one place keeps image bytes out
+ *  of local-inventory.json and out of Firestore documents — the latter matters
+ *  more than it looks, since a Firestore document has a hard 1 MiB ceiling that
+ *  a couple of base64 photos will breach.
+ *
+ *  Idempotent: put() hands back a reference unchanged, so re-saving an already
+ *  converted inspection costs a map and nothing else. */
+function storeVehiclePhotos(vehicle: any): any {
+  const photos = vehicle?.photos;
+  if (!photos || typeof photos !== 'object') return vehicle;
+  const next: Record<string, string> = {};
+  for (const [slotId, value] of Object.entries(photos)) {
+    const ref = putPhoto(value);
+    /* Falls back to the original value when the store cannot take it, so an
+       inspection is never silently lost — it simply stays base64. */
+    next[slotId] = ref || (value as string);
+  }
+  return { ...vehicle, photos: next };
+}
+
 async function saveVehicle(vehicle: any): Promise<any> {
-  const normalized = normalizeVehicle(vehicle);
+  const normalized = storeVehiclePhotos(normalizeVehicle(vehicle));
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
     const idx = store.vehicles.findIndex((v) => v.id === normalized.id);
@@ -411,19 +546,38 @@ app.use((req, res, next) => {
 });
 
 /** TruLens-only public stock — for dealers without DMS (or as photo-first feed) */
-function toPublicFromLens(v: any) {
+/** Absolute origin of this instance, taken from the request.
+ *
+ *  Derived rather than configured so localhost, staging and production each
+ *  advertise URLs pointing at themselves with no env var to forget. Honours the
+ *  proxy headers Render sets, or the scheme comes back http behind its TLS
+ *  terminator and consuming pages fetch mixed content. */
+function originOf(req: any): string {
+  const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https')
+    .split(',')[0]
+    .trim();
+  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').trim();
+  return host ? `${proto}://${host}` : '';
+}
+
+function toPublicFromLens(v: any, origin: string = '') {
   const photos = v.photos && typeof v.photos === 'object' ? v.photos : {};
   // Prefer exterior hero order for website gallery
   const order = [
     'front_3_4', 'front_straight', 'side_driver', 'side_passenger',
     'rear_3_4', 'rear_straight', 'interior_dash', 'engine_bay',
   ];
+  /* Stored photos are served by this instance, but a report or dealer page
+     reading this feed is on its own domain — a relative "/media/…" would
+     resolve against that host and 404. Legacy base64 passes through untouched. */
+  const abs = (s: string) => (isStoredRef(s) && origin ? `${origin}${s}` : s);
+
   const images: string[] = [];
   for (const id of order) {
-    if (typeof photos[id] === 'string' && photos[id].length > 32) images.push(photos[id]);
+    if (typeof photos[id] === 'string' && photos[id].length > 32) images.push(abs(photos[id]));
   }
   for (const [id, src] of Object.entries(photos)) {
-    if (!order.includes(id) && typeof src === 'string' && src.length > 32) images.push(src);
+    if (!order.includes(id) && typeof src === 'string' && src.length > 32) images.push(abs(src));
   }
 
   // Ready-for-web: required shots ideally full; allow publish if Ready/Listed or has solid gallery
@@ -473,10 +627,78 @@ function toPublicFromLens(v: any) {
 }
 
 // ── Web 3D / spin packages for dealer websites ─────────────────
-const WEB3D_DIR = path.join(process.cwd(), 'data', 'web3d');
+/* Under LOCAL_DATA_DIR, not cwd — orbit packages were written to the container
+   filesystem and discarded on every deploy, the same way inspections were. */
+const WEB3D_DIR = path.join(LOCAL_DATA_DIR, 'web3d');
 
 function ensureWeb3dDir() {
   if (!fs.existsSync(WEB3D_DIR)) fs.mkdirSync(WEB3D_DIR, { recursive: true });
+}
+
+/**
+ * Move base64 frames out of orbit packages already sitting on disk.
+ *
+ * The write path converts new packages, which leaves every existing one
+ * untouched — and these are the largest objects the system produces. On TruLens
+ * the equivalent package was still being served at 20 MB after its capture
+ * photos had already moved, against a client that gives up after 12 seconds.
+ *
+ * Converted one file at a time so a failure on one package leaves the rest.
+ */
+function migrateOrbitsToFiles(): void {
+  let names: string[];
+  try {
+    ensureWeb3dDir();
+    names = fs.readdirSync(WEB3D_DIR).filter((n) => n.endsWith('.json'));
+  } catch (err) {
+    console.error('[photos] could not list orbit packages:', err);
+    return;
+  }
+
+  let packagesChanged = 0;
+  let imagesMoved = 0;
+
+  for (const name of names) {
+    const file = path.join(WEB3D_DIR, name);
+    try {
+      const pkg = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      let changed = false;
+      for (const f of Array.isArray(pkg?.frames) ? pkg.frames : []) {
+        if (!f || typeof f !== 'object' || isStoredRef(f.image)) continue;
+        const ref = putPhoto(f.image);
+        if (ref) { f.image = ref; changed = true; imagesMoved++; }
+      }
+      /* Damage pins carry a base64 thumbnail each — easy to overlook because
+         they are not frames, and on TruLens they were the entire remaining
+         weight of the package once the frames had moved. */
+      for (const t of Array.isArray(pkg?.damageTags) ? pkg.damageTags : []) {
+        if (!t || typeof t !== 'object' || isStoredRef(t.thumb)) continue;
+        const ref = putPhoto(t.thumb);
+        if (ref) { t.thumb = ref; changed = true; imagesMoved++; }
+      }
+      if (changed) {
+        fs.writeFileSync(file, JSON.stringify(pkg), 'utf-8');
+        packagesChanged++;
+      }
+    } catch (err) {
+      console.error(`[photos] skipped orbit package ${name}:`, err);
+    }
+  }
+
+  if (packagesChanged) {
+    console.log(
+      `[photos] moved ${imagesMoved} orbit image(s) out of ${packagesChanged} package(s).`
+    );
+  }
+}
+
+/* Runs here rather than beside the inspection migration above, because it reads
+   WEB3D_DIR — declared immediately above — and calling it earlier hits the
+   temporal dead zone on that const. */
+try {
+  migrateOrbitsToFiles();
+} catch (err) {
+  console.error('[photos] orbit migration failed, continuing with base64:', err);
 }
 
 // POST /api/export/web-3d — save package from TruLens client
@@ -555,7 +777,7 @@ app.get('/api/public/stock', async (req, res) => {
       const snapshot = await fdb.collection('vehicles').get();
       vehicles = snapshot.docs.map((d) => normalizeVehicle(d.data()));
     }
-    const publicList = vehicles.map(toPublicFromLens).filter(Boolean);
+    const publicList = vehicles.map((v: any) => toPublicFromLens(v, originOf(req))).filter(Boolean);
     res.json({
       success: true,
       dealer,
@@ -1005,7 +1227,15 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const photos = vehicle.photos || {};
+    /* The wire format to TruFlow is { slotId: dataUri }, so photos that now live
+       on disk are read back for the export. Keeping the wire unchanged means
+       neither product had to ship in lockstep with the other. */
+    const storedPhotos = vehicle.photos || {};
+    const photos: Record<string, string> = {};
+    for (const [slotId, value] of Object.entries(storedPhotos)) {
+      const uri = asDataUri(value);
+      if (uri) photos[slotId] = uri;
+    }
     const photoCount = Object.keys(photos).length;
     if (photoCount === 0) {
       return res.status(400).json({

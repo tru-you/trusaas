@@ -4,7 +4,7 @@ import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
 import './index.css';
 import { AuthProvider } from './contexts/AuthContext';
-import { registerTruLensServiceWorker } from './lib/pwa';
+import { registerTruInspectServiceWorker } from './lib/pwa';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -19,6 +19,6 @@ createRoot(document.getElementById('root')!).render(
 // Register PWA service worker after first paint
 if (typeof window !== 'undefined') {
   window.addEventListener('load', () => {
-    void registerTruLensServiceWorker();
+    void registerTruInspectServiceWorker();
   });
 }

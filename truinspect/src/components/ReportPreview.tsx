@@ -143,6 +143,9 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const reportRef = useRef<HTMLDivElement>(null);
   const salesRef = useRef<HTMLDivElement>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  /* Inlining every photo takes a moment on a big inspection, and a download
+     button that appears to do nothing gets pressed again. */
+  const [exporting, setExporting] = useState(false);
   const [generating, setGenerating] = useState<'sales' | 'full' | null>(null);
   const [web3dBusy, setWeb3dBusy] = useState(false);
   const [web3dMsg, setWeb3dMsg] = useState<string | null>(null);
@@ -183,17 +186,59 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const checklistFlags = useMemo(() => checklistRows.filter(r => r.flagged), [checklistRows]);
   const checklistAnswered = useMemo(() => checklistRows.filter(r => r.answer), [checklistRows]);
 
-  /** Standalone HTML export — self-contained (styles + base64 photos inline) */
-  const exportHtml = () => {
+  /**
+   * Standalone HTML export — genuinely self-contained.
+   *
+   * This used to be self-contained by accident: photos were base64 in the
+   * record, so serialising the DOM carried them along. Photos are files now, so
+   * the same serialisation would produce `<img src="/media/…">` — a relative
+   * URL that resolves against nothing once the file is emailed, saved to a
+   * desktop or opened offline, which is precisely when a VIR matters. Every
+   * image is fetched and inlined before writing the file.
+   *
+   * Done on a clone, so the report on screen keeps its light URLs and the page
+   * does not briefly balloon to hold every photo twice.
+   */
+  const exportHtml = async () => {
     const el = reportRef.current;
     if (!el) return;
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TruInspect VIR · ${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.stockNumber || ''}</title><style>*{box-sizing:border-box}body{margin:0;background:#F1F5F9;padding:16px;overflow-x:hidden}</style></head><body>${el.outerHTML}</body></html>`;
-    const blob = new Blob([html], { type: 'text/html' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `TruInspect_VIR_${vehicle.stockNumber || 'draft'}.html`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    setExporting(true);
+    try {
+      const clone = el.cloneNode(true) as HTMLElement;
+      const images = Array.from(clone.querySelectorAll('img'));
+
+      await Promise.all(
+        images.map(async (img) => {
+          const src = img.getAttribute('src') || '';
+          if (!src || src.startsWith('data:')) return; // already inline
+          try {
+            const res = await fetch(src, { cache: 'force-cache' });
+            if (!res.ok) return;
+            const blob = await res.blob();
+            const dataUri = await new Promise<string>((resolve, reject) => {
+              const fr = new FileReader();
+              fr.onload = () => resolve(String(fr.result));
+              fr.onerror = () => reject(fr.error);
+              fr.readAsDataURL(blob);
+            });
+            img.setAttribute('src', dataUri);
+          } catch {
+            /* One unreachable photo must not cost the whole report — the rest
+               still export, and the gap is visible rather than silent. */
+          }
+        })
+      );
+
+      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TruInspect VIR · ${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.stockNumber || ''}</title><style>*{box-sizing:border-box}body{margin:0;background:#F1F5F9;padding:16px;overflow-x:hidden}</style></head><body>${clone.outerHTML}</body></html>`;
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `TruInspect_VIR_${vehicle.stockNumber || 'draft'}.html`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    } finally {
+      setExporting(false);
+    }
   };
   const hasCondition = condition.findings.length > 0 || condition.flaggedPoints.length > 0;
   const band = conditionBand(hasCondition ? condition.stars : null);
@@ -359,8 +404,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             >
               Condition {condition.stars.toFixed(1)}/5
             </span>
-            <button onClick={exportHtml} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
-              <FileText size={12} /> HTML
+            <button
+              onClick={exportHtml}
+              disabled={exporting}
+              title="Downloads a single file with every photo embedded — it opens offline and survives being emailed"
+              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200 disabled:opacity-50"
+            >
+              <FileText size={12} /> {exporting ? 'Embedding…' : 'HTML'}
             </button>
             <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print

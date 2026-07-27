@@ -87,9 +87,20 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    # Inspections and their photos are written here. WITHOUT this the service
+    # wrote to the container filesystem, so every deploy or restart discarded
+    # every inspection a dealer had recorded — the same warning trusaas-lens
+    # carries, which this service never got. The code also hardcoded ./data with
+    # no DATA_DIR override, so mounting a disk alone would not have helped.
+    disk:
+      name: truinspect-data
+      mountPath: /var/data
+      sizeGB: 5
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DATA_DIR
+        value: /var/data
       - key: LOCAL_MODE
         value: "1"
       - key: GEMINI_API_KEY
