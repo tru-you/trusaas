@@ -630,6 +630,7 @@ const DEFAULT_MOCK_STATE: DMSState = {
   dealerships: [
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
     { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://www.carsoncaledon.co.za' },
+    { id: 'd3', name: 'Truecars', location: 'George, Western Cape', slug: 'truecars', websiteUrl: 'https://www.true-cars.co.za' },
     { id: 'demo', name: 'Demo Dealership', location: 'Sandbox', slug: 'demo', websiteUrl: 'https://tru-saas.com' }
   ],
   vehicles: [
@@ -783,6 +784,13 @@ function readState(): DMSState {
           const seed = DEFAULT_MOCK_STATE.dealerships.find((x: any) => x.id === d.id);
           return seed ? { ...d, ...seed } : d; // platform-managed website/slug: seed wins
         });
+        // Add seed dealerships that don't exist in the state file yet — so a
+        // new dealer added to DEFAULT_MOCK_STATE appears after a redeploy
+        // without needing to manually POST via the admin panel.
+        const existingIds = new Set(parsed.dealerships.map((d: any) => d.id));
+        for (const seed of DEFAULT_MOCK_STATE.dealerships) {
+          if (!existingIds.has(seed.id)) parsed.dealerships.push({ ...seed });
+        }
       }
       parsed.vehicles.forEach((v: any) => {
         if (!v.images) v.images = [];

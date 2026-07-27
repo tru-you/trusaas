@@ -565,6 +565,13 @@
       "websiteUrl": "https://www.carsoncaledon.co.za"
     },
     {
+      "id": "d3",
+      "name": "Truecars",
+      "location": "George, Western Cape",
+      "slug": "truecars",
+      "websiteUrl": "https://www.true-cars.co.za"
+    },
+    {
       "id": "demo",
       "name": "Demo Dealership",
       "location": "Sandbox",

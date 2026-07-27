@@ -113,13 +113,10 @@ import {
 } from "./lib/salesShare";
 import { initGlassMotion } from "./lib/glassMotion";
 
-/** Which dealership a newly-added vehicle belongs to — must stay in sync
- *  with DEALER_SLUG_TO_ID in server.ts (that's what the public website feed
- *  filters on) and with each dealer's own site slug (?dealer=...). */
-const DEALERSHIPS = [
-  { id: "d1", name: "MKR Auto Sales" },
-  { id: "d2", name: "Cars on Caledon" },
-];
+/** Which dealership a newly-added vehicle belongs to — loaded from the
+ *  server so every onboarded dealer appears automatically.
+ *  The hardcoded DEALERSHIPS array was removed because it only listed MKR
+ *  and Cars on Caledon, so every other dealer got the wrong name and URL. */
 
 
 /* ── Pipeline discipline ────────────────────────────────────────────────────
@@ -324,8 +321,9 @@ export default function App() {
 
   // --- Derived State ---
   const currentUser = state ? (state.users.find(u => u.id === currentUserId) || state.users[0]) : null;
-  const isMasterAdmin = currentUser?.role === 'admin';
-  const dealershipId = currentUser?.dealershipId;
+  const sessionAccount = getAccount();
+  const isMasterAdmin = sessionAccount?.role === 'admin';
+  const dealershipId = sessionAccount?.dealershipId;
 
   /* Tenant scoping ----------------------------------------------------------
      The server already scopes /api/state to the signed-in tenant, so this is a
@@ -374,7 +372,7 @@ export default function App() {
   // selector" pill that let anyone flip to Dealer Owner regardless of their
   // real login — a permissions hole now that seats are live. principal/admin
   // see the owner view; managers and salespeople see their own.
-  const account = getAccount();
+  const account = sessionAccount;
   const accountRole: 'salesperson' | 'manager' | 'owner' =
     account?.role === 'admin' || account?.role === 'principal' ? 'owner'
     : account?.role === 'manager' ? 'manager' : 'salesperson';
@@ -678,10 +676,11 @@ export default function App() {
   // allowed to draw the eye. Under an hour the dealer is on top of it.
   const replyIsLate = oldestWaitMs > 60 * 60 * 1000;
 
-  /** Whose floor this is. Falls back through the signed-in account so the
-   *  banner never renders a bare "· live" with nothing in front of it. */
+  /** Whose floor this is. Matches the signed-in dealership first, then
+   *  falls back so the banner never renders a bare "· live". */
   const dealershipLabel =
-    (state?.dealerships || [])[0]?.name || account?.label || "Your dealership";
+    (state?.dealerships || []).find((d: any) => d.id === dealershipId)?.name
+    || account?.label || "Your dealership";
   const todayLabel = new Date().toLocaleDateString("en-ZA", {
     day: "numeric",
     month: "long",
@@ -1185,8 +1184,9 @@ export default function App() {
               so every dealership's sidebar linked to our consumer site instead
               of to their website. */}
           {(() => {
-            const mine = (state?.dealerships || []).find((d: any) => d.id === dealershipId)
-              || (state?.dealerships || [])[0];
+            const mine = dealershipId
+              ? (state?.dealerships || []).find((d: any) => d.id === dealershipId)
+              : undefined;
             const site = mine?.websiteUrl;
             if (!site) return null;
             const label = site.replace(/^https?:\/\//, '').replace(/\/$/, '');
@@ -2070,7 +2070,7 @@ export default function App() {
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, dealershipId: e.target.value }))}
                       className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                     >
-                      {DEALERSHIPS.map((d) => (
+                      {(state?.dealerships || []).map((d: any) => (
                         <option key={d.id} value={d.id}>{d.name}</option>
                       ))}
                     </select>
