@@ -299,12 +299,75 @@ function migrateCapturesToFiles(): void {
   }
 }
 
+/**
+ * Move base64 frames out of orbit packages already sitting on disk.
+ *
+ * The write path converts new packages, but that leaves every existing one
+ * untouched — and these are the largest objects the system produces: the Yaris
+ * orbit was still being served at 20,004,300 bytes after the capture photos had
+ * already moved. A client that times out at 12 seconds never receives it, which
+ * is why dealer sites fell back to showing a different car entirely.
+ *
+ * Converted in place, one file at a time, so a failure on one package leaves
+ * the rest alone.
+ */
+function migrateOrbitsToFiles(): void {
+  let names: string[];
+  try {
+    ensureWeb3dDir();
+    names = fs.readdirSync(WEB3D_DIR).filter((n) => n.endsWith('.json'));
+  } catch (err) {
+    console.error('[photos] could not list orbit packages:', err);
+    return;
+  }
+
+  let packagesChanged = 0;
+  let framesMoved = 0;
+
+  for (const name of names) {
+    const file = path.join(WEB3D_DIR, name);
+    try {
+      const pkg = JSON.parse(fs.readFileSync(file, 'utf-8'));
+      if (!Array.isArray(pkg?.frames)) continue;
+      let changed = false;
+      for (const f of pkg.frames) {
+        if (!f || typeof f !== 'object' || isStoredRef(f.image)) continue;
+        const ref = putPhoto(f.image);
+        if (ref) { f.image = ref; changed = true; framesMoved++; }
+      }
+      /* Damage pins carry a base64 thumbnail each. Easy to overlook because
+         they are not frames, but on the Yaris the two of them were 717 KB —
+         the entire remaining weight of the package once the frames had moved. */
+      for (const t of Array.isArray(pkg.damageTags) ? pkg.damageTags : []) {
+        if (!t || typeof t !== 'object' || isStoredRef(t.thumb)) continue;
+        const ref = putPhoto(t.thumb);
+        if (ref) { t.thumb = ref; changed = true; framesMoved++; }
+      }
+      if (changed) {
+        fs.writeFileSync(file, JSON.stringify(pkg), 'utf-8');
+        packagesChanged++;
+      }
+    } catch (err) {
+      console.error(`[photos] skipped orbit package ${name}:`, err);
+    }
+  }
+
+  if (packagesChanged) {
+    console.log(
+      `[photos] moved ${framesMoved} orbit frame(s) out of ${packagesChanged} package(s).`
+    );
+  }
+}
+
 try {
   migrateCapturesToFiles();
+  /* migrateOrbitsToFiles() is deliberately NOT called here: it reads WEB3D_DIR,
+     a const declared several hundred lines below, so calling it at this point
+     hits the temporal dead zone. It runs immediately after that declaration. */
 } catch (err) {
   /* Never block boot: the read paths still understand base64, so an
      un-migrated instance behaves exactly as it did before. */
-  console.error('[photos] capture migration failed, continuing with base64:', err);
+  console.error('[photos] migration failed, continuing with base64:', err);
 }
 
 // Initialize firebase-admin only when not forced local-only
@@ -770,6 +833,15 @@ function ensureWeb3dDir() {
   if (!fs.existsSync(WEB3D_DIR)) fs.mkdirSync(WEB3D_DIR, { recursive: true });
 }
 
+/* Runs here rather than beside the capture migration above, because it reads
+   WEB3D_DIR — declared immediately above this — and calling it any earlier hits
+   the temporal dead zone on that const. */
+try {
+  migrateOrbitsToFiles();
+} catch (err) {
+  console.error('[photos] orbit migration failed, continuing with base64:', err);
+}
+
 // POST /api/export/web-3d — save package from TruLens client
 app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
   try {
@@ -794,6 +866,14 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
         const ref = putPhoto(f.image);
         return ref ? { ...f, image: ref } : f;
       }),
+      // Damage pins carry a thumbnail each — 717 KB of the Yaris package.
+      damageTags: Array.isArray(pkg.damageTags)
+        ? pkg.damageTags.map((t: any) => {
+            if (!t || typeof t !== 'object') return t;
+            const ref = putPhoto(t.thumb);
+            return ref ? { ...t, thumb: ref } : t;
+          })
+        : pkg.damageTags,
       savedAt: new Date().toISOString(),
       ownerId: req.user.uid,
     };
@@ -847,6 +927,11 @@ app.get('/api/public/web3d/:stockNumber', (req, res) => {
     if (Array.isArray(data?.frames)) {
       data.frames = data.frames.map((f: any) =>
         f && isStoredRef(f.image) && origin ? { ...f, image: `${origin}${f.image}` } : f
+      );
+    }
+    if (Array.isArray(data?.damageTags)) {
+      data.damageTags = data.damageTags.map((t: any) =>
+        t && isStoredRef(t.thumb) && origin ? { ...t, thumb: `${origin}${t.thumb}` } : t
       );
     }
     res.json({ success: true, package: data });
