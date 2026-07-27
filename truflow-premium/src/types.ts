@@ -10,6 +10,12 @@ export interface Dealership {
   websiteUrl?: string;
   /** Slug used by the public stock feed (?dealer=). */
   slug?: string;
+  /** Which products this dealership's code opens — "lens", "flow", "inspect",
+   *  "live", "value". Every product verifies codes against this instance, so a
+   *  dealer gains or loses an app by this list changing, rather than by someone
+   *  editing that app's environment variable and redeploying it. Backfilled to
+   *  all products on load, since that is what a dealer can reach today. */
+  products?: string[];
 }
 
 export interface Vehicle {

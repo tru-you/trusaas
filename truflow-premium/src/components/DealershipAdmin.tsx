@@ -20,9 +20,26 @@ type Dealership = {
   location?: string;
   slug: string;
   websiteUrl?: string;
+  /** Which apps this dealership's code opens. */
+  products?: string[];
 };
 
 const FEED_ORIGIN = "https://flow.tru-saas.com";
+
+/** The apps a dealership can be signed up for.
+ *
+ *  Every product verifies dealer codes against this instance, so ticking a box
+ *  here is the whole of granting access. It used to mean pasting the dealer's
+ *  code into that app's environment variable in plaintext and restarting it —
+ *  once per app, per dealer — and revoking meant editing the same string and
+ *  redeploying again. Keep in step with PRODUCTS in server.ts. */
+const PRODUCT_OPTIONS: Array<{ id: string; label: string; hint: string }> = [
+  { id: "lens", label: "TruLens", hint: "Guided photo & video capture" },
+  { id: "flow", label: "TruFlow", hint: "The DMS — stock, leads, invoicing" },
+  { id: "inspect", label: "TruInspect", hint: "Condition report / VIR" },
+  { id: "live", label: "TruLive", hint: "Live video walkaround" },
+  { id: "value", label: "TruValue", hint: "Live video trade-in appraisal" },
+];
 
 /** Mirrors the server's rule exactly, so the form fails before the request does. */
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -73,6 +90,11 @@ export default function DealershipAdmin({
   const [slug, setSlug] = useState("");
   // Once the slug is hand-edited we stop overwriting it from the name.
   const [slugTouched, setSlugTouched] = useState(false);
+  /* Defaults to the common case — a yard buying the DMS and the capture app.
+     A Lens-only dealer is now a matter of unticking TruFlow, rather than
+     something the provisioning model could not express at all. */
+  const [products, setProducts] = useState<string[]>(["lens", "flow"]);
+  const [savingProductsFor, setSavingProductsFor] = useState<string | null>(null);
 
   /* Codes come back from the server exactly once. Holding them in state means
      a mis-click elsewhere loses them, so they stay until dismissed and the
@@ -146,6 +168,7 @@ export default function DealershipAdmin({
           location: location.trim(),
           websiteUrl: websiteUrl.trim(),
           slug: effectiveSlug,
+          products,
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -157,9 +180,12 @@ export default function DealershipAdmin({
       setWebsiteUrl("");
       setSlug("");
       setSlugTouched(false);
+      setProducts(["lens", "flow"]);
       onNotify(
         "Dealership added",
-        `${body.dealership.name} is live in the TruLens picker now — no redeploy needed.`,
+        `${body.dealership.name} can sign in to ` +
+          `${(body.dealership.products || []).join(", ") || "no apps"} as soon as they have a code. ` +
+          `No environment variable, no redeploy.`,
       );
     } catch (err: any) {
       onNotify("Could not add dealership", err?.message || "Unknown error", "error");
@@ -361,6 +387,45 @@ export default function DealershipAdmin({
                 className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-mono"
               />
             </label>
+          </div>
+
+          {/* Which apps their code opens. Every product checks codes against this
+              instance, so this is the whole of provisioning — there is no
+              environment variable to edit and nothing to redeploy. */}
+          <div className="flex flex-col gap-2">
+            <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+              Apps this dealership can sign in to
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {PRODUCT_OPTIONS.map((p) => {
+                const on = products.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    title={p.hint}
+                    onClick={() =>
+                      setProducts((prev) =>
+                        prev.includes(p.id) ? prev.filter((x) => x !== p.id) : [...prev, p.id]
+                      )
+                    }
+                    className={
+                      "px-3 py-2 rounded-lg border text-[13px] font-bold cursor-pointer transition-colors " +
+                      (on
+                        ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)]"
+                        : "bg-[color:var(--glass)] text-[color:var(--muted)] border-[color:var(--glass-line)] hover:text-[color:var(--white)]")
+                    }
+                  >
+                    {on ? "✓ " : ""}{p.label}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-[13px] text-[rgba(232,234,230,0.55)]">
+              {products.length
+                ? `Their code will open ${products.length} app${products.length === 1 ? "" : "s"}. Changeable later.`
+                : "No apps selected — their code will not open anything."}
+            </span>
           </div>
 
           <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">

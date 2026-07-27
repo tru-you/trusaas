@@ -623,14 +623,67 @@ const STARTED_AT = Date.now();
 /** Exchange the dealership's access code for a signed device token.
  *  Deliberately public — it is the way in. Slow-hashed and rate-limited by
  *  nothing yet, so keep the code long. */
-app.post('/api/auth/device', (req, res) => {
-  if (!ACCESS_CODE && DEALER_CODES.length === 0) {
-    return res.status(503).json({ error: 'No access code configured on this server.' });
+/**
+ * Ask TruFlow whether a code is real and whether it opens TruLens.
+ *
+ * Dealerships, their codes and their entitlements live in one place. This app
+ * used to keep its own copy of every dealer's code in TRULENS_DEALER_CODES — a
+ * comma-separated "slug:CODE" string in the service configuration — so
+ * onboarding a dealer meant pasting their code here in plaintext and restarting
+ * this service, and revoking meant editing that string and restarting again.
+ *
+ * Returns null on anything other than a clean yes, including an unreachable
+ * TruFlow, so the caller can fall back to the environment list rather than
+ * locking a yard out of their phones because the DMS was briefly down.
+ */
+async function verifyCodeWithTruFlow(
+  code: string
+): Promise<{ dealerSlug: string; dealerName?: string } | null> {
+  if (!SYNC_KEY) return null; // no shared key configured — nothing to ask with
+  try {
+    const res = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/auth/verify-code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-tru-sync-key': SYNC_KEY },
+      body: JSON.stringify({ code, product: 'lens' }),
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) {
+      /* 403 is a real answer, not a failure: the code is valid but this
+         dealership is not set up for TruLens. Logged so an onboarding mistake
+         is visible rather than looking like a wrong code. */
+      if (res.status === 403) {
+        const body = await res.json().catch(() => ({}));
+        console.warn(`[auth] TruFlow refused a code for lens: ${body?.message || res.status}`);
+      }
+      return null;
+    }
+    const body = await res.json();
+    return body?.ok && body.dealerSlug
+      ? { dealerSlug: body.dealerSlug, dealerName: body.dealerName }
+      : null;
+  } catch (err: any) {
+    console.warn('[auth] could not reach TruFlow to verify a code:', err?.message || err);
+    return null;
   }
+}
+
+app.post('/api/auth/device', async (req, res) => {
   const given = String(req.body?.code || '');
 
-  // A per-dealership code pins the yard server-side, so the phone cannot claim
-  // to be someone else later.
+  /* TruFlow first. A dealer onboarded there works here immediately, with no
+     environment variable to edit and no restart of this service. */
+  const central = await verifyCodeWithTruFlow(given);
+  if (central) {
+    return res.json({
+      token: signDeviceToken(central.dealerSlug),
+      expiresInDays: 30,
+      dealerSlug: central.dealerSlug,
+      dealerName: central.dealerName,
+    });
+  }
+
+  /* Then the local list. Kept as a fallback so phones already signed in keep
+     working, and so a TruFlow outage cannot stop a yard photographing cars. */
   const dealerSlug = dealerForCode(given);
   if (dealerSlug) {
     return res.json({ token: signDeviceToken(dealerSlug), expiresInDays: 30, dealerSlug });
@@ -640,6 +693,16 @@ app.post('/api/auth/device', (req, res) => {
   // remains the only thing that decides where captures file.
   if (ACCESS_CODE && codeMatches(given, ACCESS_CODE)) {
     return res.json({ token: signDeviceToken(), expiresInDays: 30, dealerSlug: null });
+  }
+
+  /* Only now is "nothing is configured" worth reporting, and it is a different
+     complaint from a wrong code: with central verification available this
+     server needs no local codes at all. */
+  if (!ACCESS_CODE && DEALER_CODES.length === 0 && !SYNC_KEY) {
+    return res.status(503).json({
+      error: 'No way to verify codes on this server.',
+      message: 'Set TRUFLOW_SYNC_KEY so codes can be checked against TruFlow, or set TRULENS_ACCESS_CODE.',
+    });
   }
 
   return res.status(401).json({ error: 'That code is not recognised.' });

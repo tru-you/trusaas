@@ -136,6 +136,21 @@ const AUTH_FILE = path.join(DATA_DIR, "auth.json");
  *  compares against it as a fallback any more; see the backfill there. */
 const DEFAULT_DEALERSHIP_ID = "d1";
 
+/** The products a dealership can be entitled to.
+ *
+ *  Adding one here is the whole of the work for a new app: every product
+ *  verifies codes against this instance, so a dealer gains access by having the
+ *  name ticked on their record rather than by someone editing an environment
+ *  variable on that app's service and redeploying it.
+ *
+ *  Onboarding used to mean creating the dealership here, issuing a code, then
+ *  hand-editing TRULENS_DEALER_CODES — a comma-separated "slug:CODE" string
+ *  holding every dealer's code in plaintext on the Render dashboard — and
+ *  restarting TruLens so it took effect. Once per product, per dealer, and
+ *  revoking access meant editing that string and redeploying again. */
+const PRODUCTS = ["lens", "flow", "inspect", "live", "value"] as const;
+type ProductName = (typeof PRODUCTS)[number];
+
 /** Collections whose rows belong to exactly one dealership.
  *
  *  Anything listed here is scoped on read and stamped on load, so a new
@@ -391,6 +406,18 @@ function requireAuth(req: any, res: any, next: any) {
     if (req.headers["x-tru-sync-key"] === SYNC_SERVICE_KEY) return next();
   }
 
+  /* Product-to-product identity. The caller is TruLens or TruInspect asking
+     whether a dealer code is real and what it opens, so it carries the shared
+     key rather than a session — there is no user logged in to this instance at
+     that moment, which is the entire point of the call.
+     Unlike push-photos there is no unset-key fallthrough: an unconfigured key
+     must not turn code verification into an open endpoint anyone can test
+     dealer codes against. The handler refuses with 503 instead. */
+  if (req.path === "/api/auth/verify-code") {
+    if (req.headers["x-tru-sync-key"] === SYNC_SERVICE_KEY && SYNC_SERVICE_KEY) return next();
+    if (!SYNC_SERVICE_KEY) return next(); // handler returns 503 explaining why
+  }
+
   const header = String(req.headers.authorization || "");
   const claims = header.startsWith("Bearer ") ? verifyToken(header.slice(7)) : null;
   if (!claims) {
@@ -458,6 +485,97 @@ app.get("/api/auth/me", (req: any, res) => {
 
 /** Issue a fresh code for a dealership, or rotate an existing one. Admin only.
  *  The new code is returned once in the response and never again. */
+/**
+ * Resolve a dealer code, for the other products in the suite.
+ *
+ * TruLens, TruInspect and everything built after them each kept their own copy
+ * of every dealer's code in an environment variable — TRULENS_DEALER_CODES is a
+ * comma-separated "slug:CODE" string — so onboarding one dealer meant creating
+ * them here, issuing a code, pasting it into each app's service configuration in
+ * plaintext, and restarting that app. Per product. Revoking meant editing the
+ * same string and redeploying again, and a code lived in as many dashboards as
+ * you had apps.
+ *
+ * Dealerships already live here and TruLens already proxies the list from this
+ * instance; identity is the piece that was missing. One place issues a code, one
+ * place says which products it opens, and an app asks rather than remembers.
+ *
+ * Service-to-service: the caller is another product, not a browser, so it
+ * authenticates with the shared sync key rather than a session. Deliberately NOT
+ * public — an open endpoint here would let anyone test codes against every
+ * dealership on the instance.
+ */
+app.post("/api/auth/verify-code", (req: any, res) => {
+  if (!SYNC_SERVICE_KEY) {
+    return res.status(503).json({
+      error: "Not configured",
+      message: "TRUFLOW_SYNC_KEY must be set before products can verify codes here.",
+    });
+  }
+  if (req.headers["x-tru-sync-key"] !== SYNC_SERVICE_KEY) {
+    return res.status(401).json({ error: "Invalid sync key." });
+  }
+
+  const code = String(req.body?.code || "").trim();
+  const product = String(req.body?.product || "").trim().toLowerCase();
+  if (!code) return res.status(400).json({ error: "code is required" });
+  if (!PRODUCTS.includes(product as ProductName)) {
+    return res.status(400).json({
+      error: `Unknown product "${product}".`,
+      message: `Known products: ${PRODUCTS.join(", ")}.`,
+    });
+  }
+
+  const store = ensureAuthStore();
+  const match = store.accounts.find((a) => hashCode(code, a.salt) === a.hash);
+  /* Same 401 for "no such code" and "wrong code", and no hint about which
+     dealerships exist — this endpoint is reachable by anything holding the sync
+     key, so it should confirm nothing it was not asked. */
+  if (!match) return res.status(401).json({ error: "Code not recognised." });
+
+  const state = readState();
+
+  /* The master admin holds no dealership. It is a platform login, not a yard's,
+     and handing it a dealerSlug would let it capture vehicles into whichever
+     dealership happened to sort first. */
+  if (!match.dealershipId) {
+    return res.status(403).json({
+      error: "Not a dealership code",
+      message: "The master admin cannot be used to sign in to a product.",
+    });
+  }
+
+  const dealership = (state.dealerships || []).find((d: any) => d.id === match.dealershipId);
+  if (!dealership) {
+    /* The code outlived its dealership — retired, or pruned. Refuse rather than
+       let a code with no yard behind it through. */
+    return res.status(403).json({
+      error: "Dealership no longer exists",
+      message: "This code belonged to a dealership that has been removed.",
+    });
+  }
+
+  const products: string[] = Array.isArray(dealership.products) ? dealership.products : [];
+  if (!products.includes(product)) {
+    return res.status(403).json({
+      error: "Not entitled",
+      message: `${dealership.name} is not set up for ${product}.`,
+      dealerSlug: dealership.slug,
+      products,
+    });
+  }
+
+  res.json({
+    ok: true,
+    dealerSlug: dealership.slug,
+    dealershipId: dealership.id,
+    dealerName: dealership.name,
+    role: match.role,
+    label: match.label,
+    products,
+  });
+});
+
 app.post("/api/auth/codes/rotate", (req: any, res) => {
   if (req.auth?.role !== "admin") {
     return res.status(403).json({ error: "Admin only" });
@@ -946,6 +1064,20 @@ function readState(): DMSState {
        * result is that it is invisible rather than quietly reassigned. That is
        * the failure a dealer can spot; the other one they never see.
        */
+      /* Which products each dealership may sign in to.
+       *
+       * Backfilled to everything, because that is what they can reach today:
+       * access is currently decided by whether their code was pasted into a
+       * given app's environment variable, not by anything on their record. So
+       * granting all preserves exactly the status quo, and taking a product
+       * away becomes a deliberate act in the admin panel rather than a silent
+       * consequence of this deploy. */
+      for (const d of parsed.dealerships || []) {
+        if (!Array.isArray(d.products) || !d.products.length) {
+          d.products = [...PRODUCTS];
+        }
+      }
+
       for (const key of TENANT_SCOPED_COLLECTIONS) {
         const rows = (parsed as any)[key];
         if (!Array.isArray(rows)) continue;
@@ -2933,14 +3065,26 @@ app.post("/api/dealerships", (req: any, res) => {
     .map(Number);
   const id = "d" + String(used.length ? Math.max(...used) + 1 : 1);
 
-  const dealership = { id, name, location, slug, websiteUrl };
+  /* Which apps this dealer's code opens. Unlisted names are dropped rather than
+     stored, so a typo cannot create an entitlement to a product that does not
+     exist and then quietly fail to match anything. Defaults to lens + flow,
+     which is what a yard signing up for the DMS and the capture app needs. */
+  const requested = Array.isArray(req.body?.products) ? req.body.products : null;
+  const products = requested
+    ? requested.map((p: any) => String(p).toLowerCase()).filter((p: string) => PRODUCTS.includes(p as ProductName))
+    : ["lens", "flow"];
+
+  const dealership = { id, name, location, slug, websiteUrl, products };
   state.dealerships = [...existing, dealership];
   writeState(state);
 
-  console.log(`[dealerships] created ${id} "${name}" (${slug})`);
+  console.log(`[dealerships] created ${id} "${name}" (${slug}) products=${products.join(",") || "none"}`);
   res.status(201).json({
     dealership,
-    next: "Issue this dealership a code with POST /api/auth/codes/rotate, then add the same slug to TRULENS_DEALER_CODES so their phones pin to it.",
+    /* No environment variable, and no redeploy of anything. Every product
+       verifies codes against this instance, so issuing the code is the last
+       step rather than the middle one. */
+    next: "Issue this dealership a code with POST /api/auth/codes/rotate. Their apps will accept it immediately.",
   });
 });
 
@@ -2953,10 +3097,26 @@ app.put("/api/dealerships/:id", (req: any, res) => {
   /* Slug and id are deliberately not editable. Vehicles are tagged by id and
      dealer websites are wired to the slug; changing either detaches stock
      from the dealer it belongs to. Retire and recreate instead. */
-  const { name, location, websiteUrl } = req.body || {};
+  const { name, location, websiteUrl, products } = req.body || {};
   if (typeof name === "string" && name.trim()) state.dealerships[i].name = name.trim();
   if (typeof location === "string") state.dealerships[i].location = location.trim();
   if (typeof websiteUrl === "string") state.dealerships[i].websiteUrl = websiteUrl.trim();
+
+  /* Entitlements ARE editable, unlike the slug — granting or revoking an app is
+     the routine part of running this. Unlisted names are dropped rather than
+     stored: a typo must not create an entitlement to a product that does not
+     exist. An empty array is meaningful and allowed — it locks the dealer out
+     of every app while leaving their stock and history intact, which is what
+     suspending an account should do. */
+  if (Array.isArray(products)) {
+    (state.dealerships[i] as any).products = products
+      .map((p: any) => String(p).toLowerCase())
+      .filter((p: string) => PRODUCTS.includes(p as ProductName));
+    console.log(
+      `[dealerships] ${state.dealerships[i].slug} products=` +
+        `${(state.dealerships[i] as any).products.join(",") || "none"}`
+    );
+  }
 
   writeState(state);
   res.json({ dealership: state.dealerships[i] });
