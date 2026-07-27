@@ -58,6 +58,33 @@ app.use((req, res, next) => {
 
 // Health check for free-tier hosts (Render, etc.) + keep-alive pings
 const STARTED_AT = Date.now();
+/** Which commit is actually running.
+ *
+ *  Added because confirming a deploy was guesswork, and the guesses were wrong
+ *  in both directions on 2026-07-27. `uptimeSec` reset to 128 while the service
+ *  was still serving the previous build, so a restart read as a deploy; and a
+ *  check that grepped index-*.js for a new string reported "not deployed" for a
+ *  change that had shipped, because Vite code-splits the modals into their own
+ *  chunks. Both were inferences about the running code from things that only
+ *  correlate with it.
+ *
+ *  RENDER_GIT_COMMIT is set by Render on every build. Public deliberately: it is
+ *  a commit id, it reveals nothing, and a deploy check that needs a login is a
+ *  deploy check nobody runs. */
+app.get("/api/version", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const commit =
+    process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null;
+  res.json({
+    product: "truflow-premium",
+    commit,
+    shortCommit: commit ? String(commit).slice(0, 7) : null,
+    branch: process.env.RENDER_GIT_BRANCH || null,
+    builtFrom: commit ? "render" : "unknown (env not set — local run?)",
+    startedAt: new Date(Date.now() - Math.floor(process.uptime() * 1000)).toISOString(),
+  });
+});
+
 app.get("/api/health", (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.json({
@@ -274,6 +301,7 @@ function verifyToken(token: string): any | null {
 function isPublicPath(p: string): boolean {
   return (
     p === "/api/health" ||
+    p === "/api/version" ||
     p === "/api/auth/login" ||
     p === "/api/auth/demo" ||   // the way in for a prospect — must be reachable
     p.startsWith("/api/public/") ||
