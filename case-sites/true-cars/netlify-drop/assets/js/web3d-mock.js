@@ -390,7 +390,14 @@
       ];
       for (let i = 0; i < apis.length; i++) {
         try {
-          const res = await fetchWithTimeout(apis[i], opts.timeoutMs || 2800);
+          /* 2800ms could never succeed: a live package is currently ~18 MB of
+             base64 stills and takes ~10s on a fast line, so the live orbit was
+             guaranteed to time out and the page always fell through to the
+             fallback below. Raised to something a real package can meet, though
+             the payload itself is the actual problem — see the frame-selection
+             and compression work. Kept finite so a cold Render start degrades
+             to the car's own gallery rather than hanging on a spinner. */
+          const res = await fetchWithTimeout(apis[i], opts.timeoutMs || 12000);
           if (!res.ok) continue;
           const data = await res.json();
           if (data.package && data.package.frames && data.package.frames.length) {
@@ -402,10 +409,22 @@
       }
     }
 
-    /* If we already mounted Honda, leave it */
+    /* If we already mounted the shipped demo orbit, leave it */
     if (container.querySelector(".w3d-root")) return null;
 
-    if (opts.useHondaOrbit !== false) {
+    /* Never stand in another car's orbit for a real vehicle.
+       This read `useHondaOrbit !== false`, which is true when the option is
+       simply absent — so every vehicle page whose live fetch failed mounted the
+       shipped HONDA orbit and presented it as that car's 360. On a Toyota Yaris
+       listing a buyer was spinning a Honda. Same class as the stock-photo hero
+       that toPublicFromLens already refuses to serve.
+
+       The honest fallback is the car's own gallery: buildMockWeb3DPackage
+       builds the turntable from vehicle.gallery when it has four or more shots,
+       so a capture that reached the site at all still spins the right car — and
+       instantly, because those frames are already in the page. Only an
+       explicit opts.useHondaOrbit (the homepage demo tile) gets the Honda. */
+    if (opts.useHondaOrbit === true) {
       return TCSA.mountWeb3D(container, TCSA.buildHondaOrbitPackage(vehicle));
     }
     return TCSA.mountWeb3D(container, TCSA.buildMockWeb3DPackage(vehicle || {}));

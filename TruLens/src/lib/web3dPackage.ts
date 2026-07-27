@@ -46,19 +46,36 @@ export interface Web3DPackage {
   };
 }
 
+/* Positions on a circle around the car, listed in the order you walk them.
+ *
+ * Only shots that are genuinely a rotation belong here. This used to also carry
+ * badges_detail, lights_detail, mirrors_handles, roof_view and wheels_all — a
+ * badge close-up, a light close-up, a mirror, a top-down and a wheel — each
+ * assigned an azimuth as though it were a position on the circle. Dragging the
+ * orbit therefore cut from the side of the car to a badge, to a headlight, back
+ * to the car, then to a mirror. Five of the eleven frames were not viewpoints at
+ * all, which is most of why the spin looked wrong rather than merely coarse.
+ * Those shots are not lost: they are in the gallery, where a close-up belongs.
+ *
+ * The azimuths were also uneven — front_3_4 sat at 0.05, a hair off
+ * front_straight at 0.0, then jumped to 0.25 — so the rotation stalled at the
+ * nose and skipped a quarter of the car. Evenly spaced now, and the frames are
+ * sorted by azimuth before they ship because the viewer scrubs by array index:
+ * front_3_4 being listed before front_straight meant frame 1 stepped backwards.
+ */
 const ORBIT_SLOTS = [
-  { id: 'front_3_4', azimuth: 0.05 },
   { id: 'front_straight', azimuth: 0.0 },
+  { id: 'front_3_4', azimuth: 0.125 },
   { id: 'side_passenger', azimuth: 0.25 },
-  { id: 'rear_3_4', azimuth: 0.45 },
+  { id: 'rear_3_4', azimuth: 0.375 },
   { id: 'rear_straight', azimuth: 0.5 },
   { id: 'side_driver', azimuth: 0.75 },
-  { id: 'roof_view', azimuth: 0.0 },
-  { id: 'wheels_all', azimuth: 0.8 },
-  { id: 'badges_detail', azimuth: 0.1 },
-  { id: 'lights_detail', azimuth: 0.15 },
-  { id: 'mirrors_handles', azimuth: 0.35 },
 ];
+
+/* Exterior shots that are NOT viewpoints on the circle. The catch-all below
+ * sweeps up every phase-1 slot not already placed, so without naming these the
+ * two of them would be added straight back with an invented azimuth. */
+const NON_ORBIT_EXTERIOR = new Set(['roof_view', 'wheels_all']);
 
 /**
  * Approximate “backgroundless” cut for studio / lot shots:
@@ -112,7 +129,19 @@ export async function approxBackgroundless(dataUrl: string): Promise<{ image: st
           }
         }
         ctx.putImageData(imageData, 0, 0);
-        resolve({ image: canvas.toDataURL('image/png'), mode: 'transparent-approx' });
+        /* WebP, not PNG. These frames are photographs, and PNG stores a
+           photograph losslessly — the Yaris orbit shipped at 18.4 MB across 11
+           frames, averaging 1.7 MB each and peaking at 4.3 MB, which took ~10s
+           to fetch and is unusable on a phone. WebP keeps the alpha channel the
+           matting above writes (JPEG cannot, it would fill the cut-out black)
+           and is roughly an order of magnitude smaller at this quality.
+           Falls back to PNG if the browser will not encode WebP, which is what
+           toDataURL signals by handing back a PNG data URL. */
+        const webp = canvas.toDataURL('image/webp', 0.82);
+        const image = webp.startsWith('data:image/webp')
+          ? webp
+          : canvas.toDataURL('image/png');
+        resolve({ image, mode: 'transparent-approx' });
       } catch {
         resolve({ image: dataUrl, mode: 'original' });
       }
@@ -188,8 +217,14 @@ export async function buildWeb3DPackage(vehicle: Vehicle): Promise<Web3DPackage>
     });
   }
 
-  // Also pick up any remaining phase-1 (exterior) slots not in ORBIT_SLOTS
+  /* Any remaining phase-1 exterior slot that is still a viewpoint. roof_view
+     and wheels_all are excluded by name: they are exterior, so they matched
+     this filter, but a top-down and a wheel close-up are not places you stand
+     on the circle, and the azimuth below is a position invented from however
+     many frames happen to already be in the array — not a measurement. Kept for
+     genuinely new exterior angles, which is what it was written for. */
   for (const slot of PHOTO_SLOTS.filter((s) => s.phase === 1)) {
+    if (NON_ORBIT_EXTERIOR.has(slot.id)) continue;
     if (frames.some((f) => f.slotId === slot.id)) continue;
     const src = photos[slot.id];
     if (!src) continue;
@@ -203,6 +238,12 @@ export async function buildWeb3DPackage(vehicle: Vehicle): Promise<Web3DPackage>
       background: cut.mode,
     });
   }
+
+  /* The viewer scrubs by array index, so the array order IS the rotation.
+     Sort by azimuth and renumber, or a frame listed out of order makes the car
+     jump backwards mid-drag. */
+  frames.sort((a, b) => a.azimuth - b.azimuth);
+  frames.forEach((f, i) => { f.index = i; });
 
   return {
     version: 1,
