@@ -88,16 +88,14 @@
       vir: virScore,
       virReport: Array.isArray(v.virReport) ? v.virReport : null,
       damage: Array.isArray(v.damage) ? v.damage : null,
-      lvs: !!v.walkaroundVideo,
-      walkaroundVideo: v.walkaroundVideo || null,
-      videoPoster: v.videoPoster || hero,
+      web3d: v.web3d || null,
       premium: category === "select",
       certUsed: true,
       tags: (function () {
         var t = [];
+        if (v.web3d && v.web3d.frames && v.web3d.frames.length) t.push("360");
         if (images.length) t.push("Tru3D");
         if (virScore) t.push("VIR");
-        if (v.walkaroundVideo) t.push("LVS");
         return t;
       })(),
       featured: true,
