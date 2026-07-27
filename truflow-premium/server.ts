@@ -7,6 +7,16 @@ import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import { initializeApp as initFirebaseAdmin, getApps as getFirebaseApps } from "firebase-admin/app";
 import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
+import {
+  initPhotoStore,
+  mediaDir,
+  MEDIA_ROUTE,
+  put as putPhoto,
+  putAll as putPhotos,
+  isStoredRef,
+  isDataUri,
+  stats as photoStats,
+} from "./photoStore";
 /**
  * The state shape is shared with the client rather than inferred here.
  *
@@ -114,6 +124,34 @@ const DATA_FILE = path.join(DATA_DIR, "data.json");
 // written back to, so a redeploy can't clobber the dealer's real stock.
 const SEED_FILE = path.join(process.cwd(), "data.json");
 const AUTH_FILE = path.join(DATA_DIR, "auth.json");
+
+/* Photos live beside the state as files rather than inside it as base64.
+   See photoStore.ts for why. Initialised here, after DATA_DIR is known and
+   before the route below is registered — express.static resolves its root at
+   construction, so registering it any earlier throws "root path required". */
+initPhotoStore(DATA_DIR);
+
+/* Stock photos, served as files.
+ *
+ * Immutable and cached for a year, which is safe precisely because the filename
+ * is the SHA-256 of the bytes: a given path can never come to mean different
+ * content, so there is no cache to bust. This is the whole point of the move —
+ * a browser fetches each photo once, instead of re-downloading every photo of
+ * every car inside a multi-megabyte JSON payload on every page load.
+ *
+ * Public, and registered before requireAuth: these are dealer stock photos
+ * bound for public websites, and the path is an opaque hash rather than
+ * anything enumerable. */
+app.use(
+  MEDIA_ROUTE,
+  express.static(mediaDir(), {
+    immutable: true,
+    maxAge: "365d",
+    fallthrough: false,
+    index: false,
+    dotfiles: "deny",
+  })
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AUTH — per-dealer access codes, verified server-side.
@@ -886,6 +924,99 @@ if (!fs.existsSync(DATA_FILE)) {
   writeState(DEFAULT_MOCK_STATE);
 }
 
+/** Every array on a vehicle that holds photos. */
+const VEHICLE_PHOTO_FIELDS = [
+  "images",
+  "extrasPhotos",
+  "damagePhotos",
+  "vinPhotos",
+  "serviceBookPhotos",
+] as const;
+
+/**
+ * Move any base64 still sitting in the state onto disk.
+ *
+ * Runs once at boot rather than inside readState, which is on 58 request paths —
+ * converting there would re-scan every photo of every car on every call, which
+ * is the cost this change exists to remove. After this pass and with the write
+ * paths converting on the way in, the state file never contains image bytes
+ * again.
+ *
+ * Idempotent: put() returns a stored reference unchanged, so a second run is a
+ * no-op and a half-finished run simply resumes.
+ */
+function migratePhotosToFiles(): void {
+  let state: any;
+  try {
+    state = readState();
+  } catch (err) {
+    console.error("[photos] migration could not read state:", err);
+    return;
+  }
+
+  let converted = 0;
+  let alreadyFiles = 0;
+
+  for (const v of state.vehicles || []) {
+    for (const field of VEHICLE_PHOTO_FIELDS) {
+      const arr = (v as any)[field];
+      if (!Array.isArray(arr) || !arr.length) continue;
+      const next: string[] = [];
+      for (const value of arr) {
+        if (isStoredRef(value)) {
+          next.push(value);
+          alreadyFiles++;
+          continue;
+        }
+        const ref = putPhoto(value);
+        if (ref) {
+          next.push(ref);
+          converted++;
+        }
+        /* Anything neither stored nor storable is dropped: it was a malformed
+           entry that could never have rendered anyway, and carrying it forward
+           only preserves a broken image on a dealer's website. */
+      }
+      (v as any)[field] = next;
+    }
+
+    // The 360 orbit carries its frames the same way.
+    const frames = (v as any).web3d?.frames;
+    if (Array.isArray(frames)) {
+      for (const f of frames) {
+        if (!f || typeof f !== "object") continue;
+        if (isStoredRef(f.image)) { alreadyFiles++; continue; }
+        const ref = putPhoto(f.image);
+        if (ref) { f.image = ref; converted++; }
+      }
+    }
+  }
+
+  if (converted > 0) {
+    /* Only written when something actually changed — a boot that finds nothing
+       to do must not rewrite a multi-megabyte file for no reason. */
+    writeState(state);
+    const { files, bytes } = photoStats();
+    console.log(
+      `[photos] moved ${converted} photo(s) out of the state file. ` +
+        `Media store now holds ${files} file(s), ${(bytes / 1024 / 1024).toFixed(1)} MB.`
+    );
+  } else {
+    console.log(
+      `[photos] nothing to migrate (${alreadyFiles} already stored as files).`
+    );
+  }
+}
+
+try {
+  migratePhotosToFiles();
+} catch (err) {
+  /* A failed migration must not stop the DMS booting: the read paths below
+     still understand base64, so an un-migrated instance serves exactly as it
+     did before, just without the size win. */
+  console.error("[photos] migration failed, continuing with base64:", err);
+}
+
 /**
  * Master-admin recovery.
  *
@@ -1183,9 +1314,19 @@ app.put("/api/inventory/:id", (req: any, res) => {
     return res.status(404).json({ error: "Vehicle not found" });
   }
 
+  /* Photos uploaded from the DMS itself arrive here as base64 — the detail
+     modal reads files with FileReader and PUTs the whole array back. Store them
+     the same way the TruLens path does, or the one route a dealer uses by hand
+     would quietly put image bytes back into the state this change exists to
+     keep them out of. */
+  const body = { ...req.body };
+  for (const field of VEHICLE_PHOTO_FIELDS) {
+    if (Array.isArray(body[field])) body[field] = putPhotos(body[field]);
+  }
+
   state.vehicles[index] = {
     ...state.vehicles[index],
-    ...req.body,
+    ...body,
     // The owner is never taken from the request body — otherwise an edit could
     // move a car into another dealership's stock.
     dealershipId: state.vehicles[index].dealershipId,
@@ -1894,10 +2035,20 @@ function mapAutoLensPhotos(photos: Record<string, string>): {
     serviceBookPhotos: [], extrasPhotos: [],
   };
 
+  /* Photos land on disk here, and only the reference goes into the state.
+     This is the single choke point for everything TruLens pushes, so converting
+     at this one spot keeps image bytes out of data.json for the entire export
+     path. Content-addressed, so a re-export of an unchanged capture — which is
+     what happens every time a dealer adds one more shot — rewrites nothing and
+     produces the identical references. */
   for (const [slotId, base64] of Object.entries(photos)) {
     if (typeof base64 === "string" && /^data:video\//i.test(base64)) continue;
     const category = SLOT_TO_CATEGORY[slotId] || "extrasPhotos";
-    mapped[category].push(base64);
+    const ref = putPhoto(base64);
+    /* Falls back to the raw value if the store could not take it, so a capture
+       is never silently dropped: an un-storable photo still reaches the dealer
+       as base64, exactly as it did before. */
+    mapped[category].push(ref || base64);
   }
 
   return {
@@ -2314,12 +2465,13 @@ app.post("/api/sync/web3d", (req, res) => {
     if (idx === -1) return res.status(404).json({ error: `Vehicle ${stockNumber} not found` });
 
     state.vehicles[idx].web3d = {
+      // Orbit frames are photos too — onto disk, same as the gallery.
       frames: frames.map((f: any, i: number) => ({
         index: i,
         slotId: f.slotId || "",
         name: f.name || f.slotId || `Frame ${i}`,
         azimuth: f.azimuth ?? i / frames.length,
-        image: f.image,
+        image: putPhoto(f.image) || f.image,
       })),
       damageTags: Array.isArray(damageTags) ? damageTags : [],
     };
@@ -2464,10 +2616,27 @@ function buildVirReport(damage: { panel: string; severity: number; type: string 
 const CATEGORY_VALUES = ["used", "select", "performance"];
 
 /** Canonical public vehicle shape for HTML dealer websites + embed widget */
-function toPublicVehicle(v: any, source: string = "premium") {
-  const notVideo = (s: any) => typeof s === "string" && !/^data:video\//i.test(s);
-  const images = Array.isArray(v.images) ? v.images.filter(notVideo) : [];
-  const extras = Array.isArray(v.extrasPhotos) ? v.extrasPhotos.filter(notVideo) : [];
+function toPublicVehicle(v: any, source: string = "premium", origin: string = "") {
+  /* A video is now either a legacy data:video/… URI or a stored .mp4/.webm/.mov
+     reference. Both must stay out of the image arrays, or a dealer site renders
+     a video file inside an <img> and shows a broken thumbnail. */
+  const notVideo = (s: any) =>
+    typeof s === "string" &&
+    !/^data:video\//i.test(s) &&
+    !/\.(mp4|webm|mov)$/i.test(s);
+
+  /* Stored photos are served from this instance, but the sites consuming this
+     feed are on their own domains — true-cars.co.za, carsoncaledon.co.za — so a
+     relative "/media/…" would resolve against the dealer's own host and 404.
+     Absolute, derived from the request rather than configured, so staging and
+     localhost work with no extra setting. Legacy base64 is passed through
+     untouched: a feed must keep working on an instance whose migration has not
+     run yet. */
+  const abs = (s: any) =>
+    isStoredRef(s) && origin ? `${origin}${s}` : s;
+
+  const images = (Array.isArray(v.images) ? v.images.filter(notVideo) : []).map(abs);
+  const extras = (Array.isArray(v.extrasPhotos) ? v.extrasPhotos.filter(notVideo) : []).map(abs);
   const allImages = [...images, ...extras];
   /* Strict, and deliberately the same test TruLens's own feed applies — a site
      pointed at either source has to make the same call about the same car.
@@ -2502,7 +2671,11 @@ function toPublicVehicle(v: any, source: string = "premium") {
     images: allImages,
     heroImage: allImages[0] || null,
     photoCount: allImages.length,
-    web3d: v.web3d?.frames?.length ? v.web3d : undefined,
+    /* Frames get the same absolute treatment as the gallery — an orbit is just
+       more photos, and a relative path would 404 on the dealer's own domain. */
+    web3d: v.web3d?.frames?.length
+      ? { ...v.web3d, frames: v.web3d.frames.map((f: any) => ({ ...f, image: abs(f?.image) })) }
+      : undefined,
     /** TruLens inspection score 0–100, absent when the car was never scored. */
     vir: typeof v.vir === "number" ? v.vir : undefined,
     /* Findings per section. Absent — not [] — when the car was never
@@ -2543,7 +2716,21 @@ function isJunkPublicVehicle(v: any): boolean {
  * be the dealership that owns the car. The showroom gets its stock by being a
  * dealership like any other. */
 
-function buildPublicStock(state: any, dealerSlug: string, source: string) {
+/** Absolute origin of this instance, from the request.
+ *
+ *  Derived rather than configured so localhost, staging and production each
+ *  serve URLs that point at themselves with no env var to forget. Honours the
+ *  proxy headers Render sets, or the scheme would come back http behind its
+ *  TLS terminator and dealer sites would fetch mixed content. */
+function originOf(req: any): string {
+  const proto = String(req.headers["x-forwarded-proto"] || req.protocol || "https")
+    .split(",")[0]
+    .trim();
+  const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").trim();
+  return host ? `${proto}://${host}` : "";
+}
+
+function buildPublicStock(state: any, dealerSlug: string, source: string, origin = "") {
   // A named single-dealer site must only ever see ITS OWN stock. A slug with no
   // mapping gets an empty result rather than leaking another dealer's inventory
   // (this once returned everything to everyone regardless of ?dealer=).
@@ -2553,7 +2740,7 @@ function buildPublicStock(state: any, dealerSlug: string, source: string) {
     ? rawVehicles.filter((v: any) => (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId)
     : [];
   const vehicles = scoped
-    .map((v: any) => toPublicVehicle(v, source))
+    .map((v: any) => toPublicVehicle(v, source, origin))
     .filter(Boolean)
     .filter((v: any) => !isJunkPublicVehicle(v));
   return {
@@ -2574,13 +2761,13 @@ function buildPublicStock(state: any, dealerSlug: string, source: string) {
    failure. The demo tenant is still reachable deliberately at ?dealer=demo. */
 app.get("/api/feed/inventory", (req, res) => {
   const dealer = String(req.query.dealer || "");
-  res.json(buildPublicStock(readState(), dealer, "premium"));
+  res.json(buildPublicStock(readState(), dealer, "premium", originOf(req)));
 });
 
 // Canonical public stock endpoint (same shape across Premium / TruLens)
 app.get("/api/public/stock", (req, res) => {
   const dealer = String(req.query.dealer || "");
-  res.json(buildPublicStock(readState(), dealer, "premium"));
+  res.json(buildPublicStock(readState(), dealer, "premium", originOf(req)));
 });
 
 /* Single vehicle detail (public).
