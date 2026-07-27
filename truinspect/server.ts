@@ -642,6 +642,30 @@ app.post('/api/auth/device', async (req, res) => {
   return res.status(401).json({ error: 'That code is not recognised.' });
 });
 
+/** Which commit is actually running.
+ *
+ *  Confirming a deploy was otherwise inference, and the inferences were wrong in
+ *  both directions on 2026-07-27: an uptime counter reset while the previous
+ *  build was still being served, so a restart read as a deploy; and grepping the
+ *  served bundle for a new string reported "not deployed" for a change that had
+ *  shipped, because Vite code-splits modals into their own chunks.
+ *
+ *  RENDER_GIT_COMMIT is set by Render on every build. Public deliberately: it is
+ *  a commit id, it reveals nothing, and a deploy check that needs a login is a
+ *  deploy check nobody runs. */
+app.get('/api/version', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const commit = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null;
+  res.json({
+    product: 'truinspect',
+    commit,
+    shortCommit: commit ? String(commit).slice(0, 7) : null,
+    branch: process.env.RENDER_GIT_BRANCH || null,
+    builtFrom: commit ? 'render' : 'unknown (env not set — local run?)',
+    startedAt: new Date(Date.now() - Math.floor(process.uptime() * 1000)).toISOString(),
+  });
+});
+
 app.get('/api/health', (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.json({
