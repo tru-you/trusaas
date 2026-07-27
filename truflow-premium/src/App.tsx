@@ -733,6 +733,13 @@ export default function App() {
       items: [
         { id: "dashboard", label: "Overview", icon: Home },
         { id: "inventory", label: "All Vehicles", icon: Car },
+        /* The pipeline board — and the ONLY place a vehicle can be moved
+           between INVENTORY, PENDING and SOLD, via the Prev/Next buttons on its
+           cards. The section was built and rendered, but no nav entry ever
+           pointed at it and nothing else calls navigateTo("workflow"), so it was
+           unreachable: a dealer could not mark a car as sold anywhere in the
+           app. */
+        { id: "workflow", label: "Sales pipeline", icon: GitBranch },
         { id: "upload", label: "Add vehicle", icon: Upload },
       ]
     },
@@ -763,13 +770,16 @@ export default function App() {
   // Filter navigation items based on current active simulated user role
   const filteredNavigation = groupedNavigation.map(group => {
     let items = group.items;
+    /* "workflow" is on both lists deliberately: moving a car from floor stock to
+       pending to sold is the job, not an admin privilege, and it is the only
+       place in the app where that can be done at all. */
     if (selectedRole === 'salesperson') {
-      items = items.filter(item => 
-        ['dashboard', 'inventory', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web'].includes(item.id)
+      items = items.filter(item =>
+        ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
-      items = items.filter(item => 
-        ['dashboard', 'inventory', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings'].includes(item.id)
+      items = items.filter(item =>
+        ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings'].includes(item.id)
       );
     }
     return { ...group, items };
