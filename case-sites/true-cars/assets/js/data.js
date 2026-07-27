@@ -44,7 +44,11 @@ TCSA.monthly = function(price, opts){
 TCSA.priceDelta = function(v){
   const d = v.truecarPrice - v.price;
   const pct = Math.round(Math.abs(d)/v.truecarPrice*100);
-  return { below: d>=0, amount:Math.abs(d), pct };
+  /* Strictly greater. `d>=0` counted an exact match as a saving, so a car
+     priced level with its TruPrice benchmark advertised "R0 below TruPrice" —
+     which reads as a broken number rather than the fair price it actually is.
+     Zero now falls through to the "Fair TruPrice" branch. */
+  return { below: d>0, amount:Math.abs(d), pct };
 };
 
 /* ---------------- Vehicle card renderer (shared) ---------------- */

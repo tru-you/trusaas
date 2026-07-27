@@ -1208,7 +1208,7 @@ html.tc-splashing,html.tc-splashing body{overflow:hidden!important;}
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=13"></script>
+<script src="assets/js/data.js?v=14"></script>
 <script src="assets/js/products.js?v=2"></script>
 <script src="assets/js/stock-bridge.js?v=3"></script>
 <script src="assets/js/web3d-mock.js?v=2"></script>
@@ -1260,19 +1260,40 @@ window.TCSApage = {
     return false;
   }
 };
-// populate makes
-(function(){
-  const makes=[...new Set(TCSA.vehicles.map(v=>v.make))].sort();
-  const sel=document.getElementById('qMake');
-  makes.forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o); });
-})();
-// featured grid (8) + performance (3) + true premium (3)
-document.getElementById('featuredGrid').innerHTML = TCSA.vehicles.filter(v=>v.featured&&!v.premium).slice(0,8).map(TCSA.vcard).join('');
-var perfVehicles = TCSA.vehicles.filter(function(v){return v.premium&&v.price<2500000&&v.fuel!=='Electric';});
-document.getElementById('performanceGrid').innerHTML = perfVehicles.slice(0,3).map(TCSA.vcard).join('');
-document.getElementById('premiumGrid').innerHTML = TCSA.vehicles.filter(function(v){return v.premium&&v.price>=2500000;}).slice(0,3).map(TCSA.vcard).join('');
-// re-run reveal observer for injected cards
-document.querySelectorAll('#featuredGrid .vcard,#performanceGrid .vcard,#premiumGrid .vcard').forEach((c,i)=>{ c.classList.add('rv'); if(i%4) c.classList.add('d'+(i%4)); });
+/* Stock is drawn twice: once now, and again when the live feed lands.
+   data.js ships no static cars (TCSA.vehicles = []), and the bridge fills it
+   asynchronously, dispatching tcsa:stock when it resolves. This block used to
+   run only at parse time — so the homepage painted three EMPTY grids and kept
+   them, while certi-used / ev / performance / premium-select all listened for
+   the event and filled correctly. The cars were sitting in TCSA.vehicles the
+   whole time; nothing ever asked this page to draw them. */
+function renderHomeStock(){
+  const cars = (window.TCSA && TCSA.vehicles) || [];
+
+  // Rebuilt from scratch — appending on a second run duplicates every make.
+  const sel = document.getElementById('qMake');
+  if (sel) {
+    const first = sel.querySelector('option');
+    sel.innerHTML = first ? first.outerHTML : '';
+    [...new Set(cars.map(v=>v.make))].sort().forEach(m=>{
+      const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o);
+    });
+  }
+
+  // featured grid (8) + performance (3) + true premium (3)
+  const put = (id, list) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = list.map(TCSA.vcard).join('');
+  };
+  put('featuredGrid', cars.filter(v=>v.featured&&!v.premium).slice(0,8));
+  put('performanceGrid', cars.filter(v=>v.premium&&v.price<2500000&&v.fuel!=='Electric').slice(0,3));
+  put('premiumGrid', cars.filter(v=>v.premium&&v.price>=2500000).slice(0,3));
+
+  // re-run reveal observer for injected cards
+  document.querySelectorAll('#featuredGrid .vcard,#performanceGrid .vcard,#premiumGrid .vcard').forEach((c,i)=>{ c.classList.add('rv'); if(i%4) c.classList.add('d'+(i%4)); });
+}
+renderHomeStock();
+window.addEventListener('tcsa:stock', renderHomeStock);
 
 // ── Interactive SA delivery map ──
 (function(){

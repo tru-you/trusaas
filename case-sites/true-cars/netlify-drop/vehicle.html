@@ -557,13 +557,21 @@ footer::after{content:"";position:absolute;bottom:0;left:0;right:0;height:200px;
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=13"></script>
+<script src="assets/js/data.js?v=14"></script>
 <script src="assets/js/stock-bridge.js?v=3"></script>
 <script src="assets/js/web3d-mock.js?v=1"></script>
 <script src="assets/js/products.js?v=1"></script>
 <script src="assets/js/site-chrome.js?v=15"></script>
 <script src="assets/js/site.js?v=15"></script>
 <script>
+/* The whole page is built from one vehicle, and the stock arrives
+   asynchronously. This ran at parse time, when TCSA.vehicles is still the empty
+   array data.js ships — so `v` was undefined, every block below hit its
+   `if(!v) return` guard, and the detail page rendered blank for a car that was
+   live in the feed. Everything is wrapped in renderVehiclePage() and run once
+   stock is actually in hand; the bridge fires tcsa:stock when its fetch chain
+   resolves, and the immediate call covers a warm cache where it already has. */
+function renderVehiclePage(){
 const id = new URLSearchParams(location.search).get('id') || 'porsche-cayenne-s-19';
 const v = TCSA.byId(id) || TCSA.vehicles[0];
 
@@ -785,6 +793,22 @@ document.getElementById('mConfirm').addEventListener('click',()=>{const name=doc
       document.body.style.overflow = '';
     }
   });
+})();
+} /* end renderVehiclePage */
+
+/* Draw as soon as there is something to draw, and again when the feed lands.
+   Guarded so a second tcsa:stock (or a warm cache that already had stock) can
+   only paint the page once. */
+(function(){
+  var painted = false;
+  function paint(){
+    if (painted) return;
+    if (!window.TCSA || !Array.isArray(TCSA.vehicles) || !TCSA.vehicles.length) return;
+    painted = true;
+    renderVehiclePage();
+  }
+  paint();
+  window.addEventListener('tcsa:stock', paint);
 })();
 </script>
 
