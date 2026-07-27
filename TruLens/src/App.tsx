@@ -504,6 +504,9 @@ export default function App() {
                 if (!saved) {
                   setVehicles((prev) => prev.map((x) => (x.id === v.id ? normalizeVehicle(v) : x)));
                 }
+                if (saved && v.showOnWebsite !== activeVehicle.showOnWebsite) {
+                  handleExportToDms(saved).catch(() => {});
+                }
               }}
             />
           )}

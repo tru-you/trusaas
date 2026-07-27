@@ -1,30 +1,27 @@
-/* Caledon Media — real 360 frame-spin and walkaround video in the vehicle modal.
+/* Caledon Media — 3D orbit spin in the vehicle detail modal.
  *
  * The stage that ships in vd-upgrade.js is a mirrored-image illusion: there is
- * no real 360 and no video. This wraps openVehicleDetail and, when the DMS has
- * actually sent media, adds a Photos / 360° / Video switcher over the stage.
+ * no real 360. This wraps openVehicleDetail and, when the DMS has sent a web3d
+ * orbit package, adds a Photos / 360° switcher over the stage.
  *
- * DMS fields consumed (mapped through in mkr-shared.js mapApi):
- *   spin          array of frame URLs, in rotation order (any count; 24–72 typical)
- *   video         mp4/webm URL, or a YouTube / Vimeo link
- *   videoPoster   still to show before playback
+ * DMS fields consumed (via mapApiVehicle):
+ *   web3d.frames[]      each { image, azimuth } — exterior stills in orbit order
+ *   web3d.damageTags[]   positioned damage pins
  *
- * With none of those present nothing changes — the existing stage stays exactly
+ * With no web3d data nothing changes — the existing stage stays exactly
  * as it is, so mock stock and thin feeds still look right.
  */
 (function () {
   "use strict";
 
   function mediaOf(car) {
-    if (!car) return { spin: [], video: "", poster: "", tags: [] };
-    var spin = car.spin || car.spinImages || car.images360 || car.spin360 || car.threeSixty || [];
-    if (typeof spin === "string") spin = spin.split(/[,\s]+/).filter(Boolean);
-    if (!Array.isArray(spin)) spin = [];
+    if (!car) return { spin: [], tags: [] };
+    var w = car.web3d;
+    var spin = (w && Array.isArray(w.frames)) ? w.frames.map(function(f){ return f.image; }).filter(Boolean) : [];
+    var tags = (w && Array.isArray(w.damageTags)) ? w.damageTags : [];
     return {
-      spin: spin.filter(Boolean),
-      video: car.video || car.videoUrl || car.walkaroundVideo || "",
-      poster: car.videoPoster || car.img || "",
-      tags: normaliseTags(car.tags || car.damage || car.damageTags || car.findings || [], spin.length)
+      spin: spin,
+      tags: normaliseTags(tags.concat(car.damage || []), spin.length)
     };
   }
 
@@ -51,15 +48,6 @@
         sev: /major|severe|high/.test(sev) ? "major" : /minor|low|cosmetic/.test(sev) ? "minor" : "note"
       };
     }).filter(Boolean);
-  }
-
-  /* ---------- video source handling ---------- */
-  function embedUrl(url) {
-    var yt = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/.exec(url);
-    if (yt) return "https://www.youtube-nocookie.com/embed/" + yt[1] + "?rel=0&playsinline=1&autoplay=1";
-    var vm = /vimeo\.com\/(?:video\/)?(\d+)/.exec(url);
-    if (vm) return "https://player.vimeo.com/video/" + vm[1] + "?autoplay=1";
-    return null; // treat as a direct file
   }
 
   /* ---------- 360 spin ---------- */
@@ -243,48 +231,6 @@
     return { show: show };
   }
 
-  /* ---------- video ---------- */
-  function buildVideo(panel, url, poster) {
-    var box = document.createElement("div");
-    box.className = "vd-video";
-
-    var play = document.createElement("button");
-    play.type = "button";
-    play.className = "vd-video-play";
-    play.setAttribute("aria-label", "Play walkaround video");
-    if (poster) play.style.backgroundImage = "url('" + poster + "')";
-    play.innerHTML = '<span class="ring"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>'
-      + '<span class="cap">Play walkaround</span>';
-
-    // Nothing downloads until it's asked for — keeps the modal light.
-    play.addEventListener("click", function () {
-      var embed = embedUrl(url);
-      if (embed) {
-        var f = document.createElement("iframe");
-        f.src = embed;
-        f.allow = "accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen";
-        f.allowFullscreen = true;
-        f.title = "Vehicle walkaround video";
-        box.appendChild(f);
-      } else {
-        var v = document.createElement("video");
-        v.src = url;
-        v.controls = true;
-        v.autoplay = true;
-        v.playsInline = true;
-        v.preload = "auto";
-        if (poster) v.poster = poster;
-        box.appendChild(v);
-        var p = v.play();
-        if (p && p.catch) p.catch(function () { v.controls = true; });
-      }
-      play.remove();
-    });
-
-    box.appendChild(play);
-    panel.appendChild(box);
-  }
-
   /* ---------- stage enhancement ---------- */
   function enhance(car) {
     var stage = document.getElementById("vdStage");
@@ -292,8 +238,7 @@
 
     var m = mediaOf(car);
     var hasSpin = m.spin.length >= 8;   // fewer frames than this judders — not a real spin
-    var hasVideo = !!m.video;
-    if (!hasSpin && !hasVideo) return;  // leave the existing stage alone
+    if (!hasSpin) return;  // leave the existing stage alone
 
     // Claim the stage synchronously, before any node is built. Guarding on
     // ".vd-media-tabs" (appended last) let a second call slip in and build a
@@ -316,15 +261,12 @@
       return p;
     }
 
-    if (hasSpin) buildSpin(addPanel("spin"), m.spin, m.tags);
-    if (hasVideo) buildVideo(addPanel("video"), m.video, m.poster);
+    buildSpin(addPanel("spin"), m.spin, m.tags);
 
-    // Every vehicle comes off the inspection app with a 360 walkaround, so the
-    // spin leads and photos sit behind it.
+    // 3D orbit leads, photos sit behind it.
     var defs = [];
-    if (hasSpin) defs.push({ k: "spin", t: "360°" });
+    defs.push({ k: "spin", t: "360°" });
     defs.push({ k: "photos", t: "Photos" });
-    if (hasVideo) defs.push({ k: "video", t: "Video", live: true });
     var first = defs[0].k;
 
     function select(k) {

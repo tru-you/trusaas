@@ -70,13 +70,15 @@ window.openVehicleDetail = function(car){
   var waFinance = encodeURIComponent("Hi "+DEALER+", I'd like to apply for finance on the "+car.yr+" "+car.make+" "+car.name+" ("+fmtR(car.price)+")");
   var waTest = encodeURIComponent("Hi "+DEALER+", I'd like a test drive of the "+car.yr+" "+car.make+" "+car.name);
 
-  var isPerf = !!car.perf;
-  var catClass = isPerf ? "background:linear-gradient(135deg,#F59E0B,#DC2626)" : "background:linear-gradient(135deg,#6E9BFF,#2E54BE)";
+  var catLabel = car.category==="select"?"Select":car.category==="performance"?"Performance":(car.tag||"Featured");
+  var catClass = car.category==="performance"
+    ? "background:linear-gradient(135deg,#F59E0B,#DC2626)"
+    : car.category==="select"
+      ? "background:linear-gradient(135deg,#6E9BFF,#2E54BE)"
+      : "background:linear-gradient(135deg,#6E9BFF,#2E54BE)";
   var bodyName = car.body || "Vehicle";
   var pm = monthly(car.price);
-  var virScore = 90 + (car.price % 8);            // deterministic 90–97
-  // TruPrice: real comparison against the car's own truPrice benchmark (not a
-  // hash of its own listing price) — same mechanism as True-Cars/MKR.
+  var virScore = (typeof car.vir === "number") ? car.vir : null;
   var tpDelta = (typeof priceDelta !== "undefined") ? priceDelta(car) : { below: false, amount: 0, pct: 0 };
   var tpRatio = car.price / (car.truPrice || car.price || 1);
   var tpPos = Math.min(96, Math.max(4, ((tpRatio - 0.85) / 0.30) * 100));
@@ -84,8 +86,11 @@ window.openVehicleDetail = function(car){
     ? "Fair market price"
     : (tpDelta.pct >= 8 ? "Great deal — " : "Good price — ") + fmtR(tpDelta.amount) + " below TruPrice";
   var tpColor = tpDelta.below ? "#16A34A" : "#7A8494";
-  var mockPanels = 12, mockFindings = MOCK_DMG.length, mockRepairCost = "R "+((Math.floor((car.price % 89)/89*8)+4)*100);
-  var verdict = virScore>=94?"Excellent condition":virScore>=88?"Very good condition":"Good condition";
+  var realReport = Array.isArray(car.virReport) && car.virReport.length ? car.virReport : [];
+  var realDamage = Array.isArray(car.damage) && car.damage.length ? car.damage : [];
+  var passCount = realReport.filter(function(s){return s.status==="Pass";}).length;
+  var attentionCount = realReport.filter(function(s){return s.status==="Attention";}).length;
+  var verdict = virScore===null?"Not yet inspected":virScore>=94?"Excellent condition":virScore>=88?"Very good condition":virScore>=70?"Good condition":"Fair condition";
 
   vdContent.innerHTML =
     // ===== LEFT COLUMN =====
@@ -94,7 +99,7 @@ window.openVehicleDetail = function(car){
     +'<div class="vd-hero-img">'
     +'<div class="im" style="'+phStyle(car.img,"linear-gradient(180deg,transparent 60%,rgba(10,16,32,.35))")+'"></div>'
     +'<div class="vd-vir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.3 7.2 16.9l.9-5.4L4.2 7.7l5.4-.8z"/></svg>VIR Inspected</div>'
-    +'<div class="vd-cat" style="'+catClass+'">'+(car.tag||"Featured")+'</div>'
+    +'<div class="vd-cat" style="'+catClass+'">'+catLabel+'</div>'
     +'</div>'
     +'<div class="vd-thumbs">'
     +'<div class="vd-thumb on"><div class="im" style="'+phStyle(car.img)+'"></div></div>'
@@ -130,7 +135,8 @@ window.openVehicleDetail = function(car){
     +'</div></div>'
 
     // ===== VIR REPORT =====
-    +'<div class="vd-vir-report">'
+    +(virScore!==null
+    ? '<div class="vd-vir-report">'
     +'<div class="vd-vir-eyebrow"><img src="coc-mark.svg" alt="">Verified Inspection Report</div>'
     +'<div class="vd-vir-score">'
     +'<div class="vd-score-ring"><svg width="88" height="88" viewBox="0 0 88 88"><circle cx="44" cy="44" r="38" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="7"/>'
@@ -138,33 +144,27 @@ window.openVehicleDetail = function(car){
     +'<defs><linearGradient id="vdsg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6E9BFF"/><stop offset="1" stop-color="#2E54BE"/></linearGradient></defs></svg>'
     +'<div class="val"><b id="vdScoreVal">0</b><span>/ 100</span></div></div>'
     +'<div><div class="vd-vir-verdict">'+verdict+'</div>'
-    +'<p class="vd-vir-desc">Independently inspected across 128 checkpoints. Findings tagged on the Tru3D orbit above.</p></div></div>'
+    +'<p class="vd-vir-desc">Condition scored from damage findings. '+(realReport.length?realReport.length+' sections inspected.':'')+'</p></div></div>'
     +'<div class="vd-vir-checks">'
-    +MOCK_CHECKS.map(function(c){return '<div class="vd-vir-check '+(c.ok?"ok":"warn")+'">'+(c.ok?svgCheck():svgWarn())+c.label+'</div>';}).join("")
+    +(realReport.length
+      ? realReport.map(function(s){return '<div class="vd-vir-check '+(s.status==="Pass"?"ok":"warn")+'">'+(s.status==="Pass"?svgCheck():svgWarn())+s.section+' — '+s.score+'/100</div>';}).join("")
+      : '<div class="vd-vir-check ok">'+svgCheck()+'No damage findings</div>')
     +'</div>'
-    +'<div class="vd-dmg-list">'
-    +MOCK_DMG.map(function(d,i){return '<div class="vd-dmg'+(d.type==="note"?" note":"")+'"><div class="di">'+(i+1)+'</div><div><b>'+d.loc+'</b><p>'+d.note+'</p></div></div>';}).join("")
+    +(realDamage.length
+      ? '<div class="vd-dmg-list">'
+        +realDamage.map(function(d,i){return '<div class="vd-dmg"><div class="di">'+(i+1)+'</div><div><b>'+(d.panel||"General")+'</b><p>'+(d.type||"")+(d.severity?' — severity '+d.severity+'/5':'')+'</p></div></div>';}).join("")
+        +'</div>'
+      : '')
     +'</div>'
-
-    // ===== TRULENS AI =====
-    +'<div class="vd-tchek">'
-    +'<div class="vd-tchek-head"><div class="vd-tchek-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>AI Damage Analysis</div>'
-    +'<div class="vd-tchek-powered">TruVIR &middot; Powered by <b>TruLens AI</b></div></div>'
-    +'<p class="vd-tchek-desc">Every panel, surface and interior zone scanned by TruLens AI — detecting damage at 95% accuracy, classifying severity, and estimating repair cost before the vehicle reaches the floor.</p>'
-    +'<div class="vd-tchek-grid">'
-    +'<div class="vd-tchek-stat"><div class="vd-tchek-icon ok">'+svgCheck()+'</div><div><div class="vd-tchek-val">'+mockPanels+' / '+mockPanels+'</div><div class="vd-tchek-lbl">Panels clear</div></div></div>'
-    +'<div class="vd-tchek-stat"><div class="vd-tchek-icon warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg></div><div><div class="vd-tchek-val">'+mockFindings+' minor</div><div class="vd-tchek-lbl">Cosmetic findings</div></div></div>'
-    +'<div class="vd-tchek-stat"><div class="vd-tchek-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.9 4.9l2.8 2.8m8.5 8.5l2.8 2.8M2 12h4m12 0h4M4.9 19.1l2.8-2.8m8.5-8.5l2.8-2.8"/></svg></div><div><div class="vd-tchek-val">'+mockRepairCost+'</div><div class="vd-tchek-lbl">Est. repair cost</div></div></div>'
-    +'</div>'
-    +'<div class="vd-tchek-conf"><div class="vd-tchek-conf-bar"><div class="vd-tchek-conf-fill" id="vdConfFill"></div></div><span>95% AI confidence &middot; TruLens AI</span></div>'
-    +'</div>'
+    : '')
     +'</div>'
 
     // ===== RIGHT COLUMN =====
     +'<div class="vd-buy">'
-    +'<div class="vd-crumb">'+DEALER+' / '+(car.tag||"Featured")+' / '+car.make+'</div>'
+    +'<div class="vd-crumb">'+DEALER+' / '+catLabel+' / '+car.make+'</div>'
     +'<h1>'+car.yr+' '+car.make+' '+car.name+'</h1>'
-    +'<div class="vd-variant">'+(car.variant||"")+' &middot; '+bodyName+'</div>'
+    +'<div class="vd-variant">'+(car.variant||"")+' &middot; '+bodyName+(car.color?' &middot; '+car.color:'')+'</div>'
+    +(car.description?'<p class="vd-desc" style="font-size:13px;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.6;">'+car.description+'</p>':'')
     +'<div class="vd-price-block"><div class="vd-price">'+fmtR(car.price)+'</div>'
     +'<div class="vd-pm">From <b>'+fmtR(pm)+'/pm</b> over 72 months</div></div>'
 
@@ -180,7 +180,8 @@ window.openVehicleDetail = function(car){
     +'<div class="vd-spec"><div class="l">Fuel</div><div class="v">'+(car.fuel||"—")+'</div></div>'
     +'<div class="vd-spec"><div class="l">Transmission</div><div class="v">'+(car.tr||"—")+'</div></div>'
     +'<div class="vd-spec"><div class="l">Body</div><div class="v">'+bodyName+'</div></div>'
-    +'<div class="vd-spec"><div class="l">Condition</div><div class="v">&#9733; '+(virScore/20).toFixed(1)+' / 5.0</div></div>'
+    +(car.color?'<div class="vd-spec"><div class="l">Colour</div><div class="v">'+car.color+'</div></div>':'')
+    +'<div class="vd-spec"><div class="l">Condition</div><div class="v">'+(virScore!==null?'&#9733; '+(virScore/20).toFixed(1)+' / 5.0':'—')+'</div></div>'
     +'</div>'
 
     +'<div class="vd-actions">'
@@ -297,9 +298,9 @@ window.openVehicleDetail = function(car){
   var lvsBtn=document.getElementById("vdLvsBtn");
   if(lvsBtn) lvsBtn.addEventListener("click",function(){openCocBooking(car);});
 
-  // VIR ring + confidence bar
-  var arc=document.getElementById("vdScoreArc"), scoreVal=document.getElementById("vdScoreVal"), conf=document.getElementById("vdConfFill");
-  if(arc&&scoreVal){
+  // VIR ring animation — only when a real score exists
+  var arc=document.getElementById("vdScoreArc"), scoreVal=document.getElementById("vdScoreVal");
+  if(arc&&scoreVal&&virScore!==null){
     setTimeout(function(){arc.style.strokeDashoffset=Math.round(239-(239*virScore/100));},60);
     var t0=Date.now();
     var cnt=setInterval(function(){
@@ -308,7 +309,6 @@ window.openVehicleDetail = function(car){
       if(p>=1) clearInterval(cnt);
     },30);
   }
-  if(conf) setTimeout(function(){conf.style.width="95%";},120);
 
   // share
   var shareBtn=document.getElementById("vdShareBtn");

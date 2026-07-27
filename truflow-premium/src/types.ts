@@ -63,15 +63,12 @@ export interface Vehicle {
    *  send `false` explicitly rather than omitting the field. */
   showOnWebsite?: boolean;
 
-  /** The 360 walkaround, as a data URI (`data:video/webm;base64,…`).
-   *
-   *  TruLens records a real video via MediaRecorder, but the export mapped its
-   *  slot into extrasPhotos — so it was merged into the image gallery and the
-   *  dealer sites rendered it inside an <img>, which shows a broken thumbnail.
-   *  Held separately so the feed can publish it as a video. */
-  walkaroundVideo?: string;
-  /** Still shown before the walkaround plays. First exterior shot. */
-  videoPoster?: string;
+  /** TruLens 360 damage orbit — spin frames + positioned damage tags.
+   *  Replaces the old walkaroundVideo field entirely. */
+  web3d?: {
+    frames: { index: number; slotId: string; name: string; azimuth: number; image: string }[];
+    damageTags: { id: string; label: string; severity: string; azimuth: number; elevation: number; slotId: string; thumb?: string }[];
+  };
   /** TruLens inspection score, 0–100. Computed at capture and, until now,
    *  never sent anywhere. */
   vir?: number;

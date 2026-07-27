@@ -1146,6 +1146,9 @@ export default function InventoryList({
                               dealerName: dealershipName,
                               dealerWhatsApp: dealerWhatsApp || vehicle.dealerWhatsApp,
                             });
+                            if (saved && onExportToDms) {
+                              await onExportToDms(saved).catch(() => {});
+                            }
                             setPublishingId(null);
                             if (saved) {
                               setExportToast({

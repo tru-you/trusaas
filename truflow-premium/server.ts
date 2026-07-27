@@ -1711,35 +1711,24 @@ function mapAutoLensPhotos(photos: Record<string, string>): {
   vinPhotos: string[];
   serviceBookPhotos: string[];
   extrasPhotos: string[];
-  walkaroundVideo?: string;
-  videoPoster?: string;
 } {
   const mapped: Record<string, string[]> = {
     images: [], damagePhotos: [], vinPhotos: [],
     serviceBookPhotos: [], extrasPhotos: [],
   };
-  let walkaroundVideo: string | undefined;
 
   for (const [slotId, base64] of Object.entries(photos)) {
-    if (typeof base64 === "string" && /^data:video\//i.test(base64)) {
-      // Keep the first if a capture somehow carries more than one.
-      walkaroundVideo = walkaroundVideo || base64;
-      continue;
-    }
+    if (typeof base64 === "string" && /^data:video\//i.test(base64)) continue;
     const category = SLOT_TO_CATEGORY[slotId] || "extrasPhotos";
     mapped[category].push(base64);
   }
 
-  // First exterior shot doubles as the poster frame; falls back to any image.
-  const poster = mapped.images[0] || mapped.extrasPhotos[0];
   return {
     images: mapped.images,
     damagePhotos: mapped.damagePhotos,
     vinPhotos: mapped.vinPhotos,
     serviceBookPhotos: mapped.serviceBookPhotos,
     extrasPhotos: mapped.extrasPhotos,
-    walkaroundVideo,
-    videoPoster: walkaroundVideo ? poster : undefined,
   };
 }
 
@@ -1805,12 +1794,6 @@ app.post("/api/sync/pull-photos", async (req, res) => {
     state.vehicles[idx].vinPhotos = mapped.vinPhotos;
     state.vehicles[idx].serviceBookPhotos = mapped.serviceBookPhotos;
     state.vehicles[idx].extrasPhotos = mapped.extrasPhotos;
-    // Only when this capture carried one — a later stills-only re-push must not
-    // wipe a walkaround the dealer already has.
-    if (mapped.walkaroundVideo) {
-      state.vehicles[idx].walkaroundVideo = mapped.walkaroundVideo;
-      state.vehicles[idx].videoPoster = mapped.videoPoster;
-    }
     // Damage findings drive the VIR — photo quality is internal to TruLens,
     // never exposed as the vehicle condition score.
     if (Array.isArray(lensVehicle?.damage)) {
@@ -1876,10 +1859,6 @@ app.post("/api/sync/pull-all", async (req, res) => {
       state.vehicles[idx].vinPhotos = mapped.vinPhotos;
       state.vehicles[idx].serviceBookPhotos = mapped.serviceBookPhotos;
       state.vehicles[idx].extrasPhotos = mapped.extrasPhotos;
-      if (mapped.walkaroundVideo) {
-        state.vehicles[idx].walkaroundVideo = mapped.walkaroundVideo;
-        state.vehicles[idx].videoPoster = mapped.videoPoster;
-      }
       (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
       syncedCount++;
       results.push({ stockNumber: lensVehicle.stockNumber, status: "synced" });
@@ -2005,8 +1984,6 @@ app.post("/api/sync/push-photos", (req, res) => {
         engine: vehicleMeta.engine || "",
         vin: vehicleMeta.vin || "",
         color: vehicleMeta.color || "",
-        walkaroundVideo: mapped.walkaroundVideo,
-        videoPoster: mapped.videoPoster,
         images: mapped.images,
         damagePhotos: mapped.damagePhotos,
         vinPhotos: mapped.vinPhotos,
@@ -2057,6 +2034,23 @@ app.post("/api/sync/push-photos", (req, res) => {
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     if (vehicleMeta.vin) (state.vehicles[idx] as any).vin = vehicleMeta.vin;
     if (vehicleMeta.color) (state.vehicles[idx] as any).color = vehicleMeta.color;
+    if (vehicleMeta.mileage != null) {
+      state.vehicles[idx].mileage = parseInt(vehicleMeta.mileage, 10) || state.vehicles[idx].mileage;
+    }
+    if (vehicleMeta.transmission) state.vehicles[idx].transmission = vehicleMeta.transmission;
+    if (vehicleMeta.fuelType) state.vehicles[idx].fuelType = vehicleMeta.fuelType;
+    if (vehicleMeta.description) (state.vehicles[idx] as any).description = vehicleMeta.description;
+    if (Array.isArray(vehicleMeta.damage)) {
+      (state.vehicles[idx] as any).damage = vehicleMeta.damage;
+      (state.vehicles[idx] as any).vir = computeVirFromDamage(vehicleMeta.damage);
+      (state.vehicles[idx] as any).virReport = buildVirReport(vehicleMeta.damage);
+    }
+    if (vehicleMeta.vir != null && !Array.isArray(vehicleMeta.damage)) {
+      (state.vehicles[idx] as any).vir = vehicleMeta.vir;
+    }
+    if (Array.isArray(vehicleMeta.inspection)) {
+      (state.vehicles[idx] as any).inspection = vehicleMeta.inspection;
+    }
     /* Re-publishing or un-publishing in TruLens now reaches the website. Only
        applied when the client actually sends a boolean, so a push that says
        nothing about it leaves whatever the dealer set here untouched. */
@@ -2090,6 +2084,42 @@ app.post("/api/sync/push-photos", (req, res) => {
       error: "Push photo sync failed",
       details: error.message,
     });
+  }
+});
+
+// Receive the 360 damage orbit from TruLens (Web3DPackage)
+app.post("/api/sync/web3d", (req, res) => {
+  try {
+    const { stockNumber, dealerSlug, frames, damageTags } = req.body || {};
+    if (!stockNumber) return res.status(400).json({ error: "stockNumber required" });
+    if (!Array.isArray(frames) || !frames.length) return res.status(400).json({ error: "frames array required" });
+
+    const state = readState();
+    const pushDealerId = dealerIdForSlug(dealerSlug) || DEFAULT_DEALERSHIP_ID;
+    const idx = state.vehicles.findIndex(
+      (v: any) => v.stockNumber === stockNumber && (v.dealershipId || DEFAULT_DEALERSHIP_ID) === pushDealerId
+    );
+    if (idx === -1) return res.status(404).json({ error: `Vehicle ${stockNumber} not found` });
+
+    state.vehicles[idx].web3d = {
+      frames: frames.map((f: any, i: number) => ({
+        index: i,
+        slotId: f.slotId || "",
+        name: f.name || f.slotId || `Frame ${i}`,
+        azimuth: f.azimuth ?? i / frames.length,
+        image: f.image,
+      })),
+      damageTags: Array.isArray(damageTags) ? damageTags : [],
+    };
+    writeState(state);
+
+    res.json({
+      success: true,
+      message: `360 orbit saved for ${stockNumber} (${frames.length} frames, ${(damageTags || []).length} damage tags)`,
+    });
+  } catch (error: any) {
+    console.error("Web3D sync error:", error);
+    res.status(500).json({ error: "Web3D sync failed", details: error.message });
   }
 });
 
@@ -2223,21 +2253,10 @@ const CATEGORY_VALUES = ["used", "select", "performance"];
 
 /** Canonical public vehicle shape for HTML dealer websites + embed widget */
 function toPublicVehicle(v: any, source: string = "premium") {
-  /* Anything that is actually a video is stripped out of the image arrays.
-     Captures taken before the walkaround was split out still have it sitting in
-     extrasPhotos, and publishing that into `images` is what made dealer sites
-     render a broken thumbnail. Belt and braces with mapAutoLensPhotos, which
-     now keeps new captures out of here in the first place. */
   const notVideo = (s: any) => typeof s === "string" && !/^data:video\//i.test(s);
   const images = Array.isArray(v.images) ? v.images.filter(notVideo) : [];
   const extras = Array.isArray(v.extrasPhotos) ? v.extrasPhotos.filter(notVideo) : [];
   const allImages = [...images, ...extras];
-  /* A pre-split capture keeps its walkaround in extrasPhotos — recover it so
-     those cars publish a video too, rather than waiting for a re-shoot. */
-  const legacyVideo = [
-    ...(Array.isArray(v.images) ? v.images : []),
-    ...(Array.isArray(v.extrasPhotos) ? v.extrasPhotos : []),
-  ].find((s: any) => typeof s === "string" && /^data:video\//i.test(s));
   // Hide vehicles explicitly unpublished; default = show if INVENTORY
   const published = v.showOnWebsite !== false && v.status === "INVENTORY";
   if (!published) return null;
@@ -2268,22 +2287,7 @@ function toPublicVehicle(v: any, source: string = "premium") {
     images: allImages,
     heroImage: allImages[0] || null,
     photoCount: allImages.length,
-    /* The 360 walkaround, published as a video rather than smuggled into
-       `images`. The name is deliberate: MKR's site already probes for
-       `walkaroundVideo` (among several guesses it makes), so it renders with no
-       change to the site.
-
-       Absent — not null, not "" — when the car has no walkaround, so a site
-       branches on presence and falls back to the still:
-
-           v.walkaroundVideo
-             ? <video poster={v.videoPoster} src={v.walkaroundVideo} …/>
-             : <img src={v.heroImage} …/>
-
-       videoPoster is always populated when a video exists, and heroImage is
-       always the first photo, so there is never a case with nothing to show. */
-    walkaroundVideo: v.walkaroundVideo || legacyVideo || undefined,
-    videoPoster: v.videoPoster || allImages[0] || undefined,
+    web3d: v.web3d?.frames?.length ? v.web3d : undefined,
     /** TruLens inspection score 0–100, absent when the car was never scored. */
     vir: typeof v.vir === "number" ? v.vir : undefined,
     /* Findings per section. Absent — not [] — when the car was never

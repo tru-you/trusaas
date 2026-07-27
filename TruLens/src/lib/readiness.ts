@@ -45,11 +45,11 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
   }
 
   const allRequired = missingRequired.length === 0;
+  const hasPhotos = Object.keys(photos).length > 0;
   const scoreOk = score === null || score >= 70;
-  const canExportDms = Object.keys(photos).length > 0;
-  // Explicit publish flag preferred; still "structurally ready" when shots+score ok
+  const canExportDms = hasPhotos;
   const canPublishWeb =
-    allRequired &&
+    hasPhotos &&
     scoreOk &&
     vehicle.showOnWebsite === true;
 
@@ -59,19 +59,23 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
 
   if (vehicle.status === 'Listed' || vehicle.lastDmsExportAt) {
     level = 'listed';
-    label = canPublishWeb ? 'Listed · web ready' : 'Exported · finish shots for web';
+    label = canPublishWeb ? 'Listed · web ready' : 'Exported to DMS';
     color = canPublishWeb ? '#0EA5E9' : '#06b6d4';
-  } else if (allRequired && scoreOk && vehicle.showOnWebsite === true) {
+  } else if (hasPhotos && scoreOk && vehicle.showOnWebsite === true) {
     level = 'web-ready';
-    label = 'Published to web';
+    label = allRequired ? 'Published to web' : 'Published to web · finish remaining shots';
     color = '#10B981';
-  } else if (allRequired) {
+  } else if (hasPhotos && scoreOk) {
     level = 'ready';
-    label = scoreOk ? 'Ready to publish' : 'Shots complete · improve quality';
-    color = scoreOk ? '#22C55E' : '#F97316';
-    if (scoreOk && vehicle.showOnWebsite !== true) {
+    label = allRequired ? 'Ready to publish' : 'Ready to publish · more shots recommended';
+    color = '#22C55E';
+    if (vehicle.showOnWebsite !== true) {
       reasons.push('Not published to website yet');
     }
+  } else if (allRequired) {
+    level = 'ready';
+    label = 'Shots complete · improve quality';
+    color = '#F97316';
   }
 
   return {
@@ -114,11 +118,10 @@ export function whatsAppSalesBlurb(
 /** Structural readiness (shots+score) without requiring publish flag */
 export function isStructurallyWebReady(vehicle: Vehicle): boolean {
   const photos = vehicle.photos || {};
-  const required = PHOTO_SLOTS.filter((s) => s.required);
-  const allRequired = required.every((s) => !!photos[s.id]);
+  const hasPhotos = Object.keys(photos).length > 0;
   const reports = Object.values(vehicle.quality || {}) as QualityReport[];
   const score = reports.length
     ? Math.round(reports.reduce((a, r) => a + (r.overallScore || 0), 0) / reports.length)
     : null;
-  return allRequired && (score === null || score >= 70);
+  return hasPhotos && (score === null || score >= 70);
 }

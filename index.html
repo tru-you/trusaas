@@ -127,10 +127,18 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
 .mc-preview video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;transition:transform .4s ease;}
 .module-card:hover .mc-preview video{transform:scale(1.03);}
 .mc-preview::after{content:'LIVE ↗';position:absolute;top:9px;right:9px;padding:4px 9px;border-radius:100px;background:rgba(6,8,13,.78);backdrop-filter:blur(8px);border:1px solid var(--glass-line);font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--cyan);z-index:2;}
+.mc-preview.no-live-badge::after{content:'BOOK A DEMO';color:var(--gold);border-color:var(--gold);}
 /* Phone-framed module preview (mobile app modules like TruFlow) */
 .mc-preview.pv-phone{background:radial-gradient(ellipse 70% 60% at 50% 40%,#0E1420,#06080D);display:grid;place-items:center;}
 .mc-preview.pv-phone .phone-fr{position:relative;height:90%;aspect-ratio:9/19.5;border:6px solid #16191F;border-radius:22px;overflow:hidden;background:#0A0D14;box-shadow:0 22px 55px -22px rgba(0,0,0,.9),inset 0 1px 0 rgba(232,234,230,.05);}
 .mc-preview.pv-phone iframe{position:absolute;top:0;left:0;width:390px;height:845px;transform-origin:top left;}
+.mc-preview.pv-phone-duo{background:radial-gradient(ellipse 80% 60% at 50% 45%,#0E1420,#06080D);display:flex;align-items:center;justify-content:center;gap:20px;perspective:900px;padding:14px 10px;}
+.mc-preview.pv-phone-duo .phone-3d{position:relative;height:94%;aspect-ratio:9/19.5;border:5px solid #1a1e28;border-radius:22px;overflow:hidden;background:#0A0D14;box-shadow:0 24px 60px -18px rgba(0,0,0,.85),inset 0 1px 0 rgba(232,234,230,.06);flex-shrink:0;transition:transform .45s cubic-bezier(.25,.46,.45,.94);}
+.mc-preview.pv-phone-duo .phone-3d:first-child{transform:rotateY(6deg) rotateX(1deg) translateZ(-10px);}
+.mc-preview.pv-phone-duo .phone-3d:last-child{transform:rotateY(-6deg) rotateX(1deg) translateZ(-10px);}
+.module-card:hover .mc-preview.pv-phone-duo .phone-3d:first-child{transform:rotateY(3deg) rotateX(0deg) translateZ(0);}
+.module-card:hover .mc-preview.pv-phone-duo .phone-3d:last-child{transform:rotateY(-3deg) rotateX(0deg) translateZ(0);}
+.mc-preview.pv-phone-duo .phone-3d img{width:100%;height:100%;object-fit:cover;object-position:top;}
 .mc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
 .mc-layer{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--muted);}
 .mc-live{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--cyan);display:flex;align-items:center;gap:6px;}
@@ -613,9 +621,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
   <div class="proof-inner">
     <div class="proof-label">A real dealership runs on this →</div>
     <div class="proof-links">
-      <a class="proof-link" href="https://true-cars.co.za" target="_blank" rel="noopener"><span class="live"></span> Tru-Cars demo <span class="arrow">↗</span></a>
-      <a class="proof-link" href="https://premium.tru-saas.com" target="_blank" rel="noopener"><span class="live"></span> Live DMS <span class="arrow">↗</span></a>
-      <a class="proof-link" href="https://lens.tru-saas.com" target="_blank" rel="noopener"><span class="live"></span> Live TruLens <span class="arrow">↗</span></a>
+      <a class="proof-link" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I'd%20like%20a%20demo%20of%20TruSaas" target="_blank" rel="noopener"><span class="live"></span> Request a demo <span class="arrow">↗</span></a>
     </div>
   </div>
 </section>
@@ -651,21 +657,27 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
     <div class="module-grid">
 
       <article class="module-card reveal">
-        <div class="mc-preview"><iframe src="https://lens.tru-saas.com" loading="lazy" scrolling="no" tabindex="-1" title="TruLens live"></iframe></div>
-        <div class="mc-head"><span class="mc-layer">Capture</span><span class="mc-live"><span class="dot"></span>LIVE</span></div>
+        <div class="mc-preview pv-phone-duo no-live-badge">
+          <div class="phone-3d"><img src="assets/brand/trulens-catalogue.jpg" alt="TruLens catalogue view" loading="lazy"></div>
+          <div class="phone-3d"><img src="assets/brand/trulens-report.jpg" alt="TruLens VIR report" loading="lazy"></div>
+        </div>
+        <div class="mc-head"><span class="mc-layer">Capture</span><span class="mc-demo" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold);display:flex;align-items:center;gap:6px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);display:inline-block;"></span>BOOK DEMO</span></div>
         <h3 class="mc-name">TruLens</h3>
         <p class="mc-outcome">Photograph any vehicle in 90 seconds — guided capture, auto-cropped, dealer-branded, ready for the web before the customer's out the door. Every shot doubles as a 360&deg; spin buyers can pinch and rotate.</p>
         <ul class="mc-meta"><li>Mobile-first, any phone</li><li>360&deg; spin generated automatically</li><li>Works offline, syncs later</li></ul>
-        <div class="mc-foot"><a class="mc-link" href="https://lens.tru-saas.com" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
+        <div class="mc-foot"><a class="mc-link" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I'd%20like%20a%20demo%20of%20TruLens" target="_blank" rel="noopener">Request a demo ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
       </article>
 
       <article class="module-card reveal">
-        <div class="mc-preview"><iframe src="https://inspect.tru-saas.com" loading="lazy" scrolling="no" tabindex="-1" title="TruInspect live"></iframe></div>
-        <div class="mc-head"><span class="mc-layer">Condition</span><span class="mc-live"><span class="dot"></span>LIVE</span></div>
+        <div class="mc-preview pv-phone-duo no-live-badge">
+          <div class="phone-3d"><img src="assets/brand/truinspect-form.jpg" alt="TruInspect new vehicle form" loading="lazy"></div>
+          <div class="phone-3d"><img src="assets/brand/truinspect-dashboard.jpg" alt="TruInspect dashboard" loading="lazy"></div>
+        </div>
+        <div class="mc-head"><span class="mc-layer">Condition</span><span class="mc-demo" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold);display:flex;align-items:center;gap:6px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);display:inline-block;"></span>BOOK DEMO</span></div>
         <h3 class="mc-name">TruInspect</h3>
         <p class="mc-outcome">A condition report a buyer actually trusts — panel by panel, tyre depth, service history, signed off before the car hits the ad.</p>
         <ul class="mc-meta"><li>Manual and AI-graded tiers</li><li>PDF export and a shareable link</li><li>Doubles as a trade-in appraisal</li></ul>
-        <div class="mc-foot"><a class="mc-link" href="https://inspect.tru-saas.com" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
+        <div class="mc-foot"><a class="mc-link" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I'd%20like%20a%20demo%20of%20TruInspect" target="_blank" rel="noopener">Request a demo ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
       </article>
 
     </div>
@@ -680,12 +692,12 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
     <div class="module-grid">
 
       <article class="module-card reveal">
-        <div class="mc-preview"><video src="assets/brand/truflow-web.mp4?v=1" poster="assets/brand/truflow-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video></div>
-        <div class="mc-head"><span class="mc-layer">DMS</span><span class="mc-live"><span class="dot"></span>LIVE</span></div>
+        <div class="mc-preview no-live-badge"><video src="assets/brand/truflow-web.mp4?v=1" poster="assets/brand/truflow-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video></div>
+        <div class="mc-head"><span class="mc-layer">DMS</span><span class="mc-demo" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold);display:flex;align-items:center;gap:6px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);display:inline-block;"></span>BOOK DEMO</span></div>
         <h3 class="mc-name">TruFlow</h3>
         <p class="mc-outcome">Stock, leads, deal jackets and the money, in one place. Lite is for the lot that outgrew spreadsheets; Premium adds F&amp;I, multi-branch, roles and a full audit trail. Same system — you move up without migrating.</p>
         <ul class="mc-meta"><li>Set up in a day, not a quarter</li><li>Finance calculator on every vehicle page</li><li>Pushes stock to your site and the marketplaces</li></ul>
-        <div class="mc-foot"><a class="mc-link" href="https://premium.tru-saas.com" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
+        <div class="mc-foot"><a class="mc-link" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I'd%20like%20a%20demo%20of%20TruFlow" target="_blank" rel="noopener">Request a demo ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
       </article>
 
     </div>
@@ -709,7 +721,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
       </article>
 
       <article class="module-card reveal">
-        <div class="mc-preview"><iframe src="truchat/ray/chat.html" loading="lazy" scrolling="no" tabindex="-1" title="TruChat · Ray"></iframe></div>
+        <div class="mc-preview"><iframe src="https://www.yourcarguy.co.za" loading="lazy" scrolling="no" tabindex="-1" title="TruChat · Ray"></iframe></div>
         <div class="mc-head"><span class="mc-layer">AI</span><span class="mc-live"><span class="dot"></span>LIVE</span></div>
         <h3 class="mc-name">TruChat</h3>
         <p class="mc-outcome">A stock-aware assistant that qualifies leads at 2am, books test drives, and hands the hot ones to your team on WhatsApp. Answers the showroom phone too, when nobody can.</p>
@@ -718,12 +730,12 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
       </article>
 
       <article class="module-card reveal">
-        <div class="mc-preview pv-phone"><div class="phone-fr"><iframe src="https://trusaas-live.onrender.com" loading="lazy" scrolling="no" tabindex="-1" title="TruLive live"></iframe></div></div>
-        <div class="mc-head"><span class="mc-layer">Video</span><span class="mc-live"><span class="dot"></span>LIVE</span></div>
+        <div class="mc-preview pv-phone no-live-badge"><div class="phone-fr"><iframe src="https://trusaas-live.onrender.com" loading="lazy" scrolling="no" tabindex="-1" title="TruLive live"></iframe></div></div>
+        <div class="mc-head"><span class="mc-layer">Video</span><span class="mc-demo" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold);display:flex;align-items:center;gap:6px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);display:inline-block;"></span>BOOK DEMO</span></div>
         <h3 class="mc-name">TruLive</h3>
         <p class="mc-outcome">A salesperson with a phone becomes a showroom for whoever is watching. Works the other way too — the customer films their trade-in while you price it.</p>
         <ul class="mc-meta"><li>No app for the buyer, just a link</li><li>Buy / Reserve wired into the DMS</li><li>Written summary lands on the lead</li></ul>
-        <div class="mc-foot"><a class="mc-link" href="https://live.tru-saas.com" target="_blank" rel="noopener">See it live ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
+        <div class="mc-foot"><a class="mc-link" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I'd%20like%20a%20demo%20of%20TruLive" target="_blank" rel="noopener">Request a demo ↗</a><a class="mc-more" href="#book">How it fits →</a></div>
       </article>
 
     </div>
@@ -757,35 +769,8 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
         <div class="scene-caption"><span>Live UI · scroll to advance</span><span class="bar"><span class="bar-fill" data-fill="1"></span></span></div>
       </div>
       <div class="scene-stage">
-        <div class="dms">
-          <div class="dms-bar"><span></span><span></span><span></span><div class="url">premium.tru-saas.com / dashboard</div></div>
-          <div class="dms-body">
-            <div class="dms-side">
-              <div class="brand">TRUFLOW PREMIUM</div>
-              <a class="act">Overview</a>
-              <a>All Vehicles</a>
-              <a>Lead pipeline</a>
-              <a>Tasks</a>
-              <a>Finance &amp; Recon</a>
-              <a>Stock media</a>
-              <a>Team &amp; Users</a>
-            </div>
-            <div class="dms-main">
-              <div class="dms-h"><div class="t">Dashboard · Marc van der Merwe (Owner)</div><div class="btn-mini">+ NEW INVENTORY</div></div>
-              <div class="dms-kpis">
-                <div class="kpi" data-kpi="1"><div class="k">Active floor stock</div><div class="v">42 <span class="up">Ready</span></div></div>
-                <div class="kpi" data-kpi="2"><div class="k">Unresolved leads</div><div class="v">18 <span class="up">+5</span></div></div>
-                <div class="kpi" data-kpi="3"><div class="k">Units sold · cycle</div><div class="v">11 <span class="up">+3</span></div></div>
-              </div>
-              <div class="dms-list">
-                <div class="row" data-row="1"><div class="n">2023 Ford Ranger · Diesel · Auto</div><div class="p">R 685,000</div><div class="st hot">FLOOR</div></div>
-                <div class="row" data-row="2"><div class="n">2023 Toyota Hilux · Diesel · Auto</div><div class="p">R 612,000</div><div class="st hot">FLOOR</div></div>
-                <div class="row" data-row="3"><div class="n">2022 Volkswagen Golf · Petrol · Auto</div><div class="p">R 485,000</div><div class="st new">RECON</div></div>
-                <div class="row" data-row="4"><div class="n">2026 sS DDAS · Petrol · Auto</div><div class="p">R 24,995</div><div class="st wn">SOLD</div></div>
-                <div class="row" data-row="5"><div class="n">One-Tap End of Day Summary</div><div class="p">EOD</div><div class="st new">READY</div></div>
-              </div>
-            </div>
-          </div>
+        <div style="perspective:1200px;display:flex;align-items:center;justify-content:center">
+          <video src="assets/brand/truflow-demo.mp4" autoplay muted loop playsinline preload="metadata" style="width:100%;border-radius:16px;transform:rotateY(-3deg) rotateX(2deg);box-shadow:0 20px 60px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)"></video>
         </div>
       </div>
     </div>
@@ -1031,8 +1016,7 @@ button{font-family:inherit;cursor:pointer;background:none;border:0;color:inherit
       <h5>Live proof</h5>
       <ul>
         <li><a href="https://true-cars.co.za" target="_blank" rel="noopener">Tru-Cars demo</a></li>
-        <li><a href="https://premium.tru-saas.com" target="_blank" rel="noopener">Live DMS</a></li>
-        <li><a href="https://lens.tru-saas.com" target="_blank" rel="noopener">Live TruLens</a></li>
+        <li><a href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I'd%20like%20a%20demo%20of%20TruSaas" target="_blank" rel="noopener">Request a demo</a></li>
       </ul>
     </div>
     <div>
