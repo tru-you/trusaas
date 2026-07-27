@@ -125,6 +125,34 @@ const DATA_FILE = path.join(DATA_DIR, "data.json");
 const SEED_FILE = path.join(process.cwd(), "data.json");
 const AUTH_FILE = path.join(DATA_DIR, "auth.json");
 
+/** The dealership an untagged legacy row is understood to belong to.
+ *
+ *  Declared here, near the top, rather than beside the public-feed helpers where
+ *  it used to live: readState() references it, and readState() is called during
+ *  boot by the photo migration — far above the old declaration, which put it in
+ *  the temporal dead zone and threw before the server could start.
+ *
+ *  It is now only ever used to STAMP legacy rows once, in readState. Nothing
+ *  compares against it as a fallback any more; see the backfill there. */
+const DEFAULT_DEALERSHIP_ID = "d1";
+
+/** Collections whose rows belong to exactly one dealership.
+ *
+ *  Anything listed here is scoped on read and stamped on load, so a new
+ *  collection that holds dealer data has one place to be registered rather than
+ *  a scattering of filters to remember. */
+const TENANT_SCOPED_COLLECTIONS = [
+  "vehicles",
+  "leads",
+  "tasks",
+  "invoices",
+  "agreements",
+  "documents",
+  "expenses",
+  "communications",
+  "users",
+] as const;
+
 /* Photos live beside the state as files rather than inside it as base64.
    See photoStore.ts for why. Initialised here, after DATA_DIR is known and
    before the route below is registered — express.static resolves its root at
@@ -389,7 +417,7 @@ app.use(requireAuth);
 function scopeToDealer<T extends { dealershipId?: string }>(rows: T[], auth: any): T[] {
   if (!auth || auth.role === "admin") return rows;
   return (rows || []).filter(
-    (r) => (r.dealershipId || DEFAULT_DEALERSHIP_ID) === auth.dealershipId
+    (r) => r.dealershipId === auth.dealershipId
   );
 }
 
@@ -903,6 +931,31 @@ function readState(): DMSState {
          * was deliberately unpublished, because that one holds false. */
         if (typeof v.showOnWebsite !== "boolean") v.showOnWebsite = true;
       });
+
+      /* Every tenant-scoped row must name its dealership explicitly.
+       *
+       * Ten places compared `row.dealershipId || DEFAULT_DEALERSHIP_ID`, which
+       * made "no dealership" silently mean d1 — a real dealership with a live
+       * website, not a neutral bucket. That default is what let a capture file
+       * into another dealer's inventory, an orbit overwrite another dealer's
+       * car, and a website enquiry land in a pipeline its sender never chose.
+       *
+       * Stamping legacy rows here preserves exactly who they belong to today,
+       * and lets those comparisons drop the fallback: once every row carries a
+       * value, an absent one means the row belongs to nobody, and the honest
+       * result is that it is invisible rather than quietly reassigned. That is
+       * the failure a dealer can spot; the other one they never see.
+       */
+      for (const key of TENANT_SCOPED_COLLECTIONS) {
+        const rows = (parsed as any)[key];
+        if (!Array.isArray(rows)) continue;
+        for (const row of rows) {
+          if (row && typeof row === "object" && !row.dealershipId) {
+            row.dealershipId = DEFAULT_DEALERSHIP_ID;
+          }
+        }
+      }
+
       return parsed;
     }
   } catch (err) {
@@ -1300,7 +1353,7 @@ app.post("/api/inventory", (req, res) => {
  *  dealership could PUT or DELETE another dealership's stock by id alone. */
 function mayTouchVehicle(v: any, auth: any): boolean {
   if (!auth || auth.role === "admin") return true;
-  return (v?.dealershipId || DEFAULT_DEALERSHIP_ID) === auth.dealershipId;
+  return !!v?.dealershipId && v.dealershipId === auth.dealershipId;
 }
 
 app.put("/api/inventory/:id", (req: any, res) => {
@@ -1359,7 +1412,7 @@ app.delete("/api/inventory/:id", (req: any, res) => {
        carrying it, which is one dealer's deletion destroying another dealer's
        photos. */
     const ownerSlug = (state.dealerships || []).find(
-      (d: any) => d.id === (target.dealershipId || DEFAULT_DEALERSHIP_ID)
+      (d: any) => d.id === target.dealershipId
     )?.slug;
     fetch(`${TRULENS_URL}/api/sync/vehicle`, {
       method: "DELETE",
@@ -2174,7 +2227,7 @@ app.post("/api/sync/pull-all", async (req, res) => {
       const idx = state.vehicles.findIndex(
         (v: any) =>
           v.stockNumber === lensVehicle.stockNumber &&
-          (!wantId || (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantId)
+          (!wantId || v.dealershipId === wantId)
       );
       if (idx === -1) {
         results.push({ stockNumber: lensVehicle.stockNumber, status: "not_in_dms" });
@@ -2272,9 +2325,9 @@ app.post("/api/sync/push-photos", (req, res) => {
        for one dealer could find, and overwrite the photos of, another dealer's
        vehicle. Scope the search the same way the public feed scopes reads, so
        write and read agree on who owns an untagged row. */
-    const pushDealerId = dealerIdForSlug(dealerSlug) || DEFAULT_DEALERSHIP_ID;
+    const pushDealerId = dealerIdForSlug(dealerSlug)!;
     const ownedByPusher = (v: any) =>
-      (v.dealershipId || DEFAULT_DEALERSHIP_ID) === pushDealerId;
+      v.dealershipId === pushDealerId;
 
     let idx = -1;
     if (matchStock) {
@@ -2458,9 +2511,9 @@ app.post("/api/sync/web3d", (req, res) => {
     }
 
     const state = readState();
-    const pushDealerId = dealerIdForSlug(dealerSlug) || DEFAULT_DEALERSHIP_ID;
+    const pushDealerId = dealerIdForSlug(dealerSlug)!;
     const idx = state.vehicles.findIndex(
-      (v: any) => v.stockNumber === stockNumber && (v.dealershipId || DEFAULT_DEALERSHIP_ID) === pushDealerId
+      (v: any) => v.stockNumber === stockNumber && v.dealershipId === pushDealerId
     );
     if (idx === -1) return res.status(404).json({ error: `Vehicle ${stockNumber} not found` });
 
@@ -2580,8 +2633,6 @@ function dealerIdForSlug(slug: string, state?: any): string | undefined {
   if (!slug) return undefined;
   return dealerSlugMap(state)[slug];
 }
-
-const DEFAULT_DEALERSHIP_ID = "d1";
 
 /** Compute a 0-100 VIR condition score from damage findings.
  *  Starts at 100 (no damage) and deducts per finding by severity.
@@ -2737,7 +2788,7 @@ function buildPublicStock(state: any, dealerSlug: string, source: string, origin
   const wantedId = dealerIdForSlug(dealerSlug, state);
   const rawVehicles = state.vehicles || [];
   const scoped = wantedId
-    ? rawVehicles.filter((v: any) => (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId)
+    ? rawVehicles.filter((v: any) => v.dealershipId === wantedId)
     : [];
   const vehicles = scoped
     .map((v: any) => toPublicVehicle(v, source, origin))
@@ -2790,7 +2841,7 @@ app.get("/api/feed/vehicle/:stockNumber", (req, res) => {
 
   const v = state.vehicles.find(
     (v: any) =>
-      (v.dealershipId || DEFAULT_DEALERSHIP_ID) === wantedId &&
+      v.dealershipId === wantedId &&
       (v.stockNumber === req.params.stockNumber || v.id === req.params.stockNumber)
   );
   if (!v) return res.status(404).json({ error: "Vehicle not found" });
