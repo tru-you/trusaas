@@ -753,9 +753,32 @@ export default function App() {
       ]
     },
     {
+      /* Built, backed by real server routes, and previously unreachable — no nav
+         entry pointed at any of them. Invoices and agreements each have full
+         GET/POST/PUT routes behind them (including pay and sign); the repayment
+         calculator is self-contained arithmetic seeded from real stock.
+
+         Two neighbours are deliberately still not here. "analytics" reports
+         12,847 monthly page views and 8,432 filter views as hard-coded literals,
+         and derives its conversion rate by dividing the real lead count by that
+         invented 8,432 — a made-up denominator presented as a measurement.
+         "scoring" ranks leads by digitalScore, which is assigned
+         Math.random() * 41 + 50 at creation, so "hot targets · high purchase
+         velocity" is a random number wearing a label. Publishing either to a
+         dealer would be inventing facts about their business. They need real
+         inputs before they are worth a menu entry. */
+      category: "Deals & Finance",
+      items: [
+        { id: "invoices", label: "Invoices", icon: FileSpreadsheet },
+        { id: "agreements", label: "Agreements", icon: FileSignature },
+        { id: "payment", label: "Repayment calculator", icon: Calculator },
+      ]
+    },
+    {
       category: "Media & Web",
       items: [
         { id: "media_web", label: "Stock media", icon: Image },
+        { id: "integration", label: "WordPress sync", icon: Code },
       ]
     },
     {
@@ -775,11 +798,13 @@ export default function App() {
        place in the app where that can be done at all. */
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web'].includes(item.id)
+        ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web',
+         'invoices', 'agreements', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings'].includes(item.id)
+        ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings',
+         'invoices', 'agreements', 'payment', 'integration'].includes(item.id)
       );
     }
     return { ...group, items };
