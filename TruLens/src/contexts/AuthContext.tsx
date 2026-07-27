@@ -98,7 +98,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('trulens_dealer_pinned');
     }
 
-    enterDemoMode();
+    localStorage.setItem(DEMO_KEY, '1');
+    setIsDemo(false);
+    setUser(createDemoUser());
+    setLoading(false);
   };
 
   const signOut = async () => {

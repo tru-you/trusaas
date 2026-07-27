@@ -1547,9 +1547,11 @@ export default function InventoryList({
                 <p className="text-[13px] text-neutral-400 leading-relaxed">
                   {isDemo
                     ? 'Signed in as demo inspector (offline). Log out returns to the login screen.'
-                    : user?.email
-                      ? `Signed in as ${user.email}`
-                      : 'Signed in'}
+                    : localStorage.getItem('trulens_device_token')
+                      ? `Signed in · ${localStorage.getItem('trulens_dealer_slug') || 'dealer device'}`
+                      : user?.email
+                        ? `Signed in as ${user.email}`
+                        : 'Signed in'}
                 </p>
                 <button
                   type="button"
