@@ -405,14 +405,7 @@ footer::after{content:"";position:absolute;bottom:0;left:0;right:0;height:200px;
             <p style="font-size:13.5px;color:var(--grey-dark);margin-top:5px;max-width:34ch">Independently inspected across 128 checkpoints. Findings are tagged on the Tru3D orbit above — same package format as TruLens export.</p>
           </div>
         </div>
-        <div class="vir-checks">
-          <div class="vir-check ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>Full service history</div>
-          <div class="vir-check ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>No accident structural damage</div>
-          <div class="vir-check ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>Cambelt / chain verified</div>
-          <div class="vir-check ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>Tyres 70%+ tread</div>
-          <div class="vir-check ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>Diagnostics: 0 fault codes</div>
-          <div class="vir-check warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg>Minor cosmetic marks (below)</div>
-        </div>
+        <div class="vir-checks" id="virChecks"></div>
         <div class="dmg-list" id="dmgList"></div>
 
         <!-- TruVIR · TruLens AI Damage Detection -->
@@ -564,12 +557,12 @@ footer::after{content:"";position:absolute;bottom:0;left:0;right:0;height:200px;
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=12"></script>
-<script src="assets/js/stock-bridge.js?v=1"></script>
+<script src="assets/js/data.js?v=13"></script>
+<script src="assets/js/stock-bridge.js?v=2"></script>
 <script src="assets/js/web3d-mock.js?v=1"></script>
 <script src="assets/js/products.js?v=1"></script>
 <script src="assets/js/site-chrome.js?v=15"></script>
-<script src="assets/js/site.js?v=14"></script>
+<script src="assets/js/site.js?v=15"></script>
 <script>
 const id = new URLSearchParams(location.search).get('id') || 'porsche-cayenne-s-19';
 const v = TCSA.byId(id) || TCSA.vehicles[0];
@@ -605,11 +598,9 @@ const v = TCSA.byId(id) || TCSA.vehicles[0];
 
 
 /* ---- TruSaaS Tru3D (replaces legacy Tru3D orbit) ---- */
-const dmgData=(v.vir>=96)
-  ?[{t:'Windscreen stone chip',n:'5mm chip upper passenger side. Repairable.',sev:'minor'}]
-  :(v.vir>=93)
-  ?[{t:'Front bumper scuff',n:'Light scuff from parking. Buffs out on detail.',sev:'minor'},{t:'Rear alloy kerb rash',n:'Minor kerb mark on left-rear alloy. Cosmetic.',sev:'minor'}]
-  :[{t:'Front bumper scuff',n:'Noticeable scuff, front-left. Quoted R850 to respray.',sev:'note'},{t:'Windscreen chip',n:'Small chip, top corner. Repairable.',sev:'minor'},{t:'Rear alloy kerb rash',n:'Kerb mark on left-rear alloy. Cosmetic.',sev:'minor'}];
+const dmgData = (v.damage && v.damage.length)
+  ? v.damage.map(function(d){ return {t:d.title||d.t||'Noted item', n:d.note||d.n||'', sev:d.severity||d.sev||'minor'}; })
+  : [];
 
 (function mountWeb3D(){
   const root = document.getElementById('web3dMount');
@@ -634,21 +625,18 @@ document.getElementById('vtTitle').textContent=`${v.year} ${v.make} ${v.model}`.
 document.getElementById('vtOdo').textContent=`Odometer: ${v.km.toLocaleString('en-ZA')} km`;
 document.getElementById('specHead').textContent=`Specifications of this ${v.make}`;
 const bodyName={suv:'SUV',bakkie:'Bakkie',hatch:'Hatchback',sedan:'Sedan',coupe:'Coupé'}[v.body];
-const stock='#'+(4000+Math.floor((v.id.length*37)%2000));
-document.getElementById('specCol1').innerHTML=[['Body Style',bodyName],['Odometer',v.km.toLocaleString('en-ZA')+' km'],['Transmission',v.trans],['Stock #',stock]].map(s=>`<div class="vspec"><span class="l">${s[0]}</span><span class="v">${s[1]}</span></div>`).join('');
+const stock=v.stockNumber||'—';
+document.getElementById('specCol1').innerHTML=[['Body Style',bodyName],['Odometer',v.km?v.km.toLocaleString('en-ZA')+' km':'—'],['Transmission',v.trans||'—'],['Stock #',stock]].map(s=>`<div class="vspec"><span class="l">${s[0]}</span><span class="v">${s[1]}</span></div>`).join('');
 document.getElementById('specCol2').innerHTML=[['Fuel',v.fuel],['Power',v.power||'—'],['Drive Type',v.drive||'—'],['Colour',v.colour]].map(s=>`<div class="vspec"><span class="l">${s[0]}</span><span class="v">${s[1]}</span></div>`).join('');
 // VIN + barcode
-const vinChars='ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
-let seed=0; for(const ch of v.id) seed+=ch.charCodeAt(0);
-function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;}
-let vin='';for(let i=0;i<17;i++)vin+=vinChars[Math.floor(rnd()*vinChars.length)];
-document.getElementById('vin').textContent='VIN '+vin;
-let bx='',x=2;for(let i=0;i<40;i++){const w=1+Math.floor(rnd()*3);if(i%2===0)bx+=`<rect x="${x}" y="2" width="${w}" height="34" fill="#16222e"/>`;x+=w+ (i%2===0?1:1);}document.getElementById('barcode').innerHTML=bx;
+const vin=v.vin||'';
+document.getElementById('vin').textContent=vin?'VIN '+vin:'';
+if(vin){let seed=0;for(const ch of vin)seed+=ch.charCodeAt(0);function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;}let bx='',x=2;for(let i=0;i<40;i++){const w=1+Math.floor(rnd()*3);if(i%2===0)bx+=`<rect x="${x}" y="2" width="${w}" height="34" fill="#16222e"/>`;x+=w+1;}document.getElementById('barcode').innerHTML=bx;}else{document.getElementById('barcode').innerHTML='';}
 
 document.getElementById('vTitle').textContent=`${v.year} ${v.make} ${v.model}`;
 document.getElementById('vVariant').textContent=`${v.variant} · ${v.colour}`;
 document.getElementById('vPrice').textContent=TCSA.fmtPrice(v.price);
-document.getElementById('buyBadges').innerHTML=(v.badges||[]).map(b=>`<span class="vbadge ${b.c}">${b.t}</span>`).join('')+(v.premium?'<span class="vbadge gold">Premium Select</span>':'');
+document.getElementById('buyBadges').innerHTML=(v.badges||[]).map(b=>`<span class="vbadge ${b.c}">${b.t}</span>`).join('')+(v.category==='select'?'<span class="vbadge gold">Premium Select</span>':v.category==='performance'?'<span class="vbadge perf">Performance</span>':'');
 document.getElementById('vDelta').innerHTML=delta.below?`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>${TCSA.fmtPrice(delta.amount)} below TruPrice`:`Fair TruPrice`;
 if(!delta.below) document.getElementById('vDelta').style.cssText='color:var(--grey-dark);background:var(--bone);border-color:var(--line)';
 document.getElementById('pbFill').style.width=Math.max(8,Math.min(96,(v.price/(v.truecarPrice*1.15))*100))+'%';
@@ -694,10 +682,51 @@ if(v.range)specs.push(['Range',v.range]);
 document.getElementById('specGrid').innerHTML=specs.map(s=>`<div class="spec"><div class="l">${s[0]}</div><div class="v">${s[1]}</div></div>`).join('');
 document.getElementById('waBtn').href=`https://wa.me/27620502091?text=${encodeURIComponent("Hi True-Cars SA, I'm interested in the "+v.year+' '+v.make+' '+v.model+' ('+TCSA.fmtPrice(v.price)+')')}`;
 
-(function(){const arc=document.getElementById('scoreArc'),circ=264;setTimeout(()=>{arc.style.transition='stroke-dashoffset 1.4s var(--ease)';arc.style.strokeDashoffset=circ*(1-v.vir/100);},300);
-  let n=0;const t=setInterval(()=>{n+=2;if(n>=v.vir){n=v.vir;clearInterval(t);}document.getElementById('scoreNum').textContent=n;},22);
-  document.getElementById('scoreVerdict').textContent=v.vir>=95?'Excellent condition':v.vir>=90?'Very good condition':'Good condition';})();
-document.getElementById('dmgList').innerHTML=dmgData.map((d,i)=>`<div class="dmg ${d.sev==='note'?'note':''}"><div class="di">${i+1}</div><div><b>${d.t}</b><p>${d.n}</p></div></div>`).join('')||'<p style="font-size:13.5px;color:var(--grey-dark)">No cosmetic defects recorded. Exceptional example.</p>';
+(function(){
+  const score = v.vir || 0;
+  const arc=document.getElementById('scoreArc'),circ=264;
+  if(score){
+    setTimeout(()=>{arc.style.transition='stroke-dashoffset 1.4s var(--ease)';arc.style.strokeDashoffset=circ*(1-score/100);},300);
+    let n=0;const t=setInterval(()=>{n+=2;if(n>=score){n=score;clearInterval(t);}document.getElementById('scoreNum').textContent=n;},22);
+  } else { document.getElementById('scoreNum').textContent='—'; }
+  document.getElementById('scoreVerdict').textContent=
+    score>=95?'Excellent condition':score>=85?'Very good condition':score>=70?'Good condition':score>0?'Fair — some items noted':'Not yet inspected';
+
+  /* VIR checks — rendered from virReport sections (damage-based) */
+  const okSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
+  const warnSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg>';
+  const checks = document.getElementById('virChecks');
+  if(v.virReport && v.virReport.length){
+    checks.innerHTML = v.virReport.map(function(r){
+      const ok = r.status === 'Pass';
+      return '<div class="vir-check '+(ok?'ok':'warn')+'">'+(ok?okSvg:warnSvg)+r.section+' — '+(ok?'Clear':'Attention ('+r.score+'/100)')+'</div>';
+    }).join('');
+  } else if(score >= 95){
+    checks.innerHTML = '<div class="vir-check ok">'+okSvg+'No damage findings recorded — exceptional condition</div>';
+  } else {
+    checks.innerHTML = '<div class="vir-check ok">'+okSvg+'Inspection pending — report available after TruLens capture</div>';
+  }
+})();
+document.getElementById('dmgList').innerHTML=dmgData.map((d,i)=>`<div class="dmg ${d.sev==='note'||d.sev>=3?'note':''}"><div class="di">${i+1}</div><div><b>${d.t}</b><p>${d.n}</p></div></div>`).join('')||'<p style="font-size:13.5px;color:var(--grey-dark)">No cosmetic defects recorded.</p>';
+
+/* AI damage stats from real data */
+(function(){
+  var damage = v.damage || [];
+  var panels = new Set(); damage.forEach(function(d){ panels.add(d.panel || d.slotId || 'General'); });
+  var totalPanels = 12;
+  var clearPanels = totalPanels - panels.size;
+  document.getElementById('tchekPanels').textContent = clearPanels + ' / ' + totalPanels;
+  var sevLabels = {1:'cosmetic',2:'minor',3:'moderate',4:'major',5:'critical'};
+  if(damage.length === 0){
+    document.getElementById('tchekFindings').textContent = 'None';
+    document.getElementById('tchekRepair').textContent = 'R 0';
+  } else {
+    var maxSev = Math.max.apply(null, damage.map(function(d){return d.severity||1;}));
+    document.getElementById('tchekFindings').textContent = damage.length + ' ' + (sevLabels[maxSev]||'noted');
+    var repairEst = damage.reduce(function(s,d){ return s + ({1:0,2:350,3:850,4:2500,5:6000}[d.severity]||500); }, 0);
+    document.getElementById('tchekRepair').textContent = 'R ' + repairEst.toLocaleString('en-ZA');
+  }
+})();
 
 /* watch/favourite toggles */
 document.getElementById('btnWatch').addEventListener('click',function(){this.classList.toggle('on');TCSA.toast(this.classList.contains('on')?'Added to your Watch list — we\'ll alert you on price drops.':'Removed from Watch list.');});

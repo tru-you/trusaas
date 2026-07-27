@@ -99,6 +99,8 @@
         <option value="">Any fuel</option>
         <option value="Petrol">Petrol</option>
         <option value="Diesel">Diesel</option>
+        <option value="Electric">Electric</option>
+        <option value="Hybrid">Hybrid</option>
       </select>
       <select id="fTrans" onchange="renderGrid()">
         <option value="">Any gearbox</option>
@@ -160,11 +162,11 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=12"></script>
+<script src="assets/js/data.js?v=13"></script>
 <script src="assets/js/products.js?v=1"></script>
-<script src="assets/js/stock-bridge.js?v=1"></script>
+<script src="assets/js/stock-bridge.js?v=2"></script>
 <script src="assets/js/site-chrome.js?v=15"></script>
-<script src="assets/js/site.js?v=14"></script>
+<script src="assets/js/site.js?v=15"></script>
 <script>if(TCSA.injectTrustRow) TCSA.injectTrustRow(document.getElementById('certTrust'));</script>
 <script>
 function renderGrid(){
@@ -174,10 +176,7 @@ function renderGrid(){
   var trans = document.getElementById('fTrans').value;
   var sort = document.getElementById('fSort').value;
   var list = TCSA.vehicles.filter(function(v){
-    if(v.premium) return false;
-    if(v.fuel === 'Electric') return false;
-    if(!v.certUsed) return false;
-    if(q && !(v.year+' '+v.make+' '+v.model+' '+v.variant+' '+v.colour).toLowerCase().includes(q)) return false;
+    if(q && !(v.year+' '+v.make+' '+v.model+' '+v.variant+' '+(v.colour||'')).toLowerCase().includes(q)) return false;
     if(body && v.body !== body) return false;
     if(fuel && v.fuel !== fuel) return false;
     if(trans && v.trans !== trans) return false;
@@ -205,7 +204,7 @@ function clearFilters(){
   renderGrid();
 }
 function refreshCounts(){
-  document.getElementById('lvsCount').textContent = TCSA.vehicles.filter(function(v){ return !v.premium && v.fuel !== 'Electric' && v.certUsed && v.lvs; }).length;
+  document.getElementById('lvsCount').textContent = TCSA.vehicles.filter(function(v){ return v.lvs; }).length;
   renderGrid();
 }
 document.addEventListener('DOMContentLoaded', function(){

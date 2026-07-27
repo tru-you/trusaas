@@ -25,16 +25,7 @@ TCSA.leads = {
     localStorage.setItem(this.KEY, JSON.stringify(leads));
   },
   clear(){ localStorage.removeItem(this.KEY); },
-  seedIfEmpty(){
-    if(this.all().length) return;
-    const seed = [
-      {name:'Thabo Mokoena', phone:'+27 82 551 0032', source:'Trade-in', status:'Qualified', intent:'Trade 2019 Polo → Golf GTI', value:'R680k', created:new Date(Date.now()-36e5*4).toISOString(), id:'LSEED1'},
-      {name:'Chef Williams', phone:'+27 83 220 7781', source:'Finance', status:'Contacted', intent:'Pre-approval — Hilux Legend RS', value:'R750k', created:new Date(Date.now()-36e5*26).toISOString(), id:'LSEED2'},
-      {name:'Aisha Patel', phone:'+27 71 908 4410', source:'Chatbot', status:'New', intent:'BYD Seal availability + LVS booking', value:'R800k', created:new Date(Date.now()-36e5*2).toISOString(), id:'LSEED3'},
-      {name:'Pieter van Wyk', phone:'+27 84 665 1120', source:'Email', status:'Won', intent:'G 63 AMG — Premium Select', value:'R3.9m', created:new Date(Date.now()-36e5*70).toISOString(), id:'LSEED4'},
-    ];
-    localStorage.setItem(this.KEY, JSON.stringify(seed));
-  }
+  seedIfEmpty(){ /* no demo seeds — real leads only */ }
 };
 
 /* ---------------- Toast ---------------- */

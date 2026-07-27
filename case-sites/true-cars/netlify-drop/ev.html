@@ -126,9 +126,10 @@
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=12"></script>
+<script src="assets/js/data.js?v=13"></script>
+<script src="assets/js/stock-bridge.js?v=2"></script>
 <script src="assets/js/site-chrome.js?v=15"></script>
-<script src="assets/js/site.js?v=14"></script>
+<script src="assets/js/site.js?v=15"></script>
 <script>
 function renderGrid(){
   var sort = document.getElementById('fSort').value;
@@ -137,17 +138,19 @@ function renderGrid(){
     priceAsc:function(a,b){return a.price-b.price;},
     priceDesc:function(a,b){return b.price-a.price;},
     kmAsc:function(a,b){return a.km-b.km;},
-    vir:function(a,b){return b.vir-a.vir;}
+    vir:function(a,b){return (b.vir||0)-(a.vir||0);}
   }[sort];
   list.sort(cmp);
   document.getElementById('rc').textContent = list.length;
   document.getElementById('grid').innerHTML = list.map(TCSA.vcard).join('');
 }
-document.addEventListener('DOMContentLoaded', function(){
+function refreshEv(){
   var count = TCSA.vehicles.filter(function(v){ return v.fuel === 'Electric' || v.fuel === 'Hybrid'; }).length;
   document.getElementById('evCount').textContent = count;
   renderGrid();
-});
+}
+document.addEventListener('DOMContentLoaded', refreshEv);
+window.addEventListener('tcsa:stock', refreshEv);
 </script>
 </body>
 </html>
