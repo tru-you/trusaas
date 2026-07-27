@@ -94,7 +94,7 @@ import AmortizationCalc from "./components/AmortizationCalc";
 import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
 import LoginSplash from "./components/LoginSplash";
-import { hasValidSession, clearSession, getAccount, SESSION_EXPIRED_EVENT } from "./lib/session";
+import { hasValidSession, clearSession, getAccount, authFetch, SESSION_EXPIRED_EVENT } from "./lib/session";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
   PRODUCT_NAME,
@@ -289,6 +289,8 @@ function Segmented<T extends string>({ value, onChange, options }: {
 export default function App() {
   const [state, setState] = useState<DMSState | null>(null);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
+  const [backingUp, setBackingUp] = useState(false);
+  const [lastBackupMb, setLastBackupMb] = useState<number | null>(null);
   // Lifted out of ChatWidget so the dashboard can open the assistant directly —
   // the floating bubble is easy to miss on a desk monitor.
   const [assistOpen, setAssistOpen] = useState(false);
@@ -3273,6 +3275,85 @@ export default function App() {
                 {PRODUCT_NAME} — stock, CRM, media hub, full finance & website embeds
               </p>
             </div>
+
+            {/* Backup. Admin only, and the server enforces that independently.
+                The mounted disk holds the only copy of every dealer's photos,
+                and taking one previously meant the Render shell or a pasted
+                console snippet — the endpoint cannot be reached by typing its
+                URL, because auth is a bearer token from localStorage rather
+                than a cookie, so a plain navigation arrives unauthenticated. */}
+            {getAccount()?.role === "admin" && (
+              <div className="card border-[color:var(--cyan-soft)]">
+                <div className="card-header border-b border-white/5 px-5 py-3">
+                  <h3 className="font-bold text-[16px] text-[color:var(--white)] flex items-center gap-2">
+                    <Download size={14} className="text-[color:var(--cyan-bright)]" /> Backup
+                  </h3>
+                </div>
+                <div className="card-body p-5 flex flex-col gap-3">
+                  <p className="text-[13px] text-[rgba(232,234,230,0.72)] max-w-2xl">
+                    Downloads the entire DMS — every dealership, vehicle, photo, lead and
+                    invoice — as a dated JSON file. The disk on the server holds the only
+                    copy, so keep a recent one somewhere else.
+                  </p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <button
+                      type="button"
+                      disabled={backingUp}
+                      onClick={async () => {
+                        setBackingUp(true);
+                        try {
+                          const res = await authFetch("/api/admin/backup", { cache: "no-store" });
+                          if (!res.ok) {
+                            const msg = res.status === 403
+                              ? "Only the master admin can download a backup."
+                              : `Backup failed (${res.status}).`;
+                            addNotification("Backup failed", msg, "warning");
+                            return;
+                          }
+                          const blob = await res.blob();
+                          /* Surface the size. A backup taken while signed in as a
+                             dealership used to come back as that dealer's slice with
+                             nothing to say it was partial, and a partial backup that
+                             looks complete is worse than none. */
+                          const mb = blob.size / 1024 / 1024;
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `truflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                          setLastBackupMb(mb);
+                          addNotification(
+                            "Backup downloaded",
+                            `${mb.toFixed(1)} MB saved. Keep it somewhere off this server.`,
+                            "info"
+                          );
+                        } catch (err: any) {
+                          addNotification("Backup failed", err?.message || "Network error", "warning");
+                        } finally {
+                          setBackingUp(false);
+                        }
+                      }}
+                      className="btn btn-primary"
+                    >
+                      <Download size={14} /> {backingUp ? "Preparing…" : "Download full backup"}
+                    </button>
+                    {lastBackupMb !== null && (
+                      <span className="text-[13px] font-mono text-[rgba(232,234,230,0.72)]">
+                        last: {lastBackupMb.toFixed(1)} MB
+                        {lastBackupMb < 1 && (
+                          <b className="text-[color:var(--warning)] ml-2">
+                            — suspiciously small, check you are master admin
+                          </b>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Onboarding a dealership. Admin only — the server enforces it too,
                 so this gate only avoids rendering a form that would 403. */}
