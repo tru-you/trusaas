@@ -1458,9 +1458,16 @@ const WA = "27618759389";
    throughout, because those are useful with no stock at all. */
 const MIN_LIVE_STOCK = 5;
 const DEALER_SLUGS = ["cars-on-caledon"];
+/* flow. and premium. are one Render service behind two custom domains — Flow
+   Lite, which used to own the flow. hostname, is retired. Listing both bought a
+   second request to the identical app rather than a fallback. TruLens is the
+   only genuinely independent source, and it speaks the same public-stock
+   contract, so a yard running the capture app without the DMS still fills this
+   page. */
 const STOCK_APIS = [
-  "https://flow.tru-saas.com/api/public/stock?dealer=",
-  "https://premium.tru-saas.com/api/public/stock?dealer="
+  "https://premium.tru-saas.com/api/public/stock?dealer=",
+  "https://trusaas-premium.onrender.com/api/public/stock?dealer=",
+  "https://lens.tru-saas.com/api/public/stock?dealer="
 ];
 
 /* ── Fallback stock — shown only until live DMS stock loads. ──

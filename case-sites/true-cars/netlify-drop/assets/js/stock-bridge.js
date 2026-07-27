@@ -7,11 +7,29 @@
   window.TCSA = window.TCSA || {};
 
   TCSA.TRUSAAS = {
-    dealer: "truecars",
+    /* "true-cars", not "truecars".
+       Both exist as dealerships on the instance, and the stock is filed under
+       the hyphenated one — so this asked for a slug that owns no vehicles, got
+       an empty list from every API in the chain, and rendered an empty site
+       while the cars sat published and correct in the DMS the whole time. */
+    dealer: "true-cars",
+    /* TruFlow first, TruLens last.
+       Both speak the same public-stock contract, so this is a genuine
+       fallback rather than a guess: a dealer running the full DMS is served
+       from it, and a dealer who only uses the capture app and a website is
+       served straight from TruLens. An empty result falls through to the next
+       one, so a dealer can move between the two without touching this file.
+
+       flow.tru-saas.com is deliberately absent: it is a custom domain on the
+       same Render service as premium, not a separate deployment, so listing it
+       bought a second round-trip to the identical app rather than a fallback.
+       The onrender.com host is the same service too, but reaching it by its
+       platform name is what survives a custom-domain DNS or certificate
+       failure. TruLens is the only genuinely independent source here. */
     apis: [
       "https://premium.tru-saas.com/api/public/stock",
-      "https://flow.tru-saas.com/api/public/stock",
       "https://trusaas-premium.onrender.com/api/public/stock",
+      "https://lens.tru-saas.com/api/public/stock",
     ],
     mergeMode: "live-only",
   };
@@ -88,12 +106,17 @@
       vir: virScore,
       virReport: Array.isArray(v.virReport) ? v.virReport : null,
       damage: Array.isArray(v.damage) ? v.damage : null,
+      /* TruFlow embeds the orbit frames in the feed; TruLens serves them from
+         its own endpoint and sends a URL, because the frames are a large set
+         of base64 stills and this is a list response. Carry whichever arrived
+         and let the detail view fetch the URL form on demand. */
       web3d: v.web3d || null,
+      web3dUrl: v.web3dUrl || null,
       premium: category === "select",
       certUsed: true,
       tags: (function () {
         var t = [];
-        if (v.web3d && v.web3d.frames && v.web3d.frames.length) t.push("360");
+        if ((v.web3d && v.web3d.frames && v.web3d.frames.length) || v.web3dUrl) t.push("360");
         if (images.length) t.push("Tru3D");
         if (virScore) t.push("VIR");
         return t;

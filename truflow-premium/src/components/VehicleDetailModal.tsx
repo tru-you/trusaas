@@ -75,7 +75,32 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     return "R " + Math.round(num).toLocaleString("en-ZA");
   };
 
-  const photoCount = vehicle.images?.length || 0;
+  /* Every array a TruLens capture fills, not just `images`.
+     mapAutoLensPhotos files the eight exterior slots into `images` and sorts
+     everything else — interior, engine, detail and document shots — into
+     extrasPhotos/damagePhotos/vinPhotos/serviceBookPhotos. This modal only
+     ever read `images`, so a 22-photo capture rendered exactly 8 photos and a
+     re-export that added interior shots looked like it had silently failed to
+     sync. Each entry remembers which array it came from, so deleting one still
+     targets the right index in the right field. */
+  const GALLERY_FIELDS = [
+    "images",
+    "extrasPhotos",
+    "damagePhotos",
+    "vinPhotos",
+    "serviceBookPhotos",
+  ] as const;
+
+  const galleryPhotos = GALLERY_FIELDS.flatMap((field) =>
+    (((vehicle as any)[field] as string[] | undefined) ?? [])
+      // Mapped before filtering so `index` stays the position in the source
+      // array — that is what a delete has to write back against.
+      .map((src, index) => ({ src, field, index }))
+      // A walkaround is a data:video/… URI and cannot render in an <img>.
+      .filter((p) => typeof p.src === "string" && p.src && !/^data:video\//i.test(p.src))
+  );
+
+  const photoCount = galleryPhotos.length;
   const webReadyHint =
     photoCount >= 6
       ? { label: "Gallery ready for web", color: "var(--cyan)" }
@@ -120,18 +145,24 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   };
 
   const handleDeletePhoto = async (indexToDelete: number) => {
+    // The gallery is a flattened view over several arrays, so a position in it
+    // says nothing about where the photo actually lives. Resolve it first.
+    const target = galleryPhotos[indexToDelete];
+    if (!target) return;
     if (!confirm("Remove this image from showroom listing?")) return;
-    const existingImages = vehicle.images || [];
-    const updatedImages = existingImages.filter((_, i) => i !== indexToDelete);
+    const source = ((vehicle as any)[target.field] as string[] | undefined) || [];
     await onUpdateVehicle(vehicle.id, {
-      images: updatedImages
-    });
+      [target.field]: source.filter((_, i) => i !== target.index),
+    } as any);
     setActiveImageIndex(Math.max(0, indexToDelete - 1));
   };
 
   // No stand-in photo. This fell back to a stock image of an unrelated car,
   // which the public feed then served as the vehicle's hero shot.
-  const imagesList = vehicle.images?.length ? vehicle.images : [];
+  const imagesList = galleryPhotos.map((p) => p.src);
+  // Deleting the last photo, or a shorter capture replacing a longer one,
+  // leaves the index past the end — which rendered an empty frame.
+  const safeIndex = Math.min(activeImageIndex, Math.max(0, imagesList.length - 1));
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-4 overflow-y-auto">
@@ -163,13 +194,13 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
         <div className="md:w-3/5 bg-black flex flex-col justify-between relative p-4 group">
           {/* Top Info Banner */}
           <div className="absolute top-4 left-4 z-10 bg-black/60 px-3 py-2 rounded-lg border border-white/10 backdrop-blur-md text-[13px] font-mono">
-            {activeImageIndex + 1} of {imagesList.length} Photos
+            {imagesList.length ? safeIndex + 1 : 0} of {imagesList.length} Photos
           </div>
 
           {/* Delete Action button if custom image */}
-          {vehicle.images && vehicle.images.length > 0 && (
+          {imagesList.length > 0 && (
             <button
-              onClick={() => handleDeletePhoto(activeImageIndex)}
+              onClick={() => handleDeletePhoto(safeIndex)}
               className="absolute top-4 right-4 z-10 bg-[color:var(--glass)] hover:bg-[color:var(--ink-2)] text-[color:var(--white)] p-2 rounded-lg transition-all cursor-pointer shadow-md"
               title="Delete Photo"
             >
@@ -180,7 +211,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           {/* Core Display frame */}
           <div className="flex-1 flex items-center justify-center min-h-[300px] max-h-[480px]">
             <img
-              src={imagesList[activeImageIndex]}
+              src={imagesList[safeIndex]}
               alt={`${vehicle.make} ${vehicle.model}`}
               className="max-h-full max-w-full object-contain rounded-lg shadow-lg"
             />
@@ -190,13 +221,13 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           {imagesList.length > 1 && (
             <>
               <button
-                onClick={() => setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : imagesList.length - 1))}
+                onClick={() => setActiveImageIndex(safeIndex > 0 ? safeIndex - 1 : imagesList.length - 1)}
                 className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/80 rounded-full border border-white/10 text-[color:var(--white)] transition-all cursor-pointer"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
-                onClick={() => setActiveImageIndex((prev) => (prev < imagesList.length - 1 ? prev + 1 : 0))}
+                onClick={() => setActiveImageIndex(safeIndex < imagesList.length - 1 ? safeIndex + 1 : 0)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/80 rounded-full border border-white/10 text-[color:var(--white)] transition-all cursor-pointer"
               >
                 <ChevronRight size={16} />
@@ -211,7 +242,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 key={idx}
                 onClick={() => setActiveImageIndex(idx)}
                 className={`w-16 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
-                  idx === activeImageIndex ? "border-[color:var(--cyan)]" : "border-transparent opacity-60 hover:opacity-100"
+                  idx === safeIndex ? "border-[color:var(--cyan)]" : "border-transparent opacity-60 hover:opacity-100"
                 }`}
               >
                 <img src={img} alt="Thumb" className="w-full h-full object-cover" />

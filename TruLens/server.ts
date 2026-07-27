@@ -488,6 +488,56 @@ app.use((req, res, next) => {
 });
 
 /** TruLens-only public stock — for dealers without DMS (or as photo-first feed) */
+/* ── VIR, computed the same way TruFlow computes it ──────────────
+ *
+ * A dealer site can be pointed at either feed — TruLens direct, or TruFlow —
+ * and the same car has to report the same score either way, or switching the
+ * source silently rewrites every vehicle's condition rating.
+ *
+ * Condition comes from confirmed damage findings, never from the photo-quality
+ * scores in v.quality: quality is how well the shot was taken, condition is
+ * what the shot shows. Keep in step with computeVirFromDamage / buildVirReport
+ * in truflow-premium/server.ts.
+ */
+function flattenDamageFindings(v: any) {
+  const bySlot = v?.damageFindings || {};
+  return Object.entries(bySlot).flatMap(([slotId, list]: [string, any]) =>
+    (Array.isArray(list) ? list : [])
+      // An AI suggestion starts confirmed:false and has to be accepted by a
+      // person before it can reach a buyer-facing report.
+      .filter((f: any) => f && f.confirmed !== false)
+      .map((f: any) => ({
+        slotId,
+        panel: f.panel,
+        type: f.damageType,
+        severity: f.severity,
+        note: f.note,
+        x: f.x,
+        y: f.y,
+      }))
+  );
+}
+
+function computeVirFromDamage(damage: { severity: number }[]): number {
+  if (!damage || !damage.length) return 100;
+  const penalties: Record<number, number> = { 1: 2, 2: 5, 3: 10, 4: 18, 5: 30 };
+  const total = damage.reduce((s, d) => s + (penalties[d.severity] ?? 5), 0);
+  return Math.max(0, Math.round(100 - total));
+}
+
+function buildVirReport(damage: { panel?: string; severity: number }[]) {
+  const panels = new Map<string, { severity: number }[]>();
+  for (const d of damage) {
+    const key = d.panel || 'General';
+    if (!panels.has(key)) panels.set(key, []);
+    panels.get(key)!.push(d);
+  }
+  return Array.from(panels, ([panel, findings]) => {
+    const score = computeVirFromDamage(findings);
+    return { section: panel, score, status: score >= 80 ? 'Pass' : 'Attention' };
+  });
+}
+
 function toPublicFromLens(v: any) {
   const photos = v.photos && typeof v.photos === 'object' ? v.photos : {};
   // Prefer exterior hero order for website gallery
@@ -524,6 +574,11 @@ function toPublicFromLens(v: any) {
 
   if (!canShow) return null;
 
+  /* Same fields, same names, same meanings as toPublicVehicle in
+     truflow-premium/server.ts — a dealer site switches between the two feeds
+     by changing one base URL and nothing else. */
+  const damage = flattenDamageFindings(v);
+
   return {
     id: v.id,
     stockNumber: v.stockNumber,
@@ -532,6 +587,8 @@ function toPublicFromLens(v: any) {
     model: v.model,
     trim: v.trim || '',
     price: v.price || 0,
+    // Absent (not 0) when unset, so a site can tell "no benchmark" from "free".
+    truPrice: v.truPrice ? Number(v.truPrice) : undefined,
     mileage: v.mileage || 0,
     transmission: v.transmission || '',
     fuelType: v.fuelType || '',
@@ -543,6 +600,16 @@ function toPublicFromLens(v: any) {
     images,
     heroImage: images[0] || null,
     photoCount: images.length,
+    /* A pointer rather than the frames themselves: the orbit is a large set of
+       base64 stills and this is a list endpoint, so a site fetches it lazily
+       for the car the buyer actually opened. */
+    web3dUrl: v.web3dPublicPath || undefined,
+    /** TruLens inspection score 0–100, absent when nothing was tagged. */
+    vir: damage.length ? computeVirFromDamage(damage) : undefined,
+    /* Absent — not [] — when the car was never inspected, so a site renders
+       the report block only when there is one to render. */
+    virReport: damage.length ? buildVirReport(damage) : undefined,
+    damage: damage.length ? damage : undefined,
     daysInStock: null,
     source: 'trulens',
     updatedAt: v.updatedAt || v.lastDmsExportAt || null,

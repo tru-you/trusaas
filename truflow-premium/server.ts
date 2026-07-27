@@ -631,8 +631,12 @@ const DEFAULT_MOCK_STATE: DMSState = {
   dealerships: [
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
     { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://www.carsoncaledon.co.za' },
-    { id: 'd3', name: 'Truecars', location: 'George, Western Cape', slug: 'truecars', websiteUrl: 'https://www.true-cars.co.za' },
-    { id: 'demo', name: 'Demo Dealership', location: 'Sandbox', slug: 'demo', websiteUrl: 'https://tru-saas.com' }
+    /* The real True Cars dealership is "true-cars", created on the instance
+       rather than seeded here. A seeded "truecars" (d3) sat alongside it for a
+       while — two dealerships one hyphen apart, both claiming
+       www.true-cars.co.za — and the website was pointed at the empty one, which
+       is why it rendered no stock while the cars sat correct in the DMS.
+       Deliberately not re-added: see the prune in readState. */
   ],
   vehicles: [
     { 
@@ -793,9 +797,45 @@ function readState(): DMSState {
           if (!existingIds.has(seed.id)) parsed.dealerships.push({ ...seed });
         }
       }
+
+      /* Retire the seeded "Truecars" (d3) and "Demo Dealership" rows.
+       *
+       * Dropping them from DEFAULT_MOCK_STATE is necessary but not sufficient:
+       * an instance whose state file already lists them keeps them, and the
+       * backfill directly above would re-add them from the seed if they were
+       * still in it. Both halves are needed for them to actually go away.
+       *
+       * Their vehicles go with them — d3 never had any, and demo's are the
+       * DEMO-1xx placeholders with no capture and no photos behind them. A
+       * marker makes this a one-off rather than a standing rule that would
+       * quietly delete a dealership someone later creates reusing either id.
+       */
+      parsed.migrations = parsed.migrations || {};
+      if (!parsed.migrations.prunedSeedDealers) {
+        const retired = new Set(["d3", "demo"]);
+        parsed.dealerships = parsed.dealerships.filter((d: any) => !retired.has(d.id));
+        parsed.vehicles = (parsed.vehicles || []).filter(
+          (v: any) => !retired.has(v.dealershipId)
+        );
+        parsed.migrations.prunedSeedDealers = true;
+      }
       parsed.vehicles.forEach((v: any) => {
         if (!v.images) v.images = [];
         if (!v.reconTasks) v.reconTasks = [];
+        /* Publish state has to be an explicit boolean.
+         *
+         * The public feed used to read "unset" as published, while TruLens's
+         * own feed requires showOnWebsite === true — so the same car was live
+         * on a TruFlow-backed site and absent from a TruLens-backed one, and a
+         * capture nobody had pressed Publish on could still reach a dealer's
+         * website. The feed is strict now, which means every row predating the
+         * flag needs a value or it would vanish from a live site on deploy.
+         *
+         * true is the value that preserves exactly what those rows already do
+         * today. New vehicles set the flag explicitly at creation, so this only
+         * ever catches legacy rows — it cannot silently republish a car that
+         * was deliberately unpublished, because that one holds false. */
+        if (typeof v.showOnWebsite !== "boolean") v.showOnWebsite = true;
       });
       return parsed;
     }
@@ -1999,11 +2039,16 @@ app.post("/api/sync/push-photos", (req, res) => {
         /* Whether the dealer's website may show it. TruLens has a Publish
            toggle, but it only ever wrote to TruLens's own store — the export
            never carried the value and this never set it, and the public feed
-           reads "not set" as published. So every capture went live the moment
-           it was exported, and unpublishing in TruLens changed nothing on the
+           read "not set" as published. So every capture went live the moment it
+           was exported, and unpublishing in TruLens changed nothing on the
            website. A junk test capture reached a dealer's public feed that way.
-           An older client that sends nothing keeps the old behaviour. */
-        showOnWebsite: typeof showOnWebsite === "boolean" ? showOnWebsite : undefined,
+
+           A capture therefore lands in the DMS unpublished unless the dealer
+           has already pressed Publish in TruLens. Exporting puts the car in the
+           dealer's inventory; putting it in front of buyers is a second,
+           deliberate act. Explicit rather than undefined so the legacy backfill
+           in readState can't later mistake it for a pre-flag row. */
+        showOnWebsite: typeof showOnWebsite === "boolean" ? showOnWebsite : false,
       };
 
       state.vehicles.unshift(newVehicle);
@@ -2257,8 +2302,11 @@ function toPublicVehicle(v: any, source: string = "premium") {
   const images = Array.isArray(v.images) ? v.images.filter(notVideo) : [];
   const extras = Array.isArray(v.extrasPhotos) ? v.extrasPhotos.filter(notVideo) : [];
   const allImages = [...images, ...extras];
-  // Hide vehicles explicitly unpublished; default = show if INVENTORY
-  const published = v.showOnWebsite !== false && v.status === "INVENTORY";
+  /* Strict, and deliberately the same test TruLens's own feed applies — a site
+     pointed at either source has to make the same call about the same car.
+     readState backfills legacy rows to true, so nothing currently live drops
+     off; anything unset from here on was never published on purpose. */
+  const published = v.showOnWebsite === true && v.status === "INVENTORY";
   if (!published) return null;
 
   return {
