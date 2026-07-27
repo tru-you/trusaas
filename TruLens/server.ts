@@ -898,20 +898,43 @@ app.delete('/api/sync/vehicle', (req, res) => {
   if (req.headers['x-tru-sync-key'] !== SYNC_KEY) {
     return res.status(401).json({ error: 'Invalid sync key.' });
   }
-  const { stockNumber } = req.body || {};
+  const { stockNumber, dealerSlug } = req.body || {};
   if (!stockNumber) {
     return res.status(400).json({ error: 'stockNumber is required.' });
   }
+
+  /* Only ever delete the capture belonging to the dealer who deleted it.
+     Stock numbers are dealer-chosen and short, so two yards routinely share
+     one. This matched on the number alone and removed EVERY vehicle carrying
+     it — a dealer deleting their own car silently destroyed another dealer's
+     capture and its photos. The Firestore branch batch-deleted the lot.
+
+     When no dealership is named (an older TruFlow that predates this) a single
+     unambiguous match is still honoured, but anything wider is refused rather
+     than guessed at — a deletion is not the place to pick one. */
+  const matchesDealer = (v: any) =>
+    !dealerSlug || (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealerSlug;
 
   (async () => {
     try {
       if (LOCAL_MODE || !fdb) {
         const store = readLocalStore();
-        const before = store.vehicles.length;
-        store.vehicles = store.vehicles.filter((v: any) => v.stockNumber !== stockNumber);
+        const doomed = store.vehicles.filter(
+          (v: any) => v.stockNumber === stockNumber && matchesDealer(v)
+        );
+        if (!dealerSlug && doomed.length > 1) {
+          return res.status(409).json({
+            deleted: false,
+            removed: 0,
+            error:
+              `${doomed.length} vehicles share stock number ${stockNumber}. ` +
+              'Send dealerSlug to say which dealership this deletion is for.',
+          });
+        }
+        const ids = new Set(doomed.map((v: any) => v.id));
+        store.vehicles = store.vehicles.filter((v: any) => !ids.has(v.id));
         writeLocalStore(store);
-        const removed = before - store.vehicles.length;
-        return res.json({ deleted: removed > 0, removed });
+        return res.json({ deleted: ids.size > 0, removed: ids.size });
       }
       const snapshot = await fdb!.collection('vehicles')
         .where('stockNumber', '==', stockNumber)
@@ -919,10 +942,23 @@ app.delete('/api/sync/vehicle', (req, res) => {
       if (snapshot.empty) {
         return res.json({ deleted: false, removed: 0 });
       }
+      const docs = snapshot.docs.filter((d) => matchesDealer(d.data()));
+      if (!dealerSlug && docs.length > 1) {
+        return res.status(409).json({
+          deleted: false,
+          removed: 0,
+          error:
+            `${docs.length} vehicles share stock number ${stockNumber}. ` +
+            'Send dealerSlug to say which dealership this deletion is for.',
+        });
+      }
+      if (!docs.length) {
+        return res.json({ deleted: false, removed: 0 });
+      }
       const batch = fdb!.batch();
-      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      docs.forEach((doc) => batch.delete(doc.ref));
       await batch.commit();
-      return res.json({ deleted: true, removed: snapshot.size });
+      return res.json({ deleted: true, removed: docs.length });
     } catch (err: any) {
       console.error('[sync] delete by stockNumber failed:', err);
       return res.status(500).json({ error: err?.message || 'Delete failed.' });
@@ -1153,6 +1189,21 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
 
     if (!vehicleId) {
       return res.status(400).json({ error: 'vehicleId is required' });
+    }
+
+    /* Stop here rather than build and upload a multi-megabyte payload the DMS
+       will refuse. A device signed in with the legacy shared code carries no
+       dealership in its token, so the slug rests entirely on the phone's
+       localStorage — cleared browser data or a reinstalled PWA leaves it blank,
+       and an export with no dealership used to be filed against the DMS's
+       default yard rather than rejected. */
+    if (!dealerSlug) {
+      return res.status(400).json({
+        success: false,
+        error:
+          'No dealership selected on this device. Choose the dealership in ' +
+          'TruLens before exporting, so the capture files into the right yard.',
+      });
     }
 
     const vehicle = await getVehicle(vehicleId, userId);

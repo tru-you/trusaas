@@ -1086,13 +1086,21 @@ app.delete("/api/inventory/:id", (req: any, res) => {
   // If this vehicle was imported from TruLens, tell TruLens to remove it too
   // so the capture doesn't linger after the DMS record is gone.
   if (target.source === "trulens" && target.stockNumber) {
+    /* Name the dealership. Stock numbers are dealer-chosen and short, so they
+       collide across yards — the same reasoning that scopes the push-photos
+       lookup. Sending only the number asked TruLens to delete every capture
+       carrying it, which is one dealer's deletion destroying another dealer's
+       photos. */
+    const ownerSlug = (state.dealerships || []).find(
+      (d: any) => d.id === (target.dealershipId || DEFAULT_DEALERSHIP_ID)
+    )?.slug;
     fetch(`${TRULENS_URL}/api/sync/vehicle`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         ...(SYNC_SERVICE_KEY ? { "x-tru-sync-key": SYNC_SERVICE_KEY } : {}),
       },
-      body: JSON.stringify({ stockNumber: target.stockNumber }),
+      body: JSON.stringify({ stockNumber: target.stockNumber, dealerSlug: ownerSlug }),
     }).catch((err) => console.warn("[sync] TruLens delete callback failed:", err?.message));
   }
 
@@ -1105,13 +1113,16 @@ app.get("/api/leads", (req: any, res) => {
   res.json(scopeToDealer(state.leads, req.auth));
 });
 
-// WordPress / External Site Form submissions hit this route!
+/* Signed-in lead creation. This is NOT the route external sites use — it is not
+   in isPublicPath, so an unauthenticated form posting here gets a 401 and the
+   enquiry is lost with nothing to show for it. External websites and plugins
+   post to /api/integration/webhook-lead, which is public and requires the
+   dealership in the payload. */
 app.post("/api/leads", (req: any, res) => {
   const state = readState();
   // Annotated because every value here comes off req.body as `any`. Without it
   // "New" widened to string and the whole literal was pushed into Lead[]
-  // unchecked — this route is public (the WordPress form posts to it), so it is
-  // the last place that should be taking the request's word for the shape.
+  // unchecked, and this takes shape straight off the request.
   const newLead: Lead = {
     id: "l_" + Date.now(),
     // Tag the lead to a dealer, or it defaults to the pilot dealership and one
@@ -1962,6 +1973,23 @@ app.post("/api/sync/push-photos", (req, res) => {
       });
     }
 
+    /* An ABSENT slug used to be treated as "legacy client, allow it" and fell
+       through to DEFAULT_DEALERSHIP_ID below — which is d1, a real dealership
+       with a live website, not a neutral bucket. So a phone that signed in with
+       the shared code and had no dealership picked (cleared browser data, a
+       reinstalled PWA, a new handset) did not fail: it silently filed another
+       dealer's car into d1's inventory, and with the publish flag set that car
+       reached d1's website. Refusing an unknown slug while quietly accepting no
+       slug at all guarded the typo and missed the dangerous case. */
+    if (!dealerSlug) {
+      return res.status(400).json({
+        synced: false,
+        error:
+          "No dealership on this capture. Pick the dealership in TruLens " +
+          "before exporting — a capture cannot be filed without one.",
+      });
+    }
+
     /* Stock numbers are dealer-chosen and short — PE-1042, STK-001 — so they
        collide across dealerships. Matching on stockNumber alone meant a push
        for one dealer could find, and overwrite the photos of, another dealer's
@@ -2032,10 +2060,13 @@ app.post("/api/sync/push-photos", (req, res) => {
         lastPhotoSync: new Date().toISOString(),
         reconTasks: [],
         source: "trulens",
-        // Tag to the dealer whose phone captured this — keeps it off every
-        // other dealer's website. Unrecognized/missing slug = untagged,
-        // which the public feed treats as the original pilot dealer (MKR).
-        dealershipId: dealerIdForSlug(dealerSlug) || undefined,
+        /* Tag to the dealer whose phone captured this — keeps it off every
+           other dealer's website. Always a real id: the slug is required and
+           validated above, and pushDealerId is what the lookup above matched
+           on, so write and read agree. This was `|| undefined`, which left the
+           row untagged, and an untagged row reads as DEFAULT_DEALERSHIP_ID —
+           another dealer's yard — everywhere it is scoped. */
+        dealershipId: pushDealerId,
         /* Whether the dealer's website may show it. TruLens has a Publish
            toggle, but it only ever wrote to TruLens's own store — the export
            never carried the value and this never set it, and the public feed
@@ -2138,6 +2169,16 @@ app.post("/api/sync/web3d", (req, res) => {
     const { stockNumber, dealerSlug, frames, damageTags } = req.body || {};
     if (!stockNumber) return res.status(400).json({ error: "stockNumber required" });
     if (!Array.isArray(frames) || !frames.length) return res.status(400).json({ error: "frames array required" });
+    /* Same reasoning as push-photos: without a slug this fell through to d1, a
+       real dealership. Stock numbers are dealer-chosen and collide across
+       yards, so an orbit could overwrite the 360 on another dealer's car that
+       happened to share the number. */
+    if (!dealerSlug) {
+      return res.status(400).json({ error: "dealerSlug required to file a 360 orbit." });
+    }
+    if (!dealerIdForSlug(dealerSlug)) {
+      return res.status(400).json({ error: `Unknown dealer "${dealerSlug}".` });
+    }
 
     const state = readState();
     const pushDealerId = dealerIdForSlug(dealerSlug) || DEFAULT_DEALERSHIP_ID;
@@ -2711,13 +2752,27 @@ app.post("/api/integration/webhook-lead", (req, res) => {
     return res.status(400).json({ error: "Missing required fields: firstName and phone are mandatory." });
   }
 
+  /* The route is public and unauthenticated, so the payload is the only thing
+     that says which yard the enquiry belongs to. Unset used to fall through to
+     the pilot dealership: a buyer enquiring on one dealer's website became a
+     lead in another dealer's pipeline, and the yard that owns the site never
+     saw it. Refuse instead — a misrouted lead is worse than a rejected one,
+     because nobody finds out. */
+  const leadDealershipId = dealershipId || dealerIdForSlug(dealerSlug);
+  if (!leadDealershipId) {
+    return res.status(400).json({
+      error:
+        "Missing dealership. Send dealerSlug (or dealershipId) so the enquiry " +
+        "reaches the dealer whose website it came from.",
+    });
+  }
+
   try {
     const state = readState();
     const newLead: Lead = {
       id: "lead_" + Date.now(),
-      // Which dealer's website sent this. Unset means it lands with the pilot
-      // dealership, so every site posting here must identify itself.
-      dealershipId: dealershipId || dealerIdForSlug(dealerSlug) || undefined,
+      // Which dealer's website sent this — validated above, never unset.
+      dealershipId: leadDealershipId,
       firstName,
       lastName: lastName || "",
       phone,
