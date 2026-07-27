@@ -366,6 +366,25 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   )}
                 </div>
 
+                {/* Showroom Category */}
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-2">
+                  <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold tracking-wider">Showroom Category</span>
+                  <select
+                    value={vehicle.category || ""}
+                    onChange={(e) => {
+                      const val = e.target.value as Vehicle["category"] | "";
+                      onUpdateVehicle(vehicle.id, { category: val || undefined } as Partial<Vehicle>);
+                    }}
+                    className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
+                  >
+                    <option value="">Used (default)</option>
+                    <option value="used">Premium Used</option>
+                    <option value="select">Premium Select</option>
+                    <option value="performance">Premium Performance</option>
+                  </select>
+                  <p className="text-[11px] text-[rgba(232,234,230,0.45)]">Controls which category page this vehicle appears on the website.</p>
+                </div>
+
                 {/* Spec Matrix */}
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[13px]">
                   <div><span className="text-[rgba(232,234,230,0.72)]">Mileage:</span> <span className="font-semibold text-[color:var(--white)]">{vehicle.mileage.toLocaleString()} km</span></div>

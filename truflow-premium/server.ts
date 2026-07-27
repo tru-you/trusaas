@@ -1811,11 +1811,13 @@ app.post("/api/sync/pull-photos", async (req, res) => {
       state.vehicles[idx].walkaroundVideo = mapped.walkaroundVideo;
       state.vehicles[idx].videoPoster = mapped.videoPoster;
     }
-    // A re-shoot changes the score, so this refreshes where the specs above
-    // deliberately do not — the DMS owns those once the car exists.
-    if (typeof lensVehicle?.vir === "number") state.vehicles[idx].vir = lensVehicle.vir;
-    if (Array.isArray(lensVehicle?.inspection)) state.vehicles[idx].virReport = lensVehicle.inspection;
-    if (Array.isArray(lensVehicle?.damage)) state.vehicles[idx].damage = lensVehicle.damage;
+    // Damage findings drive the VIR — photo quality is internal to TruLens,
+    // never exposed as the vehicle condition score.
+    if (Array.isArray(lensVehicle?.damage)) {
+      state.vehicles[idx].damage = lensVehicle.damage;
+      state.vehicles[idx].vir = computeVirFromDamage(lensVehicle.damage);
+      state.vehicles[idx].virReport = buildVirReport(lensVehicle.damage);
+    }
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     writeState(state);
 
@@ -1988,9 +1990,9 @@ app.post("/api/sync/push-photos", (req, res) => {
         mileage: parseInt(vehicleMeta.mileage, 10) || 0,
         transmission: vehicleMeta.transmission || "Automatic",
         fuelType: vehicleMeta.fuelType || "Petrol",
-        vir: typeof vehicleMeta.vir === "number" ? vehicleMeta.vir : undefined,
-        virReport: Array.isArray(vehicleMeta.inspection) ? vehicleMeta.inspection : undefined,
         damage: Array.isArray(vehicleMeta.damage) ? vehicleMeta.damage : undefined,
+        vir: Array.isArray(vehicleMeta.damage) ? computeVirFromDamage(vehicleMeta.damage) : undefined,
+        virReport: Array.isArray(vehicleMeta.damage) ? buildVirReport(vehicleMeta.damage) : undefined,
         stockNumber:
           matchStock ||
           "STK-" + Math.floor(Math.random() * 900000 + 100000),
@@ -2186,6 +2188,34 @@ function dealerIdForSlug(slug: string, state?: any): string | undefined {
 }
 
 const DEFAULT_DEALERSHIP_ID = "d1";
+
+/** Compute a 0-100 VIR condition score from damage findings.
+ *  Starts at 100 (no damage) and deducts per finding by severity.
+ *  This replaces the old photo-quality average — VIR is a vehicle
+ *  condition score, not a capture quality score. */
+function computeVirFromDamage(damage: { severity: number }[]): number {
+  if (!damage || !damage.length) return 100;
+  const penalties: Record<number, number> = { 1: 2, 2: 5, 3: 10, 4: 18, 5: 30 };
+  const total = damage.reduce((s, d) => s + (penalties[d.severity] ?? 5), 0);
+  return Math.max(0, Math.round(100 - total));
+}
+
+/** Build virReport sections by grouping damage by panel. */
+function buildVirReport(damage: { panel: string; severity: number; type: string }[]):
+  { section: string; score: number; status: 'Pass' | 'Attention' }[] {
+  const panels = new Map<string, { severity: number }[]>();
+  for (const d of damage) {
+    const key = d.panel || 'General';
+    if (!panels.has(key)) panels.set(key, []);
+    panels.get(key)!.push(d);
+  }
+  const sections: { section: string; score: number; status: 'Pass' | 'Attention' }[] = [];
+  for (const [panel, findings] of panels) {
+    const score = computeVirFromDamage(findings);
+    sections.push({ section: panel, score, status: score >= 80 ? 'Pass' : 'Attention' });
+  }
+  return sections;
+}
 
 /** Showroom tiers a dealer can shelve a vehicle into. Anything else is
  *  treated as unset, so a typo can't hide a car from every category page. */

@@ -498,7 +498,7 @@ export default function App() {
   const [seatError, setSeatError] = useState("");
   /** A freshly issued code, shown once. Never fetched back from the server. */
   const [issuedCode, setIssuedCode] = useState<{ name: string; code: string } | null>(null);
-  const [newVehicleForm, setNewVehicleForm] = useState<NewVehicleForm>({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel", transmission: "Automatic", bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: "d1", category: "" });
+  const [newVehicleForm, setNewVehicleForm] = useState<NewVehicleForm>({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel", transmission: "Automatic", bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: getAccount()?.dealershipId || "d1", category: "" });
 
   const [vinInput, setVinInput] = useState("");
   const [vinDecoding, setVinDecoding] = useState(false);
@@ -1087,10 +1087,7 @@ export default function App() {
       mileage: 15300,
       stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000),
       description: "Immaculate condition. Full service history. Active info display cockpit.",
-      dealershipId: "d1",
-      // Was missing, so after publishing a car the form kept the previous
-      // showroom tier while the select showed "Auto" — the next vehicle
-      // silently inherited it.
+      dealershipId: dealershipId || "d1",
       category: "",
     });
     loadAllState();
@@ -1894,6 +1891,8 @@ export default function App() {
                           <h4 className="font-semibold text-[16px] text-[color:var(--white)] truncate">{v.year || ""} {v.make || "Vehicle"} {v.model || ""}</h4>
                           <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                             {v.trim || "Standard Specs"} · <span className="font-mono">{v.stockNumber}</span>
+                            {v.category === "select" && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">Select</span>}
+                            {v.category === "performance" && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/30">Performance</span>}
                           </p>
                           <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-wrap gap-x-2 gap-y-1 mt-2">
                             <span>{Number(v.mileage || 0).toLocaleString()} km</span>
@@ -2062,21 +2061,6 @@ export default function App() {
             <div className="card max-w-[700px] mx-auto w-full">
               <div className="card-body p-6 flex flex-col gap-4">
                 <form onSubmit={handlePublishVehicle} className="flex flex-col gap-4">
-                  {/* Dealership — which dealer site this stock belongs to */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Dealership</label>
-                    <select
-                      value={newVehicleForm.dealershipId}
-                      onChange={(e) => setNewVehicleForm((p) => ({ ...p, dealershipId: e.target.value }))}
-                      className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
-                    >
-                      {(state?.dealerships || []).map((d: any) => (
-                        <option key={d.id} value={d.id}>{d.name}</option>
-                      ))}
-                    </select>
-                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">This stock will only appear on this dealer's own website and inventory.</p>
-                  </div>
-
                   {/* Showroom tier — which category page this car lands on */}
                   <div className="flex flex-col gap-1">
                     <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Showroom Category</label>
