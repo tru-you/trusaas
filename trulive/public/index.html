@@ -6,6 +6,7 @@
 <title>TruLive — Live Vehicle Walkthrough</title>
 <link rel="stylesheet" href="/tru-tokens.css">
 <link rel="stylesheet" href="/device-frame.css">
+<link rel="stylesheet" href="/tru-premium.css">
 <link rel="manifest" href="/manifest.webmanifest" />
 <meta name="theme-color" content="#0a0a0a" />
 <meta name="mobile-web-app-capable" content="yes" />
@@ -807,6 +808,8 @@ function reportWA(){
 <script>window.TRU_INSTALL={appName:"TruLive",accent:"#4D9BFF",key:"truview"};</script>
 <script>/* faux status-bar clock for the desktop phone frame */
 (function(){var el=document.getElementById('dev-clock');if(!el)return;function t(){var d=new Date(),h=d.getHours(),m=d.getMinutes();el.textContent=((h%12)||12)+':'+(m<10?'0':'')+m;}t();setInterval(t,10000);})();</script>
+<script>/* cursor-tracking glow for premium cards (desktop) */
+(function(){if(!matchMedia('(hover: hover)').matches)return;function h(e){var c=e.target.closest('.card-btn,.stat,.share-btn');if(!c)return;var r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px');}document.addEventListener('mousemove',h,{passive:true});})();</script>
 <script src="/install-banner.js" defer></script>
 </body>
 </html>
