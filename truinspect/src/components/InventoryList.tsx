@@ -902,9 +902,16 @@ export default function InventoryList({
               const requiredTaken = PHOTO_SLOTS.filter(s => s.required && !!photos[s.id]).length;
               const totalRequired = PHOTO_SLOTS.filter(s => s.required).length;
               const readiness = computeWebReadiness(vehicle);
-              const thumb = typeof photos.front_3_4 === 'string' && photos.front_3_4.startsWith('data:')
-                ? photos.front_3_4
-                : null;
+              /* Photos are files now, so the hero is usually "/media/<hash>.jpg"
+                 rather than a data URI. Testing only for data: left every
+                 migrated vehicle with a blank thumbnail. */
+              const thumb =
+                typeof photos.front_3_4 === 'string' &&
+                (photos.front_3_4.startsWith('data:') ||
+                  photos.front_3_4.startsWith('/media/') ||
+                  photos.front_3_4.startsWith('http'))
+                  ? photos.front_3_4
+                  : null;
               const priceLabel = Number(vehicle.price || 0).toLocaleString();
               const isHighlighted =
                 !!highlightStock &&

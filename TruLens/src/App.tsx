@@ -17,7 +17,14 @@ function normalizeVehicle(raw: any): Vehicle {
   for (const [k, v] of Object.entries(photosIn)) {
     if (typeof v !== 'string' || v.length < 32) continue;
     if (v.includes('[image content will be provided')) continue;
-    if (v.startsWith('data:') || v.startsWith('http')) {
+    /* A stored reference — "/media/<sha256>.jpg" — is a real photo, and is the
+       form every photo takes now that they are files rather than base64 in the
+       record. It has to be named explicitly: at ~75 characters it carries no
+       data:/http prefix and is far too short for the raw-base64 branch below,
+       so without this it matched nothing, fell through, and was dropped here on
+       arrival — leaving a fully photographed vehicle looking like the shots
+       were never taken. The server's isValidPhotoData carries the same case. */
+    if (v.startsWith('/media/') || v.startsWith('data:') || v.startsWith('http')) {
       photos[k] = v;
     } else if (v.length > 200 && !v.includes(' ')) {
       photos[k] = `data:image/jpeg;base64,${v}`;

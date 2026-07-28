@@ -1200,8 +1200,12 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
       status,
       updatedAt: now,
     };
-    await saveVehicle(updated);
-    res.json({ success: true, vehicle: updated });
+    /* Return what was actually stored, not what arrived. saveVehicle moves the
+       photo onto disk and swaps in a reference, so echoing `updated` handed the
+       client back the full base64 it had just uploaded — which it then held in
+       memory until its next fetch, on a phone, for every shot in the capture. */
+    const saved = await saveVehicle(updated);
+    res.json({ success: true, vehicle: saved });
   } catch (error) {
     console.error('POST /api/inventory/upload-photo - Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
