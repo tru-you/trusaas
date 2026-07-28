@@ -131,14 +131,23 @@ export function put(value: unknown): string | null {
   return `${MEDIA_ROUTE}/${name}`;
 }
 
-/** Convert an array of photo values in place-ish, dropping anything unusable. */
+/** Convert an array of photo values, keeping anything already usable.
+ *
+ *  A remote http(s) URL is a valid photo everywhere else in this system —
+ *  isValidPhotoData accepts one, dealer sites and seed records carry them — but
+ *  it is not ours to store, so put() returns null for it. An earlier version
+ *  treated that null as "unusable" and dropped the entry, which meant any save
+ *  carrying URL-backed images silently lost them. Only genuinely unusable
+ *  values are discarded now. */
 export function putAll(values: unknown): string[] {
   if (!Array.isArray(values)) return [];
   const out: string[] = [];
   for (const v of values) {
     const ref = put(v);
-    if (ref) out.push(ref);
-    else if (isStoredRef(v)) out.push(v);
+    if (ref) { out.push(ref); continue; }
+    if (isStoredRef(v)) { out.push(v); continue; }
+    // Not ours to store, but still a real image the record should keep.
+    if (typeof v === "string" && /^https?:\/\//i.test(v)) out.push(v);
   }
   return out;
 }
