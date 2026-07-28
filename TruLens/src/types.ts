@@ -131,7 +131,25 @@ export interface DamageFinding {
 }
 
 export const PHOTO_SLOTS: PhotoSlot[] = [
-  // Phase 1: Exterior Panels (Lens Folder: Exterior Panels -> TruFlow: Main images)
+  /* Phase 1 is ONE walk around the vehicle, in the order you physically reach
+     each shot. It used to run front 3/4 -> front -> rear 3/4 -> rear -> driver
+     side -> passenger side, which crosses the car twice before either side is
+     photographed. Wheels were a single "all four" slot, so a lap ended with the
+     inspector going back round for them.
+     Now: nose, front corner, then clockwise down the driver side and up the
+     passenger side, taking each wheel at the corner you are standing on. To
+     walk it the other way, swap the driver and passenger blocks below - order
+     here is the capture order, nothing keys off the index. */
+  {
+    id: 'front_straight',
+    name: 'Front Profile',
+    description: 'Position camera level with the front grill, perfectly centered.',
+    overlaySvgPath: 'front_profile',
+    required: true,
+    idealAngle: { pitch: 10, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Exterior Panels',
+  },
   {
     id: 'front_3_4',
     name: 'Front 3/4 (Hero)',
@@ -143,12 +161,32 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     category: 'Exterior Panels',
   },
   {
-    id: 'front_straight',
-    name: 'Front Profile',
-    description: 'Position camera level with the front grill, perfectly centered.',
-    overlaySvgPath: 'front_profile',
+    id: 'wheel_front_driver',
+    name: 'Wheel - Front Driver',
+    description: 'Rim face and tyre wall, shot as you reach this corner on the lap.',
+    overlaySvgPath: 'rims_condition',
     required: true,
-    idealAngle: { pitch: 10, roll: 0, yaw: 0 },
+    idealAngle: { pitch: -15, roll: 0, yaw: 90 },
+    phase: 1,
+    category: 'Exterior Panels',
+  },
+  {
+    id: 'side_driver',
+    name: 'Driver Side Profile',
+    description: 'Position camera level with the middle of the vehicle on the driver side.',
+    overlaySvgPath: 'side_profile',
+    required: true,
+    idealAngle: { pitch: 8, roll: 0, yaw: 90 },
+    phase: 1,
+    category: 'Exterior Panels',
+  },
+  {
+    id: 'wheel_rear_driver',
+    name: 'Wheel - Rear Driver',
+    description: 'Rim face and tyre wall on the rear driver corner.',
+    overlaySvgPath: 'rims_condition',
+    required: true,
+    idealAngle: { pitch: -15, roll: 0, yaw: 90 },
     phase: 1,
     category: 'Exterior Panels',
   },
@@ -173,12 +211,12 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     category: 'Exterior Panels',
   },
   {
-    id: 'side_driver',
-    name: 'Driver Side Profile',
-    description: 'Position camera level with the middle of the vehicle on the driver side.',
-    overlaySvgPath: 'side_profile',
+    id: 'wheel_rear_passenger',
+    name: 'Wheel - Rear Passenger',
+    description: 'Rim face and tyre wall on the rear passenger corner.',
+    overlaySvgPath: 'rims_condition',
     required: true,
-    idealAngle: { pitch: 8, roll: 0, yaw: 90 },
+    idealAngle: { pitch: -15, roll: 0, yaw: -90 },
     phase: 1,
     category: 'Exterior Panels',
   },
@@ -193,6 +231,16 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     category: 'Exterior Panels',
   },
   {
+    id: 'wheel_front_passenger',
+    name: 'Wheel - Front Passenger',
+    description: 'Rim face and tyre wall on the front passenger corner.',
+    overlaySvgPath: 'rims_condition',
+    required: true,
+    idealAngle: { pitch: -15, roll: 0, yaw: -90 },
+    phase: 1,
+    category: 'Exterior Panels',
+  },
+  {
     id: 'roof_view',
     name: 'Roof View',
     description: 'Hold camera high to capture the condition of the roof and sunroof if applicable.',
@@ -202,16 +250,8 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     phase: 1,
     category: 'Exterior Panels',
   },
-  {
-    id: 'wheels_all',
-    name: 'Wheels & Tyres',
-    description: 'Capture close-ups of all 4 wheels and the spare tyre if visible.',
-    overlaySvgPath: 'rims_condition',
-    required: true,
-    idealAngle: { pitch: -15, roll: 0, yaw: 90 },
-    phase: 1,
-    category: 'Exterior Panels',
-  },
+
+  // Phase 1: Exterior Panels (Lens Folder: Exterior Panels -> TruFlow: Main images)
 
   // Phase 2: Details & Badges (Lens Folder: Interior + Engine -> TruFlow: Additional images)
   {

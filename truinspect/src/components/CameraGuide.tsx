@@ -781,7 +781,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <text x="50" y="50" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">ROOF / SUNROOF VIEW</text>
           </svg>
         );
+      /* All four corners share one overlay — the guide is a wheel, and the
+         corner is named in the slot title above it. wheels_all is the
+         pre-split id, kept so an older capture still draws a guide. */
       case 'wheels_all':
+      case 'wheel_front_driver':
+      case 'wheel_rear_driver':
+      case 'wheel_rear_passenger':
+      case 'wheel_front_passenger':
         return (
           <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
             <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="1.5" />

@@ -854,7 +854,7 @@ function toPublicFromLens(v: any, origin: string = '') {
   const status = v.status || 'In-Progress';
   const requiredIds = [
     'front_3_4', 'front_straight', 'rear_3_4', 'rear_straight',
-    'side_driver', 'side_passenger', 'wheels_all',
+    'side_driver', 'side_passenger', 'wheel_front_driver', 'wheel_rear_driver', 'wheel_rear_passenger', 'wheel_front_passenger',
     'interior_dash', 'seat_driver', 'seats_rear', 'boot_bay',
     'engine_bay', 'service_book', 'reg_papers', 'odometer_reading',
     'vin_plate', 'video_360',
@@ -1182,7 +1182,7 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
     const now = new Date().toISOString();
     const requiredSlots = [
       'front_3_4', 'front_straight', 'rear_3_4', 'rear_straight',
-      'side_driver', 'side_passenger', 'wheels_all', 'badges_detail',
+      'side_driver', 'side_passenger', 'wheel_front_driver', 'wheel_rear_driver', 'wheel_rear_passenger', 'wheel_front_passenger', 'badges_detail',
       'interior_dash', 'seat_driver', 'seats_rear', 'boot_bay',
       'engine_bay', 'service_book', 'reg_papers', 'odometer_reading',
       'vin_plate', 'video_360',
@@ -1467,7 +1467,9 @@ You MUST respond strictly with a valid JSON matching this schema:
 const SLOT_TO_DMS_CATEGORY: Record<string, string> = {
   front_3_4: 'images', front_straight: 'images', rear_3_4: 'images',
   rear_straight: 'images', side_driver: 'images', side_passenger: 'images',
-  roof_view: 'images', wheels_all: 'images',
+  roof_view: 'images', wheels_all: 'images', /* legacy */
+  wheel_front_driver: 'images', wheel_rear_driver: 'images',
+  wheel_rear_passenger: 'images', wheel_front_passenger: 'images',
   badges_detail: 'extrasPhotos', lights_detail: 'extrasPhotos',
   mirrors_handles: 'extrasPhotos', interior_dash: 'extrasPhotos',
   seat_driver: 'extrasPhotos', seat_passenger: 'extrasPhotos',

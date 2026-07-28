@@ -75,7 +75,10 @@ const ORBIT_SLOTS = [
 /* Exterior shots that are NOT viewpoints on the circle. The catch-all below
  * sweeps up every phase-1 slot not already placed, so without naming these the
  * two of them would be added straight back with an invented azimuth. */
-const NON_ORBIT_EXTERIOR = new Set(['roof_view', 'wheels_all']);
+const NON_ORBIT_EXTERIOR = new Set([
+  'roof_view', 'wheels_all', /* wheels_all is pre-split, kept for old captures */
+  'wheel_front_driver', 'wheel_rear_driver', 'wheel_rear_passenger', 'wheel_front_passenger',
+]);
 
 /**
  * Approximate “backgroundless” cut for studio / lot shots:

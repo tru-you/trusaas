@@ -2177,7 +2177,9 @@ const SLOT_TO_CATEGORY: Record<string, string> = {
   // Phase 1: Exterior → main images
   front_3_4: "images", front_straight: "images", rear_3_4: "images",
   rear_straight: "images", side_driver: "images", side_passenger: "images",
-  roof_view: "images", wheels_all: "images",
+  roof_view: "images", wheels_all: "images", /* legacy, pre-split */
+  wheel_front_driver: "images", wheel_rear_driver: "images",
+  wheel_rear_passenger: "images", wheel_front_passenger: "images",
   // Phase 2-4: Details/Interior/Engine → extras
   badges_detail: "extrasPhotos", lights_detail: "extrasPhotos",
   mirrors_handles: "extrasPhotos", interior_dash: "extrasPhotos",
