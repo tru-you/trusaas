@@ -17,7 +17,7 @@
     align-items: center;
     justify-content: center;
     min-height: 100dvh;
-    padding: 14px;
+    padding: 20px 14px;
     background:
       radial-gradient(120% 90% at 50% -10%, #101d33 0%, transparent 55%),
       radial-gradient(90% 60% at 50% 110%, rgba(34,211,238,.05), transparent 60%),
@@ -27,10 +27,9 @@
   /* Outer bezel */
   .device {
     position: relative;
-    height: min(980px, 96dvh);
-    aspect-ratio: 9 / 19.5;
-    width: auto;
-    max-width: 96vw;
+    width: 100%;
+    max-width: 430px;
+    height: min(900px, 90dvh);
     background: #0a0a0a;
     border-radius: 52px;
     padding: 13px;
