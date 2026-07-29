@@ -9,6 +9,7 @@ import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
 import trusaasLogo from '../assets/images/trusaas-lockup.png';
 import trusaasLogoDark from '../assets/images/trusaas-lockup-dark.png';
+import truinspectLogo from '../assets/images/truinspect-logo.svg';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -416,7 +417,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#0B0F17]"
               style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}>
               <Download size={12} /> {generating === 'full' ? '…' : 'Inspection PDF'}
             </button>
@@ -468,10 +469,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report *, .tl-report *::before, .tl-report *::after { box-sizing: border-box; }
             .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; overflow:hidden; }
             .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
-            .tl-report .brand { display:flex; align-items:center; gap:12px; min-width:0; }
-            .tl-report .brand .mark { width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#7FF0EA,#4FE3DC); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:20px; flex-shrink:0; }
-            .tl-report .brand .txt { font-weight:800; font-size:20px; min-width:0; }
-            .tl-report .brand .txt em { font-style:normal; color:#93C5FD; }
+            .tl-report .brand { display:flex; flex-direction:column; min-width:0; }
             .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; min-width:0; }
             .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; overflow-wrap:break-word; }
             .tl-report .subhead { font-size:13px; color:rgba(248,250,252,.72); margin-bottom:18px; }
@@ -482,7 +480,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
             .tl-report .vehicle-facts .v { font-weight:700; font-size:13px; margin-top:2px; overflow-wrap:break-word; word-break:break-all; }
             .tl-report section { padding: 12mm 16mm; overflow:hidden; }
-            .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+            .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; padding-bottom:8px; border-bottom:2px solid #4FE3DC; }
             .tl-report .grades { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
             @media (max-width:600px) {
               .tl-report .grades { grid-template-columns:repeat(3,1fr); }
@@ -518,21 +516,19 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="cover">
             <div className="cover-head">
               <div className="brand">
-                <div className="txt" style={{ fontSize: 26 }}>
-                  <span style={{ color:'#E8EAE6' }}>Tru</span><em style={{ color:'#4FE3DC' }}>Inspect</em>
-                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', textTransform:'', color:'rgba(248,250,252,.85)', marginTop:2 }}>
-                    Vehicle Inspection Report
-                  </div>
-                  <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
-                </div>
+                <img src={truinspectLogo} alt="TruInspect" style={{ height:48, width:'auto' }} />
+                <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:6 }}>{dealerName}</div>
               </div>
               <div className="meta-row">
-                <img src={trusaasLogo} alt="TruSaaS" style={{ height:34, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
+                <img src={trusaasLogo} alt="TruSaaS" style={{ height:28, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
                 <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
                 <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
                 {dealerBranch ? <div>{dealerBranch}</div> : null}
               </div>
             </div>
+            {/* Accent bar */}
+            <div style={{ width:60, height:3, borderRadius:2, background:'linear-gradient(90deg,#4FE3DC,#4D9BFF)', margin:'0 0 14px' }} />
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:'.14em', color:'rgba(79,227,220,.7)', marginBottom:6 }}>VEHICLE INSPECTION REPORT</div>
             <h1>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
             <div className="subhead">{vehicle.trim} · {vehicle.color} · Stock <b>{vehicle.stockNumber}</b></div>
             <div className="score-strip">
@@ -878,6 +874,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </div>
           </section>
 
+          <div style={{ height:3, background:'linear-gradient(90deg,#4FE3DC,#4D9BFF,#4FE3DC)' }} />
           <div className="foot" style={{ alignItems:'center' }}>
             <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruInspect</b></div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>

@@ -1,0 +1,292 @@
+import React, { useRef } from 'react';
+import { ArrowLeft, ArrowRight, Camera, CheckCircle2, AlertTriangle, Upload } from 'lucide-react';
+import { Vehicle } from '../types';
+import {
+  InspectionItem, InspectionCondition,
+  TRADE_IN_ITEMS, createDefaultItems, getStatusOptions, needsReconCost,
+  computeOverallRating,
+} from '../types/inspection';
+
+interface TradeInWalkAroundProps {
+  vehicle: Vehicle;
+  onBack: () => void;
+  onComplete: (items: InspectionItem[]) => void;
+}
+
+export default function TradeInWalkAround({ vehicle, onBack, onComplete }: TradeInWalkAroundProps) {
+  const [items, setItems] = React.useState<InspectionItem[]>(() => {
+    if (vehicle.tradeInData?.items?.length) {
+      return JSON.parse(JSON.stringify(vehicle.tradeInData.items));
+    }
+    return createDefaultItems();
+  });
+  const [currentStep, setCurrentStep] = React.useState(0);
+  const [showroomBypass, setShowroomBypass] = React.useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const item = items[currentStep];
+  const statusOptions = getStatusOptions(item.id);
+  const totalRecon = items.reduce((s, i) => s + i.estimatedRepairCost, 0);
+  const completedCount = items.filter((i) => i.isCompleted).length;
+
+  const updateItem = (patch: Partial<InspectionItem>) => {
+    setItems((prev) => prev.map((it, idx) => {
+      if (idx !== currentStep) return it;
+      const updated = { ...it, ...patch };
+      if (patch.status !== undefined) {
+        if (!needsReconCost(updated.status)) {
+          updated.estimatedRepairCost = 0;
+          updated.condition = 'Good';
+        } else {
+          updated.condition = 'Needs Recon';
+        }
+      }
+      const hasPhoto = !!updated.photoUrl;
+      const hasStatus = true;
+      updated.isCompleted = hasPhoto || (showroomBypass && item.id !== 'odometer');
+      if (hasStatus && hasPhoto) updated.isCompleted = true;
+      return updated;
+    }));
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    updateItem({ photoUrl: url, isCompleted: true });
+  };
+
+  const canSubmit = items.every((it) => {
+    if (it.id === 'odometer') return !!it.photoUrl;
+    if (showroomBypass) return true;
+    return !!it.photoUrl;
+  });
+
+  const categories = [
+    { name: 'Front & Engine' as const, items: items.filter((i) => i.category === 'Front & Engine') },
+    { name: 'Clockwise Exterior' as const, items: items.filter((i) => i.category === 'Clockwise Exterior') },
+    { name: 'Interior, History & Verification' as const, items: items.filter((i) => i.category === 'Interior, History & Verification') },
+  ];
+
+  const categoryForStep = TRADE_IN_ITEMS[currentStep]?.category || '';
+
+  return (
+    <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
+      {/* Header */}
+      <div className="tl-glass p-4 border-b border-cyan-500/20 shrink-0">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button onClick={onBack} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5">
+              <ArrowLeft size={18} />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-[16px] font-bold tracking-tight">Trade-In Appraisal</h1>
+              <p className="text-[13px] text-neutral-400 truncate">
+                {vehicle.year} {vehicle.make} {vehicle.model}
+              </p>
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <div className="text-[13px] font-bold text-neutral-300">{completedCount}/{items.length}</div>
+            <div className="text-[13px] text-cyan-400 font-semibold">
+              R {totalRecon.toLocaleString('en-ZA')} recon
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full bg-neutral-800 rounded-full h-2">
+          <div
+            className="bg-cyan-500 h-2 rounded-full transition-all"
+            style={{ width: `${(completedCount / items.length) * 100}%` }}
+          />
+        </div>
+
+        {/* Category label */}
+        <p className="text-[11px] tracking-[0.15em] text-cyan-400 mt-2 font-semibold">{categoryForStep}</p>
+      </div>
+
+      {/* Current step card */}
+      <div className="flex-1 overflow-y-auto p-4 pb-32">
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[15px] font-bold text-neutral-100">
+              Step {currentStep + 1}: {item.label}
+            </h2>
+            {item.isCompleted ? (
+              <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
+            ) : (
+              <AlertTriangle size={20} className="text-amber-400 shrink-0" />
+            )}
+          </div>
+
+          {/* Photo */}
+          <div className="mb-4">
+            {item.photoUrl ? (
+              <div className="relative">
+                <img src={item.photoUrl} alt={item.label} className="w-full h-48 object-cover rounded-xl border border-neutral-700" />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg bg-black/70 text-[12px] text-cyan-300 border border-cyan-500/30"
+                >
+                  Retake
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-48 rounded-xl border-2 border-dashed border-neutral-700 hover:border-cyan-500/40 flex flex-col items-center justify-center gap-2 text-neutral-500 hover:text-cyan-300 transition-colors"
+              >
+                <Camera size={32} />
+                <span className="text-[13px] font-semibold">Tap to capture / upload photo</span>
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handlePhotoUpload}
+            />
+          </div>
+
+          {/* Status toggles */}
+          <div className="mb-4">
+            <p className="text-[12px] text-neutral-500 mb-2 font-semibold">STATUS</p>
+            <div className="flex flex-wrap gap-2">
+              {statusOptions.map((opt) => {
+                const active = item.status === opt.value;
+                const isGood = opt.value === 'OK' || opt.value === 'PRESENT' || opt.value === 'VALID' || opt.value === 'FSH';
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => updateItem({ status: opt.value })}
+                    className={`flex-1 min-w-[120px] min-h-[44px] rounded-lg text-[13px] font-semibold border transition-colors ${
+                      active
+                        ? isGood
+                          ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
+                          : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
+                        : 'bg-neutral-950 border-neutral-800 text-neutral-400'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Condition */}
+          <div className="mb-4">
+            <p className="text-[12px] text-neutral-500 mb-2 font-semibold">CONDITION</p>
+            <div className="flex gap-2">
+              {(['Good', 'Fair', 'Poor', 'Needs Recon'] as InspectionCondition[]).map((c) => {
+                const active = item.condition === c;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => updateItem({ condition: c })}
+                    className={`flex-1 min-h-[40px] rounded-lg text-[12px] font-semibold border transition-colors ${
+                      active
+                        ? c === 'Good' ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
+                        : c === 'Fair' ? 'bg-amber-500/15 border-amber-500/50 text-amber-300'
+                        : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
+                        : 'bg-neutral-950 border-neutral-800 text-neutral-400'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recon cost */}
+          <div>
+            <p className="text-[12px] text-neutral-500 mb-2 font-semibold">ESTIMATED REPAIR / REPLACEMENT COST (R)</p>
+            <input
+              type="number"
+              min={0}
+              value={item.estimatedRepairCost || ''}
+              onChange={(e) => updateItem({ estimatedRepairCost: Math.max(0, Number(e.target.value) || 0) })}
+              placeholder="0"
+              autoFocus={needsReconCost(item.status)}
+              className={`w-full px-4 py-3 rounded-xl text-[15px] font-semibold border focus:outline-none ${
+                needsReconCost(item.status)
+                  ? 'bg-red-950/30 border-red-500/50 text-red-200 placeholder-red-400/50 focus:border-red-400'
+                  : 'bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:border-cyan-500/40'
+              }`}
+            />
+          </div>
+        </div>
+
+        {/* Step navigator (dots) */}
+        <div className="mt-4 flex items-center gap-1 justify-center flex-wrap">
+          {items.map((it, idx) => (
+            <button
+              key={it.id}
+              type="button"
+              onClick={() => setCurrentStep(idx)}
+              className={`w-3 h-3 rounded-full transition-colors ${
+                idx === currentStep
+                  ? 'bg-cyan-400 ring-2 ring-cyan-400/30'
+                  : it.isCompleted
+                    ? 'bg-emerald-500/60'
+                    : 'bg-neutral-700'
+              }`}
+              title={`${idx + 1}. ${it.label}`}
+            />
+          ))}
+        </div>
+
+        {/* Showroom bypass */}
+        <label className="flex items-center gap-3 mt-4 px-2">
+          <input
+            type="checkbox"
+            checked={showroomBypass}
+            onChange={(e) => setShowroomBypass(e.target.checked)}
+            className="w-5 h-5 rounded border-neutral-700 bg-neutral-900 accent-cyan-500"
+          />
+          <span className="text-[13px] text-neutral-400">
+            Showroom Condition — skip photos (odometer still required)
+          </span>
+        </label>
+      </div>
+
+      {/* Bottom nav */}
+      <div className="shrink-0 p-3 border-t border-neutral-900 bg-neutral-950/95 flex gap-2">
+        <button
+          type="button"
+          disabled={currentStep === 0}
+          onClick={() => setCurrentStep((s) => s - 1)}
+          className="flex-1 py-3 rounded-xl border border-neutral-800 text-neutral-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-30"
+        >
+          <ArrowLeft size={14} /> Prev
+        </button>
+        {currentStep < items.length - 1 ? (
+          <button
+            type="button"
+            onClick={() => setCurrentStep((s) => s + 1)}
+            className="flex-1 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[13px] font-semibold flex items-center justify-center gap-2"
+          >
+            Next <ArrowRight size={14} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={!canSubmit}
+            onClick={() => onComplete(items)}
+            className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+          >
+            <CheckCircle2 size={14} /> Continue to Valuation
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

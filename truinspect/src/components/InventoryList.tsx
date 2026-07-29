@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
-  BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
+  BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders,
   FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil
 } from 'lucide-react';
 import { 
@@ -13,7 +13,7 @@ import { Vehicle, PHOTO_SLOTS, DmsExportResult } from '../types';
 import DiscScanner from './DiscScanner';
 import type { DiscScan } from '../lib/saDisc';
 import InstallAppButton from './InstallAppButton';
-import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
+import { computeWebReadiness } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 
 interface InventoryListProps {
@@ -25,6 +25,7 @@ interface InventoryListProps {
   onExportToDms?: (vehicle: Vehicle) => Promise<DmsExportResult>;
   onOpenChecklist?: (vehicle: Vehicle) => void;
   onTagDamage?: (vehicle: Vehicle) => void;
+  onOpenTradeIn?: (vehicle: Vehicle) => void;
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
@@ -47,6 +48,7 @@ export default function InventoryList({
   onExportToDms,
   onOpenChecklist,
   onTagDamage,
+  onOpenTradeIn,
   onUpdateVehicle,
   syncStatus,
   onForceSync
@@ -60,13 +62,11 @@ export default function InventoryList({
   const [copiedStockId, setCopiedStockId] = React.useState<string | null>(null);
   const cardRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
   const [activeFilter, setActiveFilter] = React.useState<'All' | 'In-Progress' | 'Ready' | 'Listed'>('All');
-  /** Extra filter: web readiness for floor managers */
-  const [readinessFilter, setReadinessFilter] = React.useState<'ALL' | 'NEEDS' | 'READY'>('ALL');
   const [showAddForm, setShowAddForm] = React.useState(false);
   const [editingVehicle, setEditingVehicle] = React.useState<Vehicle | null>(null);
   const [currentTab, setCurrentTab] = React.useState<'catalog' | 'dashboard' | 'settings'>('catalog');
   const [exportingId, setExportingId] = React.useState<string | null>(null);
-  const [publishingId, setPublishingId] = React.useState<string | null>(null);
+
   const [exportToast, setExportToast] = React.useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   const handleLogout = async () => {
@@ -90,7 +90,6 @@ export default function InventoryList({
       setDeepLinkBanner(stock);
       setCurrentTab('catalog');
       setActiveFilter('All');
-      setReadinessFilter('ALL');
       // Clean URL after read so refresh doesn't re-flash forever
       const url = new URL(window.location.href);
       url.searchParams.delete('stock');
@@ -362,13 +361,6 @@ export default function InventoryList({
       make.includes(q) || model.includes(q) || vin.includes(q) || stock.includes(q);
     if (!matchesSearch) return false;
     if (activeFilter !== 'All' && v.status !== activeFilter) return false;
-    if (readinessFilter !== 'ALL') {
-      const r = computeWebReadiness(v);
-      if (readinessFilter === 'NEEDS' && (r.level === 'inspecting' || r.level === 'signed' || r.level === 'issued')) {
-        return false;
-      }
-      if (readinessFilter === 'READY' && r.level === 'capture') return false;
-    }
     return true;
   });
 
@@ -803,8 +795,8 @@ export default function InventoryList({
 
             Each chip carries its own count: the number is the reason you would
             tap it, and it is what the deleted stat grid was there to tell you. */}
-        <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
-          <div className="flex items-center gap-1.5 w-max">
+        <div className="overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1.5">
             {([
               { id: 'All' as const, label: 'All' },
               { id: 'In-Progress' as const, label: 'In progress' },
@@ -820,7 +812,7 @@ export default function InventoryList({
                   key={f.id}
                   type="button"
                   onClick={() => setActiveFilter(f.id)}
-                  className={`flex items-center gap-1.5 px-3.5 rounded-full text-[13px] font-semibold tracking-normal whitespace-nowrap border transition-colors cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[13px] font-semibold tracking-normal whitespace-nowrap border transition-colors cursor-pointer ${
                     on
                       ? 'bg-[#4FE3DC] border-[#4FE3DC] text-[#06080D]'
                       : 'bg-white/[0.04] border-white/10 text-neutral-300 hover:border-white/20'
@@ -834,29 +826,6 @@ export default function InventoryList({
               );
             })}
 
-            <span className="w-px h-6 bg-white/10 mx-1 shrink-0" aria-hidden="true" />
-
-            {([
-              { id: 'ALL' as const, label: 'Any readiness' },
-              { id: 'NEEDS' as const, label: 'Needs shots' },
-              { id: 'READY' as const, label: 'Web-ready' },
-            ]).map((f) => {
-              const on = readinessFilter === f.id;
-              return (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setReadinessFilter(f.id)}
-                  className={`px-3.5 rounded-full text-[13px] font-semibold tracking-normal whitespace-nowrap border transition-colors cursor-pointer ${
-                    on
-                      ? 'bg-[#4FE3DC] border-[#4FE3DC] text-[#06080D]'
-                      : 'bg-white/[0.04] border-white/10 text-neutral-300 hover:border-white/20'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              );
-            })}
           </div>
         </div>
 
@@ -868,7 +837,7 @@ export default function InventoryList({
                 <Camera size={22} className="text-indigo-400" />
               </div>
               <p className="text-[16px] text-[#E8EAE6] font-bold">
-                {searchTerm || readinessFilter !== 'ALL' || activeFilter !== 'All' ? 'No matches' : 'No vehicles yet'}
+                {searchTerm || activeFilter !== 'All' ? 'No matches' : 'No vehicles yet'}
               </p>
               <p className="text-[13px] text-neutral-500 mt-2 max-w-[220px] leading-relaxed">
                 {searchTerm
@@ -878,10 +847,9 @@ export default function InventoryList({
               <button
                 type="button"
                 onClick={() => {
-                  if (searchTerm || readinessFilter !== 'ALL' || activeFilter !== 'All') {
+                  if (searchTerm || activeFilter !== 'All') {
                     setSearchTerm('');
-                    setReadinessFilter('ALL');
-                    setActiveFilter('All');
+                                  setActiveFilter('All');
                     setDeepLinkBanner(null);
                   } else {
                     setShowAddForm(true);
@@ -890,7 +858,7 @@ export default function InventoryList({
                 className="mt-4 px-4 py-2 rounded-xl tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] text-[13px] font-semibold tracking-normal flex items-center gap-2"
               >
                 <Plus size={12} />{' '}
-                {searchTerm || readinessFilter !== 'ALL' || activeFilter !== 'All' ? 'Clear filters' : 'Add first vehicle'}
+                {searchTerm || activeFilter !== 'All' ? 'Clear filters' : 'Add first vehicle'}
               </button>
             </div>
           ) : (
@@ -1053,23 +1021,23 @@ export default function InventoryList({
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => onSelectVehicle(vehicle)}
-                        className="flex-1 min-w-[110px] flex items-center justify-center gap-2 text-[13px] font-semibold  tracking-wide text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-3 min-h-[44px] rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
+                        className="flex items-center justify-center gap-2 text-[13px] font-semibold text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer min-h-[44px] rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
                         title="Open camera guide and take pictures"
                       >
-                        <Camera size={12} /> Take photos
+                        <Camera size={12} /> Photos
                       </button>
 
                       {onOpenChecklist && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onOpenChecklist(vehicle); }}
                           title="Full inspection — rate every part, check what works, comment"
-                          className="flex items-center gap-1 text-[13px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer whitespace-nowrap bg-cyan-500/10 px-3 min-h-[44px] rounded border border-cyan-500/20 transition-colors"
+                          className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer bg-cyan-500/10 min-h-[44px] rounded-lg border border-cyan-500/20 transition-colors"
                         >
-                          <BookOpen size={10} /> Inspect
+                          <BookOpen size={12} /> Inspect
                         </button>
                       )}
 
@@ -1077,9 +1045,9 @@ export default function InventoryList({
                         <button
                           onClick={(e) => { e.stopPropagation(); onTagDamage(vehicle); }}
                           title="Tag damage directly on the photos — dent, scratch, rust with location and severity"
-                          className="flex items-center gap-1 text-[13px] font-bold text-amber-300 hover:text-amber-200 cursor-pointer whitespace-nowrap bg-amber-500/10 px-3 min-h-[44px] rounded border border-amber-500/25 transition-colors"
+                          className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-amber-300 hover:text-amber-200 cursor-pointer bg-amber-500/10 min-h-[44px] rounded-lg border border-amber-500/25 transition-colors"
                         >
-                          <AlertCircle size={10} /> Tag damage
+                          <AlertCircle size={12} /> Damage
                           {(() => {
                             const n = Object.values(vehicle.damageFindings || {}).reduce((a, l) => a + l.length, 0);
                             return n > 0 ? <span className="ml-0.5">{n}</span> : null;
@@ -1087,13 +1055,17 @@ export default function InventoryList({
                         </button>
                       )}
 
-                      {/* Was text-[#E8EAE6] on this light cyan gradient — near-white on
-                          #7FF0EA is about 1.3:1, i.e. not readable at all. The guard in
-                          index.css that catches this only lists the solid bg-cyan-*
-                          utilities, and a gradient paints background-IMAGE, so nothing
-                          matched it. .on-fill is the system's answer for type on an
-                          accent fill, and is what the neighbouring "Take pictures"
-                          button already gets via .tl-btn-3d. */}
+                      {onOpenTradeIn && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onOpenTradeIn(vehicle); }}
+                          title="Trade-in appraisal — 28-step walk-around with valuation"
+                          className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-emerald-300 hover:text-emerald-200 cursor-pointer bg-emerald-500/10 min-h-[44px] rounded-lg border border-emerald-500/25 transition-colors"
+                        >
+                          <BarChart3 size={12} /> Trade-In
+                          {vehicle.tradeInData && <span className="ml-0.5 text-[10px]">✓</span>}
+                        </button>
+                      )}
+
                       {takenCount > 0 && onViewReport && (
                         <button
                           onClick={(e) => {
@@ -1101,58 +1073,10 @@ export default function InventoryList({
                             onViewReport(vehicle);
                           }}
                           title="Open inspection report with score, findings & damage photos"
-                          className="on-fill flex items-center justify-center gap-1 text-[13px] font-bold cursor-pointer whitespace-nowrap px-3 min-h-[44px] rounded transition-colors shadow-sm"
+                          className="col-span-2 on-fill flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer min-h-[44px] rounded-lg transition-colors shadow-sm"
                           style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
                         >
-                          Report <FileText size={10} />
-                        </button>
-                      )}
-
-                      {onUpdateVehicle && isStructurallyWebReady(vehicle) && (
-                        <button
-                          type="button"
-                          disabled={publishingId === vehicle.id}
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            setPublishingId(vehicle.id);
-                            const nextShow = !vehicle.showOnWebsite;
-                            const saved = await onUpdateVehicle(vehicle, {
-                              showOnWebsite: nextShow,
-                              status: nextShow && vehicle.status === 'In-Progress' ? 'Ready' : vehicle.status,
-                              dealerName: dealershipName,
-                              dealerWhatsApp: dealerWhatsApp || vehicle.dealerWhatsApp,
-                            });
-                            setPublishingId(null);
-                            if (saved) {
-                              setExportToast({
-                                type: 'ok',
-                                text: nextShow
-                                  ? `${vehicle.stockNumber} published to website feed`
-                                  : `${vehicle.stockNumber} removed from website feed`,
-                              });
-                              setTimeout(() => setExportToast(null), 3200);
-                            } else {
-                              setExportToast({ type: 'err', text: 'Could not update publish status' });
-                              setTimeout(() => setExportToast(null), 3200);
-                            }
-                          }}
-                          title={
-                            vehicle.showOnWebsite
-                              ? 'Remove from public website stock feed'
-                              : 'One-tap publish to dealer website stock feed'
-                          }
-                          className={`flex items-center gap-1 text-[13px] font-bold cursor-pointer whitespace-nowrap px-2 py-2 rounded border transition-colors disabled:opacity-50 ${
-                            vehicle.showOnWebsite
-                              ? 'bg-sky-500/15 text-sky-300 border-sky-500/30 hover:bg-sky-500/25'
-                              : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/25 hover:bg-cyan-500/20'
-                          }`}
-                        >
-                          {publishingId === vehicle.id ? (
-                            <RefreshCw size={10} className="animate-spin" />
-                          ) : (
-                            <ExternalLink size={10} />
-                          )}
-                          {vehicle.showOnWebsite ? 'On web · Unpublish' : 'Publish to web'}
+                          <FileText size={12} /> Report
                         </button>
                       )}
                     </div>
@@ -1431,6 +1355,33 @@ export default function InventoryList({
                     Photos that come out too dark or blurry to below this level get flagged for a re-take, so every shot on the report is clear.
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Trade-In Margin */}
+            <div className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
+              <div className="p-3 border-b border-neutral-850 bg-neutral-900/40 flex items-center justify-between">
+                <span className="text-[13px] font-bold text-neutral-400">Trade-in margin</span>
+                <BarChart3 size={11} className="text-emerald-400" />
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <p className="text-[13px] font-bold text-neutral-200">Dealer margin %</p>
+                  <span className="text-[13px] font-mono text-emerald-400 font-bold">
+                    {Number(localStorage.getItem('trulens_margin_pct')) || 15}%
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  defaultValue={Number(localStorage.getItem('trulens_margin_pct')) || 15}
+                  onChange={(e) => localStorage.setItem('trulens_margin_pct', String(Math.max(0, Math.min(100, Number(e.target.value) || 15))))}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-emerald-500/40"
+                />
+                <p className="text-[13px] text-neutral-500 leading-relaxed italic">
+                  Applied to trade-in valuations. Hidden from customer-facing exports.
+                </p>
               </div>
             </div>
 

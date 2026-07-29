@@ -79,6 +79,8 @@ export interface Vehicle {
   slotAssessment?: Record<string, PointResult>;
   /** TruInspect: close-up damage photos taken at capture time, keyed by photo slot id */
   closeups?: Record<string, string[]>;
+  /** Trade-in appraisal: 28-step walk-around + valuation */
+  tradeInData?: import('./types/inspection').TradeInData;
 }
 
 /** TruInspect: one answered checklist question */

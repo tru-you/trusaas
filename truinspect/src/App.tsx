@@ -7,7 +7,11 @@ import ReportPreview from './components/ReportPreview';
 import SlotReview from './components/SlotReview';
 import InspectionSheet from './components/InspectionSheet';
 import DamageTagger from './components/DamageTagger';
+import TradeInWalkAround from './components/TradeInWalkAround';
+import TradeInValuation from './components/TradeInValuation';
+import TradeInSummary from './components/TradeInSummary';
 import { Vehicle, QualityReport, DmsExportResult, PointResult, PHOTO_SLOTS } from './types';
+import type { InspectionItem, ValuationState, TradeInData } from './types/inspection';
 import { useAuth } from './contexts/AuthContext';
 
 /** Keep client state crash-safe even if API returns partial records. */
@@ -69,9 +73,13 @@ export default function App() {
   const { user, loading } = useAuth();
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
-  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist' | 'damage'>('inventory');
+  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist' | 'damage' | 'trade-in' | 'trade-in-valuation' | 'trade-in-summary'>('inventory');
   const [loadError, setLoadError] = React.useState<string | null>(null);
-  
+
+  // Trade-in flow state (carried between the 3 screens)
+  const [tradeInItems, setTradeInItems] = React.useState<InspectionItem[]>([]);
+  const [tradeInValuation, setTradeInValuation] = React.useState<ValuationState | null>(null);
+
   // Editor view states
   const [activeSlotId, setActiveSlotId] = React.useState<string | null>(null);
   const [activeImageSrc, setActiveImageSrc] = React.useState<string | null>(null);
@@ -485,6 +493,21 @@ export default function App() {
     setLoadError(null);
   };
 
+  // Open the trade-in appraisal for a vehicle
+  const handleOpenTradeIn = (vehicle: Vehicle) => {
+    setActiveVehicleId(vehicle.id);
+    setTradeInItems([]);
+    setTradeInValuation(null);
+    setActiveView('trade-in');
+    setLoadError(null);
+  };
+
+  // Save completed trade-in data to the vehicle
+  const handleSaveTradeIn = async (data: TradeInData) => {
+    if (!activeVehicle) return;
+    await handleUpdateVehicle(activeVehicle, { tradeInData: data } as Partial<Vehicle>);
+  };
+
   // Open the inspection Report for a vehicle
   const handleViewReport = (vehicle: Vehicle) => {
     try {
@@ -502,7 +525,7 @@ export default function App() {
   // If camera/report was opened but vehicle disappeared, bounce home instead of blank/error
   React.useEffect(() => {
     if (
-      (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage') &&
+      (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage' || activeView === 'trade-in' || activeView === 'trade-in-valuation' || activeView === 'trade-in-summary') &&
       activeVehicleId &&
       !vehicles.find((v) => v.id === activeVehicleId)
     ) {
@@ -547,6 +570,7 @@ export default function App() {
                 onDeleteVehicle={handleDeleteVehicle}
                 onOpenChecklist={handleOpenChecklist}
                 onTagDamage={handleOpenDamage}
+                onOpenTradeIn={handleOpenTradeIn}
                 onUpdateVehicle={handleUpdateVehicle}
                 syncStatus={syncStatus}
                 onForceSync={fetchInventory}
@@ -572,6 +596,39 @@ export default function App() {
               onSave={async (damageFindings) => {
                 await handleUpdateVehicle(activeVehicle, { damageFindings });
               }}
+            />
+          )}
+
+          {activeView === 'trade-in' && activeVehicle && (
+            <TradeInWalkAround
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onComplete={(completedItems) => {
+                setTradeInItems(completedItems);
+                setActiveView('trade-in-valuation');
+              }}
+            />
+          )}
+
+          {activeView === 'trade-in-valuation' && activeVehicle && (
+            <TradeInValuation
+              vehicle={activeVehicle}
+              items={tradeInItems}
+              onBack={() => setActiveView('trade-in')}
+              onComplete={(val) => {
+                setTradeInValuation(val);
+                setActiveView('trade-in-summary');
+              }}
+            />
+          )}
+
+          {activeView === 'trade-in-summary' && activeVehicle && tradeInValuation && (
+            <TradeInSummary
+              vehicle={activeVehicle}
+              items={tradeInItems}
+              valuation={tradeInValuation}
+              onBack={() => setActiveView('trade-in-valuation')}
+              onSave={handleSaveTradeIn}
             />
           )}
 
