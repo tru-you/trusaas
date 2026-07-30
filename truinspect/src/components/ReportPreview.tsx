@@ -267,46 +267,32 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
+  /* Render straight from the live report node — the same approach TruLens uses,
+   * which downloads reliably. An earlier version cloned the node offscreen and
+   * re-waited for images; that was a workaround for a DOM stuffed with base64
+   * photos, and html2canvas chokes on a detached, unpainted node. Photos are
+   * lightweight "/media/…" URLs now (already loaded on screen), so the live node
+   * rasterises cleanly. */
   const runPdf = async (mode: 'sales' | 'full') => {
     const el = mode === 'sales' ? salesRef.current : reportRef.current;
     if (!el) return;
     setGenerating(mode);
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      const clone = el.cloneNode(true) as HTMLElement;
-      clone.style.width = '210mm';
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      document.body.appendChild(clone);
-
-      // Wait for images in the clone to load (or fail) before rendering
-      const imgs = Array.from(clone.querySelectorAll('img'));
-      await Promise.allSettled(
-        imgs.map(img => img.complete ? Promise.resolve() : new Promise<void>(r => {
-          img.onload = img.onerror = () => r();
-          setTimeout(r, 3000);
-        }))
-      );
-
-      try {
-        await html2pdf()
-          .set({
-            margin: mode === 'sales' ? [6, 8, 6, 8] : [8, 8, 8, 8],
-            filename: `TruInspect_${mode === 'sales' ? 'Summary' : 'VIR'}_${vehicle.stockNumber || 'draft'}.pdf`,
-            image: { type: 'jpeg', quality: 0.95 },
-            html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false, windowWidth: 794 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] },
-          } as any)
-          .from(clone)
-          .save();
-      } finally {
-        document.body.removeChild(clone);
-      }
+      await html2pdf()
+        .set({
+          margin: mode === 'sales' ? [6, 8, 6, 8] : [8, 8, 8, 8],
+          filename: `TruInspect_${mode === 'sales' ? 'Summary' : 'VIR'}_${vehicle.stockNumber || 'draft'}.pdf`,
+          image: { type: 'jpeg', quality: 0.95 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['css', 'legacy'] },
+        } as any)
+        .from(el)
+        .save();
     } catch (err) {
       console.error(err);
-      alert('PDF failed — use Print → Save as PDF.');
+      alert('PDF failed — use Save Report (HTML) or Print → Save as PDF.');
     } finally {
       setGenerating(null);
     }
@@ -429,17 +415,17 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <button
               onClick={exportHtml}
               disabled={exporting}
-              title="Downloads a single file with every photo embedded — it opens offline and survives being emailed. Most reliable on a phone."
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#0B0F17] disabled:opacity-50"
-              style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
+              title="Downloads a single file with every photo embedded — opens offline and survives being emailed"
+              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200 disabled:opacity-50"
             >
-              <FileText size={12} /> {exporting ? 'Embedding…' : 'Save Report'}
+              <FileText size={12} /> {exporting ? 'Embedding…' : 'HTML'}
             </button>
             <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200 disabled:opacity-50">
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#0B0F17] disabled:opacity-50"
+              style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}>
               <Download size={12} /> {generating === 'full' ? '…' : 'PDF'}
             </button>
           </div>

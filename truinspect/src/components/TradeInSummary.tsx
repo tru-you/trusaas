@@ -147,45 +147,29 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
     }
   };
 
+  /* Render straight from the live report node — matches TruLens, which downloads
+   * reliably. No offscreen clone: photos are "/media/…" URLs already painted on
+   * screen, so html2canvas rasterises the live node cleanly. */
   const handleExportPdf = async () => {
     const el = reportRef.current;
     if (!el) return;
     setExporting(true);
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      const clone = el.cloneNode(true) as HTMLElement;
-      clone.style.width = '210mm';
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      document.body.appendChild(clone);
-
-      const imgs = Array.from(clone.querySelectorAll('img'));
-      await Promise.allSettled(
-        imgs.map(img => img.complete ? Promise.resolve() : new Promise<void>(r => {
-          img.onload = img.onerror = () => r();
-          setTimeout(r, 3000);
-        }))
-      );
-
-      try {
-        await html2pdf()
-          .set({
-            margin: [8, 8, 8, 8],
-            filename: `TradeIn_${vehicle.stockNumber || 'draft'}.pdf`,
-            image: { type: 'jpeg', quality: 0.92 },
-            html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false, windowWidth: 794 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] },
-          } as any)
-          .from(clone)
-          .save();
-      } finally {
-        document.body.removeChild(clone);
-      }
+      await html2pdf()
+        .set({
+          margin: [8, 8, 8, 8],
+          filename: `TradeIn_${vehicle.stockNumber || 'draft'}.pdf`,
+          image: { type: 'jpeg', quality: 0.92 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['css', 'legacy'] },
+        } as any)
+        .from(el)
+        .save();
     } catch (err) {
       console.error(err);
-      alert('PDF failed — use HTML or Print → Save as PDF.');
+      alert('PDF failed — use Save Report (HTML) or Print → Save as PDF.');
     } finally {
       setExporting(false);
     }
@@ -262,19 +246,10 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             type="button"
             onClick={handleExportHtml}
             disabled={exporting}
-            title="Downloads a single file with every photo embedded — opens offline and survives being emailed. Most reliable on a phone."
-            className="px-3 py-2 rounded-lg text-[#0B0F17] text-[12px] font-semibold flex items-center gap-1.5 disabled:opacity-50"
-            style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
+            title="Downloads a single file with every photo embedded — opens offline and survives being emailed"
+            className="px-3 py-2 rounded-lg border border-neutral-700 text-neutral-300 text-[12px] font-semibold flex items-center gap-1.5 disabled:opacity-50"
           >
-            <Download size={13} /> {exporting ? 'Exporting…' : 'Save Report'}
-          </button>
-          <button
-            type="button"
-            onClick={handleExportPdf}
-            disabled={exporting}
-            className="px-3 py-2 rounded-lg border border-cyan-500/30 text-cyan-300 text-[12px] font-semibold flex items-center gap-1.5 disabled:opacity-50"
-          >
-            <Download size={13} /> PDF
+            <Download size={13} /> HTML
           </button>
           <button
             type="button"
@@ -282,6 +257,15 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             className="px-3 py-2 rounded-lg border border-neutral-700 text-neutral-300 text-[12px] font-semibold flex items-center gap-1.5"
           >
             <Printer size={13} /> Print
+          </button>
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            disabled={exporting}
+            className="px-3 py-2 rounded-lg text-[#0B0F17] text-[12px] font-semibold flex items-center gap-1.5 disabled:opacity-50"
+            style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
+          >
+            <Download size={13} /> {exporting ? 'Exporting…' : 'PDF'}
           </button>
         </div>
       </div>
