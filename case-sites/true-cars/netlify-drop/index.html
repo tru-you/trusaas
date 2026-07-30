@@ -1208,12 +1208,12 @@ html.tc-splashing,html.tc-splashing body{overflow:hidden!important;}
   </div>
 </footer>
 
-<script src="assets/js/data.js?v=14"></script>
+<script src="assets/js/data.js?v=15"></script>
 <script src="assets/js/products.js?v=2"></script>
-<script src="assets/js/stock-bridge.js?v=3"></script>
+<script src="assets/js/stock-bridge.js?v=4"></script>
 <script src="assets/js/web3d-mock.js?v=2"></script>
 <script src="assets/js/site-chrome.js?v=16"></script>
-<script src="assets/js/site.js?v=15"></script>
+<script src="assets/js/site.js?v=16"></script>
 <script>
 (function(){
   /* Tru3D on homepage — ship local Honda orbit immediately (don't wait on Lens cold start) */
@@ -1291,6 +1291,13 @@ function renderHomeStock(){
 
   // re-run reveal observer for injected cards
   document.querySelectorAll('#featuredGrid .vcard,#performanceGrid .vcard,#premiumGrid .vcard').forEach((c,i)=>{ c.classList.add('rv'); if(i%4) c.classList.add('d'+(i%4)); });
+  if(window.TCSA_reobserve) TCSA_reobserve();
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('#featuredGrid .rv:not(.in),#performanceGrid .rv:not(.in),#premiumGrid .rv:not(.in)').forEach(el=>{
+      const r=el.getBoundingClientRect();
+      if(r.top<window.innerHeight&&r.bottom>0) el.classList.add('in');
+    });
+  });
 }
 renderHomeStock();
 window.addEventListener('tcsa:stock', renderHomeStock);
@@ -1598,7 +1605,7 @@ TCSA.initChrome();
 <script src="truchat/true-cars/widget.js?v=5" data-bottom="24px" data-position="right" defer></script>
 
 <!-- TruAfford · soft affordability (TruSaaS) -->
-<script src="tru-afford.js?v=5" data-dealer="True-Cars" data-wa="27620502091" data-brand="truecars" data-position="left" data-bottom="96px"></script>
+<script src="tru-afford.js?v=6" data-dealer="True-Cars" data-wa="27620502091" data-brand="truecars" data-position="left" data-bottom="24px"></script>
 
 <script>
 /* Pause the hero's infinite animations whenever it scrolls out of view */

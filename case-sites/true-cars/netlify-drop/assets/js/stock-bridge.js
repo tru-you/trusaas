@@ -1,7 +1,8 @@
 /* ============================================================
    TRUECAR SA — TruSaaS live stock bridge
-   Pulls public inventory from TruFlow Premium and populates
-   TCSA.vehicles. No static fallback — this is a live DMS site.
+   Pulls public inventory from TruFlow Premium and merges it
+   with mock stock from data.js. Live vehicles take priority;
+   mock vehicles with non-colliding IDs are kept alongside.
    ============================================================ */
 (function () {
   window.TCSA = window.TCSA || {};
@@ -34,7 +35,9 @@
     mergeMode: "live-only",
   };
 
-  TCSA._staticVehicles = [];
+  if (!TCSA._staticVehicles || !TCSA._staticVehicles.length) {
+    TCSA._staticVehicles = [];
+  }
 
   function mapBody(raw) {
     var b = String(raw || "").toLowerCase();
@@ -162,13 +165,17 @@
 
   TCSA.loadLiveStock = async function () {
     var live = await TCSA.fetchTruSaasStock();
+    var mock = (TCSA._staticVehicles || []).slice();
 
     if (live.vehicles.length) {
-      TCSA.vehicles = live.vehicles;
+      var liveIds = {};
+      live.vehicles.forEach(function (v) { liveIds[v.id] = true; });
+      var kept = mock.filter(function (v) { return !liveIds[v.id]; });
+      TCSA.vehicles = live.vehicles.concat(kept);
       TCSA.stockSource = live.source;
     } else {
-      TCSA.vehicles = [];
-      TCSA.stockSource = "empty";
+      TCSA.vehicles = mock;
+      TCSA.stockSource = mock.length ? "mock" : "empty";
     }
 
     window.dispatchEvent(

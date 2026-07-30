@@ -148,6 +148,9 @@ TCSA.initChrome = function(){
       if(r.top < window.innerHeight && r.bottom > 0){ el.classList.add('in'); io.unobserve(el); }
     });
   });
+  window.TCSA_reobserve = function(root){
+    (root||document).querySelectorAll('.rv:not(.in),.rv-scale:not(.in)').forEach(el=>io.observe(el));
+  };
 
   /* animated counters */
   const cio = new IntersectionObserver((entries)=>{
