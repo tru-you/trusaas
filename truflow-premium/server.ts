@@ -148,7 +148,7 @@ const DEFAULT_DEALERSHIP_ID = "d1";
  *  holding every dealer's code in plaintext on the Render dashboard — and
  *  restarting TruLens so it took effect. Once per product, per dealer, and
  *  revoking access meant editing that string and redeploying again. */
-const PRODUCTS = ["lens", "flow", "inspect", "live", "value"] as const;
+const PRODUCTS = ["lens", "flow", "flow-lite", "inspect", "live", "value"] as const;
 type ProductName = (typeof PRODUCTS)[number];
 
 /** Collections whose rows belong to exactly one dealership.
@@ -3076,7 +3076,14 @@ app.post("/api/dealerships", (req: any, res) => {
     ? requested.map((p: any) => String(p).toLowerCase()).filter((p: string) => PRODUCTS.includes(p as ProductName))
     : ["lens", "flow"];
 
-  const dealership = { id, name, location, slug, websiteUrl, products };
+  const address = String(req.body?.address || "").trim();
+  const registrationNumber = String(req.body?.registrationNumber || "").trim();
+  const vatNumber = String(req.body?.vatNumber || "").trim();
+
+  const dealership: Record<string, any> = { id, name, location, slug, websiteUrl, products };
+  if (address) dealership.address = address;
+  if (registrationNumber) dealership.registrationNumber = registrationNumber;
+  if (vatNumber) dealership.vatNumber = vatNumber;
   state.dealerships = [...existing, dealership];
   writeState(state);
 
@@ -3099,10 +3106,13 @@ app.put("/api/dealerships/:id", (req: any, res) => {
   /* Slug and id are deliberately not editable. Vehicles are tagged by id and
      dealer websites are wired to the slug; changing either detaches stock
      from the dealer it belongs to. Retire and recreate instead. */
-  const { name, location, websiteUrl, products } = req.body || {};
+  const { name, location, websiteUrl, products, address, registrationNumber, vatNumber } = req.body || {};
   if (typeof name === "string" && name.trim()) state.dealerships[i].name = name.trim();
   if (typeof location === "string") state.dealerships[i].location = location.trim();
   if (typeof websiteUrl === "string") state.dealerships[i].websiteUrl = websiteUrl.trim();
+  if (typeof address === "string") state.dealerships[i].address = address.trim();
+  if (typeof registrationNumber === "string") state.dealerships[i].registrationNumber = registrationNumber.trim();
+  if (typeof vatNumber === "string") state.dealerships[i].vatNumber = vatNumber.trim();
 
   /* Entitlements ARE editable, unlike the slug — granting or revoking an app is
      the routine part of running this. Unlisted names are dropped rather than

@@ -16,6 +16,12 @@ export interface Dealership {
    *  editing that app's environment variable and redeploying it. Backfilled to
    *  all products on load, since that is what a dealer can reach today. */
   products?: string[];
+  /** Street address lines for invoices/agreements. */
+  address?: string;
+  /** CIPC registration number, e.g. "2015/123456/07". */
+  registrationNumber?: string;
+  /** SARS VAT reference number. */
+  vatNumber?: string;
 }
 
 export interface Vehicle {

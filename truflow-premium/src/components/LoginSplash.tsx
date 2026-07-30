@@ -55,7 +55,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div
-      className="flex items-center justify-center min-h-screen bg-[color:var(--ink)] text-[color:var(--white)] p-4 relative overflow-hidden"
+      className="flex items-center justify-center flex-1 min-h-full bg-[color:var(--ink)] text-[color:var(--white)] p-4 relative overflow-hidden"
       style={{
         paddingTop: 'calc(1rem + var(--safe-t))',
         paddingBottom: 'calc(1rem + var(--safe-b))',
@@ -168,12 +168,9 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
           <p className="mt-3 text-center text-[13px] text-[rgba(232,234,230,0.72)]">Opening demo…</p>
         )}
 
-        <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center gap-1.5">
-          <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[13px] font-mono tracking-normal text-[color:var(--cyan-bright)] hover:underline">
-            TruSaaS platform
-          </a>
-          <p className="text-[13px] text-[color:var(--faint)] text-center">
-            Codes are issued by your dealer principal.
+        <div className="mt-6 pt-4 border-t border-white/10 text-center">
+          <p className="text-[13px] text-[color:var(--faint)]">
+            <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[color:var(--cyan-bright)] hover:underline">TruSaaS</a> · Dealer management · v1.0
           </p>
         </div>
       </div>

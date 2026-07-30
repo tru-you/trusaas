@@ -460,7 +460,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <option value="select">Premium Select</option>
                     <option value="performance">Premium Performance</option>
                   </select>
-                  <p className="text-[11px] text-[rgba(232,234,230,0.45)]">Controls which category page this vehicle appears on the website.</p>
+                  <p className="text-[length:var(--t-micro)] text-[rgba(232,234,230,0.45)]">Controls which category page this vehicle appears on the website.</p>
                 </div>
 
                 {/* Spec Matrix */}

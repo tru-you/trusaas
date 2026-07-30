@@ -88,10 +88,10 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-[1000] font-sans">
+    <div className="fixed bottom-0 right-0 md:bottom-5 md:right-5 z-[1000] font-sans">
       {/* Chat Panel */}
       {isOpen && (
-        <div className="flex flex-col w-[350px] h-[480px] bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.15)] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="flex flex-col w-full h-[100dvh] md:w-[350px] md:h-[480px] md:rounded-2xl bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.15)] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
           <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(138,162,184,0.1)] bg-[linear-gradient(90deg,rgba(20,102,224,0.1),rgba(21,199,192,0.05))]">
             <div className="flex items-center gap-2">

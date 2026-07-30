@@ -1,15 +1,20 @@
-import { Invoice, Lead, Vehicle } from "../types";
+import { Invoice, Lead, Vehicle, Dealership } from "../types";
 import { Printer } from "lucide-react";
 
 interface InvoicePreviewProps {
   invoice: Invoice;
   lead?: Lead;
   vehicle?: Vehicle;
+  dealership?: Dealership;
 }
 
-export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePreviewProps) {
+export default function InvoicePreview({ invoice, lead, vehicle, dealership }: InvoicePreviewProps) {
   const exVat = invoice.amount / 1.15;
   const vat = invoice.amount - exVat;
+
+  const dealerName = dealership?.name || "Your Dealership";
+  const dealerAddress = dealership?.address || dealership?.location || "";
+  const dealerVat = dealership?.vatNumber || "";
 
   const formatZAR = (num: number) => {
     return "R " + Math.round(num).toLocaleString("en-ZA");
@@ -55,12 +60,14 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
         </button>
       </div>
       <div className="card-body p-6" id="printableInvoiceFrame">
-        <div className="bg-[color:var(--ink-2)] text-[color:var(--ink-2)] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans">
+        <div className="bg-white text-[#1a1a2e] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans">
           {/* Header */}
-          <div className="flex justify-between border-b-2 border-white/10 pb-5 mb-6">
+          <div className="flex justify-between border-b-2 border-gray-200 pb-5 mb-6">
             <div>
-              <div className="text-xl font-semibold tracking-tight text-[color:var(--ink-2)]">TruFlow</div>
-              <div className="text-[13px] text-gray-400 font-medium">Automotive Retail Operations South Africa</div>
+              <div className="text-xl font-semibold tracking-tight text-gray-900">{dealerName}</div>
+              {dealerAddress && (
+                <div className="text-[13px] text-gray-400 font-medium">{dealerAddress}</div>
+              )}
             </div>
             <div className="text-right">
               <div className="text-lg font-semibold tracking-tight text-gray-900">TAX INVOICE</div>
@@ -72,10 +79,11 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
           <div className="grid grid-cols-3 gap-6 mb-8 text-[13px] text-gray-700">
             <div>
               <div className="font-bold text-gray-900 mb-1">Merchant Provider:</div>
-              <div>Johannesburg Auto (Pty) Ltd</div>
-              <div>Sandton Towers, Sandhurst</div>
-              <div>Johannesburg, 2196</div>
-              <div>VAT Ref: 4920194857</div>
+              <div>{dealerName}</div>
+              {dealerAddress && dealerAddress.split("\n").map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+              {dealerVat && <div>VAT Ref: {dealerVat}</div>}
             </div>
             <div>
               <div className="font-bold text-gray-900 mb-1">Bill To:</div>
@@ -100,7 +108,7 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
           {/* Table */}
           <table className="w-full border-collapse mb-6 text-[13px] text-gray-800">
             <thead>
-              <tr className="border-b-2 border-white/10 bg-gray-50">
+              <tr className="border-b-2 border-gray-200 bg-gray-50">
                 <th className="text-left py-2 px-3 font-bold text-gray-700 text-[13px]">Vehicle</th>
                 <th className="text-center py-2 px-3 font-bold text-gray-700 text-[13px] w-12">Qty</th>
                 <th className="text-right py-2 px-3 font-bold text-gray-700 text-[13px] w-36">Unit price ex VAT</th>
@@ -136,7 +144,7 @@ export default function InvoicePreview({ invoice, lead, vehicle }: InvoicePrevie
               <span>VAT @ 15%:</span>
               <span className="font-mono">{formatZAR(vat)}</span>
             </div>
-            <div className="flex justify-between text-base font-semibold text-gray-900 border-t-2 border-white/10 pt-2 mt-2">
+            <div className="flex justify-between text-base font-semibold text-gray-900 border-t-2 border-gray-200 pt-2 mt-2">
               <span>TOTAL DUE:</span>
               <span className="font-mono">{formatZAR(invoice.amount)}</span>
             </div>

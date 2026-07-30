@@ -74,7 +74,6 @@ import { Vehicle, Lead, Task, Invoice, Agreement, User, Communication, Expense, 
 
 import Counter from "./components/Counter";
 import ChatWidget from "./components/ChatWidget";
-import WebsiteChatWidget from "./components/WebsiteChatWidget";
 import InvoicePreview from "./components/InvoicePreview";
 import AgreementPreview from "./components/AgreementPreview";
 import DocumentsHub from "./components/DocumentsHub";
@@ -88,7 +87,6 @@ import InstallAppButton from "./components/InstallAppButton";
 const LeadDetailModal = lazy(() => import("./components/LeadDetailModal"));
 const AccountingRecon = lazy(() => import("./components/AccountingRecon"));
 const VehicleDetailModal = lazy(() => import("./components/VehicleDetailModal"));
-const WordPressIntegration = lazy(() => import("./components/WordPressIntegration"));
 const DealershipAdmin = lazy(() => import("./components/DealershipAdmin"));
 import AmortizationCalc from "./components/AmortizationCalc";
 import CustomerLeadForm from "./components/CustomerLeadForm";
@@ -781,7 +779,6 @@ export default function App() {
       category: "Media & Web",
       items: [
         { id: "media_web", label: "Stock media", icon: Image },
-        { id: "integration", label: "WordPress sync", icon: Code },
       ]
     },
     {
@@ -1174,7 +1171,7 @@ export default function App() {
     !isLoggedIn ? (
       <LoginSplash onLogin={handleLogin} />
     ) : (
-      <div className="min-h-screen bg-[color:var(--ink)] text-[color:var(--white)] flex relative select-none perspective-scene">
+      <div className="min-h-full flex-1 bg-[color:var(--ink)] text-[color:var(--white)] flex relative select-none perspective-scene">
         {/* Scroll indicator */}
         <div className="scroll-progress transition-transform" />
 
@@ -1243,7 +1240,7 @@ export default function App() {
          <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1 scrollbar-thin">
           {filteredNavigation.map((group) => (
             <div key={group.category} className="flex flex-col gap-1">
-              <span className="font-mono text-[13px] text-[rgba(232,234,230,0.72)] tracking-widest  font-semibold pl-3 mb-1 block">
+              <span className="font-mono text-[13px] text-[rgba(232,234,230,0.72)] tracking-wide font-semibold pl-3 mb-1 block">
                 {group.category}
               </span>
               {group.items.map((n) => {
@@ -1254,7 +1251,7 @@ export default function App() {
                     key={n.id}
                     type="button"
                     onClick={() => navigateTo(n.id)}
-                    className={`glass-nav-item flex items-center gap-3 px-3 py-2 text-[13px] font-semibold rounded-xl text-left relative cursor-pointer border ${
+                    className={`glass-nav-item flex items-center gap-3 px-3 py-2.5 min-h-11 text-[13px] font-semibold rounded-xl text-left relative cursor-pointer border ${
                       active
                         ? "is-active bg-[color:var(--cyan-faint)] text-[color:var(--white)] border-[color:var(--cyan-soft)]"
                         : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/[0.04] border-transparent"
@@ -1377,7 +1374,7 @@ export default function App() {
             installed PWA and falls back to 0.5rem everywhere else. */}
         <div
           style={{ top: "calc(0.5rem + var(--safe-t))" }}
-          className="flex flex-col gap-3 md:hidden sticky z-[60] rounded-xl px-3 py-2.5 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]"
+          className="flex flex-col gap-2 md:hidden sticky z-[60] rounded-xl px-3 py-2 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]"
         >
           <div className="flex items-center gap-2">
             <button
@@ -1389,12 +1386,6 @@ export default function App() {
               <Menu size={20} />
             </button>
             <img src={logo} alt="TruFlow Premium" className="h-9 w-auto max-w-[150px] object-contain logo-float" />
-            {/* The desktop top bar is hidden on mobile, so the assistant needs
-                its own way in here or phone users lose it entirely.
-                Log out used to sit here too — four controls on a 390px row left
-                the logo 90px and both pills under the 44px touch floor. It is
-                already the last item in the drawer, which is where a
-                once-a-day action belongs. */}
             <button
               type="button"
               onClick={() => setAssistOpen(true)}
@@ -1406,51 +1397,45 @@ export default function App() {
             </button>
           </div>
 
-          {/* The morning strip, which was desktop-only. These three counts are
-              the most glanceable thing in the app and a phone is exactly where
-              someone checks them — walking the floor, not at the desk. Scrolls
-              sideways rather than wrapping so the row stays one line deep. */}
-          {/* -mx/px match the bar's own padding so the row scrolls edge to edge
-              without escaping its rounded border. */}
-          <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <button
-              type="button"
-              onClick={() => navigateTo("leads")}
-              className="flex items-center gap-2 h-10 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[13px] shrink-0"
-              title="Leads that have never been replied to"
-            >
-              <MessageSquare size={14} />
-              <span className="font-semibold">{awaitingReply.length}</span>
-              <span>waiting</span>
-              {awaitingReply.length > 0 && (
-                <span className="opacity-70">· {formatWait(oldestWaitMs)}</span>
-              )}
-            </button>
+          <div className="relative">
+            <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <button
+                type="button"
+                onClick={() => navigateTo("leads")}
+                className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
+                title="Leads that have never been replied to"
+              >
+                <MessageSquare size={12} />
+                <span className="font-semibold">{awaitingReply.length}</span>
+                <span>waiting</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => navigateTo("tasks")}
-              className="flex items-center gap-2 h-10 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[13px] shrink-0"
-              title="Promised for today, and anything already past its date"
-            >
-              <CalendarClock size={14} />
-              <span className="font-semibold">{dueTodayCount}</span>
-              <span>due today</span>
-              {overdueCount > 0 && (
-                <span className="text-[color:var(--muted)] font-semibold">· {overdueCount} late</span>
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={() => navigateTo("tasks")}
+                className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
+                title="Promised for today, and anything already past its date"
+              >
+                <CalendarClock size={12} />
+                <span className="font-semibold">{dueTodayCount}</span>
+                <span>due</span>
+                {overdueCount > 0 && (
+                  <span className="text-[color:var(--muted)] font-semibold">· {overdueCount} late</span>
+                )}
+              </button>
 
-            <button
-              type="button"
-              onClick={() => navigateTo("inventory")}
-              className="flex items-center gap-2 h-10 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[13px] shrink-0"
-              title="Sold, not yet handed over"
-            >
-              <Car size={14} />
-              <span className="font-semibold">{inPrepCount}</span>
-              <span>going out</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => navigateTo("inventory")}
+                className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
+                title="Sold, not yet handed over"
+              >
+                <Car size={12} />
+                <span className="font-semibold">{inPrepCount}</span>
+                <span>going out</span>
+              </button>
+            </div>
+            <div className="pointer-events-none absolute top-0 right-0 bottom-0.5 w-6 bg-gradient-to-l from-[color:var(--ink-2)] to-transparent rounded-r-xl" />
           </div>
         </div>
 
@@ -1460,7 +1445,7 @@ export default function App() {
             {/* Framed header. The plain heading read like a page title on a
                 form; a dealer opening this at 8am should see whose floor it is,
                 that it is live, and have the assistant one click away. */}
-            <div className="card p-5 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="card p-4 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[length:var(--t-micro)] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]">
@@ -1570,7 +1555,7 @@ export default function App() {
             )}
 
             {/* Stock that can't sell yet — see the notOnline note above. */}
-            <div className="card p-5 md:p-6">
+            <div className="card p-4 md:p-6">
               <div className="flex items-center justify-between mb-4 gap-2">
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">
                   Not online yet
@@ -1929,8 +1914,8 @@ export default function App() {
                           <h4 className="font-semibold text-[16px] text-[color:var(--white)] truncate">{v.year || ""} {v.make || "Vehicle"} {v.model || ""}</h4>
                           <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
                             {v.trim || "Standard Specs"} · <span className="font-mono">{v.stockNumber}</span>
-                            {v.category === "select" && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">Select</span>}
-                            {v.category === "performance" && <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/30">Performance</span>}
+                            {v.category === "select" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">Select</span>}
+                            {v.category === "performance" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-bold bg-red-500/15 text-red-400 border border-red-500/30">Performance</span>}
                           </p>
                           <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-wrap gap-x-2 gap-y-1 mt-2">
                             <span>{Number(v.mileage || 0).toLocaleString()} km</span>
@@ -2211,7 +2196,7 @@ export default function App() {
                         type="number"
                         value={newVehicleForm.retailPrice}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, retailPrice: parseFloat(e.target.value) || 0 }))}
-                        className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
+                        className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -2220,7 +2205,7 @@ export default function App() {
                         type="number"
                         value={newVehicleForm.costPrice}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, costPrice: parseFloat(e.target.value) || 0 }))}
-                        className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
+                        className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -2229,7 +2214,7 @@ export default function App() {
                         type="number"
                         value={newVehicleForm.mileage}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, mileage: parseInt(e.target.value) || 0 }))}
-                        className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
+                        className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -2238,7 +2223,7 @@ export default function App() {
                         type="text"
                         value={newVehicleForm.stockNumber}
                         onChange={(e) => setNewVehicleForm((p) => ({ ...p, stockNumber: e.target.value }))}
-                        className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-mono"
+                        className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none font-mono"
                       />
                     </div>
                   </div>
@@ -2267,7 +2252,7 @@ export default function App() {
                       rows={3}
                       value={newVehicleForm.description}
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, description: e.target.value }))}
-                      className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
+                      className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none font-sans"
                     ></textarea>
                   </div>
 
@@ -2800,6 +2785,7 @@ export default function App() {
                 invoice={state.invoices.find((i) => i.id === activeInvoiceId)!}
                 lead={state.leads.find((l) => l.id === state.invoices.find((i) => i.id === activeInvoiceId)?.leadId)}
                 vehicle={state.vehicles.find((v) => v.id === state.invoices.find((i) => i.id === activeInvoiceId)?.vehicleId)}
+                dealership={dealershipId ? (state?.dealerships || []).find((d: any) => d.id === dealershipId) : undefined}
               />
             )}
           </div>
@@ -2870,6 +2856,7 @@ export default function App() {
                 agreement={state.agreements.find((a) => a.id === activeAgreementId)!}
                 lead={state.leads.find((l) => l.id === state.agreements.find((a) => a.id === activeAgreementId)?.leadId)}
                 vehicle={state.vehicles.find((v) => v.id === state.agreements.find((a) => a.id === activeAgreementId)?.vehicleId)}
+                dealership={dealershipId ? (state?.dealerships || []).find((d: any) => d.id === dealershipId) : undefined}
                 onSignAgreement={handleSignAgreement}
               />
             )}
@@ -3139,13 +3126,6 @@ export default function App() {
             </div>
             <AmortizationCalc initialPrice={state.vehicles[0]?.retailPrice || 485000} />
           </div>
-        )}
-
-        {/* WORDPRESS & WEB SYNC MODULE */}
-        {activeSection === "integration" && (
-          <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
-            <WordPressIntegration onRefresh={loadAllState} />
-          </Suspense>
         )}
 
         {/* STOCK MEDIA HUB — gallery only; capture lives in TruLens */}
@@ -3434,7 +3414,7 @@ export default function App() {
                       value={trulensUrlInput}
                       onChange={(e) => setTrulensUrlInput(e.target.value)}
                       placeholder="http://localhost:3000 or https://… tunnel"
-                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-mono"
+                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-xl px-4 py-3 text-[16px] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors text-[color:var(--white)] font-mono"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
@@ -3443,7 +3423,7 @@ export default function App() {
                       value={dealerSlugInput}
                       onChange={(e) => setDealerSlugInput(e.target.value)}
                       placeholder="mkr-autosales"
-                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-mono"
+                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-xl px-4 py-3 text-[16px] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors text-[color:var(--white)] font-mono"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
@@ -3452,7 +3432,7 @@ export default function App() {
                       value={waNumberInput}
                       onChange={(e) => setWaNumberInput(e.target.value)}
                       placeholder="2766… (country code, no +)"
-                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-mono"
+                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-xl px-4 py-3 text-[16px] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors text-[color:var(--white)] font-mono"
                     />
                   </label>
                 </div>
@@ -3588,7 +3568,7 @@ export default function App() {
                   </div>
                   <div>
                     <span className="font-bold text-[16px] text-[color:var(--white)] block">Marketplace syndication</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Real-time syndication endpoints for synchronizing stock with AutoTrader, Cars.co.za and WordPress.</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Real-time syndication endpoints for synchronizing stock with AutoTrader and Cars.co.za.</span>
                   </div>
                 </div>
               </div>
@@ -3638,7 +3618,7 @@ export default function App() {
       {/* Log Lead Modal */}
       {isLeadModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-4 md:p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
               <h3 className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">Add lead</h3>
               <button onClick={() => setIsLeadModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"><X size={16} /></button>
@@ -3647,21 +3627,21 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">First Name</label>
-                  <input type="text" required value={newLeadForm.firstName} onChange={(e) => setNewLeadForm((p) => ({ ...p, firstName: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                  <input type="text" required value={newLeadForm.firstName} onChange={(e) => setNewLeadForm((p) => ({ ...p, firstName: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Last Name</label>
-                  <input type="text" required value={newLeadForm.lastName} onChange={(e) => setNewLeadForm((p) => ({ ...p, lastName: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                  <input type="text" required value={newLeadForm.lastName} onChange={(e) => setNewLeadForm((p) => ({ ...p, lastName: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Phone</label>
-                  <input type="text" required value={newLeadForm.phone} onChange={(e) => setNewLeadForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                  <input type="text" required value={newLeadForm.phone} onChange={(e) => setNewLeadForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Email</label>
-                  <input type="email" required value={newLeadForm.email} onChange={(e) => setNewLeadForm((p) => ({ ...p, email: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                  <input type="email" required value={newLeadForm.email} onChange={(e) => setNewLeadForm((p) => ({ ...p, email: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
@@ -3683,7 +3663,7 @@ export default function App() {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Initial Requirement notes</label>
-                <textarea rows={2} value={newLeadForm.notes} onChange={(e) => setNewLeadForm((p) => ({ ...p, notes: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-sans"></textarea>
+                <textarea rows={2} value={newLeadForm.notes} onChange={(e) => setNewLeadForm((p) => ({ ...p, notes: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors font-sans"></textarea>
               </div>
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" onClick={() => setIsLeadModalOpen(false)} className="btn btn-secondary">Cancel</button>
@@ -3697,7 +3677,7 @@ export default function App() {
       {/* Invoice Modal */}
       {isInvoiceModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-4 md:p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
               <h3 className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">New invoice</h3>
               <button onClick={() => setIsInvoiceModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"><X size={16} /></button>
@@ -3729,11 +3709,11 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Amount (ZAR)</label>
-                  <input type="number" required value={newInvoiceForm.amount} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, amount: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                  <input type="number" required value={newInvoiceForm.amount} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, amount: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Due Date</label>
-                  <input type="date" required value={newInvoiceForm.dueDate} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-sans" />
+                  <input type="date" required value={newInvoiceForm.dueDate} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors font-sans" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
@@ -3756,7 +3736,7 @@ export default function App() {
       {/* Agreement Modal */}
       {isAgreementModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-4 md:p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
               <h3 className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">New agreement</h3>
               <button onClick={() => setIsAgreementModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"><X size={16} /></button>
@@ -3788,11 +3768,11 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Negotiated Price</label>
-                  <input type="number" required value={newAgreementForm.purchasePrice} onChange={(e) => setNewAgreementForm((p) => ({ ...p, purchasePrice: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                  <input type="number" required value={newAgreementForm.purchasePrice} onChange={(e) => setNewAgreementForm((p) => ({ ...p, purchasePrice: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Deposit amount</label>
-                  <input type="number" required value={newAgreementForm.depositAmount} onChange={(e) => setNewAgreementForm((p) => ({ ...p, depositAmount: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                  <input type="number" required value={newAgreementForm.depositAmount} onChange={(e) => setNewAgreementForm((p) => ({ ...p, depositAmount: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">
@@ -3815,7 +3795,7 @@ export default function App() {
       {/* Task Modal */}
       {isTaskModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-4 md:p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
               <h3 className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">New task</h3>
               <button onClick={() => setIsTaskModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"><X size={16} /></button>
@@ -3823,7 +3803,7 @@ export default function App() {
             <form onSubmit={handleCreateTaskSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Task description header</label>
-                <input type="text" required placeholder="e.g. Call client back with rates" value={newTaskForm.title} onChange={(e) => setNewTaskForm((p) => ({ ...p, title: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                <input type="text" required placeholder="e.g. Call client back with rates" value={newTaskForm.title} onChange={(e) => setNewTaskForm((p) => ({ ...p, title: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
@@ -3856,7 +3836,7 @@ export default function App() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Due Date Target</label>
-                  <input type="date" required value={newTaskForm.dueDate} onChange={(e) => setNewTaskForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-sans" />
+                  <input type="date" required value={newTaskForm.dueDate} onChange={(e) => setNewTaskForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors font-sans" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -3890,7 +3870,7 @@ export default function App() {
       {/* User Modal */}
       {isUserModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-6 flex flex-col gap-4">
+          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-4 md:p-6 flex flex-col gap-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-3">
               <h3 className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">
                 {issuedCode ? "Access code" : "Add a staff member"}
@@ -3926,11 +3906,11 @@ export default function App() {
               {seatError && <p className="text-[13px] text-[color:var(--muted)]">{seatError}</p>}
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Full Name</label>
-                <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">E-mail Address</label>
-                <input type="email" required placeholder="aiden@true-cars.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                <input type="email" required placeholder="aiden@true-cars.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
@@ -3942,7 +3922,7 @@ export default function App() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Contact Number</label>
-                  <input type="text" required placeholder="082 111 2222" value={newUserForm.phone} onChange={(e) => setNewUserForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]" />
+                  <input type="text" required placeholder="082 111 2222" value={newUserForm.phone} onChange={(e) => setNewUserForm((p) => ({ ...p, phone: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
                 </div>
               </div>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">

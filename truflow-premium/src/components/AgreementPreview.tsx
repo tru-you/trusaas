@@ -1,20 +1,25 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Agreement, Lead, Vehicle } from "../types";
+import React, { useRef, useState } from "react";
+import { Agreement, Lead, Vehicle, Dealership } from "../types";
 import { Printer, Shield, FileSignature, RotateCcw, Check } from "lucide-react";
 
 interface AgreementPreviewProps {
   agreement: Agreement;
   lead?: Lead;
   vehicle?: Vehicle;
+  dealership?: Dealership;
   onSignAgreement?: (id: string, signature: string) => Promise<void>;
 }
 
-export default function AgreementPreview({ agreement, lead, vehicle, onSignAgreement }: AgreementPreviewProps) {
+export default function AgreementPreview({ agreement, lead, vehicle, dealership, onSignAgreement }: AgreementPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [signMode, setSignMode] = useState<"draw" | "type">("draw");
   const [typedName, setTypedName] = useState(lead ? `${lead.firstName} ${lead.lastName}` : "");
   const [submitting, setSubmitting] = useState(false);
+
+  const dealerName = dealership?.name || "Your Dealership";
+  const dealerReg = dealership?.registrationNumber || "";
+  const dealerAddress = dealership?.address || dealership?.location || "";
 
   const formatZAR = (num: number) => {
     return "R " + Math.round(num).toLocaleString("en-ZA");
@@ -62,7 +67,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
     const rect = canvas.getBoundingClientRect();
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
     const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-    
+
     ctx.beginPath();
     ctx.moveTo(clientX - rect.left, clientY - rect.top);
     setIsDrawing(true);
@@ -139,17 +144,17 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
           <Printer size={13} /> Print / Save PDF
         </button>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
         {/* CONTRACT PAPER VIEW */}
         <div className="lg:col-span-2">
-          <div className="bg-[color:var(--ink-2)] text-[color:var(--ink-2)] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans relative overflow-hidden" id="printableAgreementFrame">
+          <div className="bg-white text-[#1a1a2e] rounded-xl p-8 max-w-[800px] mx-auto shadow-xl font-sans relative overflow-hidden" id="printableAgreementFrame">
             {/* Security Badge watermark */}
-            <div className="absolute top-8 right-8 text-[color:var(--cyan-faint)] flex items-center gap-1 text-[13px] font-bold tracking-wider select-none">
-              <Shield size={16} /> SECURED BY TRUECAR DMS SIGN-OFF
+            <div className="absolute top-8 right-8 text-gray-300 flex items-center gap-1 text-[13px] font-bold tracking-wider select-none">
+              <Shield size={16} /> SECURED DOCUMENT
             </div>
 
-            <h1 className="text-center text-xl font-semibold text-[color:var(--ink-2)] tracking-tight ">
+            <h1 className="text-center text-xl font-semibold text-gray-900 tracking-tight ">
               {agreement.type === "Offer to Purchase" ? "Offer to Purchase (OTP)" :
                agreement.type === "Finance Application" ? "Pre-Approval Credit Finance Application" :
                agreement.type === "Trade-In Transfer" ? "Trade-In Exchange Agreement" :
@@ -169,10 +174,11 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
             <div className="grid grid-cols-2 gap-8 mb-6 text-[13px] text-gray-700 leading-relaxed border-b border-gray-100 pb-6">
               <div>
                 <div className="font-bold text-gray-900 mb-2 text-[13px] tracking-wider  text-gray-400">PART A: DEALER MERCHANT</div>
-                <div className="font-semibold text-gray-900">Johannesburg Auto (Pty) Ltd</div>
-                <div>Registration No: 2015/123456/07</div>
-                <div>Sandton Towers, Sandhurst</div>
-                <div>Johannesburg, South Africa</div>
+                <div className="font-semibold text-gray-900">{dealerName}</div>
+                {dealerReg && <div>Registration No: {dealerReg}</div>}
+                {dealerAddress && dealerAddress.split("\n").map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
               </div>
               <div>
                 <div className="font-bold text-gray-900 mb-2 text-[13px] tracking-wider  text-gray-400">PART B: APPLICANT / PURCHASER</div>
@@ -191,14 +197,14 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
 
             {/* Asset Identification Panel */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-[13px] text-gray-800">
-              <div className="font-bold text-[color:var(--ink-2)] mb-2 tracking-wide  text-[13px]">
+              <div className="font-bold text-gray-900 mb-2 tracking-wide  text-[13px]">
                 Acquired Asset Assignment Identification:
               </div>
               <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                 <div><span className="text-gray-400 font-medium">Year Model:</span> <span className="font-semibold">{vehicle?.year || "N/A"}</span></div>
                 <div><span className="text-gray-400 font-medium">Make Manufacturer:</span> <span className="font-semibold">{vehicle?.make || "N/A"}</span></div>
                 <div><span className="text-gray-400 font-medium">Engine / Model:</span> <span className="font-semibold">{vehicle?.model || "N/A"}</span></div>
-                <div><span className="text-gray-400 font-medium">Stock identification:</span> <span className="font-semibold font-mono text-[color:var(--ink-2)]">{vehicle?.stockNumber || "N/A"}</span></div>
+                <div><span className="text-gray-400 font-medium">Stock identification:</span> <span className="font-semibold font-mono text-gray-900">{vehicle?.stockNumber || "N/A"}</span></div>
               </div>
             </div>
 
@@ -231,12 +237,12 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                   <div className="font-bold text-gray-900 mt-3 mb-2">2. FINANCING CONDITION SUSPENSIVE:</div>
                   If financing is requested, this agreement is suspensively conditioned upon securing formal finance approval from registered South African banks (including WesBank, Absa, Standard Bank, Nedbank) within 10 operational days.
                   <div className="font-bold text-gray-900 mt-3 mb-2">3. POPI ACT & CREDIT BUREAU DISCLOSURE:</div>
-                  The purchaser authorizes Johannesburg Auto to syndicate this OTP data to financial institutions for credit analysis.
+                  The purchaser authorizes {dealerName} to syndicate this OTP data to financial institutions for credit analysis.
                 </>
               ) : agreement.type === "Finance Application" ? (
                 <>
                   <div className="font-bold text-gray-900 mb-2">1. CREDIT ASSESSMENT DISCLOSURE:</div>
-                  The applicant hereby requests Johannesburg Auto (Pty) Ltd to act as the finance & insurance (F&I) broker. The applicant explicitly authorizes soft and hard credit bureau enquiries (Experian, TransUnion, ITC).
+                  The applicant hereby requests {dealerName} to act as the finance & insurance (F&I) broker. The applicant explicitly authorizes soft and hard credit bureau enquiries (Experian, TransUnion, ITC).
                   <div className="font-bold text-gray-900 mt-3 mb-2">2. POPI Act:</div>
                   All personal credit logs, bank details, and identification files provided will be treated in strict accordance with the Protection of Personal Information (POPI) Act of South Africa.
                   <div className="font-bold text-gray-900 mt-3 mb-2">3. DECLARATION OF SOLVENCY:</div>
@@ -257,10 +263,6 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
             {/* Signatures */}
             <div className="grid grid-cols-2 gap-12 mt-8 text-[13px] border-t border-gray-100 pt-6">
               <div className="flex flex-col">
-                {/* Left blank to be signed. This printed "TrueCar Sandton
-                    Showroom Floor Node" in the dealer's signature field —
-                    wrong product, a hardcoded branch, and a contract should
-                    never arrive with a signature already in it. */}
                 <div className="h-12 border-b border-gray-300" />
                 <div className="font-semibold text-gray-900 mt-2">Signature of Dealer Representative</div>
                 <div className="text-gray-400 text-[13px] mt-0.5">Date: {agreement.signedAt?.slice(0, 10) || new Date().toISOString().slice(0, 10)}</div>
@@ -269,7 +271,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
                 <div className="h-12 border-b border-gray-300 flex items-center justify-center text-center">
                   {agreement.signature ? (
                     agreement.signature.startsWith("TYPED:") ? (
-                      <span className="font-serif italic text-base text-[color:var(--ink-2)] tracking-wider font-semibold">
+                      <span className="font-serif italic text-base text-gray-900 tracking-wider font-semibold">
                         {agreement.signature.replace("TYPED:", "")}
                       </span>
                     ) : (
@@ -390,7 +392,6 @@ export default function AgreementPreview({ agreement, lead, vehicle, onSignAgree
 
           <div className="bg-[color:var(--glass-line)] rounded-lg p-3 text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed border border-white/3 flex flex-col gap-1">
             <span className="font-bold text-[rgba(232,234,230,0.72)]">Audit trail:</span>
-            <span>IP Location: Sandton, RSA (Vite Showroom)</span>
             <span>Timestamp: {agreement.signedAt || "Pending Execution"}</span>
             <span>POPI Act consent recorded</span>
           </div>

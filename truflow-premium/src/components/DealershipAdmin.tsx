@@ -22,6 +22,9 @@ type Dealership = {
   websiteUrl?: string;
   /** Which apps this dealership's code opens. */
   products?: string[];
+  address?: string;
+  registrationNumber?: string;
+  vatNumber?: string;
 };
 
 const FEED_ORIGIN = "https://flow.tru-saas.com";
@@ -36,6 +39,7 @@ const FEED_ORIGIN = "https://flow.tru-saas.com";
 const PRODUCT_OPTIONS: Array<{ id: string; label: string; hint: string }> = [
   { id: "lens", label: "TruLens", hint: "Guided photo & video capture" },
   { id: "flow", label: "TruFlow", hint: "The DMS — stock, leads, invoicing" },
+  { id: "flow-lite", label: "TruFlow Lite", hint: "Lightweight dealer console — leads, inventory & upload" },
   { id: "inspect", label: "TruInspect", hint: "Condition report / VIR" },
   { id: "live", label: "TruLive", hint: "Live video walkaround" },
   { id: "value", label: "TruValue", hint: "Live video trade-in appraisal" },
@@ -87,6 +91,9 @@ export default function DealershipAdmin({
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [address, setAddress] = useState("");
+  const [regNumber, setRegNumber] = useState("");
+  const [vatNumber, setVatNumber] = useState("");
   const [slug, setSlug] = useState("");
   // Once the slug is hand-edited we stop overwriting it from the name.
   const [slugTouched, setSlugTouched] = useState(false);
@@ -169,6 +176,9 @@ export default function DealershipAdmin({
           websiteUrl: websiteUrl.trim(),
           slug: effectiveSlug,
           products,
+          address: address.trim(),
+          registrationNumber: regNumber.trim(),
+          vatNumber: vatNumber.trim(),
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -178,6 +188,9 @@ export default function DealershipAdmin({
       setName("");
       setLocation("");
       setWebsiteUrl("");
+      setAddress("");
+      setRegNumber("");
+      setVatNumber("");
       setSlug("");
       setSlugTouched(false);
       setProducts(["lens", "flow"]);
@@ -264,6 +277,14 @@ export default function DealershipAdmin({
                     {d.location || "No location set"} ·{" "}
                     <span className="font-mono text-[color:var(--cyan-bright)]">{d.slug}</span>
                   </div>
+                  {(d.registrationNumber || d.vatNumber || d.address) && (
+                    <div className="text-[13px] text-[rgba(232,234,230,0.55)] mt-0.5">
+                      {d.registrationNumber && <span>Reg: {d.registrationNumber}</span>}
+                      {d.registrationNumber && d.vatNumber && <span> · </span>}
+                      {d.vatNumber && <span>VAT: {d.vatNumber}</span>}
+                      {d.address && <div className="mt-0.5">{d.address}</div>}
+                    </div>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -384,6 +405,47 @@ export default function DealershipAdmin({
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
                 placeholder="https://gardenroutemotors.co.za"
+                className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-mono"
+              />
+            </label>
+          </div>
+
+          <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider mt-1">
+            Document branding — appears on invoices &amp; agreements
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+                Street address
+              </span>
+              <input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="123 Main Rd, Sandton, 2196"
+                className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)]"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+                CIPC registration no.
+              </span>
+              <input
+                value={regNumber}
+                onChange={(e) => setRegNumber(e.target.value)}
+                placeholder="2015/123456/07"
+                className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-mono"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+                VAT number
+              </span>
+              <input
+                value={vatNumber}
+                onChange={(e) => setVatNumber(e.target.value)}
+                placeholder="4920194857"
                 className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-mono"
               />
             </label>

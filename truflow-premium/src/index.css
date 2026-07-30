@@ -338,7 +338,12 @@ button.glass-panel:hover, a.glass-panel:hover, [role="button"].glass-panel:hover
   box-shadow: inset 2px 0 0 var(--cyan);
 }
 
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
 .logo-float {
+  animation: logo-float 900ms cubic-bezier(.22,1,.36,1) 1;
   transition: opacity 0.25s ease;
 }
 .logo-float:hover {
