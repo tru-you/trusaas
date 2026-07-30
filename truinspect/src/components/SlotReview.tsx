@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, Save, RotateCcw, Check, AlertTriangle, MinusCircle, Camera, X } from 'lucide-react';
-import { Vehicle, PointResult, PHOTO_SLOTS } from '../types';
+import { Vehicle, PointResult } from '../types';
+import { DEFAULT_TEMPLATE } from '../templates';
 
 /**
  * Review & assess a shot the moment it's taken — this is where the condition
@@ -19,7 +20,7 @@ interface SlotReviewProps {
 }
 
 export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }: SlotReviewProps) {
-  const slot = PHOTO_SLOTS.find((s) => s.id === slotId);
+  const slot = DEFAULT_TEMPLATE.slots.find((s) => s.id === slotId);
   const existing = vehicle.slotAssessment?.[slotId];
   const [rating, setRating] = React.useState<PointResult['rating']>(existing?.rating);
   const [note, setNote] = React.useState(existing?.comment || '');

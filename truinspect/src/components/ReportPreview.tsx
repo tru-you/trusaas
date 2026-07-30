@@ -1,13 +1,16 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, Download, Printer, Share2, Award, AlertTriangle, CheckCircle2,
-  Camera, FileText, Wrench, ClipboardList, Clock, Copy, Check, Box,
+  Camera, FileText, ClipboardList, Clock, Copy, Check, Box,
 } from 'lucide-react';
-import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, INSPECTION_CHECKLIST, INSPECTION_POINTS, PointResult } from '../types';
+import { Vehicle, QualityReport, PointResult } from '../types';
 import { computeWebReadiness } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
 import { deriveReportId } from '../types/inspection';
+import { DEFAULT_TEMPLATE } from '../templates';
+import type { TemplateSlot } from '../template';
+import { ICONS } from '../iconMap';
 import truinspectLogo from '../assets/images/truinspect-logo.svg';
 import trudealerLogo from '../assets/images/trudealer-lockup-light.svg';
 import trudealerLogoDark from '../assets/images/trudealer-lockup-dark.svg';
@@ -19,8 +22,8 @@ interface ReportPreviewProps {
 }
 
 function computeOverallScore(vehicle: Vehicle) {
-  const req = PHOTO_SLOTS.filter(s => s.required);
-  const opt = PHOTO_SLOTS.filter(s => !s.required);
+  const req = DEFAULT_TEMPLATE.slots.filter(s => s.required);
+  const opt = DEFAULT_TEMPLATE.slots.filter(s => !s.required);
   let totalWeight = 0, weightedScore = 0;
   let capturedReq = 0, capturedOpt = 0;
 
@@ -39,7 +42,7 @@ function computeOverallScore(vehicle: Vehicle) {
   return { score, captured: capturedReq + capturedOpt, required: req.length, optional: opt.length };
 }
 
-function scoreForSlots(vehicle: Vehicle, slots: PhotoSlot[]): number | null {
+function scoreForSlots(vehicle: Vehicle, slots: TemplateSlot[]): number | null {
   const captured = slots.map(s => vehicle.quality?.[s.id]).filter(Boolean) as QualityReport[];
   if (captured.length === 0) return null;
   return Math.round(captured.reduce((sum, q) => sum + q.overallScore, 0) / captured.length);
@@ -105,7 +108,7 @@ function computeCondition(vehicle: Vehicle) {
 
   // Flagged inspection points: notes, damage ratings, and faulty functions.
   const pts = vehicle.inspectionPoints || {};
-  const flaggedPoints = INSPECTION_POINTS
+  const flaggedPoints = (DEFAULT_TEMPLATE.checklistPoints || [])
     .map(p => ({ point: p, res: pts[p.id] }))
     .filter(({ res }) => res && (res.rating === 'note' || res.rating === 'damage' || res.works === 'no'));
   for (const { res } of flaggedPoints) {
@@ -132,13 +135,9 @@ function computeCondition(vehicle: Vehicle) {
   return { stars, label, findings: all, flaggedPoints };
 }
 
-const PHASES = [
-  { id: 1, name: 'Exterior', key: 'exterior', icon: Camera },
-  { id: 3, name: 'Interior', key: 'interior', icon: ClipboardList },
-  { id: 4, name: 'Engine', key: 'engine', icon: Wrench },
-  { id: 5, name: 'Damage', key: 'damage', icon: AlertTriangle },
-  { id: 6, name: 'Documents', key: 'documents', icon: FileText },
-];
+const PHASES = DEFAULT_TEMPLATE.phases
+  .filter(p => p.reportCard)
+  .map(p => ({ id: p.id, name: p.reportCard!.label, icon: ICONS[p.reportCard!.iconKey] }));
 
 export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
@@ -179,7 +178,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const condition = useMemo(() => computeCondition(vehicle), [vehicle]);
 
   /** Inspector questionnaire: answered items + the flagged (disclosure) subset */
-  const checklistRows = useMemo(() => INSPECTION_CHECKLIST.flatMap(section =>
+  const checklistRows = useMemo(() => (DEFAULT_TEMPLATE.disclosureQuestions || []).flatMap(section =>
     section.items.map(item => {
       const a = vehicle.inspectionChecklist?.[item.id];
       return { section: section.section, item, answer: a?.answer, note: a?.note, flagged: a?.answer === item.flagWhen };
@@ -250,11 +249,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     : null;
 
   const phaseScores = PHASES.map(p => {
-    const slots = PHOTO_SLOTS.filter(s => s.phase === p.id);
+    const slots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === p.id);
     return { ...p, slots, score: scoreForSlots(vehicle, slots) };
   });
 
-  const damagePhotos = PHOTO_SLOTS.filter(s => s.phase === 5)
+  const damagePhotos = DEFAULT_TEMPLATE.slots.filter(s => s.phase === 5)
     .map(s => ({ slot: s, src: vehicle.photos?.[s.id], quality: vehicle.quality?.[s.id] }))
     .filter(p => !!p.src);
 
@@ -611,7 +610,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 <tr><th>Slot</th><th>Status</th><th>Score</th></tr>
               </thead>
               <tbody>
-                {PHOTO_SLOTS.filter(s => s.required).map(s => {
+                {DEFAULT_TEMPLATE.slots.filter(s => s.required).map(s => {
                   const has = !!vehicle.photos?.[s.id];
                   const q = vehicle.quality?.[s.id];
                   return (
@@ -642,7 +641,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             ) : (
               condition.findings.map((f, i) => {
                 const sev = severityMeta(f.severity);
-                const slot = PHOTO_SLOTS.find(s => s.id === f.slotId);
+                const slot = DEFAULT_TEMPLATE.slots.find(s => s.id === f.slotId);
                 return (
                   <div className="finding" key={i} style={{ background: sev.bg, borderLeftColor: sev.color }}>
                     <div className="h" style={{ color: sev.color }}>
@@ -660,7 +659,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
           {(() => {
             const sa = vehicle.slotAssessment || {};
-            const rows = PHOTO_SLOTS
+            const rows = DEFAULT_TEMPLATE.slots
               .map(s => ({ s, r: sa[s.id], shots: vehicle.closeups?.[s.id] || [] }))
               .filter(({ r, shots }) => r && (r.rating || r.comment || shots.length));
             if (!rows.length) return null;
@@ -695,7 +694,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <h2><ClipboardList size={16} /> Inspection sheet</h2>
             {(() => {
               const pts = vehicle.inspectionPoints || {};
-              const rows = INSPECTION_POINTS
+              const rows = (DEFAULT_TEMPLATE.checklistPoints || [])
                 .map(p => ({ p, r: pts[p.id] }))
                 .filter(({ r }) => r && (r.rating || r.works || r.comment));
               if (!rows.length) {
@@ -775,7 +774,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <section>
             <h2><Camera size={16} /> Gallery</h2>
             <div className="photo-grid">
-              {PHOTO_SLOTS.filter(s => vehicle.photos?.[s.id]).slice(0, 12).map(slot => (
+              {DEFAULT_TEMPLATE.slots.filter(s => vehicle.photos?.[s.id]).slice(0, 12).map(slot => (
                 <div className="photo-tile" key={slot.id}>
                   <img src={vehicle.photos[slot.id]} alt={slot.name} />
                   <div className="cap">{slot.name}</div>

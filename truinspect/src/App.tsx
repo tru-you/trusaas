@@ -10,7 +10,7 @@ import DamageTagger from './components/DamageTagger';
 import TradeInWalkAround from './components/TradeInWalkAround';
 import TradeInValuation from './components/TradeInValuation';
 import TradeInSummary from './components/TradeInSummary';
-import { Vehicle, QualityReport, DmsExportResult, PointResult, PHOTO_SLOTS } from './types';
+import { Vehicle, QualityReport, DmsExportResult, PointResult } from './types';
 import type { InspectionItem, ValuationState, TradeInData } from './types/inspection';
 import { useAuth } from './contexts/AuthContext';
 

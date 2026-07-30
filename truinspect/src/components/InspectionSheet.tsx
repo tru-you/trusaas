@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Save, ClipboardCheck, Camera, AlertTriangle, Check, MinusCircle } from 'lucide-react';
-import { Vehicle, PointResult, INSPECTION_POINTS } from '../types';
+import { Vehicle, PointResult } from '../types';
+import { DEFAULT_TEMPLATE } from '../templates';
 
 /**
  * The inspection sheet — every part of the car gets a place to rate condition,
@@ -17,10 +18,6 @@ interface InspectionSheetProps {
   onTagDamage: () => void;
 }
 
-const GROUP_ORDER = [
-  'Exterior', 'Glass & lights', 'Wheels & tyres', 'Interior', 'Engine & underbody', 'Identity & documents',
-];
-
 export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }: InspectionSheetProps) {
   const [points, setPoints] = React.useState<Record<string, PointResult>>(
     () => JSON.parse(JSON.stringify(vehicle.inspectionPoints || {})),
@@ -31,13 +28,15 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
   const set = (id: string, patch: Partial<PointResult>) =>
     setPoints((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
 
-  const answered = INSPECTION_POINTS.filter((p) => {
+  const checklistPoints = DEFAULT_TEMPLATE.checklistPoints || [];
+
+  const answered = checklistPoints.filter((p) => {
     const r = points[p.id];
     return p.kind === 'condition' ? !!r?.rating : !!r?.works;
   }).length;
 
   // Anything the buyer must be told about.
-  const flagged = INSPECTION_POINTS.filter((p) => {
+  const flagged = checklistPoints.filter((p) => {
     const r = points[p.id];
     return r?.rating === 'damage' || r?.rating === 'note' || r?.works === 'no';
   }).length;
@@ -49,9 +48,9 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
     return m;
   }, [vehicle.damageFindings]);
 
-  const grouped = GROUP_ORDER.map((g) => ({
-    group: g,
-    items: INSPECTION_POINTS.filter((p) => p.group === g),
+  const grouped = (DEFAULT_TEMPLATE.checklistGroups || []).map((g) => ({
+    group: g.name,
+    items: checklistPoints.filter((p) => p.group === g.id),
   }));
 
   const handleSave = async (thenBack: boolean) => {
@@ -84,7 +83,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
           </div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-[13px] font-bold text-neutral-300">{answered}/{INSPECTION_POINTS.length} done</div>
+          <div className="text-[13px] font-bold text-neutral-300">{answered}/{checklistPoints.length} done</div>
           <div className={`text-[13px] font-bold ${flagged ? 'text-amber-400' : 'text-emerald-400'}`}>
             {flagged ? `${flagged} to disclose` : 'Nothing flagged'}
           </div>

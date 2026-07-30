@@ -1,4 +1,5 @@
-import { PHOTO_SLOTS, Vehicle, QualityReport } from '../types';
+import { Vehicle, QualityReport } from '../types';
+import { DEFAULT_TEMPLATE } from '../templates';
 
 /**
  * Inspection progress, not merchandising readiness.
@@ -39,8 +40,8 @@ function overallScore(vehicle: Vehicle): number | null {
 /** Shared Ready-for-web rules across TruLens → DMS → website */
 export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
   const photos = vehicle.photos || {};
-  const required = PHOTO_SLOTS.filter((s) => s.required);
-  const optional = PHOTO_SLOTS.filter((s) => !s.required);
+  const required = DEFAULT_TEMPLATE.slots.filter((s) => s.required);
+  const optional = DEFAULT_TEMPLATE.slots.filter((s) => !s.required);
   const requiredTaken = required.filter((s) => !!photos[s.id]).length;
   const optionalTaken = optional.filter((s) => !!photos[s.id]).length;
   const missingRequired = required.filter((s) => !photos[s.id]).map((s) => s.name);
@@ -134,7 +135,7 @@ export function whatsAppSalesBlurb(
 /** Structural readiness (shots+score) without requiring publish flag */
 export function isStructurallyWebReady(vehicle: Vehicle): boolean {
   const photos = vehicle.photos || {};
-  const required = PHOTO_SLOTS.filter((s) => s.required);
+  const required = DEFAULT_TEMPLATE.slots.filter((s) => s.required);
   const allRequired = required.every((s) => !!photos[s.id]);
   const reports = Object.values(vehicle.quality || {}) as QualityReport[];
   const score = reports.length

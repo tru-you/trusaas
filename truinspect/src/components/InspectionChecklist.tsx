@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, ClipboardList, AlertTriangle, CheckCircle2, Save } from 'lucide-react';
-import { Vehicle, ChecklistAnswer, INSPECTION_CHECKLIST } from '../types';
+import { Vehicle, ChecklistAnswer } from '../types';
+import { DEFAULT_TEMPLATE } from '../templates';
 
 interface InspectionChecklistProps {
   vehicle: Vehicle;
@@ -21,9 +22,9 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
   const [saving, setSaving] = React.useState(false);
   const [savedFlash, setSavedFlash] = React.useState(false);
 
-  const totalItems = INSPECTION_CHECKLIST.reduce((n, s) => n + s.items.length, 0);
+  const totalItems = (DEFAULT_TEMPLATE.disclosureQuestions || []).reduce((n, s) => n + s.items.length, 0);
   const answered = Object.keys(answers).filter(id => answers[id]?.answer).length;
-  const flagged = INSPECTION_CHECKLIST.flatMap(s => s.items)
+  const flagged = (DEFAULT_TEMPLATE.disclosureQuestions || []).flatMap(s => s.items)
     .filter(it => answers[it.id]?.answer === it.flagWhen).length;
 
   const setAnswer = (id: string, answer: ChecklistAnswer['answer']) => {
@@ -72,7 +73,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
 
       {/* Questions */}
       <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
-        {INSPECTION_CHECKLIST.map(section => (
+        {(DEFAULT_TEMPLATE.disclosureQuestions || []).map(section => (
           <div key={section.section}>
             <h2 className="text-[13px] font-semibold  tracking-[0.2em] text-cyan-400 mb-2">
               {section.section}

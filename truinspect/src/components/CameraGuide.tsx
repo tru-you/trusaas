@@ -4,8 +4,9 @@ import {
   Check, RefreshCw, Upload, Smartphone, HelpCircle, Eye, Images, Loader2, Trash2, X,
   Circle, CheckCircle2
 } from 'lucide-react';
-import { Vehicle, PhotoSlot, QualityReport, PHOTO_SLOTS } from '../types';
+import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { DEFAULT_TEMPLATE } from '../templates';
 
 interface CameraGuideProps {
   vehicle: Vehicle;
@@ -65,34 +66,26 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   });
 
   // Active slot information
-  const activeSlot = PHOTO_SLOTS.find(s => s.id === selectedSlotId) || PHOTO_SLOTS[0];
+  const activeSlot = DEFAULT_TEMPLATE.slots.find(s => s.id === selectedSlotId) || DEFAULT_TEMPLATE.slots[0];
 
-  const phaseNames = [
-    'Exterior Panels',
-    'Details & Badges',
-    'Interior',
-    'Engine & Mechanical',
-    'Recon / Work',
-    'Documents',
-    'Tru Orbit'
-  ];
+  const phaseNames = DEFAULT_TEMPLATE.phases.map(p => p.name);
 
   // Progress tracker calculation
-  const completedSlots = PHOTO_SLOTS.filter(slot => !!photos[slot.id]);
-  const progressPercentage = Math.round((completedSlots.length / PHOTO_SLOTS.length) * 100);
+  const completedSlots = DEFAULT_TEMPLATE.slots.filter(slot => !!photos[slot.id]);
+  const progressPercentage = Math.round((completedSlots.length / DEFAULT_TEMPLATE.slots.length) * 100);
 
-  const phaseSlots = PHOTO_SLOTS.filter(s => s.phase === currentPhase);
+  const phaseSlots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === currentPhase);
   const phaseCompleted = phaseSlots.every(s => !!photos[s.id] || !s.required);
 
   // Detailed phase completion status
   const phaseCompletionStatus = React.useMemo(() => {
-    return Array.from({ length: 7 }).map((_, i) => {
+    return DEFAULT_TEMPLATE.phases.map((p, i) => {
       const phaseIndex = i + 1;
-      const slots = PHOTO_SLOTS.filter(s => s.phase === phaseIndex);
+      const slots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === phaseIndex);
       const completed = slots.every(s => !!photos[s.id] || !s.required);
       return {
         phase: phaseIndex,
-        name: phaseNames[i],
+        name: p.name,
         completed
       };
     });
@@ -229,9 +222,9 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     let loadedCount = 0;
 
     // We try to auto-assign slots sequentially to make bulk processing extremely fast
-    const unfilledRequired = PHOTO_SLOTS.filter(s => s.required && !photos[s.id]);
-    const unfilledAll = PHOTO_SLOTS.filter(s => !photos[s.id]);
-    const assignableSlots = unfilledRequired.length > 0 ? unfilledRequired : (unfilledAll.length > 0 ? unfilledAll : PHOTO_SLOTS);
+    const unfilledRequired = DEFAULT_TEMPLATE.slots.filter(s => s.required && !photos[s.id]);
+    const unfilledAll = DEFAULT_TEMPLATE.slots.filter(s => !photos[s.id]);
+    const assignableSlots = unfilledRequired.length > 0 ? unfilledRequired : (unfilledAll.length > 0 ? unfilledAll : DEFAULT_TEMPLATE.slots);
 
     Array.from(files).forEach((file, idx) => {
       const fileObj = file as File;
@@ -240,7 +233,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         if (event.target?.result) {
           const base64 = event.target.result as string;
           // Auto assign slot
-          const slot = assignableSlots[idx % assignableSlots.length] || PHOTO_SLOTS[0];
+          const slot = assignableSlots[idx % assignableSlots.length] || DEFAULT_TEMPLATE.slots[0];
           
           const defaultReport: QualityReport = {
             overallScore: 94,
@@ -545,8 +538,8 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     const count = Object.keys(photos).length;
     if (count > prevPhotoCount.current) {
       const next =
-        PHOTO_SLOTS.find((s) => s.required && !photos[s.id]) ||
-        PHOTO_SLOTS.find((s) => !photos[s.id]);
+        DEFAULT_TEMPLATE.slots.find((s) => s.required && !photos[s.id]) ||
+        DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
       if (next) {
         setSelectedSlotId(next.id);
         setCurrentPhase(next.phase);
@@ -934,7 +927,10 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </div>
         </div>
         
-        <div className="grid grid-cols-7 gap-2">
+        <div
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${DEFAULT_TEMPLATE.phases.length}, minmax(0, 1fr))` }}
+        >
           {phaseCompletionStatus.map((status, i) => {
             const isActive = currentPhase === status.phase;
             return (
@@ -942,7 +938,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 key={i}
                 onClick={() => {
                   setCurrentPhase(status.phase);
-                  const firstSlot = PHOTO_SLOTS.find(s => s.phase === status.phase);
+                  const firstSlot = DEFAULT_TEMPLATE.slots.find(s => s.phase === status.phase);
                   if (firstSlot) setSelectedSlotId(firstSlot.id);
                 }}
                 className="flex flex-col gap-2 group cursor-pointer border-none bg-transparent p-0"
@@ -1114,7 +1110,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             const isNext =
               !isTaken &&
               slot.required &&
-              slot.id === (PHOTO_SLOTS.find((s) => s.required && !photos[s.id])?.id);
+              slot.id === (DEFAULT_TEMPLATE.slots.find((s) => s.required && !photos[s.id])?.id);
             return (
               <button
                 key={slot.id}
@@ -1147,7 +1143,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             onClick={() => {
               const newPhase = currentPhase - 1;
               setCurrentPhase(newPhase);
-              const firstSlotOfNewPhase = PHOTO_SLOTS.find(s => s.phase === newPhase);
+              const firstSlotOfNewPhase = DEFAULT_TEMPLATE.slots.find(s => s.phase === newPhase);
               if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
             }}
             className="text-[13px] font-bold text-neutral-400 hover:text-[#E8EAE6] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
@@ -1160,11 +1156,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </p>
 
           <button
-            disabled={currentPhase === 7}
+            disabled={currentPhase === DEFAULT_TEMPLATE.phases.length}
             onClick={() => {
               const newPhase = currentPhase + 1;
               setCurrentPhase(newPhase);
-              const firstSlotOfNewPhase = PHOTO_SLOTS.find(s => s.phase === newPhase);
+              const firstSlotOfNewPhase = DEFAULT_TEMPLATE.slots.find(s => s.phase === newPhase);
               if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
             }}
             className={`text-[13px] font-bold flex items-center gap-1 cursor-pointer ${phaseCompleted ? 'text-indigo-400 hover:text-indigo-300' : 'text-neutral-500'}`}
@@ -1388,7 +1384,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                         }}
                         className="w-full bg-neutral-950 border border-neutral-800 rounded-lg text-[13px] py-1 px-2 text-neutral-200 focus:border-indigo-500 focus:outline-none"
                       >
-                        {PHOTO_SLOTS.map(slot => (
+                        {DEFAULT_TEMPLATE.slots.map(slot => (
                           <option key={slot.id} value={slot.id}>
                             {slot.name} {slot.required ? '(Required)' : ''}
                           </option>
