@@ -13,6 +13,13 @@
       "location": "Kariega, Eastern Cape",
       "slug": "cars-on-caledon",
       "websiteUrl": "https://www.carsoncaledon.co.za"
+    },
+    {
+      "id": "true-cars",
+      "name": "True Cars",
+      "location": "Port Elizabeth",
+      "slug": "true-cars",
+      "websiteUrl": "https://www.true-cars.co.za"
     }
   ],
   "vehicles": [],
