@@ -104,6 +104,25 @@ export default function DealershipAdmin({
   const [products, setProducts] = useState<string[]>(["lens", "flow"]);
   const [savingProductsFor, setSavingProductsFor] = useState<string | null>(null);
 
+  const updateProducts = async (d: Dealership, next: string[]) => {
+    setSavingProductsFor(d.id);
+    try {
+      const res = await authFetch(`/api/dealerships/${d.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ products: next }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body?.error || `Server responded ${res.status}`);
+      setRows((prev) => prev.map((r) => (r.id === d.id ? { ...r, products: body.dealership.products } : r)));
+      onNotify("Products updated", `${d.name} now has access to ${next.length} app${next.length === 1 ? "" : "s"}.`);
+    } catch (err: any) {
+      onNotify("Could not update products", err?.message || "Unknown error", "error");
+    } finally {
+      setSavingProductsFor(null);
+    }
+  };
+
   /* Codes come back from the server exactly once. Holding them in state means
      a mis-click elsewhere loses them, so they stay until dismissed and the
      copy button is the primary action. */
@@ -340,6 +359,40 @@ export default function DealershipAdmin({
                     ? "No stock live yet"
                     : `${stock[d.id]} live on site`}
                 </span>
+              </div>
+
+              {/* Inline product toggles — edit entitlements without recreating */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+                  Apps
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {PRODUCT_OPTIONS.map((p) => {
+                    const on = (d.products || []).includes(p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        title={p.hint}
+                        disabled={savingProductsFor === d.id}
+                        onClick={() => {
+                          const next = on
+                            ? (d.products || []).filter((x) => x !== p.id)
+                            : [...(d.products || []), p.id];
+                          updateProducts(d, next);
+                        }}
+                        className={
+                          "px-2.5 py-1.5 rounded-lg border text-[13px] font-bold cursor-pointer transition-colors disabled:opacity-50 " +
+                          (on
+                            ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)]"
+                            : "bg-[color:var(--glass)] text-[color:var(--muted)] border-[color:var(--glass-line)] hover:text-[color:var(--white)]")
+                        }
+                      >
+                        {on ? "✓ " : ""}{p.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="flex items-center justify-between gap-3 flex-wrap">
