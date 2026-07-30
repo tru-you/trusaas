@@ -574,7 +574,7 @@ export default function InventoryList({
               placeholder="Search VIN, Stock, Make..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-neutral-950 text-[13px] text-neutral-200 pl-8 pr-3 py-2 rounded-lg border border-neutral-850 focus:border-indigo-500 outline-none placeholder-neutral-500 font-mono"
+              className="w-full bg-neutral-950 text-[13px] text-neutral-200 pl-8 pr-3 py-2 rounded-lg border border-neutral-850 focus:border-cyan-500/40 outline-none placeholder-neutral-500 font-mono"
             />
           </div>
           <button
@@ -1220,23 +1220,31 @@ export default function InventoryList({
             </div>
 
             {/* Performance KPIs */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[11px] text-neutral-500  font-bold">Catalogue</span>
+                <span className="text-[13px] text-neutral-500 font-bold">Catalogue</span>
                 <span className="text-[16px] font-semibold text-[#E8EAE6]">{vehicles.length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[11px] text-emerald-500  font-bold">Ready</span>
+                <span className="text-[13px] text-emerald-500 font-bold">Ready</span>
                 <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready').length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[11px] text-amber-500  font-bold">Pending</span>
+                <span className="text-[13px] text-amber-500 font-bold">Pending</span>
                 <span className="text-[16px] font-semibold text-amber-400">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[11px] text-indigo-500  font-bold">Capture rate</span>
-                <span className="text-[16px] font-semibold text-indigo-400">
+                <span className="text-[13px] text-cyan-500 font-bold">Capture rate</span>
+                <span className="text-[16px] font-semibold text-cyan-400">
                   {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * PHOTO_SLOTS.length || 1)) * 100)}%
+                </span>
+              </div>
+              <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
+                <span className="text-[13px] text-cyan-500 font-bold">Photos</span>
+                <span className="text-[16px] font-semibold text-cyan-400">
+                  {vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0)}
                 </span>
               </div>
             </div>
@@ -1397,21 +1405,21 @@ export default function InventoryList({
               </div>
               <div className="p-4 space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[13px] text-neutral-500  font-bold">Dealership name</label>
+                  <label className="text-[12px] text-neutral-500 font-semibold">Dealership name</label>
                   <input 
                     type="text" 
                     value={dealershipName}
                     onChange={(e) => setDealershipName(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[13px] text-neutral-500  font-bold">Branch</label>
+                  <label className="text-[12px] text-neutral-500 font-semibold">Branch</label>
                   <input
                     type="text"
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
                   />
                 </div>
                 {/* Not a choice any more.
@@ -1421,7 +1429,7 @@ export default function InventoryList({
                     phone claims — so changing it did nothing while looking like
                     it did something. The code decides; this reports it. */}
                 <div className="space-y-2">
-                  <label className="text-[13px] text-neutral-500  font-bold">Dealership (DMS tagging)</label>
+                  <label className="text-[12px] text-neutral-500 font-semibold">Dealership (DMS tagging)</label>
                   <div className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-3">
                     <div className="text-[15px] font-semibold text-[#E8EAE6]">
                       {dealerDisplayName || 'Not set'}
@@ -1547,7 +1555,7 @@ export default function InventoryList({
                   setExportToast({ type: 'ok', text: 'Settings saved on this device (used in VIR & WhatsApp)' });
                   setTimeout(() => setExportToast(null), 2800);
                 }}
-                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-bold py-3 rounded-xl text-[13px] transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
+                className="w-full tl-btn-3d font-bold py-3 rounded-xl text-[15px] transition-all"
               >
                 Save Configuration
               </button>
@@ -1576,7 +1584,7 @@ export default function InventoryList({
             </div>
 
             <div className="pt-8 pb-4 flex flex-col items-center opacity-40">
-              <span className="text-[13px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaaS</span>
+              <span className="text-[13px] text-neutral-600 tracking-[0.15em] font-bold">Powered by TruSaaS</span>
             </div>
           </div>
         )}

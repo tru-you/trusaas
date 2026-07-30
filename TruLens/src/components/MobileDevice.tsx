@@ -67,7 +67,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
   // ── Desktop demo: phone frame ─────────────────────────────────────
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-4 md:p-8 select-none font-sans overflow-hidden">
-      <div className="relative w-full max-w-[412px] md:max-w-[500px] lg:max-w-[550px] aspect-[9/19.5] bg-neutral-950 rounded-[52px] p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.05),0_0_40px_10px_rgba(30,58,138,0.25)] border border-neutral-800 flex flex-col justify-stretch">
+      <div className="relative w-full max-w-[430px] aspect-[9/19.5] bg-neutral-950 rounded-[52px] p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.05),0_0_40px_10px_rgba(30,58,138,0.25)] border border-neutral-800 flex flex-col justify-stretch">
         <div className="absolute top-6 left-1/2 -translate-x-1/2 w-32 h-6.5 bg-neutral-950 rounded-full z-50 flex items-center justify-between px-4 border border-neutral-800 shadow-inner">
           <div className="w-2.5 h-2.5 rounded-full bg-neutral-900 border border-blue-900 flex items-center justify-center">
             <div className="w-1 h-1 rounded-full bg-blue-500 opacity-60"></div>

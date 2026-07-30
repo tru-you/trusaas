@@ -8,8 +8,8 @@ import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
 import trulensLockup from '../assets/images/trulens-wordmark.png';
-import trusaasLogo from '../assets/images/trusaas-lockup.png';
-import trusaasLogoDark from '../assets/images/trusaas-lockup-dark.png';
+import trudealerLockupDark from '../assets/images/trudealer-lockup-dark.svg';
+import trudealerLockupLight from '../assets/images/trudealer-lockup-light.svg';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -389,7 +389,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
               </div>
               <div className="meta-row">
-                <img src={trusaasLogo} alt="TruSaaS" style={{ height:34, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
+                <img src={trudealerLockupDark} alt="TruDealer" style={{ height:34, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
                 <div><b style={{color:'#fff'}}>Report</b> · {reportId}</div>
                 <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
                 {dealerBranch ? <div>{dealerBranch}</div> : null}
@@ -652,7 +652,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
           <div className="foot">
             <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruLens</b></div>
-            <img src={trusaasLogoDark} alt="TruSaaS" style={{ height:16, width:'auto' }} />
+            <img src={trudealerLockupLight} alt="TruDealer" style={{ height:16, width:'auto' }} />
             <div>{reportId}</div>
             <div>Visual condition at a moment in time — not a mechanical warranty</div>
           </div>
