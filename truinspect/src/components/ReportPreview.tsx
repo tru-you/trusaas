@@ -7,9 +7,10 @@ import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, INSPECTION_CHECKLIST, I
 import { computeWebReadiness } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
-import trusaasLogo from '../assets/images/trusaas-lockup.png';
-import trusaasLogoDark from '../assets/images/trusaas-lockup-dark.png';
+import { deriveReportId } from '../types/inspection';
 import truinspectLogo from '../assets/images/truinspect-logo.svg';
+import trudealerLogo from '../assets/images/trudealer-lockup-light.svg';
+import trudealerLogoDark from '../assets/images/trudealer-lockup-dark.svg';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -261,7 +262,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
      printing the same inspection twice produced two different IDs and the
      report could not be cited. Derived only from the vehicle id, which does
      not change. (Prefix was TL-, which reads as TruLens.) */
-  const reportId = `TI-${(vehicle.stockNumber || vehicle.id).toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
+  const reportId = deriveReportId(vehicle);
   const generatedAt = new Date().toLocaleString('en-ZA', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
@@ -520,7 +521,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:6 }}>{dealerName}</div>
               </div>
               <div className="meta-row">
-                <img src={trusaasLogo} alt="TruSaaS" style={{ height:28, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
+                <img src={trudealerLogoDark} alt="TruDealer" style={{ height:28, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
                 <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
                 <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
                 {dealerBranch ? <div>{dealerBranch}</div> : null}
@@ -878,7 +879,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="foot" style={{ alignItems:'center' }}>
             <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruInspect</b></div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <img src={trusaasLogoDark} alt="TruSaaS" style={{ height:16, width:'auto' }} />
+              <img src={trudealerLogo} alt="TruDealer" style={{ height:16, width:'auto' }} />
               <span>{reportId}</span>
             </div>
             <div>Visual inspection at a moment in time — not a mechanical warranty. See Scope.</div>

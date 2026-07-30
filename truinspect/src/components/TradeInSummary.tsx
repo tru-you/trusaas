@@ -3,10 +3,11 @@ import { ArrowLeft, Download, Printer, Star, Pen, Clock } from 'lucide-react';
 import { Vehicle } from '../types';
 import {
   InspectionItem, ValuationState, TradeInData,
-  computeOverallRating, needsReconCost,
+  computeOverallRating, needsReconCost, deriveReportId,
 } from '../types/inspection';
 import truinspectLogo from '../assets/images/truinspect-logo.svg';
-import trusaasLogoDark from '../assets/images/trusaas-lockup-dark.png';
+import trudealerLogo from '../assets/images/trudealer-lockup-light.svg';
+import trudealerLogoDark from '../assets/images/trudealer-lockup-dark.svg';
 
 interface TradeInSummaryProps {
   vehicle: Vehicle;
@@ -57,6 +58,8 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
     overallRating >= 4.5 ? '#16A34A' :
     overallRating >= 3.5 ? '#65A30D' :
     overallRating >= 2.5 ? '#CA8A04' : '#DC2626';
+
+  const photosWithLabel = items.filter(i => i.photoUrl);
 
   // Signature canvas drawing
   useEffect(() => {
@@ -115,7 +118,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
   };
 
   const buildTradeInData = (): TradeInData => ({
-    inspectionId: `TI-${(vehicle.stockNumber || vehicle.id).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`,
+    inspectionId: deriveReportId(vehicle),
     vehicleDetails: {
       make: vehicle.make,
       model: vehicle.model,
@@ -150,17 +153,27 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
     setExporting(true);
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      await html2pdf()
-        .set({
-          margin: [8, 8, 8, 8],
-          filename: `TradeIn_${vehicle.stockNumber || 'draft'}.pdf`,
-          image: { type: 'jpeg', quality: 0.95 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'] },
-        } as any)
-        .from(el)
-        .save();
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.style.width = '210mm';
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      document.body.appendChild(clone);
+      try {
+        await html2pdf()
+          .set({
+            margin: [8, 8, 8, 8],
+            filename: `TradeIn_${vehicle.stockNumber || 'draft'}.pdf`,
+            image: { type: 'jpeg', quality: 0.92 },
+            html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false, windowWidth: 794 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] },
+          } as any)
+          .from(clone)
+          .save();
+      } finally {
+        document.body.removeChild(clone);
+      }
     } catch (err) {
       console.error(err);
       alert('PDF failed — use Print → Save as PDF.');
@@ -222,8 +235,8 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
                 <p style={{ fontSize: '11px', fontWeight: 600, opacity: 0.75, marginTop: 6 }}>{dealerName}</p>
               </div>
               <div style={{ textAlign: 'right', fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: 'rgba(248,250,252,.62)' }}>
-                <img src={trusaasLogoDark} alt="TruSaaS" style={{ height: 22, width: 'auto', display: 'block', marginLeft: 'auto', marginBottom: 4, filter: 'brightness(1.6)' }} />
-                <div>ID: TI-{(vehicle.stockNumber || vehicle.id).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}</div>
+                <img src={trudealerLogoDark} alt="TruDealer" style={{ height: 22, width: 'auto', display: 'block', marginLeft: 'auto', marginBottom: 4 }} />
+                <div>ID: {deriveReportId(vehicle)}</div>
                 <div><Clock size={9} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />{now}</div>
               </div>
             </div>
@@ -261,6 +274,29 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             </div>
           </div>
 
+          {/* Photo gallery */}
+          {photosWithLabel.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0D9488', borderBottom: '2px solid #0D9488', paddingBottom: '4px', marginBottom: '10px' }}>
+                  Inspection Photos ({photosWithLabel.length})
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  {photosWithLabel.map((it) => (
+                    <div key={it.id} style={{ position: 'relative' }}>
+                      <img
+                        src={it.photoUrl!}
+                        alt={it.label}
+                        style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #E5E7EB' }}
+                      />
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(0,0,0,.7))', borderRadius: '0 0 6px 6px', padding: '2px 4px' }}>
+                        <span style={{ fontSize: '8px', color: '#fff', fontWeight: 600 }}>{it.label}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+          )}
+
           {/* Valuation banner — NO margin shown */}
           <div style={{ background: '#F0FDFA', border: '2px solid #0D9488', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
             <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
@@ -292,7 +328,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           {/* Itemized grid */}
           {categories.map((cat) => (
             <div key={cat.name} style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0D9488', borderBottom: '1px solid #E5E7EB', paddingBottom: '4px', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0D9488', borderBottom: '2px solid #0D9488', paddingBottom: '4px', marginBottom: '8px' }}>
                 {cat.name}
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
@@ -355,7 +391,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           <div style={{ height: 3, background: 'linear-gradient(90deg,#4FE3DC,#4D9BFF,#4FE3DC)', marginTop: 24, borderRadius: 2 }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '12px 0', fontSize: '10px', color: '#64748B', fontFamily: 'ui-monospace, monospace', letterSpacing: '.08em' }}>
             <span>Prepared by <b style={{ color: '#0D9488' }}>{dealerName}</b> · powered by <b>TruInspect</b></span>
-            <img src={trusaasLogoDark} alt="TruSaaS" style={{ height: 14, width: 'auto' }} />
+            <img src={trudealerLogo} alt="TruDealer" style={{ height: 14, width: 'auto' }} />
           </div>
           <p style={{ textAlign: 'center', fontSize: '9px', color: '#94A3B8', margin: 0 }}>
             Trade-in valuation at a moment in time — subject to physical verification.

@@ -123,7 +123,8 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           type="button"
           onClick={handleFetchValuation}
           disabled={fetching}
-          className="w-full py-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full py-4 rounded-xl text-[#06080D] text-[14px] font-bold flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg active:scale-[0.98] transition-all"
+          style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC, #4D9BFF)' }}
         >
           {fetching ? <Loader2 size={18} className="animate-spin" /> : <Zap size={18} />}
           {fetching ? 'Fetching…' : 'Fetch Market Value'}

@@ -105,12 +105,7 @@ export default function App() {
         const list = Array.isArray(data) ? data.map(normalizeVehicle) : [];
         setVehicles(list);
         
-        // Seed database if empty (optional: only for first-time login)
-        if (list.length === 0) {
-          await seedInitialVehicles();
-        } else {
-          setSyncStatus('synced');
-        }
+        setSyncStatus('synced');
       } else {
         const errBody = await res.json().catch(() => ({}));
         setSyncStatus('error');
@@ -128,63 +123,6 @@ export default function App() {
       fetchInventory();
     }
   }, [user]);
-
-  // Helper to seed initial vehicle listings for instant evaluation
-  const seedInitialVehicles = async () => {
-    if (!user) return;
-    const token = await user.getIdToken();
-    
-    const seedCars = [
-      {
-        id: 'car-mustang-gt-' + Date.now(),
-        make: 'Ford',
-        model: 'Mustang GT Premium',
-        year: 2022,
-        trim: 'Fastback v8',
-        vin: '1FA6P8CF0N5102931',
-        stockNumber: 'STK-958210',
-        color: 'Oxford White',
-        price: 43500,
-        vehicleType: 'Coupe',
-        status: 'In-Progress' as const,
-        photos: {},
-        quality: {}
-      },
-      {
-        id: 'car-tesla-modely-' + Date.now(),
-        make: 'Tesla',
-        model: 'Model Y Long Range',
-        year: 2023,
-        trim: 'Dual Motor AWD',
-        vin: '5YJYGDEE7PF382910',
-        stockNumber: 'STK-441029',
-        color: 'Solid Black',
-        price: 49990,
-        vehicleType: 'SUV',
-        status: 'In-Progress' as const,
-        photos: {},
-        quality: {}
-      }
-    ];
-
-    try {
-      for (const car of seedCars) {
-        await fetch('/api/inventory', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(car)
-        });
-      }
-      // Re-fetch to get synced state
-      await fetchInventory();
-    } catch (err) {
-      console.error('Failed to seed DB:', err);
-      setSyncStatus('error');
-    }
-  };
 
   // Add vehicle
   const handleAddVehicle = async (newVehicleData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => {
@@ -508,6 +446,15 @@ export default function App() {
     await handleUpdateVehicle(activeVehicle, { tradeInData: data } as Partial<Vehicle>);
   };
 
+  const handleViewTradeInReport = (vehicle: Vehicle) => {
+    if (!vehicle.tradeInData) return;
+    setActiveVehicleId(vehicle.id);
+    setTradeInItems(vehicle.tradeInData.items || []);
+    setTradeInValuation(vehicle.tradeInData.valuation || null);
+    setActiveView('trade-in-summary');
+    setLoadError(null);
+  };
+
   // Open the inspection Report for a vehicle
   const handleViewReport = (vehicle: Vehicle) => {
     try {
@@ -571,6 +518,7 @@ export default function App() {
                 onOpenChecklist={handleOpenChecklist}
                 onTagDamage={handleOpenDamage}
                 onOpenTradeIn={handleOpenTradeIn}
+                onViewTradeInReport={handleViewTradeInReport}
                 onUpdateVehicle={handleUpdateVehicle}
                 syncStatus={syncStatus}
                 onForceSync={fetchInventory}
@@ -620,6 +568,18 @@ export default function App() {
                 setActiveView('trade-in-summary');
               }}
             />
+          )}
+
+          {activeView === 'trade-in-summary' && activeVehicle && !tradeInValuation && (
+            <div className="flex flex-col items-center justify-center h-full bg-neutral-950 text-[#E8EAE6] p-6 text-center">
+              <p className="text-[15px] text-neutral-400 mb-4">No valuation data yet — complete the market valuation step first.</p>
+              <button
+                onClick={() => setActiveView('trade-in-valuation')}
+                className="px-6 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[13px] font-semibold"
+              >
+                Go to Valuation
+              </button>
+            </div>
           )}
 
           {activeView === 'trade-in-summary' && activeVehicle && tradeInValuation && (

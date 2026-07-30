@@ -56,6 +56,10 @@ export interface TradeInData {
   items: InspectionItem[];
 }
 
+export function deriveReportId(vehicle: { stockNumber?: string; id: string }): string {
+  return `TI-${(vehicle.stockNumber || vehicle.id).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
+}
+
 export interface StatusOption {
   value: InspectionStatus;
   label: string;

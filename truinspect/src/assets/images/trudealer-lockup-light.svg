@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 130" width="560" height="130" role="img" aria-label="TruDealer — Future Automotive">
+  <title>TruDealer lockup (light backgrounds)</title>
+  <defs>
+    <linearGradient id="lklCyan" x1="14" y1="20" x2="84" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3FCFC8"/>
+      <stop offset="1" stop-color="#1F9A95"/>
+    </linearGradient>
+    <linearGradient id="lklInk" x1="0" y1="30" x2="0" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#12181F"/>
+      <stop offset="1" stop-color="#3B444C"/>
+    </linearGradient>
+    <linearGradient id="lklWordCyan" x1="270" y1="30" x2="540" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2FC2BB"/>
+      <stop offset="1" stop-color="#1B8F8A"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(0,15)">
+    <g fill="none" stroke="url(#lklCyan)" stroke-width="12" stroke-linecap="butt" stroke-linejoin="round">
+      <path d="M14 26 H64"/>
+      <path d="M40 26 V80"/>
+      <path d="M40 26 H52 C72 26 82 37 82 53 C82 69 72 80 52 80 H40"/>
+    </g>
+  </g>
+
+  <rect x="108" y="26" width="1.5" height="74" fill="#C4CBD1"/>
+
+  <text x="136" y="80"
+        font-family="Inter,'Helvetica Neue',Arial,system-ui,sans-serif"
+        font-size="64" font-weight="700" letter-spacing="-2.6">
+    <tspan fill="url(#lklInk)">Tru</tspan><tspan fill="url(#lklWordCyan)">Dealer</tspan>
+  </text>
+  <text x="139" y="108"
+        font-family="Inter,'Helvetica Neue',Arial,system-ui,sans-serif"
+        font-size="16" font-weight="500" letter-spacing="3"
+        fill="#6B747B">FUTURE AUTOMOTIVE</text>
+</svg>

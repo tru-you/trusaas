@@ -26,6 +26,7 @@ interface InventoryListProps {
   onOpenChecklist?: (vehicle: Vehicle) => void;
   onTagDamage?: (vehicle: Vehicle) => void;
   onOpenTradeIn?: (vehicle: Vehicle) => void;
+  onViewTradeInReport?: (vehicle: Vehicle) => void;
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
@@ -49,6 +50,7 @@ export default function InventoryList({
   onOpenChecklist,
   onTagDamage,
   onOpenTradeIn,
+  onViewTradeInReport,
   onUpdateVehicle,
   syncStatus,
   onForceSync
@@ -61,7 +63,7 @@ export default function InventoryList({
   const [deepLinkBanner, setDeepLinkBanner] = React.useState<string | null>(null);
   const [copiedStockId, setCopiedStockId] = React.useState<string | null>(null);
   const cardRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
-  const [activeFilter, setActiveFilter] = React.useState<'All' | 'In-Progress' | 'Ready' | 'Listed'>('All');
+  const [activeFilter, setActiveFilter] = React.useState<'All' | 'In-Progress' | 'Ready'>('All');
   const [showAddForm, setShowAddForm] = React.useState(false);
   const [editingVehicle, setEditingVehicle] = React.useState<Vehicle | null>(null);
   const [currentTab, setCurrentTab] = React.useState<'catalog' | 'dashboard' | 'settings'>('catalog');
@@ -537,7 +539,7 @@ export default function InventoryList({
           </div>
           <button
             onClick={() => { setEditingVehicle(null); setShowAddForm(!showAddForm); }}
-            aria-label={showAddForm ? 'Close new vehicle form' : 'Add a vehicle'}
+            aria-label={showAddForm ? (editingVehicle ? 'Close edit form' : 'Close new vehicle form') : 'Add a vehicle'}
             className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 rounded-lg bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
           >
             <Plus size={18} />
@@ -801,7 +803,6 @@ export default function InventoryList({
               { id: 'All' as const, label: 'All' },
               { id: 'In-Progress' as const, label: 'In progress' },
               { id: 'Ready' as const, label: 'Ready' },
-              { id: 'Listed' as const, label: 'Listed' },
             ]).map((f) => {
               const count = f.id === 'All'
                 ? vehicles.length
@@ -1059,14 +1060,14 @@ export default function InventoryList({
                         <button
                           onClick={(e) => { e.stopPropagation(); onOpenTradeIn(vehicle); }}
                           title="Trade-in appraisal — 28-step walk-around with valuation"
-                          className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-emerald-300 hover:text-emerald-200 cursor-pointer bg-emerald-500/10 min-h-[44px] rounded-lg border border-emerald-500/25 transition-colors"
+                          className={`flex items-center justify-center gap-1.5 text-[13px] font-bold text-emerald-300 hover:text-emerald-200 cursor-pointer bg-emerald-500/10 min-h-[44px] rounded-lg border border-emerald-500/25 transition-colors${takenCount === 0 ? ' col-span-2' : ''}`}
                         >
                           <BarChart3 size={12} /> Trade-In
                           {vehicle.tradeInData && <span className="ml-0.5 text-[10px]">✓</span>}
                         </button>
                       )}
 
-                      {takenCount > 0 && onViewReport && (
+                      {takenCount > 0 && onViewReport && !vehicle.tradeInData && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1078,6 +1079,27 @@ export default function InventoryList({
                         >
                           <FileText size={12} /> Report
                         </button>
+                      )}
+
+                      {takenCount > 0 && onViewReport && vehicle.tradeInData && (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onViewReport(vehicle); }}
+                            title="Vehicle Inspection Report"
+                            className="on-fill flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer min-h-[44px] rounded-lg transition-colors shadow-sm"
+                            style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
+                          >
+                            <FileText size={12} /> VIR
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onViewTradeInReport?.(vehicle); }}
+                            title="Trade-In Appraisal Report"
+                            className="on-fill flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer min-h-[44px] rounded-lg transition-colors shadow-sm"
+                            style={{ background: 'linear-gradient(120deg, #6EE7B7, #10B981)' }}
+                          >
+                            <BarChart3 size={12} /> Trade-In
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -1097,11 +1119,11 @@ export default function InventoryList({
                   <BarChart3 size={15} className="text-indigo-400" />
                   <span className="text-[13px] font-bold text-neutral-200 tracking-normal">Dashboard</span>
                 </div>
-                <p className="text-[13px] text-neutral-500 mt-0.5">Real-time photography & readiness audit</p>
+                <p className="text-[13px] text-neutral-500 mt-0.5">Photography, inspections & trade-in appraisals</p>
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-[13px] font-bold text-emerald-400">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0).toLocaleString()} Ready
+                  R {vehicles.reduce((acc, v) => acc + (v.status === 'Ready' || v.status === 'Listed' ? v.price : 0), 0).toLocaleString()} Ready
                 </span>
                 <span className="text-[13px] text-neutral-500">
                   R {vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0).toLocaleString()} Pending
@@ -1110,24 +1132,30 @@ export default function InventoryList({
             </div>
 
             {/* Performance KPIs */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
                 <span className="text-[13px] text-neutral-500  font-bold">Catalogue</span>
                 <span className="text-[16px] font-semibold text-[#E8EAE6]">{vehicles.length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
                 <span className="text-[13px] text-emerald-500  font-bold">Ready</span>
-                <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready').length}</span>
+                <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready' || v.status === 'Listed').length}</span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
                 <span className="text-[13px] text-amber-500  font-bold">Pending</span>
                 <span className="text-[16px] font-semibold text-amber-400">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
                 <span className="text-[13px] text-indigo-500  font-bold">Capture rate</span>
                 <span className="text-[16px] font-semibold text-indigo-400">
                   {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * PHOTO_SLOTS.length || 1)) * 100)}%
                 </span>
+              </div>
+              <div className="bg-neutral-950 p-2 rounded-xl border border-emerald-800/40 flex flex-col justify-between h-16">
+                <span className="text-[13px] text-emerald-500  font-bold">Trade-Ins</span>
+                <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.tradeInData).length}</span>
               </div>
             </div>
 
@@ -1141,7 +1169,7 @@ export default function InventoryList({
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Ready', value: vehicles.filter(v => v.status === 'Ready').length },
+                          { name: 'Ready', value: vehicles.filter(v => v.status === 'Ready' || v.status === 'Listed').length },
                           { name: 'In-Progress', value: vehicles.filter(v => v.status === 'In-Progress').length }
                         ]}
                         cx="50%"
