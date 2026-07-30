@@ -3036,6 +3036,17 @@ app.put("/api/dealerships/:id", (req: any, res) => {
   res.json({ dealership: state.dealerships[i] });
 });
 
+app.delete("/api/dealerships/:id", (req: any, res) => {
+  if (req.auth?.role !== "admin") return res.status(403).json({ error: "Admin only" });
+  const state = readState();
+  const i = (state.dealerships || []).findIndex((d: any) => d.id === req.params.id);
+  if (i === -1) return res.status(404).json({ error: "Dealership not found" });
+  const removed = state.dealerships.splice(i, 1)[0];
+  writeState(state);
+  console.log(`[dealerships] deleted ${(removed as any).slug || removed.id}`);
+  res.json({ message: `${(removed as any).name || removed.id} deleted.` });
+});
+
 app.get("/api/portals", (req, res) => {
   res.json(readPortals());
 });

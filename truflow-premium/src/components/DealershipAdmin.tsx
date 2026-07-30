@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Building2, Check, Copy, ExternalLink, KeyRound, Plus, RefreshCw } from "lucide-react";
+import { Building2, Check, Copy, ExternalLink, KeyRound, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { authFetch } from "../lib/session";
 import { TRUFLOW_LITE_URL } from "../lib/ecosystem";
 
@@ -103,6 +103,24 @@ export default function DealershipAdmin({
      something the provisioning model could not express at all. */
   const [products, setProducts] = useState<string[]>(["lens", "flow"]);
   const [savingProductsFor, setSavingProductsFor] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const deleteDealership = async (d: Dealership) => {
+    if (!confirm(`Delete ${d.name}? Their stock, leads and history stay in the system but their code will stop working.`)) return;
+    setDeleting(d.id);
+    try {
+      const res = await authFetch(`/api/dealerships/${d.id}`, { method: "DELETE" });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body?.error || `Server responded ${res.status}`);
+      setRows((prev) => prev.filter((r) => r.id !== d.id));
+      onNotify("Dealership removed", body?.message || `${d.name} deleted.`);
+    } catch (err: any) {
+      onNotify("Could not delete", err?.message || "Unknown error", "error");
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   const updateProducts = async (d: Dealership, next: string[]) => {
     setSavingProductsFor(d.id);
@@ -279,13 +297,40 @@ export default function DealershipAdmin({
           </p>
         )}
 
+        {/* ── search ───────────────────────────────────────────────────── */}
+        {rows.length > 3 && (
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(232,234,230,0.4)]" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search dealerships…"
+              className="w-full bg-[color:var(--ink-2)] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-[13px] text-[color:var(--white)]"
+            />
+          </div>
+        )}
+
         {/* ── existing dealerships ─────────────────────────────────────── */}
         <div className="flex flex-col gap-3">
           {loading && rows.length === 0 && (
             <p className="text-[13px] text-[rgba(232,234,230,0.72)]">Loading dealerships…</p>
           )}
 
-          {rows.map((d) => (
+          {rows.length > 0 && (
+            <p className="text-[13px] text-[rgba(232,234,230,0.55)]">
+              {rows.length} dealership{rows.length === 1 ? "" : "s"}
+              {searchQuery && ` · ${rows.filter((d) => {
+                const q = searchQuery.toLowerCase();
+                return d.name.toLowerCase().includes(q) || d.slug.toLowerCase().includes(q) || (d.location || "").toLowerCase().includes(q);
+              }).length} matching`}
+            </p>
+          )}
+
+          {rows.filter((d) => {
+            if (!searchQuery) return true;
+            const q = searchQuery.toLowerCase();
+            return d.name.toLowerCase().includes(q) || d.slug.toLowerCase().includes(q) || (d.location || "").toLowerCase().includes(q);
+          }).map((d) => (
             <div
               key={d.id}
               className="rounded-xl border border-white/10 bg-[color:var(--ink-2)] px-4 py-3 flex flex-col gap-2"
@@ -306,15 +351,25 @@ export default function DealershipAdmin({
                     </div>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => issueCode(d)}
-                  disabled={issuing === d.id}
-                  className="btn bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] text-[13px] inline-flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  <KeyRound size={13} />
-                  {issuing === d.id ? "Issuing…" : "Issue login code"}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => issueCode(d)}
+                    disabled={issuing === d.id}
+                    className="btn bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] text-[13px] inline-flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <KeyRound size={13} />
+                    {issuing === d.id ? "Issuing…" : "Issue login code"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteDealership(d)}
+                    disabled={deleting === d.id}
+                    className="btn bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] text-[13px] inline-flex items-center gap-1.5 disabled:opacity-50 hover:text-red-400 hover:border-red-400/30"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
 
               {issued[d.id] && (
