@@ -96,16 +96,11 @@ import { hasValidSession, clearSession, getAccount, authFetch, SESSION_EXPIRED_E
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
   PRODUCT_NAME,
-  getTruLensUrl,
-  setTruLensUrl,
   getDealerSlug,
-  setDealerSlug,
   openTruLens,
   stockWidgetSnippet,
 } from "./lib/productConfig";
 import {
-  getDealerWaNumber,
-  setDealerWaNumber,
   openStockWhatsApp,
   copyStockBlurb,
 } from "./lib/salesShare";
@@ -399,9 +394,6 @@ export default function App() {
   const [notifications, setNotifications] = useState<{ id: string; title: string; message: string; type: 'info' | 'warning' | 'error' }[]>([]);
   const notifiedTaskIds = React.useRef<Set<string>>(new Set());
 
-  const [trulensUrlInput, setTrulensUrlInput] = useState(() => getTruLensUrl());
-  const [dealerSlugInput, setDealerSlugInput] = useState(() => getDealerSlug());
-  const [waNumberInput, setWaNumberInput] = useState(() => getDealerWaNumber());
   const [embedCopied, setEmbedCopied] = useState(false);
 
   const addNotification = (title: string, message: string, type: 'info' | 'warning' | 'error' = 'info') => {
@@ -3406,78 +3398,33 @@ export default function App() {
               </Suspense>
             )}
 
-            {/* Integration URLs + website kit */}
+            {/* Website stock widget embed — the one thing a dealer's web person needs */}
             <div className="card border-[color:var(--cyan-soft)]">
               <div className="card-header border-b border-white/5 px-5 py-3">
                 <h3 className="font-bold text-[16px] text-[color:var(--white)] flex items-center gap-2">
-                  <Code size={14} className="text-[color:var(--cyan-bright)]" /> TruLens & website wiring
+                  <Code size={14} className="text-[color:var(--cyan-bright)]" /> Website stock widget
                 </h3>
               </div>
-              <div className="card-body p-5 flex flex-col gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <label className="flex flex-col gap-1">
-                    <span className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">TruLens URL</span>
-                    <input
-                      value={trulensUrlInput}
-                      onChange={(e) => setTrulensUrlInput(e.target.value)}
-                      placeholder="http://localhost:3000 or https://… tunnel"
-                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-xl px-4 py-3 text-[16px] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors text-[color:var(--white)] font-mono"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">Dealer slug (public stock)</span>
-                    <input
-                      value={dealerSlugInput}
-                      onChange={(e) => setDealerSlugInput(e.target.value)}
-                      placeholder="mkr-autosales"
-                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-xl px-4 py-3 text-[16px] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors text-[color:var(--white)] font-mono"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider">Sales WhatsApp</span>
-                    <input
-                      value={waNumberInput}
-                      onChange={(e) => setWaNumberInput(e.target.value)}
-                      placeholder="2766… (country code, no +)"
-                      className="bg-[color:var(--ink-2)] border border-white/10 rounded-xl px-4 py-3 text-[16px] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors text-[color:var(--white)] font-mono"
-                    />
-                  </label>
-                </div>
+              <div className="card-body p-5 flex flex-col gap-3">
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
-                  Phone demo: run TruLens behind <b className="text-[color:var(--white)]">HTTPS</b> (e.g. cloudflared tunnel), paste that URL here, then Install PWA on the phone.
-                  Full checklist: <span className="font-mono text-[color:var(--cyan-bright)]">PRODUCTION.md</span> in the TruSaaS folder.
+                  Drop this snippet into the dealer's website to show their live inventory. The widget pulls from the public stock feed automatically.
                 </p>
+                <pre className="text-[13px] bg-black/50 border border-white/10 rounded-xl p-3 overflow-x-auto text-[rgba(232,234,230,0.72)] font-mono whitespace-pre-wrap">
+                  {stockWidgetSnippet(window.location.origin)}
+                </pre>
                 <button
                   type="button"
-                  className="btn btn-primary self-start text-[13px] font-bold"
-                  onClick={() => {
-                    setTruLensUrl(trulensUrlInput);
-                    setDealerSlug(dealerSlugInput);
-                    setDealerWaNumber(waNumberInput);
-                    addNotification("Saved", "TruLens URL, slug & WhatsApp stored on this device", "info");
+                  className="self-start text-[13px] font-bold text-[color:var(--cyan-bright)] hover:underline"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(stockWidgetSnippet(window.location.origin));
+                      setEmbedCopied(true);
+                      setTimeout(() => setEmbedCopied(false), 1600);
+                    } catch { /* ignore */ }
                   }}
                 >
-                  Save integration settings
+                  {embedCopied ? "Copied!" : "Copy embed snippet"}
                 </button>
-                <div>
-                  <div className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] tracking-wider mb-1">Website stock widget (copy for web person)</div>
-                  <pre className="text-[13px] bg-black/50 border border-white/10 rounded-xl p-3 overflow-x-auto text-[rgba(232,234,230,0.72)] font-mono whitespace-pre-wrap">
-                    {stockWidgetSnippet(window.location.origin)}
-                  </pre>
-                  <button
-                    type="button"
-                    className="mt-2 text-[13px] font-bold text-[color:var(--cyan-bright)] hover:underline"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(stockWidgetSnippet(window.location.origin));
-                        setEmbedCopied(true);
-                        setTimeout(() => setEmbedCopied(false), 1600);
-                      } catch { /* ignore */ }
-                    }}
-                  >
-                    {embedCopied ? "Copied!" : "Copy embed snippet"}
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -3492,92 +3439,6 @@ export default function App() {
               </div>
               <div className="card-body p-5">
                 <InstallAppButton appName="TruFlow" />
-              </div>
-            </div>
-
-            <div className="card border-[color:var(--cyan-soft)] bg-gradient-to-br from-[color:var(--ink-2)] via-[color:var(--ink-2)] to-[color:var(--ink)]">
-              <div className="card-header border-b border-white/5 px-6 py-4 flex justify-between items-center">
-                <div>
-                  <h3 className="font-bold text-base text-[color:var(--white)] flex items-center gap-2">
-                    <Sparkles size={16} className="text-[color:var(--cyan)]" />
-                    TruFlow Premium
-                  </h3>
-                  <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Full DMS · media hub · recon · website feed · TruLens export</p>
-                </div>
-                <span className="px-3 py-1 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] rounded-full text-[13px] font-semibold tracking-widest ">
-                  Premium
-                </span>
-              </div>
-              <div className="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 bg-[color:var(--glass)] border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)]">
-                    <Check size={16} />
-                  </div>
-                  <div>
-                    <span className="font-bold text-[16px] text-[color:var(--white)] block">Dealer website</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Full inventory showcase on your custom front-end portal www.trusaas.co.za.</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 bg-[color:var(--glass)] border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)]">
-                    <Check size={16} />
-                  </div>
-                  <div>
-                    <span className="font-bold text-[16px] text-[color:var(--white)] block">Full DMS & CRM Logic</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Integrated Lead CRM, Lead scoring pipelines, tasks and automated AI lead assignments.</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 bg-[color:var(--glass)] border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)]">
-                    <Check size={16} />
-                  </div>
-                  <div>
-                    <span className="font-bold text-[16px] text-[color:var(--white)] block">Dealer Assist — VIR & image studio</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Generates automated visual inspection reports (VIR) and optimizes vehicle images using neural nets.</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 bg-[color:var(--glass)] border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)]">
-                    <Check size={16} />
-                  </div>
-                  <div>
-                    <span className="font-bold text-[16px] text-[color:var(--white)] block">Smart Ledger & Recon</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Automated expense matching and real-time reconciliation logs with dealer capital ledger.</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 bg-[color:var(--glass)] border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)]">
-                    <Check size={16} />
-                  </div>
-                  <div>
-                    <span className="font-bold text-[16px] text-[color:var(--white)] block">AI Chatbot Co-Pilot</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Customer-facing conversational agent on the showroom floor to answer dealer or visitor queries.</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 bg-[color:var(--glass)] border border-white/5 rounded-xl p-4">
-                  <div className="p-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)]">
-                    <Check size={16} />
-                  </div>
-                  <div>
-                    <span className="font-bold text-[16px] text-[color:var(--white)] block">Search optimisation</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Optimizes raw metadata, vehicle specifications, and pricing for Search and Answer Engines.</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 md:col-span-2">
-                  <div className="p-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)]">
-                    <Check size={16} />
-                  </div>
-                  <div>
-                    <span className="font-bold text-[16px] text-[color:var(--white)] block">Marketplace syndication</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block">Real-time syndication endpoints for synchronizing stock with AutoTrader and Cars.co.za.</span>
-                  </div>
-                </div>
               </div>
             </div>
 
