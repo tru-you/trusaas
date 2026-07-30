@@ -8,7 +8,8 @@
 #                                   → flow.tru-saas.com     (canonical)
 #                                   → premium.tru-saas.com  (alias, legacy embeds)
 #   trusaas-live.onrender.com     → TruLive          (trulive)  → live.tru-saas.com
-#   trusaas-value.onrender.com    → TruTrade         (trutrade) → trade.tru-saas.com  (subdomain fixed at creation; custom domain = trade.tru-saas.com)
+#   trusaas-trade.onrender.com    → TruTrade         (trutrade) → trade.tru-saas.com
+#                                   (renamed from trusaas-value 2026-07-31; old service discontinued, domain repointed)
 #
 # TruFlow Lite retired 2026-07-25 — see the note where its block used to be.
 #
@@ -143,7 +144,7 @@ services:
 
   # ── 2c. TruTrade — live video trade-in appraisal (customer films, dealer prices)
   - type: web
-    name: trusaas-value
+    name: trusaas-trade
     runtime: node
     plan: starter
     rootDir: trutrade
