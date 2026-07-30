@@ -185,7 +185,54 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
       }
     } catch (err) {
       console.error(err);
-      alert('PDF failed — use Print → Save as PDF.');
+      alert('PDF failed — use HTML or Print → Save as PDF.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  /* Self-contained HTML export — the reliable path on a phone.
+   *
+   * html2canvas (the PDF route) rasterises the whole report in memory and
+   * routinely runs out of it on a mobile browser. This clones the report,
+   * inlines every image as a data URI so the file opens offline / after being
+   * emailed, and downloads one .html — which every mobile browser can save and
+   * share. Photos are "/media/…" URLs now, so they must be fetched and embedded
+   * or the saved file would point at nothing. */
+  const handleExportHtml = async () => {
+    const el = reportRef.current;
+    if (!el) return;
+    setExporting(true);
+    try {
+      const clone = el.cloneNode(true) as HTMLElement;
+      const images = Array.from(clone.querySelectorAll('img'));
+      await Promise.all(
+        images.map(async (img) => {
+          const src = img.getAttribute('src') || '';
+          if (!src || src.startsWith('data:')) return; // already inline
+          try {
+            const res = await fetch(src, { cache: 'force-cache' });
+            if (!res.ok) return;
+            const blob = await res.blob();
+            const dataUri = await new Promise<string>((resolve, reject) => {
+              const fr = new FileReader();
+              fr.onload = () => resolve(String(fr.result));
+              fr.onerror = () => reject(fr.error);
+              fr.readAsDataURL(blob);
+            });
+            img.setAttribute('src', dataUri);
+          } catch {
+            /* One unreachable photo must not cost the whole report. */
+          }
+        })
+      );
+      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TruInspect Trade-In · ${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.stockNumber || ''}</title><style>*{box-sizing:border-box}body{margin:0;background:#F1F5F9;padding:16px;overflow-x:hidden}</style></head><body>${clone.outerHTML}</body></html>`;
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `TradeIn_${vehicle.stockNumber || 'draft'}.html`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     } finally {
       setExporting(false);
     }
@@ -213,11 +260,21 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
         <div className="flex gap-2">
           <button
             type="button"
+            onClick={handleExportHtml}
+            disabled={exporting}
+            title="Downloads a single file with every photo embedded — opens offline and survives being emailed. Most reliable on a phone."
+            className="px-3 py-2 rounded-lg text-[#0B0F17] text-[12px] font-semibold flex items-center gap-1.5 disabled:opacity-50"
+            style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
+          >
+            <Download size={13} /> {exporting ? 'Exporting…' : 'Save Report'}
+          </button>
+          <button
+            type="button"
             onClick={handleExportPdf}
             disabled={exporting}
             className="px-3 py-2 rounded-lg border border-cyan-500/30 text-cyan-300 text-[12px] font-semibold flex items-center gap-1.5 disabled:opacity-50"
           >
-            <Download size={13} /> {exporting ? 'Exporting…' : 'PDF'}
+            <Download size={13} /> PDF
           </button>
           <button
             type="button"

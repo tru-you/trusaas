@@ -11,9 +11,21 @@ interface TradeInWalkAroundProps {
   vehicle: Vehicle;
   onBack: () => void;
   onComplete: (items: InspectionItem[]) => void;
+  /** Store one photo and resolve to its "/media/…" URL (null if it couldn't). */
+  onUploadPhoto: (base64Image: string) => Promise<string | null>;
 }
 
-export default function TradeInWalkAround({ vehicle, onBack, onComplete }: TradeInWalkAroundProps) {
+/** Read a File into a base64 data URL so it can be posted to the photo store. */
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploadPhoto }: TradeInWalkAroundProps) {
   const [items, setItems] = React.useState<InspectionItem[]>(() => {
     if (vehicle.tradeInData?.items?.length) {
       return JSON.parse(JSON.stringify(vehicle.tradeInData.items));
@@ -22,6 +34,8 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete }: Trade
   });
   const [currentStep, setCurrentStep] = React.useState(0);
   const [showroomBypass, setShowroomBypass] = React.useState(false);
+  /** Item ids whose photo is still uploading — Continue waits for these. */
+  const [uploading, setUploading] = React.useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const item = items[currentStep];
@@ -49,12 +63,46 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete }: Trade
     }));
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    updateItem({ photoUrl: url, isCompleted: true });
+  /** Set photoUrl on a specific item by id (async-safe: the current step may
+   *  change while an upload is in flight). */
+  const setItemPhoto = (itemId: string, photoUrl: string) => {
+    setItems((prev) => prev.map((it) =>
+      it.id === itemId ? { ...it, photoUrl, isCompleted: true } : it
+    ));
   };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    // Reset the input so re-selecting the same file still fires onChange.
+    e.target.value = '';
+    if (!file) return;
+
+    const itemId = item.id;
+    // Instant preview from a local blob URL — replaced by the stored URL below.
+    const blobUrl = URL.createObjectURL(file);
+    updateItem({ photoUrl: blobUrl, isCompleted: true });
+
+    // Upload in the background; keep the URL (not base64) in state.
+    setUploading((u) => ({ ...u, [itemId]: true }));
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const ref = await onUploadPhoto(dataUrl);
+      if (ref) {
+        setItemPhoto(itemId, ref);
+        URL.revokeObjectURL(blobUrl);
+      }
+      /* If the upload failed, the blob URL stays as a visible preview; App
+         converts that lone shot to base64 on Continue so it is not lost. */
+    } finally {
+      setUploading((u) => {
+        const next = { ...u };
+        delete next[itemId];
+        return next;
+      });
+    }
+  };
+
+  const isUploading = Object.values(uploading).some(Boolean);
 
   const canSubmit = items.every((it) => {
     if (it.id === 'odometer') return !!it.photoUrl;
@@ -279,11 +327,11 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete }: Trade
         ) : (
           <button
             type="button"
-            disabled={!canSubmit}
+            disabled={!canSubmit || isUploading}
             onClick={() => onComplete(items)}
             className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
           >
-            <CheckCircle2 size={14} /> Continue to Valuation
+            <CheckCircle2 size={14} /> {isUploading ? 'Saving photos…' : 'Continue to Valuation'}
           </button>
         )}
       </div>

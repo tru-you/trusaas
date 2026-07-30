@@ -458,6 +458,26 @@ export default function App() {
     setLoadError(null);
   };
 
+  /** Upload one trade-in photo and get back a "/media/…" URL.
+   *  Mirrors the inspection capture: bytes become a file, state keeps a URL. */
+  const uploadTradePhoto = async (base64Image: string): Promise<string | null> => {
+    if (!user) return null;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/inventory/upload-trade-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ base64Image }),
+      });
+      if (!res.ok) return null;
+      const { ref } = await res.json();
+      return typeof ref === 'string' ? ref : null;
+    } catch (e) {
+      console.error('Trade-in photo upload failed:', e);
+      return null;
+    }
+  };
+
   // Save completed trade-in data to the vehicle
   const handleSaveTradeIn = async (data: TradeInData) => {
     if (!activeVehicle) return;
@@ -569,14 +589,20 @@ export default function App() {
             <TradeInWalkAround
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
+              onUploadPhoto={uploadTradePhoto}
               onComplete={(completedItems) => {
                 setTradeInItems(completedItems);
                 setActiveView('trade-in-valuation');
-                // Convert blob URLs and save in background — don't block the transition
+                /* Photos are already "/media/…" URLs (uploaded as they were
+                   captured). Only a shot whose upload failed is still a blob:
+                   URL — convert just those to base64 so the server can still
+                   file them on save. The common path does no conversion. */
                 Promise.all(
                   completedItems.map(async (it) => ({
                     ...it,
-                    photoUrl: it.photoUrl ? await blobUrlToDataUrl(it.photoUrl) : null,
+                    photoUrl: it.photoUrl?.startsWith('blob:')
+                      ? await blobUrlToDataUrl(it.photoUrl)
+                      : (it.photoUrl || null),
                   }))
                 ).then((persisted) => {
                   setTradeInItems(persisted);

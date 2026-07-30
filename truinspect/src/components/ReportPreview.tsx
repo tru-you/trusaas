@@ -429,18 +429,18 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <button
               onClick={exportHtml}
               disabled={exporting}
-              title="Downloads a single file with every photo embedded — it opens offline and survives being emailed"
-              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200 disabled:opacity-50"
+              title="Downloads a single file with every photo embedded — it opens offline and survives being emailed. Most reliable on a phone."
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#0B0F17] disabled:opacity-50"
+              style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
             >
-              <FileText size={12} /> {exporting ? 'Embedding…' : 'HTML'}
+              <FileText size={12} /> {exporting ? 'Embedding…' : 'Save Report'}
             </button>
             <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf('full')} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#0B0F17]"
-              style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}>
-              <Download size={12} /> {generating === 'full' ? '…' : 'Inspection PDF'}
+              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200 disabled:opacity-50">
+              <Download size={12} /> {generating === 'full' ? '…' : 'PDF'}
             </button>
           </div>
         </div>

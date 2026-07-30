@@ -519,17 +519,60 @@ async function getVehicle(id: string, userId?: string): Promise<any | null> {
  *
  *  Idempotent: put() hands back a reference unchanged, so re-saving an already
  *  converted inspection costs a map and nothing else. */
-function storeVehiclePhotos(vehicle: any): any {
-  const photos = vehicle?.photos;
-  if (!photos || typeof photos !== 'object') return vehicle;
-  const next: Record<string, string> = {};
-  for (const [slotId, value] of Object.entries(photos)) {
-    const ref = putPhoto(value);
-    /* Falls back to the original value when the store cannot take it, so an
-       inspection is never silently lost — it simply stays base64. */
-    next[slotId] = ref || (value as string);
+/** Move a trade-in appraisal's photos onto disk too.
+ *
+ *  Trade-in shots live nested in tradeInData.items[].photoUrl and the dealer's
+ *  signature in dealerDetails.digitalSignatureUrl — a level below vehicle.photos,
+ *  so the loop above never reached them. Left alone, a 28-step walk-around wrote
+ *  28 base64 images straight into local-inventory.json / the Firestore document,
+ *  bloating every read and breaching Firestore's 1 MiB ceiling (which silently
+ *  fails the whole save — "images not saving"). Same put()/reference treatment,
+ *  one level deeper. Idempotent: a stored "/media/…" reference passes through. */
+function externalizeTradeInPhotos(tradeInData: any): any {
+  if (!tradeInData || typeof tradeInData !== 'object') return tradeInData;
+  let next = tradeInData;
+
+  if (Array.isArray(tradeInData.items)) {
+    next = {
+      ...next,
+      items: tradeInData.items.map((it: any) => {
+        if (!it || typeof it !== 'object' || !it.photoUrl) return it;
+        const ref = putPhoto(it.photoUrl);
+        return ref ? { ...it, photoUrl: ref } : it;
+      }),
+    };
   }
-  return { ...vehicle, photos: next };
+
+  const dd = tradeInData.dealerDetails;
+  if (dd && typeof dd === 'object' && dd.digitalSignatureUrl) {
+    const sigRef = putPhoto(dd.digitalSignatureUrl);
+    if (sigRef) next = { ...next, dealerDetails: { ...dd, digitalSignatureUrl: sigRef } };
+  }
+
+  return next;
+}
+
+function storeVehiclePhotos(vehicle: any): any {
+  if (!vehicle || typeof vehicle !== 'object') return vehicle;
+  let next = vehicle;
+
+  const photos = vehicle.photos;
+  if (photos && typeof photos === 'object') {
+    const nextPhotos: Record<string, string> = {};
+    for (const [slotId, value] of Object.entries(photos)) {
+      const ref = putPhoto(value);
+      /* Falls back to the original value when the store cannot take it, so an
+         inspection is never silently lost — it simply stays base64. */
+      nextPhotos[slotId] = ref || (value as string);
+    }
+    next = { ...next, photos: nextPhotos };
+  }
+
+  if (vehicle.tradeInData) {
+    next = { ...next, tradeInData: externalizeTradeInPhotos(vehicle.tradeInData) };
+  }
+
+  return next;
 }
 
 async function saveVehicle(vehicle: any): Promise<any> {
@@ -1056,6 +1099,29 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
     res.json({ success: true, vehicle: saved });
   } catch (error) {
     console.error('POST /api/inventory/upload-photo - Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// 3b. Trade-in photo upload — store one image as a file, return its URL.
+//
+// The 28-step trade-in walk-around used to keep photos as blob: URLs (which die
+// on navigation) and then base64 them into the record (which bloats it). This
+// endpoint gives each shot the same treatment inspection photos get: bytes go to
+// the content-addressed media store, and the caller keeps only a "/media/…" URL.
+app.post('/api/inventory/upload-trade-photo', authenticate, async (req: any, res) => {
+  try {
+    const { base64Image } = req.body;
+    if (!base64Image || typeof base64Image !== 'string') {
+      return res.status(400).json({ error: 'base64Image is required' });
+    }
+    const ref = putPhoto(base64Image);
+    if (!ref) {
+      return res.status(422).json({ error: 'Unsupported or malformed image data' });
+    }
+    res.json({ success: true, ref });
+  } catch (error) {
+    console.error('POST /api/inventory/upload-trade-photo - Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
