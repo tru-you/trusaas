@@ -82,6 +82,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const reportRef = useRef<HTMLDivElement>(null);
   const [waCopied, setWaCopied] = useState(false);
   const [generating, setGenerating] = useState<'full' | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [web3dBusy, setWeb3dBusy] = useState(false);
   const [web3dMsg, setWeb3dMsg] = useState<string | null>(null);
   const [publishBusy, setPublishBusy] = useState(false);
@@ -129,16 +130,50 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
-  const exportHtml = () => {
+  /* Photos are files now, so serialising the DOM would produce `<img src="/media/…">`
+   * — a relative URL that resolves against nothing once the file is emailed, saved
+   * or opened offline, which is precisely when a report matters. Every image is
+   * fetched and inlined as a data URI before writing the file. Done on a clone so
+   * the on-screen report keeps its light URLs and the page does not briefly hold
+   * every photo twice. */
+  const exportHtml = async () => {
     const el = reportRef.current;
     if (!el) return;
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TruLens Report · ${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.stockNumber || ''}</title><style>*{box-sizing:border-box}body{margin:0;background:#F1F5F9;padding:16px;overflow-x:hidden}</style></head><body>${el.outerHTML}</body></html>`;
-    const blob = new Blob([html], { type: 'text/html' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `TruLens_Report_${vehicle.stockNumber || 'draft'}.html`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    setExporting(true);
+    try {
+      const clone = el.cloneNode(true) as HTMLElement;
+      const images = Array.from(clone.querySelectorAll('img'));
+      await Promise.all(
+        images.map(async (img) => {
+          const src = img.getAttribute('src') || '';
+          if (!src || src.startsWith('data:')) return; // already inline
+          try {
+            const res = await fetch(src, { cache: 'force-cache' });
+            if (!res.ok) return;
+            const blob = await res.blob();
+            const dataUri = await new Promise<string>((resolve, reject) => {
+              const fr = new FileReader();
+              fr.onload = () => resolve(String(fr.result));
+              fr.onerror = () => reject(fr.error);
+              fr.readAsDataURL(blob);
+            });
+            img.setAttribute('src', dataUri);
+          } catch {
+            /* One unreachable photo must not cost the whole report — the rest
+               still export, and the gap is visible rather than silent. */
+          }
+        })
+      );
+      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TruLens Report · ${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.stockNumber || ''}</title><style>*{box-sizing:border-box}body{margin:0;background:#F1F5F9;padding:16px;overflow-x:hidden}</style></head><body>${clone.outerHTML}</body></html>`;
+      const blob = new Blob([html], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `TruLens_Report_${vehicle.stockNumber || 'draft'}.html`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    } finally {
+      setExporting(false);
+    }
   };
 
   const runPdf = async () => {
@@ -288,8 +323,10 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 Open 3D
               </button>
             )}
-            <button onClick={exportHtml} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
-              <FileText size={12} /> HTML
+            <button onClick={exportHtml} disabled={exporting}
+              title="Downloads a single file with every photo embedded — opens offline and survives being emailed"
+              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200 disabled:opacity-50">
+              <FileText size={12} /> {exporting ? 'Embedding…' : 'HTML'}
             </button>
             <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
