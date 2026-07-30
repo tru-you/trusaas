@@ -273,17 +273,27 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     setGenerating(mode);
     try {
       const html2pdf = (await import('html2pdf.js')).default;
-      await html2pdf()
-        .set({
-          margin: mode === 'sales' ? [6, 8, 6, 8] : [8, 8, 8, 8],
-          filename: `TruInspect_${mode === 'sales' ? 'Summary' : 'VIR'}_${vehicle.stockNumber || 'draft'}.pdf`,
-          image: { type: 'jpeg', quality: 0.95 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'] },
-        } as any)
-        .from(el)
-        .save();
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.style.width = '210mm';
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      document.body.appendChild(clone);
+      try {
+        await html2pdf()
+          .set({
+            margin: mode === 'sales' ? [6, 8, 6, 8] : [8, 8, 8, 8],
+            filename: `TruInspect_${mode === 'sales' ? 'Summary' : 'VIR'}_${vehicle.stockNumber || 'draft'}.pdf`,
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false, windowWidth: 794 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] },
+          } as any)
+          .from(clone)
+          .save();
+      } finally {
+        document.body.removeChild(clone);
+      }
     } catch (err) {
       console.error(err);
       alert('PDF failed — use Print → Save as PDF.');

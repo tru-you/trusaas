@@ -14,6 +14,19 @@ import { Vehicle, QualityReport, DmsExportResult, PointResult, PHOTO_SLOTS } fro
 import type { InspectionItem, ValuationState, TradeInData } from './types/inspection';
 import { useAuth } from './contexts/AuthContext';
 
+/** Convert a blob: URL to a data: URL so it survives navigation / reload. */
+async function blobUrlToDataUrl(url: string): Promise<string> {
+  if (!url.startsWith('blob:')) return url;
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 /** Keep client state crash-safe even if API returns partial records. */
 function normalizeVehicle(raw: any): Vehicle {
   const photosIn = raw?.photos && typeof raw.photos === 'object' ? raw.photos : {};
@@ -434,8 +447,13 @@ export default function App() {
   // Open the trade-in appraisal for a vehicle
   const handleOpenTradeIn = (vehicle: Vehicle) => {
     setActiveVehicleId(vehicle.id);
-    setTradeInItems([]);
-    setTradeInValuation(null);
+    if (vehicle.tradeInData?.items?.length) {
+      setTradeInItems(vehicle.tradeInData.items);
+      setTradeInValuation(vehicle.tradeInData.valuation || null);
+    } else {
+      setTradeInItems([]);
+      setTradeInValuation(null);
+    }
     setActiveView('trade-in');
     setLoadError(null);
   };
@@ -551,8 +569,21 @@ export default function App() {
             <TradeInWalkAround
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
-              onComplete={(completedItems) => {
-                setTradeInItems(completedItems);
+              onComplete={async (completedItems) => {
+                const persisted = await Promise.all(
+                  completedItems.map(async (it) => ({
+                    ...it,
+                    photoUrl: it.photoUrl ? await blobUrlToDataUrl(it.photoUrl) : null,
+                  }))
+                );
+                setTradeInItems(persisted);
+                await handleUpdateVehicle(activeVehicle, {
+                  tradeInData: {
+                    ...activeVehicle.tradeInData,
+                    items: persisted,
+                    valuation: tradeInValuation || activeVehicle.tradeInData?.valuation || undefined,
+                  },
+                } as Partial<Vehicle>);
                 setActiveView('trade-in-valuation');
               }}
             />
