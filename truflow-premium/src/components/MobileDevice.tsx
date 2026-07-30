@@ -41,7 +41,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
   if (nativeMode) {
     return (
       <div className="relative flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-neutral-950 text-[#E8EAE6] font-sans select-none overflow-hidden">
-        <div className="relative flex-1 min-h-0 w-full overflow-hidden flex flex-col">
+        <div className="relative flex-1 min-h-0 w-full overflow-y-auto flex flex-col">
           {children}
           <PwaInstallBanner />
         </div>
@@ -79,7 +79,7 @@ export default function MobileDevice({ children }: MobileDeviceProps) {
             </div>
           </div>
 
-          <div className="relative flex-1 w-full bg-neutral-950 overflow-hidden flex flex-col">
+          <div className="relative flex-1 w-full bg-neutral-950 overflow-y-auto flex flex-col">
             {children}
             <PwaInstallBanner />
           </div>

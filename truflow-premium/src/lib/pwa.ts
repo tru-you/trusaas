@@ -19,7 +19,7 @@ export function isIosSafari(): boolean {
 
 export function isMobileViewport(): boolean {
   if (typeof window === 'undefined') return false;
-  return window.matchMedia('(max-width: 900px), (pointer: coarse)').matches || isStandaloneDisplay();
+  return window.matchMedia('(max-width: 900px)').matches || isStandaloneDisplay();
 }
 
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
