@@ -9,7 +9,8 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 } from 'recharts';
-import { Vehicle, PHOTO_SLOTS, DmsExportResult } from '../types';
+import { Vehicle, DmsExportResult } from '../types';
+import { DEFAULT_TEMPLATE } from '../templates';
 import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 import DiscScanner from './DiscScanner';
@@ -924,9 +925,9 @@ export default function InventoryList({
               // Count completed photos (always use safe photos map)
               const photos = vehicle.photos || {};
               const takenCount = Object.keys(photos).length;
-              const totalCount = PHOTO_SLOTS.length;
-              const requiredTaken = PHOTO_SLOTS.filter(s => s.required && !!photos[s.id]).length;
-              const totalRequired = PHOTO_SLOTS.filter(s => s.required).length;
+              const totalCount = DEFAULT_TEMPLATE.slots.length;
+              const requiredTaken = DEFAULT_TEMPLATE.slots.filter(s => s.required && !!photos[s.id]).length;
+              const totalRequired = DEFAULT_TEMPLATE.slots.filter(s => s.required).length;
               const readiness = computeWebReadiness(vehicle);
               /* Photos are files now, so the hero is usually "/media/<hash>.jpg"
                  rather than a data URI. Testing only for data: left every
@@ -1064,7 +1065,7 @@ export default function InventoryList({
                             keeps the percentage the bar is drawing. */}
                         <span>Required photos</span>
                         <span className="font-bold text-neutral-200">
-                          {Math.round((requiredTaken / totalRequired) * 100)}%
+                          {totalRequired > 0 ? Math.round((requiredTaken / totalRequired) * 100) : 100}%
                         </span>
                       </div>
                       <div className="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden relative">
@@ -1072,7 +1073,7 @@ export default function InventoryList({
                           className={`h-full rounded-full transition-all duration-500 relative overflow-hidden ${
                             requiredTaken === totalRequired ? 'bg-emerald-500' : 'bg-indigo-500'
                           } ${requiredTaken > 0 && requiredTaken < totalRequired ? 'tl-progress-sheen' : ''}`}
-                          style={{ width: `${Math.round((requiredTaken / totalRequired) * 100)}%` }}
+                          style={{ width: `${totalRequired > 0 ? Math.round((requiredTaken / totalRequired) * 100) : 100}%` }}
                         />
                       </div>
                     </div>
@@ -1238,7 +1239,7 @@ export default function InventoryList({
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
                 <span className="text-[13px] text-cyan-500 font-bold">Capture rate</span>
                 <span className="text-[16px] font-semibold text-cyan-400">
-                  {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * PHOTO_SLOTS.length || 1)) * 100)}%
+                  {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * DEFAULT_TEMPLATE.slots.length || 1)) * 100)}%
                 </span>
               </div>
               <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
@@ -1336,7 +1337,7 @@ export default function InventoryList({
                   </div>
                 ) : (
                   vehicles.filter(v => v.status === 'In-Progress').slice(0, 3).map(v => {
-                    const missingCount = PHOTO_SLOTS.filter(s => s.required && !(v.photos || {})[s.id]).length;
+                    const missingCount = DEFAULT_TEMPLATE.slots.filter(s => s.required && !(v.photos || {})[s.id]).length;
                     return (
                       <div key={v.id} className="flex items-center justify-between p-2 bg-neutral-900/40 rounded-lg border border-neutral-850/50">
                         <div className="flex items-center gap-2">

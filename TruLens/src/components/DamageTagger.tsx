@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, Check, Sparkles, Loader2 } from 'lucide-react';
-import { Vehicle, DamageFinding, PHOTO_SLOTS } from '../types';
+import { Vehicle, DamageFinding } from '../types';
+import { DEFAULT_TEMPLATE } from '../templates';
 
 /**
  * Manual damage tagging — the inspector taps the exact spot on a REAL captured
@@ -34,7 +35,7 @@ const newId = () => `dmg_${Date.now().toString(36)}_${Math.floor(Math.random() *
 export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerProps) {
   // Only slots that actually have a photo can be tagged.
   const shotSlots = React.useMemo(
-    () => PHOTO_SLOTS.filter((s) => vehicle.photos?.[s.id]),
+    () => DEFAULT_TEMPLATE.slots.filter((s) => vehicle.photos?.[s.id]),
     [vehicle.photos],
   );
 
@@ -49,7 +50,7 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
   const [scanMsg, setScanMsg] = React.useState<string | null>(null);
   const imgWrapRef = React.useRef<HTMLDivElement | null>(null);
 
-  const slot = PHOTO_SLOTS.find((s) => s.id === slotId);
+  const slot = DEFAULT_TEMPLATE.slots.find((s) => s.id === slotId);
   const photo = vehicle.photos?.[slotId];
   const slotTags = findings[slotId] || [];
   const editing = slotTags.find((t) => t.id === editingId) || null;

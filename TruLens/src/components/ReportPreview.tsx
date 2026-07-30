@@ -1,12 +1,15 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, Download, Printer, Award, AlertTriangle, CheckCircle2,
-  Camera, FileText, Wrench, ClipboardList, Clock, Check, MessageCircle, Box,
+  Camera, FileText, ClipboardList, Clock, Check, MessageCircle, Box,
 } from 'lucide-react';
-import { Vehicle, PHOTO_SLOTS, PhotoSlot, QualityReport, DamageFinding } from '../types';
+import { Vehicle, QualityReport, DamageFinding } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
+import { DEFAULT_TEMPLATE } from '../templates';
+import type { TemplateSlot } from '../template';
+import { ICONS } from '../iconMap';
 import trulensLockup from '../assets/images/trulens-wordmark.png';
 import trudealerLockupDark from '../assets/images/trudealer-lockup-dark.svg';
 import trudealerLockupLight from '../assets/images/trudealer-lockup-light.svg';
@@ -63,19 +66,15 @@ function captureBand(score: number | null) {
   return { label: 'Re-shoot', color: '#DC2626', bg: 'rgba(239,68,68,0.14)' };
 }
 
-function scoreForSlots(vehicle: Vehicle, slots: PhotoSlot[]): number | null {
+function scoreForSlots(vehicle: Vehicle, slots: TemplateSlot[]): number | null {
   const captured = slots.map(s => vehicle.quality?.[s.id]).filter(Boolean) as QualityReport[];
   if (captured.length === 0) return null;
   return Math.round(captured.reduce((sum, q) => sum + q.overallScore, 0) / captured.length);
 }
 
-const PHASES = [
-  { id: 1, name: 'Exterior', icon: Camera },
-  { id: 3, name: 'Interior', icon: ClipboardList },
-  { id: 4, name: 'Engine', icon: Wrench },
-  { id: 5, name: 'Damage', icon: AlertTriangle },
-  { id: 6, name: 'Documents', icon: FileText },
-];
+const PHASES = DEFAULT_TEMPLATE.phases
+  .filter(p => p.reportCard)
+  .map(p => ({ id: p.id, name: p.reportCard!.label, icon: ICONS[p.reportCard!.iconKey] }));
 
 export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
@@ -117,12 +116,12 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     : null;
 
   const phaseScores = PHASES.map(p => {
-    const slots = PHOTO_SLOTS.filter(s => s.phase === p.id);
+    const slots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === p.id);
     return { ...p, slots, score: scoreForSlots(vehicle, slots) };
   });
 
-  const capturedPhotos = PHOTO_SLOTS.filter(s => vehicle.photos?.[s.id]);
-  const requiredSlots = PHOTO_SLOTS.filter(s => s.required);
+  const capturedPhotos = DEFAULT_TEMPLATE.slots.filter(s => vehicle.photos?.[s.id]);
+  const requiredSlots = DEFAULT_TEMPLATE.slots.filter(s => s.required);
   const requiredTaken = requiredSlots.filter(s => vehicle.photos?.[s.id]).length;
 
   const reportId = `TL-${(vehicle.stockNumber || vehicle.id).toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
@@ -498,7 +497,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             ) : (
               condition.findings.map((f, i) => {
                 const sev = severityMeta(f.severity);
-                const slot = PHOTO_SLOTS.find(s => s.id === f.slotId);
+                const slot = DEFAULT_TEMPLATE.slots.find(s => s.id === f.slotId);
                 return (
                   <div className="finding" key={i} style={{ background: sev.bg, borderLeftColor: sev.color }}>
                     <div className="h" style={{ color: sev.color }}>
@@ -519,7 +518,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             const slotsWithDamage = Object.entries(vehicle.damageFindings || {})
               .filter(([, list]) => list && list.some(f => f.confirmed !== false))
               .map(([slotId, list]) => ({
-                slot: PHOTO_SLOTS.find(s => s.id === slotId),
+                slot: DEFAULT_TEMPLATE.slots.find(s => s.id === slotId),
                 src: vehicle.photos?.[slotId],
                 findings: (list || []).filter(f => f.confirmed !== false),
               }))
