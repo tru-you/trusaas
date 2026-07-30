@@ -1291,7 +1291,7 @@ export default function App() {
       </aside>
 
       {/* Main Panel */}
-      <main className="flex-1 md:ml-[240px] min-h-screen px-4 py-6 md:px-8 md:py-8 z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+      <main className="flex-1 md:ml-[240px] min-h-0 px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:px-8 md:py-8 md:pb-[calc(2rem+env(safe-area-inset-bottom,0px))] z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
         {/* Top Profile Bar - Hidden on mobile */}
         {/* The top bar was a row of pills on a hairline with nothing behind it,
             so it read as the first row of content rather than as chrome. It now
