@@ -88,6 +88,7 @@ export default function App() {
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
   const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist' | 'damage' | 'trade-in' | 'trade-in-valuation' | 'trade-in-summary'>('inventory');
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
 
   // Trade-in flow state (carried between the 3 screens)
   const [tradeInItems, setTradeInItems] = React.useState<InspectionItem[]>([]);
@@ -291,6 +292,7 @@ export default function App() {
   const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport: QualityReport) => {
     if (!user) return;
     setSyncStatus('syncing');
+    setUploadError(null);
     try {
       const token = await user.getIdToken();
       const res = await fetch('/api/inventory/upload-photo', {
@@ -308,10 +310,12 @@ export default function App() {
         setSyncStatus('synced');
       } else {
         setSyncStatus('error');
+        setUploadError(`Could not save that photo (server said ${res.status}). It has NOT been kept — try again.`);
       }
     } catch (e) {
       console.error('Failed to upload photo:', e);
       setSyncStatus('error');
+      setUploadError('Could not reach the server to save that shot. It has NOT been kept — check signal and try again.');
     }
   };
 
@@ -544,6 +548,24 @@ export default function App() {
                     onClick={() => { setLoadError(null); fetchInventory(); }}
                   >
                     Retry
+                  </button>
+                </div>
+              )}
+              {/* A failed save has to be seen. The pending shot is already gone
+                  by the time this renders, so without it the loss is invisible
+                  and the dealer keeps shooting into a void. */}
+              {uploadError && (
+                <div
+                  role="alert"
+                  className="mb-3 rounded-xl border border-[#B86A6A]/40 bg-[#B86A6A]/[0.12] px-4 py-3 flex items-start gap-3"
+                >
+                  <p className="text-[13px] text-[#DFB6B6] leading-snug flex-1">{uploadError}</p>
+                  <button
+                    type="button"
+                    onClick={() => setUploadError(null)}
+                    className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] shrink-0"
+                  >
+                    Dismiss
                   </button>
                 </div>
               )}
