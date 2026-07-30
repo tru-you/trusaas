@@ -1,0 +1,23 @@
+
+.page-hero{background:linear-gradient(135deg,#07101e,#0d1829);color:#fff;padding:calc(var(--nav-h) + 56px) 0 56px;position:relative;overflow:hidden;}
+.page-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 80% at 100% 0%,rgba(255,60,60,.12),transparent 60%);}
+.page-hero .wrap{position:relative;z-index:1;}
+.page-hero .eyebrow{color:#ff6b6b;}
+.page-hero .eyebrow::before{background:#ff6b6b;}
+.page-hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(36px,5vw,60px);letter-spacing:-.02em;line-height:1.05;margin-top:12px;}
+.page-hero h1 em{font-style:italic;color:#ff6b6b;}
+.page-hero p{color:rgba(255,255,255,.6);margin-top:16px;font-size:16px;max-width:52ch;line-height:1.7;}
+.perf-pills{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;}
+.perf-pills span{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,107,107,.28);border-radius:100px;padding:8px 16px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.78);}
+.grid-section{padding:64px 0 100px;background:#07101e;}
+.grid-section .results-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
+.grid-section .results-count{font-size:15px;font-weight:700;color:#fff;}
+.grid-section .results-count b{color:#ff6b6b;}
+.sort-wrap select{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:10px;padding:11px 14px;font-size:13.5px;font-weight:600;color:#fff;appearance:none;}
+.sort-wrap select option{background:#0d1829;color:#fff;}
+.perf-vcard{background:#0d1c32;border-color:rgba(255,255,255,.07);}
+.perf-vcard .vcard-title,.perf-vcard .vcard-price{color:#fff;}
+.perf-vcard .vcard-variant{color:rgba(255,255,255,.5);}
+.perf-vcard .vcard-meta{border-color:rgba(255,255,255,.07);}
+.perf-vcard .vcard-meta .m span{color:rgba(255,255,255,.5);}
+.perf-vcard .trucars-tag{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.65);}

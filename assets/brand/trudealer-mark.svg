@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="TruDealer">
+  <title>TruDealer mark</title>
+  <defs>
+    <linearGradient id="tdCyan" x1="14" y1="20" x2="84" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7CF3ED"/>
+      <stop offset="0.55" stop-color="#4FE3DC"/>
+      <stop offset="1" stop-color="#2BB6B0"/>
+    </linearGradient>
+  </defs>
+  <!-- T crossbar + shared spine + D bowl: one ligature -->
+  <g fill="none" stroke="url(#tdCyan)" stroke-width="12" stroke-linecap="butt" stroke-linejoin="round">
+    <path d="M14 26 H64"/>
+    <path d="M40 26 V80"/>
+    <path d="M40 26 H52 C72 26 82 37 82 53 C82 69 72 80 52 80 H40"/>
+  </g>
+</svg>

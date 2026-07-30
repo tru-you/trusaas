@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" type="image/svg+xml" href="demo-icon.svg"/>
+<link rel="apple-touch-icon" href="demo-icon.svg"/>
+<script src="stock-data.js"></script>
+<script src="demo-boot.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Detail — True-Cars SA</title>
+<meta name="description" content="TruSaaS Tru3D inspection, verified VIR condition report, live video viewing and instant finance on every True-Cars SA vehicle.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=11">
+<link rel="stylesheet" href="assets/css/web3d.css?v=1">
+<link rel="stylesheet" href="assets/css/site-chrome.css?v=12">
+<style>
+body{background:var(--bone);}
+.crumb{padding:calc(var(--nav-h) + 22px) 0 0;font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey);}
+.crumb a{color:var(--grey);}.crumb a:hover{color:var(--blue);}
+.vd-layout{display:grid;grid-template-columns:1.4fr .9fr;gap:36px;padding:24px 0 90px;align-items:start;}
+@media(max-width:1000px){.vd-layout{grid-template-columns:1fr;gap:30px;}}
+.vd-layout>*{min-width:0;max-width:100%;}.vir360{min-width:0;max-width:100%;}.thumbs{min-width:0;}
+
+/* ================= VIR360 MODULE (TruSaaS-style) ================= */
+.vir360{background:#eef2f7;border:1px solid #dbe3ec;border-radius:20px;box-shadow:0 24px 60px -28px rgba(8,22,45,.35);overflow:hidden;}
+.vir-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:20px 22px 0;flex-wrap:wrap;}
+.vir-top .vt-title{font-family:'Archivo';font-weight:800;font-size:18px;letter-spacing:.01em;color:#16222e;text-transform:uppercase;}
+.vir-top .vt-odo{font-size:12px;color:var(--grey);margin-top:3px;font-family:'IBM Plex Mono';}
+.vir-actions{display:flex;gap:7px;flex-wrap:wrap;}
+.vir-actions button{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:8px 11px;border-radius:7px;border:1px solid #d3dce6;background:#fff;color:#42526b;transition:all .2s;}
+.vir-actions button:hover{border-color:var(--blue);color:var(--blue);}
+.vir-actions button.on{background:var(--gold);border-color:var(--gold);color:#3a2e12;}
+.vir-actions button.qr{background:#1466e0;border-color:#1466e0;color:#fff;}
+.vir-actions button.print{background:#16222e;border-color:#16222e;color:#fff;}
+.vir-actions svg{width:13px;height:13px;}
+
+.vir-specs{display:grid;grid-template-columns:1fr 1fr auto;gap:6px 24px;padding:16px 22px 6px;align-items:start;}
+.vir-specs h4{grid-column:1/-1;font-family:'Archivo';font-weight:700;font-size:13px;color:var(--blue);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+.vspec{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #e2e8f0;font-size:12.5px;}
+.vspec .l{color:var(--grey-dark);}.vspec .v{font-weight:700;color:#16222e;}
+.vir-barcode{grid-row:1/6;grid-column:3;align-self:center;text-align:center;}
+.vir-barcode svg{height:44px;width:150px;}
+.vir-barcode .vin{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.06em;color:#42526b;margin-top:4px;}
+@media(max-width:600px){.vir-specs{grid-template-columns:1fr;}.vir-barcode{grid-row:auto;grid-column:1;justify-self:start;}
+  /* On a narrow stage the floating callout cards can't sit beside the car — keep the pins, drop the cards+lines (findings are listed in the VIR report below) */
+  .vir-stage{height:60vh;min-height:280px;}
+  .tag-card,.tag-lines,.reticle{display:none!important;}
+  .spin .frame.photo{width:92%;}}
+
+/* Turntable stage */
+.vir-stage{position:relative;height:400px;margin-top:6px;background:radial-gradient(120% 80% at 50% 20%,#ffffff,#e4eaf1 90%);overflow:hidden;cursor:grab;touch-action:pan-y pinch-zoom;user-select:none;}
+.vir-stage.grabbing{cursor:grabbing;}
+/* skeleton loader — shown until first spin frame decodes */
+.spin-skeleton{position:absolute;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:#eef2f7;transition:opacity .55s ease;}
+.spin-skeleton::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.75) 50%,transparent 80%);background-size:200% 100%;animation:skelShimmer 1.4s ease-in-out infinite;}
+.spin-skeleton svg{width:56%;max-width:400px;color:#cdd8e5;position:relative;z-index:1;}
+.spin-skeleton .sk-lbl{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#9fb0c4;z-index:1;}
+@keyframes skelShimmer{0%{background-position:150% 0;}100%{background-position:-150% 0;}}
+.vir-stage.loaded .spin-skeleton{opacity:0;pointer-events:none;}
+/* callouts + seal hidden until loaded, then reveal with stagger */
+.vir-stage .tag-card,.vir-stage .tag-pin,.vir-stage .grade-pin,.vir-stage .tag-lines,.vir-stage #spinSeal{opacity:0;transition:opacity .5s ease,transform .55s cubic-bezier(.22,1,.36,1);}
+.vir-stage .tag-card{transform:translateY(8px) scale(.96);}
+.vir-stage .tag-pin,.vir-stage .grade-pin{transform:translate(-50%,-50%) scale(.4);}
+.vir-stage.loaded .tag-card{opacity:1;transform:translateY(0) scale(1);}
+/* inspection pins/grades stay hidden until the user turns them on */
+.vir-stage.tags-on .tag-pin,.vir-stage.tags-on .grade-pin{opacity:1;transform:translate(-50%,-50%) scale(1);}
+.vir-stage.tags-on .tag-lines{opacity:1;}
+.vir-stage .tag-pin,.vir-stage .grade-pin{pointer-events:none;}
+.vir-stage.tags-on .tag-pin{pointer-events:auto;}
+.vir-stage.loaded #spinSeal{opacity:1;}
+/* tags toggle button (top-left of stage) */
+.tag-toggle{position:absolute;top:14px;left:16px;z-index:8;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);border:1px solid #d3dce6;border-radius:100px;padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);cursor:pointer;box-shadow:0 4px 14px -6px rgba(8,22,45,.25);transition:background .2s,color .2s,transform .2s,box-shadow .2s;opacity:0;}
+.vir-stage.loaded .tag-toggle{opacity:1;}
+.tag-toggle:hover{transform:translateY(-1px);box-shadow:0 8px 20px -8px rgba(8,22,45,.32);}
+.tag-toggle svg{width:14px;height:14px;flex-shrink:0;}
+.tag-toggle .tt-off{display:inline;}
+.tag-toggle .tt-on{display:none;}
+.vir-stage.tags-on .tag-toggle{background:var(--blue);color:#fff;border-color:var(--blue);}
+.vir-stage.tags-on .tag-toggle .tt-off{display:none;}
+.vir-stage.tags-on .tag-toggle .tt-on{display:inline;}
+.tt-disc{position:absolute;left:50%;bottom:12%;width:66%;height:20%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(60% 100% at 50% 40%,rgba(20,102,224,.12),transparent 72%);}
+.tt-ring{position:absolute;left:50%;bottom:13%;width:60%;height:16%;transform:translateX(-50%);border-radius:50%;border:2px solid rgba(20,102,224,.18);border-top-color:rgba(21,199,192,.5);}
+.tt-ring.spin-anim{animation:ringrot 7s linear infinite;}
+@keyframes ringrot{to{transform:translateX(-50%) rotate(360deg);}}
+.spin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:1500px;z-index:2;}
+.spin .frame{position:absolute;width:66%;max-width:520px;transition:opacity .12s linear;color:#8aa9c9;filter:drop-shadow(0 22px 26px rgba(20,40,80,.30));}
+.spin .frame.photo{width:80%;max-width:600px;}
+
+/* callout tags */
+.tag-lines{position:absolute;inset:0;z-index:3;pointer-events:none;}
+.tag-pin{position:absolute;z-index:5;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;background:#1466e0;border:3px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;box-shadow:0 3px 8px rgba(20,102,224,.5);cursor:pointer;line-height:1;}
+.tag-card{position:absolute;z-index:6;width:132px;background:#fff;border-radius:9px;box-shadow:0 10px 26px -8px rgba(8,22,45,.4);overflow:hidden;cursor:pointer;transition:transform .2s;}
+.tag-card:hover{transform:translateY(-2px) scale(1.03);}
+.tag-thumb{height:64px;background:linear-gradient(135deg,#cdd8e6,#9fb1c8);position:relative;display:flex;align-items:flex-end;padding:6px;}
+.tag-thumb .ph{position:absolute;top:6px;left:6px;color:rgba(255,255,255,.8);}
+.tag-thumb .ph svg{width:20px;height:20px;}
+.tag-thumb .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.tag-thumb .play svg{width:26px;height:26px;color:#fff;opacity:.9;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4));}
+.tag-label{font-family:'Archivo';font-weight:700;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:#1466e0;padding:7px 9px;text-align:center;}
+.tag-label.damage{background:#7ac70f;color:#183a00;}
+.tag-label.warn{background:#f0a020;color:#3a2600;}
+
+/* condition grade pins */
+.grade-pin{position:absolute;z-index:5;transform:translate(-50%,-50%);}
+.grade-pin .g{background:#3a3a3a;color:#fff;font-family:'Archivo';font-weight:800;font-size:12px;padding:4px 9px;border-radius:100px;box-shadow:0 3px 8px rgba(0,0,0,.3);position:relative;}
+.grade-pin .g::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:5px solid transparent;border-top-color:#7ac70f;}
+.grade-pin.hi .g{background:#1a1a1a;}
+.grade-pin .g em{color:#7ac70f;font-style:normal;}
+
+/* focus reticle */
+.reticle{position:absolute;z-index:4;width:44px;height:44px;transform:translate(-50%,-50%);}
+.reticle span{position:absolute;width:12px;height:12px;border:2px solid rgba(20,102,224,.7);}
+.reticle .tl{top:0;left:0;border-right:0;border-bottom:0;}.reticle .tr{top:0;right:0;border-left:0;border-bottom:0;}
+.reticle .bl{bottom:0;left:0;border-right:0;border-top:0;}.reticle .br{bottom:0;right:0;border-left:0;border-top:0;}
+.reticle .dot{position:absolute;inset:0;margin:auto;width:6px;height:6px;border-radius:50%;background:var(--blue);}
+
+/* 360 badge + add tag + degree */
+.badge-360{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#17c7c0,#0e9d98);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-weight:800;font-size:13px;box-shadow:0 8px 20px -6px rgba(14,157,152,.6);border:3px solid #fff;}
+.add-tag{position:absolute;right:16px;bottom:18px;z-index:7;display:inline-flex;align-items:center;gap:7px;background:#7ac70f;color:#183a00;font-family:'Archivo';font-weight:800;font-size:12px;padding:9px 14px;border-radius:8px;box-shadow:0 6px 16px -4px rgba(122,199,15,.6);}
+.add-tag svg{width:14px;height:14px;}
+.spin-hint{position:absolute;left:16px;bottom:20px;z-index:7;display:inline-flex;align-items:center;gap:8px;background:rgba(9,18,32,.72);backdrop-filter:blur(8px);color:#fff;font-size:11.5px;font-weight:600;padding:8px 13px;border-radius:100px;}
+/* branded seal — covers source-image watermark, reads as our verification mark */
+.spin-seal{position:absolute;z-index:6;display:none;align-items:center;gap:8px;padding:8px 13px 8px 10px;border-radius:11px;background:rgba(9,18,32,.9);backdrop-filter:blur(9px);box-shadow:0 8px 22px -6px rgba(0,0,0,.5);pointer-events:none;transform:translate(-50%,-50%);}
+.spin-seal .sk{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--teal-deep));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.spin-seal .sk svg{width:15px;height:15px;color:#fff;}
+.spin-seal .st{line-height:1.15;}
+.spin-seal .st b{display:block;font-family:'Archivo';font-weight:800;font-size:11px;color:#fff;letter-spacing:.02em;}
+.spin-seal .st span{display:block;font-family:'IBM Plex Mono';font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal-bright);margin-top:1px;}
+.spin-hint svg{width:14px;height:14px;color:#7FE9E3;}
+.deg-read{position:absolute;top:14px;right:16px;z-index:7;background:rgba(9,18,32,.72);color:#fff;font-family:'IBM Plex Mono';font-size:11px;padding:7px 12px;border-radius:100px;}
+.vir-badge-360{position:absolute;top:14px;left:16px;z-index:7;display:inline-flex;align-items:center;gap:7px;background:linear-gradient(120deg,var(--blue),var(--teal-deep));color:#fff;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:7px 12px;border-radius:100px;font-weight:600;}
+.vir-badge-360 svg{width:13px;height:13px;}
+
+/* angle quick buttons */
+/* ── Photo gallery ──
+   Replaces .thumbs/.thumb, which styled uppercase TEXT buttons from an older
+   tab switcher — there was no photo gallery on this page at all. */
+.vgal{border-top:1px solid #dbe3ec;background:#f6f8fb;}
+.vgal[hidden]{display:none;}
+.vgal-main{position:relative;background:#0b1220;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;max-height:460px;}
+.vgal-main img{width:100%;height:100%;object-fit:contain;display:block;}
+.vgal-count{position:absolute;bottom:10px;right:12px;background:rgba(11,18,32,.78);color:#e8eef6;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;letter-spacing:.04em;}
+/* Horizontal scroll rather than wrap: a 20+ shot capture would otherwise push
+   the rest of the page below the fold. */
+.vgal-strip{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;scrollbar-width:thin;}
+.vgal-thumb{flex:0 0 auto;width:84px;height:62px;padding:0;border-radius:8px;overflow:hidden;border:2px solid transparent;background:#fff;cursor:pointer;transition:border-color .18s,opacity .18s;opacity:.72;}
+.vgal-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.vgal-thumb:hover{opacity:1;}
+.vgal-thumb.on{border-color:var(--blue);opacity:1;}
+.vgal-thumb:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+@media(max-width:760px){.vgal-thumb{width:68px;height:50px;}.vgal-main{aspect-ratio:3/2;}}
+
+/* VIR report */
+.vir-report{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:28px;margin-top:24px;box-shadow:var(--shadow-sm);}
+.vir-score{display:flex;align-items:center;gap:22px;padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:22px;}
+.score-ring{position:relative;width:96px;height:96px;flex-shrink:0;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-ring .val b{font-family:'Fraunces',serif;font-size:28px;font-weight:600;line-height:1;}
+.score-ring .val span{font-size:9px;font-family:'IBM Plex Mono';letter-spacing:.1em;color:var(--grey);}
+.vir-checks{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;}
+.vir-check{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--grey-dark);}
+.vir-check svg{width:18px;height:18px;flex-shrink:0;}
+.vir-check.ok svg{color:var(--ok);}.vir-check.warn svg{color:var(--warn);}
+.dmg-list{margin-top:20px;display:grid;gap:10px;}
+.dmg{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--bone);border-radius:11px;border-left:3px solid var(--warn);}
+.dmg.note{border-left-color:var(--bad);}
+.dmg .di{font-weight:800;color:#fff;width:22px;height:22px;border-radius:50%;background:var(--warn);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.dmg.note .di{background:var(--bad);}
+.dmg b{font-size:13.5px;}.dmg p{font-size:12.5px;color:var(--grey-dark);}
+
+/* ===== TCHEK AI SECTION ===== */
+.tchek-ai-section{margin-top:26px;border:1px solid var(--line);border-radius:16px;padding:22px;background:linear-gradient(135deg,rgba(20,102,224,.02),rgba(21,199,192,.03));position:relative;overflow:hidden;}
+.tchek-ai-section::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--teal),var(--blue));}
+.tchek-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.tchek-badge{display:flex;align-items:center;gap:8px;font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:var(--ink);}
+.tchek-powered{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);font-weight:500;}
+.tchek-powered b{color:var(--teal-deep);font-weight:700;}
+.tchek-desc{font-size:13px;color:var(--grey-dark);line-height:1.65;margin-bottom:18px;}
+.tchek-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.tchek-stat{display:flex;align-items:center;gap:10px;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;}
+.tchek-stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(20,102,224,.08);color:var(--blue);}
+.tchek-stat-icon svg{width:16px;height:16px;}
+.tchek-stat-icon.ok{background:rgba(34,197,94,.1);color:var(--ok);}
+.tchek-stat-icon.warn{background:rgba(245,158,11,.1);color:var(--warn);}
+.tchek-stat-val{font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;color:var(--ink);}
+.tchek-stat-lbl{font-size:11px;color:var(--grey);margin-top:1px;}
+.tchek-confidence{display:flex;align-items:center;gap:10px;}
+.tchek-conf-bar{flex:1;height:6px;background:var(--line);border-radius:100px;overflow:hidden;}
+.tchek-conf-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal),var(--blue));}
+.tchek-confidence span{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--grey);white-space:nowrap;}
+@media(max-width:600px){.tchek-grid{grid-template-columns:1fr;}}
+
+/* ===== BUY PANEL ===== */
+.buy{position:sticky;top:94px;}
+@media(max-width:1000px){.buy{position:static;}}
+.buy-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow);}
+.buy-badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.buy h1{font-family:'Fraunces',serif;font-weight:600;font-size:30px;letter-spacing:-.02em;line-height:1.1;}
+.buy .variant{color:var(--grey);font-size:14px;margin-top:5px;font-weight:500;}
+.price-row{display:flex;align-items:flex-end;gap:14px;margin-top:20px;flex-wrap:wrap;}
+.price-now{font-family:'IBM Plex Mono';font-weight:600;font-size:32px;letter-spacing:-.02em;}
+.trucars-badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--teal-deep);background:rgba(21,199,192,.1);border:1px solid rgba(21,199,192,.28);padding:7px 12px;border-radius:100px;}
+.trucars-badge svg{width:13px;height:13px;}
+.pricebar{margin-top:16px;height:8px;border-radius:100px;background:var(--line);position:relative;overflow:hidden;}
+.pricebar i{position:absolute;top:0;bottom:0;left:0;border-radius:100px;background:linear-gradient(90deg,var(--teal-deep),var(--blue));}
+.pricebar-lab{display:flex;justify-content:space-between;font-size:11px;color:var(--grey);margin-top:7px;font-family:'IBM Plex Mono';}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:22px;}
+.spec{background:var(--paper);padding:14px 16px;}
+.spec .l{font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);}
+.spec .v{font-size:14.5px;font-weight:700;margin-top:3px;}
+.buy-actions{display:grid;gap:10px;margin-top:24px;}
+.buy-actions .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* finance mini calc */
+.calc{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:26px;margin-top:22px;box-shadow:var(--shadow-sm);}
+.calc h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600;}
+.calc .sub{font-size:13px;color:var(--grey);margin-bottom:18px;}
+.calc-out{background:linear-gradient(135deg,var(--ink),var(--navy));color:#fff;border-radius:14px;padding:20px;text-align:center;margin-bottom:18px;}
+.calc-out .m{font-family:'Fraunces',serif;font-size:36px;font-weight:600;}
+.calc-out .m small{font-size:15px;color:var(--grey-2);}
+.calc-out .lbl{font-size:12px;color:var(--grey-2);}
+.crange{margin-bottom:14px;}
+.crange .top{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px;}
+.crange .top b{font-family:'IBM Plex Mono';}
+.crange input{width:100%;accent-color:var(--blue);}
+
+/* LVS modal */
+.modal-bg{position:fixed;inset:0;z-index:350;background:rgba(9,18,32,.7);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:opacity .3s;}
+.modal-bg.open{opacity:1;visibility:visible;}
+.modal{background:var(--paper);border-radius:20px;max-width:440px;width:100%;padding:32px;box-shadow:var(--shadow-lg);transform:translateY(16px);transition:transform .3s var(--ease-bounce);max-height:90vh;overflow-y:auto;}
+.modal-bg.open .modal{transform:none;}
+.modal h3{font-family:'Fraunces',serif;font-size:26px;font-weight:600;}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}
+.modal-head button{color:var(--grey);font-size:22px;line-height:1;}
+.slot-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0;}
+.slot{padding:11px;border:1.5px solid var(--line-2);border-radius:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.slot:hover{border-color:var(--blue);}
+.slot.on{border-color:var(--blue);background:var(--blue);color:#fff;}
+/* ===== MOBILE VEHICLE HEADER BANNER ===== */
+.mob-veh-banner{display:none;background:linear-gradient(135deg,var(--ink),var(--navy));color:#fff;padding:calc(var(--nav-h) + 18px) 20px 20px;position:relative;overflow:hidden;}
+.mob-veh-banner::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(79,227,220,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(79,227,220,.05) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(80% 100% at 70% 0%,#000,transparent 70%);}
+.mob-veh-banner-inner{position:relative;z-index:1;}
+.mob-veh-crumb{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-2);margin-bottom:10px;}
+.mob-veh-crumb a{color:var(--grey-2);}
+.mob-veh-crumb a:hover{color:var(--teal-bright);}
+.mob-veh-title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(22px,6vw,30px);line-height:1.1;letter-spacing:-.02em;margin-bottom:4px;}
+.mob-veh-variant{font-size:13px;color:var(--grey-2);margin-bottom:14px;}
+.mob-veh-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.mob-veh-price{font-family:'IBM Plex Mono';font-weight:600;font-size:22px;letter-spacing:-.02em;}
+.mob-veh-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:100px;background:rgba(21,199,192,.15);border:1px solid rgba(21,199,192,.35);color:var(--teal-bright);font-size:11px;font-weight:700;font-family:'IBM Plex Mono';letter-spacing:.06em;}
+.mob-veh-pills{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.mob-veh-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:100px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.78);font-size:12px;font-weight:600;}
+.mob-veh-pill svg{width:12px;height:12px;color:var(--teal-bright);}
+@media(max-width:900px){.mob-veh-banner{display:block;}.crumb{display:none !important;}}
+
+/* Mobile menu enhanced */
+.mobile-menu{position:fixed;inset:0;z-index:300 !important;background:#070c18;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(20,102,224,.22),transparent 55%),linear-gradient(180deg,#0a1220 0%,#070c18 45%,#050810 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s cubic-bezier(.22,1,.36,1),visibility .35s;padding:88px 28px 48px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.mobile-menu.open{opacity:1;visibility:visible;pointer-events:auto;}
+.mobile-menu a{color:#f8fafc !important;font-size:clamp(17px,4.5vw,22px);font-weight:700;letter-spacing:-.02em;padding:12px 18px;border-radius:12px;width:100%;max-width:340px;text-align:center;position:relative;opacity:0;transform:translateY(20px);transition:opacity .4s cubic-bezier(.22,1,.36,1),transform .4s cubic-bezier(.22,1,.36,1),color .25s,background .2s;text-decoration:none;display:block;}
+.mobile-menu.open a{opacity:1;transform:translateY(0);}
+.mobile-menu.open a:nth-child(2){transition-delay:.08s;}
+.mobile-menu.open a:nth-child(3){transition-delay:.14s;}
+.mobile-menu.open a:nth-child(4){transition-delay:.20s;}
+.mobile-menu.open a:nth-child(5){transition-delay:.26s;}
+.mobile-menu.open a:nth-child(6){transition-delay:.32s;}
+.mobile-menu.open a:nth-child(7){transition-delay:.38s;}
+.mobile-menu.open a:nth-child(8){transition-delay:.44s;}
+.mobile-menu a::after{content:"";position:absolute;bottom:8px;left:50%;width:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--teal));transition:width .3s cubic-bezier(.22,1,.36,1),left .3s cubic-bezier(.22,1,.36,1);border-radius:2px;}
+.mobile-menu a:hover{color:var(--teal-bright);}
+.mobile-menu a:hover::after{width:100%;left:0;}
+.mobile-menu .btn{margin-top:20px;opacity:0;transform:translateY(20px);transition:opacity .4s .5s cubic-bezier(.22,1,.36,1),transform .4s .5s cubic-bezier(.22,1,.36,1);}
+.mobile-menu.open .btn{opacity:1;transform:translateY(0);}
+.mobile-menu-close{position:absolute;top:20px;right:20px;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;transition:all .25s;z-index:220;}
+.mobile-menu-close:hover{background:rgba(255,255,255,.15);transform:rotate(90deg);}
+
+/* Footer enhanced */
+footer{background:linear-gradient(180deg,var(--ink-2) 0%,#070f18 100%);color:#fff;padding:90px 0 0;position:relative;overflow:hidden;}
+footer::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--teal),var(--gold),var(--blue));background-size:250% 100%;animation:footgrad 8s linear infinite;}
+footer::after{content:"";position:absolute;bottom:0;left:0;right:0;height:200px;background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(20,102,224,.08),transparent 70%);pointer-events:none;}
+.foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.3fr;gap:56px;padding-bottom:64px;position:relative;z-index:1;}
+.foot-brand .brand{margin-bottom:20px;}
+.foot-brand p{color:var(--grey-2);font-size:14px;max-width:36ch;line-height:1.75;}
+.foot-socials{display:flex;gap:12px;margin-top:24px;}
+.foot-socials a{width:42px;height:42px;border-radius:10px;border:1.5px solid var(--line-dark);display:flex;align-items:center;justify-content:center;color:var(--grey-2);transition:all .3s cubic-bezier(.22,1,.36,1);background:rgba(255,255,255,.03);}
+.foot-socials a:hover{border-color:var(--teal);color:var(--teal-bright);background:rgba(21,199,192,.1);transform:translateY(-3px);box-shadow:0 8px 20px -8px rgba(21,199,192,.3);}
+.foot-socials svg{width:18px;height:18px;}
+.foot-col h5{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--grey);margin-bottom:22px;font-weight:600;}
+.foot-col a{display:block;color:var(--grey-2);font-size:14px;margin-bottom:13px;transition:color .25s,transform .25s cubic-bezier(.22,1,.36,1);position:relative;padding-left:0;}
+.foot-col a:hover{color:#fff;transform:translateX(4px);}
+.foot-col a::before{content:"›";position:absolute;left:-14px;opacity:0;color:var(--teal-bright);transition:opacity .2s,left .2s;}
+.foot-col a:hover::before{opacity:1;left:-10px;}
+.foot-contact li{display:flex;gap:12px;align-items:flex-start;color:var(--grey-2);font-size:14px;margin-bottom:15px;transition:color .25s;}
+.foot-contact li:hover{color:#fff;}
+.foot-contact svg{width:16px;height:16px;color:var(--teal-bright);flex-shrink:0;margin-top:2px;}
+.foot-bottom{border-top:1px solid rgba(255,255,255,.08);padding:24px 0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);position:relative;z-index:1;}
+.foot-bottom .ax{display:flex;align-items:center;gap:8px;}
+.foot-bottom .ax b{color:var(--teal-bright);}
+@keyframes footgrad{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+@media(max-width:900px){.foot-grid{grid-template-columns:1fr 1fr;gap:40px;}}
+@media(max-width:640px){.foot-grid{grid-template-columns:1fr;gap:34px;padding-bottom:48px;}}
+
+/* ---- Interactive inspection popups ---- */
+.vir-popup{position:absolute;z-index:10;background:#fff;border-radius:11px;box-shadow:0 14px 34px -8px rgba(8,22,45,.48);width:188px;overflow:hidden;animation:popIn .22s cubic-bezier(.22,1,.36,1);}
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(-5px);}to{opacity:1;transform:none;}}
+.vp-head{display:flex;align-items:center;justify-content:space-between;padding:9px 10px 4px;}
+.vp-type{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:100px;}
+.vp-type.damage{color:#a06000;background:#fff3dc;}
+.vp-type.feature{color:#0e559d;background:#e4eeff;}
+.vp-close{font-size:15px;color:#7a8ea3;line-height:1;padding:2px 6px;border-radius:5px;transition:all .15s;cursor:pointer;}
+.vp-close:hover{background:#f0f4f8;color:#16222e;}
+.vp-title{font-family:'Archivo';font-weight:800;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#16222e;padding:0 10px 7px;}
+.vp-note{font-size:12.5px;color:#42526b;padding:7px 10px 12px;line-height:1.55;border-top:1px solid #eef2f7;}
+.vir-popup.damage{border-top:3px solid #f0a020;}
+.vir-popup.feature{border-top:3px solid #1466e0;}
+.tag-pin{transition:transform .15s,box-shadow .15s;}
+.tag-pin:hover{transform:translate(-50%,-50%) scale(1.2);box-shadow:0 4px 12px rgba(20,102,224,.5);}
+/* TruChat Insight CTA */
+.luna-insight{margin:14px 0 4px;}
+.luna-insight-btn{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;border-radius:14px;border:1.5px solid var(--line);background:linear-gradient(135deg,rgba(20,102,224,.04),rgba(21,199,192,.04));color:var(--ink);font:600 13px/1.3 var(--font);cursor:pointer;transition:all .3s var(--ease);text-align:left;}
+.luna-insight-btn:hover{background:linear-gradient(135deg,var(--blue),var(--teal-deep));color:#fff;border-color:transparent;box-shadow:0 10px 28px -8px rgba(20,102,224,.4);transform:translateY(-2px);}
+.luna-insight-btn:hover svg{color:#fff;opacity:1;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span></a>
+    <div class="nav-links">
+      <a href="performance.html">Performance</a>
+      <a href="premium-select.html">Premium Select</a>
+      <a href="certi-used.html">Certi-Used</a>
+      <a href="ev.html">EV / Hybrid</a>
+      <a href="trade-in.html">Sell / Trade-in</a>
+      <a href="finance.html">Finance</a>
+      
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-grad btn-sm" href="certi-used.html"><span>Browse Stock</span></a>
+    </div>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu">
+  <button class="mobile-menu-close" aria-label="Close menu" onclick="document.querySelector('.mobile-menu').classList.remove('open');document.querySelector('.hamburger').classList.remove('open');document.body.style.overflow='';">✕</button>
+  <a href="performance.html">Performance</a>
+  <a href="premium-select.html">Premium Select</a>
+  <a href="certi-used.html">Certi-Used</a>
+  <a href="ev.html">EV / Hybrid</a>
+  <a href="trade-in.html">Sell / Trade-in</a>
+  <a href="finance.html">Finance</a>
+  <a href="technology.html">Our Technology</a>
+  <a class="btn btn-grad" href="trade-in.html" style="margin-top:10px"><span>Sell My Car</span></a>
+</div>
+
+<div id="mobVehBanner" class="mob-veh-banner">
+  <div class="mob-veh-banner-inner">
+    <div class="mob-veh-crumb"><a href="index.html">Home</a> / <a href="certi-used.html">Stock</a> / <span id="mobCrumbName">Vehicle</span></div>
+    <div class="mob-veh-title" id="mobVehTitle">Loading…</div>
+    <div class="mob-veh-variant" id="mobVehVariant"></div>
+    <div class="mob-veh-row">
+      <span class="mob-veh-price" id="mobVehPrice"></span>
+      <span class="mob-veh-badge" id="mobVehTCBadge"></span>
+    </div>
+    <div class="mob-veh-pills" id="mobVehPills"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="crumb"><a href="index.html">Home</a> / <a href="certi-used.html">Stock</a> / <span id="crumbName">Vehicle</span></div>
+  <div class="vd-layout">
+    <!-- LEFT: VIR360 + report -->
+    <div>
+      <div class="vir360">
+        <div class="vir-top">
+          <div>
+            <div class="vt-title" id="vtTitle">—</div>
+            <div class="vt-odo" id="vtOdo">Odometer: —</div>
+          </div>
+          <div class="vir-actions">
+            <button id="btnWatch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Watch</button>
+            <button id="btnFav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z"/></svg>Favourite</button>
+            <button class="qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7M17 20h4"/></svg>QR</button>
+            <button class="print" onclick="window.open('vir-report.html','_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Download VIR Report</button>
+          </div>
+        </div>
+
+        <div class="vir-specs">
+          <h4 id="specHead">Specifications</h4>
+          <div id="specCol1"></div>
+          <div id="specCol2"></div>
+          <div class="vir-barcode">
+            <svg id="barcode" viewBox="0 0 150 44" preserveAspectRatio="none"></svg>
+            <div class="vin" id="vin">VIN —</div>
+          </div>
+        </div>
+
+        <!-- TruSaaS Tru3D (replaces legacy 360°) — mock package or live TruLens export -->
+        <div id="web3dMount" class="web3d-mount" aria-label="TruSaaS Tru3D viewer">
+          <div class="spin-skeleton" style="position:relative;height:320px;display:flex;align-items:center;justify-content:center;background:#0b1220;color:#8ba0b8;">
+            <span class="sk-lbl" style="position:static;color:#8ba0b8;">Loading Tru3D…</span>
+          </div>
+        </div>
+        <!-- Photo gallery. The container that used to sit here was #thumbs,
+             permanently display:none and never populated by anything — the page
+             showed the orbit and not one of the vehicle's photos. -->
+        <div class="vgal" id="vgal" hidden>
+          <div class="vgal-main">
+            <img id="vgalMain" alt="">
+            <span class="vgal-count" id="vgalCount"></span>
+          </div>
+          <div class="vgal-strip" id="vgalStrip"></div>
+        </div>
+      </div>
+
+      <!-- VIR REPORT -->
+      <div class="vir-report">
+        <div class="eyebrow teal" style="margin-bottom:14px">Verified Inspection Report</div>
+        <div class="vir-score">
+          <div class="score-ring">
+            <svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="42" fill="none" stroke="#E2EAF3" stroke-width="8"/><circle id="scoreArc" cx="48" cy="48" r="42" fill="none" stroke="url(#sg)" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"/><defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#15C7C0"/><stop offset="1" stop-color="#1466E0"/></linearGradient></defs></svg>
+            <div class="val"><b id="scoreNum">0</b><span>/ 100</span></div>
+          </div>
+          <div>
+            <b style="font-size:17px" id="scoreVerdict">Excellent condition</b>
+            <p style="font-size:13.5px;color:var(--grey-dark);margin-top:5px;max-width:34ch">Independently inspected across 128 checkpoints. Findings are tagged on the Tru3D orbit above — same package format as TruLens export.</p>
+          </div>
+        </div>
+        <div class="vir-checks" id="virChecks"></div>
+        <div class="dmg-list" id="dmgList"></div>
+
+        <!-- TruVIR · TruLens AI Damage Detection -->
+        <div class="tchek-ai-section" id="tchekAI">
+          <div class="tchek-head">
+            <div class="tchek-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--teal)"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>AI Damage Analysis</span>
+            </div>
+            <div class="tchek-powered">TruVIR · Powered by <b>TruLens AI</b></div>
+          </div>
+          <p class="tchek-desc">Every panel, surface and interior zone has been scanned by TruLens AI — detecting damage at 95% accuracy, classifying severity, and estimating repair cost before the vehicle reaches the showroom floor.</p>
+          <div class="tchek-grid">
+            <div class="tchek-stat">
+              <div class="tchek-stat-icon ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg></div>
+              <div class="tchek-stat-body">
+                <div class="tchek-stat-val" id="tchekPanels">12 / 12</div>
+                <div class="tchek-stat-lbl">Panels clear</div>
+              </div>
+            </div>
+            <div class="tchek-stat">
+              <div class="tchek-stat-icon warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg></div>
+              <div class="tchek-stat-body">
+                <div class="tchek-stat-val" id="tchekFindings">1 minor</div>
+                <div class="tchek-stat-lbl">Cosmetic finding</div>
+              </div>
+            </div>
+            <div class="tchek-stat">
+              <div class="tchek-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.9 4.9l2.8 2.8m8.5 8.5l2.8 2.8M2 12h4m12 0h4M4.9 19.1l2.8-2.8m8.5-8.5l2.8-2.8"/></svg></div>
+              <div class="tchek-stat-body">
+                <div class="tchek-stat-val" id="tchekRepair">R 850</div>
+                <div class="tchek-stat-lbl">Est. repair cost</div>
+              </div>
+            </div>
+          </div>
+          <div class="tchek-confidence">
+            <div class="tchek-conf-bar"><div class="tchek-conf-fill" style="width:95%"></div></div>
+            <span>95% AI confidence · TruLens AI deep learning model
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: buy panel -->
+    <div class="buy">
+      <div class="buy-card">
+        <div class="buy-badges" id="buyBadges"></div>
+        <h1 id="vTitle">—</h1>
+        <div class="variant" id="vVariant">—</div>
+        <div class="price-row">
+          <div class="price-now" id="vPrice">—</div>
+          <div class="trucars-badge" id="vDelta"></div>
+        </div>
+        <div class="pricebar"><i id="pbFill"></i></div>
+        <div class="pricebar-lab"><span>Great deal</span><span>TruPrice</span><span>Above market</span></div>
+
+        <!-- TruPrice Meter -->
+        <div class="price-meter" id="priceMeter">
+          <div class="pm-verdict" id="pmVerdict"></div>
+          <div class="pm-bar"><div class="pm-marker" id="pmMarker"></div></div>
+          <div class="pm-labels"><span>Below market</span><span>Market avg</span><span>Above market</span></div>
+        </div>
+
+        <!-- TruChat Insight CTA -->
+        <div class="luna-insight" id="lunaInsight" style="display:none">
+          <button class="luna-insight-btn" id="lunaInsightBtn">
+            <svg viewBox="0 0 48 48" style="width:22px;height:22px;flex-shrink:0"><circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="1.8" opacity=".5"/><circle cx="24" cy="24" r="14" fill="currentColor" opacity=".12"/><ellipse cx="18" cy="22" rx="3.4" ry="3.4" fill="currentColor"/><ellipse cx="30" cy="22" rx="3.4" ry="3.4" fill="currentColor"/><circle cx="24" cy="32" r="2" fill="currentColor" opacity=".5"/></svg>
+            <span id="lunaInsightText">Ask TruChat why this car is priced below market</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;opacity:.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+
+        <div class="spec-grid" id="specGrid"></div>
+        <div class="buy-actions">
+          <button class="btn btn-grad btn-lg" id="reserveBtn"><span>Reserve this car · R2 500 refundable</span></button>
+          <div class="row2">
+            <button class="btn btn-dark" id="testBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 12l4-7h10l4 7M6 17h.01M18 17h.01"/></svg>Test drive</button>
+            <button class="btn btn-dark" id="lvsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Book LVS</button>
+          </div>
+          <a class="btn btn-wa btn-block" id="waBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>WhatsApp us</a>
+          <a class="btn btn-ghost" href="trade-in.html">Trade in my current car →</a>
+        </div>
+        <div style="margin-top:18px;display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--grey-dark)">
+          <span class="badge-dot"><i></i>Available now</span>
+          <span class="badge-dot"><i style="background:var(--blue)"></i>Nationwide delivery</span>
+          <span class="badge-dot"><i style="background:var(--gold)"></i>7-day money-back</span>
+        </div>
+      </div>
+
+      <div class="calc">
+        <h3>Estimate your instalment</h3>
+        <div class="sub">Indicative only · via our Seriti F&amp;I desk across all major banks</div>
+        <div class="calc-out"><div class="lbl">From approximately</div><div class="m" id="calcM">R0<small>/mo</small></div></div>
+        <div class="crange"><div class="top"><span>Deposit</span><b id="depV">10%</b></div><input type="range" id="dep" min="0" max="40" value="10"></div>
+        <div class="crange"><div class="top"><span>Term</span><b id="termV">72 months</b></div><input type="range" id="term" min="24" max="84" step="6" value="72"></div>
+        <div class="crange"><div class="top"><span>Balloon / residual</span><b id="balV">0%</b></div><input type="range" id="bal" min="0" max="40" step="5" value="0"></div>
+        <div class="crange"><div class="top"><span>Interest rate</span><b id="rateV">11.75%</b></div><input type="range" id="rate" min="9" max="16" step="0.25" value="11.75"></div>
+        <a class="btn btn-blue btn-block" href="finance.html">Get pre-approved in 2 minutes →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LVS / TEST DRIVE MODAL -->
+<div class="modal-bg" id="bookModal">
+  <div class="modal" style="position:relative">
+    <div class="modal-head">
+      <div><div class="eyebrow teal" style="margin-bottom:6px" id="mEyebrow">Live Video Stream</div><h3 id="mTitle">Book your live viewing</h3></div>
+      <button onclick="document.getElementById('bookModal').classList.remove('open')">✕</button>
+    </div>
+    <p style="font-size:13.5px;color:var(--grey-dark);margin-bottom:8px" id="mBlurb">A product specialist walks this exact car on a live video call — engine bay, tyres, underbody, any VIR-flagged marks. You point, they show.</p>
+    <label style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--grey-dark);font-family:'IBM Plex Mono'">Pick a time</label>
+    <div class="slot-grid" id="slots"></div>
+    <div class="field"><label>Your name</label><input id="mName" placeholder="Full name"></div>
+    <div class="field"><label>Mobile</label><input id="mPhone" placeholder="+27 …"></div>
+    <button class="btn btn-grad btn-block btn-lg" id="mConfirm"><span>Confirm booking</span></button>
+  </div>
+</div>
+
+
+
+<footer style="margin-top:0;">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="index.html"><span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span></a>
+        <p>The fair way to buy and sell a car in South Africa. 360° verified, transparently priced, delivered nationwide. Proudly built in Cape Town.</p>
+        <div class="foot-cta-row">
+          <a class="btn btn-grad btn-sm" href="technology.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Our Platform</a>
+          <a class="btn btn-wa btn-sm" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20a%20dealer%20and%20I%27d%20like%20to%20book%20a%20demo%20of%20TruSaaS." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;flex-shrink:0"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg> Book a demo</a>
+        </div>
+        <div class="foot-socials">
+          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="https://wa.me/27620502091" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg></a>
+        </div>
+      </div>
+      <div class="foot-col"><h5>Buy</h5><a href="certi-used.html">All Stock</a><a href="ev.html">Electric &amp; Hybrid</a><a href="certi-used.html">Bakkies &amp; 4x4</a><a href="premium-select.html">Premium Select</a><a href="finance.html">Finance</a></div>
+      <div class="foot-col"><h5>Sell &amp; Tech</h5><a href="trade-in.html">Sell / Trade-in</a><a href="vehicle.html?id=porsche-cayenne-s-19">Tru3D VIR Demo</a><a href="portal.html">Dealer Console</a></div>
+      <div class="foot-col"><h5>Talk to us</h5>
+        <ul class="foot-contact">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Cape Town · Western Cape · Eastern Cape · Kenya</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 2.9a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.5c.9.3 1.9.6 2.9.7a2 2 0 011.7 2z"/></svg><a href="https://wa.me/27620502091">+27 62 050 2091 · WhatsApp</a></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg><span>hello@true-cars.co.za</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom"><span>© 2026 True-Cars SA · Built by Paul de Beer</span><span class="ax">Powered by <a href="truesaas.html" style="color:inherit;text-decoration:none"><b>TruSaaS</b></a> · <a href="https://true-cars.co.za" style="color:inherit;text-decoration:underline;text-underline-offset:2px">true-cars.co.za</a></span></div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=14"></script>
+<script src="assets/js/stock-bridge.js?v=3"></script>
+<script src="assets/js/web3d-mock.js?v=2"></script>
+<script src="assets/js/products.js?v=1"></script>
+<script src="assets/js/site-chrome.js?v=15"></script>
+<script src="assets/js/site.js?v=15"></script>
+<script>
+/* The whole page is built from one vehicle, and the stock arrives
+   asynchronously. This ran at parse time, when TCSA.vehicles is still the empty
+   array data.js ships — so `v` was undefined, every block below hit its
+   `if(!v) return` guard, and the detail page rendered blank for a car that was
+   live in the feed. Everything is wrapped in renderVehiclePage() and run once
+   stock is actually in hand; the bridge fires tcsa:stock when its fetch chain
+   resolves, and the immediate call covers a warm cache where it already has. */
+function renderVehiclePage(){
+const id = new URLSearchParams(location.search).get('id') || 'porsche-cayenne-s-19';
+const v = TCSA.byId(id) || TCSA.vehicles[0];
+
+/* ---- Populate mobile vehicle hero banner ---- */
+(function(){
+  const title = document.getElementById('mobVehTitle');
+  const variant = document.getElementById('mobVehVariant');
+  const price = document.getElementById('mobVehPrice');
+  const badge = document.getElementById('mobVehTCBadge');
+  const pills = document.getElementById('mobVehPills');
+  const crumb = document.getElementById('mobCrumbName');
+  if(!title || !v) return;
+  const name = v.year + ' ' + v.make + ' ' + v.model;
+  title.textContent = name;
+  if(crumb) crumb.textContent = v.make + ' ' + v.model;
+  if(variant) variant.textContent = v.variant || '';
+  if(price) price.textContent = TCSA.fmtPrice(v.price);
+  const d = TCSA.priceDelta(v);
+  if(badge) badge.innerHTML = d.below
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:11px;height:11px"><path d="M20 6L9 17l-5-5"/></svg> ${TCSA.fmtPrice(d.amount)} below TruPrice`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:11px;height:11px"><path d="M20 6L9 17l-5-5"/></svg> Fair TruPrice`;
+  if(pills){
+    const icon = (path) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><path d="${path}"/></svg>`;
+    pills.innerHTML = [
+      `<span class="mob-veh-pill">${icon('M12 2a10 10 0 110 20A10 10 0 0112 2zm0 5v5l4 2')} ${v.km ? v.km.toLocaleString('en-ZA') + ' km' : '—'}</span>`,
+      `<span class="mob-veh-pill">${icon('M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z')} ${v.fuel || '—'}</span>`,
+      `<span class="mob-veh-pill">${icon('M9 12l2 2 4-4')} VIR ${v.vir || '—'}/100</span>`,
+      v.lvs ? `<span class="mob-veh-pill" style="border-color:rgba(255,77,77,.3);color:#FFC2C2"><span style="width:7px;height:7px;border-radius:50%;background:#FF4D4D;display:inline-block;margin-right:2px"></span> Live viewing</span>` : ''
+    ].join('');
+  }
+})();
+
+
+/* ---- TruSaaS Tru3D (replaces legacy Tru3D orbit) ---- */
+const dmgData = (v.damage && v.damage.length)
+  ? v.damage.map(function(d){ return {t:d.title||d.t||'Noted item', n:d.note||d.n||'', sev:d.severity||d.sev||'minor'}; })
+  : [];
+
+(function mountWeb3D(){
+  const root = document.getElementById('web3dMount');
+  if (!root || !TCSA.loadWeb3DForVehicle) return;
+  const go = function(){ TCSA.loadWeb3DForVehicle(root, v); };
+  if (TCSA.loadLiveStock) {
+    TCSA.loadLiveStock().then(function(){
+      const live = TCSA.byId && TCSA.byId(v.id);
+      if (live) Object.assign(v, live);
+      go();
+    }).catch(go);
+  } else {
+    go();
+  }
+})();
+
+/* ---- populate details ---- */
+const delta=TCSA.priceDelta(v);
+document.title=`${v.year} ${v.make} ${v.model} — True-Cars SA`;
+document.getElementById('crumbName').textContent=`${v.make} ${v.model}`;
+document.getElementById('vtTitle').textContent=`${v.year} ${v.make} ${v.model}`.toUpperCase();
+document.getElementById('vtOdo').textContent=`Odometer: ${v.km.toLocaleString('en-ZA')} km`;
+document.getElementById('specHead').textContent=`Specifications of this ${v.make}`;
+const bodyName={suv:'SUV',bakkie:'Bakkie',hatch:'Hatchback',sedan:'Sedan',coupe:'Coupé'}[v.body];
+const stock=v.stockNumber||'—';
+document.getElementById('specCol1').innerHTML=[['Body Style',bodyName],['Odometer',v.km?v.km.toLocaleString('en-ZA')+' km':'—'],['Transmission',v.trans||'—'],['Stock #',stock]].map(s=>`<div class="vspec"><span class="l">${s[0]}</span><span class="v">${s[1]}</span></div>`).join('');
+document.getElementById('specCol2').innerHTML=[['Fuel',v.fuel],['Power',v.power||'—'],['Drive Type',v.drive||'—'],['Colour',v.colour]].map(s=>`<div class="vspec"><span class="l">${s[0]}</span><span class="v">${s[1]}</span></div>`).join('');
+// VIN + barcode
+const vin=v.vin||'';
+document.getElementById('vin').textContent=vin?'VIN '+vin:'';
+if(vin){let seed=0;for(const ch of vin)seed+=ch.charCodeAt(0);function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;}let bx='',x=2;for(let i=0;i<40;i++){const w=1+Math.floor(rnd()*3);if(i%2===0)bx+=`<rect x="${x}" y="2" width="${w}" height="34" fill="#16222e"/>`;x+=w+1;}document.getElementById('barcode').innerHTML=bx;}else{document.getElementById('barcode').innerHTML='';}
+
+document.getElementById('vTitle').textContent=`${v.year} ${v.make} ${v.model}`;
+document.getElementById('vVariant').textContent=`${v.variant} · ${v.colour}`;
+document.getElementById('vPrice').textContent=TCSA.fmtPrice(v.price);
+document.getElementById('buyBadges').innerHTML=(v.badges||[]).map(b=>`<span class="vbadge ${b.c}">${b.t}</span>`).join('')+(v.category==='select'?'<span class="vbadge gold">Premium Select</span>':v.category==='performance'?'<span class="vbadge perf">Performance</span>':'');
+document.getElementById('vDelta').innerHTML=delta.below?`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>${TCSA.fmtPrice(delta.amount)} below TruPrice`:`Fair TruPrice`;
+if(!delta.below) document.getElementById('vDelta').style.cssText='color:var(--grey-dark);background:var(--bone);border-color:var(--line)';
+document.getElementById('pbFill').style.width=Math.max(8,Math.min(96,(v.price/(v.truecarPrice*1.15))*100))+'%';
+
+/* TruPrice Meter */
+(function(){
+  const ratio = v.price / v.truecarPrice;
+  const pct = Math.max(4, Math.min(96, ((ratio - 0.85) / 0.30) * 100));
+  const d = TCSA.priceDelta(v);
+  const marker = document.getElementById('pmMarker');
+  const verdict = document.getElementById('pmVerdict');
+  setTimeout(()=>{ marker.style.left = pct + '%'; }, 200);
+  let icon, cls, title, desc;
+  if(d.below && d.pct >= 8){ cls='great'; icon='<path d="M20 6L9 17l-5-5"/>'; title='Great deal'; desc=TCSA.fmtPrice(d.amount)+' below market — top '+d.pct+'% value'; }
+  else if(d.below){ cls='great'; icon='<path d="M20 6L9 17l-5-5"/>'; title='Good price'; desc=TCSA.fmtPrice(d.amount)+' below TruPrice market average'; }
+  else { cls='fair'; icon='<path d="M5 12h14"/>'; title='Fair price'; desc='At or near TruPrice market average'; }
+  verdict.innerHTML='<div class="pm-icon '+cls+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">'+icon+'</svg></div><div><b>'+title+'</b><br><span>'+desc+'</span></div>';
+})();
+
+/* TruChat Insight CTA — shows contextual prompts beneath price meter */
+(function(){
+  const d = TCSA.priceDelta(v);
+  const el = document.getElementById('lunaInsight');
+  const btn = document.getElementById('lunaInsightBtn');
+  const txt = document.getElementById('lunaInsightText');
+  if(d.below && d.pct >= 3){
+    txt.textContent = 'Ask TruChat why this ' + v.make + ' ' + v.model + ' is ' + TCSA.fmtPrice(d.amount) + ' below market';
+    el.style.display = '';
+  } else if(v.fuel === 'Electric' || v.fuel === 'Hybrid'){
+    txt.textContent = 'Ask TruChat about charging & running costs for this ' + v.model;
+    el.style.display = '';
+  } else if(v.km > 100000){
+    txt.textContent = 'Ask TruChat about high-mileage reliability for the ' + v.make + ' ' + v.model;
+    el.style.display = '';
+  }
+  btn.addEventListener('click', function(){
+    if(window.TCSA && TCSA.chat) TCSA.chat.openWith(txt.textContent.replace('Ask TruChat ', ''));
+  });
+})();
+
+const specs=[['Year',v.year],['Mileage',v.km.toLocaleString('en-ZA')+' km'],['Fuel',v.fuel],['Transmission',v.trans],['Power',v.power||'—'],['Drivetrain',v.drive||'—'],['Location',v.location],['Body',bodyName]];
+if(v.range)specs.push(['Range',v.range]);
+document.getElementById('specGrid').innerHTML=specs.map(s=>`<div class="spec"><div class="l">${s[0]}</div><div class="v">${s[1]}</div></div>`).join('');
+document.getElementById('waBtn').href=`https://wa.me/27620502091?text=${encodeURIComponent("Hi True-Cars SA, I'm interested in the "+v.year+' '+v.make+' '+v.model+' ('+TCSA.fmtPrice(v.price)+')')}`;
+
+(function(){
+  const score = v.vir || 0;
+  const arc=document.getElementById('scoreArc'),circ=264;
+  if(score){
+    setTimeout(()=>{arc.style.transition='stroke-dashoffset 1.4s var(--ease)';arc.style.strokeDashoffset=circ*(1-score/100);},300);
+    let n=0;const t=setInterval(()=>{n+=2;if(n>=score){n=score;clearInterval(t);}document.getElementById('scoreNum').textContent=n;},22);
+  } else { document.getElementById('scoreNum').textContent='—'; }
+  document.getElementById('scoreVerdict').textContent=
+    score>=95?'Excellent condition':score>=85?'Very good condition':score>=70?'Good condition':score>0?'Fair — some items noted':'Not yet inspected';
+
+  /* VIR checks — rendered from virReport sections (damage-based) */
+  const okSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
+  const warnSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg>';
+  const checks = document.getElementById('virChecks');
+  if(v.virReport && v.virReport.length){
+    checks.innerHTML = v.virReport.map(function(r){
+      const ok = r.status === 'Pass';
+      return '<div class="vir-check '+(ok?'ok':'warn')+'">'+(ok?okSvg:warnSvg)+r.section+' — '+(ok?'Clear':'Attention ('+r.score+'/100)')+'</div>';
+    }).join('');
+  } else if(score >= 95){
+    checks.innerHTML = '<div class="vir-check ok">'+okSvg+'No damage findings recorded — exceptional condition</div>';
+  } else {
+    checks.innerHTML = '<div class="vir-check ok">'+okSvg+'Inspection pending — report available after TruLens capture</div>';
+  }
+})();
+document.getElementById('dmgList').innerHTML=dmgData.map((d,i)=>`<div class="dmg ${d.sev==='note'||d.sev>=3?'note':''}"><div class="di">${i+1}</div><div><b>${d.t}</b><p>${d.n}</p></div></div>`).join('')||'<p style="font-size:13.5px;color:var(--grey-dark)">No cosmetic defects recorded.</p>';
+
+/* AI damage stats from real data */
+(function(){
+  var damage = v.damage || [];
+  var panels = new Set(); damage.forEach(function(d){ panels.add(d.panel || d.slotId || 'General'); });
+  var totalPanels = 12;
+  var clearPanels = totalPanels - panels.size;
+  document.getElementById('tchekPanels').textContent = clearPanels + ' / ' + totalPanels;
+  var sevLabels = {1:'cosmetic',2:'minor',3:'moderate',4:'major',5:'critical'};
+  if(damage.length === 0){
+    document.getElementById('tchekFindings').textContent = 'None';
+    document.getElementById('tchekRepair').textContent = 'R 0';
+  } else {
+    var maxSev = Math.max.apply(null, damage.map(function(d){return d.severity||1;}));
+    document.getElementById('tchekFindings').textContent = damage.length + ' ' + (sevLabels[maxSev]||'noted');
+    var repairEst = damage.reduce(function(s,d){ return s + ({1:0,2:350,3:850,4:2500,5:6000}[d.severity]||500); }, 0);
+    document.getElementById('tchekRepair').textContent = 'R ' + repairEst.toLocaleString('en-ZA');
+  }
+})();
+
+/* watch/favourite toggles */
+document.getElementById('btnWatch').addEventListener('click',function(){this.classList.toggle('on');TCSA.toast(this.classList.contains('on')?'Added to your Watch list — we\'ll alert you on price drops.':'Removed from Watch list.');});
+document.getElementById('btnFav').addEventListener('click',function(){this.classList.toggle('on');TCSA.toast(this.classList.contains('on')?'Saved to Favourites ★':'Removed from Favourites.');});
+
+/* finance calc */
+function calc(){const dep=+depEl.value,term=+termEl.value,bal=+balEl.value,rate=+rateEl.value;
+  document.getElementById('depV').textContent=dep+'%';document.getElementById('termV').textContent=term+' months';document.getElementById('balV').textContent=bal+'%';document.getElementById('rateV').textContent=rate.toFixed(2)+'%';
+  const m=TCSA.monthly(v.price,{deposit:v.price*dep/100,term,rate,balloon:bal});document.getElementById('calcM').innerHTML=TCSA.fmtPrice(m)+'<small>/mo</small>';}
+const depEl=document.getElementById('dep'),termEl=document.getElementById('term'),balEl=document.getElementById('bal'),rateEl=document.getElementById('rate');
+[depEl,termEl,balEl,rateEl].forEach(el=>el.addEventListener('input',calc));calc();
+
+/* reserve + booking modal (LVS / test drive) */
+document.getElementById('reserveBtn').addEventListener('click',()=>{TCSA.leads.add({name:'(reservation started)',source:'Reservation',intent:`Reserve ${v.year} ${v.make} ${v.model}`,value:TCSA.fmtPrice(v.price),status:'New'});TCSA.toast('Reservation started — our team will confirm your R2 500 hold.');});
+const modal=document.getElementById('bookModal');let bookMode='LVS';
+function openBook(mode){bookMode=mode;
+  document.getElementById('mEyebrow').textContent=mode==='LVS'?'Live Video Stream':'Test Drive';
+  document.getElementById('mTitle').textContent=mode==='LVS'?'Book your live viewing':'Book a test drive';
+  document.getElementById('mBlurb').textContent=mode==='LVS'?'A product specialist walks this exact car on a live video call — engine bay, tyres, underbody, any VIR-flagged marks. You point, they show.':'Get behind the wheel at your nearest branch, or we\'ll bring it to you. No pressure, no obligation.';
+  modal.classList.add('open');}
+document.getElementById('lvsBtn').addEventListener('click',()=>openBook('LVS'));
+document.getElementById('testBtn').addEventListener('click',()=>openBook('Test drive'));
+modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open');});
+const slotList=['Today 15:00','Today 17:00','Tomorrow 09:00','Tomorrow 12:00','Sat 10:00','Sat 14:00'];let chosen=null;
+document.getElementById('slots').innerHTML=slotList.map(s=>`<div class="slot">${s}</div>`).join('');
+document.querySelectorAll('#slots .slot').forEach(s=>s.addEventListener('click',()=>{document.querySelectorAll('#slots .slot').forEach(x=>x.classList.remove('on'));s.classList.add('on');chosen=s.textContent;}));
+document.getElementById('mConfirm').addEventListener('click',()=>{const name=document.getElementById('mName').value.trim(),phone=document.getElementById('mPhone').value.trim();
+  if(!name||!phone||!chosen){TCSA.toast('Please pick a time and add your details.');return;}
+  TCSA.leads.add({name,phone,source:bookMode,intent:`${bookMode} — ${v.year} ${v.make} ${v.model} · ${chosen}`,value:TCSA.fmtPrice(v.price),status:'Qualified'});
+  modal.classList.remove('open');TCSA.toast(bookMode==='LVS'?'Live viewing booked ✓ We\'ll WhatsApp your call link.':'Test drive booked ✓ We\'ll confirm on WhatsApp.');});
+
+/* ── Photo gallery ──
+   The comment that used to sit here claimed the gallery was "already loaded via
+   v.gallery", but nothing ever read v.gallery or touched the container — the
+   page rendered the orbit and none of the car's photos. mapTruSaasVehicle fills
+   v.gallery from the feed's images[], which is the dealer's full web set. */
+(function renderGallery(){
+  var wrap  = document.getElementById('vgal');
+  var main  = document.getElementById('vgalMain');
+  var strip = document.getElementById('vgalStrip');
+  var count = document.getElementById('vgalCount');
+  if(!wrap || !main || !strip) return;
+
+  var shots = ((v && v.gallery && v.gallery.length) ? v.gallery : (v && v.img ? [v.img] : []))
+    .filter(function(s){ return typeof s === 'string' && s && !/^data:video\//i.test(s); });
+
+  if(!shots.length){ wrap.hidden = true; return; }
+  wrap.hidden = false;
+
+  var name = [v.year, v.make, v.model].filter(Boolean).join(' ');
+  function show(i){
+    i = ((i % shots.length) + shots.length) % shots.length;
+    main.src = shots[i];
+    main.alt = name + ' — photo ' + (i+1) + ' of ' + shots.length;
+    if(count) count.textContent = (i+1) + ' / ' + shots.length;
+    var btns = strip.querySelectorAll('.vgal-thumb');
+    for(var k=0;k<btns.length;k++){ btns[k].classList.toggle('on', k===i); }
+  }
+
+  strip.innerHTML = shots.map(function(s,i){
+    /* Only the first is eager — a 20-shot capture is 20 base64 payloads, and
+       loading them all at once is what makes the page crawl on mobile data. */
+    return '<button type="button" class="vgal-thumb" data-i="'+i+'" aria-label="Show photo '+(i+1)+'">'
+         + '<img src="'+s+'" alt="" decoding="async" loading="'+(i===0?'eager':'lazy')+'">'
+         + '</button>';
+  }).join('');
+
+  strip.addEventListener('click', function(e){
+    var btn = e.target.closest ? e.target.closest('.vgal-thumb') : null;
+    if(btn) show(+btn.getAttribute('data-i'));
+  });
+
+  show(0);
+})();
+
+/* Mobile hamburger toggle */
+(function(){
+  var hamburger = document.querySelector('.hamburger');
+  var mobileMenu = document.querySelector('.mobile-menu');
+  if(!hamburger || !mobileMenu) return;
+  hamburger.addEventListener('click', function(e){
+    e.stopPropagation();
+    var isOpen = mobileMenu.classList.toggle('open');
+    hamburger.classList.toggle('open', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+  mobileMenu.querySelectorAll('a').forEach(function(link){
+    link.addEventListener('click', function(){
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && mobileMenu.classList.contains('open')){
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+})();
+} /* end renderVehiclePage */
+
+/* Draw as soon as there is something to draw, and again when the feed lands.
+   Guarded so a second tcsa:stock (or a warm cache that already had stock) can
+   only paint the page once. */
+(function(){
+  var painted = false;
+  function paint(){
+    if (painted) return;
+    if (!window.TCSA || !Array.isArray(TCSA.vehicles) || !TCSA.vehicles.length) return;
+    painted = true;
+    renderVehiclePage();
+  }
+  paint();
+  window.addEventListener('tcsa:stock', paint);
+})();
+</script>
+
+<!-- TruAfford · soft affordability (TruSaaS) -->
+<script src="tru-afford.js?v=2" data-dealer="True-Cars" data-wa="27620502091" data-brand="truecars" data-position="right" data-bottom="136px"></script>
+</body>
+</html>

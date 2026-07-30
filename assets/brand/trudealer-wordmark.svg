@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" width="420" height="120" role="img" aria-label="TruDealer — Future Automotive">
+  <title>TruDealer wordmark</title>
+  <defs>
+    <linearGradient id="wmSteel" x1="0" y1="20" x2="0" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#B9C0C4"/>
+    </linearGradient>
+    <linearGradient id="wmCyan" x1="120" y1="20" x2="400" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7CF3ED"/>
+      <stop offset="1" stop-color="#3FCFC8"/>
+    </linearGradient>
+  </defs>
+  <text x="0" y="74"
+        font-family="Inter,'Helvetica Neue',Arial,system-ui,sans-serif"
+        font-size="72" font-weight="700" letter-spacing="-3">
+    <tspan fill="url(#wmSteel)">Tru</tspan><tspan fill="url(#wmCyan)">Dealer</tspan>
+  </text>
+  <text x="3" y="106"
+        font-family="Inter,'Helvetica Neue',Arial,system-ui,sans-serif"
+        font-size="19" font-weight="500" letter-spacing="3.4"
+        fill="#8E979C">FUTURE AUTOMOTIVE</text>
+</svg>

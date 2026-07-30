@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" type="image/svg+xml" href="demo-icon.svg"/>
+<link rel="apple-touch-icon" href="demo-icon.svg"/>
+<script src="stock-data.js"></script>
+<script src="demo-boot.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Car Finance — True-Cars SA | Pre-Approval Across All Major Banks</title>
+<meta name="description" content="Work out your instalment, check what you can afford, and get pre-approved in principle across every major South African bank through our Signio & Seriti F&I desk. One application, all banks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=11">
+<style>
+body{background:var(--bone);}
+.fin-hero{background:linear-gradient(135deg,var(--ink),var(--navy));color:#fff;padding:calc(var(--nav-h) + 46px) 0 44px;position:relative;overflow:hidden;}
+.fin-hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(79,227,220,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(79,227,220,.05) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(70% 100% at 25% 0%,#000,transparent 70%);}
+.fin-hero .wrap{position:relative;z-index:1;}
+.fin-hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(32px,4.4vw,54px);letter-spacing:-.02em;max-width:18ch;}
+.fin-hero p{color:var(--grey-2);font-size:16.5px;margin-top:14px;max-width:56ch;line-height:1.6;}
+.tabs{display:flex;gap:8px;margin-top:28px;flex-wrap:wrap;}
+.tab{padding:12px 22px;border-radius:100px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;font-weight:700;font-size:13.5px;transition:all .2s;}
+.tab.on{background:#fff;color:var(--ink);}
+
+.fin-wrap{max-width:1120px;margin:-24px auto 40px;padding:0 24px;position:relative;z-index:5;}
+.calc-shell{background:var(--paper);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-lg);overflow:hidden;}
+.calc-grid{display:grid;grid-template-columns:1.2fr .8fr;}
+@media(max-width:820px){.calc-grid{grid-template-columns:1fr;}}
+.calc-controls{padding:34px;}
+.calc-result{background:linear-gradient(150deg,var(--ink),var(--navy));color:#fff;padding:34px;display:flex;flex-direction:column;}
+.crange{margin-bottom:20px;}
+.crange .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.crange .top label{font-size:13.5px;font-weight:700;color:var(--ink);}
+.crange .top b{font-family:'IBM Plex Mono';font-size:15px;color:var(--blue);}
+.crange input[type=range]{width:100%;accent-color:var(--blue);}
+.crange .ticks{display:flex;justify-content:space-between;font-size:10.5px;color:var(--grey);font-family:'IBM Plex Mono';margin-top:4px;}
+.panel{display:none;}
+.panel.on{display:block;}
+.result-lbl{font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal-bright);}
+.result-amt{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(40px,7vw,60px);line-height:1;margin:10px 0;}
+.result-amt small{font-size:20px;color:var(--grey-2);}
+.result-break{margin-top:auto;padding-top:22px;border-top:1px solid rgba(255,255,255,.12);display:grid;gap:12px;}
+.rb-row{display:flex;justify-content:space-between;font-size:13.5px;}
+.rb-row span{color:var(--grey-2);}
+.rb-row b{font-family:'IBM Plex Mono';font-weight:600;}
+.result-note{font-size:11.5px;color:var(--grey-2);margin-top:16px;line-height:1.5;}
+
+/* banks */
+.banks{padding:60px 0;}
+.bank-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:30px;}
+@media(max-width:820px){.bank-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:480px){.bank-grid{grid-template-columns:repeat(2,1fr);}}
+.bank{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 14px;text-align:center;transition:transform .3s var(--ease),box-shadow .3s;}
+.bank:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+.bank .bl{width:44px;height:44px;border-radius:11px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-weight:900;color:#fff;font-size:18px;}
+.bank b{font-size:13px;display:block;}
+.bank span{font-size:11px;color:var(--grey);font-family:'IBM Plex Mono';}
+
+/* seriti band */
+.seriti{background:linear-gradient(135deg,#081326,#0d2647);border-radius:24px;padding:56px;color:#fff;position:relative;overflow:hidden;}
+.seriti::before{content:"";position:absolute;right:-100px;bottom:-100px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(0,161,221,.18),transparent 65%);}
+.seriti-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;position:relative;z-index:1;}
+@media(max-width:820px){.seriti-grid{grid-template-columns:1fr;gap:32px;}.seriti{padding:36px;}}
+.flow{display:grid;gap:12px;}
+.flow-step{display:flex;gap:16px;align-items:flex-start;padding:16px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;}
+.flow-step .n{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#00A1DD,#0077A8);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
+.flow-step b{font-size:14.5px;}
+.flow-step p{font-size:12.5px;color:var(--grey-2);margin-top:2px;}
+
+/* pre-approval form */
+.approve{padding:60px 0;}
+.approve-card{background:var(--paper);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);max-width:720px;margin:0 auto;overflow:hidden;}
+.approve-head{background:linear-gradient(135deg,var(--ink),var(--navy));color:#fff;padding:28px 34px;}
+.approve-head h3{font-family:'Fraunces',serif;font-size:26px;font-weight:600;}
+.approve-head p{color:var(--grey-2);font-size:13.5px;margin-top:5px;}
+.approve-body{padding:34px;}
+.consent{display:flex;gap:12px;align-items:flex-start;background:var(--bone);border-radius:12px;padding:14px 16px;margin:8px 0 20px;font-size:12.5px;color:var(--grey-dark);}
+.consent input{margin-top:3px;width:18px;height:18px;accent-color:var(--blue);flex-shrink:0;}
+.approve-done{display:none;text-align:center;padding:20px 0;}
+.approve-done .ico{width:76px;height:76px;border-radius:50%;background:rgba(21,199,192,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
+.approve-done .ico svg{width:38px;height:38px;color:var(--teal-deep);}
+.prob{display:flex;gap:6px;margin:18px 0;}
+.prob .seg{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden;}
+.prob .seg i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal-deep),var(--blue));transition:width 1s var(--ease);}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span></a>
+    <div class="nav-links">
+      <a href="performance.html">Performance</a>
+      <a href="premium-select.html">Premium Select</a>
+      <a href="certi-used.html">Certi-Used</a>
+      <a href="ev.html">EV / Hybrid</a>
+      <a href="trade-in.html">Sell / Trade-in</a>
+      <a href="finance.html" class="active">Finance</a>
+      
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-grad btn-sm" href="certi-used.html"><span>Browse Stock</span></a>
+    </div>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu">
+  <button class="mobile-menu-close" aria-label="Close menu" onclick="document.querySelector('.mobile-menu').classList.remove('open');document.querySelector('.hamburger').classList.remove('open');document.body.style.overflow='';">✕</button>
+  <a href="performance.html" class="mm-cat mm-perf">Performance</a>
+  <a href="premium-select.html" class="mm-cat mm-prem">Premium Select</a>
+  <a href="ev.html" class="mm-cat mm-ev">EV / Hybrid</a>
+  <div class="mm-sep"></div>
+  <a href="certi-used.html" class="mm-util">Certi-Used</a>
+  <a href="trade-in.html" class="mm-util">Sell / Trade-in</a>
+  <a href="finance.html" class="mm-util">Finance</a>
+  <a href="technology.html" class="mm-util">Our Technology</a>
+  <a class="btn btn-grad" href="trade-in.html" style="margin-top:14px;width:100%;max-width:340px"><span>Sell My Car</span></a>
+</div>
+
+<section class="fin-hero">
+  <div class="wrap">
+    <div class="eyebrow teal" style="color:#7FE9E3">Finance</div>
+    <h1>One application. <span style="color:var(--teal-bright)">Every major bank.</span></h1>
+    <p>Work out your instalment, see what you can afford, then get pre-approved in principle through our Signio &amp; Seriti F&amp;I desk — without hurting your credit score.</p>
+    <div class="tabs">
+      <button class="tab on" data-tab="repay">Repayment calculator</button>
+      <button class="tab" data-tab="afford">What can I afford?</button>
+    </div>
+  </div>
+</section>
+
+<div class="fin-wrap">
+  <div class="calc-shell">
+    <div class="calc-grid">
+      <div class="calc-controls">
+        <!-- REPAYMENT -->
+        <div class="panel on" data-panel="repay">
+          <div class="crange"><div class="top"><label>Vehicle price</label><b id="pPrice">R450 000</b></div><input type="range" id="price" min="80000" max="4000000" step="10000" value="450000"><div class="ticks"><span>R80k</span><span>R4m</span></div></div>
+          <div class="crange"><div class="top"><label>Deposit</label><b id="pDep">10% · R45 000</b></div><input type="range" id="dep" min="0" max="50" step="1" value="10"><div class="ticks"><span>0%</span><span>50%</span></div></div>
+          <div class="crange"><div class="top"><label>Term</label><b id="pTerm">72 months</b></div><input type="range" id="term" min="12" max="84" step="6" value="72"><div class="ticks"><span>12</span><span>84</span></div></div>
+          <div class="crange"><div class="top"><label>Balloon / residual</label><b id="pBal">0%</b></div><input type="range" id="bal" min="0" max="40" step="5" value="0"><div class="ticks"><span>0%</span><span>40%</span></div></div>
+          <div class="crange"><div class="top"><label>Interest rate (linked)</label><b id="pRate">11.75%</b></div><input type="range" id="rate" min="9" max="18" step="0.25" value="11.75"><div class="ticks"><span>9%</span><span>18%</span></div></div>
+        </div>
+        <!-- AFFORDABILITY -->
+        <div class="panel" data-panel="afford">
+          <div class="crange"><div class="top"><label>Monthly budget for a car</label><b id="aBudget">R7 500</b></div><input type="range" id="budget" min="1500" max="40000" step="250" value="7500"><div class="ticks"><span>R1 500</span><span>R40 000</span></div></div>
+          <div class="crange"><div class="top"><label>Deposit available</label><b id="aDep">R30 000</b></div><input type="range" id="aDepR" min="0" max="500000" step="5000" value="30000"><div class="ticks"><span>R0</span><span>R500k</span></div></div>
+          <div class="crange"><div class="top"><label>Term</label><b id="aTerm">72 months</b></div><input type="range" id="aTermR" min="12" max="84" step="6" value="72"><div class="ticks"><span>12</span><span>84</span></div></div>
+          <div class="crange"><div class="top"><label>Interest rate</label><b id="aRate">11.75%</b></div><input type="range" id="aRateR" min="9" max="18" step="0.25" value="11.75"><div class="ticks"><span>9%</span><span>18%</span></div></div>
+          <p style="font-size:12.5px;color:var(--grey);margin-top:8px">Tip: banks generally want your total car instalment under ~25% of gross monthly income.</p>
+        </div>
+      </div>
+
+      <div class="calc-result">
+        <!-- repay result -->
+        <div class="panel on" data-panel="repay">
+          <div class="result-lbl">Estimated instalment</div>
+          <div class="result-amt" id="rMonthly">R0<small>/mo</small></div>
+          <div class="result-break">
+            <div class="rb-row"><span>Financed amount</span><b id="rFin">R0</b></div>
+            <div class="rb-row"><span>Total interest</span><b id="rInt">R0</b></div>
+            <div class="rb-row"><span>Balloon due at end</span><b id="rBalloon">R0</b></div>
+            <div class="rb-row"><span>Total cost of credit</span><b id="rTotal">R0</b></div>
+          </div>
+          <div class="result-note">Indicative only. Excludes initiation fee (~R1 207) &amp; monthly admin (~R69). Final rate is risk-based and set by the bank.</div>
+          <a class="btn btn-grad btn-block" href="#approve" style="margin-top:18px"><span>Get pre-approved →</span></a>
+        </div>
+        <!-- afford result -->
+        <div class="panel" data-panel="afford">
+          <div class="result-lbl">You could afford up to</div>
+          <div class="result-amt" id="aMax">R0</div>
+          <div class="result-break">
+            <div class="rb-row"><span>On the road, financed</span><b id="aFin">R0</b></div>
+            <div class="rb-row"><span>Your deposit</span><b id="aDepShow">R0</b></div>
+            <div class="rb-row"><span>Est. instalment</span><b id="aInst">R0</b></div>
+          </div>
+          <div class="result-note" id="aMatch">Matching cars in stock…</div>
+          <a class="btn btn-grad btn-block" id="aBrowse" href="certi-used.html" style="margin-top:18px"><span>See cars in my budget →</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BANKS -->
+<section class="banks">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <div class="eyebrow center">One application, all banks</div>
+      <h2 class="sec-h">We shop your deal to <span class="hl">every major lender</span></h2>
+      <p class="lede">Our F&amp;I desk submits a single application to South Africa's banks simultaneously and brings you back the best approved rate.</p>
+    </div>
+    <div class="bank-grid">
+      <div class="bank rv"><div class="bl" style="background:#00A0DE">WB</div><b>WesBank</b><span>Prime linked</span></div>
+      <div class="bank rv d1"><div class="bl" style="background:#DA020E">ABSA</div><b>Absa</b><span>Vehicle finance</span></div>
+      <div class="bank rv d2"><div class="bl" style="background:#0033A0">SB</div><b>Standard Bank</b><span>Vehicle &amp; asset</span></div>
+      <div class="bank rv d3"><div class="bl" style="background:#006A4D">NB</div><b>Nedbank / MFC</b><span>MFC finance</span></div>
+      <div class="bank rv d4"><div class="bl" style="background:#1A1A1A">IV</div><b>Investec</b><span>Premium</span></div>
+      <div class="bank rv d5"><div class="bl" style="background:#7B2D8E">CT</div><b>Capitec</b><span>Vehicle credit</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERITI / SIGNIO -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="seriti rv">
+      <div class="seriti-grid">
+        <div>
+          <div class="eyebrow" style="color:#4FD8FF">Signio &amp; Seriti F&amp;I integration</div>
+          <h2 class="sec-h" style="color:#fff">Paperless F&amp;I, <em>done right.</em></h2>
+          <p class="lede" style="color:var(--grey-2)">Your details flow straight from the vehicle you're viewing into the bank's system — no re-capturing, no faxing. Finance and insurance are originated, e-signed and settled through one integrated workflow SA dealers trust.</p>
+          <div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap">
+            <a class="btn btn-grad" href="#approve"><span>Start pre-approval</span></a>
+            <button class="btn btn-ghost-light" data-chat="Work out finance">Ask TruChat</button>
+          </div>
+        </div>
+        <div class="flow">
+          <div class="flow-step"><div class="n">1</div><div><b>Apply once</b><p>One secure form, pre-filled from your chosen vehicle.</p></div></div>
+          <div class="flow-step"><div class="n">2</div><div><b>Banks respond</b><p>Signio submits to all lenders; approvals come back in minutes.</p></div></div>
+          <div class="flow-step"><div class="n">3</div><div><b>Seriti settles</b><p>F&amp;I, licensing &amp; insurance originated and e-signed digitally.</p></div></div>
+          <div class="flow-step"><div class="n">4</div><div><b>Drive away</b><p>We deliver nationwide, paperwork already done.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRE-APPROVAL -->
+<section class="approve" id="approve" style="background:var(--bone)">
+  <div class="wrap">
+    <div class="approve-card">
+      <div class="approve-head">
+        <h3>Get pre-approved in principle</h3>
+        <p>2 minutes · won't affect your credit score · no obligation</p>
+      </div>
+      <div class="approve-body">
+        <div id="apForm">
+          <div class="field-row">
+            <div class="field"><label>Full name</label><input id="apName" placeholder="Your name"></div>
+            <div class="field"><label>Mobile</label><input id="apPhone" placeholder="+27 …"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Gross monthly income</label><input id="apIncome" type="number" placeholder="e.g. 35000" inputmode="numeric"></div>
+            <div class="field"><label>Nett take-home</label><input id="apNett" type="number" placeholder="e.g. 26000" inputmode="numeric"></div>
+          </div>
+          <div class="field"><label>Vehicle of interest (optional)</label><input id="apCar" placeholder="e.g. 2022 VW Golf 8 GTI"></div>
+          <div class="field"><label>Employment status</label><select id="apEmp"><option>Permanently employed</option><option>Self-employed</option><option>Contract</option><option>Commission-based</option></select></div>
+          <label class="consent"><input type="checkbox" id="apConsent"><span>I consent to True-Cars SA &amp; its F&amp;I partners (Signio/Seriti) performing an affordability &amp; credit assessment in line with the NCA and POPIA. This is a soft check and won't affect my score.</span></label>
+          <button class="btn btn-grad btn-block btn-lg" onclick="FIN.apply()"><span>Submit pre-approval</span></button>
+        </div>
+        <div id="apDone" class="approve-done">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <h3 style="font-family:'Fraunces',serif;font-size:26px;font-weight:600" id="apVerdict">Pre-approved in principle 🎉</h3>
+          <p style="color:var(--grey-dark);margin-top:6px" id="apMsg">Reference —</p>
+          <div class="prob"><div class="seg"><i id="apBar"></i></div></div>
+          <p style="font-size:12.5px;color:var(--grey);margin-top:-6px" id="apScore">Approval likelihood —</p>
+          <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <a class="btn btn-wa" href="https://wa.me/27620502091">Chat to our F&amp;I desk</a>
+            <a class="btn btn-ghost" href="certi-used.html">Browse cars</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;color:var(--grey);font-size:12.5px;margin-top:18px;font-family:'IBM Plex Mono'">A registered credit provider partner network · NCA &amp; POPIA compliant</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="index.html"><span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span></a>
+        <p>The fair way to buy and sell a car in South Africa. Tru3D verified, transparently priced, delivered nationwide. Proudly built in Cape Town.</p>
+        <div class="foot-cta-row">
+          <a class="btn btn-grad btn-sm" href="technology.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Our Platform</a>
+          <a class="btn btn-wa btn-sm" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20a%20dealer%20and%20I%27d%20like%20to%20book%20a%20demo%20of%20TruSaaS." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;flex-shrink:0"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg> Book a demo</a>
+        </div>
+        <div class="foot-socials">
+          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="https://wa.me/27620502091" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg></a>
+        </div>
+      </div>
+      <div class="foot-col"><h5>Buy</h5><a href="certi-used.html">All Stock</a><a href="ev.html">Electric &amp; Hybrid</a><a href="certi-used.html">Bakkies &amp; 4x4</a><a href="premium-select.html">Premium Select</a><a href="finance.html">Finance</a></div>
+      <div class="foot-col"><h5>Sell &amp; Tech</h5><a href="trade-in.html">Sell / Trade-in</a><a href="vehicle.html?id=porsche-cayenne-s-19">Tru3D demo</a><a href="portal.html">Dealer Console</a></div>
+      <div class="foot-col"><h5>Talk to us</h5>
+        <ul class="foot-contact">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Cape Town · Western Cape · Eastern Cape · Kenya</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 2.9a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.5c.9.3 1.9.6 2.9.7a2 2 0 011.7 2z"/></svg><a href="https://wa.me/27620502091">+27 62 050 2091 · WhatsApp</a></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg><span>hello@true-cars.co.za</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom"><span>© 2026 True-Cars SA · Built by Paul de Beer</span><span class="ax">Powered by <a href="truesaas.html" style="color:inherit;text-decoration:none"><b>TruSaaS</b></a> · <a href="https://true-cars.co.za" style="color:inherit;text-decoration:underline;text-underline-offset:2px">true-cars.co.za</a></span></div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=14"></script>
+<script src="assets/js/site-chrome.js?v=15"></script>
+<script src="assets/js/site.js?v=14"></script>
+<script>
+window.FIN = {
+  init(){
+    document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+      const p=t.dataset.tab; document.querySelectorAll('.panel').forEach(pn=>pn.classList.toggle('on',pn.dataset.panel===p));
+    }));
+    ['price','dep','term','bal','rate'].forEach(id=>document.getElementById(id).addEventListener('input',()=>this.repay()));
+    ['budget','aDepR','aTermR','aRateR'].forEach(id=>document.getElementById(id).addEventListener('input',()=>this.afford()));
+    // rate loosely linked to term/deposit could be added; keep manual
+    this.repay(); this.afford();
+    // prefill price from ?price=
+    const p=new URLSearchParams(location.search); if(p.get('price')){document.getElementById('price').value=p.get('price');this.repay();}
+  },
+  pmt(principal, annualRate, term, balloonAmt){
+    const r=annualRate/100/12;
+    const pv=principal - balloonAmt/Math.pow(1+r,term);
+    return pv*r/(1-Math.pow(1+r,-term));
+  },
+  repay(){
+    const price=+price_.value, depPct=+dep.value, term=+term_.value, balPct=+bal.value, rate=+rate_.value;
+    const deposit=price*depPct/100, balloon=price*balPct/100, financed=price-deposit;
+    const m=this.pmt(financed,rate,term,balloon);
+    document.getElementById('pPrice').textContent=TCSA.fmtPrice(price);
+    document.getElementById('pDep').textContent=depPct+'% · '+TCSA.fmtPrice(Math.round(deposit));
+    document.getElementById('pTerm').textContent=term+' months';
+    document.getElementById('pBal').textContent=balPct+'% · '+TCSA.fmtPrice(Math.round(balloon));
+    document.getElementById('pRate').textContent=rate.toFixed(2)+'%';
+    const totalPaid=m*term+balloon, interest=totalPaid-financed;
+    document.getElementById('rMonthly').innerHTML=TCSA.fmtPrice(Math.round(m))+'<small>/mo</small>';
+    document.getElementById('rFin').textContent=TCSA.fmtPrice(Math.round(financed));
+    document.getElementById('rInt').textContent=TCSA.fmtPrice(Math.round(interest));
+    document.getElementById('rBalloon').textContent=TCSA.fmtPrice(Math.round(balloon));
+    document.getElementById('rTotal').textContent=TCSA.fmtPrice(Math.round(totalPaid+deposit));
+  },
+  afford(){
+    const budget=+document.getElementById('budget').value, deposit=+document.getElementById('aDepR').value, term=+document.getElementById('aTermR').value, rate=+document.getElementById('aRateR').value;
+    const r=rate/100/12;
+    // max financed from instalment: financed = m * (1-(1+r)^-n)/r  (no balloon)
+    const financed=budget*(1-Math.pow(1+r,-term))/r;
+    const maxPrice=Math.round((financed+deposit)/1000)*1000;
+    document.getElementById('aBudget').textContent=TCSA.fmtPrice(budget);
+    document.getElementById('aDep').textContent=TCSA.fmtPrice(deposit);
+    document.getElementById('aTerm').textContent=term+' months';
+    document.getElementById('aRate').textContent=rate.toFixed(2)+'%';
+    document.getElementById('aMax').textContent=TCSA.fmtPrice(maxPrice);
+    document.getElementById('aFin').textContent=TCSA.fmtPrice(Math.round(financed));
+    document.getElementById('aDepShow').textContent=TCSA.fmtPrice(deposit);
+    document.getElementById('aInst').textContent=TCSA.fmtPrice(budget)+'/mo';
+    const matches=TCSA.vehicles.filter(v=>v.price<=maxPrice).length;
+    document.getElementById('aMatch').textContent=matches+' cars in stock fit this budget.';
+    document.getElementById('aBrowse').href='certi-used.html?maxPrice='+maxPrice;
+  },
+  apply(){
+    const name=document.getElementById('apName').value.trim(), phone=document.getElementById('apPhone').value.trim();
+    const income=+document.getElementById('apIncome').value, nett=+document.getElementById('apNett').value;
+    if(!name||!phone){ TCSA.toast('Please add your name and mobile.'); return; }
+    if(!document.getElementById('apConsent').checked){ TCSA.toast('Please tick consent to run the soft check.'); return; }
+    if(!income){ TCSA.toast('Please add your gross monthly income.'); return; }
+    // simple affordability scoring
+    const car=document.getElementById('apCar').value.trim();
+    const dispo=(nett||income*0.72)*0.28; // ~28% of take-home available for instalment
+    let score=Math.min(96, Math.max(35, Math.round(45 + (dispo/9000)*40)));
+    if(document.getElementById('apEmp').value!=='Permanently employed') score-=8;
+    score=Math.max(30,Math.min(97,score));
+    const verdict = score>=70?'Pre-approved in principle 🎉': score>=50?'Likely to qualify 👍':'Let\'s find the right deal';
+    const rec=TCSA.leads.add({name,phone,source:'Finance',
+      intent:`Pre-approval · income ${TCSA.fmtPrice(income)} · ${document.getElementById('apEmp').value}${car?' · '+car:''}`,
+      value: car||('~'+TCSA.fmtPrice(Math.round(dispo*45))), status: score>=70?'Qualified':'New'});
+    document.getElementById('apForm').style.display='none';
+    document.getElementById('apDone').style.display='block';
+    document.getElementById('apVerdict').textContent=verdict;
+    document.getElementById('apMsg').innerHTML=`Reference <b>${rec.id}</b> · our F&I desk will WhatsApp <b>${phone}</b> shortly with your options.`;
+    document.getElementById('apScore').textContent=`Approval likelihood ${score}%`;
+    setTimeout(()=>document.getElementById('apBar').style.width=score+'%',150);
+    document.getElementById('apDone').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+};
+// alias range els with reserved names
+const price_=document.getElementById('price'), dep=document.getElementById('dep'), term_=document.getElementById('term'), bal=document.getElementById('bal'), rate_=document.getElementById('rate');
+document.addEventListener('DOMContentLoaded',()=>FIN.init());
+</script>
+</body>
+</html>

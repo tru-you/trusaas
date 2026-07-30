@@ -1,0 +1,111 @@
+/* Ridgeline Motors — 3D WebGL splash intro.
+   Full-screen Three.js stage with rotating shield emblem, orbiting torus rings,
+   floating particles, HUD frame and GSAP entrance animations.
+   Shows once per session (sessionStorage gate in mkr-splash.js). */
+.mkr-splash{
+  position:fixed;inset:0;z-index:500;
+  background:#030508;
+  opacity:1;transition:opacity .8s cubic-bezier(.22,1,.36,1),visibility .8s;
+  overflow:hidden;
+}
+.mkr-splash.out{opacity:0;visibility:hidden;pointer-events:none;}
+
+/* ── WebGL canvas ─────────────────────────────────────────────────── */
+.mkr-splash canvas{
+  position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block;
+}
+
+/* ── atmosphere overlays ──────────────────────────────────────────── */
+.mkr-splash-vignette{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 50%,transparent 20%,rgba(3,5,8,.85) 80%),
+    linear-gradient(to bottom,rgba(3,5,8,.4),transparent 30%,transparent 70%,#030508);
+}
+.mkr-splash-grid{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:50px 50px;
+  mask-image:radial-gradient(circle at 50% 50%,black 40%,transparent 80%);
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,black 40%,transparent 80%);
+}
+
+/* ── HUD frame ────────────────────────────────────────────────────── */
+.mkr-splash-hud{
+  position:absolute;inset:24px;z-index:10;pointer-events:none;
+  font-family:'JetBrains Mono','IBM Plex Mono',ui-monospace,monospace;
+  font-size:11px;letter-spacing:.2em;color:rgba(255,158,128,.85);text-transform:uppercase;
+}
+.mkr-splash-ht{
+  position:absolute;display:flex;align-items:center;gap:8px;
+  background:rgba(3,5,8,.7);padding:6px 14px;border-radius:6px;
+  border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.mkr-splash-ht.tl{top:0;left:0;}
+.mkr-splash-ht.tr{top:0;right:0;}
+.mkr-splash-ht.bl{bottom:0;left:0;}
+.mkr-splash-ht.br{bottom:0;right:0;}
+.mkr-splash-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#FF6D00;box-shadow:0 0 10px #FF6D00;
+  animation:mkrSplDot 2s infinite;
+}
+@keyframes mkrSplDot{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:.4;transform:scale(.8);}
+}
+
+/* ── brand header ─────────────────────────────────────────────────── */
+.mkr-splash-viewport{
+  position:relative;z-index:5;min-height:100vh;
+  display:flex;flex-direction:column;justify-content:space-between;align-items:center;
+  padding:80px 24px 60px;text-align:center;
+}
+.mkr-splash-head{opacity:0;transform:translateY(-20px);}
+.mkr-splash-title{
+  font-family:'Plus Jakarta Sans','Archivo',system-ui,sans-serif;
+  font-size:clamp(48px,10vw,110px);font-weight:900;
+  letter-spacing:-.04em;line-height:.95;margin-bottom:12px;user-select:none;
+}
+.mkr-splash-title .rl{
+  background:linear-gradient(180deg,#FFF 0%,#E2E8F0 25%,#94A3B8 50%,#475569 80%,#1E293B 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.8));
+}
+.mkr-splash-title .mt{
+  background:linear-gradient(180deg,#FFE0B2 0%,#FF9800 25%,#FF6D00 55%,#E65100 85%,#BF360C 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 30px rgba(255,109,0,.4));
+}
+.mkr-splash-sub{
+  font-family:'JetBrains Mono','IBM Plex Mono',ui-monospace,monospace;
+  font-size:clamp(12px,2vw,16px);letter-spacing:.3em;color:#94a3b8;text-transform:uppercase;
+}
+
+/* ── CTA ──────────────────────────────────────────────────────────── */
+.mkr-splash-cta{opacity:0;transform:translateY(30px);}
+.mkr-splash-enter{
+  background:linear-gradient(135deg,#FF6D00 0%,#DD2C00 100%);
+  color:#fff;border:none;font-family:inherit;font-size:16px;font-weight:800;
+  padding:18px 48px;border-radius:99px;cursor:pointer;
+  box-shadow:0 0 30px rgba(255,109,0,.4);
+  transition:transform .25s,box-shadow .25s;
+  letter-spacing:.05em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:10px;
+}
+.mkr-splash-enter:hover{
+  transform:translateY(-3px) scale(1.02);
+  box-shadow:0 0 45px rgba(255,109,0,.7);
+}
+.mkr-splash-enter svg{width:18px;height:18px;}
+
+@media(max-width:768px){
+  .mkr-splash-hud{display:none;}
+  .mkr-splash-viewport{padding:60px 20px 40px;}
+}
+@media(prefers-reduced-motion:reduce){
+  .mkr-splash-dot{animation:none;}
+}

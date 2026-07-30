@@ -1,0 +1,707 @@
+/* ============================================================
+   CARS ON CALEDON — TruSaas family skin
+   ============================================================
+   Adopts the design language of tru-saas.com rather than copying it:
+
+     one continuous near-black field, not alternating light/dark bands
+     warm off-white text (#E8EAE6) instead of pure white
+     a single accent, used sparingly and at low opacity
+     restrained type — 600 weight, tight tracking, smaller headings
+     mono eyebrows: 9-10px, ~2.1px tracking, uppercase
+     transparent cards with hairline borders, no fills or heavy shadows
+     uniform section rhythm
+
+   The one deliberate departure: TruSaas uses cyan (#4FE3DC). Caledon keeps
+   its own blue as the accent, so the site reads as part of the family
+   without impersonating the parent brand.
+
+   Loaded LAST. Remove the <link> to revert to the retail look.
+   ============================================================ */
+
+:root{
+  --sk-ink:#06080D;
+  --sk-ink-2:#0B0F17;
+  --sk-white:#E8EAE6;
+  --sk-dim:rgba(232,234,230,.72);
+  --sk-muted:rgba(232,234,230,.55);
+  --sk-faint:rgba(232,234,230,.32);
+  --sk-accent:#6E9BFF;              /* Caledon blue, lifted for a dark field */
+  --sk-accent-soft:rgba(110,155,255,.35);
+  --sk-glass:rgba(232,234,230,.055);
+  --sk-line:rgba(232,234,230,.14);
+}
+
+/* ---- one continuous field ------------------------------------ */
+body{background:var(--sk-ink)!important;color:var(--sk-white)!important;}
+section,
+.cat-section,.inventory,.finance,.sell,.why,.testi,.visit,.ti,
+.showroom,.delivery{
+  background:transparent!important;
+  color:var(--sk-white)!important;
+}
+/* the seam between bands becomes a hairline instead of a colour change */
+section + section{border-top:1px solid rgba(232,234,230,.07);}
+section{padding-top:110px!important;padding-bottom:110px!important;}
+@media(max-width:760px){section{padding-top:68px!important;padding-bottom:68px!important;}}
+
+/* ---- type: quieter, tighter ---------------------------------- */
+h1,.hero h1{
+  font-weight:600!important;
+  letter-spacing:-.025em!important;
+  line-height:1.04!important;
+}
+h2,.sec-h,.ti h2{
+  font-weight:600!important;
+  font-size:clamp(26px,3.1vw,38px)!important;
+  letter-spacing:-.022em!important;
+  line-height:1.12!important;
+  color:var(--sk-white)!important;
+}
+h3{font-weight:600!important;letter-spacing:-.01em!important;}
+p,.lede,.sec-lede,.ti-lede{color:var(--sk-dim)!important;}
+.sec-lede,.lede,.ti-lede{font-size:15px!important;line-height:1.72!important;}
+
+/* accent words stop shouting */
+h2 em,.sec-h em,.ti h2 em,h1 em{
+  color:var(--sk-accent)!important;
+  font-style:normal!important;
+  background:none!important;-webkit-text-fill-color:currentColor!important;
+}
+
+/* ---- mono eyebrows ------------------------------------------- */
+.eyebrow,.sec-eyebrow,.ti-eyebrow,.wc-tag,.tag,.badge{
+  font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace!important;
+  font-size:9.5px!important;
+  font-weight:500!important;
+  letter-spacing:.2em!important;
+  text-transform:uppercase!important;
+  color:var(--sk-accent-soft)!important;
+  background:none!important;
+  border:0!important;
+  padding:0!important;
+}
+.ti-eyebrow i{background:var(--sk-accent)!important;}
+
+/* ---- surfaces: hairline, not filled -------------------------- */
+.card,.ti-card,.ti-factor,.ti-note,.calc-card,.visit-card,.wc,.t,
+.cat-tile,.chip,.sp-field,.testi-card{
+  background:var(--sk-glass)!important;
+  border:1px solid var(--sk-line)!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+.card:hover,.cat-tile:hover,.wc:hover{
+  border-color:var(--sk-accent-soft)!important;
+  transform:translateY(-3px)!important;
+  box-shadow:none!important;
+}
+.card .ph::after{background:linear-gradient(180deg,transparent 55%,rgba(6,8,13,.55))!important;}
+
+/* ---- buttons: hairline first, one solid CTA ------------------ */
+.btn,.ti-nav button{
+  border-radius:100px!important;
+  font-weight:600!important;
+  letter-spacing:.01em!important;
+  box-shadow:none!important;
+}
+.btn-outline,.btn-ghost,.btn-ghost-light,.ti-nav .back{
+  background:transparent!important;
+  border:1px solid var(--sk-line)!important;
+  color:var(--sk-white)!important;
+}
+.btn-outline:hover,.btn-ghost:hover,.ti-nav .back:hover{
+  border-color:var(--sk-accent)!important;
+  background:rgba(110,155,255,.08)!important;
+}
+.btn-blue,.btn-grad,.btn-primary,.ti-nav .next,.btn-vd{
+  background:var(--sk-accent)!important;
+  border:1px solid var(--sk-accent)!important;
+  color:#06080D!important;
+}
+.btn-blue:hover,.btn-grad:hover,.ti-nav .next:hover{
+  background:#8FB4FF!important;border-color:#8FB4FF!important;
+}
+
+/* ---- chrome --------------------------------------------------- */
+header,.site-header{background:rgba(6,8,13,.86)!important;border-bottom:1px solid var(--sk-line)!important;}
+nav a,.nav-links a{color:var(--sk-dim)!important;font-weight:400!important;}
+nav a:hover,.nav-links a:hover{color:var(--sk-white)!important;background:none!important;}
+footer{background:var(--sk-ink-2)!important;border-top:1px solid var(--sk-line)!important;}
+
+/* prices keep their weight — this is still a retail site */
+.pr,.price,.vcard-price{color:var(--sk-white)!important;font-weight:700!important;letter-spacing:-.02em!important;}
+
+@media (prefers-reduced-motion:reduce){
+  .card:hover,.cat-tile:hover,.wc:hover{transform:none!important;}
+}
+
+
+/* ============================================================
+   DARK-FIELD TEXT REPAIR
+   The retail build used dark ink (#111318) and mid-grey (#6B7280)
+   for text that sat on light panels. On a near-black field those
+   went invisible. Restated here per role — buttons with light
+   fills keep their dark text, which is correct.
+   ============================================================ */
+.l1,.pr-main,.pr,.price,.vcard-price,.cb-name,.cb-title,
+.sn,.ct-name,.wc h3,.t b,.v-row .vv,.sec-h,h3{
+  color:var(--sk-white)!important;
+}
+.l2,.sl,.ct-count,.stock-source,.stock-source span,.cb-year,.cb-variant,
+.chip,.vk,.who span,.wc p,.t p,.f-grid a,.foot-note,.sp-field label,
+.card .specs span,.card .var,.yr{
+  color:var(--sk-muted)!important;
+}
+/* brand-blue links were #23419A — near-black on near-black */
+a[class*="blue"]:not(.btn),.link-blue,.view-all,.more-link,
+.sn,.stat-num{color:var(--sk-accent)!important;}
+a:not([class]){color:var(--sk-dim);}
+a:not([class]):hover{color:var(--sk-white);}
+
+/* chips read as hairline pills, not grey text */
+.chip{border:1px solid var(--sk-line)!important;background:transparent!important;}
+.chip.on,.chip[aria-selected="true"]{
+  background:rgba(110,155,255,.14)!important;
+  border-color:var(--sk-accent-soft)!important;
+  color:var(--sk-white)!important;
+}
+
+/* light-filled buttons keep dark text — restate so nothing above steals them */
+.btn-white{background:var(--sk-white)!important;color:#06080D!important;border-color:var(--sk-white)!important;}
+.btn-white:hover{background:#fff!important;}
+.vir,.badge.solid{color:#06080D!important;}
+
+/* the skip link is white-on-dark by default; it sits on a light chip */
+.coc-skip{background:var(--sk-white)!important;color:#06080D!important;}
+
+
+/* last four stragglers: monthly figure, step numerals, calc label, email link */
+.pm b,.pm,.pr-pm,.pr-pm b,.price-row b,.cr-label,.fn,.f-contact a,a[href^="mailto:"]{
+  color:var(--sk-accent)!important;
+}
+.cr-val,.cr-val b{color:var(--sk-white)!important;}
+
+/* ============================================================
+   CALL BUTTON — blue, matching the field's single accent
+   (was a green gradient left over from the WhatsApp palette)
+   ============================================================ */
+.coc-call{border-color:var(--sk-accent-soft)!important;color:var(--sk-white)!important;}
+.coc-call::before{background:linear-gradient(145deg,#6E9BFF,#2E54BE)!important;}
+.coc-call.armed{
+  border-color:var(--sk-accent)!important;
+  box-shadow:0 6px 22px -6px rgba(110,155,255,.55)!important;
+}
+.coc-call.armed .cc-arm,.coc-call.armed .cc-num{color:#06080D!important;}
+.coc-call.armed svg{color:#06080D!important;}
+.coc-call .cc-ring{border-color:rgba(110,155,255,.6)!important;}
+.coc-call.armed .cc-ring{border:2px solid rgba(110,155,255,.6)!important;}
+
+/* ============================================================
+   SPLASH — video framed on a flat black stage
+   ============================================================ */
+.coc-splash{background:#000!important;}
+.coc-splash-atmo{display:none!important;}   /* no coloured wash behind the frame */
+.coc-splash-card{
+  padding:14px!important;
+  background:#0A0A0A!important;
+  border:1px solid rgba(232,234,230,.16)!important;
+  border-radius:20px!important;
+  box-shadow:0 40px 120px -40px rgba(0,0,0,.9),0 0 0 1px rgba(0,0,0,.6)!important;
+}
+.coc-splash-card video{border-radius:12px!important;background:#000!important;}
+.coc-splash-skip{color:var(--sk-white)!important;border-color:var(--sk-line)!important;}
+.coc-splash-bar{background:var(--sk-accent)!important;}
+
+
+/* ============================================================
+   SECONDARY BUTTONS — a .14 hairline at 0.55px was effectively
+   invisible until hover, so ghost buttons read as plain text.
+   They now carry a resting fill and a border you can actually
+   see; hover becomes an enhancement rather than the reveal.
+   ============================================================ */
+.btn-outline,.btn-ghost,.btn-ghost-light,.btn-ghost-blue,
+.ti-nav .back,.btn-white-outline{
+  background:rgba(232,234,230,.08)!important;
+  border:1px solid rgba(232,234,230,.34)!important;
+  color:var(--sk-white)!important;
+}
+.btn-outline:hover,.btn-ghost:hover,.btn-ghost-light:hover,
+.btn-ghost-blue:hover,.ti-nav .back:hover{
+  background:rgba(110,155,255,.16)!important;
+  border-color:var(--sk-accent)!important;
+  color:#fff!important;
+}
+/* filled buttons must keep dark labels — restated last so nothing steals them */
+.btn-blue,.btn-grad,.btn-primary,.btn-vd,.ti-nav .next,.sp-go{
+  color:#06080D!important;
+}
+.btn-white{color:#06080D!important;}
+/* WhatsApp keeps its own green — it's a recognised brand cue */
+.btn-wa{
+  background:linear-gradient(145deg,#2FDC74,#1DA851)!important;
+  color:#06210F!important;border:0!important;
+}
+.btn-wa:hover{background:linear-gradient(145deg,#46E88A,#25C061)!important;}
+
+/* filter chips: visible at rest */
+.chip{
+  background:rgba(232,234,230,.07)!important;
+  border:1px solid rgba(232,234,230,.28)!important;
+  color:var(--sk-dim)!important;
+}
+.chip:hover{border-color:var(--sk-accent-soft)!important;color:var(--sk-white)!important;}
+.chip.on,.chip[aria-selected="true"]{
+  background:rgba(110,155,255,.20)!important;
+  border-color:var(--sk-accent)!important;
+  color:#fff!important;
+}
+
+
+/* ============================================================
+   LIGHT PANELS LEFT OVER FROM THE RETAIL BUILD
+   These were white/near-white surfaces designed for a light page.
+   On the dark field they read as grey slabs. Buttons that are
+   *meant* to be light (.btn-white, .btn-blue, skip link) are
+   deliberately excluded.
+   ============================================================ */
+.stats-row,#stockSource,.stock-source,.strip,.band,.panel-light{
+  background:rgba(232,234,230,.055)!important;
+  border:1px solid var(--sk-line)!important;
+  color:var(--sk-white)!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  box-shadow:none!important;
+}
+.stats-row{border-radius:18px!important;}
+.stats-row .sn,.stats-row .stat-num{color:var(--sk-accent)!important;}
+.stats-row .sl,.stats-row .stat-label{color:var(--sk-muted)!important;}
+
+/* card image well — was #E4E7EE, a light grey box behind every photo
+   and fully visible on cars with no image yet */
+.card .ph,.ph,.vcard-ph,.im-none{
+  background:#0E1117!important;
+}
+.im-none,.imn-txt{color:var(--sk-muted)!important;}
+
+
+/* ---- remaining light chips from the retail build ---------------- */
+.specs span,.card .specs span,.spec-chip,.nav-fav,.vir,.fav-btn,.badge-light{
+  background:rgba(232,234,230,.08)!important;
+  border:1px solid var(--sk-line)!important;
+  color:var(--sk-dim)!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+.vir{color:var(--sk-white)!important;}
+.vir i,.vir svg{color:var(--sk-accent)!important;}
+.nav-fav{color:var(--sk-white)!important;}
+.fav-btn svg{stroke:var(--sk-white)!important;fill:none!important;}
+.fav-btn.on{background:rgba(110,155,255,.9)!important;border-color:var(--sk-accent)!important;}
+.fav-btn.on svg{fill:#fff!important;stroke:#fff!important;}
+
+/* ============================================================
+   BODY-TYPE ICONS — 3D, with a staggered flash
+   The silhouettes were flat 1.6px strokes in near-black, invisible
+   on a dark field. They now read as lit metal: a bright top edge,
+   a coloured under-glow, and a pulse that runs across the row.
+   ============================================================ */
+.cat-tile svg{
+  stroke:var(--sk-accent)!important;
+  stroke-width:1.9!important;
+  overflow:visible;
+  filter:
+    drop-shadow(0 -1px 0 rgba(255,255,255,.55))
+    drop-shadow(0 2px 1px rgba(0,0,0,.85))
+    drop-shadow(0 6px 16px rgba(110,155,255,.45));
+  transform:perspective(420px) rotateX(12deg);
+  transform-origin:50% 80%;
+  transition:transform .45s cubic-bezier(.34,1.4,.64,1),filter .45s;
+  animation:ctFlash 4.2s ease-in-out infinite;
+}
+@keyframes ctFlash{
+  0%,72%,100%{stroke:#6E9BFF;filter:drop-shadow(0 -1px 0 rgba(255,255,255,.5)) drop-shadow(0 2px 1px rgba(0,0,0,.85)) drop-shadow(0 6px 16px rgba(110,155,255,.4));}
+  80%{stroke:#CFE0FF;filter:drop-shadow(0 -1px 0 rgba(255,255,255,.95)) drop-shadow(0 2px 1px rgba(0,0,0,.9)) drop-shadow(0 10px 26px rgba(110,155,255,.85));}
+}
+/* the flash travels along the row rather than firing all at once */
+.cat-tile:nth-child(1) svg{animation-delay:0s;}
+.cat-tile:nth-child(2) svg{animation-delay:.42s;}
+.cat-tile:nth-child(3) svg{animation-delay:.84s;}
+.cat-tile:nth-child(4) svg{animation-delay:1.26s;}
+.cat-tile:nth-child(5) svg{animation-delay:1.68s;}
+.cat-tile:hover svg{
+  transform:perspective(420px) rotateX(0deg) scale(1.12)!important;
+  stroke:#CFE0FF!important;
+  filter:drop-shadow(0 -1px 0 rgba(255,255,255,.9)) drop-shadow(0 3px 2px rgba(0,0,0,.9)) drop-shadow(0 12px 30px rgba(110,155,255,.9));
+  animation-play-state:paused;
+}
+@media (prefers-reduced-motion:reduce){
+  .cat-tile svg{animation:none!important;transform:none!important;}
+}
+
+
+/* ---- last of the light slabs ------------------------------------
+   sell-flow steps, testimonial cards, the shortlist drawer panels
+   and the seller-image badge were all built for a light page. */
+.ss,.tc,.si-badge,.fav-list,.fav-foot,.fav-panel,.step,.testi .t{
+  background:rgba(232,234,230,.055)!important;
+  border:1px solid var(--sk-line)!important;
+  color:var(--sk-white)!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+.ss b,.tc b,.si-badge b,.fav-list b{color:var(--sk-white)!important;}
+.ss p,.tc p,.si-badge div,.fav-list p,.fav-foot,.fav-list{color:var(--sk-muted)!important;}
+.ss .sn{color:var(--sk-accent)!important;}
+.tc .stars,.stars{color:var(--sk-accent)!important;}
+
+
+/* ---- legibility pass -------------------------------------------
+   TruSaas can run eyebrows at 35% because its field is a flat black
+   with almost nothing else competing. On a retail page with cards
+   and photos they disappeared, so they sit brighter here. */
+.eyebrow,.sec-eyebrow,.ti-eyebrow,.wc-tag,.tag{
+  color:rgba(110,155,255,.85)!important;
+}
+.badge{color:var(--sk-white)!important;}
+.tc p,.testi p,.t p,blockquote{color:var(--sk-white)!important;}
+.who b,.tc .who b{color:var(--sk-white)!important;}
+.who span{color:var(--sk-muted)!important;}
+
+
+/* ---- final tap-target sweep (phones) ---------------------------
+   The widget's own rules carry #id specificity, so its option
+   buttons need to be addressed at the same weight. */
+@media (pointer:coarse),(max-width:760px){
+  .view-all,.more-link,a.view-all,
+  a[href*="showroom"]:not(.btn),.sec-head a{
+    min-height:44px;display:inline-flex;align-items:center;
+  }
+  #tru-afford-root button,
+  #tru-afford-root .ta-opt,
+  #tru-afford-root [class*="ta-choice"],
+  .ct-chips button,#ctCond button,.ct-f button,
+  a[href^="mailto:"],.f-contact a{
+    min-height:44px!important;
+    display:inline-flex!important;align-items:center;
+  }
+}
+
+
+/* ---- sell panel -------------------------------------------------
+   Three stacked blue gradients at 55-62% made this the loudest block
+   on a near-black page, and buried the logo watermark behind it.
+   Same composition, dialled right back so the mark reads and the
+   panel sits with the other surfaces. */
+.sell-img{
+  background:
+    radial-gradient(110% 80% at 22% 12%, rgba(86,128,240,.20), transparent 62%),
+    radial-gradient(95% 75% at 88% 96%, rgba(52,92,205,.16), transparent 60%),
+    linear-gradient(150deg, #0C1120 0%, #0E1526 55%, #0A0E1A 100%)!important;
+  border:1px solid var(--sk-line)!important;
+}
+.sell-img::before{
+  opacity:.30!important;
+  filter:saturate(.2) brightness(1.5);
+}
+.si-badge{
+  background:rgba(10,14,26,.72)!important;
+  border:1px solid rgba(110,155,255,.28)!important;
+  backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;
+}
+.si-badge .sb1{color:var(--sk-accent)!important;}
+.si-badge .sb2{color:var(--sk-white)!important;}
+
+
+/* ---- splash video: a light overlay ------------------------------
+   The clip was punching out of the black frame. A gentle knock-down
+   plus a soft vignette settles it into the stage without dulling it. */
+.coc-splash-card video{
+  filter:brightness(.90) contrast(1.04) saturate(.98);
+}
+/* vignette sits above the video, below the frame edge */
+.coc-splash-refl{
+  position:absolute!important;inset:14px!important;
+  border-radius:12px!important;
+  pointer-events:none!important;z-index:3!important;
+  background:
+    radial-gradient(120% 100% at 50% 40%, transparent 52%, rgba(0,0,0,.34) 100%),
+    linear-gradient(180deg, rgba(6,8,13,.16) 0%, transparent 34%, rgba(6,8,13,.26) 100%)!important;
+  opacity:1!important;
+}
+
+
+/* ---- sell panel: brand clip behind the badge --------------------
+   The panel was a flat gradient block. It now runs the brand clip,
+   knocked back under a veil so the badge stays legible and the
+   panel doesn't compete with the stock grid. */
+.sell-img{position:relative;overflow:hidden;}
+.sell-img .si-vid{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:block;z-index:0;
+  filter:brightness(.86) saturate(.95) contrast(1.02);
+}
+.sell-img .si-veil{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(130% 105% at 50% 45%, transparent 58%, rgba(6,8,13,.42) 100%),
+    linear-gradient(160deg, rgba(10,14,26,.30) 0%, transparent 45%, rgba(6,8,13,.46) 100%);
+}
+/* No watermark over the clip — the video already carries the logo, so
+   layering the mark on top put the brand over itself. */
+.sell-img::before{display:none!important;}
+.sell-img .si-badge{position:relative;z-index:3;}
+
+/* data saver / reduced motion: poster frame only, no loop */
+@media (prefers-reduced-motion:reduce){
+  .sell-img .si-vid{display:none;}
+}
+
+
+/* ============================================================
+   TRADE-IN FACTOR ICONS — blue, 3D, animated
+   Flat white strokes in a grey square. Now lit blue chips with a
+   bevelled tile, a perspective tilt and a pulse that runs down
+   the list; the active factor lifts brighter still.
+   ============================================================ */
+.ti-factor .ic,.wc-icon{
+  background:linear-gradient(160deg, rgba(110,155,255,.30), rgba(35,65,154,.18) 55%, rgba(10,14,26,.9))!important;
+  border:1px solid rgba(110,155,255,.34)!important;
+  border-radius:11px!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    0 6px 16px -8px rgba(110,155,255,.55)!important;
+  transform:perspective(320px) rotateX(10deg);
+  transform-origin:50% 85%;
+  transition:transform .45s cubic-bezier(.34,1.4,.64,1),box-shadow .45s,background .45s;
+  animation:tiIcon 4.6s ease-in-out infinite;
+}
+.ti-factor svg,.wc-icon svg{
+  stroke:#9CC0FF!important;
+  stroke-width:1.9!important;
+  overflow:visible;
+  filter:
+    drop-shadow(0 -1px 0 rgba(255,255,255,.45))
+    drop-shadow(0 2px 3px rgba(0,0,0,.8))
+    drop-shadow(0 0 10px rgba(110,155,255,.55));
+  transition:stroke .4s,filter .4s;
+}
+@keyframes tiIcon{
+  0%,74%,100%{
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.55),0 6px 16px -8px rgba(110,155,255,.5);
+    transform:perspective(320px) rotateX(10deg);
+  }
+  82%{
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(0,0,0,.6),0 10px 26px -8px rgba(110,155,255,.95);
+    transform:perspective(320px) rotateX(2deg) translateY(-2px);
+  }
+}
+/* the pulse walks down the list rather than firing together */
+.ti-factor:nth-child(1) .ic{animation-delay:0s;}
+.ti-factor:nth-child(2) .ic{animation-delay:.5s;}
+.ti-factor:nth-child(3) .ic{animation-delay:1s;}
+.ti-factor:nth-child(4) .ic{animation-delay:1.5s;}
+
+.ti-factor:hover .ic,.ti-factor.hot .ic,.wc:hover .wc-icon{
+  transform:perspective(320px) rotateX(0deg) scale(1.08)!important;
+  background:linear-gradient(160deg, rgba(110,155,255,.55), rgba(35,65,154,.32) 55%, rgba(10,14,26,.9))!important;
+  border-color:var(--sk-accent)!important;
+  animation-play-state:paused;
+}
+.ti-factor:hover svg,.ti-factor.hot svg,.wc:hover .wc-icon svg{
+  stroke:#DCE9FF!important;
+  filter:drop-shadow(0 -1px 0 rgba(255,255,255,.7)) drop-shadow(0 2px 3px rgba(0,0,0,.85)) drop-shadow(0 0 16px rgba(110,155,255,.95));
+}
+@media (prefers-reduced-motion:reduce){
+  .ti-factor .ic,.wc-icon{animation:none!important;transform:none!important;}
+}
+
+/* why-us icons walk on their own offset so the two rows don't sync */
+.why-grid .wc:nth-child(1) .wc-icon{animation-delay:.25s;}
+.why-grid .wc:nth-child(2) .wc-icon{animation-delay:.75s;}
+.why-grid .wc:nth-child(3) .wc-icon{animation-delay:1.25s;}
+.why-grid .wc:nth-child(4) .wc-icon{animation-delay:1.75s;}
+.why-grid .wc:nth-child(5) .wc-icon{animation-delay:2.25s;}
+.why-grid .wc:nth-child(6) .wc-icon{animation-delay:2.75s;}
+/* these tiles are larger than the trade-in chips */
+.wc-icon{width:52px!important;height:52px!important;border-radius:14px!important;
+  display:flex!important;align-items:center;justify-content:center;}
+.wc-icon svg{width:22px!important;height:22px!important;}
+
+
+/* ============================================================
+   CTA BUTTONS — embossed 3D label
+   Both primary CTAs carry dark text on a light fill, so the type
+   is cut into the button: a bright edge above, shadow below, and
+   a soft cast underneath. The whole button presses on :active.
+   ============================================================ */
+.btn-blue,.btn-wa,.btn-grad,.btn-primary,.btn-vd,.ti-nav .next{
+  font-weight:800!important;
+  letter-spacing:.005em!important;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.55),
+    0 -1px 0 rgba(0,0,0,.22),
+    0 2px 4px rgba(0,0,0,.28)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    inset 0 -2px 0 rgba(0,0,0,.22),
+    0 8px 20px -10px rgba(0,0,0,.75)!important;
+  transition:transform .18s cubic-bezier(.34,1.4,.64,1),box-shadow .18s,filter .25s!important;
+}
+.btn-blue:hover,.btn-wa:hover,.btn-grad:hover,.btn-vd:hover,.ti-nav .next:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.6),
+    inset 0 -2px 0 rgba(0,0,0,.24),
+    0 14px 28px -12px rgba(0,0,0,.8)!important;
+}
+.btn-blue:active,.btn-wa:active,.btn-grad:active,.btn-vd:active,.ti-nav .next:active{
+  transform:translateY(1px);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.2),
+    0 3px 8px -6px rgba(0,0,0,.8)!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.35),0 -1px 0 rgba(0,0,0,.3)!important;
+}
+@media (prefers-reduced-motion:reduce){
+  .btn-blue,.btn-wa,.btn-grad,.btn-vd,.ti-nav .next{transition:none!important;}
+  .btn-blue:hover,.btn-wa:hover,.btn-grad:hover,.btn-vd:hover{transform:none;}
+}
+
+
+/* ============================================================
+   CALL BUTTON — filled, embossed, and it pops
+   It was a hairline ghost in a dark bar: the single highest-intent
+   action on the page, styled like a footer link. Now a filled
+   accent pill with the same 3D label as the CTAs, a slow breathing
+   ring to catch the eye, and a real press.
+   ============================================================ */
+.coc-call{
+  background:linear-gradient(145deg,#8FB4FF 0%,#6E9BFF 45%,#2E54BE 100%)!important;
+  border:1px solid rgba(180,205,255,.55)!important;
+  color:#06121F!important;
+  font-weight:800!important;
+  padding:9px 18px!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.5),0 -1px 0 rgba(0,0,0,.18)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.6),
+    inset 0 -2px 0 rgba(0,0,0,.25),
+    0 6px 18px -6px rgba(110,155,255,.75)!important;
+  transition:transform .18s cubic-bezier(.34,1.4,.64,1),box-shadow .22s,filter .22s!important;
+}
+.coc-call svg{color:#06121F!important;}
+.coc-call .cc-num b{color:#06121F!important;}
+.coc-call:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.7),
+    inset 0 -2px 0 rgba(0,0,0,.26),
+    0 12px 26px -8px rgba(110,155,255,.95)!important;
+}
+.coc-call:active{
+  transform:translateY(1px);
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.4),0 3px 8px -6px rgba(0,0,0,.7)!important;
+}
+/* the fill is already there, so the armed sweep just brightens */
+.coc-call::before{
+  background:linear-gradient(145deg,#DCE9FF,#8FB4FF)!important;
+}
+.coc-call.armed{
+  border-color:#DCE9FF!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 26px -8px rgba(110,155,255,1)!important;
+}
+.coc-call.armed .cc-arm,.coc-call.armed .cc-num,.coc-call.armed svg{color:#06121F!important;}
+
+/* slow breathing ring — attention without a flashing badge */
+.coc-call .cc-ring{
+  border:2px solid rgba(143,180,255,.75)!important;
+  animation:ccBreathe 3.2s ease-out infinite;
+}
+@keyframes ccBreathe{
+  0%{transform:scale(1);opacity:.55;}
+  70%,100%{transform:scale(1.28);opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .coc-call .cc-ring{animation:none!important;opacity:0;}
+  .coc-call{transition:none!important;}
+  .coc-call:hover{transform:none;}
+}
+
+
+/* ============================================================
+   WHITE CTA — same 3D treatment, kept white
+   On a light fill the emboss inverts: the highlight sits *below*
+   each glyph so the type reads as pressed into the surface, and
+   the bevel runs bright at the top edge into shadow at the base.
+   ============================================================ */
+.btn-white{
+  background:linear-gradient(175deg,#FFFFFF 0%,#EDEFEA 55%,#DADCD6 100%)!important;
+  border:1px solid rgba(255,255,255,.9)!important;
+  color:#0A0E17!important;
+  font-weight:800!important;
+  letter-spacing:.005em!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.95),0 -1px 0 rgba(0,0,0,.14)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -2px 0 rgba(0,0,0,.16),
+    0 8px 20px -10px rgba(0,0,0,.8)!important;
+  transition:transform .18s cubic-bezier(.34,1.4,.64,1),box-shadow .22s,filter .22s!important;
+}
+.btn-white:hover{
+  background:linear-gradient(175deg,#FFFFFF 0%,#F5F6F2 55%,#E4E6E0 100%)!important;
+  transform:translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -2px 0 rgba(0,0,0,.18),
+    0 14px 28px -12px rgba(0,0,0,.85)!important;
+}
+.btn-white:active{
+  transform:translateY(1px);
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.5),
+    0 3px 8px -6px rgba(0,0,0,.8)!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.7)!important;
+}
+@media (prefers-reduced-motion:reduce){
+  .btn-white{transition:none!important;}
+  .btn-white:hover{transform:none;}
+}
+
+
+/* ============================================================
+   IDENTITY PASS — display font + calm
+   Bricolage Grotesque: a characterful humanist grotesque, warm and
+   slightly irregular, premium without being clinical. Body stays
+   DM Sans, eyebrows IBM Plex Mono.
+   ============================================================ */
+h1,h2,h3,.hero h1,.sec-h,.ti h2,.wc h3,.card-body h3,
+.cb-name,.cb-title,.pr,.pr-main{
+  font-family:'Bricolage Grotesque','DM Sans',system-ui,sans-serif!important;
+}
+h1,.hero h1{font-weight:700!important;letter-spacing:-.03em!important;}
+h2,.sec-h,.ti h2{font-weight:700!important;letter-spacing:-.028em!important;}
+h3,.wc h3,.card-body h3{font-weight:600!important;letter-spacing:-.015em!important;}
+
+/* TruAfford widget hardcodes Inter — bring it into the family */
+#tru-afford-root,#tru-afford-root *{font-family:'DM Sans',system-ui,-apple-system,sans-serif!important;}
+
+/* ---- calm the perpetual ambient motion --------------------------
+   Entrances and the icon flashes / call ring you asked for stay.
+   These loops ran forever and made the dark field feel restless. */
+.fab-btn,.fab-inner,.fab-rail .fab-btn{animation:none!important;}
+#tc-fab *{animation:none!important;}
+.orb,[class*="orb"]{animation:none!important;}
+/* every <i> here is a decorative status dot (real icons are SVG),
+   so calming them all stops the ambient blinking in one line; the
+   SVG icon-flashes and the call ring (a span) keep animating. */
+i,.dot,.live-dot,[class*="pulse-dot"]{animation:none!important;}
+
+
+/* ---- TruChat: a slight breathing glow (blue, matched) ---------- */
+#tc-fab{animation:cocChatBreath 3.4s ease-in-out infinite!important;}
+@keyframes cocChatBreath{
+  0%,100%{box-shadow:0 8px 22px -8px rgba(6,8,13,.6), 0 0 0 0 rgba(110,155,255,0);}
+  50%{box-shadow:0 10px 26px -6px rgba(6,8,13,.6), 0 0 16px 3px rgba(110,155,255,.4);}
+}
+@media (prefers-reduced-motion:reduce){#tc-fab{animation:none!important;}}

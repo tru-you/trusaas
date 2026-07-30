@@ -1,8 +1,0 @@
-{
-  "name": "Truflow Light",
-  "description": "A unified platform for independent dealers with mobile uploads, real-time inventory, sales tracking, accounting, and automated document signing.",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}

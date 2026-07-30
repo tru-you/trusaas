@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Halstead Motor Co. — Welcome</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+
+<!-- Three.js & GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<style>
+:root {
+  --bg: #020408;
+  --blue: #0088FF;
+  --blue-soft: #70BAFF;
+  --blue-glow: rgba(0, 136, 255, 0.45);
+  --border: rgba(255, 255, 255, 0.1);
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: #f1f5f9;
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── WEBGL CANVAS ───────────────────────────────── */
+#webgl-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+/* ─── OVERLAYS ───────────────────────────────────── */
+.ambient-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: 
+    radial-gradient(circle at 50% 40%, transparent 15%, rgba(2, 4, 8, 0.85) 75%),
+    linear-gradient(to bottom, rgba(2, 4, 8, 0.5), transparent 30%, transparent 70%, var(--bg));
+}
+
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(circle at 50% 50%, black 40%, transparent 80%);
+}
+
+/* ─── HUD FRAME ──────────────────────────────────── */
+.hud-frame {
+  position: fixed;
+  inset: 24px;
+  z-index: 10;
+  pointer-events: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--blue-soft);
+  text-transform: uppercase;
+}
+
+.hud-tag {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(2, 4, 8, 0.75);
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+.hud-tl { top: 0; left: 0; }
+.hud-tr { top: 0; right: 0; }
+.hud-bl { bottom: 0; left: 0; }
+.hud-br { bottom: 0; right: 0; }
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 10px var(--blue);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ─── SPLASH VIEWPORT ────────────────────────────── */
+.splash-viewport {
+  position: relative;
+  z-index: 5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 80px 24px 60px;
+  text-align: center;
+}
+
+/* TOP AREA TAGLINE BADGE */
+.top-tagline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 99px;
+  background: rgba(0, 136, 255, 0.1);
+  border: 1px solid rgba(0, 136, 255, 0.3);
+  color: var(--blue-soft);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px rgba(0, 136, 255, 0.2);
+}
+
+.brand-header {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.brand-title {
+  font-size: clamp(48px, 9vw, 100px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  margin-bottom: 16px;
+  user-select: none;
+}
+
+/* Metallic Silver "Halstead" */
+.brand-title .halstead {
+  background: linear-gradient(180deg, #FFFFFF 0%, #E2E8F0 25%, #94A3B8 50%, #475569 80%, #1E293B 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
+}
+
+/* Glowing Sapphire Blue "Motor Co." */
+.brand-title .motorco {
+  background: linear-gradient(180deg, #E0F2FE 0%, #38BDF8 25%, #0088FF 55%, #0055CC 85%, #003399 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px var(--blue-glow));
+}
+
+.cta-panel {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.enter-btn {
+  background: linear-gradient(135deg, #0088FF 0%, #0044CC 100%);
+  color: #FFFFFF;
+  border: none;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  padding: 20px 52px;
+  border-radius: 99px;
+  cursor: pointer;
+  box-shadow: 0 0 35px rgba(0, 136, 255, 0.45);
+  transition: transform 0.25s, box-shadow 0.25s;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.enter-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 0 50px rgba(0, 136, 255, 0.7);
+}
+
+@media (max-width: 768px) {
+  .hud-frame { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- WEBGL 3D BACKGROUND STAGE -->
+<canvas id="webgl-canvas"></canvas>
+
+<!-- OVERLAYS -->
+<div class="ambient-vignette"></div>
+<div class="grid-overlay"></div>
+
+<!-- HUD FRAME -->
+<div class="hud-frame">
+  <div class="hud-tag hud-tl"><span class="pulse-dot"></span> HALSTEAD MOTOR CO. // 3D STAGE</div>
+  <div class="hud-tag hud-tr">SYS // 60 FPS</div>
+  <div class="hud-tag hud-bl">PREMIUM USED VEHICLES</div>
+  <div class="hud-tag hud-br">DRAG TO ROTATE 3D CORE</div>
+</div>
+
+<!-- SPLASH VIEWPORT -->
+<main class="splash-viewport">
+
+  <header class="brand-header" id="brandHeader">
+    <!-- TOP AREA TAGLINE BADGE -->
+    <div class="top-tagline-badge">
+      <span class="pulse-dot"></span> Top Rated // Premium Used Vehicles
+    </div>
+
+    <!-- MAIN BRAND TITLE -->
+    <h1 class="brand-title">
+      <span class="halstead">Halstead</span> <span class="motorco">Motor Co.</span>
+    </h1>
+  </header>
+
+  <!-- SINGLE PRIMARY CTA -->
+  <div class="cta-panel" id="ctaPanel">
+    <button class="enter-btn" onclick="alert('Welcome to Halstead Motor Co. Showroom')">
+      Enter Showroom →
+    </button>
+  </div>
+
+</main>
+
+<script>
+/* ── THREE.JS 3D ROTATING SHIELD ENGINE ──────────── */
+const canvas = document.getElementById('webgl-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 13;
+
+// Lighting Setup
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const blueLight = new THREE.PointLight(0x0088ff, 3.5, 40);
+blueLight.position.set(5, 5, 5);
+scene.add(blueLight);
+
+const chromeLight = new THREE.PointLight(0xffffff, 2.5, 40);
+chromeLight.position.set(-5, -5, -2);
+scene.add(chromeLight);
+
+// Group Container
+const group = new THREE.Group();
+scene.add(group);
+
+// Orbiting Torus Rings
+const ringGeo1 = new THREE.TorusGeometry(3.2, 0.035, 16, 100);
+const ringMat1 = new THREE.MeshStandardMaterial({
+  color: 0x0088ff,
+  emissive: 0x0055cc,
+  emissiveIntensity: 0.8,
+  roughness: 0.2
+});
+const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
+ring1.rotation.x = Math.PI / 3;
+group.add(ring1);
+
+const ringGeo2 = new THREE.TorusGeometry(4.0, 0.02, 16, 100);
+const ringMat2 = new THREE.MeshBasicMaterial({ color: 0x0088ff, wireframe: true, transparent: true, opacity: 0.35 });
+const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
+ring2.rotation.y = Math.PI / 4;
+group.add(ring2);
+
+// Center 3D 'H' Shield Monolith
+const shape = new THREE.Shape();
+shape.moveTo(-1.8, 2);
+shape.lineTo(-1.0, 2);
+shape.lineTo(-1.0, 0.5);
+shape.lineTo(1.0, 0.5);
+shape.lineTo(1.0, 2);
+shape.lineTo(1.8, 2);
+shape.lineTo(1.8, -2);
+shape.lineTo(1.0, -2);
+shape.lineTo(1.0, -0.5);
+shape.lineTo(-1.0, -0.5);
+shape.lineTo(-1.0, -2);
+shape.lineTo(-1.8, -2);
+shape.closePath();
+
+const extrudeSettings = { depth: 0.4, bevelEnabled: true, bevelSegments: 5, steps: 2, bevelSize: 0.1, bevelThickness: 0.1 };
+const coreGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+coreGeo.center();
+
+const chromeMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.1, metalness: 0.95 });
+const blueMat = new THREE.MeshStandardMaterial({ color: 0x0088ff, emissive: 0x0044cc, emissiveIntensity: 0.5, roughness: 0.15, metalness: 0.5 });
+
+const coreMesh = new THREE.Mesh(coreGeo, [chromeMat, blueMat]);
+group.add(coreMesh);
+
+const wireMat = new THREE.MeshBasicMaterial({ color: 0x0088ff, wireframe: true, transparent: true, opacity: 0.35 });
+const wireMesh = new THREE.Mesh(coreGeo, wireMat);
+group.add(wireMesh);
+
+// Particles
+const particleCount = 180;
+const particleGeo = new THREE.BufferGeometry();
+const positions = new Float32Array(particleCount * 3);
+
+for (let i = 0; i < particleCount * 3; i += 3) {
+  positions[i] = (Math.random() - 0.5) * 30;
+  positions[i + 1] = (Math.random() - 0.5) * 30;
+  positions[i + 2] = (Math.random() - 0.5) * 30;
+}
+
+particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+const particleMat = new THREE.PointsMaterial({ size: 0.045, color: 0x0088ff, transparent: true, opacity: 0.5 });
+const particles = new THREE.Points(particleGeo, particleMat);
+scene.add(particles);
+
+// Interactive Drag-to-Rotate
+let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
+let dragVelocity = { x: 0, y: 0 };
+
+window.addEventListener('pointerdown', (e) => {
+  isDragging = true;
+  previousMousePosition = { x: e.clientX, y: e.clientY };
+});
+
+window.addEventListener('pointermove', (e) => {
+  if (!isDragging) return;
+  const deltaMove = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
+  dragVelocity.x = deltaMove.x * 0.005;
+  dragVelocity.y = deltaMove.y * 0.005;
+  group.rotation.y += dragVelocity.x;
+  group.rotation.x += dragVelocity.y;
+  previousMousePosition = { x: e.clientX, y: e.clientY };
+});
+
+window.addEventListener('pointerup', () => isDragging = false);
+
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const elapsedTime = clock.getElapsedTime();
+
+  if (!isDragging) {
+    dragVelocity.x *= 0.95;
+    dragVelocity.y *= 0.95;
+    group.rotation.y += dragVelocity.x + 0.012; // Continuous 3D rotation
+    group.rotation.x += dragVelocity.y;
+  }
+
+  ring1.rotation.z = elapsedTime * 0.2;
+  ring2.rotation.z = -elapsedTime * 0.15;
+
+  group.position.y = Math.sin(elapsedTime * 0.8) * 0.25;
+  particles.rotation.y = elapsedTime * 0.015;
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* GSAP Entrance Timeline */
+gsap.timeline({ defaults: { ease: 'power3.out' } })
+  .to('#brandHeader', { opacity: 1, y: 0, duration: 1, delay: 0.3 })
+  .to('#ctaPanel', { opacity: 1, y: 0, duration: 0.8 }, '-=0.5');
+</script>
+</body>
+</html>

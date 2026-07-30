@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════
+   GLOBAL ENHANCEMENTS — TruDealer & All Demo Sites
+   Premium design layer: scroll reveal, cursors, scrollbars,
+   ambient animations, hover effects
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Smooth scrolling & custom scrollbar ── */
+html { scroll-behavior: smooth; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #030508; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0,242,254,0.5), rgba(79,227,220,0.2));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0,242,254,0.7); }
+
+/* ── Global Cursor Glow ── */
+@media (pointer: fine) {
+  body { cursor: none; }
+  .global-cursor-glow {
+    position: fixed;
+    width: 28px; height: 28px;
+    border: 1.5px solid rgba(0, 242, 254, 0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999999;
+    transition: transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                background 0.18s ease,
+                border-color 0.18s ease,
+                opacity 0.3s ease;
+    mix-blend-mode: screen;
+    opacity: 0;
+    will-change: transform;
+  }
+  .global-cursor-glow.active { opacity: 1; }
+  .global-cursor-glow.hover {
+    transform: scale(2.5) !important;
+    background: rgba(0, 242, 254, 0.1);
+    border-color: rgba(0, 242, 254, 0.6);
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+  }
+  .global-cursor-dot {
+    position: fixed;
+    width: 4px; height: 4px;
+    background: #00F2FE;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999999;
+    box-shadow: 0 0 6px #00F2FE, 0 0 12px rgba(0,242,254,0.6);
+    opacity: 0;
+    transition: opacity 0.3s;
+    will-change: transform;
+  }
+  .global-cursor-dot.active { opacity: 1; }
+}
+
+/* ── Global Scroll Reveal ── */
+/* These selectors match common card/section patterns across all demos */
+.ge-reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ge-reveal.ge-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ge-reveal.ge-delay-1 { transition-delay: 0.08s; }
+.ge-reveal.ge-delay-2 { transition-delay: 0.16s; }
+.ge-reveal.ge-delay-3 { transition-delay: 0.24s; }
+.ge-reveal.ge-delay-4 { transition-delay: 0.32s; }
+
+/* ── Image hover micro-interaction ── */
+a img, .vcard img, .portal-card img, .case-preview img, .prod-card img {
+  transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+a:hover img, .vcard:hover img, .portal-card:hover img {
+  transform: scale(1.04);
+}
+
+/* ── Generic card hover lift (works on any .card, .vcard, .portal-card) ── */
+.vcard, .portal-card, .prod-card, .why-card-tcsa, .step {
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ── Glowing section dividers ── */
+.ge-glow-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,242,254,0.4) 30%, rgba(0,242,254,0.4) 70%, transparent);
+  margin: 0;
+  box-shadow: 0 0 20px rgba(0,242,254,0.15);
+}
+
+/* ── Scroll progress bar (top of page) ── */
+.ge-scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, #00F2FE, #4FE3DC, #7b8eff);
+  z-index: 99999;
+  box-shadow: 0 0 8px rgba(0,242,254,0.6);
+  pointer-events: none;
+}
+
+/* ── Ambient floating particles container ── */
+.ge-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.ge-particle {
+  position: absolute;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  background: rgba(0, 242, 254, 0.6);
+  box-shadow: 0 0 6px rgba(0,242,254,0.4);
+  animation: ge-particle-float linear infinite;
+}
+@keyframes ge-particle-float {
+  0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-20px) translateX(var(--drift, 30px)); opacity: 0; }
+}
+
+/* ── Button hover glow pulse ── */
+.btn-primary:focus-visible,
+.btn-grad:focus-visible,
+.btn-blue:focus-visible {
+  outline: 2px solid rgba(0,242,254,0.8);
+  outline-offset: 3px;
+}
+
+/* ── Page load fade-in ── */
+@keyframes ge-page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+body {
+  animation: ge-page-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Hero section ambient shimmer line ── */
+@keyframes ge-shimmer-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.ge-shimmer-line {
+  position: absolute;
+  top: 0; left: 0;
+  width: 33%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  pointer-events: none;
+  animation: ge-shimmer-sweep 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation-delay: 2s;
+}
+
+/* ── "LIVE" pulse dot enhancement ── */
+@keyframes ge-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,242,254,0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(0,242,254,0); }
+}
+.dot, .nav-status .dot, .mc-live .dot {
+  animation: ge-live-pulse 2s ease-out infinite !important;
+}
+
+/* ── Reduce motion overrides ── */
+@media (prefers-reduced-motion: reduce) {
+  .ge-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .ge-particle { display: none; }
+  .ge-shimmer-line { display: none; }
+  body { animation: none; }
+  img, .vcard, .portal-card, .prod-card, .why-card-tcsa, .step { transition: none; }
+}

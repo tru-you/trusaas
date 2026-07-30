@@ -1,0 +1,78 @@
+/* ═══════════════════════════════════════════════════════
+   Ridgeline Motors (Austin, TX) — Premium Upgrade Layer
+   Orange/amber muscle truck energy, bold & rugged
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Brand color overrides (orange/amber theme) ── */
+:root {
+  --rdg-orange: #FF7A2F;
+  --rdg-amber: #FFB347;
+  --rdg-dark: #0A1020;
+}
+
+/* ── Scroll progress bar (orange themed) ── */
+.ge-scroll-progress {
+  background: linear-gradient(90deg, #FF7A2F, #FFB347, #FF9A5C) !important;
+  box-shadow: 0 0 10px rgba(255, 122, 47, 0.6) !important;
+}
+
+/* ── Hero: ambient glow (orange) ── */
+header.hero, .hero, #hero {
+  position: relative;
+  overflow: hidden;
+}
+header.hero::before, .hero::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(255,122,47,0.12) 0%, transparent 70%);
+  top: 20%; right: -100px;
+  pointer-events: none;
+  animation: rdg-orb-pulse 6s ease-in-out infinite alternate;
+}
+@keyframes rdg-orb-pulse {
+  0%   { opacity: 0.5; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1.15); }
+}
+
+/* ── Portal/feature cards orange hover ── */
+.portal-card:hover, .wk:hover {
+  border-color: rgba(255, 122, 47, 0.4) !important;
+  box-shadow:
+    0 24px 60px -20px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(255, 122, 47, 0.2),
+    0 0 40px -15px rgba(255, 122, 47, 0.2) !important;
+}
+
+/* ── Vehicle card hover (orange accent) ── */
+.vcard:hover {
+  border-color: rgba(255, 122, 47, 0.3) !important;
+  box-shadow: 0 20px 50px -16px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,122,47,0.2) !important;
+}
+
+/* ── Eyebrow text (US orange) ── */
+.eyebrow, .sec-eyebrow, .layer-num {
+  color: var(--rdg-orange, #FF7A2F) !important;
+  text-shadow: 0 0 20px rgba(255, 122, 47, 0.3);
+}
+
+/* ── Stats glow (orange) ── */
+.stat .n, .stat-num {
+  text-shadow: 0 0 30px rgba(255, 122, 47, 0.4) !important;
+}
+
+/* ── CTA primary button (orange glow) ── */
+.btn-primary:hover, .btn-grad:hover {
+  box-shadow: 0 12px 35px -8px rgba(255, 122, 47, 0.55) !important;
+}
+
+/* ── Scrollbar (orange themed) ── */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255,122,47,0.5), rgba(255,179,71,0.2)) !important;
+}
+
+/* ── Ambient floating particles (orange) ── */
+.ge-particle {
+  background: rgba(255, 122, 47, 0.5) !important;
+  box-shadow: 0 0 6px rgba(255,122,47,0.3) !important;
+}

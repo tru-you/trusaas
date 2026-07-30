@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TruChat — Dual-Bot Demo Template | TruSaaS</title>
+<style>
+  /* Page styling — replace with the client's actual site or remove entirely. */
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:#0a0f1a;color:#fff;min-height:100vh;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:40px 20px}
+  .ts-logo{width:90px;height:90px;filter:drop-shadow(0 0 24px rgba(56,189,248,.4))}
+  @keyframes tsFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes tsGlow{0%,100%{filter:drop-shadow(0 0 18px rgba(56,189,248,.3))}50%{filter:drop-shadow(0 0 32px rgba(0,242,254,.6))}}
+  @keyframes tsRingSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes tsPulseRing{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.4;transform:scale(1.06)}}
+  @keyframes tsShimmer{0%{stop-color:#38BDF8}50%{stop-color:#00F2FE}100%{stop-color:#38BDF8}}
+  .ts-logo{animation:tsFloat 4s ease-in-out infinite,tsGlow 3s ease-in-out infinite}
+  h1{font-size:clamp(22px,4vw,36px);font-weight:800;letter-spacing:-.02em;text-align:center;
+     background:linear-gradient(90deg,#e0f2fe 20%,#38bdf8 50%,#00f2fe 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  p{color:#94a3b8;font-size:14px;text-align:center;max-width:440px;line-height:1.6}
+  a{color:#38bdf8}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+         color:#38bdf8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);padding:5px 12px;border-radius:999px}
+</style>
+</head>
+<body>
+
+<!-- ========================================================================
+     TruChat — Standalone Dual-Bot Demo Template
+     ========================================================================
+     HOW TO USE THIS FILE:
+       1.  Copy this file and rename it for the dealer (e.g. "TruChat-MKR.html").
+       2.  Edit the RAY_TRUCHAT_CONFIG block below with the dealer's details.
+       3.  Open in a browser — both bubbles appear (WhatsApp left, Ray right).
+       4.  This runs the LOCAL qualifier engine only (no API key needed for demo).
+           In production (WordPress plugin), it connects to the Claude backend.
+
+     WHAT TO CHANGE PER DEALER:
+       - dealerName, assistantName
+       - salesWhatsApp (digits, no +)
+       - address, hours
+       - logoUrl / fabIconUrl (the avatar and bubble image)
+       - brandPrimary / brandPrimaryDark (accent colours)
+       - greeting / greetingHuman (opening messages)
+       - catalog (demo stock — in production this comes from the stock API)
+       - brandMap (keyword → brand mapping for the local engine)
+     ========================================================================= -->
+
+<svg class="ts-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="chromeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/><stop offset="30%" stop-color="#CBD5E1"/>
+      <stop offset="65%" stop-color="#64748B"/><stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E0F2FE">
+        <animate attributeName="stop-color" values="#E0F2FE;#FFFFFF;#E0F2FE" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="35%" stop-color="#38BDF8">
+        <animate attributeName="stop-color" values="#38BDF8;#7DD3FC;#38BDF8" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="70%" stop-color="#00F2FE">
+        <animate attributeName="stop-color" values="#00F2FE;#38BDF8;#00F2FE" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#0369A1">
+        <animate attributeName="stop-color" values="#0369A1;#0EA5E9;#0369A1" dur="3s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <linearGradient id="edgeShimmer" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF">
+        <animate attributeName="offset" values="0;0.5;0" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Pulsing outer ring -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#38BDF8" stroke-width="1" opacity="0">
+    <animate attributeName="r" values="82;96;82" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0.3;0" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-width" values="2;0.5;2" dur="3s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Spinning dashed orbit -->
+  <circle cx="100" cy="100" r="88" fill="none" stroke="url(#cyanGrad)" stroke-width="1"
+    stroke-dasharray="8 18" opacity="0.35">
+    <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="20s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Main glowing ring -->
+  <circle cx="100" cy="100" r="82" fill="none" stroke="url(#cyanGrad)" stroke-width="4" filter="url(#glow)" opacity="0.6">
+    <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="100" r="82" fill="none" stroke="url(#cyanGrad)" stroke-width="2" opacity="0.9"/>
+
+  <!-- Orbiting dot -->
+  <circle cx="100" cy="18" r="3" fill="#00F2FE" filter="url(#glow)" opacity="0.9">
+    <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Left metallic T face -->
+  <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#chromeGrad)" stroke="#1E293B" stroke-width="1"/>
+  <!-- Top T face -->
+  <path d="M100 35 L145 60 L125 72 L100 58 Z" fill="#FFFFFF" opacity="0.7">
+    <animate attributeName="opacity" values="0.6;0.85;0.6" dur="3s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Right cyan S face -->
+  <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#cyanGrad)" filter="url(#glow)" opacity="0.95"/>
+  <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#cyanGrad)"/>
+
+  <!-- Centre edge shimmer -->
+  <line x1="100" y1="35" x2="100" y2="160" stroke="url(#edgeShimmer)" stroke-width="2.5" opacity="0.8">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+  </line>
+</svg>
+<div class="badge">TruChat by TruSaaS</div>
+<h1>TruChat — Dual-Bot Demo</h1>
+<p style="margin-bottom:6px">A product by <strong style="color:#fff">TruSaaS</strong> — dealer technology, sorted.</p>
+<p>Two floating chat bubbles: WhatsApp-styled (left) and AI assistant (right). Same brain, different skin. Edit the config block to rebrand for any dealer.</p>
+
+<!-- ===== DEALER CONFIG — edit this per client ===== -->
+<script>
+window.RAY_TRUCHAT_CONFIG = {
+  // ---- Dealer identity ----
+  dealerName:     "Demo Motors",        // <-- change per dealer
+  assistantName:  "Sam",                // <-- change per dealer (the AI assistant name)
+  address:        "123 Main Road, Your Town",
+  website:        "https://example.com",
+  hoursText:      "Mon–Fri: 08:00 – 17:00\nSaturday: 08:00 – 13:00\nSunday: Closed",
+
+  // ---- Contact ----
+  salesWhatsApp:  "27800000000",        // digits only, no +
+  personalWhatsApp: "",                 // optional second number
+
+  // ---- Appearance ----
+  skin:           "both",               // "both" = dual bubbles | "default" = Ray only | "whatsapp" = WA only
+  logoUrl:        "",                   // URL to dealer logo (avatar + bubble) — leave blank for fallback initial
+  fabIconUrl:     "",                   // URL for the floating bubble image (falls back to logoUrl)
+  brandPrimary:   "#e30613",            // accent colour (buttons, glows)
+  brandPrimaryDark: "#9b0410",          // darker shade
+  brandLine:      "Demo Motors",         // footer text
+
+  // ---- Bubble positions (only used in "both" mode) ----
+  waSide:   "left",       // which side for the WhatsApp bubble
+  waBottom: "24px",       // same level as the AI bubble
+  aiSide:   "right",      // which side for the AI bubble
+  aiBottom: "24px",
+
+  // ---- Greetings ----
+  greeting:       "",   // AI bubble greeting (blank = default)
+  greetingHuman:  "",   // WhatsApp bubble greeting (blank = default)
+  suggestions:    ["Browse stock", "Trade-in valuation", "Showroom hours", "Finance help"],
+
+  // ---- Demo stock (local engine — production pulls from stockApi) ----
+  stockApi:         "",   // leave blank for demo mode
+  stockApiFallback: "",
+  catalog: [
+    { id: "001", brand: "FORD",       model: "Ranger 2.0 SiT XLT D/C",    year: 2022, price: 489900, km: "42 000 km", fuel: "Diesel" },
+    { id: "002", brand: "TOYOTA",     model: "Hilux 2.8 GD-6 Legend RS",   year: 2021, price: 549900, km: "51 000 km", fuel: "Diesel" },
+    { id: "003", brand: "VOLKSWAGEN", model: "Polo 1.0 TSI Life",          year: 2023, price: 299900, km: "18 000 km", fuel: "Petrol" },
+    { id: "004", brand: "AUDI",       model: "A3 Sportback 35 TFSI",       year: 2022, price: 449900, km: "28 000 km", fuel: "Petrol" },
+    { id: "005", brand: "TOYOTA",     model: "Fortuner 2.4 GD-6 4x4",     year: 2020, price: 479900, km: "63 000 km", fuel: "Diesel" },
+    { id: "006", brand: "FORD",       model: "EcoSport 1.0 Titanium",      year: 2021, price: 269900, km: "35 000 km", fuel: "Petrol" },
+  ],
+  brandMap: {
+    "ford":       "FORD",
+    "ranger":     "FORD",
+    "ecosport":   "FORD",
+    "toyota":     "TOYOTA",
+    "hilux":      "TOYOTA",
+    "fortuner":   "TOYOTA",
+    "vw":         "VOLKSWAGEN",
+    "volkswagen": "VOLKSWAGEN",
+    "polo":       "VOLKSWAGEN",
+    "audi":       "AUDI",
+  },
+
+  // ---- Backend (leave blank for local-only demo) ----
+  chatApi:        "",     // e.g. "https://yourdomain.com/wp-json/truchat/v1/chat"
+  leadWebhook:    "",
+  showCredit:     true,
+};
+</script>
+
+<!-- ===== QUALIFIER ENGINE (local keyword bot) ===== -->
+<script>
+(function (root) {
+  "use strict";
+
+  function createSession() {
+    return {
+      name: "Prospect",
+      phone: "",
+      vehicleInterest: "Browsing",
+      tradeInDetails: "",
+      testDriveDate: "",
+      inspectionDate: "",
+      financeInterest: false,
+      pathway: [],
+      stage: "idle",
+      qualified: false,
+    };
+  }
+
+  function createQualifier(config) {
+    const cfg = Object.assign(
+      {
+        assistantName: "Assistant",
+        dealerName: "Showroom",
+        address: "",
+        hoursText: "",
+        salesWhatsApp: "",
+        catalog: [],
+        brandMap: {},
+        workingDays: 6,
+        skipSunday: true,
+        weekdaySlots: ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM"],
+        saturdaySlots: ["08:30 AM", "10:00 AM", "11:30 AM"],
+      },
+      config || {}
+    );
+
+    let session = createSession();
+
+    function log(action) {
+      const t = new Date().toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" });
+      session.pathway.push({ action: action, time: t });
+    }
+
+    function getWorkingDays() {
+      const days = [];
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const d = new Date();
+      while (days.length < cfg.workingDays) {
+        d.setDate(d.getDate() + 1);
+        if (cfg.skipSunday && d.getDay() === 0) continue;
+        days.push({
+          label: dayNames[d.getDay()] + " " + d.getDate() + " " + monthNames[d.getMonth()],
+          isSaturday: d.getDay() === 6,
+          iso: d.toISOString().slice(0, 10),
+        });
+      }
+      return days;
+    }
+
+    function slotsFor(isSaturday) {
+      return isSaturday ? cfg.saturdaySlots : cfg.weekdaySlots;
+    }
+
+    function matchCatalog(text) {
+      const lower = String(text || "").toLowerCase();
+      const map = cfg.brandMap || {};
+      for (const key of Object.keys(map)) {
+        if (lower.includes(key)) {
+          const brand = map[key];
+          return cfg.catalog.filter(function (c) {
+            return String(c.brand).toUpperCase() === String(brand).toUpperCase();
+          });
+        }
+      }
+      return cfg.catalog.filter(function (c) {
+        const blob = (c.brand + " " + c.model).toLowerCase();
+        return lower.split(/\s+/).some(function (w) {
+          return w.length > 3 && blob.includes(w);
+        });
+      });
+    }
+
+    function isQualified() {
+      const hasPhone = !!session.phone;
+      const hasIntent =
+        (session.vehicleInterest && session.vehicleInterest !== "Browsing") ||
+        !!session.tradeInDetails ||
+        !!session.testDriveDate ||
+        !!session.inspectionDate;
+      return hasPhone && hasIntent;
+    }
+
+    function recomputeQualified() {
+      session.qualified = isQualified();
+      return session.qualified;
+    }
+
+    function process(text) {
+      const raw = String(text || "").trim();
+      const lower = raw.toLowerCase();
+      const replies = [];
+
+      function say(t, suggestions) {
+        replies.push({ type: "text", text: t, suggestions: suggestions || [] });
+      }
+
+      log('Client: "' + raw + '"');
+
+      const phoneMatched = raw.match(/(?:\+27|0)\d{9}/);
+      if (phoneMatched) {
+        session.phone = phoneMatched[0];
+        log("Saved phone: " + session.phone);
+        recomputeQualified();
+        say(
+          "Thanks — I've logged **" + session.phone + "**. " +
+            (session.qualified
+              ? "You're all set; our team will follow up on WhatsApp shortly."
+              : "One of the team will follow up on WhatsApp.") +
+            (session.qualified ? "\n\n--- Lead qualified ---" : ""),
+          ["Browse stock", "Trade-in", "Hours"]
+        );
+        return { replies: replies, session: session, handoffReady: session.qualified };
+      }
+
+      const nameMatched = raw.match(/(?:my name is|i am|i'm|call me)\s+([a-zA-Z\s]{2,20})/i);
+      if (nameMatched) {
+        session.name = nameMatched[1].trim();
+        log("Name: " + session.name);
+        say("Nice to meet you, **" + session.name + "**. How can I help?", [
+          "Browse stock", "I have a trade-in", "Book test drive",
+        ]);
+        return { replies: replies, session: session };
+      }
+
+      if (/^\s*(hi+|hey+|hello|howzit|hallo|yo|greetings|good\s+(morning|afternoon|evening|day))[\s!.,]*$/i.test(raw)) {
+        say(
+          "Hi there! I'm **" + (cfg.assistantName || "your assistant") + "** at **" + cfg.dealerName +
+            "**. I can help with **stock**, **test drives**, **trade-in valuations**, **finance**, or **hours**. What are you after?",
+          ["Browse stock", "Trade-in valuation", "Book test drive", "Finance help"]
+        );
+        return { replies: replies, session: session };
+      }
+
+      if (/^\s*(thanks?|thank\s+you|thank\s+u|cheers|much\s+appreciated|dankie|lekker)[\s!.,]*$/i.test(raw)) {
+        say("Pleasure! Anything else I can sort — stock, finance, or a test drive?", [
+          "Browse stock", "Finance help", "Book test drive",
+        ]);
+        return { replies: replies, session: session };
+      }
+
+      if (lower.includes("address") || lower.includes("location") || lower.includes("where") ||
+          lower.includes("hours") || lower.includes("open")) {
+        say(
+          (cfg.address ? "**" + cfg.address + "**\n\n" : "") + (cfg.hoursText || "Please ask the team for hours."),
+          ["Browse stock", "Trade-in"]
+        );
+        return { replies: replies, session: session };
+      }
+
+      if (lower.includes("catalog") || lower.includes("stock") || lower.includes("inventory") ||
+          lower.includes("cars") || lower.includes("browse")) {
+        say("Here's a selection from the floor right now:");
+        replies.push({ type: "catalog", vehicles: cfg.catalog.slice() });
+        return { replies: replies, session: session };
+      }
+
+      if (lower.includes("trade-in") || lower.includes("trade in") || lower.includes("sell my car") ||
+          lower.includes("valuation")) {
+        session.stage = "trade_await_specs";
+        session.tradeInDetails = "Awaiting input...";
+        say("We buy pre-owned daily.\n\nPlease send: **Year, Make, Model, Mileage & condition**.");
+        return { replies: replies, session: session };
+      }
+
+      if (session.stage === "trade_await_specs" || session.tradeInDetails === "Awaiting input...") {
+        session.tradeInDetails = raw;
+        session.stage = "idle";
+        log("Trade-in specs: " + raw);
+        say("Thanks — got those details. Pick a showroom valuation slot:");
+        replies.push({ type: "schedule", scheduleType: "inspection", days: getWorkingDays() });
+        return { replies: replies, session: session };
+      }
+
+      if (lower.includes("yes") && (lower.includes("finance") || session.financeInterest)) {
+        session.financeInterest = true;
+        log("Finance interest confirmed");
+        say("Great — finance can run a soft assessment. Please share your **mobile number** so we can continue on WhatsApp.", []);
+        return { replies: replies, session: session };
+      }
+
+      if (lower.includes("finance") || lower.includes("financ") || lower.includes("afford") ||
+          lower.includes("instal") || lower.includes("repayment") || lower.includes("deposit") ||
+          lower.includes("credit")) {
+        session.financeInterest = true;
+        log("Finance interest");
+        say(
+          "We arrange **vehicle finance** through the major banks on our approved pre-owned stock.\n\nShare your **mobile number** and I'll have the finance desk start a soft, no-obligation assessment on WhatsApp.",
+          ["Browse stock", "Book test drive"]
+        );
+        return { replies: replies, session: session };
+      }
+
+      const matches = matchCatalog(raw);
+      if (matches.length) {
+        session.vehicleInterest = matches[0].brand + " " + matches[0].model;
+        log("Matched: " + session.vehicleInterest);
+        say("I found these on the floor:");
+        replies.push({ type: "catalog", vehicles: matches });
+        return { replies: replies, session: session };
+      }
+
+      const alts = ["mercedes", "merc", "benz", "bmw", "isuzu", "nissan", "kia", "hyundai"];
+      const alt = alts.find(function (b) { return lower.includes(b); });
+      if (alt) {
+        say("No **" + alt.toUpperCase() + "** units showing right now — interested in these instead?");
+        replies.push({ type: "catalog", vehicles: cfg.catalog.slice(0, 2) });
+        return { replies: replies, session: session };
+      }
+
+      say(
+        "I can help with **stock**, **test drives**, **trade-in valuations**, **finance**, or **showroom hours**.\n\nWhat would you like?",
+        ["Browse stock", "Trade-in valuation", "Finance help", "Showroom hours"]
+      );
+      return { replies: replies, session: session };
+    }
+
+    function selectVehicleAction(vehicleLabel, action) {
+      const replies = [];
+      session.vehicleInterest = vehicleLabel;
+      if (action === "finance") {
+        session.financeInterest = true;
+        log("Finance query: " + vehicleLabel);
+        replies.push({
+          type: "text",
+          text: "Estimating terms for **" + vehicleLabel + "**…\n\nTypical terms are 60–72 months. Want our finance desk to start a preliminary assessment?",
+          suggestions: ["Yes, help with finance", "Book test drive instead"],
+        });
+      } else {
+        log("Test drive: " + vehicleLabel);
+        replies.push({ type: "text", text: "Let's book a viewing for the **" + vehicleLabel + "**.\n\nPick a date:", suggestions: [] });
+        replies.push({ type: "schedule", scheduleType: "test_drive", days: getWorkingDays() });
+      }
+      return { replies: replies, session: session };
+    }
+
+    function confirmSlot(scheduleType, dateLabel, timeLabel) {
+      const replies = [];
+      const stamp = dateLabel + " @ " + timeLabel;
+      if (scheduleType === "test_drive") {
+        session.testDriveDate = stamp;
+        log("Test drive: " + stamp);
+        replies.push({ type: "text", text: "Booked **test drive** for **" + stamp + "**" + (cfg.address ? " at " + cfg.address : "") + ".\n\nPlease send your **phone number** to complete.", suggestions: [] });
+      } else {
+        session.inspectionDate = stamp;
+        log("Inspection: " + stamp);
+        replies.push({ type: "text", text: "Valuation slot confirmed for **" + stamp + "**.\n\nDrop your **phone number** to finalise.", suggestions: [] });
+      }
+      recomputeQualified();
+      return { replies: replies, session: session };
+    }
+
+    function buildTicket() {
+      let msg = "LIVE TICKET — " + cfg.dealerName.toUpperCase() + "\n\n";
+      msg += "Client: " + session.name + "\n";
+      msg += "Phone: " + (session.phone || "Not provided") + "\n";
+      msg += "Interest: " + session.vehicleInterest + "\n";
+      if (session.financeInterest) msg += "Finance: Interested\n";
+      msg += "\n";
+      if (session.testDriveDate) msg += "Test drive: " + session.testDriveDate + "\n\n";
+      if (session.tradeInDetails) {
+        msg += "Trade-in: " + session.tradeInDetails + "\n";
+        if (session.inspectionDate) msg += "Valuation: " + session.inspectionDate + "\n\n";
+      }
+      msg += "Pathway:\n";
+      session.pathway.forEach(function (step, idx) {
+        msg += (idx + 1) + ". [" + step.time + "] " + step.action + "\n";
+      });
+      msg += "\nQualified: " + (session.qualified ? "YES" : "pending phone/intent");
+      msg += "\n\n— sent via TruChat by TruSaaS";
+      return msg;
+    }
+
+    function whatsappHandoffUrl() {
+      const phone = String(cfg.salesWhatsApp || "").replace(/\D/g, "");
+      const text = encodeURIComponent(buildTicket());
+      return "https://api.whatsapp.com/send?phone=" + phone + "&text=" + text;
+    }
+
+    function reset() { session = createSession(); return session; }
+    function getSession() { return session; }
+    function setCatalog(list) { cfg.catalog = list || []; }
+
+    return {
+      process, selectVehicleAction, confirmSlot, getWorkingDays, slotsFor,
+      buildTicket, whatsappHandoffUrl, getSession, reset, setCatalog, recomputeQualified,
+      config: cfg,
+    };
+  }
+
+  root.TruChatQualifier = { createQualifier, createSession };
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+
+<!-- ===== CHAT-CORE UI ===== -->
+<script>
+(function (root) {
+  "use strict";
+
+  var DEFAULT_LS_KEY = "ray_truchat_leads_v1";
+  var STYLE_ID = "truchat-core-css";
+
+  function injectCss() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement("style");
+    s.id = STYLE_ID;
+    s.textContent = [
+      ".tc-root{--tc-red:#e30613;--tc-red-dark:#9b0410;--tc-gold:#ffffff;--tc-gold-dim:rgba(255,255,255,.08);",
+      "--tc-bg:#08090f;--tc-panel:rgba(16,18,28,.92);--tc-border:rgba(255,255,255,.1);--tc-text:#f8fafc;",
+      "--tc-muted:#94a3b8;--tc-green:#34d399;--tc-user:rgba(227,6,19,.2);",
+      "--tc-ease:cubic-bezier(.22,1,.36,1);--tc-spring:cubic-bezier(.34,1.56,.64,1);",
+      "font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--tc-text);box-sizing:border-box;",
+      "-webkit-font-smoothing:antialiased}",
+      ".tc-root *,.tc-root *::before,.tc-root *::after{box-sizing:border-box}",
+      "@media(prefers-reduced-motion:reduce){.tc-root *,.tc-root *::before,.tc-root *::after{",
+      "animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}",
+      "@keyframes tcShellIn{from{opacity:0;transform:translateY(16px) scale(.96);filter:blur(4px)}",
+      "to{opacity:1;transform:none;filter:none}}",
+      "@keyframes tcMsgIn{0%{opacity:0;transform:translateY(14px) scale(.96)}100%{opacity:1;transform:none}}",
+      "@keyframes tcMsgUser{0%{opacity:0;transform:translateX(16px) scale(.96)}100%{opacity:1;transform:none}}",
+      "@keyframes tcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}",
+      "@keyframes tcDot{0%,80%,100%{opacity:.3;transform:translateY(0) scale(.9)}40%{opacity:1;transform:translateY(-4px) scale(1)}}",
+      "@keyframes tcRing{0%{transform:scale(.85);opacity:.7}70%{transform:scale(1.15);opacity:0}100%{opacity:0}}",
+      "@keyframes tcLive{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(52,211,153,.5)}50%{opacity:.7;box-shadow:0 0 0 4px rgba(52,211,153,0)}}",
+      "@keyframes tcShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}",
+      "@keyframes tcGlow{0%,100%{opacity:.35}50%{opacity:.65}}",
+      "@keyframes tcWaIn{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:none}}",
+      "@keyframes tcCarShine{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}",
+      ".tc-shell{position:relative;display:flex;flex-direction:column;height:100%;min-height:0;",
+      "background:linear-gradient(165deg,rgba(28,12,16,.95) 0%,rgba(12,14,22,.97) 42%,rgba(10,12,18,.98) 100%);",
+      "border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;",
+      "box-shadow:0 28px 80px -24px rgba(0,0,0,.75),0 0 0 1px rgba(227,6,19,.08),inset 0 1px 0 rgba(255,255,255,.08);",
+      "backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);",
+      "animation:tcShellIn .45s var(--tc-ease) both}",
+      ".tc-shell::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;",
+      "background:radial-gradient(ellipse 90% 50% at 50% -10%,rgba(227,6,19,.22),transparent 55%),",
+      "radial-gradient(ellipse 40% 30% at 100% 100%,rgba(232,185,35,.06),transparent 50%)}",
+      ".tc-shell > *{position:relative;z-index:1}",
+      ".tc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;",
+      "background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);",
+      "border-bottom:1px solid rgba(255,255,255,.08)}",
+      ".tc-who{display:flex;align-items:center;gap:11px;min-width:0}",
+      ".tc-avatar-wrap{position:relative;width:44px;height:44px;flex-shrink:0}",
+      ".tc-avatar-wrap::after{content:'';position:absolute;inset:-3px;border-radius:16px;",
+      "border:1.5px solid rgba(227,6,19,.45);animation:tcRing 2.4s ease-out infinite}",
+      ".tc-avatar{width:44px;height:44px;border-radius:14px;",
+      "background:linear-gradient(145deg,var(--tc-red),var(--tc-red-dark));",
+      "display:grid;place-items:center;font-weight:800;font-size:15px;",
+      "box-shadow:0 8px 20px -6px rgba(227,6,19,.65);overflow:hidden}",
+      ".tc-avatar img{width:100%;height:100%;object-fit:cover;background:#0a0b10;padding:0}",
+      ".tc-name{font-weight:700;font-size:14px;line-height:1.2;letter-spacing:-.01em;",
+      "white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+      ".tc-name em{font-style:normal;background:linear-gradient(90deg,#fff 20%,#fecaca 100%);",
+      "-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}",
+      ".tc-status{font-size:11px;color:var(--tc-green);display:flex;align-items:center;margin-top:2px;font-weight:500}",
+      ".tc-status .tc-live{display:inline-block;width:7px;height:7px;border-radius:50%;",
+      "background:var(--tc-green);margin-right:7px;animation:tcLive 1.8s ease-in-out infinite}",
+      ".tc-status.off{color:var(--tc-muted)}.tc-status.off .tc-live{background:var(--tc-muted);animation:none}",
+      ".tc-head-acts{display:flex;gap:6px;flex-shrink:0}",
+      ".tc-iconbtn{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);",
+      "color:var(--tc-muted);border-radius:11px;width:36px;height:36px;cursor:pointer;font-size:15px;",
+      "transition:transform .2s var(--tc-spring),color .15s,background .15s,border-color .15s}",
+      ".tc-iconbtn:hover{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);transform:scale(1.08)}",
+      ".tc-iconbtn:active{transform:scale(.94)}",
+      ".tc-history{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:11px;padding:16px 14px;",
+      "min-height:0;scroll-behavior:smooth}",
+      ".tc-history::-webkit-scrollbar{width:5px}",
+      ".tc-history::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}",
+      ".tc-msg{max-width:92%;padding:12px 14px;border-radius:16px;font-size:13.5px;line-height:1.55;word-wrap:break-word}",
+      ".tc-msg.bot{align-self:flex-start;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);",
+      "border-bottom-left-radius:6px;box-shadow:0 4px 16px -8px rgba(0,0,0,.4);",
+      "animation:tcMsgIn .42s var(--tc-ease) both}",
+      ".tc-msg.user{align-self:flex-end;background:linear-gradient(145deg,rgba(227,6,19,.35),rgba(227,6,19,.18));",
+      "border:1px solid rgba(227,6,19,.4);border-bottom-right-radius:6px;",
+      "box-shadow:0 6px 18px -10px rgba(227,6,19,.5);animation:tcMsgUser .38s var(--tc-ease) both}",
+      ".tc-msg strong{color:#fff;font-weight:700}",
+      ".tc-msg a{color:#fca5a5}",
+      ".tc-sugs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}",
+      ".tc-sug{font-size:11.5px;font-weight:600;padding:8px 12px;border-radius:999px;cursor:pointer;",
+      "background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;",
+      "transition:transform .2s var(--tc-spring),filter .15s,background .15s,box-shadow .2s;",
+      "animation:tcFadeUp .45s var(--tc-ease) both}",
+      ".tc-sug:nth-child(1){animation-delay:.06s}.tc-sug:nth-child(2){animation-delay:.12s}",
+      ".tc-sug:nth-child(3){animation-delay:.18s}.tc-sug:nth-child(4){animation-delay:.24s}",
+      ".tc-sug:hover{filter:brightness(1.08);transform:translateY(-2px) scale(1.03);",
+      "background:rgba(255,255,255,.14);box-shadow:0 8px 18px -10px rgba(255,255,255,.2)}",
+      ".tc-sug:active{transform:scale(.96)}",
+      ".tc-cars{display:flex;flex-direction:column;gap:9px;align-self:flex-start;max-width:94%;width:100%}",
+      ".tc-car{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(0,0,0,.35));",
+      "border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 12px 11px;",
+      "animation:tcFadeUp .45s var(--tc-ease) both;transition:border-color .25s,transform .25s var(--tc-ease),box-shadow .25s}",
+      ".tc-car:nth-child(1){animation-delay:.05s}.tc-car:nth-child(2){animation-delay:.12s}",
+      ".tc-car:nth-child(3){animation-delay:.19s}.tc-car:nth-child(4){animation-delay:.26s}",
+      ".tc-car:hover{border-color:rgba(227,6,19,.4);transform:translateY(-2px);",
+      "box-shadow:0 12px 28px -14px rgba(227,6,19,.35)}",
+      ".tc-car::after{content:'';position:absolute;top:0;left:0;width:40%;height:100%;",
+      "background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);",
+      "transform:translateX(-120%);pointer-events:none}",
+      ".tc-car:hover::after{animation:tcCarShine .7s ease}",
+      ".tc-car b{display:block;font-size:13px;margin-bottom:4px;letter-spacing:-.01em}",
+      ".tc-car .m{font-size:11px;color:var(--tc-muted)}",
+      ".tc-car .p{font-size:15px;font-weight:800;margin:8px 0 4px;color:#fff}",
+      ".tc-car-acts{display:flex;gap:7px;margin-top:10px}",
+      ".tc-car-acts button{flex:1;border:none;border-radius:10px;padding:9px;font-size:11px;font-weight:700;",
+      "cursor:pointer;transition:transform .18s var(--tc-spring),filter .15s,box-shadow .2s}",
+      ".tc-car-acts button:hover{transform:translateY(-2px);filter:brightness(1.08)}",
+      ".tc-car-acts button:active{transform:scale(.97)}",
+      ".tc-pri{background:linear-gradient(145deg,var(--tc-red),var(--tc-red-dark));color:#fff;",
+      "box-shadow:0 6px 16px -8px rgba(227,6,19,.7)}",
+      ".tc-sec{background:rgba(255,255,255,.06);color:var(--tc-text);border:1px solid rgba(255,255,255,.12)!important}",
+      ".tc-cal{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:14px;",
+      "padding:13px;width:100%;max-width:94%;align-self:flex-start;animation:tcFadeUp .4s var(--tc-ease)}",
+      ".tc-cal-t{font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase}",
+      ".tc-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}",
+      ".tc-grid button{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--tc-text);",
+      "border-radius:10px;padding:9px;font-size:11px;cursor:pointer;font-weight:600;",
+      "transition:border-color .15s,background .15s,transform .15s var(--tc-spring)}",
+      ".tc-grid button:hover{transform:scale(1.03);border-color:rgba(255,255,255,.2)}",
+      ".tc-grid button.sel{border-color:var(--tc-red);background:rgba(227,6,19,.22);box-shadow:0 0 0 1px rgba(227,6,19,.2)}",
+      ".tc-typing{font-size:11px;color:var(--tc-muted);min-height:20px;padding:0 16px 6px;display:flex;align-items:center;gap:8px}",
+      ".tc-typing.is-on .tc-dots{display:inline-flex;gap:4px;padding:6px 10px;background:rgba(255,255,255,.05);",
+      "border:1px solid rgba(255,255,255,.08);border-radius:12px}",
+      ".tc-dots{display:none}",
+      ".tc-dots i{width:6px;height:6px;border-radius:50%;background:linear-gradient(180deg,#fff,var(--tc-muted));",
+      "display:block;animation:tcDot 1.15s ease-in-out infinite}",
+      ".tc-dots i:nth-child(2){animation-delay:.15s}.tc-dots i:nth-child(3){animation-delay:.3s}",
+      ".tc-typing-txt{opacity:.85}",
+      ".tc-composer{display:flex;gap:8px;padding:12px 14px 14px;border-top:1px solid rgba(255,255,255,.08);",
+      "background:linear-gradient(180deg,transparent,rgba(0,0,0,.25))}",
+      ".tc-composer input{flex:1;border-radius:14px;border:1px solid rgba(255,255,255,.1);",
+      "background:rgba(0,0,0,.4);color:var(--tc-text);padding:13px 15px;font-size:14px;outline:none;",
+      "transition:border-color .2s,box-shadow .25s,background .2s}",
+      ".tc-composer input::placeholder{color:#64748b}",
+      ".tc-composer input:focus{border-color:rgba(227,6,19,.55);background:rgba(0,0,0,.5);",
+      "box-shadow:0 0 0 4px rgba(227,6,19,.14)}",
+      ".tc-composer button{border:none;border-radius:14px;min-width:52px;",
+      "background:linear-gradient(145deg,var(--tc-red),var(--tc-red-dark));color:#fff;padding:0 16px;",
+      "font-weight:800;cursor:pointer;font-size:13px;letter-spacing:.02em;",
+      "box-shadow:0 8px 20px -8px rgba(227,6,19,.75);",
+      "transition:transform .2s var(--tc-spring),filter .15s,box-shadow .2s}",
+      ".tc-composer button:hover{filter:brightness(1.1);transform:scale(1.04);box-shadow:0 10px 24px -8px rgba(227,6,19,.85)}",
+      ".tc-composer button:active{transform:scale(.96)}",
+      ".tc-foot{text-align:center;font-size:10px;color:#64748b;padding:4px 10px 12px;",
+      "letter-spacing:.04em;text-transform:uppercase}",
+      ".tc-foot span{color:rgba(227,6,19,.7);font-weight:700}",
+      ".tc-wa-bar{display:none;padding:10px 14px;gap:10px;align-items:center;",
+      "background:linear-gradient(90deg,rgba(16,185,129,.18),rgba(37,211,102,.1));",
+      "border-top:1px solid rgba(52,211,153,.3)}",
+      ".tc-wa-bar.show{display:flex;animation:tcWaIn .45s var(--tc-ease)}",
+      ".tc-wa-bar span{flex:1;font-size:11.5px;color:#bbf7d0;line-height:1.4;font-weight:500}",
+      ".tc-wa-bar button{border:none;border-radius:12px;background:linear-gradient(145deg,#34d399,#059669);",
+      "color:#042f1a;font-weight:800;font-size:12px;padding:10px 14px;cursor:pointer;white-space:nowrap;",
+      "box-shadow:0 8px 20px -8px rgba(16,185,129,.6);transition:transform .2s var(--tc-spring),filter .15s}",
+      ".tc-wa-bar button:hover{filter:brightness(1.08);transform:scale(1.05)}",
+      ".tc-intro{align-self:center;text-align:center;padding:8px 14px 4px;max-width:92%;",
+      "animation:tcFadeUp .5s var(--tc-ease) both}",
+      ".tc-intro .pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;",
+      "letter-spacing:.08em;text-transform:uppercase;color:#fecaca;",
+      "background:rgba(227,6,19,.12);border:1px solid rgba(227,6,19,.3);padding:5px 10px;border-radius:999px;margin-bottom:6px}",
+    ].join("");
+    document.head.appendChild(s);
+  }
+
+  var WA_STYLE_ID = "truchat-wa-css";
+  function injectWaCss() {
+    if (document.getElementById(WA_STYLE_ID)) return;
+    var s = document.createElement("style");
+    s.id = WA_STYLE_ID;
+    s.textContent = [
+      ".tc-root.tc-wa .tc-shell{background:#efeae2;border:none;",
+      "box-shadow:0 28px 80px -24px rgba(0,0,0,.5);backdrop-filter:none;-webkit-backdrop-filter:none}",
+      ".tc-root.tc-wa .tc-shell::before{display:none}",
+      ".tc-root.tc-wa .tc-head{background:#008069;border-bottom:none;padding:10px 12px}",
+      ".tc-root.tc-wa .tc-avatar-wrap,.tc-root.tc-wa .tc-avatar{width:40px;height:40px}",
+      ".tc-root.tc-wa .tc-avatar-wrap::after{inset:-2px;border-radius:50%;border-color:var(--tc-red);opacity:.0}",
+      ".tc-root.tc-wa .tc-avatar{border-radius:50%;background:#0a0b10;box-shadow:none}",
+      ".tc-root.tc-wa .tc-avatar img{border-radius:50%}",
+      ".tc-root.tc-wa .tc-name,.tc-root.tc-wa .tc-name em{color:#fff!important;",
+      "-webkit-text-fill-color:#fff;background:none;font-weight:600}",
+      ".tc-root.tc-wa .tc-status{color:rgba(255,255,255,.82)}",
+      ".tc-root.tc-wa .tc-status .tc-live{background:#25d366}",
+      ".tc-root.tc-wa .tc-status.off{color:rgba(255,255,255,.72)}",
+      ".tc-root.tc-wa .tc-status.off .tc-live{background:#25d366}",
+      ".tc-root.tc-wa .tc-iconbtn{color:#fff;background:transparent;border:none}",
+      ".tc-root.tc-wa .tc-iconbtn:hover{background:rgba(255,255,255,.15);color:#fff;border:none}",
+      ".tc-root.tc-wa .tc-history{background:#efeae2;gap:8px}",
+      ".tc-root.tc-wa .tc-history::-webkit-scrollbar-thumb{background:rgba(11,20,26,.2)}",
+      ".tc-root.tc-wa .tc-msg{font-size:14px;border:none;max-width:85%;",
+      "box-shadow:0 1px .5px rgba(11,20,26,.13)}",
+      ".tc-root.tc-wa .tc-msg.bot{background:#fff;color:#111b21;border-radius:8px 8px 8px 0}",
+      ".tc-root.tc-wa .tc-msg.user{background:#d9fdd3;color:#111b21;border:none;",
+      "border-radius:8px 8px 0 8px;position:relative;padding-right:34px}",
+      ".tc-root.tc-wa .tc-msg strong{color:#111b21}",
+      ".tc-root.tc-wa .tc-msg.user strong{color:#111b21}",
+      ".tc-root.tc-wa .tc-msg a{color:#027eb5}",
+      ".tc-root.tc-wa .tc-tick{position:absolute;right:9px;bottom:5px;font-size:12px;",
+      "line-height:1;color:#53bdeb;letter-spacing:-3px;font-family:system-ui}",
+      ".tc-root.tc-wa .tc-sug{background:#fff;color:var(--tc-red);border:1px solid var(--tc-red);",
+      "box-shadow:0 1px .5px rgba(11,20,26,.13)}",
+      ".tc-root.tc-wa .tc-sug:hover{background:#fff;filter:brightness(.98)}",
+      ".tc-root.tc-wa .tc-intro{display:none}",
+      ".tc-root.tc-wa .tc-typing{color:#667781}",
+      ".tc-root.tc-wa .tc-typing.is-on .tc-dots{background:#fff;border:none}",
+      ".tc-root.tc-wa .tc-dots i{background:#8696a0}",
+      ".tc-root.tc-wa .tc-composer{background:#f0f2f5;border-top:none;padding:8px 10px;align-items:center}",
+      ".tc-root.tc-wa .tc-composer input{background:#fff;border:none;border-radius:22px;color:#111b21;padding:11px 16px}",
+      ".tc-root.tc-wa .tc-composer input::placeholder{color:#8696a0}",
+      ".tc-root.tc-wa .tc-composer input:focus{background:#fff;box-shadow:none;border:none}",
+      ".tc-root.tc-wa .tc-composer button{background:#00a884;border-radius:50%;min-width:46px;width:46px;",
+      "height:46px;padding:0;box-shadow:none;font-size:0;flex-shrink:0}",
+      ".tc-root.tc-wa .tc-composer button::after{content:'\\27A4';font-size:17px;color:#fff}",
+      ".tc-root.tc-wa .tc-composer button:hover{background:#008f72;filter:none;transform:none}",
+      ".tc-root.tc-wa .tc-foot{background:#f0f2f5;color:#8696a0}",
+      ".tc-root.tc-wa .tc-foot span{color:#008069}",
+      ".tc-root.tc-wa .tc-car{background:#fff;border:1px solid #e9edef;color:#111b21}",
+      ".tc-root.tc-wa .tc-car b{color:#111b21}",
+      ".tc-root.tc-wa .tc-car .m{color:#667781}",
+      ".tc-root.tc-wa .tc-car .p{color:#008069}",
+      ".tc-root.tc-wa .tc-car:hover{border-color:#00a884;box-shadow:0 8px 18px -12px rgba(0,168,132,.4)}",
+      ".tc-root.tc-wa .tc-pri{background:#00a884;box-shadow:none}",
+      ".tc-root.tc-wa .tc-sec{background:#f0f2f5;color:#111b21;border:1px solid #e9edef!important}",
+      ".tc-root.tc-wa .tc-cal{background:#fff;border:1px solid #e9edef}",
+      ".tc-root.tc-wa .tc-cal-t{color:#008069}",
+      ".tc-root.tc-wa .tc-grid button{background:#f0f2f5;border:1px solid #e9edef;color:#111b21}",
+      ".tc-root.tc-wa .tc-grid button.sel{background:#d9fdd3;border-color:#00a884;box-shadow:none}",
+    ].join("");
+    document.head.appendChild(s);
+  }
+
+  function esc(s) {
+    return String(s || "").replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function detectVehicleFromPage() { return ""; }
+
+  function loadLeads(lsKey) {
+    try { return JSON.parse(localStorage.getItem(lsKey || DEFAULT_LS_KEY) || "[]"); } catch (e) { return []; }
+  }
+
+  function saveLeadEntry(entry, lsKey) {
+    var key = lsKey || DEFAULT_LS_KEY;
+    var list = loadLeads(key);
+    if (list[0] && list[0].source === "chat" &&
+        ((entry.phone && list[0].phone === entry.phone) ||
+         (!entry.phone && list[0].name === entry.name && Date.now() - new Date(list[0].at).getTime() < 2 * 3600 * 1000))) {
+      list[0] = entry;
+    } else { list.unshift(entry); }
+    localStorage.setItem(key, JSON.stringify(list.slice(0, 50)));
+  }
+
+  function mount(container, options) {
+    options = options || {};
+    injectCss();
+    var CFG = options.config || root.RAY_TRUCHAT_CONFIG || {};
+    var waSkin = (options.skin || CFG.skin) === "whatsapp";
+    if (waSkin) injectWaCss();
+    var TQ = root.TruChatQualifier;
+    if (!TQ) throw new Error("TruChatQualifier missing");
+
+    var LS_KEY = CFG.leadStorageKey || DEFAULT_LS_KEY;
+    var bot = TQ.createQualifier({
+      assistantName: CFG.assistantName, dealerName: CFG.dealerName, address: CFG.address,
+      hoursText: CFG.hoursText, salesWhatsApp: CFG.personalWhatsApp || CFG.salesWhatsApp,
+      catalog: (CFG.catalog || []).slice(), brandMap: CFG.brandMap || {},
+    });
+
+    container.classList.add("tc-root");
+    if (waSkin) container.classList.add("tc-wa");
+    if (CFG.brandPrimary) {
+      var primary = CFG.brandPrimary;
+      var dark = CFG.brandPrimaryDark || primary;
+      container.style.setProperty("--tc-red", primary);
+      container.style.setProperty("--tc-red-dark", dark);
+    }
+    container.innerHTML =
+      '<div class="tc-shell">' +
+      '<div class="tc-head"><div class="tc-who">' +
+      '<div class="tc-avatar-wrap"><div class="tc-avatar" id="tcAv">' + esc((CFG.assistantName||"R")[0]) + '</div></div>' +
+      '<div><div class="tc-name"><em>' + esc(waSkin ? (CFG.dealerName||"Showroom") : (CFG.assistantName||"Assistant")) + '</em>' +
+      (waSkin ? '' : ' · ' + esc(CFG.dealerName||"Showroom")) +
+      '</div><div class="tc-status" id="tcStatus"><span class="tc-live"></span>' +
+      (waSkin ? 'Online · Sales team' : 'Online · showroom assistant') + '</div></div></div>' +
+      '<div class="tc-head-acts">' +
+      (options.onClose ? '<button type="button" class="tc-iconbtn" id="tcClose" aria-label="Close">&#10005;</button>' : '') +
+      '</div></div>' +
+      '<div class="tc-history" id="tcHist" role="log"></div>' +
+      '<div class="tc-typing" id="tcTyping"><span class="tc-dots"><i></i><i></i><i></i></span><span class="tc-typing-txt"></span></div>' +
+      '<div class="tc-wa-bar" id="tcWaBar"><span>You\'re ready — continue with the yard on WhatsApp</span>' +
+      '<button type="button" id="tcWaBtn">Open WhatsApp</button></div>' +
+      '<div class="tc-composer"><input id="tcIn" type="text" placeholder="Ask about stock, finance, trade-in…" autocomplete="off" enterkeyhint="send" />' +
+      '<button type="button" id="tcSend">Send</button></div>' +
+      (options.showFoot !== false ? '<div class="tc-foot">' + esc(CFG.brandLine||CFG.dealerName||'') +
+      (CFG.showCredit === false ? '' : ' · <span>TruChat</span> by TruSaaS') + '</div>' : '') +
+      '</div>';
+
+    if (CFG.logoUrl) container.querySelector("#tcAv").innerHTML = '<img src="' + esc(CFG.logoUrl) + '" alt="" />';
+
+    var histEl = container.querySelector("#tcHist");
+    var typingEl = container.querySelector("#tcTyping");
+    var input = container.querySelector("#tcIn");
+    var waBar = container.querySelector("#tcWaBar");
+    var lastSavedSig = "";
+    var destroyed = false;
+    var handoffPrompted = false;
+
+    function setTyping(on, label) {
+      if (on) {
+        typingEl.classList.add("is-on");
+        var t = typingEl.querySelector(".tc-typing-txt");
+        if (t) t.textContent = label || (waSkin ? "typing…" : (CFG.assistantName||"Assistant") + " is typing");
+      } else {
+        typingEl.classList.remove("is-on");
+        var t2 = typingEl.querySelector(".tc-typing-txt");
+        if (t2) t2.textContent = "";
+      }
+    }
+
+    function persistLead(force) {
+      var s = bot.getSession();
+      var hasSignal = force || s.qualified || (s.phone && s.phone.length > 5) ||
+        (s.tradeInDetails && s.tradeInDetails !== "Awaiting input...") || s.testDriveDate || s.inspectionDate ||
+        (s.vehicleInterest && s.vehicleInterest !== "Browsing");
+      if (!hasSignal) return;
+      var sig = [s.name,s.phone,s.vehicleInterest,s.qualified,s.testDriveDate,s.inspectionDate].join("|");
+      if (!force && sig === lastSavedSig) return;
+      lastSavedSig = sig;
+      var entry = { at: new Date().toISOString(), name: s.name, phone: s.phone,
+        vehicleInterest: s.vehicleInterest, tradeInDetails: s.tradeInDetails,
+        testDriveDate: s.testDriveDate, inspectionDate: s.inspectionDate,
+        financeInterest: s.financeInterest, qualified: s.qualified,
+        ticket: bot.buildTicket(), source: "chat", session: JSON.parse(JSON.stringify(s)) };
+      saveLeadEntry(entry, LS_KEY);
+    }
+
+    function addBotText(text, suggestions) {
+      var div = document.createElement("div");
+      div.className = "tc-msg bot";
+      div.innerHTML = esc(text).replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
+      if (suggestions && suggestions.length) {
+        var sug = document.createElement("div"); sug.className = "tc-sugs";
+        suggestions.forEach(function(label) {
+          var b = document.createElement("button"); b.type = "button"; b.className = "tc-sug";
+          b.textContent = label; b.onclick = function() { userSay(label); }; sug.appendChild(b);
+        });
+        div.appendChild(sug);
+      }
+      histEl.appendChild(div); histEl.scrollTop = histEl.scrollHeight;
+    }
+
+    function addUserText(text) {
+      var div = document.createElement("div"); div.className = "tc-msg user"; div.textContent = text;
+      if (waSkin) { var tick = document.createElement("span"); tick.className = "tc-tick"; tick.textContent = "✓✓"; div.appendChild(tick); }
+      histEl.appendChild(div); histEl.scrollTop = histEl.scrollHeight;
+    }
+
+    function addCatalog(vehicles) {
+      var wrap = document.createElement("div"); wrap.className = "tc-cars";
+      (vehicles||[]).forEach(function(v) {
+        var card = document.createElement("div"); card.className = "tc-car";
+        var label = v.year + " " + v.brand + " " + v.model;
+        card.innerHTML = '<b>' + esc(label) + '</b><div class="m">' + esc(v.km||'') + (v.fuel ? ' · ' + esc(v.fuel) : '') +
+          '</div><div class="p">R ' + Number(v.price||0).toLocaleString("en-ZA") +
+          '</div><div class="tc-car-acts"><button type="button" class="tc-sec" data-a="finance">Finance</button>' +
+          '<button type="button" class="tc-pri" data-a="test_drive">Test drive</button></div>';
+        card.querySelectorAll("button").forEach(function(btn) {
+          btn.onclick = function() {
+            var a = btn.getAttribute("data-a");
+            handleOut(bot.selectVehicleAction(label, a));
+          };
+        });
+        wrap.appendChild(card);
+      });
+      histEl.appendChild(wrap); histEl.scrollTop = histEl.scrollHeight;
+    }
+
+    function addScheduler(scheduleType, days) {
+      var box = document.createElement("div"); box.className = "tc-cal";
+      box.innerHTML = '<div class="tc-cal-t">' + (scheduleType === "test_drive" ? "Pick a test drive" : "Pick a valuation slot") +
+        '</div><div class="tc-grid" data-g="days"></div><div class="tc-grid" data-g="slots" style="display:none;margin-top:8px"></div>';
+      var grid = box.querySelector('[data-g="days"]');
+      var slots = box.querySelector('[data-g="slots"]');
+      (days||[]).forEach(function(d) {
+        var b = document.createElement("button"); b.type = "button"; b.textContent = d.label;
+        b.onclick = function() {
+          grid.querySelectorAll("button").forEach(function(x){x.classList.remove("sel")});
+          b.classList.add("sel"); slots.style.display = "grid"; slots.innerHTML = "";
+          bot.slotsFor(d.isSaturday).forEach(function(hr) {
+            var s = document.createElement("button"); s.type = "button"; s.textContent = hr;
+            s.onclick = function() {
+              slots.querySelectorAll("button").forEach(function(x){x.classList.remove("sel")});
+              s.classList.add("sel"); box.style.opacity = "0.75"; box.style.pointerEvents = "none";
+              handleOut(bot.confirmSlot(scheduleType, d.label, hr));
+            };
+            slots.appendChild(s);
+          });
+        };
+        grid.appendChild(b);
+      });
+      histEl.appendChild(box); histEl.scrollTop = histEl.scrollHeight;
+    }
+
+    function handleOut(out) {
+      (out.replies||[]).forEach(function(r) {
+        if (r.type === "text") addBotText(r.text, r.suggestions);
+        if (r.type === "catalog") addCatalog(r.vehicles);
+        if (r.type === "schedule") addScheduler(r.scheduleType, r.days);
+      });
+      persistLead(false);
+      if ((out.handoffReady || (bot.getSession() && bot.getSession().qualified)) && !handoffPrompted) {
+        handoffPrompted = true; waBar.classList.add("show");
+        addBotText("Perfect — you're **qualified**. Tap **Open WhatsApp** and the yard gets your full ticket instantly.", ["Continue on WhatsApp"]);
+      } else if (bot.getSession() && bot.getSession().qualified) { waBar.classList.add("show"); }
+    }
+
+    function userSay(text) {
+      if (destroyed || !text || !String(text).trim()) return;
+      var t = String(text).trim();
+      if (t.toLowerCase() === "continue on whatsapp" || t.toLowerCase() === "open handoff") {
+        persistLead(true);
+        window.open(bot.whatsappHandoffUrl(), "_blank", "noopener");
+        return;
+      }
+      addUserText(t);
+      setTyping(true);
+      var delay = 420 + Math.min(400, t.length * 8);
+      setTimeout(function() {
+        if (destroyed) return;
+        setTyping(false);
+        handleOut(bot.process(t));
+      }, delay);
+    }
+
+    function send() { userSay(input.value); input.value = ""; input.focus(); }
+    container.querySelector("#tcSend").onclick = send;
+    input.addEventListener("keydown", function(e) { if (e.key === "Enter") send(); });
+    container.querySelector("#tcWaBtn").onclick = function() {
+      persistLead(true);
+      window.open(bot.whatsappHandoffUrl(), "_blank", "noopener");
+    };
+    var closeBtn = container.querySelector("#tcClose");
+    if (closeBtn && options.onClose) closeBtn.onclick = options.onClose;
+
+    // Start chat
+    var intro = document.createElement("div"); intro.className = "tc-intro";
+    intro.innerHTML = '<div class="pill">' + (waSkin ? "Chat with the team" : "Live showroom assistant") + '</div>';
+    histEl.appendChild(intro);
+    var greet;
+    if (waSkin) {
+      greet = (CFG.greetingHuman && String(CFG.greetingHuman).trim()) ||
+        "Howzit! You've reached **" + (CFG.dealerName||"the yard") + "**. What are you looking for today?";
+    } else {
+      greet = CFG.greeting ||
+        "Hi — I'm **" + (CFG.assistantName||"your assistant") + "** at **" + (CFG.dealerName||"the showroom") +
+        "**. Stock, test drives, trade-ins, hours — what do you need?";
+    }
+    var sugs = CFG.suggestions || ["Browse stock", "Trade-in valuation", "Showroom hours", "Finance help"];
+    setTimeout(function() { addBotText(greet, sugs); }, 180);
+
+    return { bot: bot, focus: function() { input.focus(); }, destroy: function() { destroyed = true; container.innerHTML = ""; } };
+  }
+
+  root.TruChatUI = { mount: mount, LS_KEY: DEFAULT_LS_KEY, detectVehicleFromPage: detectVehicleFromPage };
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+
+<!-- ===== FLOATING WIDGET (dual bubbles) ===== -->
+<script>
+(function () {
+  "use strict";
+  if (window.__TRUCHAT_WIDGET__) return;
+  window.__TRUCHAT_WIDGET__ = true;
+
+  var script = document.currentScript;
+  var Z = "999990";
+
+  function resolveAsset(path) {
+    var p = path || "";
+    if (!p || /^https?:\/\//i.test(p) || p.indexOf("data:") === 0) return p;
+    return p;
+  }
+
+  var WA_GLYPH =
+    '<svg class="tc-wa-glyph" viewBox="0 0 32 32" fill="#fff" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<path d="M16.03 5.33c-5.87 0-10.64 4.76-10.64 10.63 0 1.87.49 3.7 1.42 5.31L5.33 26.67l5.53-1.45c1.55.85 ' +
+    '3.3 1.29 5.08 1.29h.01c5.86 0 10.63-4.76 10.63-10.63 0-2.84-1.11-5.51-3.11-7.52a10.56 10.56 0 0 0-7.52-3.03zm0 ' +
+    '19.35h-.01c-1.59 0-3.15-.43-4.51-1.24l-.32-.19-3.28.86.88-3.2-.21-.33a8.83 8.83 0 0 1-1.35-4.7c0-4.88 3.97-8.85 ' +
+    '8.85-8.85 2.36 0 4.58.92 6.25 2.6a8.8 8.8 0 0 1 2.59 6.26c0 4.88-3.97 8.85-8.84 8.85zm4.85-6.62c-.27-.13-1.57-.78-1.82-.86-.24-.09-.42-.13-.6.13-.18.27-.68.86-.84 ' +
+    '1.04-.15.18-.31.2-.58.07-.27-.13-1.12-.41-2.14-1.32-.79-.7-1.32-1.57-1.48-1.84-.15-.27-.02-.41.12-.54.12-.12.27-.31.4-.47.14-.16.18-.27.27-.45.09-.18.05-.34-.02-.47-.07-.13-.6-1.45-.83-1.98-.22-.52-.44-.45-.6-.46-.15-.01-.33-.01-.51-.01s-.47.07-.72.34c-.24.27-.94.92-.94 ' +
+    '2.25 0 1.32.97 2.6 1.1 2.78.13.18 1.9 2.9 4.6 4.07.64.28 1.14.44 1.53.57.64.2 1.23.17 1.69.11.52-.08 1.57-.64 1.79-1.26.22-.62.22-1.15.16-1.26-.07-.11-.24-.18-.51-.31z"/></svg>';
+
+  var SHARED_CSS_ID = "truchat-widget-chrome";
+  var WA_CSS_ID = "truchat-widget-wa";
+
+  function ensureWaCss() {
+    if (document.getElementById(WA_CSS_ID)) return;
+    var s = document.createElement("style"); s.id = WA_CSS_ID;
+    s.textContent = [
+      "@keyframes tcFabPulseWa{0%{box-shadow:0 14px 36px -10px rgba(37,211,102,.6),0 0 0 0 rgba(37,211,102,.5)}",
+      "70%{box-shadow:0 14px 36px -10px rgba(37,211,102,.6),0 0 0 18px rgba(37,211,102,0)}",
+      "100%{box-shadow:0 14px 36px -10px rgba(37,211,102,.6),0 0 0 0 rgba(37,211,102,0)}}",
+      ".tc-fab.tc-wa{background:radial-gradient(circle at 35% 30%,#42d980 0%,#25d366 55%,#1ebe5d 100%)!important;",
+      "box-shadow:0 14px 36px -10px rgba(37,211,102,.55),0 0 0 3px rgba(37,211,102,.35),0 0 0 5px rgba(0,0,0,.25)!important}",
+      ".tc-fab.tc-wa:hover{box-shadow:0 16px 40px -8px rgba(37,211,102,.75),0 0 0 3px rgba(37,211,102,.5),0 0 24px rgba(37,211,102,.4)!important}",
+      ".tc-fab.tc-wa.has-pulse{animation:tcFabIn .65s cubic-bezier(.22,1,.36,1) both,",
+      "tcFabPulseWa 2.4s ease-out 1.1s infinite,tcFabBob 3.2s ease-in-out 1.4s infinite}",
+      ".tc-fab.tc-wa .tc-ring,.tc-fab.tc-wa .tc-ring2{border-color:rgba(37,211,102,.5)}",
+      ".tc-fab.tc-wa.is-open{background:linear-gradient(145deg,#128c7e,#008069)!important}",
+      ".tc-fab.tc-wa .tc-badge{background:linear-gradient(145deg,#25d366,#059669)}",
+      ".tc-fab.tc-wa .tc-wa-glyph{width:46px;height:46px;display:block}",
+    ].join("");
+    document.head.appendChild(s);
+  }
+
+  function injectSharedCss() {
+    if (document.getElementById(SHARED_CSS_ID)) return;
+    var style = document.createElement("style"); style.id = SHARED_CSS_ID;
+    style.textContent = [
+      ".tc-widget-root{all:initial;font-family:Inter,system-ui,sans-serif}",
+      ".tc-widget-root *{box-sizing:border-box}",
+      "@media(prefers-reduced-motion:reduce){.tc-fab,.tc-panel,.tc-fab .tc-ring,.tc-fab .tc-ring2{animation:none!important}}",
+      "@keyframes tcFabIn{0%{opacity:0;transform:scale(.4) translateY(24px)}60%{opacity:1;transform:scale(1.08) translateY(-2px)}100%{transform:none}}",
+      "@keyframes tcFabPulse{0%{box-shadow:0 14px 36px -10px rgba(227,6,19,.65),0 0 0 0 rgba(227,6,19,.5)}",
+      "70%{box-shadow:0 14px 36px -10px rgba(227,6,19,.65),0 0 0 18px rgba(227,6,19,0)}",
+      "100%{box-shadow:0 14px 36px -10px rgba(227,6,19,.65),0 0 0 0 rgba(227,6,19,0)}}",
+      "@keyframes tcFabBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}",
+      "@keyframes tcRingOut{0%{transform:scale(.7);opacity:.55}100%{transform:scale(1.55);opacity:0}}",
+      "@keyframes tcPanelIn{0%{opacity:0;transform:translateY(28px) scale(.92);filter:blur(6px)}100%{opacity:1;transform:none;filter:none}}",
+      "@keyframes tcPanelOut{0%{opacity:1;transform:none}100%{opacity:0;transform:translateY(16px) scale(.96)}}",
+      "@keyframes tcLabelIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}",
+      ".tc-fab{position:fixed;width:68px;height:68px;border-radius:50%;border:none;cursor:pointer;padding:0;",
+      "background:radial-gradient(circle at 35% 30%,#2a2d38 0%,#0a0b10 70%);color:#fff;",
+      "font-weight:800;font-size:12px;letter-spacing:.02em;",
+      "box-shadow:0 14px 36px -10px rgba(227,6,19,.55),0 0 0 3px rgba(227,6,19,.35),0 0 0 5px rgba(0,0,0,.35);",
+      "display:grid;place-items:center;isolation:isolate;overflow:visible;",
+      "transition:transform .25s cubic-bezier(.34,1.56,.64,1),filter .15s,box-shadow .2s;",
+      "animation:tcFabIn .65s cubic-bezier(.22,1,.36,1) both}",
+      ".tc-fab:hover{transform:scale(1.1);filter:brightness(1.1);",
+      "box-shadow:0 16px 40px -8px rgba(227,6,19,.7),0 0 0 3px rgba(227,6,19,.5),0 0 24px rgba(227,6,19,.35)}",
+      ".tc-fab:active{transform:scale(.93)}",
+      ".tc-fab.has-pulse{animation:tcFabIn .65s cubic-bezier(.22,1,.36,1) both,",
+      "tcFabPulse 2.4s ease-out 1.1s infinite,tcFabBob 3.2s ease-in-out 1.4s infinite}",
+      ".tc-fab.is-open{animation:none;background:linear-gradient(145deg,#2a2d3a,#12141c);",
+      "box-shadow:0 12px 28px -10px rgba(0,0,0,.5),0 0 0 3px rgba(255,255,255,.12)}",
+      ".tc-fab .tc-ring,.tc-fab .tc-ring2{position:absolute;inset:-7px;border-radius:50%;",
+      "border:2px solid rgba(227,6,19,.5);pointer-events:none;opacity:0}",
+      ".tc-fab.has-pulse .tc-ring{animation:tcRingOut 2.4s ease-out 1.2s infinite}",
+      ".tc-fab.has-pulse .tc-ring2{animation:tcRingOut 2.4s ease-out 2s infinite}",
+      ".tc-fab .tc-fab-inner{position:relative;width:100%;height:100%;display:grid;place-items:center;border-radius:50%;overflow:hidden}",
+      ".tc-fab .tc-fab-img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;transform:scale(1.08)}",
+      ".tc-fab .tc-fab-ico{font-size:22px;line-height:1}",
+      ".tc-fab.is-open .tc-fab-inner{background:transparent}",
+      ".tc-fab.is-open .tc-fab-ico{font-size:18px;font-weight:800}",
+      ".tc-fab .tc-badge{position:absolute;top:-1px;right:-1px;width:15px;height:15px;border-radius:50%;",
+      "background:linear-gradient(145deg,#34d399,#059669);border:2px solid #fff;display:none;",
+      "box-shadow:0 2px 8px rgba(16,185,129,.5);z-index:2}",
+      ".tc-fab.has-pulse .tc-badge{display:block}",
+      ".tc-tip{position:fixed;background:rgba(12,14,20,.94);color:#fff;font-size:12px;font-weight:600;",
+      "padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);",
+      "box-shadow:0 12px 32px -12px rgba(0,0,0,.55);pointer-events:none;",
+      "opacity:0;transform:translateY(6px);transition:opacity .25s,transform .3s cubic-bezier(.22,1,.36,1);",
+      "backdrop-filter:blur(12px);white-space:nowrap}",
+      ".tc-tip.show{opacity:1;transform:none;animation:tcLabelIn .35s ease}",
+      ".tc-tip strong{color:#fecaca}",
+      ".tc-tip.tc-tip-right::after{content:'';position:absolute;top:50%;right:-5px;margin-top:-5px;border:5px solid transparent;border-left-color:rgba(12,14,20,.94)}",
+      ".tc-tip.tc-tip-left::after{content:'';position:absolute;top:50%;left:-5px;margin-top:-5px;border:5px solid transparent;border-right-color:rgba(12,14,20,.94)}",
+      ".tc-panel{position:fixed;width:min(420px,calc(100vw - 20px));",
+      "display:none;flex-direction:column;border-radius:20px;overflow:hidden;",
+      "box-shadow:0 32px 80px -20px rgba(0,0,0,.7),0 0 0 1px rgba(227,6,19,.15)}",
+      ".tc-panel.open{display:flex;animation:tcPanelIn .4s cubic-bezier(.22,1,.36,1) both}",
+      ".tc-panel.closing{display:flex;animation:tcPanelOut .24s ease forwards;pointer-events:none}",
+      ".tc-panel-inner{flex:1;min-height:0;display:flex;flex-direction:column}",
+      "@media(max-width:480px){.tc-panel{left:0!important;right:0!important;bottom:0!important;",
+      "width:100%;height:min(94vh,760px);border-radius:22px 22px 0 0;transform-origin:bottom center!important}",
+      ".tc-tip{display:none!important}}",
+    ].join("");
+    document.head.appendChild(style);
+
+    if (!document.getElementById("truchat-font")) {
+      var link = document.createElement("link"); link.id = "truchat-font"; link.rel = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap";
+      document.head.appendChild(link);
+    }
+  }
+
+  var instanceCount = 0;
+
+  function createWidget(cfgUi, fabIcon, opts) {
+    opts = opts || {};
+    var side = opts.side === "left" ? "left" : "right";
+    var bottom = opts.bottom || "24px";
+    var skin = opts.skin || "default";
+    var waSkin = skin === "whatsapp";
+    var bnum = parseInt(bottom, 10); if (isNaN(bnum)) bnum = 24;
+    instanceCount++;
+    if (waSkin) ensureWaCss();
+
+    function fabClosedHtml() {
+      var inner = waSkin ? WA_GLYPH :
+        fabIcon ? '<img class="tc-fab-img" src="' + fabIcon.replace(/"/g,"") + '" alt="" width="68" height="68" />' :
+        '<span class="tc-fab-ico">' + ((cfgUi.assistantName||"R")[0]) + '</span>';
+      return '<span class="tc-ring"></span><span class="tc-ring2"></span><span class="tc-badge"></span><span class="tc-fab-inner">' + inner + '</span>';
+    }
+    function fabOpenHtml() {
+      return '<span class="tc-fab-inner"><span class="tc-fab-ico">&#10005;</span></span>';
+    }
+
+    var root = document.createElement("div"); root.className = "tc-widget-root"; root.setAttribute("data-truchat","1");
+    var tip = document.createElement("div"); tip.className = "tc-tip tc-tip-" + side;
+    tip.style.cssText = side + ":92px;bottom:" + (bnum+14) + "px;z-index:" + Z + ";";
+    tip.innerHTML = opts.label || "Chat with <strong>Ray</strong>";
+
+    var fab = document.createElement("button"); fab.type = "button";
+    fab.className = "tc-fab" + (waSkin ? " tc-wa" : "");
+    fab.style.cssText = side + ":18px;bottom:" + bottom + ";z-index:" + Z + ";";
+    fab.setAttribute("aria-label", opts.ariaLabel || "Open chat");
+    fab.innerHTML = fabClosedHtml();
+
+    var panel = document.createElement("div"); panel.className = "tc-panel";
+    panel.setAttribute("role","dialog");
+    panel.style.cssText = side + ":14px;bottom:" + (bnum+78) + "px;height:min(640px,calc(100vh - " + (bnum+96) + "px));z-index:" + Z + ";transform-origin:bottom " + side + ";";
+    var inner = document.createElement("div"); inner.className = "tc-panel-inner";
+    panel.appendChild(inner);
+
+    root.appendChild(panel); root.appendChild(tip); root.appendChild(fab);
+    document.body.appendChild(root);
+
+    var ui = null, open = false, tipTimer = null;
+
+    function showTip(ms) { tip.classList.add("show"); clearTimeout(tipTimer); if (ms) tipTimer = setTimeout(function(){tip.classList.remove("show")}, ms); }
+
+    function setOpen(v) {
+      var want = !!v;
+      if (want === open && !(want && panel.classList.contains("closing"))) return;
+      tip.classList.remove("show");
+      if (!want && open) {
+        open = false; panel.classList.remove("open"); panel.classList.add("closing");
+        fab.classList.remove("is-open"); fab.classList.add("has-pulse"); fab.innerHTML = fabClosedHtml();
+        setTimeout(function(){panel.classList.remove("closing")}, 240); return;
+      }
+      open = want;
+      panel.classList.remove("closing"); panel.classList.toggle("open", open);
+      fab.classList.toggle("has-pulse", !open); fab.classList.toggle("is-open", open);
+      fab.innerHTML = open ? fabOpenHtml() : fabClosedHtml();
+      if (open) {
+        if (!ui) ui = window.TruChatUI.mount(inner, { config: cfgUi, skin: skin, showFoot: true, onClose: function(){setOpen(false)} });
+        setTimeout(function(){if(ui)ui.focus()}, 120);
+      }
+    }
+
+    fab.addEventListener("click", function(){setOpen(!open)});
+    fab.addEventListener("mouseenter", function(){if(!open)showTip(0)});
+    fab.addEventListener("mouseleave", function(){if(!open)tip.classList.remove("show")});
+
+    var myIndex = instanceCount;
+    setTimeout(function(){if(!open)fab.classList.add("has-pulse")}, 2800);
+    setTimeout(function(){if(!open)showTip(4000)}, 2800 + (myIndex-1)*5000);
+
+    if (opts.autoOpen) setOpen(true);
+    return { open:function(){setOpen(true)}, close:function(){setOpen(false)}, toggle:function(){setOpen(!open)} };
+  }
+
+  function boot() {
+    if (!window.TruChatQualifier || !window.TruChatUI || !window.RAY_TRUCHAT_CONFIG) return;
+    var CFG = window.RAY_TRUCHAT_CONFIG;
+    var mode = CFG.skin || "default";
+    var fabIcon = resolveAsset(CFG.fabIconUrl || CFG.logoUrl || "");
+    var logoResolved = resolveAsset(CFG.logoUrl || CFG.fabIconUrl || "");
+    var cfgUi = Object.assign({}, CFG, { logoUrl: logoResolved, fabIconUrl: fabIcon });
+
+    injectSharedCss();
+
+    var WA_LABEL = "Chat with us on <strong>WhatsApp</strong>";
+    var AI_LABEL = "Chat with <strong>" + (CFG.assistantName||"Ray") + "</strong> — stock, finance & trade-ins";
+
+    if (mode === "both") {
+      var norm = function(v,d){ v=(v==null?"":String(v)).trim(); if(!v) return d; return /^\d+$/.test(v)?v+"px":v; };
+      var waSide = CFG.waSide === "right" ? "right" : "left";
+      var aiSide = CFG.aiSide === "left" ? "left" : "right";
+      createWidget(cfgUi, fabIcon, { side:waSide, bottom:norm(CFG.waBottom,"150px"), skin:"whatsapp", label:WA_LABEL, ariaLabel:"Chat with us on WhatsApp" });
+      var ai = createWidget(cfgUi, fabIcon, { side:aiSide, bottom:norm(CFG.aiBottom,"24px"), skin:"default", label:AI_LABEL, ariaLabel:"Chat with " + (CFG.assistantName||"Ray") });
+      window.TruChatWidget = ai;
+    } else if (mode === "whatsapp") {
+      window.TruChatWidget = createWidget(cfgUi, fabIcon, { side:"right", bottom:"24px", skin:"whatsapp", label:WA_LABEL });
+    } else {
+      window.TruChatWidget = createWidget(cfgUi, fabIcon, { side:"right", bottom:"24px", skin:"default", label:AI_LABEL });
+    }
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+</script>
+
+</body>
+</html>

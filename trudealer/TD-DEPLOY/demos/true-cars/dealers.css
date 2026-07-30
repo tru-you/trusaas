@@ -1,0 +1,5 @@
+
+  html,body{height:100%;margin:0}
+  body{display:grid;place-items:center;background:#0b1220;color:#fff;
+    font-family:'IBM Plex Mono',ui-monospace,monospace;text-align:center;padding:24px}
+  a{color:#4FE3DC}

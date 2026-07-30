@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" type="image/svg+xml" href="../../demo-icon.svg"/>
+<link rel="apple-touch-icon" href="../../demo-icon.svg"/>
+<script src="../../stock-data.js"></script>
+<script src="../../demo-boot.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chatbot leads · True · True-Cars</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07080e;
+      --card: rgba(17, 20, 37, 0.9);
+      --border: rgba(255, 255, 255, 0.08);
+      --red: #1466E0;
+      --gold: #fff;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --green: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, system-ui, sans-serif; }
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(circle at 40% 0%, #0d2440 0%, #070c18 70%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; display: grid; gap: 16px; }
+    header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;
+      padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo img { width: 42px; height: 42px; object-fit: contain; background: #fff; border-radius: 10px; padding: 3px; }
+    .logo h1 { font-family: "Plus Jakarta Sans", sans-serif; font-size: 18px; color: var(--red); line-height: 1.1; }
+    .logo p { font-size: 12px; color: var(--muted); }
+    .nav-links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn {
+      border: none; border-radius: 10px; padding: 10px 14px; font-weight: 700; font-size: 12px;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-gold { background: rgba(212,160,23,0.15); color: var(--gold); border: 1px solid rgba(212,160,23,0.35); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn:hover { filter: brightness(1.08); }
+    .panel {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 18px; backdrop-filter: blur(12px);
+    }
+    .panel h2 {
+      font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+      color: #7eb6ff; margin-bottom: 10px;
+    }
+    .panel p { font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 10px; }
+    .panel strong { color: var(--text); }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+    @media (max-width: 520px) { .stats { grid-template-columns: 1fr; } }
+    .stat {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+    }
+    .stat .n { font-family: "Plus Jakarta Sans", sans-serif; font-size: 24px; font-weight: 800; }
+    .stat .l { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .q-yes { color: var(--green); font-weight: 700; }
+    .q-no { color: var(--muted); }
+    .ticket-box {
+      margin-top: 12px; background: rgba(0,0,0,0.35); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px; font-size: 11px; white-space: pre-wrap; color: var(--muted);
+      max-height: 280px; overflow: auto; min-height: 80px;
+    }
+    .ops { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .note { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+    .empty { color: var(--muted); padding: 16px 0; font-size: 13px; }
+    tr.selected td { background: rgba(20,102,224,0.12); }
+    .row-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+    .row-acts .btn { padding: 6px 8px; font-size: 11px; }
+    #gate {
+      max-width: 360px; margin: 12vh auto; background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; text-align: center;
+    }
+    #gate h1 { font-family: "Plus Jakarta Sans", sans-serif; font-size: 18px; color: var(--red); margin-bottom: 8px; }
+    #gate p { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    #gate input {
+      width: 100%; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,.35);
+      color: var(--text); padding: 12px; font-size: 14px; margin-bottom: 10px; outline: none;
+    }
+    #gate .err { color: #f87171; font-size: 12px; margin-bottom: 8px; display: none; }
+    .hidden { display: none !important; }
+    code { color: var(--gold); font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div id="gate">
+    <h1>Chatbot leads</h1>
+    <p>Private portal · True-Cars chatbot only</p>
+    <div class="err" id="pinErr">Wrong PIN</div>
+    <input id="pinIn" type="password" placeholder="PIN" autocomplete="current-password" />
+    <button class="btn btn-red" type="button" id="pinGo" style="width:100%;justify-content:center">Enter</button>
+  </div>
+
+  <div class="wrap hidden" id="app">
+    <header>
+      <div class="logo">
+        <img src="assets/truecars-mark.jpg" alt="" width="42" height="42" />
+        <div>
+          <h1>TRUE-CARS LEADS</h1>
+          <p>Inbox for True chatbot only · private</p>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a class="btn btn-ghost" href="chat.html" target="_blank" rel="noopener">Open chatbot ↗</a>
+        <a class="btn btn-ghost" href="index.html">Hub</a>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>For the web chatbot</h2>
+      <p>
+        Leads from <strong>chat.html</strong> / the WordPress widget save here when this browser was used —
+        and go via <strong>WhatsApp handoff</strong> when the visitor is qualified.
+      </p>
+      <p class="note" style="margin:0">
+        On live WordPress, set <code>leadWebhook</code> in config for remote copies (Make / Zapier / Formspree).
+        Primary path remains the WhatsApp ticket.
+      </p>
+      <div class="stats">
+        <div class="stat"><div class="n" id="statTotal">0</div><div class="l">Chatbot leads</div></div>
+        <div class="stat"><div class="n" id="statQ" style="color:var(--green)">0</div><div class="l">Qualified</div></div>
+        <div class="stat"><div class="n" id="statToday">0</div><div class="l">Today</div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Leads</h2>
+      <div class="ops" style="margin-top:0;margin-bottom:12px">
+        <button class="btn btn-ghost" type="button" id="btnRefresh">Refresh</button>
+        <button class="btn btn-ghost" type="button" id="btnExport">Export JSON</button>
+        <button class="btn btn-ghost" type="button" id="btnClear">Clear all</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Client</th>
+              <th>Interest</th>
+              <th>Q?</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadRows"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="emptyState" hidden>
+        No chatbot leads in this browser yet. Open the chatbot or site widget, run a test, then refresh.
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Ticket preview</h2>
+      <p>Select a lead → copy or open WhatsApp to the demo line.</p>
+      <div class="ticket-box" id="ticketPreview">Select a lead…</div>
+      <div class="ops">
+        <button class="btn btn-red" type="button" id="btnHandoff">WhatsApp handoff</button>
+        <button class="btn btn-gold" type="button" id="btnCopy">Copy ticket</button>
+      </div>
+      <p class="note">Handoff → <strong id="waHint">…</strong></p>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const CFG = window.TRUECARS_TRUCHAT_CONFIG || {};
+    const LS_KEY = (CFG.leadStorageKey || "truecars_truchat_leads_v1");
+    const PIN_OK = "truecars_portal_ok_v1";
+    let leads = [];
+    let selected = -1;
+
+    function personalPhone() {
+      return String(CFG.personalWhatsApp || CFG.salesWhatsApp || "").replace(/\D/g, "");
+    }
+
+    function unlock() {
+      document.getElementById("gate").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+      document.getElementById("waHint").textContent = "+" + personalPhone();
+      render();
+      setInterval(render, 8000);
+    }
+
+    const needPin = !!(CFG.portalPin && String(CFG.portalPin).length);
+    if (!needPin || sessionStorage.getItem(PIN_OK) === "1") {
+      unlock();
+    } else {
+      document.getElementById("pinGo").onclick = tryPin;
+      document.getElementById("pinIn").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") tryPin();
+      });
+      document.getElementById("pinIn").focus();
+    }
+
+    function tryPin() {
+      const v = document.getElementById("pinIn").value;
+      if (v === String(CFG.portalPin)) {
+        sessionStorage.setItem(PIN_OK, "1");
+        unlock();
+      } else {
+        document.getElementById("pinErr").style.display = "block";
+      }
+    }
+
+    function loadSaved() {
+      try {
+        return JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function esc(s) {
+      return String(s || "").replace(/[&<>]/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c];
+      });
+    }
+
+    function isToday(iso) {
+      if (!iso) return false;
+      var d = new Date(iso);
+      var n = new Date();
+      return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+    }
+
+    function render() {
+      leads = loadSaved().filter(function (r) {
+        return !r.source || r.source === "chat";
+      });
+      document.getElementById("statTotal").textContent = String(leads.length);
+      document.getElementById("statQ").textContent = String(leads.filter(function (l) { return l.qualified; }).length);
+      document.getElementById("statToday").textContent = String(leads.filter(function (l) { return isToday(l.at); }).length);
+
+      var tbody = document.getElementById("leadRows");
+      var empty = document.getElementById("emptyState");
+      if (!leads.length) {
+        tbody.innerHTML = "";
+        empty.hidden = false;
+        document.getElementById("ticketPreview").textContent = "No chatbot leads yet.";
+        selected = -1;
+        return;
+      }
+      empty.hidden = true;
+      tbody.innerHTML = leads
+        .map(function (r, i) {
+          return (
+            '<tr class="' +
+            (i === selected ? "selected" : "") +
+            '" data-i="' +
+            i +
+            '">' +
+            "<td>" +
+            esc(new Date(r.at).toLocaleString()) +
+            "</td>" +
+            "<td><b>" +
+            esc(r.name || "Prospect") +
+            '</b><br/><span style="color:var(--muted)">' +
+            esc(r.phone || "—") +
+            (r.pageUrl ? '<br/><span style="font-size:10px">' + esc(r.pageUrl.slice(0, 48)) + "…</span>" : "") +
+            "</span></td>" +
+            "<td>" +
+            esc(r.vehicleInterest || "—") +
+            (r.financeInterest ? "<br/><span style='color:var(--gold)'>Finance</span>" : "") +
+            "</td>" +
+            '<td class="' +
+            (r.qualified ? "q-yes" : "q-no") +
+            '">' +
+            (r.qualified ? "YES" : "—") +
+            '</td>' +
+            '<td class="row-acts">' +
+            '<button type="button" class="btn btn-ghost" data-act="view" data-i="' +
+            i +
+            '">View</button>' +
+            '<button type="button" class="btn btn-red" data-act="wa" data-i="' +
+            i +
+            '">WA</button>' +
+            '<button type="button" class="btn btn-ghost" data-act="del" data-i="' +
+            i +
+            '">Del</button>' +
+            "</td></tr>"
+          );
+        })
+        .join("");
+
+      tbody.querySelectorAll("tr").forEach(function (tr) {
+        tr.addEventListener("click", function (e) {
+          if (e.target.closest("button")) return;
+          selectLead(Number(tr.getAttribute("data-i")));
+        });
+      });
+      tbody.querySelectorAll("button[data-act]").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var i = Number(btn.getAttribute("data-i"));
+          var act = btn.getAttribute("data-act");
+          if (act === "view") selectLead(i);
+          if (act === "wa") {
+            selectLead(i);
+            openHandoff();
+          }
+          if (act === "del") deleteLead(i);
+        });
+      });
+
+      if (selected < 0 || selected >= leads.length) selectLead(0);
+      else selectLead(selected);
+    }
+
+    function selectLead(i) {
+      selected = i;
+      var r = leads[i];
+      if (!r) return;
+      document.getElementById("ticketPreview").textContent = r.ticket || "(no ticket)";
+      document.querySelectorAll("#leadRows tr").forEach(function (tr, idx) {
+        tr.classList.toggle("selected", idx === i);
+      });
+    }
+
+    function deleteLead(i) {
+      var target = leads[i];
+      if (!target) return;
+      var list = loadSaved().filter(function (r) {
+        if (r.at === target.at && r.phone === target.phone && r.ticket === target.ticket) return false;
+        return true;
+      });
+      localStorage.setItem(LS_KEY, JSON.stringify(list));
+      selected = -1;
+      render();
+    }
+
+    function openHandoff() {
+      var r = leads[selected];
+      if (!r || !r.ticket) {
+        alert("Select a lead with a ticket first.");
+        return;
+      }
+      var url =
+        "https://api.whatsapp.com/send?phone=" +
+        personalPhone() +
+        "&text=" +
+        encodeURIComponent(r.ticket);
+      window.open(url, "_blank");
+    }
+
+    document.getElementById("btnRefresh").onclick = render;
+    document.getElementById("btnClear").onclick = function () {
+      if (!confirm("Clear all saved leads in this browser?")) return;
+      localStorage.removeItem(LS_KEY);
+      selected = -1;
+      render();
+    };
+    document.getElementById("btnExport").onclick = function () {
+      var blob = new Blob([JSON.stringify(leads, null, 2)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "truecars-chatbot-leads.json";
+      a.click();
+    };
+    document.getElementById("btnHandoff").onclick = openHandoff;
+    document.getElementById("btnCopy").onclick = async function () {
+      var r = leads[selected];
+      var text = (r && r.ticket) || "";
+      if (!text) {
+        alert("Nothing to copy.");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Ticket copied.");
+      } catch (e) {
+        prompt("Copy ticket:", text);
+      }
+    };
+  </script>
+</body>
+</html>
+
+
+

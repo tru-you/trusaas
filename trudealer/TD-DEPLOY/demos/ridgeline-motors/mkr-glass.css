@@ -1,0 +1,148 @@
+/* Ridgeline Glass — topbar rebuild + glass/motion polish.
+   Loaded last so it can override the inline <style> block. */
+
+/* ============================================================
+   TOPBAR — was a cream strip sitting on a near-black header,
+   which read as two different sites stacked. Now one dark
+   glass column that the header continues.
+   ============================================================ */
+.topbar{
+  position:relative;
+  background:linear-gradient(180deg,#040A14 0%,#0B0A08 100%)!important;
+  color:rgba(255,255,255,.62)!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+  font-size:11px;letter-spacing:.04em;
+  backdrop-filter:blur(18px) saturate(1.25);-webkit-backdrop-filter:blur(18px) saturate(1.25);
+}
+/* hairline of brand gold, with a slow sheen travelling across it */
+.topbar::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,162,75,.5) 22%,rgba(200,162,75,.75) 50%,rgba(200,162,75,.5) 78%,transparent);
+}
+.topbar::before{
+  content:"";position:absolute;left:0;bottom:0;width:22%;height:1px;z-index:1;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);
+  animation:mkrSheen 7s cubic-bezier(.5,0,.5,1) infinite;
+}
+@keyframes mkrSheen{0%{transform:translateX(-120%);}55%,100%{transform:translateX(560%);}}
+.topbar .wrap{height:38px;}
+.topbar b{color:#fff!important;}
+.topbar a{color:rgba(255,255,255,.72)!important;font-weight:600;}
+.topbar a:hover{color:#fff!important;}
+.topbar .tb-loc{display:inline-flex;align-items:center;gap:7px;}
+.topbar .tb-loc svg{width:12px;height:12px;fill:none;stroke:var(--gold-light,#E8B76A);stroke-width:1.8;flex-shrink:0;}
+.topbar .tb-phone{display:inline-flex;align-items:center;gap:7px;}
+.topbar .tb-phone svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.9;}
+
+/* live trading-hours pill */
+.tb-status{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:4px 11px;border-radius:100px;
+  font-family:var(--mono,"IBM Plex Mono"),monospace;
+  font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid transparent;white-space:nowrap;
+}
+.tb-status i{width:6px;height:6px;border-radius:50%;flex-shrink:0;position:relative;}
+.tb-status.open{background:rgba(255,122,47,.14);border-color:rgba(255,122,47,.32);color:#FFB47A;}
+.tb-status.open i{background:#E0872F;}
+.tb-status.open i::after{
+  content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid #E0872F;
+  animation:mkrRipple 2.2s ease-out infinite;
+}
+.tb-status.shut{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:rgba(255,255,255,.6);}
+.tb-status.shut i{background:rgba(255,255,255,.4);}
+@keyframes mkrRipple{0%{transform:scale(.6);opacity:.9;}100%{transform:scale(1.9);opacity:0;}}
+
+/* ============================================================
+   HEADER — glass continuity + a live accent line
+   ============================================================ */
+header.site-header{position:relative;}
+header.site-header::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,154,82,.75),rgba(200,162,75,.6),rgba(255,154,82,.75),transparent);
+  background-size:220% 100%;
+  opacity:0;transition:opacity .45s;
+  animation:mkrDrift 9s linear infinite;
+}
+header.site-header.scrolled::after{opacity:1;}
+@keyframes mkrDrift{to{background-position:220% 0;}}
+header.site-header.scrolled .logo img{height:42px;}
+@media(min-width:900px){header.site-header.scrolled .logo img{height:48px;}}
+
+/* nav underline that sweeps in from the left */
+.nav-links a{position:relative;}
+.nav-links a::after{
+  content:"";position:absolute;left:12px;right:12px;bottom:3px;height:1.5px;border-radius:2px;
+  background:linear-gradient(90deg,var(--blue-bright,#FF9A52),var(--gold-light,#E8B76A));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .34s cubic-bezier(.22,1,.36,1);
+}
+.nav-links a:hover::after{transform:scaleX(1);}
+.nav-links a.active::after{display:none;}
+
+/* scroll progress in brand colours rather than flat blue */
+.scroll-progress{
+  background:linear-gradient(90deg,var(--gold,#C98F4B),var(--blue-bright,#FF9A52))!important;
+  box-shadow:0 0 12px rgba(255,154,82,.55);
+}
+
+/* ============================================================
+   GLASS SURFACES — depth on the flat light sections
+   ============================================================ */
+.calc-card,.visit-card,.sell-right .ss,.tc{
+  position:relative;
+  backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+}
+/* soft specular highlight along the top edge of glass panels */
+.tc::before,.calc-card::before{
+  content:"";position:absolute;left:14%;right:14%;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);
+}
+.tc{transition:transform .45s cubic-bezier(.34,1.4,.64,1),box-shadow .45s,border-color .35s;}
+.tc:hover{transform:translateY(-6px);border-color:rgba(255,122,47,.28);box-shadow:0 28px 52px -26px rgba(0,0,0,.5);}
+
+/* section headings get a slow gold-to-ink sweep on their emphasis word */
+.sec-h em{
+  background:linear-gradient(100deg,var(--blue,#FF7A2F) 0%,var(--gold,#C98F4B) 45%,var(--blue,#FF7A2F) 90%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:mkrTextSweep 9s ease-in-out infinite;
+}
+@keyframes mkrTextSweep{0%,100%{background-position:0% 0;}50%{background-position:100% 0;}}
+
+@media (prefers-reduced-motion:reduce){
+  .topbar::before,.tb-status.open i::after,header.site-header::after,
+  .sec-h em{animation:none!important;}
+  .sec-h em{background:none;-webkit-text-fill-color:currentColor;color:var(--blue,#FF7A2F);}
+  .nav-links a::after,.tc{transition:none!important;}
+}
+
+
+/* ============================================================
+   PORTALS — three identical blocks made the primary action look
+   optional. Buy now leads the composition; Sell and Finance
+   stack beside it as secondary lanes.
+   ============================================================ */
+/* Scoped to #portals: the #collections row reuses .buy/.sell class names and
+   must keep its even three-up grid. */
+@media(min-width:860px){
+  #portals .portal-grid{
+    grid-template-columns:1.55fr 1fr;
+    grid-template-rows:auto auto;
+    align-items:stretch;
+  }
+  #portals .portal-card.buy{grid-row:span 2;min-height:540px;}
+  #portals .portal-card.sell,#portals .portal-card.finance{min-height:262px;}
+  #portals .portal-card.buy .pc-body h3{font-size:clamp(28px,2.6vw,38px);letter-spacing:-.02em;}
+  #portals .portal-card.buy .pc-body p{font-size:14.5px;max-width:46ch;}
+  #portals .portal-card.sell .pc-body ul,#portals .portal-card.finance .pc-body ul{display:none;}
+  #portals .portal-card.sell .pc-body h3,#portals .portal-card.finance .pc-body h3{font-size:21px;}
+  #portals .portal-card.sell .pc-body p,#portals .portal-card.finance .pc-body p{font-size:13px;max-width:38ch;}
+}
+/* the lead card earns a warmer edge so it reads as the primary lane */
+#portals .portal-card.buy{border-color:rgba(255,154,82,.34);}
+#portals .portal-card.buy:hover{border-color:rgba(255,154,82,.6);}
+#portals .portal-card.sell:hover{border-color:rgba(226,196,111,.55);}
+#portals .portal-card.finance:hover{border-color:rgba(255,140,66,.5);}

@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════════
+   HV Motors (Worcester, ZA) — Premium Upgrade Layer
+   Deep navy blue / clean, trustworthy family dealer
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --hv-blue: #0B5BD7;
+  --hv-bright: #4D8DFF;
+  --hv-glow: rgba(11, 91, 215, 0.35);
+}
+
+/* ── Scroll progress bar ── */
+.ge-scroll-progress {
+  background: linear-gradient(90deg, #0B5BD7, #4D8DFF, #80B0FF) !important;
+  box-shadow: 0 0 10px rgba(11, 91, 215, 0.6) !important;
+}
+
+/* ── Hero ambient glow ── */
+header.hero::before, .hero::before, section.hero::before {
+  content: '';
+  position: absolute;
+  width: 700px; height: 500px;
+  background: radial-gradient(ellipse, rgba(11,91,215,0.12) 0%, transparent 70%);
+  top: 0; right: 0;
+  pointer-events: none;
+  animation: hv-hero-glow 8s ease-in-out infinite alternate;
+  z-index: 0;
+}
+@keyframes hv-hero-glow {
+  0%   { opacity: 0.5; transform: scale(0.9) translateY(0); }
+  100% { opacity: 1; transform: scale(1.1) translateY(-20px); }
+}
+
+/* ── Card hover (blue) ── */
+.portal-card:hover, .wk:hover, .vcard:hover {
+  border-color: rgba(11, 91, 215, 0.4) !important;
+  box-shadow:
+    0 24px 60px -20px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(11, 91, 215, 0.25),
+    0 0 40px -15px rgba(11, 91, 215, 0.2) !important;
+}
+
+/* ── Eyebrow text ── */
+.eyebrow, .sec-eyebrow, .layer-num {
+  color: var(--hv-bright, #4D8DFF) !important;
+  text-shadow: 0 0 16px rgba(77, 141, 255, 0.3);
+}
+
+/* ── Stat glow ── */
+.stat .n, .stat-num {
+  text-shadow: 0 0 30px rgba(11, 91, 215, 0.5) !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(11,91,215,0.5), rgba(77,141,255,0.2)) !important;
+}
+
+/* ── Particles ── */
+.ge-particle {
+  background: rgba(77, 141, 255, 0.5) !important;
+  box-shadow: 0 0 6px rgba(77,141,255,0.3) !important;
+}
+
+/* ── Button hover ── */
+.btn-primary:hover, .btn-grad:hover {
+  box-shadow: 0 12px 35px -8px rgba(11, 91, 215, 0.55) !important;
+}
+
+/* ── Finance-first pulse badge ── */
+.badge-finance, .finance-badge, .tbadge {
+  transition: all 0.3s ease;
+}
+.badge-finance:hover, .tbadge:hover {
+  border-color: rgba(11, 91, 215, 0.4) !important;
+  box-shadow: 0 0 20px rgba(11, 91, 215, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ── Trust strip ── */
+.trust-strip, .partner-bar {
+  border-color: rgba(11, 91, 215, 0.15) !important;
+}

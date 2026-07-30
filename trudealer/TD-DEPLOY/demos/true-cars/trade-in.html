@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" type="image/svg+xml" href="demo-icon.svg"/>
+<link rel="apple-touch-icon" href="demo-icon.svg"/>
+<script src="stock-data.js"></script>
+<script src="demo-boot.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sell or Trade-in Your Car — True-Cars SA | Instant Online Estimate</title>
+<meta name="description" content="Get a fair, benchmarked True-Cars estimate in 60 seconds. A TruValue remote inspection follows, and the dealership makes you a firm written offer. We buy any car — even if you don't buy ours.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,600&family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=11">
+<style>
+body{background:var(--bone);}
+.ti-hero{background:linear-gradient(135deg,var(--ink),var(--navy));color:#fff;padding:calc(var(--nav-h) + 48px) 0 60px;position:relative;overflow:hidden;}
+.ti-hero::before{content:"";position:absolute;right:-120px;top:-120px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(21,199,192,.18),transparent 65%);}
+.ti-hero .wrap{position:relative;z-index:1;}
+.ti-hero h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(34px,4.6vw,60px);line-height:1.03;letter-spacing:-.02em;max-width:16ch;}
+.ti-hero h1 em{font-style:italic;color:var(--teal-bright);font-weight:300;}
+.ti-hero p{color:var(--grey-2);font-size:17px;margin-top:16px;max-width:52ch;line-height:1.6;}
+.ti-trust{display:flex;gap:22px;flex-wrap:wrap;margin-top:26px;}
+.ti-trust span{display:inline-flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:#E4E8EE;}
+.ti-trust svg{width:17px;height:17px;color:var(--teal-bright);}
+
+.ti-wrap{max-width:820px;margin:-40px auto 90px;padding:0 24px;position:relative;z-index:5;}
+.wizard{background:var(--paper);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-lg);overflow:hidden;}
+.wiz-steps{display:flex;border-bottom:1px solid var(--line);}
+.wiz-steps .ws{flex:1;padding:16px 12px;text-align:center;font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);position:relative;font-weight:600;}
+.wiz-steps .ws.on{color:var(--blue);}
+.wiz-steps .ws.done{color:var(--teal-deep);}
+.wiz-steps .ws b{display:block;font-family:'Archivo';font-size:20px;margin-bottom:3px;}
+.wiz-steps .ws.on::after{content:"";position:absolute;left:0;bottom:-1px;width:100%;height:2px;background:var(--blue);}
+.wiz-body{padding:36px;}
+@media(max-width:560px){.wiz-body{padding:24px;}}
+.wiz-panel{display:none;animation:fadeIn .4s var(--ease);}
+.wiz-panel.on{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}}
+.wiz-h{font-family:'Fraunces',serif;font-size:26px;font-weight:600;margin-bottom:6px;}
+.wiz-sub{color:var(--grey-dark);font-size:14.5px;margin-bottom:24px;}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:560px){.opt-grid{grid-template-columns:1fr;}}
+.opt{padding:16px;border:1.5px solid var(--line-2);border-radius:12px;cursor:pointer;transition:all .2s;text-align:center;font-weight:700;font-size:14px;}
+.opt:hover{border-color:var(--blue);}
+.opt.on{border-color:var(--blue);background:rgba(20,102,224,.06);color:var(--blue);}
+.opt small{display:block;font-weight:500;color:var(--grey);font-size:11.5px;margin-top:4px;}
+.opt.on small{color:var(--blue);}
+.upload{margin-top:16px;border:2px dashed var(--line-2);border-radius:14px;padding:26px;text-align:center;color:var(--grey-dark);transition:border-color .2s;cursor:pointer;}
+.upload:hover{border-color:var(--blue);}
+.upload svg{width:34px;height:34px;color:var(--blue);margin:0 auto 10px;}
+.upload .thumbs{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+.upload .th{width:60px;height:46px;border-radius:8px;background:var(--bone-2);display:flex;align-items:center;justify-content:center;color:var(--teal-deep);}
+.wiz-nav{display:flex;justify-content:space-between;gap:12px;margin-top:28px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);}
+.toggle-row:last-child{border:none;}
+.toggle-row span{font-size:14.5px;font-weight:600;}
+.switch{width:46px;height:26px;border-radius:100px;background:var(--line-2);position:relative;transition:background .25s;flex-shrink:0;cursor:pointer;}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.switch.on{background:var(--teal-deep);}
+.switch.on::after{transform:translateX(20px);}
+
+/* offer */
+.offer-card{background:linear-gradient(135deg,var(--ink),var(--navy));color:#fff;border-radius:18px;padding:34px;text-align:center;position:relative;overflow:hidden;}
+.offer-card::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 100% at 50% 0,rgba(21,199,192,.22),transparent 60%);}
+.offer-card .in{position:relative;z-index:1;}
+.offer-lbl{font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal-bright);}
+.offer-amt{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(44px,8vw,68px);line-height:1;margin:12px 0;letter-spacing:-.02em;}
+.offer-range{font-size:14px;color:var(--grey-2);}
+.offer-meta{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:22px;font-size:12.5px;color:var(--grey-2);}
+.offer-meta b{color:#fff;}
+.confetti-note{background:rgba(21,199,192,.1);border:1px solid rgba(21,199,192,.3);border-radius:12px;padding:14px;margin-top:18px;font-size:13.5px;color:#D8DEE6;}
+.success{text-align:center;padding:20px 0;}
+.success .ico{width:76px;height:76px;border-radius:50%;background:rgba(21,199,192,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
+.success .ico svg{width:38px;height:38px;color:var(--teal-deep);}
+
+/* Free-inspection callout in hero */
+.ti-inspect{margin-top:30px;display:flex;align-items:center;gap:16px;background:rgba(21,199,192,.09);border:1px solid rgba(21,199,192,.3);border-radius:16px;padding:16px 20px;max-width:580px;backdrop-filter:blur(6px);}
+.ti-inspect .ico{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,var(--teal-deep),var(--teal));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 22px -8px rgba(14,157,152,.55);}
+.ti-inspect .ico svg{width:23px;height:23px;color:#fff;}
+.ti-inspect b{color:#fff;font-size:15px;display:block;margin-bottom:3px;letter-spacing:-.01em;}
+.ti-inspect b .free{color:var(--teal-bright);}
+.ti-inspect p{color:var(--grey-2);font-size:12.5px;margin:0;line-height:1.5;}
+
+/* How we sell — steps */
+.sell-steps{max-width:1180px;margin:0 auto;padding:20px 32px 100px;}
+.sell-steps .sh{text-align:center;margin-bottom:52px;}
+.sell-steps .sh .eyebrow{justify-content:center;}
+.sell-steps .sh h2{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(30px,3.6vw,46px);letter-spacing:-.015em;line-height:1.06;}
+.sell-steps .sh h2 em{font-style:italic;font-weight:300;color:var(--teal-deep);}
+.sell-steps .sh p{color:var(--grey-dark);font-size:16.5px;margin-top:14px;max-width:56ch;margin-inline:auto;line-height:1.6;}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+@media(max-width:820px){.steps-grid{grid-template-columns:1fr;}}
+@media(max-width:640px){.sell-steps{padding:16px 20px 72px;}.ti-inspect{flex-direction:column;text-align:center;}}
+.step-card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:36px 30px;position:relative;overflow:hidden;transition:transform .45s var(--ease),box-shadow .45s;}
+.step-card:hover{transform:translateY(-7px);box-shadow:0 34px 70px -26px rgba(20,102,224,.24);}
+.step-card .line{position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--blue),var(--teal));}
+.step-card .num{font-family:'IBM Plex Mono';font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--teal-deep);}
+.step-card .sc-ic{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--teal-deep));display:flex;align-items:center;justify-content:center;margin:18px 0 20px;box-shadow:0 14px 32px -12px rgba(20,102,224,.5);}
+.step-card .sc-ic svg{width:27px;height:27px;color:#fff;}
+.step-card h3{font-size:20px;font-weight:800;letter-spacing:-.015em;margin-bottom:10px;}
+.step-card p{font-size:14.5px;color:var(--grey-dark);line-height:1.66;}
+.steps-cta{text-align:center;margin-top:46px;}
+.steps-cta .note{margin-top:16px;font-family:'IBM Plex Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span></a>
+    <div class="nav-links">
+      <a href="performance.html">Performance</a>
+      <a href="premium-select.html">Premium Select</a>
+      <a href="certi-used.html">Certi-Used</a>
+      <a href="ev.html">EV / Hybrid</a>
+      <a href="trade-in.html" class="active">Sell / Trade-in</a>
+      <a href="finance.html">Finance</a>
+      
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-grad btn-sm" href="certi-used.html"><span>Browse Stock</span></a>
+    </div>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu">
+  <button class="mobile-menu-close" aria-label="Close menu">✕</button>
+  <a href="performance.html">Performance</a>
+  <a href="premium-select.html">Premium Select</a>
+  <a href="certi-used.html">Certi-Used</a>
+  <a href="ev.html">EV / Hybrid</a>
+  <a href="trade-in.html">Sell / Trade-in</a>
+  <a href="finance.html">Finance</a>
+  <a href="technology.html">Our Technology</a>
+  <a class="btn btn-grad" href="trade-in.html" style="margin-top:10px"><span>Sell My Car</span></a>
+</div>
+
+<section class="ti-hero">
+  <div class="wrap">
+    <div class="eyebrow teal" style="color:#7FE9E3">Sell or Trade-in</div>
+    <h1>We'll buy your car — <em>even if you don't buy ours.</em></h1>
+    <p>Get an instant, benchmarked True-Cars valuation in 60 seconds. Book a free inspection, and we'll pay you fast — nationwide.</p>
+    <div class="ti-trust">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>Instant online offer</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>No obligation</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>Same-day payment</span>
+    </div>
+    <div class="ti-inspect">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <div>
+        <b>Let us inspect your car <span class="free">free</span> — with South Africa's most complete inspection software.</b>
+        <p>A 200-point Tru3D + VIR scan Powered by TruSaaS. Every angle documented, so buyers trust it — and you get the best price.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ti-wrap">
+  <div class="wizard">
+    <div class="wiz-steps">
+      <div class="ws on" data-s="0"><b>1</b>Your car</div>
+      <div class="ws" data-s="1"><b>2</b>Condition</div>
+      <div class="ws" data-s="2"><b>3</b>Your estimate</div>
+      <div class="ws" data-s="3"><b>4</b>Book</div>
+    </div>
+    <div class="wiz-body">
+
+      <!-- STEP 1 -->
+      <div class="wiz-panel on" data-p="0">
+        <div class="wiz-h">Tell us about your car</div>
+        <div class="wiz-sub">A few basics is all we need for an instant estimate.</div>
+        <div class="field-row">
+          <div class="field"><label>Make</label><select id="tMake"></select></div>
+          <div class="field"><label>Model</label><input id="tModel" placeholder="e.g. GTI, Raider, Life"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Year</label><select id="tYear"></select></div>
+          <div class="field"><label>Mileage (km)</label><input id="tKm" type="number" placeholder="e.g. 62000" inputmode="numeric"></div>
+        </div>
+        <div class="wiz-nav">
+          <span></span>
+          <button class="btn btn-grad" onclick="TI.next()"><span>Continue</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="wiz-panel" data-p="1">
+        <div class="wiz-h">What condition is it in?</div>
+        <div class="wiz-sub">Be honest — our inspection confirms it, and honesty gets you the best price.</div>
+        <div class="opt-grid" id="condGrid">
+          <div class="opt on" data-cond="excellent">Excellent<small>Like new, no marks</small></div>
+          <div class="opt" data-cond="good">Good<small>Minor wear</small></div>
+          <div class="opt" data-cond="fair">Fair<small>Needs some love</small></div>
+        </div>
+        <div style="margin-top:22px">
+          <div class="toggle-row"><span>Full service history</span><div class="switch on" data-t="fsh"></div></div>
+          <div class="toggle-row"><span>Accident-free</span><div class="switch on" data-t="accfree"></div></div>
+          <div class="toggle-row"><span>Still under finance</span><div class="switch" data-t="finance"></div></div>
+        </div>
+        <div class="upload" onclick="TI.fakeUpload()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <b>Add photos of your car</b> (optional)<br><small>Front, rear, interior, dash — boosts your offer accuracy</small>
+          <div class="thumbs" id="tThumbs"></div>
+        </div>
+        <div class="wiz-nav">
+          <button class="btn btn-ghost" onclick="TI.prev()">Back</button>
+          <button class="btn btn-grad" onclick="TI.calcAndNext()"><span>Get my offer</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="wiz-panel" data-p="2">
+        <div class="wiz-h">Your instant True-Cars offer</div>
+        <div class="wiz-sub" id="offerCar">—</div>
+        <div class="offer-card">
+          <div class="in">
+            <div class="offer-lbl">We'll buy it for</div>
+            <div class="offer-amt" id="offerAmt">R0</div>
+            <div class="offer-range" id="offerRange">Indicative range — not an offer</div>
+            <div class="offer-meta">
+              <span>Benchmark retail <b id="offerRetail">—</b></span>
+              <span>VIR-verified on inspection</span>
+            </div>
+          </div>
+        </div>
+        <div class="confetti-note">💡 This is an indicative estimate from market benchmarks &mdash; <b>not an offer</b>. Next comes a <b>TruValue</b> remote inspection: a guided live video walkthrough of your car, about 20 minutes, from wherever you are. The <b>dealership</b> then makes you a firm written offer based on what it actually sees &mdash; no algorithm prices your car.</div>
+        <div class="wiz-nav">
+          <button class="btn btn-ghost" onclick="TI.prev()">Back</button>
+          <button class="btn btn-grad" onclick="TI.next()"><span>Book my inspection</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="wiz-panel" data-p="3">
+        <div id="bookForm">
+          <div class="wiz-h">Lock in your offer</div>
+          <div class="wiz-sub">Leave your details — our team will confirm your inspection on WhatsApp within the hour.</div>
+          <div class="field-row">
+            <div class="field"><label>Full name</label><input id="bName" placeholder="Your name"></div>
+            <div class="field"><label>Mobile</label><input id="bPhone" placeholder="+27 …"></div>
+          </div>
+          <div class="field"><label>Preferred branch / area</label><select id="bBranch"><option>Cape Town</option><option>Johannesburg</option><option>Pretoria</option><option>Durban</option><option>Gqeberha</option><option>Collect from me</option></select></div>
+          <div class="field"><label>How would you like the inspection?</label>
+            <div class="opt-grid" id="inspGrid">
+              <div class="opt on" data-insp="branch">At a branch</div>
+              <div class="opt" data-insp="mobile">Mobile / at home</div>
+              <div class="opt" data-insp="lvs">LVS live video</div>
+            </div>
+          </div>
+          <div class="wiz-nav">
+            <button class="btn btn-ghost" onclick="TI.prev()">Back</button>
+            <button class="btn btn-grad btn-lg" onclick="TI.submit()"><span>Confirm &amp; book inspection</span></button>
+          </div>
+        </div>
+        <div id="bookDone" class="success" style="display:none">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="wiz-h">You're booked! 🎉</div>
+          <div class="wiz-sub" id="doneMsg">Reference —</div>
+          <div class="offer-card" style="margin-top:10px"><div class="in"><div class="offer-lbl">Your held offer</div><div class="offer-amt" id="doneAmt" style="font-size:44px">R0</div></div></div>
+          <div style="margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <a class="btn btn-wa" href="https://wa.me/27620502091">Message us on WhatsApp</a>
+            <a class="btn btn-ghost" href="certi-used.html">Browse your next car</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p style="text-align:center;color:var(--grey);font-size:12.5px;margin-top:20px;font-family:'IBM Plex Mono'">AI-powered by TruLens AI · VIR-verified valuations · POPIA compliant</p>
+</div>
+
+<!-- HOW WE SELL YOUR CAR -->
+<section class="sell-steps">
+  <div class="sh">
+    <div class="eyebrow teal">Let us sell your car</div>
+    <h2>Three steps to <em>the best price</em>, countrywide.</h2>
+    <p>You don't chase buyers one at a time. We inspect once, then put your car in front of a national network of verified buyers — and they compete for it.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card rv d1">
+      <div class="line"></div>
+      <div class="num">STEP 01</div>
+      <div class="sc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <h3>We inspect</h3>
+      <p>A free Tru3D + VIR inspection — 200 points, every panel, engine and interior documented on TruSaaS, SA's most complete inspection platform. One honest report buyers can trust.</p>
+    </div>
+    <div class="step-card rv d2">
+      <div class="line"></div>
+      <div class="num">STEP 02</div>
+      <div class="sc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg></div>
+      <h3>Countrywide reach</h3>
+      <p>Your verified listing goes live to buyers in every province — Cape Town to Joburg, Durban to Gqeberha. Distance is no barrier: we handle inspection, paperwork and nationwide collection.</p>
+    </div>
+    <div class="step-card rv d3">
+      <div class="line"></div>
+      <div class="num">STEP 03</div>
+      <div class="sc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 4 3 5-7"/></svg></div>
+      <h3>Best price from buyers countrywide</h3>
+      <p>Verified buyers across South Africa bid on your car — no lowball, no haggle. You accept the strongest offer, and get paid the same day. Even if you never buy one of ours.</p>
+    </div>
+  </div>
+  <div class="steps-cta">
+    <a class="btn btn-grad btn-lg" href="#" onclick="document.querySelector('.wizard').scrollIntoView({behavior:'smooth'});return false;"><span>Get my free inspection &amp; offer</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    <div class="note">Free inspection · No obligation · Same-day payment</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="index.html"><span class="tc-logo"><span class="tc-true">True</span><span class="tc-car">Cars</span><span class="tc-sa">SA</span></span></a>
+        <p>The fair way to buy and sell a car in South Africa. Tru3D verified, transparently priced, delivered nationwide. Proudly built in Cape Town.</p>
+        <div class="foot-cta-row">
+          <a class="btn btn-grad btn-sm" href="technology.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Our Platform</a>
+          <a class="btn btn-wa btn-sm" href="https://wa.me/27620502091?text=Hi%20Paul%2C%20I%27m%20a%20dealer%20and%20I%27d%20like%20to%20book%20a%20demo%20of%20TruSaaS." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;flex-shrink:0"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg> Book a demo</a>
+        </div>
+        <div class="foot-socials">
+          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="https://wa.me/27620502091" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg></a>
+        </div>
+      </div>
+      <div class="foot-col"><h5>Buy</h5><a href="certi-used.html">All Stock</a><a href="ev.html">Electric &amp; Hybrid</a><a href="certi-used.html">Bakkies &amp; 4x4</a><a href="premium-select.html">Premium Select</a><a href="finance.html">Finance</a></div>
+      <div class="foot-col"><h5>Sell &amp; Tech</h5><a href="trade-in.html">Sell / Trade-in</a><a href="vehicle.html?id=porsche-cayenne-s-19">Tru3D demo</a><a href="portal.html">Dealer Console</a></div>
+      <div class="foot-col"><h5>Talk to us</h5>
+        <ul class="foot-contact">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Cape Town · Western Cape · Eastern Cape · Kenya</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 2.9a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.5c.9.3 1.9.6 2.9.7a2 2 0 011.7 2z"/></svg><a href="https://wa.me/27620502091">+27 62 050 2091 · WhatsApp</a></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg><span>hello@true-cars.co.za</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom"><span>© 2026 True-Cars SA · Built by Paul de Beer</span><span class="ax">Powered by <a href="truesaas.html" style="color:inherit;text-decoration:none"><b>TruSaaS</b></a> · <a href="https://true-cars.co.za" style="color:inherit;text-decoration:underline;text-underline-offset:2px">true-cars.co.za</a></span></div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js?v=14"></script>
+<script src="assets/js/site-chrome.js?v=15"></script>
+<script src="assets/js/site.js?v=14"></script>
+<script>
+window.TI = {
+  step:0, cond:'excellent', insp:'branch',
+  toggles:{fsh:true, accfree:true, finance:false},
+  base:{ // benchmark value of a ~2023 example, good condition, ~40k km (ZAR)
+    'Toyota':{_d:300000,'hilux':540000,'fortuner':630000,'corolla cross':430000,'corolla':300000,'quest':240000,'starlet':250000,'rav4':520000,'land cruiser':1250000},
+    'Volkswagen':{_d:290000,'polo':310000,'polo vivo':215000,'golf gti':610000,'golf r':820000,'golf':420000,'tiguan':520000,'t-cross':360000},
+    'Ford':{_d:300000,'ranger':560000,'everest':720000,'fiesta':230000,'figo':190000},
+    'BMW':{_d:520000,'3 series':600000,'x3':720000,'1 series':420000,'m4':1500000},
+    'Mercedes-Benz':{_d:560000,'c-class':650000,'a-class':520000,'glc':900000},
+    'Hyundai':{_d:260000,'i20':250000,'grand i10':200000,'tucson':480000,'creta':390000},
+    'Kia':{_d:250000,'picanto':205000,'sonet':330000,'seltos':420000},
+    'Suzuki':{_d:220000,'swift':235000,'jimny':420000,'baleno':245000,'fronx':320000},
+    'Nissan':{_d:240000,'np200':190000,'magnite':260000,'navara':520000,'x-trail':480000},
+    'Isuzu':{_d:300000,'d-max':510000,'kb':360000,'mu-x':650000},
+    'Haval':{_d:320000,'jolion':340000,'h6':470000},
+    'BYD':{_d:420000,'atto 3':560000,'dolphin':480000,'seal':720000},
+    'Other':{_d:280000}
+  },
+  init(){
+    const mk=document.getElementById('tMake');
+    Object.keys(this.base).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;mk.appendChild(o);});
+    mk.value='Toyota';
+    const yr=document.getElementById('tYear');
+    for(let y=2026;y>=2008;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yr.appendChild(o);}
+    yr.value=2022;
+    // condition + inspection option selects
+    document.querySelectorAll('#condGrid .opt').forEach(o=>o.addEventListener('click',()=>{document.querySelectorAll('#condGrid .opt').forEach(x=>x.classList.remove('on'));o.classList.add('on');this.cond=o.dataset.cond;}));
+    document.querySelectorAll('#inspGrid .opt').forEach(o=>o.addEventListener('click',()=>{document.querySelectorAll('#inspGrid .opt').forEach(x=>x.classList.remove('on'));o.classList.add('on');this.insp=o.dataset.insp;}));
+    document.querySelectorAll('.switch[data-t]').forEach(s=>s.addEventListener('click',()=>{s.classList.toggle('on');this.toggles[s.dataset.t]=s.classList.contains('on');}));
+    // prefill from URL (?make=&model=)
+    const p=new URLSearchParams(location.search);
+    if(p.get('make')&&this.base[p.get('make')]) mk.value=p.get('make');
+    if(p.get('model')) document.getElementById('tModel').value=p.get('model');
+  },
+  go(s){ this.step=Math.max(0,Math.min(3,s));
+    document.querySelectorAll('.wiz-panel').forEach(p=>p.classList.toggle('on',+p.dataset.p===this.step));
+    document.querySelectorAll('.wiz-steps .ws').forEach(w=>{const n=+w.dataset.s;w.classList.toggle('on',n===this.step);w.classList.toggle('done',n<this.step);});
+    document.querySelector('.wizard').scrollIntoView({behavior:'smooth',block:'start'});
+  },
+  next(){ if(this.step===0 && !this.validate1()) return; this.go(this.step+1); },
+  prev(){ this.go(this.step-1); },
+  validate1(){
+    if(!document.getElementById('tModel').value.trim()){ TCSA.toast('Please enter your model.'); return false; }
+    const km=+document.getElementById('tKm').value; if(!km||km<0){ TCSA.toast('Please enter your mileage.'); return false; }
+    return true;
+  },
+  fakeUpload(){ const t=document.getElementById('tThumbs'); if(t.children.length>=4) return;
+    const d=document.createElement('div'); d.className='th'; d.innerHTML='<svg viewBox="0 0 24 24" width="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>'; t.appendChild(d);
+    TCSA.toast('Photo added — thanks, this sharpens your quote.');
+  },
+  estimate(){
+    const make=document.getElementById('tMake').value;
+    const model=document.getElementById('tModel').value.trim().toLowerCase();
+    const year=+document.getElementById('tYear').value;
+    const km=+document.getElementById('tKm').value;
+    const grp=this.base[make]||this.base.Other;
+    let base=grp._d;
+    Object.keys(grp).forEach(k=>{ if(k!=='_d' && model.includes(k)) base=Math.max(base,grp[k]); });
+    // age: benchmark is 2023; +9% per newer year, -9% per older
+    const age=1 + (year-2023)*0.09; const ageF=Math.max(0.42,Math.min(1.4,age));
+    // mileage vs expected (20k/yr from year)
+    const expected=Math.max(10000,(2026-year)*20000);
+    const mF=Math.max(0.68,Math.min(1.12,1-(km-expected)/Math.max(expected,1)*0.14));
+    const condF={excellent:1.05,good:1.0,fair:0.87}[this.cond];
+    let histF=1; if(this.toggles.fsh) histF+=0.04; if(this.toggles.accfree) histF+=0.03; else histF-=0.05;
+    let val=base*ageF*mF*condF*histF;
+    val=Math.max(25000,Math.round(val/500)*500);
+    const retail=Math.round(val*1.14/500)*500;
+    return {val,low:Math.round(val*0.95/500)*500,high:Math.round(val*1.05/500)*500,retail,make,model:document.getElementById('tModel').value.trim(),year,km};
+  },
+  calcAndNext(){
+    const e=this.estimate(); this._est=e;
+    document.getElementById('offerCar').textContent=`${e.year} ${e.make} ${e.model} · ${e.km.toLocaleString('en-ZA')} km · ${this.cond} condition`;
+    document.getElementById('offerRetail').textContent=TCSA.fmtPrice(e.retail);
+    document.getElementById('offerRange').textContent=`Estimated range ${TCSA.fmtPrice(e.low)} – ${TCSA.fmtPrice(e.high)}`;
+    // count-up
+    const el=document.getElementById('offerAmt'); let n=Math.round(e.val*0.7); const step=Math.round((e.val-n)/28);
+    const t=setInterval(()=>{ n+=step; if(n>=e.val){n=e.val;clearInterval(t);} el.textContent=TCSA.fmtPrice(n); },26);
+    this.go(2);
+  },
+  submit(){
+    const name=document.getElementById('bName').value.trim(), phone=document.getElementById('bPhone').value.trim();
+    if(!name||!phone){ TCSA.toast('Please add your name and mobile number.'); return; }
+    const e=this._est||this.estimate();
+    const rec=TCSA.leads.add({name,phone,source:'Trade-in',
+      intent:`Trade-in ${e.year} ${e.make} ${e.model} (${e.km.toLocaleString('en-ZA')}km) · ${this.insp} inspection · ${document.getElementById('bBranch').value}`,
+      value:TCSA.fmtPrice(e.val), status:'Qualified'});
+    document.getElementById('bookForm').style.display='none';
+    document.getElementById('bookDone').style.display='block';
+    document.getElementById('doneMsg').innerHTML=`Reference <b>${rec.id}</b> · we'll WhatsApp <b>${phone}</b> within the hour.`;
+    document.getElementById('doneAmt').textContent=TCSA.fmtPrice(e.val);
+    TCSA.toast('Inspection booked ✓ Offer held for 7 days.');
+  }
+};
+document.addEventListener('DOMContentLoaded',()=>TI.init());
+</script>
+</body>
+</html>
