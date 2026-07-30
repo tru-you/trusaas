@@ -110,6 +110,7 @@ import {
   copyStockBlurb,
 } from "./lib/salesShare";
 import { initGlassMotion } from "./lib/glassMotion";
+import { TRUFLOW_LITE_URL } from "./lib/ecosystem";
 
 /** Which dealership a newly-added vehicle belongs to — loaded from the
  *  server so every onboarded dealer appears automatically.
@@ -487,10 +488,10 @@ export default function App() {
   };
 
   // Form Fields State
-  const [newLeadForm, setNewLeadForm] = useState({ firstName: "", lastName: "", phone: "082 ", email: "", vehicleId: "", source: "Website", notes: "" });
+  const [newLeadForm, setNewLeadForm] = useState({ firstName: "", lastName: "", phone: "", email: "", vehicleId: "", source: "Website", notes: "" });
   const [newInvoiceForm, setNewInvoiceForm] = useState({ leadId: "", vehicleId: "", amount: 0, paymentMethod: "Bank Transfer", status: "Sent" as any, dueDate: new Date().toISOString().slice(0, 10) });
-  const [newAgreementForm, setNewAgreementForm] = useState({ leadId: "", vehicleId: "", purchasePrice: 0, depositAmount: 50000, type: "Vehicle Sale" as any, status: "Pending Signature" as any });
-  const [newTaskForm, setNewTaskForm] = useState({ title: "", leadId: "", vehicleId: "", assignedUserId: "u1", dueDate: new Date().toISOString().slice(0, 10), priority: "Normal" as any, status: "Pending" as any });
+  const [newAgreementForm, setNewAgreementForm] = useState({ leadId: "", vehicleId: "", purchasePrice: 0, depositAmount: 0, type: "Vehicle Sale" as any, status: "Pending Signature" as any });
+  const [newTaskForm, setNewTaskForm] = useState({ title: "", leadId: "", vehicleId: "", assignedUserId: "", dueDate: new Date().toISOString().slice(0, 10), priority: "Normal" as any, status: "Pending" as any });
   const [newUserForm, setNewUserForm] = useState({ name: "", email: "", role: "salesperson" as any, phone: "" });
   // Staff logins ("seats") — the principal manages these, and activeSeats is
   // what the dealership is billed on.
@@ -499,7 +500,7 @@ export default function App() {
   const [seatError, setSeatError] = useState("");
   /** A freshly issued code, shown once. Never fetched back from the server. */
   const [issuedCode, setIssuedCode] = useState<{ name: string; code: string } | null>(null);
-  const [newVehicleForm, setNewVehicleForm] = useState<NewVehicleForm>({ year: 2026, make: "Volkswagen", model: "Amarok", trim: "Double Cab Style V6", engine: "3.0L V6 Turbo Diesel", fuelType: "Diesel", transmission: "Automatic", bodyType: "Bakkie Utility", retailPrice: 745000, costPrice: 640000, mileage: 15300, stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000), description: "Immaculate condition. Full service history. Active info display cockpit.", dealershipId: getAccount()?.dealershipId || "d1", category: "" });
+  const [newVehicleForm, setNewVehicleForm] = useState<NewVehicleForm>({ year: new Date().getFullYear(), make: "", model: "", trim: "", engine: "", fuelType: "Petrol", transmission: "Automatic", bodyType: "", retailPrice: 0, costPrice: 0, mileage: 0, stockNumber: "", description: "", dealershipId: getAccount()?.dealershipId || "", category: "" });
 
   const [vinInput, setVinInput] = useState("");
   const [vinDecoding, setVinDecoding] = useState(false);
@@ -985,10 +986,9 @@ export default function App() {
     e.preventDefault();
     await createLead({
       ...newLeadForm,
-      digitalScore: Math.floor(Math.random() * 41) + 50
     });
     setIsLeadModalOpen(false);
-    setNewLeadForm({ firstName: "", lastName: "", phone: "082 ", email: "", vehicleId: state.vehicles[0]?.id || "", source: "Website", notes: "" });
+    setNewLeadForm({ firstName: "", lastName: "", phone: "", email: "", vehicleId: state.vehicles[0]?.id || "", source: "Website", notes: "" });
     loadAllState();
   };
 
@@ -1109,20 +1109,20 @@ export default function App() {
     );
     setActiveSection("inventory");
     setNewVehicleForm({
-      year: 2026,
-      make: "Volkswagen",
-      model: "Amarok",
-      trim: "Double Cab Style V6",
-      engine: "3.0L V6 Turbo Diesel",
-      fuelType: "Diesel",
+      year: new Date().getFullYear(),
+      make: "",
+      model: "",
+      trim: "",
+      engine: "",
+      fuelType: "Petrol",
       transmission: "Automatic",
-      bodyType: "Bakkie Utility",
-      retailPrice: 745000,
-      costPrice: 640000,
-      mileage: 15300,
-      stockNumber: "JHB-" + Math.floor(Math.random() * 8999 + 1000),
-      description: "Immaculate condition. Full service history. Active info display cockpit.",
-      dealershipId: dealershipId || "d1",
+      bodyType: "",
+      retailPrice: 0,
+      costPrice: 0,
+      mileage: 0,
+      stockNumber: "",
+      description: "",
+      dealershipId: dealershipId || "",
       category: "",
     });
     loadAllState();
@@ -1131,26 +1131,27 @@ export default function App() {
     }
   };
 
-  // End of Day CSV spreadsheet export generator
   const handleExportCSV = () => {
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [
-          ["TruFlow Light - End of Day Operations Summary"],
-          ["Date", new Date().toISOString().split('T')[0]],
-          [],
-          ["Key Performance Indicators", "Value"],
-          ["Leads Engaged / Worked", "12 Leads"],
-          ["Vehicles Moved (Sold)", "3 Units"],
-          ["Total Reconditioning Outlay", "R 18,500"],
-          ["Gross Sales Revenue", "R 1,515,000"],
-          ["Total Profit Realized", "R 185,000"],
-          [],
-          ["Finalized Sales Transactions"],
-          ["Stock Ref", "Vehicle Model", "Client Name", "Sale Amount", "Calculated Gross Margin"],
-          ["JHB-8319", "Toyota Hilux 2.8 GD-6 Legend", "Aiden Fourie", "R 825 000", "R 115 000"],
-          ["CT-5219", "Volkswagen Golf 8 GTI", "Sipho Dlamini", "R 690 000", "R 70 000"]
-        ].map(e => e.map(val => `"${val}"`).join(",")).join("\n");
-        
+    const sold = state.vehicles.filter(v => v.status === "SOLD");
+    const totalRevenue = sold.reduce((s, v) => s + (v.retailPrice || 0), 0);
+    const totalProfit = sold.reduce((s, v) => s + ((v.retailPrice || 0) - (v.costPrice || 0)), 0);
+    const reconTotal = state.vehicles.flatMap((v: any) => v.reconTasks || []).reduce((s: number, t: any) => s + (t.cost || 0), 0);
+    const rows: (string | number)[][] = [
+      ["TruFlow - End of Day Operations Summary"],
+      ["Date", new Date().toISOString().split('T')[0]],
+      [],
+      ["Key Performance Indicators", "Value"],
+      ["Leads Engaged / Worked", `${state.leads.length} Leads`],
+      ["Vehicles Moved (Sold)", `${sold.length} Units`],
+      ["Total Reconditioning Outlay", `R ${reconTotal.toLocaleString()}`],
+      ["Gross Sales Revenue", `R ${totalRevenue.toLocaleString()}`],
+      ["Total Profit Realized", `R ${totalProfit.toLocaleString()}`],
+      [],
+      ["Finalized Sales Transactions"],
+      ["Stock Ref", "Vehicle Model", "Sale Amount", "Calculated Gross Margin"],
+      ...sold.map(v => [v.stockNumber || "", `${v.year} ${v.make} ${v.model}`, `R ${(v.retailPrice || 0).toLocaleString()}`, `R ${((v.retailPrice || 0) - (v.costPrice || 0)).toLocaleString()}`]),
+    ];
+    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -1226,11 +1227,17 @@ export default function App() {
               <>
                 {/* The bare URL sat directly above a button that goes to the
                     same place — the button says what it does, the URL didn't. */}
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2 mt-3 flex-wrap">
                   <a href={site} target="_blank" rel="noopener noreferrer"
                      className="text-[13px] px-3 py-1 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-faint)] transition-colors">
                     Your showroom
                   </a>
+                  {(mine?.products || []).includes("flow-lite") && (
+                    <a href={TRUFLOW_LITE_URL} target="_blank" rel="noopener noreferrer"
+                       className="text-[13px] px-3 py-1 rounded-full bg-[rgba(0,136,255,0.08)] text-[#38BDF8] border border-[rgba(0,136,255,0.2)] hover:bg-[rgba(0,136,255,0.12)] transition-colors">
+                      TruFlow Light
+                    </a>
+                  )}
                 </div>
               </>
             );
@@ -3906,11 +3913,11 @@ export default function App() {
               {seatError && <p className="text-[13px] text-[color:var(--muted)]">{seatError}</p>}
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Full Name</label>
-                <input type="text" required placeholder="Aiden Fourie" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
+                <input type="text" required placeholder="Full name" value={newUserForm.name} onChange={(e) => setNewUserForm((p) => ({ ...p, name: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">E-mail Address</label>
-                <input type="email" required placeholder="aiden@true-cars.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
+                <input type="email" required placeholder="name@dealership.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
@@ -4018,33 +4025,39 @@ export default function App() {
             </div>
 
             {/* Daily Summary Metrics Block */}
+            {(() => {
+              const sold = state.vehicles.filter(v => v.status === "SOLD");
+              const totalRevenue = sold.reduce((s, v) => s + (v.retailPrice || 0), 0);
+              const totalProfit = sold.reduce((s, v) => s + ((v.retailPrice || 0) - (v.costPrice || 0)), 0);
+              const reconTotal = state.vehicles.flatMap((v: any) => v.reconTasks || []).reduce((s: number, t: any) => s + (t.cost || 0), 0);
+              const marginPct = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : "0.0";
+              return (<>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
                 <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Leads Worked</span>
-                <span className="text-lg font-semibold text-[color:var(--white)]">12 Leads</span>
+                <span className="text-lg font-semibold text-[color:var(--white)]">{state.leads.length} Leads</span>
                 <span className="text-[13px] text-[color:var(--cyan)]">Active response</span>
               </div>
               <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Cars Moved Today</span>
-                <span className="text-lg font-semibold text-[color:var(--white)]">3 Units</span>
+                <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Cars Moved</span>
+                <span className="text-lg font-semibold text-[color:var(--white)]">{sold.length} Units</span>
                 <span className="text-[13px] text-[color:var(--cyan)]">Closed Won status</span>
               </div>
               <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[13px] font-bold text-[color:var(--cyan-bright)]  font-mono">EOD Net Profit</span>
-                <span className="text-lg font-semibold text-[color:var(--cyan)]">R 185,000</span>
-                <span className="text-[13px] text-[color:var(--cyan)]">11.4% avg margin</span>
+                <span className="text-[13px] font-bold text-[color:var(--cyan-bright)]  font-mono">Net Profit</span>
+                <span className="text-lg font-semibold text-[color:var(--cyan)]">R {totalProfit.toLocaleString()}</span>
+                <span className="text-[13px] text-[color:var(--cyan)]">{marginPct}% avg margin</span>
               </div>
             </div>
 
-            {/* Financial and Recon Outlay Details */}
             <div className="bg-[color:var(--ink)] rounded-xl border border-white/5 p-4 flex flex-col gap-3">
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Reconditioning Expenditures</span>
-                <span className="font-mono font-bold text-[color:var(--muted)]">- R 18,500</span>
+                <span className="font-mono font-bold text-[color:var(--muted)]">- R {reconTotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Gross Dealership Revenue</span>
-                <span className="font-mono font-bold text-[color:var(--white)]">R 1,515,000</span>
+                <span className="font-mono font-bold text-[color:var(--white)]">R {totalRevenue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Unpaid invoices</span>
@@ -4052,26 +4065,23 @@ export default function App() {
               </div>
             </div>
 
-            {/* Daily Sold Vehicles Details */}
             <div className="flex flex-col gap-2">
-              <span className="text-[13px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)] font-mono px-1">Sold today</span>
+              <span className="text-[13px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)] font-mono px-1">Sold vehicles</span>
               <div className="flex flex-col gap-2">
-                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-3 py-3 flex justify-between items-center text-[13px]">
-                  <div>
-                    <span className="font-bold text-[color:var(--white)] block">Toyota Hilux 2.8 GD-6 Legend</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: CT-5112 | Closed by Aiden Fourie</span>
+                {sold.length === 0 && <span className="text-[13px] text-[rgba(232,234,230,0.72)] px-1">No sold vehicles on record.</span>}
+                {sold.map(v => (
+                  <div key={v.id} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-3 py-3 flex justify-between items-center text-[13px]">
+                    <div>
+                      <span className="font-bold text-[color:var(--white)] block">{v.year} {v.make} {v.model} {v.trim}</span>
+                      <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: {v.stockNumber}</span>
+                    </div>
+                    <span className="font-mono font-semibold text-[color:var(--cyan)]">R {((v.retailPrice || 0) - (v.costPrice || 0)).toLocaleString()} profit</span>
                   </div>
-                  <span className="font-mono font-semibold text-[color:var(--cyan)]">R 115,000 profit</span>
-                </div>
-                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-3 py-3 flex justify-between items-center text-[13px]">
-                  <div>
-                    <span className="font-bold text-[color:var(--white)] block">Volkswagen Golf 8 GTI</span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: JHB-8319 | Closed by Sipho Dlamini</span>
-                  </div>
-                  <span className="font-mono font-semibold text-[color:var(--cyan)]">R 70,000 profit</span>
-                </div>
+                ))}
               </div>
             </div>
+              </>);
+            })()}
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-end gap-3 border-t border-[color:var(--cyan-faint)] pt-4">
@@ -4086,7 +4096,7 @@ export default function App() {
               <button 
                 type="button" 
                 onClick={() => {
-                  addNotification("EOD Summary Dispatched", "The compiled daily operations summary has been securely emailed to dealers@real-cars.co.za and all stakeholders.", "info");
+                  addNotification("EOD Summary Dispatched", "The compiled daily operations summary has been emailed to stakeholders.", "info");
                   setShowEODReport(false);
                 }} 
                 className="px-4 py-2 bg-gradient-to-r from-[color:var(--cyan-faint)] to-[color:var(--cyan-soft)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan-bright)] hover:bg-[color:var(--cyan-soft)] rounded-xl text-[13px] font-bold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"

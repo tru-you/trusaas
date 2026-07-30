@@ -835,121 +835,22 @@ app.get("/api/auth/codes", (req: any, res) => {
   });
 });
 
-// Default high-fidelity seed data
+// Clean initial state — no demo data, no seed vehicles or leads.
+// Dealerships are config (they map dealer slugs to websites) so they stay.
 const DEFAULT_MOCK_STATE: DMSState = {
-  // Every dealer live on this instance needs an entry, and its id must match
-  // its slug below — that pairing is what keeps each dealer's stock
-  // on their own website only.
   dealerships: [
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
     { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://www.carsoncaledon.co.za' },
-    /* The real True Cars dealership is "true-cars", created on the instance
-       rather than seeded here. A seeded "truecars" (d3) sat alongside it for a
-       while — two dealerships one hyphen apart, both claiming
-       www.true-cars.co.za — and the website was pointed at the empty one, which
-       is why it rendered no stock while the cars sat correct in the DMS.
-       Deliberately not re-added: see the prune in readState. */
   ],
-  vehicles: [
-    { 
-      id: 'v1', year: 2023, make: 'Ford', model: 'Ranger', trim: 'Wildtrak', status: 'INVENTORY', retailPrice: 685000, costPrice: 580000, mileage: 18400, transmission: 'Automatic', fuelType: 'Diesel', stockNumber: 'PE-1042', dateAcquired: '2026-07-05', daysInInventory: 8, description: 'Single owner clean condition wildtrak. Full service history at Ford.',
-      images: [],
-      reconTasks: [
-        { id: 'rc-1', name: 'Premium Polish & Buffing', cost: 1800, status: 'Completed', dateAdded: '2026-07-06' },
-        { id: 'rc-2', name: 'Windscreen Chip Repair', cost: 1200, status: 'In Progress', dateAdded: '2026-07-08' }
-      ]
-    },
-    { 
-      id: 'v2', year: 2022, make: 'Volkswagen', model: 'Golf', trim: 'GTI', status: 'INVENTORY', retailPrice: 485000, costPrice: 410000, mileage: 24100, transmission: 'Automatic', fuelType: 'Petrol', stockNumber: 'PE-1038', dateAcquired: '2026-07-01', daysInInventory: 14, description: 'Volkswagen Golf GTI DSG. Finished in Pure White with tartan sports seats, sunroof, and active info display.',
-      images: [],
-      reconTasks: [
-        { id: 'rc-3', name: 'Front Brake Pads Replacement', cost: 2400, status: 'Completed', dateAdded: '2026-07-02' }
-      ]
-    },
-    { 
-      id: 'v3', year: 2023, make: 'Toyota', model: 'Hilux', trim: 'Legend', status: 'INVENTORY', retailPrice: 612000, costPrice: 530000, mileage: 9800, transmission: 'Automatic', fuelType: 'Diesel', stockNumber: 'CT-2091', dateAcquired: '2026-07-10', daysInInventory: 5, description: 'Excellent utility truck with full canopy cover, roller shutter, and premium audio.',
-      images: [],
-      reconTasks: []
-    },
-    { 
-      id: 'v4', year: 2021, make: 'BMW', model: 'X5', trim: 'xDrive30d', status: 'PENDING', retailPrice: 945000, costPrice: 830000, mileage: 52300, transmission: 'Automatic', fuelType: 'Diesel', stockNumber: 'PE-1015', dateAcquired: '2026-06-03', daysInInventory: 42, description: 'Sophisticated dark black metallic finish with premium luxury leather upholstery, panoroma roof.',
-      images: [],
-      reconTasks: [
-        { id: 'rc-4', name: 'Leather Seat Reconditioning', cost: 3500, status: 'Completed', dateAdded: '2026-06-05' }
-      ]
-    },
-    { 
-      id: 'v5', year: 2022, make: 'Isuzu', model: 'D-Max', trim: 'X-Rider', status: 'SOLD', retailPrice: 558000, costPrice: 480000, mileage: 31200, transmission: 'Manual', fuelType: 'Diesel', stockNumber: 'PE-1029', dateAcquired: '2026-07-12', daysInInventory: 3, description: 'Strong workhorse with low fuel consumption indexes and modern canopy safety setup.',
-      images: [],
-      reconTasks: []
-    },
-    { 
-      id: 'v6', year: 2023, make: 'Toyota', model: 'Corolla', trim: 'Cross XR', status: 'INVENTORY', retailPrice: 459000, costPrice: 390000, mileage: 12600, transmission: 'Automatic', fuelType: 'Petrol', stockNumber: 'CT-2103', dateAcquired: '2026-07-04', daysInInventory: 11, description: 'Crossover urban build with advanced hybrid integration features and Toyota Safety Sense.',
-      images: [],
-      reconTasks: []
-    }
-  ],
-  leads: [
-    { 
-      id: 'l1', firstName: 'David', lastName: 'Moyo', phone: '082 441 9012', email: 'david.moyo@gmail.com', vehicleId: 'v4', source: 'Website', status: 'Negotiating', assignedUserId: 'u1', createdAt: '2026-07-08', lastContactedAt: '2026-07-14', digitalScore: 92, notes: 'Interested in structural trade-in credit assessments for his older Ranger.',
-      journey: [
-        { time: "10:32 AM", action: "Navigated Floor Catalog", detail: "Applied Filter [Price Range: Sub-R1,000,000]" },
-        { time: "10:38 AM", action: "Focused Vehicle Detail", detail: "Subject Asset: 2021 BMW X5" },
-        { time: "10:45 AM", action: "Completed Digital Installment Form", detail: "Modeled installment schedule on standard parameters." }
-      ]
-    },
-    { 
-      id: 'l2', firstName: 'Thabo', lastName: 'Ndlovu', phone: '071 552 3348', email: 'thabo@gmail.com', vehicleId: 'v2', source: 'Walk-in', status: 'Test Drive Scheduled', assignedUserId: 'u1', createdAt: '2026-07-12', lastContactedAt: '2026-07-13', digitalScore: 88, notes: 'Requested Saturday morning slots to inspect suspension & engine bay.',
-      journey: [
-        { time: "11:15 AM", action: "Walk-in registration", detail: "Greeted at showroom by Aiden" },
-        { time: "11:25 AM", action: "Static inspect", detail: "Spent 20 minutes inspecting Golf GTI interior & panel alignments" }
-      ]
-    },
-    { 
-      id: 'l3', firstName: 'Linda', lastName: 'Khumalo', phone: '083 219 7765', email: 'linda.k@yahoo.com', vehicleId: 'v6', source: 'Facebook', status: 'Contacted', assignedUserId: 'u2', createdAt: '2026-07-10', lastContactedAt: '2026-07-11', digitalScore: 68, notes: 'Query regarding Corolla Cross hybrid model battery replacement warranties.',
-      journey: [
-        { time: "08:14 PM", action: "Facebook Lead Gen Form", detail: "Submitted ad query on Hybrid Tech" }
-      ]
-    },
-    { 
-      id: 'l4', firstName: 'Riaan', lastName: 'Botha', phone: '084 662 5510', email: 'riaan@bothabuilding.co.za', vehicleId: 'v3', source: 'AutoTrader', status: 'New', assignedUserId: 'u3', createdAt: '2026-07-14', lastContactedAt: null, digitalScore: 54, notes: 'Wants business asset write-off tax documents for his construction fleet.',
-      journey: [
-        { time: "04:50 PM", action: "AutoTrader Lead API", detail: "Transferred lead focus on Hilux Legend" }
-      ]
-    }
-  ],
-  tasks: [
-    { id: 't1', title: 'Verify test drive parameters with Thabo', leadId: 'l2', vehicleId: 'v2', assignedUserId: 'u1', dueDate: '2026-07-16', priority: 'Urgent', status: 'Pending' },
-    { id: 't2', title: 'Deliver pre-sale checklist packet to David', leadId: 'l1', vehicleId: 'v4', assignedUserId: 'u2', dueDate: '2026-07-18', priority: 'High', status: 'In Progress' },
-    { id: 't3', title: 'Validate credit authorization documents for Linda', leadId: 'l3', vehicleId: 'v6', assignedUserId: 'u2', dueDate: '2026-07-20', priority: 'Normal', status: 'Pending' }
-  ],
-  invoices: [
-    { id: 'inv-1', invoiceNumber: 'INV-2026-0047', leadId: 'l1', vehicleId: 'v4', amount: 945000, paymentMethod: 'Dealer Finance', status: 'Sent', dueDate: '2026-07-28' },
-    { id: 'inv-2', invoiceNumber: 'INV-2026-0043', leadId: 'l2', vehicleId: 'v2', amount: 485000, paymentMethod: 'Bank Transfer', status: 'Paid', dueDate: '2026-07-15' }
-  ],
-  agreements: [
-    { id: 'agr-1', agreementNumber: 'AGR-2026-0012', leadId: 'l1', vehicleId: 'v4', purchasePrice: 945000, depositAmount: 50000, type: 'Vehicle Sale', status: 'Pending Signature' }
-  ],
+  vehicles: [],
+  leads: [],
+  tasks: [],
+  invoices: [],
+  agreements: [],
   documents: [] as any[],
-  users: [
-    { id: 'u1', name: 'Aiden Fourie', email: 'aiden@true-cars.co.za', role: 'salesperson', phone: '082 441 0021', isActive: true },
-    { id: 'u2', name: 'Zanele Booi', email: 'zanele@true-cars.co.za', role: 'salesperson', phone: '083 552 8834', isActive: true },
-    { id: 'u3', name: 'Zack Daniels', email: 'zack@true-cars.co.za', role: 'manager', phone: '084 219 6602', isActive: true }
-  ],
-  communications: [
-    { id: 'c1', leadId: 'l1', type: 'email', subject: 'Pre-Approved Financing Packages', content: 'Here are the pre-approved options for the BMW X5. Let me know if we can sign.', sentBy: 'Aiden Fourie', sentAt: '2026-07-12' },
-    { id: 'c2', leadId: 'l2', type: 'whatsapp', subject: 'WhatsApp Follow-Up', content: 'Hi Thabo, confirmed Saturday morning test drive details for Golf GTI. See you then!', sentBy: 'Aiden Fourie', sentAt: '2026-07-13' }
-  ],
-  expenses: [
-    { id: 'exp-1', description: 'Sandton Showroom Monthly Lease', amount: 45000, date: '2026-07-01', category: 'Rent', referenceId: '', reconciled: true },
-    { id: 'exp-2', description: 'Google Local Ads Campaign', amount: 12000, date: '2026-07-05', category: 'Marketing', referenceId: '', reconciled: true },
-    { id: 'exp-3', description: 'Sutherland Detailing Equipment', amount: 4800, date: '2026-07-08', category: 'Operations', referenceId: 'PE-1042', reconciled: false },
-    { id: 'exp-4', description: 'Eskom Electricity Grid Levy', amount: 8400, date: '2026-07-12', category: 'Utilities', referenceId: '', reconciled: false }
-  ],
-  // Matches PLAN_DEFAULTS.premium in src/types.ts. tier, truLens, truInspect
-  // and multiPortalSync were absent, so a fresh instance booted with the four
-  // flags that gate the capture app, the inspection module and portal sync all
-  // undefined — falsy, and therefore off, on the premium product.
+  users: [],
+  communications: [],
+  expenses: [],
   settings: {
     tier: 'premium',
     truLens: true,
@@ -1588,13 +1489,13 @@ app.post("/api/leads", (req: any, res) => {
     lastName: req.body.lastName || "Lead",
     phone: req.body.phone || "N/A",
     email: req.body.email || "N/A",
-    vehicleId: req.body.vehicleId || "v1",
+    vehicleId: req.body.vehicleId || "",
     source: req.body.source || "Website Form",
     status: "New",
-    assignedUserId: req.body.assignedUserId || "u1",
+    assignedUserId: req.body.assignedUserId || "",
     createdAt: new Date().toISOString().slice(0, 10),
     lastContactedAt: null,
-    digitalScore: req.body.digitalScore || Math.floor(Math.random() * 41) + 50, // Auto scoring
+    digitalScore: req.body.digitalScore || 0,
     // A new lead is due a first contact today — not "sometime".
     nextAction: req.body.nextAction || "First contact",
     nextActionAt: req.body.nextActionAt || new Date().toISOString().slice(0, 10),
@@ -1650,7 +1551,7 @@ app.post("/api/tasks", (req: any, res) => {
     title: req.body.title || "Generic Follow-Up Task",
     leadId: req.body.leadId || "",
     vehicleId: req.body.vehicleId || "",
-    assignedUserId: req.body.assignedUserId || "u1",
+    assignedUserId: req.body.assignedUserId || "",
     dueDate: req.body.dueDate || new Date().toISOString().slice(0, 10),
     priority: req.body.priority || "Normal",
     status: req.body.status || "Pending",
@@ -3474,6 +3375,11 @@ Respond strictly with valid JSON matching the required schema.`;
 // --- VITE DEV SERVER / PRODUCTION ROUTER ---
 
 async function startServer() {
+  // TruFlow Light — standalone dealer console served at /light
+  const lightDir = path.join(process.cwd(), "public", "light");
+  app.use("/light", express.static(lightDir));
+  app.get("/light", (_req, res) => res.sendFile(path.join(lightDir, "index.html")));
+
   // Embed widget + static public assets (dealer websites load /embed/stock-widget.js)
   app.use("/embed", express.static(path.join(process.cwd(), "public", "embed")));
   app.use("/public", express.static(path.join(process.cwd(), "public")));
