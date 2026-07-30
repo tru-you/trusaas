@@ -159,6 +159,15 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
       clone.style.left = '-9999px';
       clone.style.top = '0';
       document.body.appendChild(clone);
+
+      const imgs = Array.from(clone.querySelectorAll('img'));
+      await Promise.allSettled(
+        imgs.map(img => img.complete ? Promise.resolve() : new Promise<void>(r => {
+          img.onload = img.onerror = () => r();
+          setTimeout(r, 3000);
+        }))
+      );
+
       try {
         await html2pdf()
           .set({

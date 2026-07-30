@@ -279,6 +279,16 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       clone.style.left = '-9999px';
       clone.style.top = '0';
       document.body.appendChild(clone);
+
+      // Wait for images in the clone to load (or fail) before rendering
+      const imgs = Array.from(clone.querySelectorAll('img'));
+      await Promise.allSettled(
+        imgs.map(img => img.complete ? Promise.resolve() : new Promise<void>(r => {
+          img.onload = img.onerror = () => r();
+          setTimeout(r, 3000);
+        }))
+      );
+
       try {
         await html2pdf()
           .set({
@@ -520,7 +530,19 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             @media print {
               .no-print { display:none !important; }
               .tl-sales { break-after: page; }
-              body { background:#fff !important; }
+              body, html { background:#fff !important; color:#0B0F17 !important; margin:0; padding:0; overflow:visible !important; }
+              [class*="bg-slate"] { background:transparent !important; }
+              .tl-report { max-width:100% !important; width:100% !important; border-radius:0 !important; box-shadow:none !important; margin:0 !important; }
+              .tl-report section { padding:8mm 10mm; }
+              .tl-report .cover { padding:14mm 10mm 10mm; }
+              .tl-report .foot { padding:10px 10mm; }
+              .tl-report img { max-height:120px; }
+              .tl-report .photo-grid { grid-template-columns:repeat(3,1fr); }
+              .tl-report .damage-grid { grid-template-columns:1fr 1fr; }
+              .tl-report .grade { break-inside:avoid; }
+              .tl-report .finding { break-inside:avoid; }
+              .tl-report table { break-inside:auto; }
+              .tl-report tr { break-inside:avoid; }
             }
           `}</style>
 
