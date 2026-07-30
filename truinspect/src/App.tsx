@@ -569,22 +569,25 @@ export default function App() {
             <TradeInWalkAround
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
-              onComplete={async (completedItems) => {
-                const persisted = await Promise.all(
+              onComplete={(completedItems) => {
+                setTradeInItems(completedItems);
+                setActiveView('trade-in-valuation');
+                // Convert blob URLs and save in background — don't block the transition
+                Promise.all(
                   completedItems.map(async (it) => ({
                     ...it,
                     photoUrl: it.photoUrl ? await blobUrlToDataUrl(it.photoUrl) : null,
                   }))
-                );
-                setTradeInItems(persisted);
-                await handleUpdateVehicle(activeVehicle, {
-                  tradeInData: {
-                    ...activeVehicle.tradeInData,
-                    items: persisted,
-                    valuation: tradeInValuation || activeVehicle.tradeInData?.valuation || undefined,
-                  },
-                } as Partial<Vehicle>);
-                setActiveView('trade-in-valuation');
+                ).then((persisted) => {
+                  setTradeInItems(persisted);
+                  handleUpdateVehicle(activeVehicle, {
+                    tradeInData: {
+                      ...activeVehicle.tradeInData,
+                      items: persisted,
+                      valuation: tradeInValuation || activeVehicle.tradeInData?.valuation || undefined,
+                    },
+                  } as Partial<Vehicle>);
+                });
               }}
             />
           )}
