@@ -40,7 +40,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
 
   const dealerName =
     vehicle.dealerName ||
-    localStorage.getItem('trulens_dealer_name') || 'TruInspect South Africa';
+    localStorage.getItem('trulens_dealer_name') || '';
 
   const overallRating = computeOverallRating(items);
   const totalRecon = items.reduce((s, i) => s + i.estimatedRepairCost, 0);

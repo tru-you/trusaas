@@ -202,10 +202,10 @@ export default function InventoryList({
 
   // Settings state (persisted for VIR / share branding)
   const [dealershipName, setDealershipName] = React.useState(
-    () => localStorage.getItem('trulens_dealer_name') || 'TruInspect South Africa'
+    () => localStorage.getItem('trulens_dealer_name') || ''
   );
   const [branch, setBranch] = React.useState(
-    () => localStorage.getItem('trulens_dealer_branch') || 'Johannesburg Central'
+    () => localStorage.getItem('trulens_dealer_branch') || ''
   );
   const [dealerWhatsApp, setDealerWhatsApp] = React.useState(
     () => localStorage.getItem('trulens_dealer_wa') || ''

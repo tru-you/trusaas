@@ -234,7 +234,7 @@ export default function Login() {
 
         {/* Footer. Was four separate 13px items plus a version line at 10%
             opacity — 1.2:1, i.e. not visible at all. One quiet line instead. */}
-        <div className="mt-10 flex items-center justify-center flex-wrap gap-2 text-[12px] text-[rgba(232,234,230,0.55)]">
+        <p className="mt-10 text-center text-[12px] text-[rgba(232,234,230,0.55)] leading-relaxed">
           <a
             href="https://tru-saas.com"
             target="_blank"
@@ -243,11 +243,8 @@ export default function Login() {
           >
             TruSaaS
           </a>
-          <span aria-hidden="true">·</span>
-          <span>Inspector-signed reports</span>
-          <span aria-hidden="true">·</span>
-          <span>v1.0</span>
-        </div>
+          {' · Inspector-signed reports · v1.0'}
+        </p>
       </div>
     </div>
   );

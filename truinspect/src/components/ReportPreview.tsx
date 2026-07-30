@@ -156,7 +156,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const dealerName =
     vehicle.dealerName ||
     (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_dealer_name') : null) ||
-    'TruInspect South Africa';
+    '';
   const dealerBranch =
     (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_dealer_branch') : null) ||
     '';
