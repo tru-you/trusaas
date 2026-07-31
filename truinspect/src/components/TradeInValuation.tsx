@@ -174,7 +174,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
 
         {/* Average retail price input */}
         <div className="rounded-xl border border-neutral-800 bg-neutral-900/70 p-4">
-          <label className="text-[12px] text-neutral-500 font-semibold block mb-2">AVERAGE MARKET RETAIL PRICE (R)</label>
+          <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-2">Average market retail price (R)</label>
           <input
             type="number"
             min={0}

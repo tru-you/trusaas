@@ -238,7 +238,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           <button onClick={onBack} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5">
             <ArrowLeft size={18} />
           </button>
-          <h1 className="text-[16px] font-bold tracking-tight">Trade-In Summary</h1>
+          <h1 className="text-[16px] font-semibold tracking-tight">Trade-in summary</h1>
         </div>
         <div className="flex gap-2">
           <button
@@ -246,14 +246,14 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             onClick={handleExportHtml}
             disabled={exporting}
             title="Downloads a single file with every photo embedded — opens offline and survives being emailed"
-            className="px-3 py-2 rounded-lg border border-neutral-700 text-neutral-300 text-[12px] font-semibold flex items-center gap-1.5 disabled:opacity-50"
+            className="px-3 min-h-[38px] rounded-lg border border-neutral-700 text-neutral-300 text-[12px] font-medium flex items-center gap-1.5 disabled:opacity-50"
           >
             <Download size={13} /> HTML
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="px-3 py-2 rounded-lg border border-neutral-700 text-neutral-300 text-[12px] font-semibold flex items-center gap-1.5"
+            className="px-3 min-h-[38px] rounded-lg border border-neutral-700 text-neutral-300 text-[12px] font-medium flex items-center gap-1.5"
           >
             <Printer size={13} /> Print
           </button>
@@ -261,7 +261,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             type="button"
             onClick={handleExportPdf}
             disabled={exporting}
-            className="px-3 py-2 rounded-lg text-[#0B0F17] text-[12px] font-semibold flex items-center gap-1.5 disabled:opacity-50"
+            className="px-3 min-h-[38px] rounded-lg text-[#0B0F17] text-[12px] font-medium flex items-center gap-1.5 disabled:opacity-50"
             style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
           >
             <Download size={13} /> {exporting ? 'Exporting…' : 'PDF'}
@@ -289,7 +289,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
                 <div><Clock size={9} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />{now}</div>
               </div>
             </div>
-            <div style={{ width: 50, height: 3, borderRadius: 2, background: 'linear-gradient(90deg,#4FE3DC,#4D9BFF)', marginBottom: 10 }} />
+            <div style={{ width: 50, height: 3, borderRadius: 2, background: 'linear-gradient(90deg,#4FE3DC,#4FE3DC)', marginBottom: 10 }} />
             <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '.14em', color: 'rgba(79,227,220,.7)', marginBottom: 6 }}>TRADE-IN APPRAISAL REPORT</div>
             <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 4px', color: '#F8FAFC', letterSpacing: '-0.025em' }}>
               {vehicle.year} {vehicle.make} {vehicle.model}
@@ -420,7 +420,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             )}
           </div>
 
-          <div style={{ height: 3, background: 'linear-gradient(90deg,#4FE3DC,#4D9BFF,#4FE3DC)', marginTop: 24, borderRadius: 2 }} />
+          <div style={{ height: 3, background: 'linear-gradient(90deg,#4FE3DC,#4FE3DC,#4FE3DC)', marginTop: 24, borderRadius: 2 }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '12px 0', fontSize: '10px', color: '#64748B', fontFamily: 'ui-monospace, monospace', letterSpacing: '.08em' }}>
             <span>Prepared by <b style={{ color: '#0D9488' }}>{dealerName}</b> · powered by <b>TruInspect</b></span>
             <img src={trudealerLockup} alt="TruDealer" style={{ height: 18, width: 'auto' }} />
@@ -434,28 +434,28 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
         <div className="p-4 space-y-4">
           {/* Dealer sign-off fields */}
           <div className="rounded-xl border border-neutral-800 bg-neutral-900/70 p-4 space-y-3">
-            <h3 className="text-[13px] font-bold text-cyan-400">Inspector Details</h3>
+            <h3 className="text-[13px] font-medium text-cyan-400">Inspector details</h3>
             <input
               type="text"
               value={inspectorName}
               onChange={(e) => setInspectorName(e.target.value)}
               placeholder="Inspector name…"
-              className="w-full px-3 py-2.5 bg-neutral-950/80 border border-neutral-800 rounded-lg text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+              className="w-full px-3 min-h-[46px] bg-neutral-950/80 border border-neutral-800 rounded-lg text-[14px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
             />
             <input
               type="tel"
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
               placeholder="Contact phone…"
-              className="w-full px-3 py-2.5 bg-neutral-950/80 border border-neutral-800 rounded-lg text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+              className="w-full px-3 min-h-[46px] bg-neutral-950/80 border border-neutral-800 rounded-lg text-[14px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
             />
           </div>
 
           {/* Digital signature canvas */}
           <div className="rounded-xl border border-neutral-800 bg-neutral-900/70 p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[13px] font-bold text-cyan-400 flex items-center gap-2">
-                <Pen size={14} /> Digital Signature
+              <h3 className="text-[13px] font-medium text-cyan-400 flex items-center gap-2">
+                <Pen size={14} /> Digital signature
               </h3>
               <button
                 type="button"
@@ -488,7 +488,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full min-h-[52px] rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {saving ? 'Saving…' : 'Save Trade-In Appraisal'}
         </button>

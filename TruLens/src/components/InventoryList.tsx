@@ -619,9 +619,10 @@ export default function InventoryList({
               <div className="flex-1 h-px bg-neutral-800" />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            {/* Required fields — full width, stacked */}
+            <div className="space-y-2">
               <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Make *</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Make</label>
                 <input
                   type="text"
                   required
@@ -632,7 +633,7 @@ export default function InventoryList({
                 />
               </div>
               <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Model *</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Model</label>
                 <input
                   type="text"
                   required
@@ -642,9 +643,22 @@ export default function InventoryList({
                   className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
+              <div>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Mileage (km)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  required
+                  value={mileage}
+                  onChange={(e) => setMileage(e.target.value.replace(/[^\d]/g, ''))}
+                  placeholder="e.g. 78400"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            {/* Listing detail — 2-col grid */}
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Year</label>
                 <input
@@ -675,9 +689,6 @@ export default function InventoryList({
                   className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Stock #</label>
                 <input
@@ -698,9 +709,6 @@ export default function InventoryList({
                   className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Vehicle type</label>
                 <select
@@ -716,22 +724,6 @@ export default function InventoryList({
                   <option value="Coupe">Coupe</option>
                   <option value="Convertible">Convertible</option>
                 </select>
-              </div>
-              {/* Mileage / transmission / fuel — the three the dealer's website
-                  prints on every card, and the three nothing else in the chain
-                  can supply. inputMode numeric so a yard phone opens the number
-                  pad rather than a full keyboard. */}
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Mileage (km) *</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  required
-                  value={mileage}
-                  onChange={(e) => setMileage(e.target.value.replace(/[^\d]/g, ''))}
-                  placeholder="e.g. 78400"
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
-                />
               </div>
               <div>
                 <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Transmission</label>
@@ -768,17 +760,16 @@ export default function InventoryList({
                   <option value="Ready">Ready</option>
                 </select>
               </div>
-            </div>
-
-            <div>
-              <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">VIN (17 characters)</label>
-              <input
-                type="text"
-                placeholder="Scan disc or enter VIN"
-                value={vin}
-                onChange={(e) => setVin(e.target.value.toUpperCase())}
-                className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
-              />
+              <div>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">VIN</label>
+                <input
+                  type="text"
+                  placeholder="17 characters"
+                  value={vin}
+                  onChange={(e) => setVin(e.target.value.toUpperCase())}
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                />
+              </div>
             </div>
 
             <div className="flex gap-2 pt-1 border-t border-neutral-850">
