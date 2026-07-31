@@ -384,7 +384,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; overflow:hidden; }
             .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; overflow-wrap:break-word; }
             .tl-report .subhead { font-size:13px; color:rgba(248,250,252,.72); margin-bottom:18px; }
-            .tl-report .score-strip { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+            .tl-report .score-strip { display:grid; grid-template-columns:1fr; gap:14px; }
             .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; min-width:0; overflow:hidden; }
             .tl-report .score-ring { width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
             .tl-report .vehicle-facts { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; min-width:0; overflow:hidden; }
@@ -394,7 +394,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
             .tl-report .grades { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
             @media (max-width:720px) {
-              .tl-report .score-strip { grid-template-columns:1fr; }
               .tl-report .grades { grid-template-columns:repeat(3,1fr); }
               .tl-report .cover { padding: 10mm 5mm 8mm; }
               .tl-report section { padding: 8mm 5mm; }
@@ -418,6 +417,12 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .checklist th { font-size:9px; letter-spacing:.1em; color:#475569; }
             .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; letter-spacing:.08em; font-family:ui-monospace,monospace; }
             .tl-report .damage-pin { position:absolute; width:20px; height:20px; border-radius:50%; border:2px solid #fff; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#fff; box-shadow:0 1px 4px rgba(0,0,0,.4); }
+            .tl-report .cover { break-inside:avoid; page-break-inside:avoid; }
+            .tl-report .score-strip { break-inside:avoid; page-break-inside:avoid; }
+            .tl-report .photo-tile, .tl-report .damage-card { break-inside:avoid; page-break-inside:avoid; }
+            .tl-report .grade { break-inside:avoid; page-break-inside:avoid; }
+            .tl-report .finding { break-inside:avoid; page-break-inside:avoid; }
+            .tl-report h2 { break-after:avoid; page-break-after:avoid; }
             @media print {
               .no-print { display:none !important; }
               body { background:#fff !important; }
