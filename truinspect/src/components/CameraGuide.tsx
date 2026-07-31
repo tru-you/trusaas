@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  Camera, ChevronLeft, Sparkles, AlertCircle,
-  Check, Upload, ClipboardCheck, Eye, Images, Loader2, Trash2, X
+  Camera, ChevronLeft, AlertCircle,
+  Check, Upload, ClipboardCheck, Images, Loader2, Trash2, X
 } from 'lucide-react';
 import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -72,6 +72,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
   // Active slot information
   const activeSlot = DEFAULT_TEMPLATE.slots.find(s => s.id === selectedSlotId) || DEFAULT_TEMPLATE.slots[0];
+  const activeSlotIndex = DEFAULT_TEMPLATE.slots.findIndex(s => s.id === selectedSlotId);
 
   // Progress tracker calculation
   const completedSlots = DEFAULT_TEMPLATE.slots.filter(slot => !!photos[slot.id]);
@@ -687,15 +688,27 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         {/* Simulated AI overlays (bubble level, lighting pill) removed —
             they showed fake sensor data and cluttered the viewfinder. */}
 
-        {/* Tip about the live feed's own alignment guides — doesn't apply
-            when there's no feed to have guides on. It used to show exactly
-            when there was no camera, which put it directly on top of the
-            "Ready to shoot this slot" placeholder's centered content. */}
-        {isCameraActive && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded text-[13px] tracking-wide text-neutral-400 flex items-center gap-1">
-            <Eye size={10} className="text-indigo-400" /> Use alignment guides to frame your vehicle.
+        {/* Slot identity overlay on the viewfinder frame */}
+        <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between p-3">
+          <div className="flex items-start justify-between">
+            <div className="bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2">
+              <span className="text-[11px] font-mono text-[#4FE3DC]">Shot {activeSlotIndex + 1} of {DEFAULT_TEMPLATE.slots.length}</span>
+              <p className="text-[17px] font-semibold text-[#E8EAE6] leading-tight">{activeSlot.name}</p>
+            </div>
+            <div className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${
+              activeSlot.required
+                ? 'bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/25'
+                : 'bg-black/60 backdrop-blur-sm text-neutral-400 border border-white/10'
+            }`}>
+              {activeSlot.required ? 'Required' : 'Optional'}
+            </div>
           </div>
-        )}
+          <div className="bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2">
+            <p className="text-[13px] text-neutral-300 leading-normal">
+              {activeSlot.description || 'Frame the panel inside the guide outline before capturing.'}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Below-viewfinder chrome: scrolls when the viewfinder's min-h
@@ -830,18 +843,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           {/* Level toggle removed — the overlay it controlled was simulated, not measured */}
         </div>
 
-        {/* Guidance for the panel being assessed right now. This was a single
-            hardcoded sentence repeated on every slot, so it stopped being read
-            after the first one. Every slot already carries a description
-            written for it — show that instead. Body copy is neutral, not cyan:
-            cyan is reserved for where the eye should go next. */}
-        <div className="flex gap-2 bg-neutral-900/60 p-3 rounded-xl border border-neutral-800">
-          <Sparkles className="text-[#4FE3DC] shrink-0" size={13} />
-          <p className="text-[13px] text-neutral-300 leading-normal">
-            <strong className="text-neutral-100">{activeSlot.name}:</strong>{' '}
-            {activeSlot.description || 'Frame the panel inside the guide outline before capturing.'}
-          </p>
-        </div>
 
       </div>
 
