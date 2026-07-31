@@ -768,37 +768,10 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </div>
         )}
 
-        {/* Primary shutter — large & labeled so it is never confused with Settings.
-            The indigo-to-cyan gradient read washed-out/white next to the rest of
-            the app's solid-cyan primary actions (Save inspection, Keep & next,
-            etc.) — matching that established color now instead of a one-off. */}
-        <button
-          type="button"
-          onClick={handleCapture}
-          className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-semibold text-[16px] tracking-normal disabled:opacity-60 bg-cyan-600 hover:bg-cyan-500 text-[#06080D]"
-          title="Take picture for this slot"
-        >
-          <Camera size={20} strokeWidth={2.5} />
-          {isCameraActive
-            ? 'Take picture'
-            : customFile
-              ? 'Use this photo'
-              : 'Take picture'}
-        </button>
-
-        {/* Secondary tools */}
-        <div className="flex items-center justify-between gap-2">
-          {/* Native camera fallback — capture attr skips the gallery picker when the
-              in-app live camera is blocked (e.g. PWA denied getUserMedia).
-
-              Only shown when that has actually happened. With the live camera
-              running this was a second shutter sitting beside the real one, in a
-              row already four tiles wide on a 360px screen, and the two do the
-              same thing from the shooter's side. */}
-          {!isCameraActive && (
-            <label className="flex-1 py-2 rounded-xl text-[13px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors bg-amber-600/20 border-amber-500/40 text-amber-300 hover:bg-amber-600/30">
-              <Camera size={13} className="text-amber-400" />
-              Phone camera
+        <div className="flex items-center justify-center gap-4">
+          {!isCameraActive ? (
+            <label className="w-[50px] h-[50px] rounded-full flex flex-col items-center justify-center cursor-pointer border transition-colors bg-amber-600/20 border-amber-500/40 text-amber-300 hover:bg-amber-600/30">
+              <Camera size={16} className="text-amber-400" />
               <input
                 type="file"
                 accept="image/*"
@@ -807,30 +780,31 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 className="hidden"
               />
             </label>
+          ) : (
+            <label className="w-[50px] h-[50px] rounded-full flex flex-col items-center justify-center cursor-pointer border transition-colors bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-neutral-300">
+              <Upload size={16} className="text-neutral-400" />
+              <input
+                ref={singleUploadRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
           )}
 
-          <label className={`flex-1 py-2 rounded-xl text-[13px] font-bold flex flex-col items-center justify-center gap-1 cursor-pointer text-center border transition-colors ${
-            !isCameraActive
-              ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-600/30'
-              : 'bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-neutral-300'
-          }`}>
-            {/* "Upload file" vs "Bulk Roll" vs "Take Photo" — three tiles that
-                all add photos, named in three different registers. One photo or
-                many is the only distinction that matters here. */}
-            <Upload size={13} className={!isCameraActive ? 'text-emerald-400' : 'text-neutral-400'} />
-            One photo
-            <input
-              ref={singleUploadRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </label>
+          <button
+            type="button"
+            onClick={handleCapture}
+            className="w-[88px] h-[88px] rounded-full flex flex-col items-center justify-center gap-1 cursor-pointer shadow-lg active:scale-[0.95] transition-all disabled:opacity-60 bg-cyan-600 hover:bg-cyan-500 text-[#06080D] border-4 border-cyan-500/30"
+            title="Take picture for this slot"
+          >
+            <Camera size={24} strokeWidth={2.5} />
+            <span className="text-[11px] font-semibold">Shoot</span>
+          </button>
 
-          <label className="flex-1 py-2 bg-indigo-950/40 border border-indigo-900/50 hover:bg-indigo-900/40 rounded-xl text-[13px] font-bold text-indigo-400 flex flex-col items-center justify-center gap-1 cursor-pointer text-center relative">
-            <Images size={13} className="text-indigo-400" />
-            <span>Many photos</span>
+          <label className="w-[50px] h-[50px] rounded-full flex flex-col items-center justify-center cursor-pointer border transition-colors bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-[#4FE3DC]">
+            <Images size={16} className="text-[#4FE3DC]" />
             <input
               type="file"
               accept="image/*"
@@ -839,8 +813,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               className="hidden"
             />
           </label>
-
-          {/* Level toggle removed — the overlay it controlled was simulated, not measured */}
         </div>
 
 
