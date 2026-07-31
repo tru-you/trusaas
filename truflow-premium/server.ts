@@ -30,7 +30,7 @@ import {
  * `import type` is erased at compile time, so this adds no runtime dependency
  * on the client bundle.
  */
-import type { DMSState, Vehicle, Lead, User, DealerDocument } from "./src/types";
+import type { DMSState, Vehicle, Lead, User, DealerDocument, Dealership } from "./src/types";
 
 dotenv.config();
 
@@ -2988,7 +2988,7 @@ app.post("/api/dealerships", (req: any, res) => {
   const registrationNumber = String(req.body?.registrationNumber || "").trim();
   const vatNumber = String(req.body?.vatNumber || "").trim();
 
-  const dealership: Record<string, any> = { id, name, location, slug, websiteUrl, products };
+  const dealership: Dealership = { id, name, location, slug, websiteUrl, products };
   if (address) dealership.address = address;
   if (registrationNumber) dealership.registrationNumber = registrationNumber;
   if (vatNumber) dealership.vatNumber = vatNumber;
