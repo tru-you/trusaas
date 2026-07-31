@@ -10,12 +10,13 @@ import { DEFAULT_TEMPLATE } from '../templates';
 interface CameraGuideProps {
   vehicle: Vehicle;
   onBack: () => void;
+  onComplete?: () => void;
   onPhotoCaptured: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
   onEditRequested?: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
   onBulkPhotosUploaded: (updatedVehicle: Vehicle) => void;
 }
 
-export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRequested, onBulkPhotosUploaded }: CameraGuideProps) {
+export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptured, onEditRequested, onBulkPhotosUploaded }: CameraGuideProps) {
   // A just-taken shot awaiting Redo / Keep. This is the whole point: shoot,
   // glance, keep or redo — no forced save-and-edit between every angle.
   const [pendingShot, setPendingShot] = React.useState<{ slotId: string; base64: string; report: QualityReport; kind: 'photo' | 'video' } | null>(null);
@@ -869,10 +870,10 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
         {progressPercentage === 100 && (
           <button
             type="button"
-            onClick={onBack}
+            onClick={onComplete || onBack}
             className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[#E8EAE6] text-[14px] font-semibold flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2"
           >
-            <Check size={16} /> All shots captured — open report
+            <Check size={16} /> All shots captured — review & publish
           </button>
         )}
 

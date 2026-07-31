@@ -6,6 +6,7 @@ import ImageEditor from './components/ImageEditor';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
 import DamageTagger from './components/DamageTagger';
+import PublishGate from './components/PublishGate';
 import { Vehicle, QualityReport, PointResult, DmsExportResult } from './types';
 import { useAuth } from './contexts/AuthContext';
 import DealerSelect from './components/DealerSelect';
@@ -102,7 +103,7 @@ export default function App() {
   }, [user]);
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
-  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'damage'>('inventory');
+  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'damage' | 'publish-gate'>('inventory');
   const [loadError, setLoadError] = React.useState<string | null>(null);
   
   // Editor view states
@@ -420,7 +421,7 @@ export default function App() {
   // If camera/report was opened but vehicle disappeared, bounce home instead of blank/error
   React.useEffect(() => {
     if (
-      (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage') &&
+      (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage' || activeView === 'publish-gate') &&
       activeVehicleId &&
       !vehicles.find((v) => v.id === activeVehicleId)
     ) {
@@ -534,10 +535,20 @@ export default function App() {
             />
           )}
 
+          {activeView === 'publish-gate' && activeVehicle && (
+            <PublishGate
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('camera')}
+              onPublish={() => setActiveView('report')}
+              onExport={() => setActiveView('report')}
+            />
+          )}
+
           {activeView === 'camera' && activeVehicle && (
             <CameraGuide
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
+              onComplete={() => setActiveView('publish-gate')}
               onPhotoCaptured={handlePhotoCaptured}
               onEditRequested={handleEditSlot}
               onBulkPhotosUploaded={(updatedVehicle) => {

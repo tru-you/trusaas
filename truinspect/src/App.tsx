@@ -5,6 +5,7 @@ import CameraGuide from './components/CameraGuide';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
 import SlotReview from './components/SlotReview';
+import CompletionReview from './components/CompletionReview';
 import InspectionSheet from './components/InspectionSheet';
 import DamageTagger from './components/DamageTagger';
 import TradeInWalkAround from './components/TradeInWalkAround';
@@ -87,7 +88,7 @@ export default function App() {
   const { user, loading } = useAuth();
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
-  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist' | 'damage' | 'trade-in' | 'trade-in-valuation' | 'trade-in-summary'>('inventory');
+  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist' | 'damage' | 'trade-in' | 'trade-in-valuation' | 'trade-in-summary' | 'completion'>('inventory');
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
 
@@ -517,7 +518,7 @@ export default function App() {
   // If camera/report was opened but vehicle disappeared, bounce home instead of blank/error
   React.useEffect(() => {
     if (
-      (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage' || activeView === 'trade-in' || activeView === 'trade-in-valuation' || activeView === 'trade-in-summary') &&
+      (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage' || activeView === 'trade-in' || activeView === 'trade-in-valuation' || activeView === 'trade-in-summary' || activeView === 'completion') &&
       activeVehicleId &&
       !vehicles.find((v) => v.id === activeVehicleId)
     ) {
@@ -690,10 +691,27 @@ export default function App() {
             />
           )}
 
+          {activeView === 'completion' && activeVehicle && (
+            <CompletionReview
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('camera')}
+              onSubmit={() => setActiveView('report')}
+              onRetakeSlot={(navSlotId) => {
+                const photo = activeVehicle.photos?.[navSlotId];
+                if (photo) {
+                  setActiveSlotId(navSlotId);
+                  setActiveImageSrc(photo);
+                  setActiveView('editor');
+                }
+              }}
+            />
+          )}
+
           {activeView === 'camera' && activeVehicle && (
             <CameraGuide
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
+              onComplete={() => setActiveView('completion')}
               onPhotoCaptured={handlePhotoCaptured}
               onOpenDamageTagger={() => setActiveView('damage')}
               onOpenChecklist={() => handleOpenChecklist(activeVehicle)}
@@ -715,6 +733,13 @@ export default function App() {
                 setActiveQualityReport(null);
               }}
               onSave={handleSaveSlotReview}
+              onNavigateSlot={(navSlotId) => {
+                const photo = activeVehicle.photos?.[navSlotId];
+                if (photo) {
+                  setActiveSlotId(navSlotId);
+                  setActiveImageSrc(photo);
+                }
+              }}
             />
           )}
         </>
