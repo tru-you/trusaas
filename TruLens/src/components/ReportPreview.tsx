@@ -72,10 +72,10 @@ function computeCondition(vehicle: Vehicle) {
 }
 
 function captureBand(score: number | null) {
-  if (score === null) return { label: 'Not captured', color: '#475569', bg: 'rgba(148,163,184,0.10)' };
-  if (score >= 80) return { label: 'Good', color: '#16A34A', bg: 'rgba(34,197,94,0.12)' };
-  if (score >= 60) return { label: 'Usable', color: '#CA8A04', bg: 'rgba(234,179,8,0.14)' };
-  return { label: 'Re-shoot', color: '#DC2626', bg: 'rgba(239,68,68,0.14)' };
+  if (score === null) return { label: 'Not captured', color: '#475569' };
+  if (score >= 80) return { label: 'Good', color: '#16A34A' };
+  if (score >= 60) return { label: 'Usable', color: '#CA8A04' };
+  return { label: 'Re-shoot', color: '#DC2626' };
 }
 
 function scoreForSlots(vehicle: Vehicle, slots: TemplateSlot[]): number | null {
@@ -141,12 +141,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
-  /* Photos are files now, so serialising the DOM would produce `<img src="/media/…">`
-   * — a relative URL that resolves against nothing once the file is emailed, saved
-   * or opened offline, which is precisely when a report matters. Every image is
-   * fetched and inlined as a data URI before writing the file. Done on a clone so
-   * the on-screen report keeps its light URLs and the page does not briefly hold
-   * every photo twice. */
   const exportHtml = async () => {
     const el = reportRef.current;
     if (!el) return;
@@ -157,7 +151,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       await Promise.all(
         images.map(async (img) => {
           const src = img.getAttribute('src') || '';
-          if (!src || src.startsWith('data:')) return; // already inline
+          if (!src || src.startsWith('data:')) return;
           try {
             const res = await fetch(src, { cache: 'force-cache' });
             if (!res.ok) return;
@@ -170,8 +164,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             });
             img.setAttribute('src', dataUri);
           } catch {
-            /* One unreachable photo must not cost the whole report — the rest
-               still export, and the gap is visible rather than silent. */
+            /* One unreachable photo must not cost the whole report */
           }
         })
       );
@@ -275,7 +268,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
   return (
     <div className="h-full w-full overflow-y-auto bg-[#06080D] text-[#E8EAE6]">
-      {/* Signed off by — on-screen only, value prints on the report footer */}
+      {/* Signed off by — on-screen only */}
       <div className="no-print bg-[#0B0F17] border-b border-white/10">
         <div className="max-w-5xl mx-auto px-3 py-3">
           <div className="text-[12px] font-medium text-[rgba(232,234,230,0.55)] mb-2">Signed off by</div>
@@ -343,8 +336,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <Printer size={12} /> Print
             </button>
             <button onClick={runPdf} disabled={!!generating}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#E8EAE6]"
-              style={{ background: 'linear-gradient(120deg, #4FE3DC, #4FE3DC)' }}>
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#0B0F17]"
+              style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}>
               <Download size={12} /> {generating ? '…' : 'PDF'}
             </button>
           </div>
@@ -362,7 +355,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.55)] font-bold">Condition report</div>
               <div className="font-bold text-[16px]" style={{ color: band.color }}>{condition.label}</div>
               <div className="text-[rgba(232,234,230,0.55)] mt-1">
-                Photos {requiredTaken}/{requiredSlots.length} required
+                Photos {capturedPhotos.length}/{DEFAULT_TEMPLATE.slots.length}
                 {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
               </div>
             </div>
@@ -376,141 +369,320 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         <div ref={reportRef} className="tl-report">
           <style>{`
             .tl-report {
-              width: 100%; max-width: 210mm; margin: 0 auto; background: #FFFFFF; color: #0B0F17;
-              font-family: Inter, system-ui, sans-serif; border-radius: 12px; overflow: hidden;
+              --paper:#FFFFFF; --ink:#121A26; --ink-2:#3A4553; --muted:#6E6656; --faint:#A79D8C;
+              --line:rgba(18,26,38,.12); --line-soft:rgba(18,26,38,.06);
+              --cyan:#07889B; --cyan-bg:rgba(7,136,155,.06);
+              --green:#1A7A3A; --green-bg:rgba(26,122,58,.08);
+              --amber:#B07A26; --amber-bg:rgba(176,122,38,.08);
+              --red:#B03226; --red-bg:rgba(176,50,38,.08);
+              --night:#080C14;
+              --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+              --display: Georgia, "Times New Roman", serif;
+              --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+              width: 100%; max-width: 210mm; margin: 0 auto; background: var(--paper); color: var(--ink);
+              font-family: var(--sans); font-size: 9.5px; line-height: 1.55; border-radius: 12px; overflow: hidden;
               box-sizing: border-box;
             }
             .tl-report *, .tl-report *::before, .tl-report *::after { box-sizing: border-box; }
-            .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; overflow:hidden; }
-            .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; overflow-wrap:break-word; }
-            .tl-report .subhead { font-size:13px; color:rgba(248,250,252,.72); margin-bottom:18px; }
-            .tl-report .score-strip { display:grid; grid-template-columns:1fr; gap:14px; }
-            .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; min-width:0; overflow:hidden; }
-            .tl-report .score-ring { width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-            .tl-report .vehicle-facts { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; min-width:0; overflow:hidden; }
-            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.1em; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; white-space:nowrap; }
-            .tl-report .vehicle-facts .v { font-weight:700; font-size:12px; margin-top:2px; overflow-wrap:break-word; word-break:break-all; }
-            .tl-report section { padding: 12mm 16mm; overflow:hidden; }
-            .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
-            .tl-report .grades { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+            .tl-report .doc-body { padding: 10mm 12mm 8mm; overflow: hidden; }
+
+            /* Header band */
+            .tl-report .hdr { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding-bottom:10px; margin-bottom:16px; border-bottom:2.5px solid var(--ink); }
+            .tl-report .hdr-left { display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap; }
+            .tl-report .hdr-left img.logo { height:28px; width:auto; flex:none; }
+            .tl-report .hdr-left img.lockup { height:16px; width:auto; flex:none; margin-left:6px; }
+            .tl-report .hdr-left .dealer { font-size:9.5px; color:var(--ink-2); margin-left:8px; line-height:1.35; overflow-wrap:break-word; }
+            .tl-report .hdr-left .dealer b { color:var(--ink); }
+            .tl-report .hdr-right { text-align:right; flex:none; }
+            .tl-report .hdr-right .doc-type { font-family:var(--mono); font-size:8.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--cyan); font-weight:700; white-space:nowrap; }
+            .tl-report .hdr-right .doc-id { font-family:var(--mono); font-size:8.5px; color:var(--muted); margin-top:3px; white-space:nowrap; }
+
+            /* Verdict banner */
+            .tl-report .verdict { display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:10px; margin-bottom:18px; break-inside:avoid; }
+            .tl-report .verdict.pass { background:var(--green-bg); border:1px solid rgba(26,122,58,.3); }
+            .tl-report .verdict.caution { background:var(--amber-bg); border:1px solid rgba(176,122,38,.3); }
+            .tl-report .verdict.fail { background:var(--red-bg); border:1px solid rgba(176,50,38,.3); }
+            .tl-report .verdict.unknown { background:var(--line-soft); border:1px solid var(--line); }
+            .tl-report .verdict .icon { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; color:#fff; }
+            .tl-report .verdict.pass .icon { background:var(--green); }
+            .tl-report .verdict.caution .icon { background:var(--amber); }
+            .tl-report .verdict.fail .icon { background:var(--red); }
+            .tl-report .verdict.unknown .icon { background:var(--muted); }
+            .tl-report .verdict .body { min-width:0; flex:1; }
+            .tl-report .verdict .body h3 { font-family:var(--display); font-weight:600; font-size:17px; line-height:1.15; margin:0 0 3px; overflow-wrap:break-word; }
+            .tl-report .verdict.pass .body h3 { color:var(--green); }
+            .tl-report .verdict.caution .body h3 { color:var(--amber); }
+            .tl-report .verdict.fail .body h3 { color:var(--red); }
+            .tl-report .verdict.unknown .body h3 { color:var(--muted); }
+            .tl-report .verdict .body p { font-size:10.5px; color:var(--ink-2); margin:0; }
+            .tl-report .verdict .score { margin-left:auto; text-align:center; flex:none; padding-left:12px; border-left:1px solid var(--line); }
+            .tl-report .verdict .score .num { font-family:var(--display); font-size:24px; font-weight:600; line-height:1; }
+            .tl-report .verdict .score .lbl { font-family:var(--mono); font-size:7px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-top:3px; }
+
+            /* Vehicle info grid */
+            .tl-report .vehicle { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; margin-bottom:18px; }
+            .tl-report .vehicle .row { display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line-soft); }
+            .tl-report .vehicle .row .k { font-family:var(--mono); font-size:7.8px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+            .tl-report .vehicle .row .v { font-size:10.5px; font-weight:700; color:var(--ink); text-align:right; overflow-wrap:break-word; word-break:break-word; }
+
+            /* Photo grid — hero 2x2 */
+            .tl-report .photos { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:18px; }
+            .tl-report .photo { position:relative; aspect-ratio:4/3; background:var(--line-soft); border-radius:6px; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; overflow:hidden; break-inside:avoid; }
+            .tl-report .photo img { width:100%; height:100%; object-fit:cover; display:block; }
+            .tl-report .photo span.slot { font-family:var(--mono); font-size:6.8px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); text-align:center; padding:4px; }
+            .tl-report .photo .cap { position:absolute; left:0; right:0; bottom:0; background:rgba(18,26,38,.65); color:#fff; font-size:6.8px; letter-spacing:.06em; padding:3px 5px; font-family:var(--mono); }
+            .tl-report .photo.hero { grid-column:span 2; grid-row:span 2; }
             @media (max-width:720px) {
-              .tl-report .grades { grid-template-columns:repeat(3,1fr); }
-              .tl-report .cover { padding: 10mm 5mm 8mm; }
-              .tl-report section { padding: 8mm 5mm; }
-              .tl-report .foot { padding: 14px 5mm; }
-              .tl-report .photo-grid { grid-template-columns:1fr 1fr; }
+              .tl-report .photos { grid-template-columns:repeat(2,1fr); }
+              .tl-report .photo.hero { grid-column:span 2; grid-row:span 1; }
             }
-            .tl-report .grade { border:1px solid #E8EAE6; border-radius:12px; padding:12px 8px; text-align:center; overflow:hidden; }
-            .tl-report .grade .v { font-weight:800; font-size:22px; }
-            .tl-report .grade .n { font-size:10px; color:#475569; margin-top:6px; font-weight:600; }
-            .tl-report .finding { background:#FEF3C7; border-left:4px solid #F59E0B; border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; overflow-wrap:break-word; }
-            .tl-report .finding .h { font-size:10px; letter-spacing:.1em; color:#B45309; font-family:ui-monospace,monospace; }
-            .tl-report .finding .l { font-size:12.5px; color:#78350F; margin-top:4px; font-weight:500; }
-            .tl-report .no-issues { background:#DCFCE7; border-left:4px solid #22C55E; border-radius:0 10px 10px 0; padding:12px 14px; color:#166534; font-weight:600; font-size:13px; }
-            .tl-report .damage-grid, .tl-report .photo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-            .tl-report .photo-grid { grid-template-columns:repeat(3,1fr); }
-            .tl-report .damage-card, .tl-report .photo-tile { border:1px solid #E8EAE6; border-radius:12px; overflow:hidden; }
-            .tl-report .damage-card img, .tl-report .photo-tile img { width:100%; height:auto; max-height:150px; object-fit:cover; display:block; }
-            .tl-report .cap { padding:8px 10px; font-size:11px; overflow-wrap:break-word; }
-            .tl-report .checklist { width:100%; border-collapse:collapse; font-size:11px; table-layout:fixed; }
-            .tl-report .checklist th, .tl-report .checklist td { border-bottom:1px solid #E8EAE6; padding:7px 6px; text-align:left; overflow-wrap:break-word; }
-            .tl-report .checklist th { font-size:9px; letter-spacing:.1em; color:#475569; }
-            .tl-report .foot { border-top:1px solid #E8EAE6; padding:14px 16mm; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:10px; color:#64748B; letter-spacing:.08em; font-family:ui-monospace,monospace; }
-            .tl-report .damage-pin { position:absolute; width:20px; height:20px; border-radius:50%; border:2px solid #fff; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#fff; box-shadow:0 1px 4px rgba(0,0,0,.4); }
-            .tl-report .cover { break-inside:avoid; page-break-inside:avoid; }
-            .tl-report .score-strip { break-inside:avoid; page-break-inside:avoid; }
-            .tl-report .photo-tile, .tl-report .damage-card { break-inside:avoid; page-break-inside:avoid; }
-            .tl-report .grade { break-inside:avoid; page-break-inside:avoid; }
-            .tl-report .finding { break-inside:avoid; page-break-inside:avoid; }
-            .tl-report h2 { break-after:avoid; page-break-after:avoid; }
+
+            /* Section title pattern */
+            .tl-report .section-title { display:flex; align-items:center; gap:8px; margin:20px 0 12px; }
+            .tl-report .section-title .n { font-family:var(--mono); font-size:8.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--cyan); font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+            .tl-report .section-title .ln { flex:1; height:1px; background:var(--line); }
+
+            /* Capture quality grades */
+            .tl-report .quality-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:18px; }
+            .tl-report .q-card { padding:10px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); text-align:center; break-inside:avoid; }
+            .tl-report .q-card .phase-name { font-family:var(--mono); font-size:7.2px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; display:flex; align-items:center; justify-content:center; gap:4px; }
+            .tl-report .q-card .q-label { font-size:11px; font-weight:700; }
+            .tl-report .q-card .q-score { font-family:var(--mono); font-size:9px; color:var(--muted); margin-top:3px; }
+            @media (max-width:720px) { .tl-report .quality-grid { grid-template-columns:repeat(3,1fr); } }
+
+            /* Panel condition grades */
+            .tl-report .panel-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:18px; }
+            .tl-report .panel { padding:9px 10px; border:1px solid var(--line); border-radius:6px; background:var(--paper); break-inside:avoid; }
+            .tl-report .panel .name { font-family:var(--mono); font-size:7.2px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+            .tl-report .panel .grade { font-size:10.5px; font-weight:700; }
+            .tl-report .panel .grade.good { color:var(--green); }
+            .tl-report .panel .grade.fair { color:var(--amber); }
+            .tl-report .panel .grade.poor { color:var(--red); }
+            .tl-report .panel .grade.na { color:var(--faint); }
+            .tl-report .panel .note { font-size:9px; color:var(--ink-2); margin-top:3px; overflow-wrap:break-word; }
+            @media (max-width:720px) { .tl-report .panel-grid { grid-template-columns:repeat(2,1fr); } }
+
+            /* Damage / findings */
+            .tl-report .finding { border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:8px; border-left:4px solid var(--muted); overflow-wrap:break-word; break-inside:avoid; }
+            .tl-report .finding .h { font-family:var(--mono); font-size:7.8px; letter-spacing:.1em; text-transform:uppercase; }
+            .tl-report .finding .l { font-size:10.5px; color:var(--ink-2); margin-top:4px; font-weight:500; }
+            .tl-report .no-issues { background:var(--green-bg); border-left:4px solid var(--green); border-radius:0 8px 8px 0; padding:10px 14px; color:var(--green); font-weight:700; font-size:11px; }
+
+            /* Damage photo grid with pins */
+            .tl-report .damage-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:18px; }
+            .tl-report .damage-card { border:1px solid var(--line); border-radius:8px; overflow:hidden; break-inside:avoid; }
+            .tl-report .damage-card img { width:100%; height:auto; max-height:150px; object-fit:cover; display:block; }
+            .tl-report .damage-card .cap { padding:8px 10px; font-size:9.5px; color:var(--ink-2); overflow-wrap:break-word; }
+            .tl-report .damage-pin { position:absolute; width:18px; height:18px; border-radius:50%; border:2px solid #fff; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:800; color:#fff; box-shadow:0 1px 4px rgba(0,0,0,.4); }
+
+            /* Checklist table */
+            .tl-report table.checklist { width:100%; border-collapse:collapse; font-size:9.5px; table-layout:fixed; margin-bottom:14px; }
+            .tl-report table.checklist th, .tl-report table.checklist td { border-bottom:1px solid var(--line-soft); padding:6px 6px; text-align:left; overflow-wrap:break-word; }
+            .tl-report table.checklist th { font-family:var(--mono); font-size:7.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+
+            /* Gallery */
+            .tl-report .gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
+            .tl-report .photo-tile { border:1px solid var(--line); border-radius:6px; overflow:hidden; break-inside:avoid; }
+            .tl-report .photo-tile img { width:100%; height:auto; max-height:130px; object-fit:cover; display:block; }
+            .tl-report .photo-tile .cap { padding:6px 8px; font-size:9px; color:var(--ink-2); font-family:var(--mono); overflow-wrap:break-word; }
+            @media (max-width:720px) { .tl-report .gallery { grid-template-columns:repeat(2,1fr); } }
+
+            /* Prose & cards */
+            .tl-report .prose { font-size:10px; color:var(--ink-2); margin-bottom:8px; line-height:1.6; overflow-wrap:break-word; }
+            .tl-report .prose b { color:var(--ink); }
+            .tl-report .card { border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:10px; break-inside:avoid; }
+            .tl-report .card .k { font-family:var(--mono); font-size:7.8px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+
+            /* Condition scale legend */
+            .tl-report .scale-row { display:flex; gap:8px; font-size:10px; color:var(--ink-2); padding:4px 0; border-bottom:1px solid var(--line-soft); align-items:baseline; flex-wrap:wrap; }
+            .tl-report .scale-row b.band { min-width:60px; font-family:var(--mono); }
+            .tl-report .scale-row b.label { min-width:60px; color:var(--ink); }
+
+            /* Signature row */
+            .tl-report .sig-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; padding-top:14px; border-top:1px solid var(--line); }
+            .tl-report .sig .line { border-top:1px solid var(--ink); padding-top:5px; min-height:22px; overflow-wrap:break-word; }
+            .tl-report .sig .name { font-size:10.5px; color:var(--ink); font-weight:600; }
+            .tl-report .sig .lbl { font-family:var(--mono); font-size:7.2px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-top:4px; }
+
+            /* Footer */
+            .tl-report .foot { border-top:1px solid var(--line); margin-top:16px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-family:var(--mono); font-size:7.8px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+            .tl-report .foot .cy { color:var(--cyan); }
+            .tl-report .foot .lockup-wrap { display:flex; align-items:center; gap:8px; }
+            .tl-report .foot img.lockup { height:16px; width:auto; }
+            .tl-report .accent { height:3px; background:var(--cyan); margin:0 0 2px; }
+
             @media print {
               .no-print { display:none !important; }
-              body { background:#fff !important; }
+              body, html { background:#fff !important; color:var(--ink) !important; margin:0; padding:0; overflow:visible !important; }
+              .tl-report { max-width:100% !important; width:100% !important; border-radius:0 !important; box-shadow:none !important; margin:0 !important; }
+              .tl-report .doc-body { padding:8mm 10mm; }
+              .tl-report img { max-height:120px; }
+              .tl-report .photos { grid-template-columns:repeat(4,1fr); }
+              .tl-report .gallery { grid-template-columns:repeat(3,1fr); }
+              .tl-report .panel, .tl-report .finding, .tl-report .photo-tile, .tl-report .photo, .tl-report .card, .tl-report .q-card, .tl-report .damage-card { break-inside:avoid; }
+              .tl-report table { break-inside:auto; }
+              .tl-report tr { break-inside:avoid; }
             }
           `}</style>
 
-          {/* Cover */}
-          <div className="cover">
-            {/* Logos — centered, stacked */}
-            <div style={{ textAlign:'center', marginBottom:20 }}>
-              <img src={trulensLockup} alt="TruLens" style={{ height:44, width:'auto', display:'inline-block' }} />
-              <div style={{ marginTop:10 }}>
-                <img src={trudealerLockup} alt="TruDealer" style={{ height:28, width:'auto', display:'inline-block' }} />
+          <div className="doc-body">
+            {/* Header band */}
+            <div className="hdr">
+              <div className="hdr-left">
+                <img className="logo" src={trulensLockup} alt="TruLens" />
+                <img className="lockup" src={trudealerLockup} alt="TruDealer" />
+                {(dealerName || dealerBranch) && (
+                  <div className="dealer">
+                    {dealerName && <b>{dealerName}</b>}
+                    {dealerBranch ? <> · {dealerBranch}</> : null}
+                  </div>
+                )}
               </div>
-              {dealerName && <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:8 }}>{dealerName}</div>}
-              {dealerBranch && <div style={{ fontSize:10, opacity:.55, marginTop:2 }}>{dealerBranch}</div>}
+              <div className="hdr-right">
+                <div className="doc-type">Vehicle Condition Report</div>
+                <div className="doc-id">{reportId} · {generatedAt}</div>
+              </div>
             </div>
 
-            {/* Report meta — centered */}
-            <div style={{ textAlign:'center', fontFamily:'ui-monospace,monospace', fontSize:10, color:'rgba(248,250,252,.62)', lineHeight:1.6, marginBottom:18 }}>
-              <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
-              <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
-            </div>
+            {/* Verdict banner */}
+            {(() => {
+              const verdictClass = !condition.hasInput ? 'unknown' : condition.stars >= 3.5 ? 'pass' : condition.stars >= 2.5 ? 'caution' : 'fail';
+              const VerdictIcon = !condition.hasInput ? ClipboardList : condition.stars >= 3.5 ? CheckCircle2 : condition.stars >= 2.5 ? AlertTriangle : AlertTriangle;
+              const verdictHeading = !condition.hasInput ? 'Not Yet Assessed' : `Condition — ${band.label}`;
+              return (
+                <div className={`verdict ${verdictClass}`}>
+                  <div className="icon"><VerdictIcon size={18} /></div>
+                  <div className="body">
+                    <h3>{verdictHeading}</h3>
+                    <p>{band.meaning} · {condition.findings.length} damage tag{condition.findings.length === 1 ? '' : 's'} · {capturedPhotos.length}/{DEFAULT_TEMPLATE.slots.length} photos captured.</p>
+                  </div>
+                  <div className="score">
+                    <div className="num">{condition.hasInput ? condition.stars.toFixed(1) : '—'}</div>
+                    <div className="lbl">/ 5 condition</div>
+                  </div>
+                </div>
+              );
+            })()}
 
-            {/* Accent bar */}
-            <div style={{ width:60, height:3, borderRadius:2, background:'linear-gradient(90deg,#4FE3DC,#4FE3DC)', margin:'0 auto 14px' }} />
-            <div style={{ fontSize:10, fontWeight:700, letterSpacing:'.14em', color:'rgba(79,227,220,.7)', marginBottom:6, textAlign:'center' }}>VEHICLE CONDITION REPORT</div>
-            <h1 style={{ textAlign:'center' }}>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
-            <div className="subhead" style={{ textAlign:'center' }}>
+            {/* Vehicle title */}
+            <div style={{ fontFamily:'var(--display)', fontWeight:600, fontSize:20, color:'var(--ink)', marginBottom:4, lineHeight:1.2 }}>
+              {vehicle.year} {vehicle.make} {vehicle.model}
+            </div>
+            <div style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--muted)', marginBottom:14 }}>
               {vehicle.trim} · {vehicle.color}
               {vehicle.mileage ? ` · ${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : ''}
               {vehicle.transmission ? ` · ${vehicle.transmission}` : ''}
               {vehicle.fuelType ? ` · ${vehicle.fuelType}` : ''}
-              {' · Stock '}<b>{vehicle.stockNumber}</b>
+              {' · Stock '}{vehicle.stockNumber}
             </div>
 
-            {/* Condition + vehicle details — unified strip */}
-            <div className="score-strip">
-              <div className="score-big">
-                <div className="score-ring" style={{ background: `conic-gradient(${band.color} ${(condition.hasInput ? condition.stars / 5 : 0) * 360}deg, rgba(255,255,255,.08) 0)` }}>
-                  <div style={{ background:'#1E293B', borderRadius:'50%', width:70, height:70, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
-                    <div style={{ fontWeight:800, fontSize:28, color: band.color }}>{condition.hasInput ? condition.stars.toFixed(1) : '—'}</div>
-                    <div style={{ fontSize:9, opacity:.7 }}>/ 5</div>
+            {/* Vehicle info grid */}
+            <div className="vehicle">
+              <div className="row"><span className="k">Make / Model</span><span className="v">{vehicle.make} {vehicle.model}</span></div>
+              <div className="row"><span className="k">Year</span><span className="v">{vehicle.year || '—'}</span></div>
+              <div className="row"><span className="k">VIN</span><span className="v">{vehicle.vin || '—'}</span></div>
+              <div className="row"><span className="k">Stock</span><span className="v">{vehicle.stockNumber || '—'}</span></div>
+              <div className="row"><span className="k">Trim</span><span className="v">{vehicle.trim || '—'}</span></div>
+              <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
+              <div className="row"><span className="k">Type</span><span className="v">{vehicle.vehicleType || '—'}</span></div>
+              <div className="row"><span className="k">List price</span><span className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</span></div>
+              <div className="row"><span className="k">Mileage</span><span className="v">{vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : '—'}</span></div>
+              <div className="row"><span className="k">Photos</span><span className="v">{capturedPhotos.length} of {DEFAULT_TEMPLATE.slots.length}</span></div>
+            </div>
+
+            {/* Photo grid — hero + slots */}
+            {(() => {
+              const ordered = DEFAULT_TEMPLATE.slots;
+              const heroSlot = ordered.find(s => vehicle.photos?.[s.id] === hero) || ordered[0];
+              const rest = ordered.filter(s => s.id !== heroSlot?.id && vehicle.photos?.[s.id]).slice(0, 6);
+              const tiles = heroSlot ? [heroSlot, ...rest] : rest;
+              if (!tiles.length) return null;
+              return (
+                <div className="photos">
+                  {tiles.map((slot, i) => {
+                    const src = vehicle.photos?.[slot.id];
+                    const isHero = i === 0;
+                    return (
+                      <div className={`photo${isHero ? ' hero' : ''}`} key={slot.id}>
+                        {src ? (
+                          <>
+                            <img src={src} alt={slot.name} />
+                            <div className="cap">{slot.name}</div>
+                          </>
+                        ) : (
+                          <span className="slot">{slot.name}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* Photo capture quality */}
+            <div className="section-title"><span className="n"><Award size={11} /> Photo capture quality</span><span className="ln" /></div>
+            <div className="prose" style={{ fontStyle:'italic', marginTop:-4 }}>
+              How well each section was photographed — this describes the images, not the vehicle.
+            </div>
+            <div className="quality-grid">
+              {phaseScores.map(p => {
+                const g = captureBand(p.score);
+                const Icon = p.icon;
+                return (
+                  <div className="q-card" key={p.id}>
+                    <div className="phase-name"><Icon size={10} style={{ color: g.color }} />{p.name}</div>
+                    <div className="q-label" style={{ color: g.color }}>{g.label}</div>
+                    <div className="q-score">{p.score !== null ? `${p.score}/100` : '—'}</div>
                   </div>
-                </div>
-                <div>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', opacity:.55 }}>Vehicle condition</div>
-                  <div style={{ fontWeight:800, fontSize:20, color: band.color, marginTop:4 }}>{band.label}</div>
-                  <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{band.meaning}</div>
-                </div>
-              </div>
-              <div className="vehicle-facts">
-                <div><div className="k">VIN</div><div className="v">{vehicle.vin || '—'}</div></div>
-                <div><div className="k">Type</div><div className="v">{vehicle.vehicleType || '—'}</div></div>
-                <div><div className="k">Mileage</div><div className="v">{vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : '—'}</div></div>
-                <div><div className="k">List price</div><div className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</div></div>
-                <div><div className="k">Photos</div><div className="v">{capturedPhotos.length} captured</div></div>
-                <div><div className="k">Damage tags</div><div className="v">{condition.findings.length}</div></div>
-              </div>
+                );
+              })}
             </div>
-          </div>
 
-          {/* Hero photo */}
-          {hero && (
-            <section style={{ paddingBottom:0 }}>
-              <img src={hero} alt="Hero" style={{ width:'100%', borderRadius:12, objectFit:'cover', aspectRatio:'16/10', background:'#F1F5F9' }} />
-            </section>
-          )}
+            {/* Panel condition grades */}
+            {(() => {
+              const sa = vehicle.slotAssessment || {};
+              const rows = DEFAULT_TEMPLATE.slots
+                .map(s => ({ s, r: sa[s.id] }))
+                .filter(({ r }) => r && (r.rating || r.comment));
+              if (!rows.length) return null;
+              const gradeOf = (r?: { rating?: string; comment?: string }) =>
+                r?.rating === 'ok' ? { t: 'Good', cls: 'good' } :
+                r?.rating === 'note' ? { t: 'Fair', cls: 'fair' } :
+                r?.rating === 'damage' ? { t: 'Poor', cls: 'poor' } : { t: '—', cls: 'na' };
+              return (
+                <>
+                  <div className="section-title"><span className="n"><ClipboardList size={11} /> Panel condition</span><span className="ln" /></div>
+                  <div className="panel-grid">
+                    {rows.map(({ s, r }) => {
+                      const g = gradeOf(r);
+                      return (
+                        <div className="panel" key={s.id}>
+                          <div className="name">{s.name}</div>
+                          <div className={`grade ${g.cls}`}>{g.t}</div>
+                          {r?.comment && <div className="note">{r.comment}</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
 
-          {/* Damage findings */}
-          <section>
-            <h2><AlertTriangle size={16} /> Damage & condition findings</h2>
+            {/* Damage findings */}
+            <div className="section-title"><span className="n"><AlertTriangle size={11} /> Damage findings</span><span className="ln" /></div>
             {condition.hasInput && (
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, padding:'10px 14px', background:'#F8FAFC', border:'1px solid #E8EAE6', borderRadius:12 }}>
-                <div style={{ fontWeight:800, fontSize:24, color: band.color }}>
-                  {condition.stars.toFixed(1)}<span style={{ fontSize:12, color:'#475569' }}>/5</span>
+              <div className="card" style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ fontFamily:'var(--display)', fontWeight:600, fontSize:22, color: condition.stars >= 3.5 ? 'var(--green)' : condition.stars >= 2.5 ? 'var(--amber)' : 'var(--red)' }}>
+                  {condition.stars.toFixed(1)}<span style={{ fontSize:11, color:'var(--muted)' }}>/5</span>
                 </div>
                 <div>
-                  <div style={{ fontWeight:700, fontSize:13 }}>Condition score</div>
-                  <div style={{ fontSize:11.5, color:'#64748B' }}>
-                    {condition.label} · {condition.findings.length} tag{condition.findings.length === 1 ? '' : 's'}
-                    {' across '}{Object.keys(vehicle.damageFindings || {}).length} photo{Object.keys(vehicle.damageFindings || {}).length === 1 ? '' : 's'}
-                  </div>
+                  <div style={{ fontWeight:700, fontSize:11 }}>Condition score</div>
+                  <div style={{ fontSize:10, color:'var(--ink-2)' }}>{condition.label} · {condition.findings.length} tag{condition.findings.length === 1 ? '' : 's'} across {Object.keys(vehicle.damageFindings || {}).length} photos</div>
                 </div>
               </div>
             )}
             {condition.findings.length === 0 ? (
-              <div className="no-issues"><CheckCircle2 size={14} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> No damage tagged on captured photos.</div>
+              <div className="no-issues"><CheckCircle2 size={13} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> No damage tagged on captured photos.</div>
             ) : (
               condition.findings.map((f, i) => {
                 const sev = severityMeta(f.severity);
@@ -520,194 +692,180 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                     <div className="h" style={{ color: sev.color }}>
                       {sev.label} · {f.damageType} · {f.panel}
                     </div>
-                    <div className="l" style={{ color:'#334155' }}>
+                    <div className="l">
                       {f.note || 'Tagged during capture'}
-                      <span style={{ color:'#475569' }}> — {slot?.name || f.slotId}</span>
+                      <span style={{ color:'var(--muted)' }}> — {slot?.name || f.slotId}</span>
                     </div>
                   </div>
                 );
               })
             )}
-          </section>
 
-          {/* Damage photos with pins */}
-          {(() => {
-            const slotsWithDamage = Object.entries(vehicle.damageFindings || {})
-              .filter(([, list]) => list && list.some(f => f.confirmed !== false))
-              .map(([slotId, list]) => ({
-                slot: DEFAULT_TEMPLATE.slots.find(s => s.id === slotId),
-                src: vehicle.photos?.[slotId],
-                findings: (list || []).filter(f => f.confirmed !== false),
-              }))
-              .filter(d => d.src && d.slot);
-            if (!slotsWithDamage.length) return null;
-            return (
-              <section>
-                <h2><Camera size={16} /> Damage locations</h2>
-                <div className="damage-grid">
-                  {slotsWithDamage.map(({ slot, src, findings }) => (
-                    <div className="damage-card" key={slot!.id} style={{ position:'relative' }}>
-                      <div style={{ position:'relative' }}>
-                        <img src={src} alt={slot!.name} />
-                        {findings.map((f, i) => {
-                          const sev = severityMeta(f.severity);
-                          return (
-                            <div
-                              key={f.id || i}
-                              className="damage-pin"
-                              style={{
-                                position:'absolute',
-                                left: `${f.x * 100}%`,
-                                top: `${f.y * 100}%`,
-                                background: sev.color,
-                              }}
-                            >
-                              {f.severity}
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <div className="cap">
-                        <b>{slot!.name}</b>
-                        <div style={{ color:'#64748B', marginTop:3 }}>
-                          {findings.length} tag{findings.length === 1 ? '' : 's'}
-                          {findings.length === 1 ? ` · ${findings[0].damageType}` : ''}
+            {/* Damage photos with pins */}
+            {(() => {
+              const slotsWithDamage = Object.entries(vehicle.damageFindings || {})
+                .filter(([, list]) => list && list.some(f => f.confirmed !== false))
+                .map(([slotId, list]) => ({
+                  slot: DEFAULT_TEMPLATE.slots.find(s => s.id === slotId),
+                  src: vehicle.photos?.[slotId],
+                  findings: (list || []).filter(f => f.confirmed !== false),
+                }))
+                .filter(d => d.src && d.slot);
+              if (!slotsWithDamage.length) return null;
+              return (
+                <>
+                  <div className="section-title"><span className="n"><Camera size={11} /> Damage locations</span><span className="ln" /></div>
+                  <div className="damage-grid">
+                    {slotsWithDamage.map(({ slot, src, findings }) => (
+                      <div className="damage-card" key={slot!.id}>
+                        <div style={{ position:'relative' }}>
+                          <img src={src} alt={slot!.name} />
+                          {findings.map((f, i) => {
+                            const sev = severityMeta(f.severity);
+                            return (
+                              <div
+                                key={f.id || i}
+                                className="damage-pin"
+                                style={{
+                                  position:'absolute',
+                                  left: `${f.x * 100}%`,
+                                  top: `${f.y * 100}%`,
+                                  background: sev.color,
+                                }}
+                              >
+                                {f.severity}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="cap">
+                          <b style={{ color:'var(--ink)' }}>{slot!.name}</b>
+                          <div style={{ marginTop:3 }}>
+                            {findings.length} tag{findings.length === 1 ? '' : 's'}
+                            {findings.length === 1 ? ` · ${findings[0].damageType}` : ''}
+                          </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+
+            {/* Required photo checklist */}
+            {requiredSlots.length > 0 && (
+              <>
+                <div className="section-title"><span className="n"><ClipboardList size={11} /> Required photos</span><span className="ln" /></div>
+                <table className="checklist">
+                  <thead>
+                    <tr><th>Shot</th><th>Status</th><th>Quality</th></tr>
+                  </thead>
+                  <tbody>
+                    {requiredSlots.map(s => {
+                      const has = !!vehicle.photos?.[s.id];
+                      const q = vehicle.quality?.[s.id];
+                      return (
+                        <tr key={s.id}>
+                          <td>{s.name}</td>
+                          <td style={{ color: has ? 'var(--green)' : 'var(--red)', fontWeight:700 }}>{has ? 'Captured' : 'Missing'}</td>
+                          <td>{q ? q.overallScore : '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </>
+            )}
+
+            {/* Gallery */}
+            {capturedPhotos.length > 0 && (
+              <>
+                <div className="section-title"><span className="n"><Camera size={11} /> Gallery</span><span className="ln" /></div>
+                <div className="gallery">
+                  {capturedPhotos.slice(0, 15).map(slot => (
+                    <div className="photo-tile" key={slot.id}>
+                      <img src={vehicle.photos[slot.id]} alt={slot.name} />
+                      <div className="cap">{slot.name}</div>
                     </div>
                   ))}
                 </div>
-              </section>
-            );
-          })()}
+              </>
+            )}
 
-          {/* Photo capture quality */}
-          <section>
-            <h2><Award size={16} /> Photo capture quality</h2>
-            <div style={{ fontSize:11, color:'#475569', marginTop:-4, marginBottom:8 }}>
-              How well each section was photographed — this describes the images, not the vehicle.
-            </div>
-            <div className="grades">
-              {phaseScores.map(p => {
-                const g = captureBand(p.score);
-                const Icon = p.icon;
-                return (
-                  <div className="grade" key={p.id} style={{ background: g.bg, borderColor: g.color + '40' }}>
-                    <div className="v" style={{ color: g.color, fontSize:15 }}>{g.label}</div>
-                    <div className="n"><Icon size={11} style={{display:'inline',verticalAlign:'-2px',marginRight:4,color:g.color}}/>{p.name}</div>
-                    <div style={{ fontSize:10, color:'#475569', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* Required photo checklist */}
-          <section>
-            <h2><ClipboardList size={16} /> Required photos</h2>
-            <table className="checklist">
-              <thead>
-                <tr><th>Shot</th><th>Status</th><th>Quality</th></tr>
-              </thead>
-              <tbody>
-                {requiredSlots.map(s => {
-                  const has = !!vehicle.photos?.[s.id];
-                  const q = vehicle.quality?.[s.id];
-                  return (
-                    <tr key={s.id}>
-                      <td>{s.name}</td>
-                      <td style={{ color: has ? '#16A34A' : '#DC2626', fontWeight:700 }}>{has ? 'Captured' : 'Missing'}</td>
-                      <td>{q ? q.overallScore : '—'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </section>
-
-          {/* Gallery */}
-          {capturedPhotos.length > 0 && (
-            <section>
-              <h2><Camera size={16} /> Gallery</h2>
-              <div className="photo-grid">
-                {capturedPhotos.slice(0, 15).map(slot => (
-                  <div className="photo-tile" key={slot.id}>
-                    <img src={vehicle.photos[slot.id]} alt={slot.name} />
-                    <div className="cap">{slot.name}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Dealer & vehicle identity */}
-          <section>
-            <h2><Award size={16} /> Report details</h2>
+            {/* Report details — dealer & vehicle identity */}
+            <div className="section-title"><span className="n"><Award size={11} /> Report details</span><span className="ln" /></div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-              <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Dealership</div>
-                <div style={{ fontWeight:700, marginTop:4 }}>{dealerName}</div>
-                {dealerBranch ? <div style={{ fontSize:12, color:'#64748B', marginTop:2 }}>{dealerBranch}</div> : null}
-                {dealerWa ? <div style={{ fontSize:12, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
+              <div className="card">
+                <div className="k">Dealership</div>
+                <div style={{ fontWeight:700, fontSize:11 }}>{dealerName || '—'}</div>
+                {dealerBranch && <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>{dealerBranch}</div>}
+                {dealerWa && <div style={{ fontSize:10, marginTop:6 }}>WhatsApp {dealerWa}</div>}
               </div>
-              <div className="grade" style={{ textAlign:'left', padding:14 }}>
-                <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Vehicle identity</div>
-                <div style={{ fontSize:12, color:'#334155', marginTop:4 }}>
-                  VIN <b style={{ fontFamily:'ui-monospace, monospace' }}>{vehicle.vin || '— not recorded —'}</b>
+              <div className="card">
+                <div className="k">Vehicle identity</div>
+                <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:4 }}>
+                  VIN <b style={{ fontFamily:'var(--mono)' }}>{vehicle.vin || '— not recorded —'}</b>
                 </div>
-                <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
+                <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>
                   Stock {vehicle.stockNumber || '—'} · {vehicle.year} {vehicle.make} {vehicle.model}
                 </div>
-                <div style={{ fontSize:12, color:'#334155', marginTop:2 }}>
+                <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>
                   Captured {generatedAt}
                 </div>
               </div>
             </div>
 
             {/* Condition scale legend */}
-            <div className="grade" style={{ textAlign:'left', padding:14, marginTop:10 }}>
-              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Condition scale</div>
-              <div style={{ marginTop:6 }}>
-                {CONDITION_SCALE.map(b => (
-                  <div key={b.label} style={{ display:'flex', gap:8, fontSize:11.5, color:'#334155', marginTop:3 }}>
-                    <b style={{ color:b.color, minWidth:64, fontFamily:'ui-monospace, monospace' }}>{b.band}</b>
-                    <b style={{ minWidth:64 }}>{b.label}</b>
-                    <span style={{ opacity:.85 }}>{b.meaning}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize:11, color:'#475569', marginTop:8 }}>
+            <div className="card" style={{ marginTop:10 }}>
+              <div className="k">Condition scale</div>
+              {CONDITION_SCALE.map(b => (
+                <div className="scale-row" key={b.label}>
+                  <b className="band" style={{ color: b.color }}>{b.band}</b>
+                  <b className="label">{b.label}</b>
+                  <span style={{ opacity:.85 }}>{b.meaning}</span>
+                </div>
+              ))}
+              <div style={{ fontSize:9.5, color:'var(--muted)', marginTop:8 }}>
                 Weighted from tagged damage severity. Not a mechanical assessment.
               </div>
             </div>
-          </section>
 
-          {/* Signature block */}
-          <section style={{ paddingTop:0 }}>
-            <div className="grade" style={{ textAlign:'left', padding:14 }}>
-              <div className="k" style={{ fontSize:9, letterSpacing:'.1em', color:'#475569' }}>Signed off by</div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginTop:10 }}>
-                <div>
-                  <div style={{ borderBottom:'1px solid #94A3B8', height:26 }}>
-                    <span style={{ fontSize:12, color:'#334155' }}>{vehicle.capturedBy || ''}</span>
-                  </div>
-                  <div style={{ fontSize:9.5, color:'#475569', marginTop:3 }}>Name</div>
-                </div>
-                <div>
-                  <div style={{ borderBottom:'1px solid #94A3B8', height:26 }}>
-                    <span style={{ fontSize:12, color:'#334155' }}>{generatedAt}</span>
-                  </div>
-                  <div style={{ fontSize:9.5, color:'#475569', marginTop:3 }}>Date</div>
-                </div>
+            {/* Scope & disclaimers */}
+            <div className="card" style={{ marginTop:10 }}>
+              <div className="k">Scope & disclaimers</div>
+              <div className="prose">
+                This report documents the <b>visual condition</b> of the vehicle at a single moment in time, based on photographs captured during the TruLens session.
+                It is <b>not</b> a mechanical inspection, roadworthiness assessment, or warranty. Damage tags and condition scores reflect only what was visible
+                and recorded in the photographs provided. Internal, mechanical, and structural defects are outside the scope of this report.
               </div>
             </div>
-          </section>
 
-          <div className="foot">
-            <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruLens</b></div>
-            <img src={trudealerLockup} alt="TruDealer" style={{ height:20, width:'auto' }} />
-            <div>{reportId}</div>
-            <div>Visual condition at a moment in time — not a mechanical warranty</div>
+            {/* Signature row */}
+            <div className="sig-row">
+              <div className="sig">
+                <div className="line">
+                  <div className="name">{vehicle.capturedBy || ''}</div>
+                </div>
+                <div className="lbl">Signed off by</div>
+              </div>
+              <div className="sig">
+                <div className="line">
+                  <div className="name">{generatedAt}</div>
+                </div>
+                <div className="lbl">Date</div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="accent" />
+            <div className="foot">
+              <div>Prepared by <span className="cy">{dealerName}</span> · powered by <b>TruLens</b></div>
+              <div className="lockup-wrap">
+                <img className="lockup" src={trudealerLockup} alt="TruDealer" />
+              </div>
+              <div>{reportId}</div>
+              <div>Visual condition at a moment in time — not a mechanical warranty</div>
+            </div>
           </div>
         </div>
       </div>
