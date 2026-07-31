@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, Check, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, Check, Sparkles, Loader2, ClipboardCheck } from 'lucide-react';
 import { Vehicle, DamageFinding } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 
@@ -16,6 +16,7 @@ interface DamageTaggerProps {
   vehicle: Vehicle;
   onBack: () => void;
   onSave: (damageFindings: Record<string, DamageFinding[]>) => Promise<void> | void;
+  onContinueToChecklist?: () => void;
 }
 
 const TYPES: DamageFinding['damageType'][] = [
@@ -32,7 +33,7 @@ const SEVERITY_META: Record<number, { label: string; color: string }> = {
 
 const newId = () => `dmg_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
 
-export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerProps) {
+export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChecklist }: DamageTaggerProps) {
   // Only slots that actually have a photo can be tagged.
   const shotSlots = React.useMemo(
     () => DEFAULT_TEMPLATE.slots.filter((s) => vehicle.photos?.[s.id]),
@@ -373,6 +374,16 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
           <Save size={14} />
           {saving ? 'Saving…' : savedFlash ? 'Saved ✓' : 'Save damage tags'}
         </button>
+        {onContinueToChecklist && (
+          <button
+            type="button"
+            onClick={async () => { await handleSave(false); onContinueToChecklist(); }}
+            disabled={saving}
+            className="w-full py-3 rounded-xl bg-neutral-900 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            <ClipboardCheck size={14} /> Continue to Checklist
+          </button>
+        )}
       </div>
     </div>
   );

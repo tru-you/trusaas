@@ -1,8 +1,7 @@
 import React from 'react';
-import { 
-  Camera, Sliders, ChevronLeft, ChevronRight, Sun, Volume2, Sparkles, AlertCircle, 
-  Check, RefreshCw, Upload, Smartphone, HelpCircle, Eye, Images, Loader2, Trash2, X,
-  Circle, CheckCircle2
+import {
+  Camera, ChevronLeft, Sparkles, AlertCircle,
+  Check, Upload, ClipboardCheck, Eye, Images, Loader2, Trash2, X
 } from 'lucide-react';
 import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,14 +12,24 @@ interface CameraGuideProps {
   onBack: () => void;
   onPhotoCaptured: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
   onBulkPhotosUploaded: (updatedVehicle: Vehicle) => void;
+  onOpenDamageTagger?: () => void;
+  onOpenChecklist?: () => void;
 }
 
-export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPhotosUploaded }: CameraGuideProps) {
+export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPhotosUploaded, onOpenDamageTagger, onOpenChecklist }: CameraGuideProps) {
   const { user } = useAuth();
   // Crash-safe: never read vehicle.photos when undefined
   const photos = vehicle?.photos || {};
-  const [selectedSlotId, setSelectedSlotId] = React.useState<string>('front_3_4');
-  const [currentPhase, setCurrentPhase] = React.useState(1);
+  /* Every capture here routes through SlotReview for a condition assessment,
+     which unmounts this component and remounts it fresh when the shooter
+     comes back — a hardcoded 'bonnet' default meant every single return trip
+     reset back to slot 1, no matter how far the walkaround had actually
+     gotten, which read as the app being stuck rather than advancing. Lazy
+     initializer so this only runs once, at mount — compute the real first
+     gap from what's already captured instead of assuming slot 1. */
+  const [selectedSlotId, setSelectedSlotId] = React.useState<string>(
+    () => DEFAULT_TEMPLATE.slots.find((s) => !vehicle.photos?.[s.id])?.id || DEFAULT_TEMPLATE.slots[0].id,
+  );
   const [isCameraActive, setIsCameraActive] = React.useState(false);
   const [hasCamPermission, setHasCamPermission] = React.useState<boolean | null>(null);
   const [cameraError, setCameraError] = React.useState<string | null>(null);
@@ -28,10 +37,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   const [shutterFlash, setShutterFlash] = React.useState(false);
   const [captureHint, setCaptureHint] = React.useState<string | null>(null);
   const singleUploadRef = React.useRef<HTMLInputElement>(null);
-  
-  // Custom video recording simulation states for 360 walkaround
-  const [isRecording360, setIsRecording360] = React.useState(false);
-  const [recordingProgress, setRecordingProgress] = React.useState(0);
 
   // Real-time camera & canvas references
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -68,28 +73,20 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   // Active slot information
   const activeSlot = DEFAULT_TEMPLATE.slots.find(s => s.id === selectedSlotId) || DEFAULT_TEMPLATE.slots[0];
 
-  const phaseNames = DEFAULT_TEMPLATE.phases.map(p => p.name);
-
   // Progress tracker calculation
   const completedSlots = DEFAULT_TEMPLATE.slots.filter(slot => !!photos[slot.id]);
   const progressPercentage = Math.round((completedSlots.length / DEFAULT_TEMPLATE.slots.length) * 100);
 
-  const phaseSlots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === currentPhase);
-  const phaseCompleted = phaseSlots.every(s => !!photos[s.id] || !s.required);
+  const allSlots = DEFAULT_TEMPLATE.slots;
+  const chipStripRef = React.useRef<HTMLDivElement>(null);
 
-  // Detailed phase completion status
-  const phaseCompletionStatus = React.useMemo(() => {
-    return DEFAULT_TEMPLATE.phases.map((p, i) => {
-      const phaseIndex = i + 1;
-      const slots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === phaseIndex);
-      const completed = slots.every(s => !!photos[s.id] || !s.required);
-      return {
-        phase: phaseIndex,
-        name: p.name,
-        completed
-      };
-    });
-  }, [photos]);
+  // Auto-scroll the chip strip so the active slot is always visible
+  React.useEffect(() => {
+    const strip = chipStripRef.current;
+    if (!strip) return;
+    const chip = strip.querySelector(`[data-slot="${selectedSlotId}"]`) as HTMLElement | null;
+    if (chip) chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [selectedSlotId]);
 
   /** PC-friendly camera start: try rear cam → front cam → any webcam. */
   const startCamera = React.useCallback(async () => {
@@ -323,79 +320,41 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     }, 1500);
   };
 
-  // Custom helper to generate red "NONE" bypass for Service Book
-  const handleMarkNoServiceBook = () => {
+  const handleMarkNotPresent = (slotId: string, slotName: string) => {
     const canvas = document.createElement('canvas');
     canvas.width = 1080;
     canvas.height = 720;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Fill beautiful cyber dark background
     ctx.fillStyle = '#0a0f1d';
     ctx.fillRect(0, 0, 1080, 720);
-    
-    // Draw grid
-    ctx.strokeStyle = 'rgba(34, 211, 238, 0.1)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 1080; i += 40) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, 720);
-      ctx.stroke();
-    }
-    for (let j = 0; j < 720; j += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, j);
-      ctx.lineTo(1080, j);
-      ctx.stroke();
-    }
 
-    // Outer border
     ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
     ctx.lineWidth = 10;
     ctx.strokeRect(40, 40, 1000, 640);
 
-    // Text details
-    ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 24px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('LOT PHOTO RECORDING ENGINE • COMPULSORY BYPASS', 540, 180);
-
     ctx.fillStyle = '#f3f4f6';
-    ctx.font = 'bold 46px sans-serif';
-    ctx.fillText('SERVICE HISTORY BOOKLET', 540, 310);
+    ctx.font = 'bold 40px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(slotName.toUpperCase(), 540, 300);
 
     ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 36px sans-serif';
-    ctx.fillText('MARKED: "NONE" (NOT PRESENT WITH VEHICLE)', 540, 410);
+    ctx.font = 'bold 34px sans-serif';
+    ctx.fillText('NOT PRESENT', 540, 390);
 
     ctx.fillStyle = '#9ca3af';
     ctx.font = '18px sans-serif';
-    ctx.fillText('This vehicle listing has been bypass-approved for launch by Lot Manager.', 540, 500);
-
-    ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText('STATUS: LOT AUDIT EXEMPTED', 540, 580);
+    ctx.fillText('Marked by inspector during walk-around.', 540, 480);
 
     const base64Data = canvas.toDataURL('image/jpeg', 0.85);
     const report: QualityReport = {
       overallScore: 100,
-      lightingCheck: {
-        status: 'Perfect',
-        brightness: 130,
-        contrast: 120,
-        feedback: 'Marked "None" by Lot Manager. Verified bypass state.'
-      },
-      angleCheck: {
-        status: 'Perfect',
-        pitchDiff: 0,
-        rollDiff: 0,
-        feedback: 'Service history book not present. Complied via bypass.'
-      }
+      lightingCheck: { status: 'Perfect', brightness: 130, contrast: 120, feedback: `${slotName} marked not present.` },
+      angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Item not present with vehicle.' },
     };
 
-    onPhotoCaptured('service_book', base64Data, report);
+    onPhotoCaptured(slotId, base64Data, report);
   };
 
   /** Canvas dims matching the source aspect ratio, long edge capped (keeps export payloads sane). */
@@ -434,14 +393,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   const handleCapture = (e?: React.MouseEvent) => {
     e?.preventDefault?.();
     e?.stopPropagation?.();
-
-    // 360 walkaround is being rebuilt as a genuine video recording. Until then
-    // we do NOT fabricate a spin — a graded report only carries real captures.
-    if (activeSlot.id === 'video_360') {
-      setCaptureHint('Tru Orbit is being rebuilt — capture the real photos for now.');
-      setTimeout(() => setCaptureHint(null), 2800);
-      return;
-    }
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -532,17 +483,19 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
     onPhotoCaptured(selectedSlotId, base64Data, report);
   };
 
-  // After a photo is saved (parent updates vehicle.photos), auto-advance to next empty required slot
+  /* After a photo is saved (parent updates vehicle.photos), auto-advance to
+     the next empty slot in walkaround ORDER — not the next empty required
+     slot. Skipping straight past an optional shot (spare wheel, jack, spare
+     keys) to the next required one broke the physical walk: the inspector is
+     standing right at the boot for those two accessory shots, and jumping
+     past them to the rear-left quarter panel sent them out of sequence. */
   const prevPhotoCount = React.useRef(Object.keys(photos).length);
   React.useEffect(() => {
     const count = Object.keys(photos).length;
     if (count > prevPhotoCount.current) {
-      const next =
-        DEFAULT_TEMPLATE.slots.find((s) => s.required && !photos[s.id]) ||
-        DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
+      const next = DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
       if (next) {
         setSelectedSlotId(next.id);
-        setCurrentPhase(next.phase);
         setCustomFile(null);
         setCaptureHint(`Saved · Next: ${next.name}`);
         setTimeout(() => setCaptureHint(null), 2200);
@@ -557,317 +510,33 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
   // Render SVG guide overlay path lines
   const renderGuideOverlay = () => {
-    switch (activeSlot.id) {
-      case 'front_3_4':
-        const isSUV = vehicle.vehicleType?.includes('SUV') || vehicle.vehicleType?.includes('Crossover');
-        const isBakkie = vehicle.vehicleType?.includes('Bakkie') || vehicle.vehicleType?.includes('Truck');
-        
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {isSUV ? (
-              <path d="M 10,70 L 15,50 L 30,42 L 35,22 L 75,22 L 85,42 L 95,50 L 92,72 C 92,72 62,78 50,78 C 38,78 10,70 10,70 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : isBakkie ? (
-              <path d="M 10,70 L 15,50 L 30,42 L 35,25 L 65,25 L 65,45 L 95,45 L 95,70 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : (
-              <path d="M 15,65 L 20,50 L 32,45 L 42,28 L 75,28 L 85,45 L 90,52 L 87,68 C 87,68 62,72 50,72 C 38,72 15,65 15,65 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            )}
-            <circle cx="30" cy={isSUV ? 70 : 65} r="5.5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="78" cy={isSUV ? 68 : 63} r="5.5" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        );
-      case 'side_driver':
-      case 'side_passenger':
-        const isSideSUV = vehicle.vehicleType?.includes('SUV') || vehicle.vehicleType?.includes('Crossover');
-        const isSideBakkie = vehicle.vehicleType?.includes('Bakkie') || vehicle.vehicleType?.includes('Truck');
-
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {isSideSUV ? (
-              <path d="M 5,72 L 8,50 L 25,40 L 30,22 L 80,22 L 90,35 L 95,50 L 95,72 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : isSideBakkie ? (
-              <path d="M 5,72 L 8,50 L 25,40 L 30,25 L 60,25 L 60,45 L 95,45 L 95,72 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : (
-              <path d="M 10,65 L 12,54 L 28,45 L 38,30 L 72,30 L 80,45 L 92,54 L 92,65 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            )}
-            <circle cx="25" cy={isSideSUV || isSideBakkie ? 70 : 64} r="6" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="75" cy={isSideSUV || isSideBakkie ? 70 : 64} r="6" fill="none" stroke="currentColor" strokeWidth="1" />
-            <text x="50" y="15" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">{activeSlot.id === 'side_driver' ? 'DRIVER' : 'PASSENGER'} SIDE</text>
-          </svg>
-        );
-      case 'rear_3_4':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M 85,65 L 80,50 L 68,45 L 58,28 L 25,28 L 15,45 L 10,52 L 13,68 C 13,68 38,72 50,72 C 62,72 85,65 85,65 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <circle cx="70" cy="65" r="5.5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="22" cy="63" r="5.5" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        );
-      case 'rear_profile':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="32" width="60" height="34" rx="4" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <circle cx="30" cy="65" r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="70" cy="65" r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        );
-      case 'barcode_scanner':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/85" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Holographic Barcode/VIN Box scan visualizer */}
-            <rect x="15" y="30" width="70" height="40" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M 12,25 L 12,15 L 25,15" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M 88,25 L 88,15 L 75,15" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M 12,75 L 12,85 L 25,85" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M 88,75 L 88,85 L 75,85" fill="none" stroke="currentColor" strokeWidth="2" />
-            
-            {/* Simulated barcode lines */}
-            <line x1="25" y1="38" x2="25" y2="62" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="30" y1="38" x2="30" y2="62" stroke="currentColor" strokeWidth="3" />
-            <line x1="35" y1="38" x2="35" y2="62" stroke="currentColor" strokeWidth="1" />
-            <line x1="42" y1="38" x2="42" y2="62" stroke="currentColor" strokeWidth="4" />
-            <line x1="48" y1="38" x2="48" y2="62" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="53" y1="38" x2="53" y2="62" stroke="currentColor" strokeWidth="2" />
-            <line x1="60" y1="38" x2="60" y2="62" stroke="currentColor" strokeWidth="3.5" />
-            <line x1="68" y1="38" x2="68" y2="62" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="75" y1="38" x2="75" y2="62" stroke="currentColor" strokeWidth="2.5" />
-
-            {/* Red Laser scan bar moving or pulsing */}
-            <line x1="15" y1="50" x2="85" y2="50" stroke="rgba(239, 68, 68, 0.85)" strokeWidth="2" className="animate-pulse" />
-            <text x="50" y="24" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">ALIGN BARCODE IN RED ZONE</text>
-          </svg>
-        );
-      case 'interior_seats':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="25" width="25" height="40" rx="3" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2,2" />
-            <rect x="55" y="25" width="25" height="40" rx="3" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2,2" />
-            <line x1="15" y1="65" x2="85" y2="65" stroke="currentColor" strokeWidth="0.8" />
-            <text x="50" y="20" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="sans-serif">ALIGN CABIN & SEATS</text>
-          </svg>
-        );
-      case 'service_book':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/70" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Outline booklet shape */}
-            <rect x="22" y="25" width="56" height="50" rx="4" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="50" y1="25" x2="50" y2="75" stroke="currentColor" strokeWidth="1.5" />
-            
-            {/* Stamp circles inside book */}
-            <circle cx="36" cy="40" r="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
-            <circle cx="36" cy="60" r="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
-            <circle cx="64" cy="40" r="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
-            <circle cx="64" cy="60" r="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
-            
-            <text x="50" y="20" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">ALIGN SERVICE HISTORY PAGES</text>
-          </svg>
-        );
-      case 'video_360':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/75" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Spinning orbital design */}
-            <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="0.5" />
-            
-            {/* Left and right spin indicators */}
-            <path d="M 12,50 L 8,45 L 8,55 Z" fill="currentColor" />
-            <path d="M 88,50 L 92,45 L 92,55 Z" fill="currentColor" />
-            
-            <text x="50" y="16" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">360° VIDEO WALKAROUND</text>
-            <text x="50" y="88" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="sans-serif">Hold stable while rotation completes</text>
-          </svg>
-        );
-      case 'license_and_disc':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/60" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Plate rectangle */}
-            <rect x="25" y="55" width="50" height="18" rx="2" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3,3" />
-            {/* Windshield License/Tax Disc Circle template */}
-            <circle cx="75" cy="32" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="75" cy="32" r="1" fill="currentColor" />
-            <line x1="75" y1="18" x2="75" y2="22" stroke="currentColor" strokeWidth="1" />
-            <text x="75" y="47" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">DISC ALIGN</text>
-          </svg>
-        );
-      case 'body_panels':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/50" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Angle lines for panel gaps */}
-            <line x1="40" y1="15" x2="40" y2="85" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-            <line x1="60" y1="15" x2="60" y2="85" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-            <text x="50" y="50" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="sans-serif">ALIGN PANEL GAP CENTER</text>
-          </svg>
-        );
-      case 'tyres_detail':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/65" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Vertical tyre outline template */}
-            <rect x="35" y="15" width="30" height="70" rx="6" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            {/* Tread pattern indicators */}
-            <line x1="38" y1="30" x2="62" y2="30" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <line x1="38" y1="50" x2="62" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <line x1="38" y1="70" x2="62" y2="70" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <text x="50" y="8" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">TYRE TREAD ZONE</text>
-          </svg>
-        );
-      case 'rims_condition':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/65" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Circle for curb rash check */}
-            <circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="1,1" />
-            <circle cx="50" cy="50" r="8" fill="none" stroke="currentColor" strokeWidth="1" />
-            {/* Radial spokes guides */}
-            <line x1="50" y1="18" x2="50" y2="82" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="18" y1="50" x2="82" y2="50" stroke="currentColor" strokeWidth="0.5" />
-            <text x="50" y="14" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">RIM CURB RASH EXAMINE</text>
-          </svg>
-        );
-      case 'vehicle_damage':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-red-400/60" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Target crosshair box for damages */}
-            <circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" strokeWidth="1.2" />
-            <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2,4" />
-            <line x1="10" y1="50" x2="90" y2="50" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2,4" />
-            <rect x="25" y="25" width="50" height="50" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="1,5" />
-            <text x="50" y="21" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">CENTER ON SCRATCH / DENT</text>
-          </svg>
-        );
-      case 'front_straight':
-        const isFrontSUV = vehicle.vehicleType?.includes('SUV') || vehicle.vehicleType?.includes('Crossover');
-        const isFrontBakkie = vehicle.vehicleType?.includes('Bakkie') || vehicle.vehicleType?.includes('Truck');
-
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {isFrontSUV || isFrontBakkie ? (
-              <path d="M 15,75 L 15,50 L 25,40 L 75,40 L 85,50 L 85,75 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : (
-              <path d="M 20,65 L 22,54 L 38,45 L 62,45 L 78,54 L 80,65 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            )}
-            <circle cx="30" cy={isFrontSUV || isFrontBakkie ? 74 : 64} r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="70" cy={isFrontSUV || isFrontBakkie ? 74 : 64} r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <text x="50" y="30" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">FRONT PROFILE</text>
-          </svg>
-        );
-      case 'rear_straight':
-        const isRearSUV = vehicle.vehicleType?.includes('SUV') || vehicle.vehicleType?.includes('Crossover');
-        const isRearBakkie = vehicle.vehicleType?.includes('Bakkie') || vehicle.vehicleType?.includes('Truck');
-
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {isRearSUV ? (
-              <rect x="15" y="25" width="70" height="50" rx="4" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : isRearBakkie ? (
-              <path d="M 15,75 L 15,45 L 85,45 L 85,75 Z" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            ) : (
-              <rect x="25" y="35" width="50" height="30" rx="3" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            )}
-            <circle cx="30" cy={isRearSUV || isRearBakkie ? 75 : 65} r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <circle cx="70" cy={isRearSUV || isRearBakkie ? 75 : 65} r="5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <text x="50" y={isRearSUV ? 20 : 30} textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">REAR PROFILE</text>
-          </svg>
-        );
-      case 'roof_view':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/50" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="20" width="60" height="60" rx="10" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-            <text x="50" y="50" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">ROOF / SUNROOF VIEW</text>
-          </svg>
-        );
-      /* All four corners share one overlay — the guide is a wheel, and the
-         corner is named in the slot title above it. wheels_all is the
-         pre-split id, kept so an older capture still draws a guide. */
-      case 'wheels_all':
-      case 'wheel_front_driver':
-      case 'wheel_rear_driver':
-      case 'wheel_rear_passenger':
-      case 'wheel_front_passenger':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="50" cy="50" r="8" fill="none" stroke="currentColor" strokeWidth="1" />
-            <text x="50" y="15" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">WHEEL & TYRE CLOSE-UP</text>
-          </svg>
-        );
-      case 'badges_detail':
-      case 'lights_detail':
-      case 'mirrors_handles':
-      case 'floor_mats':
-      case 'mechanical_details':
-      case 'undercarriage':
-      case 'odometer_reading':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/60" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <line x1="50" y1="30" x2="50" y2="70" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="30" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="0.5" />
-            <text x="50" y="25" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">{activeSlot.name.toUpperCase()}</text>
-          </svg>
-        );
-      case 'seat_driver':
-      case 'seat_passenger':
-      case 'seats_rear':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="30" y="20" width="40" height="50" rx="5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3,3" />
-            <text x="50" y="15" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">{activeSlot.name.toUpperCase()}</text>
-          </svg>
-        );
-      case 'boot_bay':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="30" width="60" height="50" rx="2" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-            <text x="50" y="25" textAnchor="middle" fill="currentColor" fontSize="3" fontFamily="monospace">BOOT / CARGO AREA</text>
-          </svg>
-        );
-      case 'reg_papers':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/70" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="20" width="60" height="60" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <line x1="25" y1="35" x2="75" y2="35" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="25" y1="45" x2="75" y2="45" stroke="currentColor" strokeWidth="0.5" />
-            <line x1="25" y1="55" x2="75" y2="55" stroke="currentColor" strokeWidth="0.5" />
-            <text x="50" y="15" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">REGISTRATION DOCUMENTS</text>
-          </svg>
-        );
-      case 'vin_plate':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple/85" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="20" y="40" width="60" height="20" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <text x="50" y="35" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">VIN PLATE / STICKER</text>
-          </svg>
-        );
-      case 'recon_damage':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-red-400/60" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" strokeWidth="1.2" />
-            <rect x="25" y="25" width="50" height="50" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="1,5" />
-            <text x="50" y="21" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">RECON / DAMAGE DETAIL</text>
-          </svg>
-        );
-      case 'engine_bay':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-trulens-purple" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="15" y="25" width="70" height="60" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="4,4" />
-            <text x="50" y="20" textAnchor="middle" fill="currentColor" fontSize="3.5" fontFamily="monospace" fontWeight="bold">ENGINE BAY VIEW</text>
-          </svg>
-        );
-      case 'interior_dash':
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/55" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <circle cx="28" cy="55" r="14" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2,2" />
-            <rect x="52" y="45" width="22" height="15" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1" />
-            <line x1="10" y1="58" x2="90" y2="58" stroke="currentColor" strokeWidth="0.8" strokeDasharray="3,3" />
-          </svg>
-        );
-      default:
-        // Generic box overlay
-        return (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-400/35" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <rect x="15" y="20" width="70" height="60" rx="6" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4,4" />
-          </svg>
-        );
-    }
+    /* No per-vehicle-shape silhouette here on purpose. A sedan outline drawn
+       over a bakkie's viewfinder (or vice versa) looks wrong and misleads the
+       shooter more than it helps — that mismatch is why TruLens moved to this
+       same vehicle-agnostic guide. A soft target zone plus the slot's own name
+       works for any body shape without guessing one. */
+    const label = (activeSlot.name || activeSlot.id || '').toString();
+    return (
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {/* Corner brackets — frame the shot without drawing a car */}
+        <g stroke="currentColor" strokeWidth="0.7" fill="none" opacity="0.55" className="text-trulens-purple">
+          <path d="M 8,16 L 8,10 L 16,10" />
+          <path d="M 92,16 L 92,10 L 84,10" />
+          <path d="M 8,84 L 8,90 L 16,90" />
+          <path d="M 92,84 L 92,90 L 84,90" />
+        </g>
+        {/* A soft target zone: fill roughly this much of the frame with the panel */}
+        <rect x="16" y="26" width="68" height="48" rx="2"
+              stroke="currentColor" strokeWidth="0.5" strokeDasharray="1.5,2"
+              fill="none" opacity="0.35" className="text-trulens-purple" />
+        {/* Level line — keep the horizon straight */}
+        <line x1="30" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="0.4" opacity="0.25" className="text-trulens-purple" />
+        {label && (
+          <text x="50" y="20" textAnchor="middle" fill="currentColor" fillOpacity="0.75"
+                fontSize="3" fontFamily="Inter, sans-serif" className="text-trulens-purple">{label.toUpperCase()}</text>
+        )}
+      </svg>
+    );
   };
 
   // Determine lighting quality for prompt advice
@@ -906,73 +575,59 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </p>
           <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Viewfinder</p>
         </div>
-        <HelpCircle size={16} className="text-neutral-500 cursor-pointer" />
+        <div className="flex items-center gap-1">
+          {onOpenDamageTagger && (
+            <button
+              type="button"
+              onClick={onOpenDamageTagger}
+              title="Tag damage on captured photos"
+              className="p-1 rounded-full hover:bg-neutral-800 text-amber-400 flex items-center justify-center cursor-pointer"
+            >
+              <AlertCircle size={18} />
+            </button>
+          )}
+          {onOpenChecklist && (
+            <button
+              type="button"
+              onClick={onOpenChecklist}
+              title="Open the condition checklist"
+              className="p-1 rounded-full hover:bg-neutral-800 text-cyan-400 flex items-center justify-center cursor-pointer"
+            >
+              <ClipboardCheck size={18} />
+            </button>
+          )}
+          {!onOpenDamageTagger && !onOpenChecklist && (
+            <div className="w-[26px]" aria-hidden />
+          )}
+        </div>
       </div>
 
-      {/* 7-Phase Dynamic Progress Tracker */}
+      {/* Shot count — a photo taken advances the flow; that's the whole
+          progress model. The 3 phase bubbles + segmented bars this used to
+          show sat above the actual count competing for the same "is this
+          moving" answer, and needed the reader to know 3 abstract categories
+          before the numbers meant anything. One count, one bar. */}
       <div className="bg-neutral-900 border-b border-neutral-850 px-4 py-2 shrink-0 animate-in slide-in-from-top-2 duration-300">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
             <Sparkles size={10} className="text-indigo-400" />
-            {/* "Capture Workflow" / "Lot Readiness" — two pieces of product
-                vocabulary for "the list of shots" and "how many are done".
-                Neither is what anyone in the yard calls them. */}
             <span className="text-[13px] font-semibold text-neutral-200">Shot list</span>
           </div>
           <div className="flex items-center gap-2">
-             <div className="text-[13px] font-mono text-neutral-500 ">Done</div>
+             <div className="text-[13px] font-mono text-neutral-500">
+               {completedSlots.length}/{DEFAULT_TEMPLATE.slots.length}
+             </div>
              <div className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
                 <span className="text-[13px] font-bold text-indigo-400">{progressPercentage}%</span>
              </div>
           </div>
         </div>
-        
-        <div
-          className="grid gap-2"
-          style={{ gridTemplateColumns: `repeat(${DEFAULT_TEMPLATE.phases.length}, minmax(0, 1fr))` }}
-        >
-          {phaseCompletionStatus.map((status, i) => {
-            const isActive = currentPhase === status.phase;
-            return (
-              <button 
-                key={i}
-                onClick={() => {
-                  setCurrentPhase(status.phase);
-                  const firstSlot = DEFAULT_TEMPLATE.slots.find(s => s.phase === status.phase);
-                  if (firstSlot) setSelectedSlotId(firstSlot.id);
-                }}
-                className="flex flex-col gap-2 group cursor-pointer border-none bg-transparent p-0"
-              >
-                {/* Progress Segment */}
-                <div className="relative h-1 w-full rounded-full bg-neutral-800 overflow-hidden">
-                  <div
-                    style={{
-                      width: status.completed ? '100%' : isActive ? '50%' : '0%',
-                      backgroundColor: status.completed ? '#10b981' : '#4FE3DC'
-                    }}
-                    className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}
-                  />
-                </div>
-                
-                {/* Status Indicator */}
-                <div className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'scale-110' : 'opacity-50 group-hover:opacity-100'}`}>
-                   <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
-                     status.completed 
-                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)]' 
-                      : isActive 
-                      ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400 shadow-[0_0_8px_rgba(6,182,212,0.2)]' 
-                      : 'bg-neutral-900 border-neutral-800 text-neutral-500'
-                   }`}>
-                      {status.completed ? (
-                        <Check size={12} className="stroke-[4]" />
-                      ) : (
-                        <span className="text-[13px] font-semibold">{status.phase}</span>
-                      )}
-                   </div>
-                </div>
-              </button>
-            );
-          })}
+
+        <div className="relative h-1.5 w-full rounded-full bg-neutral-800 overflow-hidden">
+          <div
+            style={{ width: `${progressPercentage}%`, backgroundColor: progressPercentage === 100 ? '#10b981' : '#4FE3DC' }}
+            className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+          />
         </div>
       </div>
 
@@ -1037,7 +692,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             {hasCamPermission === false && (
               <p className="text-[13px] text-neutral-500 max-w-[240px] leading-relaxed pt-1">
                 Chrome/Edge: address bar → camera icon → <span className="text-neutral-300">Allow</span>. Use{' '}
-                <span className="text-neutral-300">http://localhost:3000</span> (not a blocked file:// page).
+                <span className="text-neutral-300">localhost</span> (not a blocked file:// page).
               </p>
             )}
           </div>
@@ -1046,44 +701,25 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         {/* No car-shaped overlay — a purple silhouette over a real car never
             lines up and just gets in the way. The frame stays clean. */}
 
-        {/* Small in-frame label so the shooter always knows what this shot is. */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-black/70 border border-white/15 px-3 py-1 rounded-full text-[13px] font-bold tracking-wide text-[#E8EAE6] pointer-events-none uppercase">
-          {activeSlot.name}
-        </div>
-
-        {/* Recording Overlay for 360 Walkaround */}
-        {isRecording360 && (
-          <div className="absolute inset-0 bg-neutral-950/85 z-30 flex flex-col items-center justify-center p-6 space-y-4 animate-in fade-in duration-200">
-            <div className="w-16 h-16 rounded-full border-4 border-red-500/20 flex items-center justify-center relative">
-              <div className="w-8 h-8 rounded-full bg-red-600 animate-ping absolute"></div>
-              <div className="w-6 h-6 rounded-full bg-red-600 relative z-10"></div>
-            </div>
-            <div className="text-center space-y-2">
-              <p className="text-[16px] font-semibold text-red-500 tracking-widest animate-pulse ">● RECORDING 360° WALK VIDEO</p>
-              <p className="text-[13px] text-neutral-400 font-mono">Simulating continuous 360° loop... keep camera steady</p>
-            </div>
-            
-            {/* Progress Bar */}
-            <div className="w-full max-w-xs space-y-1">
-              <div className="flex justify-between text-[13px] font-mono text-neutral-500">
-                <span>Capturing continuous footage</span>
-                <span>{recordingProgress}%</span>
-              </div>
-              <div className="w-full h-1.5 bg-neutral-900 rounded-full overflow-hidden border border-neutral-800">
-                <div 
-                  className="h-full bg-red-600 rounded-full transition-all duration-150"
-                  style={{ width: `${recordingProgress}%` }}
-                ></div>
-              </div>
-            </div>
+        {/* Small in-frame label so the shooter always knows what this shot is
+            — only over an actual live feed. The "Ready to shoot this slot"
+            placeholder below is vertically centered in this same box when
+            there's no camera/file yet, and at top-3 this label sat directly
+            on top of it, the two texts overlapping into a garbled mess. */}
+        {(isCameraActive || customFile) && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-black/70 border border-white/15 px-3 py-1 rounded-full text-[13px] font-bold tracking-wide text-[#E8EAE6] pointer-events-none uppercase">
+            {activeSlot.name}
           </div>
         )}
 
         {/* Simulated AI overlays (bubble level, lighting pill) removed —
             they showed fake sensor data and cluttered the viewfinder. */}
 
-        {/* Quick Camera Source Helper overlay if webcam unavailable */}
-        {!isCameraActive && !customFile && (
+        {/* Tip about the live feed's own alignment guides — doesn't apply
+            when there's no feed to have guides on. It used to show exactly
+            when there was no camera, which put it directly on top of the
+            "Ready to shoot this slot" placeholder's centered content. */}
+        {isCameraActive && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded text-[13px] tracking-wide text-neutral-400 flex items-center gap-1">
             <Eye size={10} className="text-indigo-400" /> Use alignment guides to frame your vehicle.
           </div>
@@ -1095,25 +731,19 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           a flex child won't shrink below its content size. */}
       <div className="flex-1 min-h-0 overflow-y-auto">
 
-      {/* Guide Slots Carousel Picker */}
-      <div className="bg-neutral-900 border-t border-neutral-850 p-2 shrink-0 z-10">
-        <div className="flex items-center justify-between px-2 mb-2">
-          <p className="text-[13px] text-neutral-400 font-bold tracking-normal">
-            Phase {currentPhase}: {phaseNames[currentPhase - 1]}
-          </p>
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto pb-1 px-2 scrollbar-none">
-          {phaseSlots.map(slot => {
+      {/* Shot list — one continuous strip, all 27 slots */}
+      <div className="bg-neutral-900 border-t border-neutral-850 py-2 shrink-0 z-10">
+        <div ref={chipStripRef} className="flex gap-2 overflow-x-auto pb-1 px-3 scrollbar-none">
+          {allSlots.map((slot, i) => {
             const isTaken = !!photos[slot.id];
             const isSelected = selectedSlotId === slot.id;
             const isNext =
               !isTaken &&
-              slot.required &&
-              slot.id === (DEFAULT_TEMPLATE.slots.find((s) => s.required && !photos[s.id])?.id);
+              slot.id === (DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id])?.id);
             return (
               <button
                 key={slot.id}
+                data-slot={slot.id}
                 type="button"
                 onClick={() => setSelectedSlotId(slot.id)}
                 className={`slot-state shrink-0 px-3 py-2 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-2 transition-all ${
@@ -1126,6 +756,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                     : 'slot-state--idle'
                 }`}
               >
+                <span className="text-[11px] opacity-60">{i + 1}</span>
                 {isTaken ? (
                   <Check size={10} className="font-semibold" />
                 ) : isNext ? (
@@ -1136,83 +767,40 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             );
           })}
         </div>
-        
-        <div className="flex items-center justify-between mt-2 px-2">
-          <button
-            disabled={currentPhase === 1}
-            onClick={() => {
-              const newPhase = currentPhase - 1;
-              setCurrentPhase(newPhase);
-              const firstSlotOfNewPhase = DEFAULT_TEMPLATE.slots.find(s => s.phase === newPhase);
-              if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
-            }}
-            className="text-[13px] font-bold text-neutral-400 hover:text-[#E8EAE6] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
-          >
-            <ChevronLeft size={12} /> Prev Phase
-          </button>
-          
-          <p className="text-[13px] text-neutral-300 font-medium truncate max-w-[150px]">
-            {activeSlot.description}
-          </p>
-
-          <button
-            disabled={currentPhase === DEFAULT_TEMPLATE.phases.length}
-            onClick={() => {
-              const newPhase = currentPhase + 1;
-              setCurrentPhase(newPhase);
-              const firstSlotOfNewPhase = DEFAULT_TEMPLATE.slots.find(s => s.phase === newPhase);
-              if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
-            }}
-            className={`text-[13px] font-bold flex items-center gap-1 cursor-pointer ${phaseCompleted ? 'text-indigo-400 hover:text-indigo-300' : 'text-neutral-500'}`}
-          >
-            Next Phase <ChevronRight size={12} />
-          </button>
-        </div>
       </div>
 
       {/* Active Capture & Controls Console */}
       <div className="bg-neutral-950 p-4 border-t border-neutral-850 space-y-4 shrink-0">
         
-        {/* Conditional Service Booklet "Mark None" Bypass Button */}
-        {activeSlot.id === 'service_book' && (
+        {/* "Not present" bypass for optional items — spare wheel, jack, spare keys, etc. */}
+        {!activeSlot.required && !photos[activeSlot.id] && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-200 px-1">
             <button
               type="button"
-              onClick={handleMarkNoServiceBook}
+              onClick={() => handleMarkNotPresent(activeSlot.id, activeSlot.name)}
               className="w-full py-2 bg-red-950/40 border border-red-500/30 text-red-400 hover:bg-red-950/60 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all tracking-normal mb-1"
             >
-              <X size={12} className="stroke-[3]" /> No booklet with vehicle? Mark "None" (Exempt)
+              <X size={12} className="stroke-[3]" /> Not present — skip this item
             </button>
           </div>
         )}
 
-        {/* Primary shutter — large & labeled so it is never confused with Settings */}
+        {/* Primary shutter — large & labeled so it is never confused with Settings.
+            The indigo-to-cyan gradient read washed-out/white next to the rest of
+            the app's solid-cyan primary actions (Save inspection, Keep & next,
+            etc.) — matching that established color now instead of a one-off. */}
         <button
           type="button"
           onClick={handleCapture}
-          disabled={isRecording360}
-          className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-semibold text-[16px] tracking-normal disabled:opacity-60 ${
-            activeSlot.id === 'video_360'
-              ? 'bg-gradient-to-r from-red-600 to-rose-500 text-[#E8EAE6] border border-red-400/40'
-              : 'bg-gradient-to-r from-indigo-500 via-indigo-600 to-cyan-600 text-[#E8EAE6] border border-indigo-400/30'
-          }`}
-          title={activeSlot.id === 'video_360' ? 'Record Tru Orbit' : 'Take picture for this slot'}
+          className="w-full py-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer shadow-lg active:scale-[0.98] transition-all font-semibold text-[16px] tracking-normal disabled:opacity-60 bg-cyan-600 hover:bg-cyan-500 text-[#06080D]"
+          title="Take picture for this slot"
         >
-          {activeSlot.id === 'video_360' ? (
-            <>
-              <span className="w-3.5 h-3.5 bg-white rounded-sm animate-pulse" />
-              {isRecording360 ? `Recording ${recordingProgress}%` : 'Record 360 video'}
-            </>
-          ) : (
-            <>
-              <Camera size={20} strokeWidth={2.5} />
-              {isCameraActive
-                ? 'Take picture'
-                : customFile
-                  ? 'Use this photo'
-                  : 'Take picture'}
-            </>
-          )}
+          <Camera size={20} strokeWidth={2.5} />
+          {isCameraActive
+            ? 'Take picture'
+            : customFile
+              ? 'Use this photo'
+              : 'Take picture'}
         </button>
 
         {/* Secondary tools */}
@@ -1230,7 +818,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
               Phone camera
               <input
                 type="file"
-                accept={activeSlot.id === 'video_360' ? 'video/*' : 'image/*'}
+                accept="image/*"
                 capture="environment"
                 onChange={handleFileUpload}
                 className="hidden"
@@ -1251,7 +839,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
             <input
               ref={singleUploadRef}
               type="file"
-              accept={activeSlot.id === 'video_360' ? 'video/*,image/*' : 'image/*'}
+              accept="image/*"
               onChange={handleFileUpload}
               className="hidden"
             />

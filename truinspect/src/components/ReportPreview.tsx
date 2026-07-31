@@ -1,19 +1,15 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft, Download, Printer, Share2, Award, AlertTriangle, CheckCircle2,
-  Camera, FileText, ClipboardList, Clock, Copy, Check, Box,
+  Camera, FileText, ClipboardList, Clock, Copy, Check,
 } from 'lucide-react';
-import { Vehicle, QualityReport, PointResult } from '../types';
-import { computeWebReadiness } from '../lib/readiness';
-import { buildWeb3DPackage } from '../lib/web3dPackage';
+import { Vehicle, PointResult } from '../types';
+import { computeInspectionReadiness } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 import { deriveReportId } from '../types/inspection';
 import { DEFAULT_TEMPLATE } from '../templates';
-import type { TemplateSlot } from '../template';
-import { ICONS } from '../iconMap';
 import truinspectLogo from '../assets/images/truinspect-logo.svg';
-import trudealerLogo from '../assets/images/trudealer-lockup-light.svg';
-import trudealerLogoDark from '../assets/images/trudealer-lockup-dark.svg';
+import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -21,31 +17,13 @@ interface ReportPreviewProps {
   onVehicleUpdated?: (v: Vehicle) => void;
 }
 
-function computeOverallScore(vehicle: Vehicle) {
-  const req = DEFAULT_TEMPLATE.slots.filter(s => s.required);
-  const opt = DEFAULT_TEMPLATE.slots.filter(s => !s.required);
-  let totalWeight = 0, weightedScore = 0;
-  let capturedReq = 0, capturedOpt = 0;
-
-  req.forEach(slot => {
-    const q = vehicle.quality?.[slot.id];
-    if (q) { weightedScore += q.overallScore * 2; capturedReq++; }
-    else   { weightedScore += 30 * 2; }
-    totalWeight += 2;
-  });
-  opt.forEach(slot => {
-    const q = vehicle.quality?.[slot.id];
-    if (q) { weightedScore += q.overallScore * 1; capturedOpt++; totalWeight += 1; }
-  });
-
-  const score = totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 0;
-  return { score, captured: capturedReq + capturedOpt, required: req.length, optional: opt.length };
-}
-
-function scoreForSlots(vehicle: Vehicle, slots: TemplateSlot[]): number | null {
-  const captured = slots.map(s => vehicle.quality?.[s.id]).filter(Boolean) as QualityReport[];
-  if (captured.length === 0) return null;
-  return Math.round(captured.reduce((sum, q) => sum + q.overallScore, 0) / captured.length);
+/** How many of the template's slots have a photo — a count, not a quality
+ *  score. Photo capture quality (lighting/angle/AI score) is a TruLens
+ *  concept and plays no part in this report; see the note on CONDITION_SCALE
+ *  below for why. */
+function countCapturedPhotos(vehicle: Vehicle) {
+  const captured = DEFAULT_TEMPLATE.slots.filter(s => !!vehicle.photos?.[s.id]).length;
+  return { captured };
 }
 
 /**
@@ -56,7 +34,10 @@ function scoreForSlots(vehicle: Vehicle, slots: TemplateSlot[]): number | null {
  * This replaces an A–D letter grade that was derived from computeOverallScore,
  * i.e. from the AI's assessment of the PHOTOGRAPHS — lighting, framing,
  * sharpness. A reader seeing "Grade A" on a vehicle inspection report will take
- * it to describe the vehicle. It described the pictures.
+ * it to describe the vehicle. It described the pictures. Photo capture
+ * quality is a TruLens concept now — it grades the photographs for a dealer
+ * website, not the vehicle for a VIR — and TruInspect's report no longer
+ * shows or scores by it at all.
  */
 const CONDITION_SCALE = [
   { min: 4.5, band: '5.0 – 4.5', label: 'Excellent', meaning: 'Minor blemishes only. Retail ready.', color: '#16A34A' },
@@ -64,19 +45,6 @@ const CONDITION_SCALE = [
   { min: 2.5, band: '3.4 – 2.5', label: 'Fair', meaning: 'Visible defects recorded. Attention advised.', color: '#CA8A04' },
   { min: 0,   band: '2.4 – 1.0', label: 'Poor', meaning: 'Significant damage documented below.', color: '#DC2626' },
 ];
-
-/**
- * Photo capture quality — how good the PHOTOGRAPHS are, per section. Kept
- * because it tells the shooter where to re-shoot, but never expressed as a
- * grade and never near the condition score, since that is precisely the
- * confusion this report used to ship.
- */
-function captureBand(score: number | null) {
-  if (score === null) return { label: 'Not captured', color: '#475569', bg: 'rgba(148,163,184,0.10)' };
-  if (score >= 80) return { label: 'Good', color: '#16A34A', bg: 'rgba(34,197,94,0.12)' };
-  if (score >= 60) return { label: 'Usable', color: '#CA8A04', bg: 'rgba(234,179,8,0.14)' };
-  return { label: 'Re-shoot', color: '#DC2626', bg: 'rgba(239,68,68,0.14)' };
-}
 
 function conditionBand(stars: number | null) {
   if (stars === null) {
@@ -104,7 +72,18 @@ function computeCondition(vehicle: Vehicle) {
     (list || []).map(f => ({ ...f, slotId }))
   );
   const penalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
-  let penalty = all.reduce((s, f) => s + (penalties[f.severity] ?? 0.3), 0);
+
+  /* Diminishing weight per additional tag, sorted worst-first: ten small
+     scratches should not crater the rating the same as ten serious ones. The
+     worst tag counts in full, the second at half weight, the third at a
+     third, and so on — count still matters (ten scratches reads worse than
+     one at the same severity) but severity, not tag quantity, dominates.
+     This used to sum every tag's penalty at full, equal weight, so quantity
+     of minor cosmetic marks alone could push a car into "Poor". */
+  const sortedPenalties = all
+    .map(f => penalties[f.severity] ?? 0.3)
+    .sort((a, b) => b - a);
+  let penalty = sortedPenalties.reduce((s, p, i) => s + p / (i + 1), 0);
 
   // Flagged inspection points: notes, damage ratings, and faulty functions.
   const pts = vehicle.inspectionPoints || {};
@@ -132,25 +111,17 @@ function computeCondition(vehicle: Vehicle) {
     stars >= 3.5 ? 'Good — light cosmetic wear' :
     stars >= 2.5 ? 'Fair — visible defects to address' :
     'Poor — significant damage documented';
-  return { stars, label, findings: all, flaggedPoints };
+  return { stars, label, findings: all, flaggedPoints, hasInput };
 }
-
-const PHASES = DEFAULT_TEMPLATE.phases
-  .filter(p => p.reportCard)
-  .map(p => ({ id: p.id, name: p.reportCard!.label, icon: ICONS[p.reportCard!.iconKey] }));
 
 export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
-  const salesRef = useRef<HTMLDivElement>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   /* Inlining every photo takes a moment on a big inspection, and a download
      button that appears to do nothing gets pressed again. */
   const [exporting, setExporting] = useState(false);
-  const [generating, setGenerating] = useState<'sales' | 'full' | null>(null);
-  const [web3dBusy, setWeb3dBusy] = useState(false);
-  const [web3dMsg, setWeb3dMsg] = useState<string | null>(null);
-  const [publishBusy, setPublishBusy] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const dealerName =
     vehicle.dealerName ||
@@ -173,8 +144,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     [vehicle, dealerName, dealerWa]
   );
 
-  const readiness = useMemo(() => computeWebReadiness(brandedVehicle), [brandedVehicle]);
-  const overall = useMemo(() => computeOverallScore(vehicle), [vehicle]);
+  const readiness = useMemo(() => computeInspectionReadiness(brandedVehicle), [brandedVehicle]);
+  const overall = useMemo(() => countCapturedPhotos(vehicle), [vehicle]);
   const condition = useMemo(() => computeCondition(vehicle), [vehicle]);
 
   /** Inspector questionnaire: answered items + the flagged (disclosure) subset */
@@ -241,27 +212,15 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       setExporting(false);
     }
   };
-  const hasCondition = condition.findings.length > 0 || condition.flaggedPoints.length > 0;
+  const hasCondition = condition.hasInput;
   const band = conditionBand(hasCondition ? condition.stars : null);
-
-  const embedUrl = vehicle.web3dPublicPath
-    ? `/embed/web3d-viewer.html?stock=${encodeURIComponent(vehicle.stockNumber)}`
-    : null;
-
-  const phaseScores = PHASES.map(p => {
-    const slots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === p.id);
-    return { ...p, slots, score: scoreForSlots(vehicle, slots) };
-  });
-
-  const damagePhotos = DEFAULT_TEMPLATE.slots.filter(s => s.phase === 5)
-    .map(s => ({ slot: s, src: vehicle.photos?.[s.id], quality: vehicle.quality?.[s.id] }))
-    .filter(p => !!p.src);
 
   /* Stable for the life of the vehicle record. This carried Date.now(), so
      printing the same inspection twice produced two different IDs and the
      report could not be cited. Derived only from the vehicle id, which does
-     not change. (Prefix was TL-, which reads as TruLens.) */
-  const reportId = deriveReportId(vehicle);
+     not change. 'VIR' distinguishes this report from the Trade-In Appraisal
+     for the same vehicle — both used to print the identical 'TI-' id. */
+  const reportId = deriveReportId(vehicle, 'VIR');
   const generatedAt = new Date().toLocaleString('en-ZA', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
@@ -272,16 +231,16 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
    * photos, and html2canvas chokes on a detached, unpainted node. Photos are
    * lightweight "/media/…" URLs now (already loaded on screen), so the live node
    * rasterises cleanly. */
-  const runPdf = async (mode: 'sales' | 'full') => {
-    const el = mode === 'sales' ? salesRef.current : reportRef.current;
+  const runPdf = async () => {
+    const el = reportRef.current;
     if (!el) return;
-    setGenerating(mode);
+    setGenerating(true);
     try {
       const html2pdf = (await import('html2pdf.js')).default;
       await html2pdf()
         .set({
-          margin: mode === 'sales' ? [6, 8, 6, 8] : [8, 8, 8, 8],
-          filename: `TruInspect_${mode === 'sales' ? 'Summary' : 'VIR'}_${vehicle.stockNumber || 'draft'}.pdf`,
+          margin: [8, 8, 8, 8],
+          filename: `TruInspect_VIR_${vehicle.stockNumber || 'draft'}.pdf`,
           image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -293,62 +252,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       console.error(err);
       alert('PDF failed — use Save Report (HTML) or Print → Save as PDF.');
     } finally {
-      setGenerating(null);
+      setGenerating(false);
     }
   };
 
-  const handleExportWeb3d = async () => {
-    if (!user) return;
-    setWeb3dBusy(true);
-    setWeb3dMsg(null);
-    try {
-      const pkg = await buildWeb3DPackage(vehicle);
-      if (!pkg.frames.length && !pkg.video) {
-        setWeb3dMsg('Need exterior photos or a 360 video first.');
-        return;
-      }
-      const token = await user.getIdToken();
-      const res = await fetch('/api/export/web-3d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ vehicleId: vehicle.id, package: pkg }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Export failed');
-      setWeb3dMsg(
-        `Web 3D ready · ${data.frames ?? pkg.frames.length} frames · ${data.damageTags ?? pkg.damageTags.length} damage tags · ${pkg.background}`
-      );
-      onVehicleUpdated?.({
-        ...vehicle,
-        lastWeb3dExportAt: new Date().toISOString(),
-        web3dPublicPath: data.publicUrl,
-      });
-      window.open(data.embedUrl, '_blank');
-    } catch (e: any) {
-      setWeb3dMsg(e.message || 'Web 3D export failed');
-    } finally {
-      setWeb3dBusy(false);
-    }
-  };
-
-  const handleTogglePublish = async () => {
-    setPublishBusy(true);
-    try {
-      const next = !vehicle.showOnWebsite;
-      await onVehicleUpdated?.({
-        ...vehicle,
-        showOnWebsite: next,
-        status: next && vehicle.status === 'In-Progress' ? 'Ready' : vehicle.status,
-        dealerName,
-        dealerWhatsApp: dealerWa || vehicle.dealerWhatsApp,
-      });
-      setWeb3dMsg(next ? 'Published to website stock feed' : 'Unpublished from website feed');
-    } finally {
-      setPublishBusy(false);
-    }
-  };
-
-  const hero = vehicle.photos?.front_3_4 || Object.values(vehicle.photos || {})[0];
+  const hero = vehicle.photos?.front_bumper || Object.values(vehicle.photos || {})[0];
 
   return (
     <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100">
@@ -422,10 +330,10 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
               <Printer size={12} /> Print
             </button>
-            <button onClick={() => runPdf('full')} disabled={!!generating}
+            <button onClick={() => runPdf()} disabled={generating}
               className="flex items-center gap-1 px-3 py-2 rounded-lg text-[13px] font-bold text-[#0B0F17] disabled:opacity-50"
               style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}>
-              <Download size={12} /> {generating === 'full' ? '…' : 'PDF'}
+              <Download size={12} /> {generating ? '…' : 'PDF'}
             </button>
           </div>
         </div>
@@ -441,7 +349,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="font-bold text-[16px] text-cyan-300">{condition.label}</div>
               <div className="text-slate-400 mt-1">
                 Photos {readiness.requiredTaken}/{readiness.requiredTotal}
-                {readiness.overallScore != null ? ` · Capture quality ${readiness.overallScore}/100` : ''}
                 {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
                 {` · ${checklistFlags.length} checklist flag${checklistFlags.length === 1 ? '' : 's'}`}
               </div>
@@ -474,9 +381,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             }
             .tl-report *, .tl-report *::before, .tl-report *::after { box-sizing: border-box; }
             .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; overflow:hidden; }
-            .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
-            .tl-report .brand { display:flex; flex-direction:column; min-width:0; }
-            .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; min-width:0; }
             .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; overflow-wrap:break-word; }
             .tl-report .subhead { font-size:13px; color:rgba(248,250,252,.72); margin-bottom:18px; }
             .tl-report .score-strip { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
@@ -532,27 +436,31 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           `}</style>
 
           <div className="cover">
-            <div className="cover-head">
-              <div className="brand">
-                <img src={truinspectLogo} alt="TruInspect" style={{ height:48, width:'auto' }} />
-                <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:6 }}>{dealerName}</div>
+            {/* Logos — centered, stacked */}
+            <div style={{ textAlign:'center', marginBottom:20 }}>
+              <img src={truinspectLogo} alt="TruInspect" style={{ height:44, width:'auto', display:'inline-block' }} />
+              <div style={{ marginTop:10 }}>
+                <img src={trudealerLockup} alt="TruDealer" style={{ height:28, width:'auto', display:'inline-block' }} />
               </div>
-              <div className="meta-row">
-                <img src={trudealerLogoDark} alt="TruDealer" style={{ height:28, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
-                <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
-                <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
-                {dealerBranch ? <div>{dealerBranch}</div> : null}
-              </div>
+              {dealerName && <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:8 }}>{dealerName}</div>}
+              {dealerBranch && <div style={{ fontSize:10, opacity:.55, marginTop:2 }}>{dealerBranch}</div>}
             </div>
+
+            {/* Report meta — centered */}
+            <div style={{ textAlign:'center', fontFamily:'ui-monospace,monospace', fontSize:10, color:'rgba(248,250,252,.62)', lineHeight:1.6, marginBottom:18 }}>
+              <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
+              <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
+            </div>
+
             {/* Accent bar */}
-            <div style={{ width:60, height:3, borderRadius:2, background:'linear-gradient(90deg,#4FE3DC,#4D9BFF)', margin:'0 0 14px' }} />
-            <div style={{ fontSize:10, fontWeight:700, letterSpacing:'.14em', color:'rgba(79,227,220,.7)', marginBottom:6 }}>VEHICLE INSPECTION REPORT</div>
-            <h1>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
-            <div className="subhead">{vehicle.trim} · {vehicle.color} · Stock <b>{vehicle.stockNumber}</b></div>
+            <div style={{ width:60, height:3, borderRadius:2, background:'linear-gradient(90deg,#4FE3DC,#4D9BFF)', margin:'0 auto 14px' }} />
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:'.14em', color:'rgba(79,227,220,.7)', marginBottom:6, textAlign:'center' }}>VEHICLE INSPECTION REPORT</div>
+            <h1 style={{ textAlign:'center' }}>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
+            <div className="subhead" style={{ textAlign:'center' }}>{vehicle.trim} · {vehicle.color} · Stock <b>{vehicle.stockNumber}</b></div>
+
+            {/* Condition + vehicle details — unified strip */}
             <div className="score-strip">
               <div className="score-big">
-                {/* The vehicle's condition, weighted from inspector findings —
-                    not the photo-quality score that used to sit here. */}
                 <div className="score-ring" style={{ background: `conic-gradient(${band.color} ${(hasCondition ? condition.stars / 5 : 0) * 360}deg, rgba(255,255,255,.08) 0)` }}>
                   <div style={{ background:'#1E293B', borderRadius:'50%', width:70, height:70, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
                     <div style={{ fontWeight:800, fontSize:28, color: band.color }}>{hasCondition ? condition.stars.toFixed(1) : '—'}</div>
@@ -560,14 +468,9 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize:10, letterSpacing:'.12em', textTransform:'', opacity:.55 }}>Vehicle condition</div>
+                  <div style={{ fontSize:10, letterSpacing:'.12em', opacity:.55 }}>Vehicle condition</div>
                   <div style={{ fontWeight:800, fontSize:20, color: band.color, marginTop:4 }}>{band.label}</div>
                   <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{band.meaning}</div>
-                  {/* Capture completeness is a separate fact and is labelled as one,
-                      so it can never be mistaken for the condition of the vehicle. */}
-                  <div style={{ fontSize:11, opacity:.65, marginTop:6 }}>
-                    Photos captured {overall.captured} · required {readiness.requiredTaken}/{readiness.requiredTotal}
-                  </div>
                 </div>
               </div>
               <div className="vehicle-facts">
@@ -575,49 +478,29 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 <div><div className="k">Type</div><div className="v">{vehicle.vehicleType || '—'}</div></div>
                 <div><div className="k">Status</div><div className="v">{vehicle.status}</div></div>
                 <div><div className="k">List price</div><div className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</div></div>
+                <div><div className="k">Photos</div><div className="v">{readiness.requiredTaken}/{readiness.requiredTotal} required</div></div>
+                <div><div className="k">Damage tags</div><div className="v">{condition.findings.length}</div></div>
               </div>
             </div>
           </div>
 
-          {/* Was "Grades by section", showing A–D letters derived from photo
-              quality directly beneath a vehicle condition score. Two different
-              things in the same visual language on the same page. */}
-          <section>
-            <h2><Award size={16} /> Photo capture quality by section</h2>
-            <div style={{ fontSize:11, color:'#475569', marginTop:-4, marginBottom:8 }}>
-              How well each section was photographed. This is about the images, not
-              the vehicle — the vehicle's condition is the score at the top.
-            </div>
-            <div className="grades">
-              {phaseScores.map(p => {
-                const g = captureBand(p.score);
-                const Icon = p.icon;
-                return (
-                  <div className="grade" key={p.id} style={{ background: g.bg, borderColor: g.color + '40' }}>
-                    <div className="v" style={{ color: g.color, fontSize:15 }}>{g.label}</div>
-                    <div className="n"><Icon size={11} style={{display:'inline',verticalAlign:'-2px',marginRight:4,color:g.color}}/>{p.name}</div>
-                    <div style={{ fontSize:10, color:'#475569', marginTop:4 }}>{p.score !== null ? `${p.score}/100` : '—'}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
+          {/* Photo capture QUALITY (lighting/angle/AI score) is a TruLens
+              concept — it grades the photographs, not the vehicle, and TruLens
+              is the app that feeds a dealer website where that matters. This
+              report only lists whether the required shots were captured. */}
           <section>
             <h2><ClipboardList size={16} /> Required photo checklist</h2>
             <table className="checklist">
               <thead>
-                <tr><th>Slot</th><th>Status</th><th>Score</th></tr>
+                <tr><th>Slot</th><th>Status</th></tr>
               </thead>
               <tbody>
                 {DEFAULT_TEMPLATE.slots.filter(s => s.required).map(s => {
                   const has = !!vehicle.photos?.[s.id];
-                  const q = vehicle.quality?.[s.id];
                   return (
                     <tr key={s.id}>
                       <td>{s.name}</td>
                       <td style={{ color: has ? '#16A34A' : '#DC2626', fontWeight:700 }}>{has ? 'Captured' : 'Missing'}</td>
-                      <td>{q ? q.overallScore : '—'}</td>
                     </tr>
                   );
                 })}
@@ -704,7 +587,17 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   </div>
                 );
               }
-              const stateLabel = (r?: typeof rows[number]['r']) =>
+              const stateLabel = (r?: typeof rows[number]['r'], kind?: string) =>
+                kind === 'presence' ? (
+                  r?.works === 'yes' ? { t: 'Present', c: '#16A34A' } :
+                  r?.works === 'no' ? { t: 'Not Present', c: '#DC2626' } :
+                  { t: '—', c: '#64748B' }
+                ) : kind === 'service_history' ? (
+                  r?.works === 'yes' ? { t: 'FSH', c: '#16A34A' } :
+                  r?.works === 'na' ? { t: 'Partial', c: '#B45309' } :
+                  r?.works === 'no' ? { t: 'None', c: '#DC2626' } :
+                  { t: '—', c: '#64748B' }
+                ) :
                 r?.works === 'yes' ? { t: 'Works', c: '#16A34A' } :
                 r?.works === 'no' ? { t: 'Faulty', c: '#DC2626' } :
                 r?.works === 'na' ? { t: 'N/A', c: '#64748B' } :
@@ -721,7 +614,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                         <div className="finding" key={point.id}>
                           <div className="h">Disclosure · {point.name}</div>
                           <div className="l">
-                            {stateLabel(res).t}{res?.comment ? ` — ${res.comment}` : ''}
+                            {stateLabel(res, point.kind).t}{res?.comment ? ` — ${res.comment}` : ''}
                           </div>
                         </div>
                       ))}
@@ -733,7 +626,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                     </thead>
                     <tbody>
                       {rows.map(({ p, r }) => {
-                        const s = stateLabel(r);
+                        const s = stateLabel(r, p.kind);
                         const isFlag = r?.rating === 'note' || r?.rating === 'damage' || r?.works === 'no';
                         return (
                           <tr key={p.id} style={isFlag ? { background:'#FFFBEB' } : undefined}>
@@ -749,27 +642,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               );
             })()}
           </section>
-
-          {damagePhotos.length > 0 && (
-            <section>
-              <h2><AlertTriangle size={16} /> Damage & recon</h2>
-              <div className="damage-grid">
-                {damagePhotos.map(({ slot, src }) => (
-                  <div className="damage-card" key={slot.id}>
-                    <img src={src} alt={slot.name} />
-                    <div className="cap">
-                      <b>{slot.name}</b>
-                      <div style={{ color:'#64748B', marginTop:3 }}>
-                        {(vehicle.damageFindings?.[slot.id]?.length ?? 0) > 0
-                          ? `${vehicle.damageFindings![slot.id].length} tag${vehicle.damageFindings![slot.id].length === 1 ? '' : 's'}`
-                          : 'Documented area'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
 
           <section>
             <h2><Camera size={16} /> Gallery</h2>
@@ -896,7 +768,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="foot" style={{ alignItems:'center' }}>
             <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruInspect</b></div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <img src={trudealerLogo} alt="TruDealer" style={{ height:16, width:'auto' }} />
+              <img src={trudealerLockup} alt="TruDealer" style={{ height:20, width:'auto' }} />
               <span>{reportId}</span>
             </div>
             <div>Visual inspection at a moment in time — not a mechanical warranty. See Scope.</div>

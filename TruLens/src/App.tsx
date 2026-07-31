@@ -6,7 +6,7 @@ import ImageEditor from './components/ImageEditor';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
 import DamageTagger from './components/DamageTagger';
-import { Vehicle, QualityReport, DmsExportResult } from './types';
+import { Vehicle, QualityReport, PointResult, DmsExportResult } from './types';
 import { useAuth } from './contexts/AuthContext';
 import DealerSelect from './components/DealerSelect';
 
@@ -276,25 +276,14 @@ export default function App() {
     }
   };
 
-  // Trigger when photo is captured in viewfinder
-  // A kept shot saves immediately — no detour through the editor. Redo happens
-  // in the camera before this is ever called; polishing is opt-in afterwards.
+  // Trigger when photo is captured in viewfinder — route to the review screen
+  // so the dealer can check the shot and rotate before it saves, matching the
+  // TruInspect SlotReview flow.
   const handlePhotoCaptured = (slotId: string, base64Image: string, qualityReport: QualityReport) => {
-    // Optimistic: update local state immediately so the UI advances without waiting for the server.
-    setVehicles(prev => prev.map(v => {
-      if (v.id !== activeVehicleId) return v;
-      return {
-        ...v,
-        photos: { ...(v.photos || {}), [slotId]: base64Image },
-        quality: { ...(v.quality || {}), [slotId]: qualityReport },
-      };
-    }));
-    setActiveView('camera');
-    setActiveImageSrc(null);
-    setActiveSlotId(null);
-    setActiveQualityReport(null);
-    // Fire-and-forget the server upload
-    void uploadPhotoToServer(activeVehicleId!, slotId, base64Image, qualityReport);
+    setActiveSlotId(slotId);
+    setActiveImageSrc(base64Image);
+    setActiveQualityReport(qualityReport);
+    setActiveView('editor');
   };
 
   /** Open the editor for a slot on demand (the optional "Edit" button). */
@@ -305,18 +294,25 @@ export default function App() {
     setActiveView('editor');
   };
 
-  // Trigger when composite photo is saved in the editor
-  const handleSaveProcessedImage = async (processedImage: string, updatedReport: QualityReport, slotId?: string) => {
-    const targetSlot = slotId || activeSlotId;
+  // Trigger when photo is saved from the review screen (condition + rotate + close-ups)
+  const handleSaveProcessedImage = async (processedImage: string, updatedReport: QualityReport, assessment?: PointResult, closeupPhotos?: string[]) => {
+    const targetSlot = activeSlotId;
     if (!activeVehicleId || !targetSlot || !user) return;
 
-    // Optimistic local update
+    // Optimistic local update — photo, quality, assessment, and close-ups
     setVehicles(prev => prev.map(v => {
       if (v.id !== activeVehicleId) return v;
       return {
         ...v,
         photos: { ...(v.photos || {}), [targetSlot]: processedImage },
         quality: { ...(v.quality || {}), [targetSlot]: updatedReport },
+        ...(assessment ? { slotAssessment: { ...(v.slotAssessment || {}), [targetSlot]: assessment } } : {}),
+        ...(() => {
+          const nextCloseups = { ...(v.closeups || {}) };
+          if (closeupPhotos?.length) nextCloseups[targetSlot] = closeupPhotos;
+          else delete nextCloseups[targetSlot];
+          return { closeups: nextCloseups };
+        })(),
       };
     }));
     setActiveView('camera');
@@ -324,10 +320,10 @@ export default function App() {
     setActiveSlotId(null);
     setActiveQualityReport(null);
 
-    await uploadPhotoToServer(activeVehicleId, targetSlot, processedImage, updatedReport);
+    await uploadPhotoToServer(activeVehicleId, targetSlot, processedImage, updatedReport, assessment, closeupPhotos);
   };
 
-  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport: QualityReport) => {
+  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport: QualityReport, assessment?: PointResult, closeupPhotos?: string[]) => {
     if (!user) return;
     setSyncStatus('syncing');
     setUploadError(null);
@@ -339,7 +335,7 @@ export default function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ vehicleId, slotId, base64Image, qualityReport }),
+        body: JSON.stringify({ vehicleId, slotId, base64Image, qualityReport, assessment, closeups: closeupPhotos }),
       });
       if (res.ok) {
         const result = await res.json();

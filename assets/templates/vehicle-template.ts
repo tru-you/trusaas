@@ -1,13 +1,24 @@
 /**
  * CANONICAL SOURCE — copied by hand into TruLens/src/template.ts and
  * Truinspect/src/template.ts, the same way assets/brand/tokens.css is copied
- * into each app's src/brand.css. There is no sync script; review `git diff`
+ * into each app's src/brand.css. There is no sync script, review `git diff`
  * against this file before editing either app's copy.
  *
- * TruLens's copy is trimmed immediately after copying (no video_360 slot / no
- * phase 7 — TruLens has no 360-video capture). Truinspect's copy keeps the
- * full superset and additionally authors its own checklistGroups /
- * checklistPoints / disclosureQuestions, which never existed in TruLens.
+ * Truinspect's copy keeps the full superset: this exact SLOTS/PHASES list,
+ * plus its own checklistGroups / checklistPoints / disclosureQuestions, which
+ * TruLens has no equivalent for. TruLens's copy carries the same 27 slots but
+ * with every `required` forced to false — TruLens feeds a dealer website, not
+ * a graded VIR, so it's the dealer's call what goes on their site.
+ *
+ * There is no video/360-capture slot (2026-07-31, Paul's call). TruOrbit — the
+ * 3D spin viewer — is built entirely from the exterior panel PHOTOS below
+ * (see each app's lib/web3dPackage.ts); it was never built from a recorded
+ * video, so a dedicated "record a walkaround video" slot never belonged here.
+ *
+ * This list is the same 27 ids/order/categories as Truinspect's
+ * src/types/inspection.ts TRADE_IN_ITEMS, on purpose: the trade-in and full
+ * inspect workflows are meant to share one photo per vehicle instead of each
+ * re-shooting the same 27 angles.
  */
 
 export interface TemplateSlot {
@@ -17,8 +28,7 @@ export interface TemplateSlot {
   required: boolean;
   idealAngle: { pitch: number; roll: number; yaw: number };
   phase: number; // -> TemplatePhase.id
-  category: string; // kept separate from phase name — Truinspect's phase 7 uses
-                     // '360 Video'; phase 2 uses 'Interior + Engine'
+  category: string;
 }
 
 export interface TemplatePhase {
@@ -26,7 +36,7 @@ export interface TemplatePhase {
   name: string; // shown in the CameraGuide phase tab strip
   reportCard?: {
     /** presence of this object = "this phase gets its own ReportPreview score card" */
-    label: string; // e.g. phase 1's card says 'Exterior', not 'Exterior Panels'
+    label: string;
     iconKey: string; // resolved via each app's own iconMap.ts — never a live component ref
   };
 }
@@ -61,296 +71,266 @@ export interface InspectionTemplate {
   disclosureQuestions?: { section: string; items: DisclosureQuestion[] }[];
 }
 
-/* Phase 1 is ONE walk around the vehicle, in the order you physically reach
-   each shot: nose, front corner, then clockwise down the driver side and up
-   the passenger side, taking each wheel at the corner you are standing on.
-   To walk it the other way, swap the driver and passenger blocks below —
-   order here is the capture order, nothing keys off the index. */
+/* Category 1: Front & Engine — the five shots you can get without moving
+   around the car: nose-on, bonnet open, and the windscreen/disc close-ups. */
 const SLOTS: TemplateSlot[] = [
   {
-    id: 'front_straight',
-    name: 'Front Profile',
-    description: 'Position camera level with the front grill, perfectly centered.',
+    id: 'bonnet',
+    name: 'Bonnet (Exterior)',
+    description: 'Stand at the front and hold the camera high, looking down the length of the closed bonnet.',
     required: true,
-    idealAngle: { pitch: 10, roll: 0, yaw: 0 },
+    idealAngle: { pitch: 30, roll: 0, yaw: 0 },
     phase: 1,
-    category: 'Exterior Panels',
+    category: 'Front & Engine',
   },
   {
-    id: 'front_3_4',
-    name: 'Front 3/4 (Hero)',
-    description: 'Stand at a 45-degree angle from the front driver-side corner.',
+    id: 'engine_bay',
+    name: 'Engine Bay (Under Bonnet)',
+    description: 'Prop the bonnet fully open and shoot from front-centre looking down.',
     required: true,
-    idealAngle: { pitch: 12, roll: 0, yaw: 45 },
+    idealAngle: { pitch: 35, roll: 0, yaw: 0 },
     phase: 1,
-    category: 'Exterior Panels',
+    category: 'Front & Engine',
   },
   {
-    id: 'wheel_front_driver',
-    name: 'Wheel - Front Driver',
+    id: 'front_bumper',
+    name: 'Front Bumper & Grill',
+    description: 'Position the camera level with the front bumper, perfectly centred.',
+    required: true,
+    idealAngle: { pitch: 5, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Front & Engine',
+  },
+  {
+    id: 'front_windscreen',
+    name: 'Front Windscreen',
+    description: 'Stand at the front and frame the full windscreen, checking for chips and cracks.',
+    required: true,
+    idealAngle: { pitch: 15, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Front & Engine',
+  },
+  {
+    id: 'license_disc',
+    name: 'License Disc & Windscreen Markings (Expiry & Arrears Check)',
+    description: 'Close-up on the license disc through the windscreen, sharp enough to read the expiry date.',
+    required: true,
+    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Front & Engine',
+  },
+
+  /* Category 2: Clockwise Exterior Walk-Around — ONE lap of the vehicle, in
+     the order you physically reach each shot: front-right corner, down the
+     right side, around the back, up the left side, back to the front-left
+     corner. To walk it the other way, mirror the left/right blocks below —
+     order here is the capture order, nothing keys off the index. */
+  {
+    id: 'fender_front_right',
+    name: 'Front Right Wing / Fender',
+    description: 'Stand at the front-right corner, 45 degrees off the nose.',
+    required: true,
+    idealAngle: { pitch: 10, roll: 0, yaw: 45 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'wheel_front_right',
+    name: 'Front Right Wheel & Tyre',
     description: 'Rim face and tyre wall, shot as you reach this corner on the lap.',
     required: true,
     idealAngle: { pitch: -15, roll: 0, yaw: 90 },
-    phase: 1,
-    category: 'Exterior Panels',
+    phase: 2,
+    category: 'Clockwise Exterior',
   },
   {
-    id: 'side_driver',
-    name: 'Driver Side Profile',
-    description: 'Position camera level with the middle of the vehicle on the driver side.',
+    id: 'door_front_right',
+    name: 'Driver Door & Side Mirror',
+    description: 'Position the camera level with the driver door and mirror.',
     required: true,
-    idealAngle: { pitch: 8, roll: 0, yaw: 90 },
-    phase: 1,
-    category: 'Exterior Panels',
+    idealAngle: { pitch: 5, roll: 0, yaw: 90 },
+    phase: 2,
+    category: 'Clockwise Exterior',
   },
   {
-    id: 'wheel_rear_driver',
-    name: 'Wheel - Rear Driver',
-    description: 'Rim face and tyre wall on the rear driver corner.',
+    id: 'door_rear_right',
+    name: 'Rear Right Door',
+    description: 'Position the camera level with the rear right door.',
     required: true,
-    idealAngle: { pitch: -15, roll: 0, yaw: 90 },
-    phase: 1,
-    category: 'Exterior Panels',
+    idealAngle: { pitch: 5, roll: 0, yaw: 100 },
+    phase: 2,
+    category: 'Clockwise Exterior',
   },
   {
-    id: 'rear_3_4',
-    name: 'Rear 3/4',
-    description: 'Stand at a 45-degree angle from the rear passenger-side corner.',
+    id: 'quarter_rear_right',
+    name: 'Rear Right Quarter Panel',
+    description: 'Stand at the rear-right corner, 45 degrees off the tail.',
     required: true,
-    idealAngle: { pitch: 12, roll: 0, yaw: 135 },
-    phase: 1,
-    category: 'Exterior Panels',
+    idealAngle: { pitch: 10, roll: 0, yaw: 135 },
+    phase: 2,
+    category: 'Clockwise Exterior',
   },
   {
-    id: 'rear_straight',
-    name: 'Rear Profile',
-    description: 'Position camera level with the rear bumper, perfectly centered.',
+    id: 'wheel_rear_right',
+    name: 'Rear Right Wheel & Tyre',
+    description: 'Rim face and tyre wall on the rear-right corner.',
+    required: true,
+    idealAngle: { pitch: -15, roll: 0, yaw: 135 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'boot_tailgate',
+    name: 'Boot Exterior / Tailgate',
+    description: 'Position the camera level with the rear bumper, centred on the boot or tailgate.',
     required: true,
     idealAngle: { pitch: 10, roll: 0, yaw: 180 },
-    phase: 1,
-    category: 'Exterior Panels',
+    phase: 2,
+    category: 'Clockwise Exterior',
   },
   {
-    id: 'wheel_rear_passenger',
-    name: 'Wheel - Rear Passenger',
-    description: 'Rim face and tyre wall on the rear passenger corner.',
+    id: 'rear_bumper',
+    name: 'Rear Bumper',
+    description: 'Position the camera level with the rear bumper, perfectly centred.',
+    required: true,
+    idealAngle: { pitch: 5, roll: 0, yaw: 180 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'spare_wheel',
+    name: 'Spare Wheel & Boot Floor Tray (Physical Accessory)',
+    description: 'Open the boot floor and photograph the spare wheel and tray. Mark Present / Not Present if there is nothing to shoot.',
+    required: false,
+    idealAngle: { pitch: 45, roll: 0, yaw: 180 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'vehicle_jack',
+    name: 'Jack, Spanner & Tool Kit (Physical Accessory)',
+    description: 'Photograph the jack, wheel spanner and tool kit. Mark Present / Not Present if there is nothing to shoot.',
+    required: false,
+    idealAngle: { pitch: 45, roll: 0, yaw: 180 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'quarter_rear_left',
+    name: 'Rear Left Quarter Panel',
+    description: 'Stand at the rear-left corner, 45 degrees off the tail.',
+    required: true,
+    idealAngle: { pitch: 10, roll: 0, yaw: -135 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'wheel_rear_left',
+    name: 'Rear Left Wheel & Tyre',
+    description: 'Rim face and tyre wall on the rear-left corner.',
+    required: true,
+    idealAngle: { pitch: -15, roll: 0, yaw: -135 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'door_rear_left',
+    name: 'Rear Left Door',
+    description: 'Position the camera level with the rear left door.',
+    required: true,
+    idealAngle: { pitch: 5, roll: 0, yaw: -100 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'door_front_left',
+    name: 'Front Left Door & Side Mirror',
+    description: 'Position the camera level with the front left door and mirror.',
+    required: true,
+    idealAngle: { pitch: 5, roll: 0, yaw: -90 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'fender_front_left',
+    name: 'Front Left Wing / Fender',
+    description: 'Stand at the front-left corner, 45 degrees off the nose.',
+    required: true,
+    idealAngle: { pitch: 10, roll: 0, yaw: -45 },
+    phase: 2,
+    category: 'Clockwise Exterior',
+  },
+  {
+    id: 'wheel_front_left',
+    name: 'Front Left Wheel & Tyre',
+    description: 'Rim face and tyre wall on the front-left corner, closing the lap.',
     required: true,
     idealAngle: { pitch: -15, roll: 0, yaw: -90 },
-    phase: 1,
-    category: 'Exterior Panels',
+    phase: 2,
+    category: 'Clockwise Exterior',
   },
   {
-    id: 'side_passenger',
-    name: 'Passenger Side Profile',
-    description: 'Position camera level with the middle of the vehicle on the passenger side.',
-    required: true,
-    idealAngle: { pitch: 8, roll: 0, yaw: -90 },
-    phase: 1,
-    category: 'Exterior Panels',
-  },
-  {
-    id: 'wheel_front_passenger',
-    name: 'Wheel - Front Passenger',
-    description: 'Rim face and tyre wall on the front passenger corner.',
-    required: true,
-    idealAngle: { pitch: -15, roll: 0, yaw: -90 },
-    phase: 1,
-    category: 'Exterior Panels',
-  },
-  {
-    id: 'roof_view',
-    name: 'Roof View',
-    description: 'Hold camera high to capture the condition of the roof and sunroof if applicable.',
+    id: 'roof_sunroof',
+    name: 'Roof & Sunroof',
+    description: 'Hold the camera high to capture the condition of the roof and sunroof, if fitted.',
     required: false,
     idealAngle: { pitch: 45, roll: 0, yaw: 0 },
-    phase: 1,
-    category: 'Exterior Panels',
+    phase: 2,
+    category: 'Clockwise Exterior',
   },
 
-  // Phase 2: Details & Badges
+  /* Category 3: Interior, History & Verification */
   {
-    id: 'badges_detail',
-    name: 'Badges & Branding',
-    description: 'Close-up of model, engine, and brand badges.',
-    required: false,
-    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
-    phase: 2,
-    category: 'Interior + Engine',
-  },
-  {
-    id: 'lights_detail',
-    name: 'Headlights & Taillights',
-    description: 'Close-up of clear lenses to prove no cracks or fogging.',
-    required: false,
-    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
-    phase: 2,
-    category: 'Interior + Engine',
-  },
-  {
-    id: 'mirrors_handles',
-    name: 'Mirrors & Door Handles',
-    description: 'Check for scuffs on mirrors and wear on handles.',
-    required: false,
-    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
-    phase: 2,
-    category: 'Interior + Engine',
-  },
-
-  // Phase 3: Interior
-  {
-    id: 'interior_dash',
-    name: 'Dashboard & Steering',
-    description: 'Shoot from back seat centered, capturing steering wheel and active instrument cluster.',
+    id: 'steering_wheel',
+    name: 'Steering Wheel, Stalks & Controls (Wear & Tear Check)',
+    description: 'Shoot from the driver seat, framing the steering wheel, stalks and buttons.',
     required: true,
     idealAngle: { pitch: 0, roll: 0, yaw: 0 },
     phase: 3,
-    category: 'Interior + Engine',
+    category: 'Interior, History & Verification',
   },
   {
-    id: 'seat_driver',
-    name: 'Driver Seat',
-    description: 'Capture the driver seat bolsters and general condition.',
-    required: true,
-    idealAngle: { pitch: -5, roll: 0, yaw: 45 },
-    phase: 3,
-    category: 'Interior + Engine',
-  },
-  {
-    id: 'seat_passenger',
-    name: 'Passenger Seat',
-    description: 'Capture the passenger seat and front cabin area.',
-    required: true,
-    idealAngle: { pitch: -5, roll: 0, yaw: -45 },
-    phase: 3,
-    category: 'Interior + Engine',
-  },
-  {
-    id: 'seats_rear',
-    name: 'Rear Seats',
-    description: 'Capture condition of rear passenger bench.',
+    id: 'interior_cabin',
+    name: 'Seats, Dash, Carpets & Trim',
+    description: 'Shoot from the rear seat centred, capturing the dash, front seats and footwell trim.',
     required: true,
     idealAngle: { pitch: -5, roll: 0, yaw: 0 },
     phase: 3,
-    category: 'Interior + Engine',
+    category: 'Interior, History & Verification',
   },
-  {
-    id: 'boot_bay',
-    name: 'Boot / Load Bay',
-    description: 'Open tailgate/boot and capture storage area condition.',
-    required: true,
-    idealAngle: { pitch: 10, roll: 0, yaw: 180 },
-    phase: 3,
-    category: 'Interior + Engine',
-  },
-  {
-    id: 'floor_mats',
-    name: 'Floor Mats & Carpets',
-    description: 'Capture the condition of carpets and mats in all footwells.',
-    required: false,
-    idealAngle: { pitch: -45, roll: 0, yaw: 0 },
-    phase: 3,
-    category: 'Interior + Engine',
-  },
-
-  // Phase 4: Engine Bay & Mechanical
-  {
-    id: 'engine_bay',
-    name: 'Engine Bay',
-    description: 'Shoot from front center looking down, hood fully propped.',
-    required: true,
-    idealAngle: { pitch: 35, roll: 0, yaw: 0 },
-    phase: 4,
-    category: 'Interior + Engine',
-  },
-  {
-    id: 'mechanical_details',
-    name: 'Battery & Fluids',
-    description: 'Close-up of battery terminals and fluid reservoirs.',
-    required: false,
-    idealAngle: { pitch: 45, roll: 0, yaw: 0 },
-    phase: 4,
-    category: 'Interior + Engine',
-  },
-  {
-    id: 'undercarriage',
-    name: 'Undercarriage',
-    description: 'Low angle shot showing chassis, exhaust, and lack of leaks.',
-    required: true,
-    idealAngle: { pitch: -30, roll: 0, yaw: 0 },
-    phase: 4,
-    category: 'Interior + Engine',
-  },
-
-  // Phase 5: Recon / Work Photos
-  {
-    id: 'recon_damage',
-    name: 'Damage & Recon',
-    description: 'Document specific scratches, dents, or areas needing repair.',
-    required: false,
-    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
-    phase: 5,
-    category: 'Recon Photos',
-  },
-
-  // Phase 6: Documents
   {
     id: 'service_book',
-    name: 'Service History Book',
-    description: 'Capture the service booklet maintenance stamps.',
+    name: 'Service Book & Maintenance Records',
+    description: 'Capture the service booklet or digital service history maintenance stamps.',
     required: true,
     idealAngle: { pitch: -20, roll: 0, yaw: 0 },
-    phase: 6,
-    category: 'Documents',
+    phase: 3,
+    category: 'Interior, History & Verification',
   },
   {
-    id: 'reg_papers',
-    name: 'Registration Papers',
-    description: 'Capture vehicle registration or title documents.',
-    required: true,
-    idealAngle: { pitch: -20, roll: 0, yaw: 0 },
-    phase: 6,
-    category: 'Documents',
-  },
-  {
-    id: 'odometer_reading',
-    name: 'Odometer Close-up',
-    description: 'Capture a clear image of the current mileage on the instrument cluster.',
+    id: 'odometer',
+    name: 'Odometer Display (Mandatory Mileage Verification Photo)',
+    description: 'Capture a clear, legible image of the current mileage on the instrument cluster.',
     required: true,
     idealAngle: { pitch: 0, roll: 0, yaw: 0 },
-    phase: 6,
-    category: 'Documents',
+    phase: 3,
+    category: 'Interior, History & Verification',
   },
   {
-    id: 'vin_plate',
-    name: 'VIN Plate / Sticker',
-    description: 'Capture the manufacturer VIN plate or barcode sticker.',
-    required: true,
-    idealAngle: { pitch: -15, roll: 0, yaw: 0 },
-    phase: 6,
-    category: 'Documents',
-  },
-
-  // Phase 7: 360 Walkaround Video — Truinspect only, trim this out of TruLens's copy
-  {
-    id: 'video_360',
-    name: 'Tru Orbit',
-    description: 'Capture a complete 360-degree high-fidelity continuous walkaround video.',
-    required: true,
-    idealAngle: { pitch: 5, roll: 0, yaw: 0 },
-    phase: 7,
-    category: '360 Video',
+    id: 'spare_keys',
+    name: 'Spare Keys & Remote Transponders (Physical Accessory)',
+    description: 'Photograph the spare key and remote(s). Mark Present / Not Present if there is nothing to shoot.',
+    required: false,
+    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
+    phase: 3,
+    category: 'Interior, History & Verification',
   },
 ];
 
 const PHASES: TemplatePhase[] = [
-  { id: 1, name: 'Exterior Panels', reportCard: { label: 'Exterior', iconKey: 'camera' } },
-  { id: 2, name: 'Details & Badges' }, // no reportCard — matches today's report, which
-                                        // has always silently omitted phase 2; now explicit
-  { id: 3, name: 'Interior', reportCard: { label: 'Interior', iconKey: 'clipboard' } },
-  { id: 4, name: 'Engine & Mechanical', reportCard: { label: 'Engine', iconKey: 'wrench' } },
-  { id: 5, name: 'Recon / Work', reportCard: { label: 'Damage', iconKey: 'alert' } },
-  { id: 6, name: 'Documents', reportCard: { label: 'Documents', iconKey: 'file' } },
-  { id: 7, name: 'Tru Orbit' }, // Truinspect only — trim out of TruLens's copy
+  { id: 1, name: 'Front & Engine', reportCard: { label: 'Front & Engine', iconKey: 'wrench' } },
+  { id: 2, name: 'Clockwise Exterior Walk-Around', reportCard: { label: 'Exterior', iconKey: 'camera' } },
+  { id: 3, name: 'Interior, History & Verification', reportCard: { label: 'Interior & History', iconKey: 'clipboard' } },
 ];
 
 const CHECKLIST_GROUPS: ChecklistGroup[] = [
@@ -364,15 +344,15 @@ const CHECKLIST_GROUPS: ChecklistGroup[] = [
 
 const CHECKLIST_POINTS: ChecklistPoint[] = [
   // ---- Exterior panels (rate + tag on the angle photos) ----
-  { id: 'ext_front', group: 'Exterior', name: 'Front (bumper, bonnet, grille)', kind: 'condition', photoSlotId: 'front_3_4' },
-  { id: 'ext_rear', group: 'Exterior', name: 'Rear (bumper, boot/tailgate)', kind: 'condition', photoSlotId: 'rear_3_4' },
-  { id: 'ext_driver', group: 'Exterior', name: 'Driver side (doors, fenders, sills)', kind: 'condition', photoSlotId: 'side_driver' },
-  { id: 'ext_passenger', group: 'Exterior', name: 'Passenger side (doors, fenders, sills)', kind: 'condition', photoSlotId: 'side_passenger' },
-  { id: 'ext_roof', group: 'Exterior', name: 'Roof', kind: 'condition', photoSlotId: 'roof_view' },
+  { id: 'ext_front', group: 'Exterior', name: 'Front (bumper, bonnet, grille)', kind: 'condition', photoSlotId: 'front_bumper' },
+  { id: 'ext_rear', group: 'Exterior', name: 'Rear (bumper, boot/tailgate)', kind: 'condition', photoSlotId: 'rear_bumper' },
+  { id: 'ext_driver', group: 'Exterior', name: 'Driver side (doors, fenders, sills)', kind: 'condition', photoSlotId: 'door_front_right' },
+  { id: 'ext_passenger', group: 'Exterior', name: 'Passenger side (doors, fenders, sills)', kind: 'condition', photoSlotId: 'door_front_left' },
+  { id: 'ext_roof', group: 'Exterior', name: 'Roof', kind: 'condition', photoSlotId: 'roof_sunroof' },
   { id: 'ext_paint', group: 'Exterior', name: 'Paint & panel gaps', kind: 'condition', hint: 'respray, mismatched panels, uneven gaps' },
 
   // ---- Glass, lights & wipers ----
-  { id: 'glass_windscreen', group: 'Glass & lights', name: 'Windscreen', kind: 'condition', photoSlotId: 'lights_detail', hint: 'chips / cracks' },
+  { id: 'glass_windscreen', group: 'Glass & lights', name: 'Windscreen', kind: 'condition', photoSlotId: 'front_windscreen', hint: 'chips / cracks' },
   { id: 'fn_headlights', group: 'Glass & lights', name: 'Headlights work', kind: 'function', hint: 'both sides, high & low beam' },
   { id: 'cond_headlights', group: 'Glass & lights', name: 'Headlight lenses', kind: 'condition', hint: 'cracked / hazed / water ingress' },
   { id: 'fn_indicators', group: 'Glass & lights', name: 'Indicators & hazards work', kind: 'function' },
@@ -380,18 +360,18 @@ const CHECKLIST_POINTS: ChecklistPoint[] = [
   { id: 'fn_wipers', group: 'Glass & lights', name: 'Wipers & washers work', kind: 'function' },
 
   // ---- Wheels & tyres ----
-  { id: 'tyre_tread', group: 'Wheels & tyres', name: 'Tyre tread & condition', kind: 'condition', photoSlotId: 'wheel_front_driver', hint: 'tread mm per corner, cracks, uneven wear — each corner has its own photo' },
+  { id: 'tyre_tread', group: 'Wheels & tyres', name: 'Tyre tread & condition', kind: 'condition', photoSlotId: 'wheel_front_right', hint: 'tread mm per corner, cracks, uneven wear — each corner has its own photo' },
   { id: 'cond_rims', group: 'Wheels & tyres', name: 'Rims', kind: 'condition', hint: 'kerbing, cracks, buckles' },
-  { id: 'fn_spare', group: 'Wheels & tyres', name: 'Spare wheel present & serviceable', kind: 'function' },
-  { id: 'fn_jack', group: 'Wheels & tyres', name: 'Jack & wheel tools present', kind: 'function' },
+  { id: 'fn_spare', group: 'Wheels & tyres', name: 'Spare wheel present & serviceable', kind: 'function', photoSlotId: 'spare_wheel' },
+  { id: 'fn_jack', group: 'Wheels & tyres', name: 'Jack & wheel tools present', kind: 'function', photoSlotId: 'vehicle_jack' },
 
   // ---- Interior ----
-  { id: 'int_dash', group: 'Interior', name: 'Dashboard & warning lights', kind: 'condition', photoSlotId: 'interior_dash', hint: 'any lights on with ignition' },
-  { id: 'int_seat_driver', group: 'Interior', name: 'Driver seat & trim', kind: 'condition', photoSlotId: 'seat_driver' },
-  { id: 'int_seat_pass', group: 'Interior', name: 'Passenger seat & trim', kind: 'condition', photoSlotId: 'seat_passenger' },
-  { id: 'int_seats_rear', group: 'Interior', name: 'Rear seats', kind: 'condition', photoSlotId: 'seats_rear' },
+  { id: 'int_dash', group: 'Interior', name: 'Dashboard & warning lights', kind: 'condition', photoSlotId: 'interior_cabin', hint: 'any lights on with ignition' },
+  { id: 'int_seat_driver', group: 'Interior', name: 'Driver seat & trim', kind: 'condition', photoSlotId: 'interior_cabin' },
+  { id: 'int_seat_pass', group: 'Interior', name: 'Passenger seat & trim', kind: 'condition', photoSlotId: 'interior_cabin' },
+  { id: 'int_seats_rear', group: 'Interior', name: 'Rear seats', kind: 'condition', photoSlotId: 'interior_cabin' },
   { id: 'int_headliner', group: 'Interior', name: 'Roof lining (headliner)', kind: 'condition', hint: 'sagging, stains, smoke' },
-  { id: 'int_carpets', group: 'Interior', name: 'Carpets & mats', kind: 'condition', photoSlotId: 'floor_mats' },
+  { id: 'int_carpets', group: 'Interior', name: 'Carpets & mats', kind: 'condition', photoSlotId: 'interior_cabin' },
   { id: 'fn_aircon', group: 'Interior', name: 'Aircon blows cold', kind: 'function' },
   { id: 'fn_electrics', group: 'Interior', name: 'Windows, mirrors, central locking work', kind: 'function' },
   { id: 'fn_infotainment', group: 'Interior', name: 'Infotainment & reverse camera work', kind: 'function' },
@@ -401,14 +381,14 @@ const CHECKLIST_POINTS: ChecklistPoint[] = [
   { id: 'fn_leaks', group: 'Engine & underbody', name: 'No oil / coolant leaks', kind: 'function' },
   { id: 'fn_battery', group: 'Engine & underbody', name: 'Battery secure & healthy', kind: 'function' },
   { id: 'fn_smoke', group: 'Engine & underbody', name: 'No abnormal smoke on start', kind: 'function' },
-  { id: 'eng_under', group: 'Engine & underbody', name: 'Undercarriage', kind: 'condition', photoSlotId: 'undercarriage', hint: 'rust, impact, weld repairs' },
+  { id: 'eng_under', group: 'Engine & underbody', name: 'Undercarriage', kind: 'condition', hint: 'rust, impact, weld repairs — no dedicated photo slot, note only' },
 
   // ---- Identity & documents ----
-  { id: 'doc_vin', group: 'Identity & documents', name: 'VIN plate', kind: 'condition', photoSlotId: 'vin_plate', hint: 'legible, untampered' },
+  { id: 'doc_vin', group: 'Identity & documents', name: 'VIN plate', kind: 'condition', hint: 'legible, untampered — no dedicated photo slot, note only' },
   { id: 'fn_vin_match', group: 'Identity & documents', name: 'VIN matches licence disc & papers', kind: 'function' },
-  { id: 'fn_service', group: 'Identity & documents', name: 'Service history validated', kind: 'function', hint: 'book or digital history confirmed' },
-  { id: 'fn_disc', group: 'Identity & documents', name: 'Licence disc present & current', kind: 'function' },
-  { id: 'fn_spare_key', group: 'Identity & documents', name: 'Spare key present', kind: 'function' },
+  { id: 'fn_service', group: 'Identity & documents', name: 'Service history validated', kind: 'function', hint: 'book or digital history confirmed', photoSlotId: 'service_book' },
+  { id: 'fn_disc', group: 'Identity & documents', name: 'Licence disc present & current', kind: 'function', photoSlotId: 'license_disc' },
+  { id: 'fn_spare_key', group: 'Identity & documents', name: 'Spare key present', kind: 'function', photoSlotId: 'spare_keys' },
 ];
 
 const DISCLOSURE_QUESTIONS: { section: string; items: DisclosureQuestion[] }[] = [
@@ -456,7 +436,7 @@ const DISCLOSURE_QUESTIONS: { section: string; items: DisclosureQuestion[] }[] =
   {
     section: 'Documents & compliance',
     items: [
-      { id: 'license_disc', q: 'License disc present and current? (photograph it in Documents)', flagWhen: 'no' },
+      { id: 'license_disc', q: 'License disc present and current? (photograph it in Front & Engine)', flagWhen: 'no' },
       { id: 'service_history', q: 'Service book / digital service history verified?', flagWhen: 'no' },
       { id: 'spare_key', q: 'Spare key present?', flagWhen: 'no' },
       { id: 'vin_match', q: 'VIN plate matches papers?', flagWhen: 'no' },

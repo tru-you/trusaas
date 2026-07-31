@@ -11,8 +11,7 @@ import { DEFAULT_TEMPLATE } from '../templates';
 import type { TemplateSlot } from '../template';
 import { ICONS } from '../iconMap';
 import trulensLockup from '../assets/images/trulens-wordmark.png';
-import trudealerLockupDark from '../assets/images/trudealer-lockup-dark.svg';
-import trudealerLockupLight from '../assets/images/trudealer-lockup-light.svg';
+import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -47,9 +46,18 @@ function computeCondition(vehicle: Vehicle) {
     (list || []).filter(f => f.confirmed !== false).map(f => ({ ...f, slotId }))
   );
   const penalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
-  const penalty = all.reduce((s, f) => s + (penalties[f.severity] ?? 0.3), 0);
+
+  const sortedPenalties = all.map(f => penalties[f.severity] ?? 0.3).sort((a, b) => b - a);
+  let penalty = sortedPenalties.reduce((s, p, i) => s + p / (i + 1), 0);
+
+  const slotAssess = vehicle.slotAssessment || {};
+  for (const res of Object.values(slotAssess)) {
+    if (res?.rating === 'damage') penalty += 0.5;
+    else if (res?.rating === 'note') penalty += 0.15;
+  }
+
   const stars = Math.max(1, Math.round((5 - Math.min(4, penalty)) * 10) / 10);
-  const hasInput = all.length > 0;
+  const hasInput = all.length > 0 || Object.keys(slotAssess).length > 0;
   const label =
     !hasInput ? 'Not yet assessed' :
     stars >= 4.5 ? 'Excellent — minor blemishes only' :
@@ -259,7 +267,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     }
   };
 
-  const hero = vehicle.photos?.front_3_4 || Object.values(vehicle.photos || {})[0];
+  const hero = vehicle.photos?.front_bumper || Object.values(vehicle.photos || {})[0];
 
   return (
     <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100">
@@ -370,8 +378,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             }
             .tl-report *, .tl-report *::before, .tl-report *::after { box-sizing: border-box; }
             .tl-report .cover { padding: 20mm 16mm 12mm; background: linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%); color:#F8FAFC; overflow:hidden; }
-            .tl-report .cover-head { display:flex; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
-            .tl-report .meta-row { text-align:right; font-family:ui-monospace,monospace; font-size:10px; color:rgba(248,250,252,.62); line-height:1.6; min-width:0; }
             .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; overflow-wrap:break-word; }
             .tl-report .subhead { font-size:13px; color:rgba(248,250,252,.72); margin-bottom:18px; }
             .tl-report .score-strip { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
@@ -416,29 +422,35 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
           {/* Cover */}
           <div className="cover">
-            <div className="cover-head">
-              <div>
-                <img src={trulensLockup} alt="TruLens" style={{ height:30, width:'auto', display:'block', marginBottom:4 }} />
-                <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.08em', color:'rgba(248,250,252,.85)' }}>
-                  Vehicle Condition Report
-                </div>
-                <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:2 }}>{dealerName}</div>
+            {/* Logos — centered, stacked */}
+            <div style={{ textAlign:'center', marginBottom:20 }}>
+              <img src={trulensLockup} alt="TruLens" style={{ height:44, width:'auto', display:'inline-block' }} />
+              <div style={{ marginTop:10 }}>
+                <img src={trudealerLockup} alt="TruDealer" style={{ height:28, width:'auto', display:'inline-block' }} />
               </div>
-              <div className="meta-row">
-                <img src={trudealerLockupDark} alt="TruDealer" style={{ height:34, width:'auto', display:'block', marginLeft:'auto', marginBottom:6 }} />
-                <div><b style={{color:'#fff'}}>Report</b> · {reportId}</div>
-                <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
-                {dealerBranch ? <div>{dealerBranch}</div> : null}
-              </div>
+              {dealerName && <div style={{ fontSize:11, fontWeight:600, opacity:.75, marginTop:8 }}>{dealerName}</div>}
+              {dealerBranch && <div style={{ fontSize:10, opacity:.55, marginTop:2 }}>{dealerBranch}</div>}
             </div>
-            <h1>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
-            <div className="subhead">
+
+            {/* Report meta — centered */}
+            <div style={{ textAlign:'center', fontFamily:'ui-monospace,monospace', fontSize:10, color:'rgba(248,250,252,.62)', lineHeight:1.6, marginBottom:18 }}>
+              <div><b style={{color:'#fff'}}>Report ID</b> · {reportId}</div>
+              <div><Clock size={9} style={{display:'inline',verticalAlign:'middle',marginRight:4}}/>{generatedAt}</div>
+            </div>
+
+            {/* Accent bar */}
+            <div style={{ width:60, height:3, borderRadius:2, background:'linear-gradient(90deg,#4FE3DC,#4D9BFF)', margin:'0 auto 14px' }} />
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:'.14em', color:'rgba(79,227,220,.7)', marginBottom:6, textAlign:'center' }}>VEHICLE CONDITION REPORT</div>
+            <h1 style={{ textAlign:'center' }}>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
+            <div className="subhead" style={{ textAlign:'center' }}>
               {vehicle.trim} · {vehicle.color}
               {vehicle.mileage ? ` · ${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : ''}
               {vehicle.transmission ? ` · ${vehicle.transmission}` : ''}
               {vehicle.fuelType ? ` · ${vehicle.fuelType}` : ''}
               {' · Stock '}<b>{vehicle.stockNumber}</b>
             </div>
+
+            {/* Condition + vehicle details — unified strip */}
             <div className="score-strip">
               <div className="score-big">
                 <div className="score-ring" style={{ background: `conic-gradient(${band.color} ${(condition.hasInput ? condition.stars / 5 : 0) * 360}deg, rgba(255,255,255,.08) 0)` }}>
@@ -451,19 +463,15 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   <div style={{ fontSize:10, letterSpacing:'.12em', opacity:.55 }}>Vehicle condition</div>
                   <div style={{ fontWeight:800, fontSize:20, color: band.color, marginTop:4 }}>{band.label}</div>
                   <div style={{ fontSize:12, opacity:.75, marginTop:4 }}>{band.meaning}</div>
-                  <div style={{ fontSize:11, opacity:.65, marginTop:6 }}>
-                    Photos {capturedPhotos.length} captured · {requiredTaken}/{requiredSlots.length} required
-                    {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
-                  </div>
                 </div>
               </div>
               <div className="vehicle-facts">
                 <div><div className="k">VIN</div><div className="v">{vehicle.vin || '—'}</div></div>
                 <div><div className="k">Type</div><div className="v">{vehicle.vehicleType || '—'}</div></div>
                 <div><div className="k">Mileage</div><div className="v">{vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : '—'}</div></div>
-                <div><div className="k">Transmission</div><div className="v">{vehicle.transmission || '—'}</div></div>
-                <div><div className="k">Fuel</div><div className="v">{vehicle.fuelType || '—'}</div></div>
                 <div><div className="k">List price</div><div className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</div></div>
+                <div><div className="k">Photos</div><div className="v">{capturedPhotos.length} captured</div></div>
+                <div><div className="k">Damage tags</div><div className="v">{condition.findings.length}</div></div>
               </div>
             </div>
           </div>
@@ -688,7 +696,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
           <div className="foot">
             <div>Prepared by <b style={{color:'#4FE3DC'}}>{dealerName}</b> · powered by <b>TruLens</b></div>
-            <img src={trudealerLockupLight} alt="TruDealer" style={{ height:16, width:'auto' }} />
+            <img src={trudealerLockup} alt="TruDealer" style={{ height:20, width:'auto' }} />
             <div>{reportId}</div>
             <div>Visual condition at a moment in time — not a mechanical warranty</div>
           </div>

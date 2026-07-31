@@ -17,6 +17,19 @@ import {
   asDataUri,
   stats as photoStats,
 } from './photoStore';
+import { DEFAULT_TEMPLATE } from './src/templates';
+
+/* Every TruLens template slot is `required: false` (dealer's call what goes on
+   their site — see src/template.ts), so there is no `required` subset to pull
+   from the template itself for the two "is this capture practically done"
+   gates below. This hand-picks the same kind of "core shot, not an
+   accessory/detail extra" set the old hardcoded lists here used to express —
+   the physical-accessory shots (present/not-present, not a blocking photo)
+   and the roof, which was always optional even before this file's lists went
+   stale and started referencing a 'video_360' slot TruLens has never had. */
+const TRULENS_CORE_SLOT_IDS = DEFAULT_TEMPLATE.slots
+  .filter((s) => !['spare_wheel', 'vehicle_jack', 'spare_keys', 'roof_sunroof'].includes(s.id))
+  .map((s) => s.id);
 
 // Load environment variables first
 dotenv.config();
@@ -833,8 +846,8 @@ function toPublicFromLens(v: any, origin: string = '') {
   const photos = v.photos && typeof v.photos === 'object' ? v.photos : {};
   // Prefer exterior hero order for website gallery
   const order = [
-    'front_3_4', 'front_straight', 'side_driver', 'side_passenger',
-    'rear_3_4', 'rear_straight', 'interior_dash', 'engine_bay',
+    'front_bumper', 'bonnet', 'door_front_right', 'door_front_left',
+    'rear_bumper', 'boot_tailgate', 'interior_cabin', 'engine_bay',
   ];
   /* Stored photos are served by this instance, but the sites reading this feed
      are on their own domains — a relative "/media/…" would resolve against the
@@ -852,14 +865,7 @@ function toPublicFromLens(v: any, origin: string = '') {
 
   // Ready-for-web: required shots ideally full; allow publish if Ready/Listed or has solid gallery
   const status = v.status || 'In-Progress';
-  const requiredIds = [
-    'front_3_4', 'front_straight', 'rear_3_4', 'rear_straight',
-    'side_driver', 'side_passenger', 'wheel_front_driver', 'wheel_rear_driver', 'wheel_rear_passenger', 'wheel_front_passenger',
-    'interior_dash', 'seat_driver', 'seats_rear', 'boot_bay',
-    'engine_bay', 'service_book', 'reg_papers', 'odometer_reading',
-    'vin_plate', 'video_360',
-  ];
-  // badges_detail is optional in guide; seat_passenger required in types - keep practical web gate
+  const requiredIds = TRULENS_CORE_SLOT_IDS;
   const reqTaken = requiredIds.filter((id) => !!photos[id]).length;
   // Public feed: only explicitly published units (one-tap Publish on catalogue)
   const canShow =
@@ -1153,7 +1159,7 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
 // 3. Upload/Save photo for a specific vehicle slot
 app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
   try {
-    const { vehicleId, slotId, base64Image, qualityReport } = req.body;
+    const { vehicleId, slotId, base64Image, qualityReport, assessment, closeups } = req.body;
     const userId = req.user.uid;
 
     if (!vehicleId || !slotId || !base64Image) {
@@ -1164,7 +1170,6 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
     if (!existingData) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
-    // Local demo can edit any local vehicle; cloud still enforces owner
     if (
       !LOCAL_MODE &&
       existingData.ownerId &&
@@ -1179,14 +1184,19 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
       quality[slotId] = qualityReport;
     }
 
+    const slotAssessment = { ...((existingData as any).slotAssessment || {}) };
+    const existingCloseups = { ...((existingData as any).closeups || {}) };
+    if (assessment) {
+      slotAssessment[slotId] = assessment;
+    }
+    if (closeups && closeups.length) {
+      existingCloseups[slotId] = closeups;
+    } else {
+      delete existingCloseups[slotId];
+    }
+
     const now = new Date().toISOString();
-    const requiredSlots = [
-      'front_3_4', 'front_straight', 'rear_3_4', 'rear_straight',
-      'side_driver', 'side_passenger', 'wheel_front_driver', 'wheel_rear_driver', 'wheel_rear_passenger', 'wheel_front_passenger', 'badges_detail',
-      'interior_dash', 'seat_driver', 'seats_rear', 'boot_bay',
-      'engine_bay', 'service_book', 'reg_papers', 'odometer_reading',
-      'vin_plate', 'video_360',
-    ];
+    const requiredSlots = TRULENS_CORE_SLOT_IDS;
     const hasAllRequired = requiredSlots.every((slot) => !!photos[slot]);
     let status = existingData.status;
     if (hasAllRequired && status === 'In-Progress') {
@@ -1197,6 +1207,8 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
       ...existingData,
       photos,
       quality,
+      slotAssessment,
+      closeups: existingCloseups,
       status,
       updatedAt: now,
     };
@@ -1465,21 +1477,19 @@ You MUST respond strictly with a valid JSON matching this schema:
 // ==================== DMS EXPORT (TruFlow) ====================
 
 const SLOT_TO_DMS_CATEGORY: Record<string, string> = {
-  front_3_4: 'images', front_straight: 'images', rear_3_4: 'images',
-  rear_straight: 'images', side_driver: 'images', side_passenger: 'images',
-  roof_view: 'images', wheels_all: 'images', /* legacy */
-  wheel_front_driver: 'images', wheel_rear_driver: 'images',
-  wheel_rear_passenger: 'images', wheel_front_passenger: 'images',
-  badges_detail: 'extrasPhotos', lights_detail: 'extrasPhotos',
-  mirrors_handles: 'extrasPhotos', interior_dash: 'extrasPhotos',
-  seat_driver: 'extrasPhotos', seat_passenger: 'extrasPhotos',
-  seats_rear: 'extrasPhotos', boot_bay: 'extrasPhotos',
-  floor_mats: 'extrasPhotos', engine_bay: 'extrasPhotos',
-  mechanical_details: 'extrasPhotos', undercarriage: 'extrasPhotos',
-  recon_damage: 'damagePhotos',
-  service_book: 'serviceBookPhotos', reg_papers: 'extrasPhotos',
-  odometer_reading: 'extrasPhotos', vin_plate: 'vinPhotos',
-  video_360: 'extrasPhotos',
+  // Category 1: Front & Engine
+  bonnet: 'images', front_bumper: 'images', front_windscreen: 'images',
+  license_disc: 'extrasPhotos', engine_bay: 'extrasPhotos',
+  // Category 2: Clockwise Exterior Walk-Around
+  fender_front_right: 'images', wheel_front_right: 'images', door_front_right: 'images',
+  door_rear_right: 'images', quarter_rear_right: 'images', wheel_rear_right: 'images',
+  boot_tailgate: 'images', rear_bumper: 'images', spare_wheel: 'extrasPhotos',
+  vehicle_jack: 'extrasPhotos', quarter_rear_left: 'images', wheel_rear_left: 'images',
+  door_rear_left: 'images', door_front_left: 'images', fender_front_left: 'images',
+  wheel_front_left: 'images', roof_sunroof: 'images',
+  // Category 3: Interior, History & Verification
+  steering_wheel: 'extrasPhotos', interior_cabin: 'extrasPhotos',
+  service_book: 'serviceBookPhotos', odometer: 'extrasPhotos', spare_keys: 'extrasPhotos',
 };
 
 function buildDmsBreakdown(photos: Record<string, string>) {
@@ -1659,6 +1669,9 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
           );
           return flat.length ? flat : undefined;
         })(),
+        slotAssessment: Object.keys((vehicle as any).slotAssessment || {}).length
+          ? (vehicle as any).slotAssessment
+          : undefined,
         description: vehicle.aiListingDescription || undefined,
       },
       photos,

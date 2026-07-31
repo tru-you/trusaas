@@ -16,9 +16,10 @@ interface InspectionSheetProps {
   onBack: () => void;
   onSave: (points: Record<string, PointResult>) => Promise<void> | void;
   onTagDamage: () => void;
+  onGenerateReport?: () => void;
 }
 
-export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }: InspectionSheetProps) {
+export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, onGenerateReport }: InspectionSheetProps) {
   const [points, setPoints] = React.useState<Record<string, PointResult>>(
     () => JSON.parse(JSON.stringify(vehicle.inspectionPoints || {})),
   );
@@ -30,16 +31,33 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
 
   const checklistPoints = DEFAULT_TEMPLATE.checklistPoints || [];
 
-  const answered = checklistPoints.filter((p) => {
+  const isAnswered = (p: typeof checklistPoints[0]) => {
     const r = points[p.id];
     return p.kind === 'condition' ? !!r?.rating : !!r?.works;
-  }).length;
+  };
+  const answered = checklistPoints.filter(isAnswered).length;
 
-  // Anything the buyer must be told about.
   const flagged = checklistPoints.filter((p) => {
     const r = points[p.id];
     return r?.rating === 'damage' || r?.rating === 'note' || r?.works === 'no';
   }).length;
+
+  const unanswered = checklistPoints.length - answered;
+
+  const markRemainingOk = () => {
+    setPoints((prev) => {
+      const next = { ...prev };
+      for (const p of checklistPoints) {
+        if (isAnswered(p)) continue;
+        if (p.kind === 'condition') {
+          next[p.id] = { ...next[p.id], rating: 'ok' };
+        } else {
+          next[p.id] = { ...next[p.id], works: 'yes' };
+        }
+      }
+      return next;
+    });
+  };
 
   // Damage tags per slot, so a point with a photo can show its count.
   const tagCounts = React.useMemo(() => {
@@ -90,14 +108,25 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
         </div>
       </div>
 
-      {/* Tag-on-photo shortcut */}
-      <button
-        type="button"
-        onClick={onTagDamage}
-        className="mx-4 mt-3 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2"
-      >
-        <Camera size={15} /> Tag damage on the photos
-      </button>
+      {/* Shortcuts */}
+      <div className="mx-4 mt-3 flex gap-2">
+        <button
+          type="button"
+          onClick={onTagDamage}
+          className="flex-1 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[13px] font-semibold flex items-center justify-center gap-2"
+        >
+          <Camera size={15} /> Tag damage
+        </button>
+        {unanswered > 0 && (
+          <button
+            type="button"
+            onClick={markRemainingOk}
+            className="flex-1 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[13px] font-semibold flex items-center justify-center gap-2"
+          >
+            <Check size={15} /> All OK ({unanswered})
+          </button>
+        )}
+      </div>
 
       {/* Points */}
       <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
@@ -125,7 +154,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                       )}
                     </div>
 
-                    {/* Condition rating OR works check */}
+                    {/* Rating buttons — shape depends on the point's kind */}
                     {p.kind === 'condition' ? (
                       <div className="flex gap-2 mt-3">
                         {([['ok', 'OK', 'emerald'], ['note', 'Note', 'amber'], ['damage', 'Damage', 'rose']] as const).map(([val, label, tone]) => {
@@ -140,6 +169,52 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
                                   ? tone === 'emerald'
                                     ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
                                     : tone === 'amber'
+                                      ? 'bg-amber-500/15 border-amber-500/50 text-amber-300'
+                                      : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
+                                  : 'bg-neutral-950 border-neutral-800 text-neutral-400'
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : p.kind === 'presence' ? (
+                      <div className="flex gap-2 mt-3">
+                        {([['yes', 'Present', Check], ['no', 'Not Present', AlertTriangle]] as const).map(([val, label, Icon]) => {
+                          const active = r.works === val;
+                          return (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => set(p.id, { works: val })}
+                              className={`flex-1 min-h-[44px] rounded-lg text-[13px] font-semibold border flex items-center justify-center gap-2 transition-colors ${
+                                active
+                                  ? val === 'yes'
+                                    ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
+                                    : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
+                                  : 'bg-neutral-950 border-neutral-800 text-neutral-400'
+                              }`}
+                            >
+                              <Icon size={14} /> {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : p.kind === 'service_history' ? (
+                      <div className="flex gap-2 mt-3">
+                        {([['yes', 'FSH'], ['na', 'Partial'], ['no', 'None']] as const).map(([val, label]) => {
+                          const active = r.works === val;
+                          return (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => set(p.id, { works: val })}
+                              className={`flex-1 min-h-[44px] rounded-lg text-[13px] font-semibold border transition-colors ${
+                                active
+                                  ? val === 'yes'
+                                    ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
+                                    : val === 'na'
                                       ? 'bg-amber-500/15 border-amber-500/50 text-amber-300'
                                       : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
                                   : 'bg-neutral-950 border-neutral-800 text-neutral-400'
@@ -209,16 +284,29 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage }
       </div>
 
       {/* Save bar */}
-      <div className="shrink-0 p-3 border-t border-neutral-900 bg-neutral-950/95">
+      <div className="shrink-0 p-3 border-t border-neutral-900 bg-neutral-950/95 flex gap-2">
         <button
           type="button"
           onClick={() => handleSave(false)}
           disabled={saving}
-          className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[13px] font-semibold tracking-wide flex items-center justify-center gap-2 disabled:opacity-60"
+          className="flex-1 py-3 rounded-xl border border-neutral-700 text-neutral-200 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
         >
           <Save size={14} />
-          {saving ? 'Saving…' : savedFlash ? 'Saved ✓' : 'Save inspection'}
+          {saving ? 'Saving…' : savedFlash ? 'Saved ✓' : 'Save'}
         </button>
+        {onGenerateReport && (
+          <button
+            type="button"
+            onClick={async () => {
+              await handleSave(false);
+              onGenerateReport();
+            }}
+            disabled={saving}
+            className="flex-1 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            <ClipboardCheck size={14} /> Generate Report
+          </button>
+        )}
       </div>
     </div>
   );

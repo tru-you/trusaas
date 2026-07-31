@@ -12,6 +12,7 @@ import TradeInValuation from './components/TradeInValuation';
 import TradeInSummary from './components/TradeInSummary';
 import { Vehicle, QualityReport, DmsExportResult, PointResult } from './types';
 import type { InspectionItem, ValuationState, TradeInData } from './types/inspection';
+import { createDefaultItems } from './types/inspection';
 import { useAuth } from './contexts/AuthContext';
 
 /** Convert a blob: URL to a data: URL so it survives navigation / reload. */
@@ -384,7 +385,7 @@ export default function App() {
     }
   };
 
-  /** Partial vehicle update (publish flag, dealer fields, web3d stamps, etc.) */
+  /** Partial vehicle update (dealer fields, trade-in data, inspection points, etc.) */
   const handleUpdateVehicle = async (vehicle: Vehicle, patch: Partial<Vehicle>): Promise<Vehicle | null> => {
     if (!user) return null;
     setSyncStatus('syncing');
@@ -441,13 +442,6 @@ export default function App() {
     setLoadError(null);
   };
 
-  // Open the photo damage tagger for a vehicle
-  const handleOpenDamage = (vehicle: Vehicle) => {
-    setActiveVehicleId(vehicle.id);
-    setActiveView('damage');
-    setLoadError(null);
-  };
-
   // Open the trade-in appraisal for a vehicle
   const handleOpenTradeIn = (vehicle: Vehicle) => {
     setActiveVehicleId(vehicle.id);
@@ -462,19 +456,24 @@ export default function App() {
     setLoadError(null);
   };
 
-  /** Upload one trade-in photo and get back a "/media/…" URL.
-   *  Mirrors the inspection capture: bytes become a file, state keeps a URL. */
-  const uploadTradePhoto = async (base64Image: string): Promise<string | null> => {
-    if (!user) return null;
+  /** Upload one trade-in photo under `itemId` and get back its "/media/…" URL.
+   *  Goes through the same /api/inventory/upload-photo endpoint — and the
+   *  same vehicle.photos store — the Inspect capture flow uses, keyed by the
+   *  same 27 slot ids, so a shot taken in either workflow shows up in both. */
+  const uploadTradePhoto = async (itemId: string, base64Image: string): Promise<string | null> => {
+    if (!user || !activeVehicleId) return null;
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/inventory/upload-trade-photo', {
+      const res = await fetch('/api/inventory/upload-photo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ base64Image }),
+        body: JSON.stringify({ vehicleId: activeVehicleId, slotId: itemId, base64Image }),
       });
       if (!res.ok) return null;
-      const { ref } = await res.json();
+      const result = await res.json();
+      const saved = normalizeVehicle(result.vehicle);
+      setVehicles(prev => prev.map(v => v.id === activeVehicleId ? saved : v));
+      const ref = saved.photos?.[itemId];
       return typeof ref === 'string' ? ref : null;
     } catch (e) {
       console.error('Trade-in photo upload failed:', e);
@@ -488,11 +487,15 @@ export default function App() {
     await handleUpdateVehicle(activeVehicle, { tradeInData: data } as Partial<Vehicle>);
   };
 
+  /** Always navigates — with no appraisal started yet this lands on the
+   *  existing "complete the market valuation step first" prompt in the
+   *  trade-in-summary view, the same empty-state pattern the VIR report
+   *  already uses (it renders fine at 0/23 photos rather than refusing to
+   *  open). A silent no-op here was a dead button before. */
   const handleViewTradeInReport = (vehicle: Vehicle) => {
-    if (!vehicle.tradeInData) return;
     setActiveVehicleId(vehicle.id);
-    setTradeInItems(vehicle.tradeInData.items || []);
-    setTradeInValuation(vehicle.tradeInData.valuation || null);
+    setTradeInItems(vehicle.tradeInData?.items || createDefaultItems());
+    setTradeInValuation(vehicle.tradeInData?.valuation || null);
     setActiveView('trade-in-summary');
     setLoadError(null);
   };
@@ -575,8 +578,6 @@ export default function App() {
                 onViewReport={handleViewReport}
                 onAddVehicle={handleAddVehicle}
                 onDeleteVehicle={handleDeleteVehicle}
-                onOpenChecklist={handleOpenChecklist}
-                onTagDamage={handleOpenDamage}
                 onOpenTradeIn={handleOpenTradeIn}
                 onViewTradeInReport={handleViewTradeInReport}
                 onUpdateVehicle={handleUpdateVehicle}
@@ -594,16 +595,18 @@ export default function App() {
                 await handleUpdateVehicle(activeVehicle, { inspectionPoints: points });
               }}
               onTagDamage={() => setActiveView('damage')}
+              onGenerateReport={() => setActiveView('report')}
             />
           )}
 
           {activeView === 'damage' && activeVehicle && (
             <DamageTagger
               vehicle={activeVehicle}
-              onBack={() => setActiveView('inventory')}
+              onBack={() => setActiveView('camera')}
               onSave={async (damageFindings) => {
                 await handleUpdateVehicle(activeVehicle, { damageFindings });
               }}
+              onContinueToChecklist={() => setActiveView('checklist')}
             />
           )}
 
@@ -692,6 +695,8 @@ export default function App() {
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
               onPhotoCaptured={handlePhotoCaptured}
+              onOpenDamageTagger={() => setActiveView('damage')}
+              onOpenChecklist={() => handleOpenChecklist(activeVehicle)}
               onBulkPhotosUploaded={(updatedVehicle) => {
                 setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
               }}

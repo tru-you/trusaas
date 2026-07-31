@@ -6,8 +6,7 @@ import {
   computeOverallRating, needsReconCost, deriveReportId,
 } from '../types/inspection';
 import truinspectLogo from '../assets/images/truinspect-logo.svg';
-import trudealerLogo from '../assets/images/trudealer-lockup-light.svg';
-import trudealerLogoDark from '../assets/images/trudealer-lockup-dark.svg';
+import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
 interface TradeInSummaryProps {
   vehicle: Vehicle;
@@ -285,7 +284,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
                 <p style={{ fontSize: '11px', fontWeight: 600, opacity: 0.75, marginTop: 6 }}>{dealerName}</p>
               </div>
               <div style={{ textAlign: 'right', fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: 'rgba(248,250,252,.62)' }}>
-                <img src={trudealerLogoDark} alt="TruDealer" style={{ height: 22, width: 'auto', display: 'block', marginLeft: 'auto', marginBottom: 4 }} />
+                <img src={trudealerLockup} alt="TruDealer" style={{ height: 26, width: 'auto', display: 'block', marginLeft: 'auto', marginBottom: 6 }} />
                 <div>ID: {deriveReportId(vehicle)}</div>
                 <div><Clock size={9} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />{now}</div>
               </div>
@@ -347,32 +346,15 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
               </div>
           )}
 
-          {/* Valuation banner — NO margin shown */}
-          <div style={{ background: '#F0FDFA', border: '2px solid #0D9488', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
-            <table style={{ width: '100%', fontSize: '14px', borderCollapse: 'collapse' }}>
-              <tbody>
-                <tr>
-                  <td style={{ padding: '6px 0', color: '#374151' }}>Average Market Retail Price</td>
-                  <td style={{ padding: '6px 0', textAlign: 'right', fontWeight: 700 }}>
-                    {valuation.averageRetailPrice !== null ? fmt(valuation.averageRetailPrice) : '—'}
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '6px 0', color: '#374151' }}>Less Total Recon Costs</td>
-                  <td style={{ padding: '6px 0', textAlign: 'right', fontWeight: 700, color: '#DC2626' }}>
-                    - {fmt(totalRecon)}
-                  </td>
-                </tr>
-                <tr style={{ borderTop: '2px solid #0D9488' }}>
-                  <td style={{ padding: '12px 0 6px', fontSize: '16px', fontWeight: 800, color: '#0D9488' }}>
-                    FINAL TRADE-IN OFFER
-                  </td>
-                  <td style={{ padding: '12px 0 6px', textAlign: 'right', fontSize: '22px', fontWeight: 800, color: '#0D9488' }}>
-                    {fmt(valuation.finalTradeInValue)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          {/* Valuation banner — margin is applied but not itemised on the report */}
+          <div style={{ background: '#F0FDFA', border: '2px solid #0D9488', borderRadius: '12px', padding: '24px', marginBottom: '20px', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '.12em', color: '#0D9488', margin: '0 0 6px' }}>TRADE-IN OFFER</p>
+            <p style={{ fontSize: '28px', fontWeight: 800, color: '#0D9488', margin: 0 }}>
+              {fmt(valuation.finalTradeInValue)}
+            </p>
+            <p style={{ fontSize: '11px', color: '#64748B', margin: '8px 0 0' }}>
+              Based on current market retail pricing, less estimated reconditioning costs.
+            </p>
           </div>
 
           {/* Itemized grid */}
@@ -441,7 +423,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           <div style={{ height: 3, background: 'linear-gradient(90deg,#4FE3DC,#4D9BFF,#4FE3DC)', marginTop: 24, borderRadius: 2 }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '12px 0', fontSize: '10px', color: '#64748B', fontFamily: 'ui-monospace, monospace', letterSpacing: '.08em' }}>
             <span>Prepared by <b style={{ color: '#0D9488' }}>{dealerName}</b> · powered by <b>TruInspect</b></span>
-            <img src={trudealerLogo} alt="TruDealer" style={{ height: 14, width: 'auto' }} />
+            <img src={trudealerLockup} alt="TruDealer" style={{ height: 18, width: 'auto' }} />
           </div>
           <p style={{ textAlign: 'center', fontSize: '9px', color: '#94A3B8', margin: 0 }}>
             Trade-in valuation at a moment in time — subject to physical verification.

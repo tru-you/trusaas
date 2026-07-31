@@ -1,4 +1,7 @@
-import { PHOTO_SLOTS, Vehicle } from '../types';
+import { Vehicle } from '../types';
+import { DEFAULT_TEMPLATE } from '../templates';
+
+const PHOTO_SLOTS = DEFAULT_TEMPLATE.slots;
 
 export interface DamageTag {
   id: string;
@@ -48,36 +51,32 @@ export interface Web3DPackage {
 
 /* Positions on a circle around the car, listed in the order you walk them.
  *
- * Only shots that are genuinely a rotation belong here. This used to also carry
- * badges_detail, lights_detail, mirrors_handles, roof_view and wheels_all — a
- * badge close-up, a light close-up, a mirror, a top-down and a wheel — each
- * assigned an azimuth as though it were a position on the circle. Dragging the
- * orbit therefore cut from the side of the car to a badge, to a headlight, back
- * to the car, then to a mirror. Five of the eleven frames were not viewpoints at
- * all, which is most of why the spin looked wrong rather than merely coarse.
- * Those shots are not lost: they are in the gallery, where a close-up belongs.
+ * Only shots that are genuinely a rotation belong here — a wheel close-up, the
+ * roof, or an accessory tray is not a position on the circle, so those are
+ * named in NON_ORBIT_EXTERIOR below rather than given an invented azimuth.
  *
- * The azimuths were also uneven — front_3_4 sat at 0.05, a hair off
- * front_straight at 0.0, then jumped to 0.25 — so the rotation stalled at the
- * nose and skipped a quarter of the car. Evenly spaced now, and the frames are
- * sorted by azimuth before they ship because the viewer scrubs by array index:
- * front_3_4 being listed before front_straight meant frame 1 stepped backwards.
- */
+ * Evenly spaced across the 8 corner/side/front/rear panel shots from the
+ * Clockwise Exterior Walk-Around category, and the frames are sorted by
+ * azimuth before they ship because the viewer scrubs by array index — an
+ * out-of-order frame makes the spin jump backwards mid-drag. */
 const ORBIT_SLOTS = [
-  { id: 'front_straight', azimuth: 0.0 },
-  { id: 'front_3_4', azimuth: 0.125 },
-  { id: 'side_passenger', azimuth: 0.25 },
-  { id: 'rear_3_4', azimuth: 0.375 },
-  { id: 'rear_straight', azimuth: 0.5 },
-  { id: 'side_driver', azimuth: 0.75 },
+  { id: 'front_bumper', azimuth: 0 },
+  { id: 'fender_front_right', azimuth: 0.125 },
+  { id: 'door_front_right', azimuth: 0.25 },
+  { id: 'quarter_rear_right', azimuth: 0.375 },
+  { id: 'rear_bumper', azimuth: 0.5 },
+  { id: 'quarter_rear_left', azimuth: 0.625 },
+  { id: 'door_front_left', azimuth: 0.75 },
+  { id: 'fender_front_left', azimuth: 0.875 },
 ];
 
 /* Exterior shots that are NOT viewpoints on the circle. The catch-all below
- * sweeps up every phase-1 slot not already placed, so without naming these the
- * two of them would be added straight back with an invented azimuth. */
+ * sweeps up every phase-2 (Clockwise Exterior) slot not already placed, so
+ * without naming these they would be added straight back with an invented
+ * azimuth. */
 const NON_ORBIT_EXTERIOR = new Set([
-  'roof_view', 'wheels_all', /* wheels_all is pre-split, kept for old captures */
-  'wheel_front_driver', 'wheel_rear_driver', 'wheel_rear_passenger', 'wheel_front_passenger',
+  'roof_sunroof', 'boot_tailgate', 'spare_wheel', 'vehicle_jack',
+  'wheel_front_right', 'wheel_rear_right', 'wheel_rear_left', 'wheel_front_left',
 ]);
 
 /**
@@ -159,26 +158,9 @@ function collectDamageTags(vehicle: Vehicle): DamageTag[] {
   const photos = vehicle.photos || {};
   const quality = vehicle.quality || {};
 
-  // Recon slot
-  if (photos.recon_damage) {
-    const issues = quality.recon_damage?.aiAnalysis?.detectedIssues;
-    const list = Array.isArray(issues) ? issues : issues ? [String(issues)] : ['Documented damage / recon area'];
-    list.forEach((label, i) => {
-      tags.push({
-        id: `recon-${i}`,
-        label: String(label),
-        severity: i === 0 ? 'attention' : 'info',
-        azimuth: 0.55,
-        elevation: 0.55,
-        slotId: 'recon_damage',
-        thumb: photos.recon_damage,
-      });
-    });
-  }
-
-  // Any slot with detected issues
+  // Any slot with detected issues — the 27-slot list has no dedicated
+  // freeform "recon/damage" slot, so every finding comes from a real angle.
   PHOTO_SLOTS.forEach((slot) => {
-    if (slot.id === 'recon_damage') return;
     const issues = quality[slot.id]?.aiAnalysis?.detectedIssues;
     if (!issues) return;
     const list = Array.isArray(issues) ? issues : [String(issues)];
@@ -220,13 +202,14 @@ export async function buildWeb3DPackage(vehicle: Vehicle): Promise<Web3DPackage>
     });
   }
 
-  /* Any remaining phase-1 exterior slot that is still a viewpoint. roof_view
-     and wheels_all are excluded by name: they are exterior, so they matched
-     this filter, but a top-down and a wheel close-up are not places you stand
-     on the circle, and the azimuth below is a position invented from however
-     many frames happen to already be in the array — not a measurement. Kept for
-     genuinely new exterior angles, which is what it was written for. */
-  for (const slot of PHOTO_SLOTS.filter((s) => s.phase === 1)) {
+  /* Any remaining phase-2 (Clockwise Exterior) slot that is still a viewpoint.
+     Wheels, the roof and the two accessory shots are excluded by name: they
+     are exterior, so they matched this filter, but a wheel close-up or a
+     tray photo is not a place you stand on the circle, and the azimuth below
+     is a position invented from however many frames happen to already be in
+     the array — not a measurement. Kept for genuinely new exterior angles,
+     which is what it was written for. */
+  for (const slot of PHOTO_SLOTS.filter((s) => s.phase === 2)) {
     if (NON_ORBIT_EXTERIOR.has(slot.id)) continue;
     if (frames.some((f) => f.slotId === slot.id)) continue;
     const src = photos[slot.id];

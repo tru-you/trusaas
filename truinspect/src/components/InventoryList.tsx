@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
-  BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders,
+  BarChart3, Palette, Copy, Check, Award, Lightbulb, Sliders,
   FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil
 } from 'lucide-react';
 import { 
@@ -14,7 +14,7 @@ import { DEFAULT_TEMPLATE } from '../templates';
 import DiscScanner from './DiscScanner';
 import type { DiscScan } from '../lib/saDisc';
 import InstallAppButton from './InstallAppButton';
-import { computeWebReadiness } from '../lib/readiness';
+import { computeInspectionReadiness } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 
 interface InventoryListProps {
@@ -24,8 +24,6 @@ interface InventoryListProps {
   onAddVehicle: (newVehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => void;
   onDeleteVehicle: (id: string) => void;
   onExportToDms?: (vehicle: Vehicle) => Promise<DmsExportResult>;
-  onOpenChecklist?: (vehicle: Vehicle) => void;
-  onTagDamage?: (vehicle: Vehicle) => void;
   onOpenTradeIn?: (vehicle: Vehicle) => void;
   onViewTradeInReport?: (vehicle: Vehicle) => void;
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
@@ -48,8 +46,6 @@ export default function InventoryList({
   onAddVehicle,
   onDeleteVehicle,
   onExportToDms,
-  onOpenChecklist,
-  onTagDamage,
   onOpenTradeIn,
   onViewTradeInReport,
   onUpdateVehicle,
@@ -156,7 +152,7 @@ export default function InventoryList({
    */
   const fleet = React.useMemo(() => {
     const rows = vehicles.map(v => {
-      const r = computeWebReadiness(v);
+      const r = computeInspectionReadiness(v);
       const answered = Object.keys(v.inspectionChecklist || {}).length;
       const signed = !!(v.inspectorName && v.inspectorName.trim());
       return { v, r, answered, signed };
@@ -871,16 +867,16 @@ export default function InventoryList({
               const totalCount = DEFAULT_TEMPLATE.slots.length;
               const requiredTaken = DEFAULT_TEMPLATE.slots.filter(s => s.required && !!photos[s.id]).length;
               const totalRequired = DEFAULT_TEMPLATE.slots.filter(s => s.required).length;
-              const readiness = computeWebReadiness(vehicle);
+              const readiness = computeInspectionReadiness(vehicle);
               /* Photos are files now, so the hero is usually "/media/<hash>.jpg"
                  rather than a data URI. Testing only for data: left every
                  migrated vehicle with a blank thumbnail. */
               const thumb =
-                typeof photos.front_3_4 === 'string' &&
-                (photos.front_3_4.startsWith('data:') ||
-                  photos.front_3_4.startsWith('/media/') ||
-                  photos.front_3_4.startsWith('http'))
-                  ? photos.front_3_4
+                typeof photos.front_bumper === 'string' &&
+                (photos.front_bumper.startsWith('data:') ||
+                  photos.front_bumper.startsWith('/media/') ||
+                  photos.front_bumper.startsWith('http'))
+                  ? photos.front_bumper
                   : null;
               const priceLabel = Number(vehicle.price || 0).toLocaleString();
               const isHighlighted =
@@ -901,9 +897,9 @@ export default function InventoryList({
                       {/* Photo Preview Miniature Thumbnail or Car icon */}
                       <div className="w-12 h-12 bg-neutral-900 rounded-lg border border-neutral-800 flex items-center justify-center overflow-hidden shrink-0 relative">
                         {thumb ? (
-                          <img 
-                            src={thumb} 
-                            alt="Front 3/4" 
+                          <img
+                            src={thumb}
+                            alt="Front bumper"
                             className="w-full h-full object-cover"
                             referrerPolicy="no-referrer"
                           />
@@ -1023,84 +1019,55 @@ export default function InventoryList({
                       </div>
                     </div>
 
+                    {/* Four buttons, always the same four: Inspect and Trade-In are
+                        the two ways to work a vehicle (photo capture is the first
+                        step inside each, not a separate button competing with
+                        them); VIR and Trade-In Report are the two documents that
+                        come out the other end. Both report buttons are always
+                        present — each opens straight to its report's own
+                        not-started state (same pattern the VIR already used at
+                        0/23 photos) rather than appearing/disappearing as work
+                        progresses. */}
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => onSelectVehicle(vehicle)}
                         className="flex items-center justify-center gap-2 text-[13px] font-semibold text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer min-h-[44px] rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
-                        title="Open camera guide and take pictures"
+                        title="Inspect — capture the shot list, then rate condition and check function"
                       >
-                        <Camera size={12} /> Photos
+                        <Camera size={12} /> Inspect
                       </button>
-
-                      {onOpenChecklist && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onOpenChecklist(vehicle); }}
-                          title="Full inspection — rate every part, check what works, comment"
-                          className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-cyan-400 hover:text-cyan-300 cursor-pointer bg-cyan-500/10 min-h-[44px] rounded-lg border border-cyan-500/20 transition-colors"
-                        >
-                          <BookOpen size={12} /> Inspect
-                        </button>
-                      )}
-
-                      {takenCount > 0 && onTagDamage && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onTagDamage(vehicle); }}
-                          title="Tag damage directly on the photos — dent, scratch, rust with location and severity"
-                          className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-amber-300 hover:text-amber-200 cursor-pointer bg-amber-500/10 min-h-[44px] rounded-lg border border-amber-500/25 transition-colors"
-                        >
-                          <AlertCircle size={12} /> Damage
-                          {(() => {
-                            const n = Object.values(vehicle.damageFindings || {}).reduce((a, l) => a + l.length, 0);
-                            return n > 0 ? <span className="ml-0.5">{n}</span> : null;
-                          })()}
-                        </button>
-                      )}
 
                       {onOpenTradeIn && (
                         <button
                           onClick={(e) => { e.stopPropagation(); onOpenTradeIn(vehicle); }}
-                          title="Trade-in appraisal — 28-step walk-around with valuation"
-                          className={`flex items-center justify-center gap-1.5 text-[13px] font-bold text-emerald-300 hover:text-emerald-200 cursor-pointer bg-emerald-500/10 min-h-[44px] rounded-lg border border-emerald-500/25 transition-colors${takenCount === 0 ? ' col-span-2' : ''}`}
+                          title="Trade-in appraisal — 27-step walk-around with valuation"
+                          className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-emerald-300 hover:text-emerald-200 cursor-pointer bg-emerald-500/10 min-h-[44px] rounded-lg border border-emerald-500/25 transition-colors"
                         >
                           <BarChart3 size={12} /> Trade-In
                           {vehicle.tradeInData && <span className="ml-0.5 text-[10px]">✓</span>}
                         </button>
                       )}
 
-                      {takenCount > 0 && onViewReport && !vehicle.tradeInData && (
+                      {onViewReport && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onViewReport(vehicle);
-                          }}
-                          title="Open inspection report with score, findings & damage photos"
-                          className="col-span-2 on-fill flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer min-h-[44px] rounded-lg transition-colors shadow-sm"
+                          onClick={(e) => { e.stopPropagation(); onViewReport(vehicle); }}
+                          title="Vehicle Inspection Report"
+                          className="on-fill flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer min-h-[44px] rounded-lg transition-colors shadow-sm"
                           style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
                         >
-                          <FileText size={12} /> Report
+                          <FileText size={12} /> VIR
                         </button>
                       )}
 
-                      {takenCount > 0 && onViewReport && vehicle.tradeInData && (
-                        <>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onViewReport(vehicle); }}
-                            title="Vehicle Inspection Report"
-                            className="on-fill flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer min-h-[44px] rounded-lg transition-colors shadow-sm"
-                            style={{ background: 'linear-gradient(120deg, #7FF0EA, #4FE3DC)' }}
-                          >
-                            <FileText size={12} /> VIR
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onViewTradeInReport?.(vehicle); }}
-                            title="Trade-In Appraisal Report"
-                            className="on-fill flex items-center justify-center gap-1.5 text-[13px] font-bold cursor-pointer min-h-[44px] rounded-lg transition-colors shadow-sm"
-                            style={{ background: 'linear-gradient(120deg, #6EE7B7, #10B981)' }}
-                          >
-                            <BarChart3 size={12} /> Trade-In
-                          </button>
-                        </>
+                      {onViewTradeInReport && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onViewTradeInReport(vehicle); }}
+                          title="Trade-In Appraisal Report"
+                          className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-emerald-300 hover:text-emerald-200 cursor-pointer bg-emerald-500/10 min-h-[44px] rounded-lg border border-emerald-500/25 transition-colors"
+                        >
+                          <BarChart3 size={12} /> TIR
+                        </button>
                       )}
                     </div>
                   </div>

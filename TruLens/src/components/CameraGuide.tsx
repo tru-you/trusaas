@@ -22,8 +22,15 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
   const { user } = useAuth();
   // Crash-safe: never read vehicle.photos when undefined
   const photos = vehicle?.photos || {};
-  const [selectedSlotId, setSelectedSlotId] = React.useState<string>('front_3_4');
-  const [currentPhase, setCurrentPhase] = React.useState(1);
+  /* Lazy initializer so this only runs once, at mount — reopening a
+     partially-shot vehicle should resume at the first real gap, not always
+     reset to slot 1. */
+  const [selectedSlotId, setSelectedSlotId] = React.useState<string>(
+    () => DEFAULT_TEMPLATE.slots.find((s) => !vehicle.photos?.[s.id])?.id || DEFAULT_TEMPLATE.slots[0].id,
+  );
+  const [currentPhase, setCurrentPhase] = React.useState(
+    () => DEFAULT_TEMPLATE.slots.find((s) => !vehicle.photos?.[s.id])?.phase || DEFAULT_TEMPLATE.slots[0].phase,
+  );
   const [isCameraActive, setIsCameraActive] = React.useState(false);
   const [hasCamPermission, setHasCamPermission] = React.useState<boolean | null>(null);
   const [cameraError, setCameraError] = React.useState<string | null>(null);
@@ -520,14 +527,16 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
     setPendingShot({ slotId: selectedSlotId, base64: base64Data, report, kind: 'photo' });
   };
 
-  // After a photo is saved (parent updates vehicle.photos), auto-advance to next empty required slot
+  /* After a photo is saved (parent updates vehicle.photos), auto-advance to
+     the next empty slot in walkaround ORDER — every TruLens slot is optional,
+     so a required-first check here would never fire and this always fell
+     through to plain order anyway. Kept explicit rather than relying on that
+     coincidence — see the matching note in Truinspect's CameraGuide.tsx. */
   const prevPhotoCount = React.useRef(Object.keys(photos).length);
   React.useEffect(() => {
     const count = Object.keys(photos).length;
     if (count > prevPhotoCount.current) {
-      const next =
-        DEFAULT_TEMPLATE.slots.find((s) => s.required && !photos[s.id]) ||
-        DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
+      const next = DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
       if (next) {
         setSelectedSlotId(next.id);
         setCurrentPhase(next.phase);
@@ -768,8 +777,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
             verdict, so they reported confidence they did not have. They also sat
             on top of the only region that has to stay readable while framing a
             car, on a screen that is already too short. */}
-        {/* Quick Camera Source Helper overlay if webcam unavailable */}
-        {!isCameraActive && !customFile && (
+        {/* Tip about the live feed's own alignment guides — doesn't apply
+            when there's no feed to have guides on. It used to show exactly
+            when there was no camera, which put it directly on top of the
+            "Ready to shoot this slot" placeholder's centered content. */}
+        {isCameraActive && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded text-[13px] tracking-wide text-neutral-400 flex items-center gap-1">
             <Eye size={10} className="text-[#4FE3DC]" /> Use alignment guides to frame your vehicle.
           </div>
@@ -793,10 +805,10 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
           {phaseSlots.map(slot => {
             const isTaken = !!photos[slot.id];
             const isSelected = selectedSlotId === slot.id;
+            // Same walkaround-order rule as the auto-advance effect above.
             const isNext =
               !isTaken &&
-              slot.required &&
-              slot.id === (DEFAULT_TEMPLATE.slots.find((s) => s.required && !photos[s.id])?.id);
+              slot.id === (DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id])?.id);
             return (
               <button
                 key={slot.id}

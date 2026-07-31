@@ -168,9 +168,14 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
         <button
           type="button"
           onClick={save}
-          className="py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[13px] font-semibold flex items-center justify-center gap-2"
+          disabled={!rating}
+          className={`py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 ${
+            rating
+              ? 'bg-cyan-600 hover:bg-cyan-500 text-[#06080D]'
+              : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+          }`}
         >
-          <Save size={15} /> Keep &amp; next
+          <Save size={15} /> {rating ? 'Keep & next' : 'Rate it first'}
         </button>
       </div>
     </div>

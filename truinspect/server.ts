@@ -20,6 +20,7 @@ import {
   asDataUri,
   stats as photoStats,
 } from './photoStore';
+import { DEFAULT_TEMPLATE } from './src/templates';
 
 // Load environment variables first
 dotenv.config();
@@ -738,87 +739,6 @@ app.use((req, res, next) => {
   next();
 });
 
-/** TruLens-only public stock — for dealers without DMS (or as photo-first feed) */
-/** Absolute origin of this instance, taken from the request.
- *
- *  Derived rather than configured so localhost, staging and production each
- *  advertise URLs pointing at themselves with no env var to forget. Honours the
- *  proxy headers Render sets, or the scheme comes back http behind its TLS
- *  terminator and consuming pages fetch mixed content. */
-function originOf(req: any): string {
-  const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https')
-    .split(',')[0]
-    .trim();
-  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').trim();
-  return host ? `${proto}://${host}` : '';
-}
-
-function toPublicFromLens(v: any, origin: string = '') {
-  const photos = v.photos && typeof v.photos === 'object' ? v.photos : {};
-  // Prefer exterior hero order for website gallery
-  const order = [
-    'front_3_4', 'front_straight', 'side_driver', 'side_passenger',
-    'rear_3_4', 'rear_straight', 'interior_dash', 'engine_bay',
-  ];
-  /* Stored photos are served by this instance, but a report or dealer page
-     reading this feed is on its own domain — a relative "/media/…" would
-     resolve against that host and 404. Legacy base64 passes through untouched. */
-  const abs = (s: string) => (isStoredRef(s) && origin ? `${origin}${s}` : s);
-
-  const images: string[] = [];
-  for (const id of order) {
-    if (typeof photos[id] === 'string' && photos[id].length > 32) images.push(abs(photos[id]));
-  }
-  for (const [id, src] of Object.entries(photos)) {
-    if (!order.includes(id) && typeof src === 'string' && src.length > 32) images.push(abs(src));
-  }
-
-  // Ready-for-web: required shots ideally full; allow publish if Ready/Listed or has solid gallery
-  const status = v.status || 'In-Progress';
-  const requiredIds = [
-    'front_3_4', 'front_straight', 'rear_3_4', 'rear_straight',
-    'side_driver', 'side_passenger', 'wheel_front_driver', 'wheel_rear_driver', 'wheel_rear_passenger', 'wheel_front_passenger',
-    'interior_dash', 'seat_driver', 'seats_rear', 'boot_bay',
-    'engine_bay', 'service_book', 'reg_papers', 'odometer_reading',
-    'vin_plate', 'video_360',
-  ];
-  // badges_detail is optional in guide; seat_passenger required in types - keep practical web gate
-  const reqTaken = requiredIds.filter((id) => !!photos[id]).length;
-  // Public feed: only explicitly published units (one-tap Publish on catalogue)
-  const canShow =
-    v.showOnWebsite === true &&
-    (status === 'Ready' ||
-      status === 'Listed' ||
-      images.length > 0 ||
-      reqTaken > 0);
-
-  if (!canShow) return null;
-
-  return {
-    id: v.id,
-    stockNumber: v.stockNumber,
-    year: v.year,
-    make: v.make,
-    model: v.model,
-    trim: v.trim || '',
-    price: v.price || 0,
-    mileage: v.mileage || 0,
-    transmission: v.transmission || '',
-    fuelType: v.fuelType || '',
-    bodyType: v.vehicleType || '',
-    color: v.color || '',
-    vin: v.vin || '',
-    description: v.aiListingDescription || `${v.year} ${v.make} ${v.model}`,
-    status: 'available',
-    images,
-    heroImage: images[0] || null,
-    photoCount: images.length,
-    daysInStock: null,
-    source: 'trulens',
-    updatedAt: v.updatedAt || v.lastDmsExportAt || null,
-  };
-}
-
 // ── Web 3D / spin packages for dealer websites ─────────────────
 /* Under LOCAL_DATA_DIR, not cwd — orbit packages were written to the container
    filesystem and discarded on every deploy, the same way inspections were. */
@@ -959,32 +879,6 @@ app.get('/api/public/web3d/:stockNumber', (req, res) => {
   }
 });
 
-// GET /api/public/stock — website feed from TruLens (lens-only dealers)
-app.get('/api/public/stock', async (req, res) => {
-  try {
-    const dealer = String(req.query.dealer || 'demo');
-    let vehicles: any[] = [];
-    if (LOCAL_MODE || !fdb) {
-      vehicles = readLocalStore().vehicles.map(normalizeVehicle);
-    } else {
-      const snapshot = await fdb.collection('vehicles').get();
-      vehicles = snapshot.docs.map((d) => normalizeVehicle(d.data()));
-    }
-    const publicList = vehicles.map((v: any) => toPublicFromLens(v, originOf(req))).filter(Boolean);
-    res.json({
-      success: true,
-      dealer,
-      source: 'trulens',
-      updatedAt: new Date().toISOString(),
-      count: publicList.length,
-      vehicles: publicList,
-    });
-  } catch (error: any) {
-    console.error('public stock error', error);
-    res.status(500).json({ success: false, error: 'Failed to build stock feed', details: error.message });
-  }
-});
-
 // 1. Get all vehicles
 app.get('/api/inventory', authenticate, async (req: any, res) => {
   try {
@@ -1071,13 +965,10 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
     }
 
     const now = new Date().toISOString();
-    const requiredSlots = [
-      'front_3_4', 'front_straight', 'rear_3_4', 'rear_straight',
-      'side_driver', 'side_passenger', 'wheel_front_driver', 'wheel_rear_driver', 'wheel_rear_passenger', 'wheel_front_passenger', 'badges_detail',
-      'interior_dash', 'seat_driver', 'seats_rear', 'boot_bay',
-      'engine_bay', 'service_book', 'reg_papers', 'odometer_reading',
-      'vin_plate', 'video_360',
-    ];
+    // Derived from the template's own `required` flag, so it can't drift the
+    // way this list once did (it kept referencing a 'video_360' slot long
+    // after the slot itself was removed from the template).
+    const requiredSlots = DEFAULT_TEMPLATE.slots.filter((s) => s.required).map((s) => s.id);
     const hasAllRequired = requiredSlots.every((slot) => !!photos[slot]);
     let status = existingData.status;
     if (hasAllRequired && status === 'In-Progress') {
@@ -1393,21 +1284,19 @@ For each finding give: panel (e.g. "front bumper", "driver door", "windscreen"),
 // ==================== DMS EXPORT (TruFlow) ====================
 
 const SLOT_TO_DMS_CATEGORY: Record<string, string> = {
-  front_3_4: 'images', front_straight: 'images', rear_3_4: 'images',
-  rear_straight: 'images', side_driver: 'images', side_passenger: 'images',
-  roof_view: 'images', wheels_all: 'images', /* legacy */
-  wheel_front_driver: 'images', wheel_rear_driver: 'images',
-  wheel_rear_passenger: 'images', wheel_front_passenger: 'images',
-  badges_detail: 'extrasPhotos', lights_detail: 'extrasPhotos',
-  mirrors_handles: 'extrasPhotos', interior_dash: 'extrasPhotos',
-  seat_driver: 'extrasPhotos', seat_passenger: 'extrasPhotos',
-  seats_rear: 'extrasPhotos', boot_bay: 'extrasPhotos',
-  floor_mats: 'extrasPhotos', engine_bay: 'extrasPhotos',
-  mechanical_details: 'extrasPhotos', undercarriage: 'extrasPhotos',
-  recon_damage: 'damagePhotos',
-  service_book: 'serviceBookPhotos', reg_papers: 'extrasPhotos',
-  odometer_reading: 'extrasPhotos', vin_plate: 'vinPhotos',
-  video_360: 'extrasPhotos',
+  // Category 1: Front & Engine
+  bonnet: 'images', front_bumper: 'images', front_windscreen: 'images',
+  license_disc: 'extrasPhotos', engine_bay: 'extrasPhotos',
+  // Category 2: Clockwise Exterior Walk-Around
+  fender_front_right: 'images', wheel_front_right: 'images', door_front_right: 'images',
+  door_rear_right: 'images', quarter_rear_right: 'images', wheel_rear_right: 'images',
+  boot_tailgate: 'images', rear_bumper: 'images', spare_wheel: 'extrasPhotos',
+  vehicle_jack: 'extrasPhotos', quarter_rear_left: 'images', wheel_rear_left: 'images',
+  door_rear_left: 'images', door_front_left: 'images', fender_front_left: 'images',
+  wheel_front_left: 'images', roof_sunroof: 'images',
+  // Category 3: Interior, History & Verification
+  steering_wheel: 'extrasPhotos', interior_cabin: 'extrasPhotos',
+  service_book: 'serviceBookPhotos', odometer: 'extrasPhotos', spare_keys: 'extrasPhotos',
 };
 
 function buildDmsBreakdown(photos: Record<string, string>) {

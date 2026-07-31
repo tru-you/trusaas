@@ -11,8 +11,11 @@ interface TradeInWalkAroundProps {
   vehicle: Vehicle;
   onBack: () => void;
   onComplete: (items: InspectionItem[]) => void;
-  /** Store one photo and resolve to its "/media/…" URL (null if it couldn't). */
-  onUploadPhoto: (base64Image: string) => Promise<string | null>;
+  /** Store one photo under the given item id and resolve to its "/media/…" URL
+   *  (null if it couldn't). Item ids are the same 27 slot ids the Inspect
+   *  workflow uses, so this writes into the vehicle's shared `photos` store —
+   *  a shot taken here shows up in Inspect too, and vice versa. */
+  onUploadPhoto: (itemId: string, base64Image: string) => Promise<string | null>;
 }
 
 /** Read a File into a base64 data URL so it can be posted to the photo store. */
@@ -27,13 +30,19 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploadPhoto }: TradeInWalkAroundProps) {
   const [items, setItems] = React.useState<InspectionItem[]>(() => {
-    if (vehicle.tradeInData?.items?.length) {
-      return JSON.parse(JSON.stringify(vehicle.tradeInData.items));
-    }
-    return createDefaultItems();
+    const base: InspectionItem[] = vehicle.tradeInData?.items?.length
+      ? JSON.parse(JSON.stringify(vehicle.tradeInData.items))
+      : createDefaultItems();
+    // Inspect and Trade-in share one 27-slot id vocabulary on purpose — if the
+    // Inspect workflow already captured this angle, use it instead of making
+    // the appraiser re-shoot it.
+    return base.map((it) => {
+      if (it.photoUrl) return it;
+      const shared = vehicle.photos?.[it.id];
+      return shared ? { ...it, photoUrl: shared, isCompleted: true } : it;
+    });
   });
   const [currentStep, setCurrentStep] = React.useState(0);
-  const [showroomBypass, setShowroomBypass] = React.useState(false);
   /** Item ids whose photo is still uploading — Continue waits for these. */
   const [uploading, setUploading] = React.useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,9 +65,14 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
         }
       }
       const hasPhoto = !!updated.photoUrl;
-      const hasStatus = true;
-      updated.isCompleted = hasPhoto || (showroomBypass && item.id !== 'odometer');
-      if (hasStatus && hasPhoto) updated.isCompleted = true;
+      const flagged = needsReconCost(updated.status);
+      if (updated.id === 'odometer') {
+        updated.isCompleted = hasPhoto;
+      } else if (flagged) {
+        updated.isCompleted = hasPhoto;
+      } else {
+        updated.isCompleted = true;
+      }
       return updated;
     }));
   };
@@ -86,7 +100,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
     setUploading((u) => ({ ...u, [itemId]: true }));
     try {
       const dataUrl = await fileToDataUrl(file);
-      const ref = await onUploadPhoto(dataUrl);
+      const ref = await onUploadPhoto(itemId, dataUrl);
       if (ref) {
         setItemPhoto(itemId, ref);
         URL.revokeObjectURL(blobUrl);
@@ -106,8 +120,8 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
 
   const canSubmit = items.every((it) => {
     if (it.id === 'odometer') return !!it.photoUrl;
-    if (showroomBypass) return true;
-    return !!it.photoUrl;
+    if (needsReconCost(it.status)) return !!it.photoUrl;
+    return true;
   });
 
   const categories = [
@@ -170,27 +184,36 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
 
           {/* Photo */}
           <div className="mb-4">
-            {item.photoUrl ? (
-              <div className="relative">
-                <img src={item.photoUrl} alt={item.label} className="w-full h-48 object-cover rounded-xl border border-neutral-700" />
+            {(() => {
+              const photoRequired = item.id === 'odometer' || needsReconCost(item.status);
+              return item.photoUrl ? (
+                <div className="relative">
+                  <img src={item.photoUrl} alt={item.label} className="w-full h-48 object-cover rounded-xl border border-neutral-700" />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg bg-black/70 text-[12px] text-cyan-300 border border-cyan-500/30"
+                  >
+                    Retake
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg bg-black/70 text-[12px] text-cyan-300 border border-cyan-500/30"
+                  className={`w-full h-48 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors ${
+                    photoRequired
+                      ? 'border-amber-500/50 text-amber-400 hover:border-amber-400'
+                      : 'border-neutral-700 text-neutral-500 hover:border-cyan-500/40 hover:text-cyan-300'
+                  }`}
                 >
-                  Retake
+                  <Camera size={32} />
+                  <span className="text-[13px] font-semibold">
+                    {photoRequired ? 'Photo required' : 'Photo optional — tap to add'}
+                  </span>
                 </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full h-48 rounded-xl border-2 border-dashed border-neutral-700 hover:border-cyan-500/40 flex flex-col items-center justify-center gap-2 text-neutral-500 hover:text-cyan-300 transition-colors"
-              >
-                <Camera size={32} />
-                <span className="text-[13px] font-semibold">Tap to capture / upload photo</span>
-              </button>
-            )}
+              );
+            })()}
             <input
               ref={fileInputRef}
               type="file"
@@ -292,18 +315,6 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           ))}
         </div>
 
-        {/* Showroom bypass */}
-        <label className="flex items-center gap-3 mt-4 px-2">
-          <input
-            type="checkbox"
-            checked={showroomBypass}
-            onChange={(e) => setShowroomBypass(e.target.checked)}
-            className="w-5 h-5 rounded border-neutral-700 bg-neutral-900 accent-cyan-500"
-          />
-          <span className="text-[13px] text-neutral-400">
-            Showroom Condition — skip photos (odometer still required)
-          </span>
-        </label>
       </div>
 
       {/* Bottom nav */}

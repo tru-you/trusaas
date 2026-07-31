@@ -56,8 +56,16 @@ export interface TradeInData {
   items: InspectionItem[];
 }
 
-export function deriveReportId(vehicle: { stockNumber?: string; id: string }): string {
-  return `TI-${(vehicle.stockNumber || vehicle.id).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
+/**
+ * The Inspect VIR and the Trade-In Appraisal are two different documents for
+ * the same vehicle, but both used to call this with no prefix argument and
+ * print the identical id — a buyer or finance house citing "TI-ABC123" had no
+ * way to say which of the two reports they meant. `prefix` defaults to 'TI'
+ * so existing trade-in report ids on disk don't change; TruInspect's own VIR
+ * report passes 'VIR' explicitly.
+ */
+export function deriveReportId(vehicle: { stockNumber?: string; id: string }, prefix: string = 'TI'): string {
+  return `${prefix}-${(vehicle.stockNumber || vehicle.id).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
 }
 
 export interface StatusOption {
@@ -80,7 +88,7 @@ export function getStatusOptions(itemId: string): StatusOption[] {
       { value: 'NO_BOOK', label: 'No Book / Untracked' },
     ];
   }
-  if (itemId === 'spare_wheel' || itemId === 'vehicle_jack' || itemId === 'spare_keys' || itemId === 'spare_key') {
+  if (itemId === 'spare_wheel' || itemId === 'vehicle_jack' || itemId === 'spare_keys') {
     return [
       { value: 'PRESENT', label: 'Present' },
       { value: 'NOT_PRESENT', label: 'Not Present' },
@@ -131,7 +139,6 @@ export const TRADE_IN_ITEMS: TradeInItemDef[] = [
   { id: 'service_book', label: 'Service Book & Maintenance Records', category: 'Interior, History & Verification', itemType: 'documentation' },
   { id: 'odometer', label: 'Odometer Display (Mileage Verification)', category: 'Interior, History & Verification', itemType: 'verification' },
   { id: 'spare_keys', label: 'Spare Keys & Remote Transponders', category: 'Interior, History & Verification', itemType: 'accessory' },
-  { id: 'spare_key', label: 'Spare Key', category: 'Interior, History & Verification', itemType: 'accessory' },
 ];
 
 export function createDefaultItems(): InspectionItem[] {

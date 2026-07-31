@@ -933,11 +933,11 @@ export default function InventoryList({
                  rather than a data URI. Testing only for data: left every
                  migrated vehicle with a blank thumbnail. */
               const thumb =
-                typeof photos.front_3_4 === 'string' &&
-                (photos.front_3_4.startsWith('data:') ||
-                  photos.front_3_4.startsWith('/media/') ||
-                  photos.front_3_4.startsWith('http'))
-                  ? photos.front_3_4
+                typeof photos.front_bumper === 'string' &&
+                (photos.front_bumper.startsWith('data:') ||
+                  photos.front_bumper.startsWith('/media/') ||
+                  photos.front_bumper.startsWith('http'))
+                  ? photos.front_bumper
                   : null;
               const priceLabel = Number(vehicle.price || 0).toLocaleString();
               const isHighlighted =
@@ -958,9 +958,9 @@ export default function InventoryList({
                       {/* Photo Preview Miniature Thumbnail or Car icon */}
                       <div className="w-12 h-12 bg-neutral-900 rounded-lg border border-neutral-800 flex items-center justify-center overflow-hidden shrink-0 relative">
                         {thumb ? (
-                          <img 
-                            src={thumb} 
-                            alt="Front 3/4" 
+                          <img
+                            src={thumb}
+                            alt="Front bumper"
                             className="w-full h-full object-cover"
                             referrerPolicy="no-referrer"
                           />
