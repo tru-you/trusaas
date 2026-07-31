@@ -2406,6 +2406,7 @@ app.post("/api/sync/push-photos", (req, res) => {
         damage: Array.isArray(vehicleMeta.damage) ? vehicleMeta.damage : undefined,
         vir: Array.isArray(vehicleMeta.damage) ? computeVirFromDamage(vehicleMeta.damage) : undefined,
         virReport: Array.isArray(vehicleMeta.damage) ? buildVirReport(vehicleMeta.damage) : undefined,
+        slotAssessment: vehicleMeta.slotAssessment || undefined,
         stockNumber:
           matchStock ||
           "STK-" + Math.floor(Math.random() * 900000 + 100000),
@@ -2492,6 +2493,9 @@ app.post("/api/sync/push-photos", (req, res) => {
     }
     if (Array.isArray(vehicleMeta.inspection)) {
       (state.vehicles[idx] as any).inspection = vehicleMeta.inspection;
+    }
+    if (vehicleMeta.slotAssessment && Object.keys(vehicleMeta.slotAssessment).length) {
+      (state.vehicles[idx] as any).slotAssessment = vehicleMeta.slotAssessment;
     }
     /* Re-publishing or un-publishing in TruLens now reaches the website. Only
        applied when the client actually sends a boolean, so a push that says
@@ -2772,6 +2776,7 @@ function toPublicVehicle(v: any, source: string = "premium", origin: string = ""
        only when there is something to show. Caledon's coc-media.js already
        reads car.damage and has never had anything to read. */
     damage: Array.isArray(v.damage) && v.damage.length ? v.damage : undefined,
+    slotAssessment: v.slotAssessment && Object.keys(v.slotAssessment).length ? v.slotAssessment : undefined,
     daysInStock: v.daysInInventory ?? null,
     source: v.source || source,
     updatedAt: v.lastPhotoSync || v.updatedAt || null,
@@ -2903,6 +2908,7 @@ app.get("/api/feed/vehicle/:stockNumber", (req, res) => {
     reconTasks: (v.reconTasks || []).map((t: any) => ({
       name: t.name, status: t.status, category: t.category,
     })),
+    slotAssessment: v.slotAssessment && Object.keys(v.slotAssessment).length ? v.slotAssessment : undefined,
     id: v.id,
   });
 });
