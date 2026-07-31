@@ -742,7 +742,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
                 type="button"
                 data-slot={slot.id}
                 onClick={() => setSelectedSlotId(slot.id)}
-                className={`slot-state shrink-0 w-[110px] h-[74px] px-2.5 py-2.5 rounded-[18px] cursor-pointer flex flex-col justify-between text-left transition-all ${
+                className={`slot-state shrink-0 w-[110px] h-[74px] px-2.5 py-2.5 rounded-[18px] cursor-pointer flex flex-col items-center justify-between text-center transition-all ${
                   isSelected
                     ? 'slot-state--active'
                     : isTaken
