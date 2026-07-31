@@ -145,8 +145,8 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
 
         {/* Fallback deep links */}
         {valuation.fallbackRequired && valuation.searchUrl && (
-          <div className="rounded-xl border border-amber-500/40 bg-amber-950/25 p-4">
-            <p className="text-[13px] text-amber-200 mb-3">
+          <div className="rounded-xl border border-[rgba(232,234,230,0.14)] bg-[rgba(232,234,230,0.055)] p-4">
+            <p className="text-[13px] text-[rgba(232,234,230,0.72)] mb-3">
               Auto-scrape unavailable — enter the market average manually after checking listings.
             </p>
             <div className="flex flex-col gap-2">
@@ -154,7 +154,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                 href={valuation.searchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[13px] font-semibold"
+                className="inline-flex items-center gap-2 px-4 min-h-[44px] rounded-lg bg-[rgba(232,234,230,0.055)] border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[13px] font-semibold"
               >
                 <ExternalLink size={14} /> AutoTrader
               </a>
@@ -163,7 +163,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                   href={carsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[13px] font-semibold"
+                  className="inline-flex items-center gap-2 px-4 min-h-[44px] rounded-lg bg-[rgba(232,234,230,0.055)] border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[13px] font-semibold"
                 >
                   <ExternalLink size={14} /> Cars.co.za
                 </a>
@@ -231,7 +231,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           type="button"
           disabled={valuation.averageRetailPrice === null || valuation.averageRetailPrice <= 0}
           onClick={() => onComplete(valuation)}
-          className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+          className="w-full min-h-[52px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[#E8EAE6] text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
         >
           Continue to Summary <ArrowRight size={14} />
         </button>

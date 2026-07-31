@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { ArrowLeft, ArrowRight, Camera, CheckCircle2, AlertTriangle, Upload } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Camera, CheckCircle2, Upload } from 'lucide-react';
 import { Vehicle } from '../types';
 import {
   InspectionItem, InspectionCondition,
@@ -175,10 +175,8 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
             <h2 className="text-[15px] font-bold text-neutral-100">
               Step {currentStep + 1}: {item.label}
             </h2>
-            {item.isCompleted ? (
+            {item.isCompleted && (
               <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
-            ) : (
-              <AlertTriangle size={20} className="text-amber-400 shrink-0" />
             )}
           </div>
 
@@ -203,13 +201,13 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
                   onClick={() => fileInputRef.current?.click()}
                   className={`w-full h-48 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors ${
                     photoRequired
-                      ? 'border-amber-500/50 text-amber-400 hover:border-amber-400'
+                      ? 'border-rose-500/50 text-rose-400 hover:border-rose-400'
                       : 'border-neutral-700 text-neutral-500 hover:border-cyan-500/40 hover:text-cyan-300'
                   }`}
                 >
                   <Camera size={32} />
                   <span className="text-[13px] font-semibold">
-                    {photoRequired ? 'Photo required' : 'Photo optional — tap to add'}
+                    {photoRequired ? 'Photo required — a cost is entered' : 'Photo optional — tap to add'}
                   </span>
                 </button>
               );
@@ -226,7 +224,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
 
           {/* Status toggles */}
           <div className="mb-4">
-            <p className="text-[12px] text-neutral-500 mb-2 font-semibold">STATUS</p>
+            <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Status</p>
             <div className="flex flex-wrap gap-2">
               {statusOptions.map((opt) => {
                 const active = item.status === opt.value;
@@ -341,7 +339,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
             type="button"
             disabled={!canSubmit || isUploading}
             onClick={() => onComplete(items)}
-            className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+            className="flex-1 min-h-[52px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[#E8EAE6] text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <CheckCircle2 size={14} /> {isUploading ? 'Saving photos…' : 'Continue to Valuation'}
           </button>
