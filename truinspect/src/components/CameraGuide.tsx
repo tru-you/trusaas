@@ -508,36 +508,20 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
   }, [photos]);
 
 
-  // Render SVG guide overlay path lines
-  const renderGuideOverlay = () => {
-    /* No per-vehicle-shape silhouette here on purpose. A sedan outline drawn
-       over a bakkie's viewfinder (or vice versa) looks wrong and misleads the
-       shooter more than it helps — that mismatch is why TruLens moved to this
-       same vehicle-agnostic guide. A soft target zone plus the slot's own name
-       works for any body shape without guessing one. */
-    const label = (activeSlot.name || activeSlot.id || '').toString();
-    return (
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-        {/* Corner brackets — frame the shot without drawing a car */}
-        <g stroke="currentColor" strokeWidth="0.7" fill="none" opacity="0.55" className="text-trulens-purple">
-          <path d="M 8,16 L 8,10 L 16,10" />
-          <path d="M 92,16 L 92,10 L 84,10" />
-          <path d="M 8,84 L 8,90 L 16,90" />
-          <path d="M 92,84 L 92,90 L 84,90" />
-        </g>
-        {/* A soft target zone: fill roughly this much of the frame with the panel */}
-        <rect x="16" y="26" width="68" height="48" rx="2"
-              stroke="currentColor" strokeWidth="0.5" strokeDasharray="1.5,2"
-              fill="none" opacity="0.35" className="text-trulens-purple" />
-        {/* Level line — keep the horizon straight */}
-        <line x1="30" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="0.4" opacity="0.25" className="text-trulens-purple" />
-        {label && (
-          <text x="50" y="20" textAnchor="middle" fill="currentColor" fillOpacity="0.75"
-                fontSize="3" fontFamily="Inter, sans-serif" className="text-trulens-purple">{label.toUpperCase()}</text>
-        )}
-      </svg>
-    );
-  };
+  const renderGuideOverlay = () => (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <g stroke="currentColor" strokeWidth="0.7" fill="none" opacity="0.55" className="text-trulens-purple">
+        <path d="M 8,16 L 8,10 L 16,10" />
+        <path d="M 92,16 L 92,10 L 84,10" />
+        <path d="M 8,84 L 8,90 L 16,90" />
+        <path d="M 92,84 L 92,90 L 84,90" />
+      </g>
+      <rect x="16" y="26" width="68" height="48" rx="2"
+            stroke="currentColor" strokeWidth="0.5" strokeDasharray="1.5,2"
+            fill="none" opacity="0.35" className="text-trulens-purple" />
+      <line x1="30" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="0.4" opacity="0.25" className="text-trulens-purple" />
+    </svg>
+  );
 
   // Determine lighting quality for prompt advice
   const getLightingAdvice = () => {

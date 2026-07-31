@@ -1,8 +1,8 @@
 import React from 'react';
-import { 
-  Camera, Sliders, ChevronLeft, ChevronRight, Sun, Sparkles, AlertCircle,
-  Check, RefreshCw, Upload, Smartphone, HelpCircle, Eye, Images, Loader2, Trash2, X,
-  Circle, CheckCircle2, RotateCcw} from 'lucide-react';
+import {
+  Camera, ChevronLeft, Sparkles, AlertCircle,
+  Check, Upload, HelpCircle, Eye, Images, Loader2, Trash2, X,
+  RotateCcw} from 'lucide-react';
 import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -27,9 +27,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
      reset to slot 1. */
   const [selectedSlotId, setSelectedSlotId] = React.useState<string>(
     () => DEFAULT_TEMPLATE.slots.find((s) => !vehicle.photos?.[s.id])?.id || DEFAULT_TEMPLATE.slots[0].id,
-  );
-  const [currentPhase, setCurrentPhase] = React.useState(
-    () => DEFAULT_TEMPLATE.slots.find((s) => !vehicle.photos?.[s.id])?.phase || DEFAULT_TEMPLATE.slots[0].phase,
   );
   const [isCameraActive, setIsCameraActive] = React.useState(false);
   const [hasCamPermission, setHasCamPermission] = React.useState<boolean | null>(null);
@@ -72,28 +69,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
   // Active slot information
   const activeSlot = DEFAULT_TEMPLATE.slots.find(s => s.id === selectedSlotId) || DEFAULT_TEMPLATE.slots[0];
 
-  const phaseNames = DEFAULT_TEMPLATE.phases.map(p => p.name);
+  const allSlots = DEFAULT_TEMPLATE.slots;
 
   // Progress tracker calculation
-  const completedSlots = DEFAULT_TEMPLATE.slots.filter(slot => !!photos[slot.id]);
-  const progressPercentage = Math.round((completedSlots.length / DEFAULT_TEMPLATE.slots.length) * 100);
-
-  const phaseSlots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === currentPhase);
-  const phaseCompleted = phaseSlots.every(s => !!photos[s.id] || !s.required);
-
-  // Detailed phase completion status
-  const phaseCompletionStatus = React.useMemo(() => {
-    return DEFAULT_TEMPLATE.phases.map((p, i) => {
-      const phaseIndex = i + 1;
-      const slots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === phaseIndex);
-      const completed = slots.every(s => !!photos[s.id] || !s.required);
-      return {
-        phase: phaseIndex,
-        name: p.name,
-        completed
-      };
-    });
-  }, [photos]);
+  const completedSlots = allSlots.filter(slot => !!photos[slot.id]);
+  const progressPercentage = Math.round((completedSlots.length / allSlots.length) * 100);
 
   /** PC-friendly camera start: try rear cam → front cam → any webcam. */
   const startCamera = React.useCallback(async () => {
@@ -539,7 +519,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
       const next = DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
       if (next) {
         setSelectedSlotId(next.id);
-        setCurrentPhase(next.phase);
         setCustomFile(null);
         setCaptureHint(`Saved · Next: ${next.name}`);
         setTimeout(() => setCaptureHint(null), 2200);
@@ -562,42 +541,20 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
    * outline: fill the frame, keep it level, shoot. Universal, quiet, and it
    * works for any vehicle.
    */
-  const renderGuideOverlay = () => {
-    const label = (activeSlot.name || activeSlot.id || '').toString();
-    return (
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-        {/* Corner brackets — frame the shot without drawing a car */}
-        <g stroke="#4FE3DC" strokeWidth="0.7" fill="none" opacity="0.55">
-          <path d="M 8,16 L 8,10 L 16,10" />
-          <path d="M 92,16 L 92,10 L 84,10" />
-          <path d="M 8,84 L 8,90 L 16,90" />
-          <path d="M 92,84 L 92,90 L 84,90" />
-        </g>
-        {/* A soft target zone: fill roughly this much of the frame with the car */}
-        <rect x="16" y="26" width="68" height="48" rx="2"
-              stroke="#4FE3DC" strokeWidth="0.5" strokeDasharray="1.5,2"
-              fill="none" opacity="0.35" />
-        {/* Level line — keep the horizon straight */}
-        <line x1="30" y1="50" x2="70" y2="50" stroke="#4FE3DC" strokeWidth="0.4" opacity="0.25" />
-        {label && (
-          <text x="50" y="20" textAnchor="middle" fill="#E8EAE6" fillOpacity="0.75"
-                fontSize="3" fontFamily="Inter, sans-serif">{label}</text>
-        )}
-      </svg>
-    );
-  };
-
-  // Determine lighting quality for prompt advice
-  const getLightingAdvice = () => {
-    if (simBrightness < 80) return { title: 'Viewfinder Dark', color: 'text-red-400', desc: 'Turn on overhead studio spots.' };
-    if (simBrightness > 210) return { title: 'Overexposed Glare', color: 'text-amber-400', desc: 'Avoid direct midday sun.' };
-    return { title: 'Lighting Perfect', color: 'text-emerald-400', desc: 'Ready for studio background extraction.' };
-  };
-
-  const lightingAdvice = getLightingAdvice();
-
-  // Angle accuracy rating
-  const angleCorrect = Math.abs(simPitch - activeSlot.idealAngle.pitch) < 4 && Math.abs(simRoll) < 3;
+  const renderGuideOverlay = () => (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <g stroke="#4FE3DC" strokeWidth="0.7" fill="none" opacity="0.55">
+        <path d="M 8,16 L 8,10 L 16,10" />
+        <path d="M 92,16 L 92,10 L 84,10" />
+        <path d="M 8,84 L 8,90 L 16,90" />
+        <path d="M 92,84 L 92,90 L 84,90" />
+      </g>
+      <rect x="16" y="26" width="68" height="48" rx="2"
+            stroke="#4FE3DC" strokeWidth="0.5" strokeDasharray="1.5,2"
+            fill="none" opacity="0.35" />
+      <line x1="30" y1="50" x2="70" y2="50" stroke="#4FE3DC" strokeWidth="0.4" opacity="0.25" />
+    </svg>
+  );
 
   return (
     <div id="camera-guide-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden relative">
@@ -626,81 +583,35 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
         <HelpCircle size={16} className="text-neutral-500 cursor-pointer" />
       </div>
 
-      {/* 7-Phase Dynamic Progress Tracker */}
+      {/* Shot count + progress bar */}
       <div className="bg-neutral-900 border-b border-neutral-850 px-4 py-2 shrink-0 animate-in slide-in-from-top-2 duration-300">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
             <Sparkles size={10} className="text-[#4FE3DC]" />
-            {/* "Capture Workflow" / "Lot Readiness" — two pieces of product
-                vocabulary for "the list of shots" and "how many are done".
-                Neither is what anyone in the yard calls them. */}
             <span className="text-[13px] font-semibold text-neutral-200">Shot list</span>
           </div>
           <div className="flex items-center gap-2">
-             <div className="text-[13px] font-mono text-neutral-500 ">Done</div>
+             <div className="text-[13px] font-mono text-neutral-500">
+               {completedSlots.length}/{allSlots.length}
+             </div>
              <div className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
                 <span className="text-[13px] font-bold text-[#4FE3DC]">{progressPercentage}%</span>
              </div>
           </div>
         </div>
-        
-        <div
-          className="grid gap-2"
-          style={{ gridTemplateColumns: `repeat(${DEFAULT_TEMPLATE.phases.length}, minmax(0, 1fr))` }}
-        >
-          {phaseCompletionStatus.map((status, i) => {
-            const isActive = currentPhase === status.phase;
-            return (
-              <button 
-                key={i}
-                onClick={() => {
-                  setCurrentPhase(status.phase);
-                  const firstSlot = DEFAULT_TEMPLATE.slots.find(s => s.phase === status.phase);
-                  if (firstSlot) setSelectedSlotId(firstSlot.id);
-                }}
-                className="flex flex-col gap-2 group cursor-pointer border-none bg-transparent p-0"
-              >
-                {/* Progress Segment */}
-                <div className="relative h-1 w-full rounded-full bg-neutral-800 overflow-hidden">
-                  <div
-                    style={{
-                      width: status.completed ? '100%' : isActive ? '50%' : '0%',
-                      backgroundColor: status.completed ? '#10b981' : '#4FE3DC'
-                    }}
-                    className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}
-                  />
-                </div>
-                
-                {/* Status Indicator */}
-                <div className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'scale-110' : 'opacity-50 group-hover:opacity-100'}`}>
-                   <div className={`w-4 h-4 rounded-full flex items-center justify-center border transition-colors ${
-                     status.completed 
-                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)]' 
-                      : isActive 
-                      ? 'bg-indigo-500/20 border-indigo-500/40 text-[#4FE3DC] shadow-[0_0_8px_rgba(6,182,212,0.2)]' 
-                      : 'bg-neutral-900 border-neutral-800 text-neutral-500'
-                   }`}>
-                      {status.completed ? (
-                        <Check size={9} className="stroke-[4]" />
-                      ) : (
-                        <span className="text-[11px] font-semibold">{status.phase}</span>
-                      )}
-                   </div>
-                </div>
-              </button>
-            );
-          })}
+
+        <div className="relative h-1.5 w-full rounded-full bg-neutral-800 overflow-hidden">
+          <div
+            style={{ width: `${progressPercentage}%`, backgroundColor: progressPercentage === 100 ? '#10b981' : '#4FE3DC' }}
+            className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+          />
         </div>
       </div>
 
       {/* Viewfinder Main View */}
-      {/* min-h gives the viewfinder a floor instead of leaving it whatever the
-          chrome does not use. As flex-1 alone it was competing with a shot-list
-          header, a phase strip, a slot row, a three-button utility row and a hint
-          panel, and lost — the preview came out a letterbox strip about a third
-          of a phone screen, which is not enough to frame a car in.
-          svh not vh: the mobile address bar collapses on scroll, and vh would
-          change the framing mid-shoot. */}
+      {/* min-h gives the viewfinder a floor so it does not compress to a
+          letterbox on short screens. svh not vh: the mobile address bar
+          collapses on scroll, and vh would change the framing mid-shoot. */}
       <div className="capture-preview relative flex-1 min-h-[46svh] bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
@@ -793,31 +704,20 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
           a flex child won't shrink below its content size. */}
       <div className="flex-1 min-h-0 overflow-y-auto">
 
-      {/* Guide Slots Carousel Picker */}
-      <div className="bg-neutral-900 border-t border-neutral-850 p-2 shrink-0 z-10">
-        <div className="flex items-center justify-between px-2 mb-2">
-          <p className="text-[13px] text-neutral-400 font-bold tracking-normal">
-            Phase {currentPhase}: {phaseNames[currentPhase - 1]}
-          </p>
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto pb-1 px-2 scrollbar-none">
-          {phaseSlots.map(slot => {
+      {/* Shot list — one continuous strip, all slots */}
+      <div className="bg-neutral-900 border-t border-neutral-850 py-2 shrink-0 z-10">
+        <div className="flex gap-2 overflow-x-auto pb-1 px-3 scrollbar-none">
+          {allSlots.map((slot, i) => {
             const isTaken = !!photos[slot.id];
             const isSelected = selectedSlotId === slot.id;
-            // Same walkaround-order rule as the auto-advance effect above.
             const isNext =
               !isTaken &&
-              slot.id === (DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id])?.id);
+              slot.id === (allSlots.find((s) => !photos[s.id])?.id);
             return (
               <button
                 key={slot.id}
                 type="button"
                 onClick={() => setSelectedSlotId(slot.id)}
-                /* shrink-0 is load-bearing: the row is overflow-x-auto, but flex children
-                   shrink by default, so without it the chips compressed instead of
-                   scrolling — and whitespace-nowrap then pushed each label out of its
-                   own box and onto the next chip. */
                 className={`slot-state shrink-0 px-3 py-2 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-2 transition-all ${
                   isSelected
                     ? 'slot-state--active'
@@ -828,6 +728,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
                     : 'slot-state--idle'
                 }`}
               >
+                <span className="text-[11px] opacity-60">{i + 1}</span>
                 {isTaken ? (
                   <Check size={10} className="font-semibold" />
                 ) : isNext ? (
@@ -837,38 +738,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
               </button>
             );
           })}
-        </div>
-        
-        <div className="flex items-center justify-between mt-2 px-2">
-          <button
-            disabled={currentPhase === 1}
-            onClick={() => {
-              const newPhase = currentPhase - 1;
-              setCurrentPhase(newPhase);
-              const firstSlotOfNewPhase = DEFAULT_TEMPLATE.slots.find(s => s.phase === newPhase);
-              if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
-            }}
-            className="text-[13px] font-bold text-neutral-400 hover:text-[#E8EAE6] disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
-          >
-            <ChevronLeft size={12} /> Prev Phase
-          </button>
-          
-          <p className="text-[13px] text-neutral-300 font-medium truncate max-w-[150px]">
-            {activeSlot.description}
-          </p>
-
-          <button
-            disabled={currentPhase === DEFAULT_TEMPLATE.phases.length}
-            onClick={() => {
-              const newPhase = currentPhase + 1;
-              setCurrentPhase(newPhase);
-              const firstSlotOfNewPhase = DEFAULT_TEMPLATE.slots.find(s => s.phase === newPhase);
-              if (firstSlotOfNewPhase) setSelectedSlotId(firstSlotOfNewPhase.id);
-            }}
-            className={`text-[13px] font-bold flex items-center gap-1 cursor-pointer ${phaseCompleted ? 'text-[#4FE3DC] hover:text-indigo-300' : 'text-neutral-500'}`}
-          >
-            Next Phase <ChevronRight size={12} />
-          </button>
         </div>
       </div>
 

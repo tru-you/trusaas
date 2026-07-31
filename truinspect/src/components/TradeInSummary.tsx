@@ -329,16 +329,16 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
                 <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0D9488', borderBottom: '2px solid #0D9488', paddingBottom: '4px', marginBottom: '10px' }}>
                   Inspection Photos ({photosWithLabel.length})
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {photosWithLabel.map((it) => (
-                    <div key={it.id} style={{ position: 'relative' }}>
+                    <div key={it.id} style={{ border: '1px solid #E5E7EB', borderRadius: '12px', overflow: 'hidden' }}>
                       <img
                         src={it.photoUrl!}
                         alt={it.label}
-                        style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #E5E7EB' }}
+                        style={{ width: '100%', height: 'auto', maxHeight: '150px', objectFit: 'cover', display: 'block' }}
                       />
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(0,0,0,.7))', borderRadius: '0 0 6px 6px', padding: '2px 4px' }}>
-                        <span style={{ fontSize: '8px', color: '#fff', fontWeight: 600 }}>{it.label}</span>
+                      <div style={{ padding: '6px 8px' }}>
+                        <span style={{ fontSize: '11px', color: '#334155', fontWeight: 600 }}>{it.label}</span>
                       </div>
                     </div>
                   ))}

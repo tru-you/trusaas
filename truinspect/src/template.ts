@@ -111,8 +111,8 @@ const SLOTS: TemplateSlot[] = [
   },
   {
     id: 'license_disc',
-    name: 'License Disc & Windscreen Markings (Expiry & Arrears Check)',
-    description: 'Close-up on the license disc through the windscreen, sharp enough to read the expiry date.',
+    name: 'Licence Disc',
+    description: 'Close-up on the licence disc through the windscreen, sharp enough to read the expiry date.',
     required: true,
     idealAngle: { pitch: 0, roll: 0, yaw: 0 },
     phase: 1,
@@ -198,7 +198,7 @@ const SLOTS: TemplateSlot[] = [
   },
   {
     id: 'spare_wheel',
-    name: 'Spare Wheel & Boot Floor Tray (Physical Accessory)',
+    name: 'Spare Wheel & Boot Floor',
     description: 'Open the boot floor and photograph the spare wheel and tray. Mark Present / Not Present if there is nothing to shoot.',
     required: false,
     idealAngle: { pitch: 45, roll: 0, yaw: 180 },
@@ -207,7 +207,7 @@ const SLOTS: TemplateSlot[] = [
   },
   {
     id: 'vehicle_jack',
-    name: 'Jack, Spanner & Tool Kit (Physical Accessory)',
+    name: 'Jack & Tool Kit',
     description: 'Photograph the jack, wheel spanner and tool kit. Mark Present / Not Present if there is nothing to shoot.',
     required: false,
     idealAngle: { pitch: 45, roll: 0, yaw: 180 },
@@ -281,7 +281,7 @@ const SLOTS: TemplateSlot[] = [
   /* Category 3: Interior, History & Verification */
   {
     id: 'steering_wheel',
-    name: 'Steering Wheel, Stalks & Controls (Wear & Tear Check)',
+    name: 'Steering & Controls',
     description: 'Shoot from the driver seat, framing the steering wheel, stalks and buttons.',
     required: true,
     idealAngle: { pitch: 0, roll: 0, yaw: 0 },
@@ -290,7 +290,7 @@ const SLOTS: TemplateSlot[] = [
   },
   {
     id: 'interior_cabin',
-    name: 'Seats, Dash, Carpets & Trim',
+    name: 'Interior Cabin',
     description: 'Shoot from the rear seat centred, capturing the dash, front seats and footwell trim.',
     required: true,
     idealAngle: { pitch: -5, roll: 0, yaw: 0 },
@@ -299,7 +299,7 @@ const SLOTS: TemplateSlot[] = [
   },
   {
     id: 'service_book',
-    name: 'Service Book & Maintenance Records',
+    name: 'Service Book',
     description: 'Capture the service booklet or digital service history maintenance stamps.',
     required: true,
     idealAngle: { pitch: -20, roll: 0, yaw: 0 },
@@ -308,7 +308,7 @@ const SLOTS: TemplateSlot[] = [
   },
   {
     id: 'odometer',
-    name: 'Odometer Display (Mandatory Mileage Verification Photo)',
+    name: 'Odometer',
     description: 'Capture a clear, legible image of the current mileage on the instrument cluster.',
     required: true,
     idealAngle: { pitch: 0, roll: 0, yaw: 0 },
@@ -317,7 +317,7 @@ const SLOTS: TemplateSlot[] = [
   },
   {
     id: 'spare_keys',
-    name: 'Spare Keys & Remote Transponders (Physical Accessory)',
+    name: 'Spare Keys',
     description: 'Photograph the spare key and remote(s). Mark Present / Not Present if there is nothing to shoot.',
     required: false,
     idealAngle: { pitch: 0, roll: 0, yaw: 0 },

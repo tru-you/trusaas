@@ -45,16 +45,20 @@ function computeCondition(vehicle: Vehicle) {
   const all = Object.entries(vehicle.damageFindings || {}).flatMap(([slotId, list]) =>
     (list || []).filter(f => f.confirmed !== false).map(f => ({ ...f, slotId }))
   );
-  const penalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
+  const sevPenalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
 
-  const sortedPenalties = all.map(f => penalties[f.severity] ?? 0.3).sort((a, b) => b - a);
-  let penalty = sortedPenalties.reduce((s, p, i) => s + p / (i + 1), 0);
+  const slotsWithTags = new Set(all.map(f => f.slotId));
+  const rawPenalties: number[] = all.map(f => sevPenalties[f.severity] ?? 0.3);
 
   const slotAssess = vehicle.slotAssessment || {};
-  for (const res of Object.values(slotAssess)) {
-    if (res?.rating === 'damage') penalty += 0.5;
-    else if (res?.rating === 'note') penalty += 0.15;
+  for (const [slotId, res] of Object.entries(slotAssess)) {
+    if (slotsWithTags.has(slotId)) continue;
+    if (res?.rating === 'damage') rawPenalties.push(0.5);
+    else if (res?.rating === 'note') rawPenalties.push(0.15);
   }
+
+  rawPenalties.sort((a, b) => b - a);
+  const penalty = rawPenalties.reduce((s, p, i) => s + p / (i + 1), 0);
 
   const stars = Math.max(1, Math.round((5 - Math.min(4, penalty)) * 10) / 10);
   const hasInput = all.length > 0 || Object.keys(slotAssess).length > 0;
