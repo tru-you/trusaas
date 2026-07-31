@@ -720,7 +720,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                 data-slot={slot.id}
                 type="button"
                 onClick={() => setSelectedSlotId(slot.id)}
-                className={`slot-state shrink-0 px-3 py-2 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-2 transition-all ${
+                className={`slot-state shrink-0 w-[110px] h-[74px] px-2.5 py-2.5 rounded-[18px] cursor-pointer flex flex-col justify-between text-left transition-all ${
                   isSelected
                     ? 'slot-state--active'
                     : isTaken
@@ -730,13 +730,11 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                     : 'slot-state--idle'
                 }`}
               >
-                <span className="text-[12px] opacity-60">{i + 1}</span>
-                {isTaken ? (
-                  <Check size={10} className="font-semibold" />
-                ) : isNext ? (
-                  <span className="text-[13px] font-semibold">NEXT</span>
-                ) : null}
-                {slot.name} {slot.required && !isTaken ? '*' : ''}
+                <span className="flex items-center justify-between w-full">
+                  <span className="text-[11px] font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
+                  {isTaken && <Check size={12} />}
+                </span>
+                <span className="text-[12px] font-medium leading-tight line-clamp-2">{slot.name}</span>
               </button>
             );
           })}
