@@ -1199,50 +1199,50 @@ export default function InventoryList({
     </>
   ) : currentTab === 'dashboard' ? (
           <div className="space-y-4 pb-6 animate-in fade-in duration-500">
-            {/* Dashboard Heading & Revenue Overview */}
+            {/* Dashboard heading & revenue overview */}
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <BarChart3 size={15} className="text-indigo-400" />
-                  <span className="text-[13px] font-bold text-neutral-200 tracking-normal">Dashboard</span>
+                  <BarChart3 size={15} className="text-[#4FE3DC]" />
+                  <span className="text-[13px] font-semibold text-[#E8EAE6]">Dashboard</span>
                 </div>
-                <p className="text-[13px] text-neutral-500 mt-0.5">Real-time photography & readiness audit</p>
+                <p className="text-[12px] text-[rgba(232,234,230,0.55)] mt-0.5">Photography & readiness audit</p>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[13px] font-bold text-emerald-400">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0).toLocaleString()} Ready
+                <span className="text-[13px] font-semibold text-[#4FE3DC]">
+                  R {vehicles.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0).toLocaleString()} ready
                 </span>
-                <span className="text-[13px] text-neutral-500">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0).toLocaleString()} Pending
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">
+                  R {vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0).toLocaleString()} pending
                 </span>
               </div>
             </div>
 
             {/* Performance KPIs */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[13px] text-neutral-500 font-bold">Catalogue</span>
+              <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Catalogue</span>
                 <span className="text-[16px] font-semibold text-[#E8EAE6]">{vehicles.length}</span>
               </div>
-              <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[13px] text-emerald-500 font-bold">Ready</span>
-                <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready').length}</span>
+              <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Ready</span>
+                <span className="text-[16px] font-semibold text-[#4FE3DC]">{vehicles.filter(v => v.status === 'Ready').length}</span>
               </div>
-              <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[13px] text-amber-500 font-bold">Pending</span>
-                <span className="text-[16px] font-semibold text-amber-400">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
+              <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Pending</span>
+                <span className="text-[16px] font-semibold text-[#E8EAE6]">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[13px] text-cyan-500 font-bold">Capture rate</span>
-                <span className="text-[16px] font-semibold text-cyan-400">
+              <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Capture rate</span>
+                <span className="text-[16px] font-semibold text-[#4FE3DC]">
                   {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * DEFAULT_TEMPLATE.slots.length || 1)) * 100)}%
                 </span>
               </div>
-              <div className="bg-neutral-950 p-2 rounded-xl border border-neutral-850 flex flex-col justify-between h-16">
-                <span className="text-[13px] text-cyan-500 font-bold">Photos</span>
-                <span className="text-[16px] font-semibold text-cyan-400">
+              <div className="bg-neutral-950 p-2.5 rounded-xl border border-[rgba(232,234,230,0.14)] flex flex-col justify-between h-16">
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Photos</span>
+                <span className="text-[16px] font-semibold text-[#4FE3DC]">
                   {vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0)}
                 </span>
               </div>
@@ -1252,7 +1252,7 @@ export default function InventoryList({
             <div className="grid grid-cols-2 gap-2">
               {/* Readiness */}
               <div className="bg-neutral-950 border border-neutral-850 rounded-xl p-3 h-48 flex flex-col">
-                <span className="text-[13px] font-bold text-neutral-400  mb-2">Readiness</span>
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]  mb-2">Readiness</span>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -1268,8 +1268,8 @@ export default function InventoryList({
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        <Cell fill="#10b981" />
-                        <Cell fill="#f59e0b" />
+                        <Cell fill="#4FE3DC" />
+                        <Cell fill="#8B8D89" />
                       </Pie>
                       <RechartsTooltip 
                         contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #262626', fontSize: '13px', borderRadius: '8px' }}
@@ -1278,15 +1278,15 @@ export default function InventoryList({
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex justify-center gap-4 text-[13px] text-neutral-500 font-bold ">
-                  <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"/> Ready</span>
-                  <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"/> Pending</span>
+                <div className="flex justify-center gap-4 text-[12px] text-[rgba(232,234,230,0.55)]">
+                  <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#4FE3DC]"/> Ready</span>
+                  <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#8B8D89]"/> Pending</span>
                 </div>
               </div>
 
               {/* Weekly Capture Volume */}
               <div className="bg-neutral-950 border border-neutral-850 rounded-xl p-3 h-48 flex flex-col">
-                <span className="text-[13px] font-bold text-neutral-400  mb-2">Weekly activity</span>
+                <span className="text-[12px] text-[rgba(232,234,230,0.55)]  mb-2">Weekly activity</span>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={[
@@ -1324,14 +1324,14 @@ export default function InventoryList({
                     same thing twice and neither said what to do. The heading now
                     names the work; the count is the urgency. */}
                 <span className="text-[13px] font-semibold text-[#E8EAE6]">Still to shoot</span>
-                <span className="text-[13px] text-amber-400 font-semibold">
+                <span className="text-[13px] text-[rgba(232,234,230,0.55)] font-medium">
                   {vehicles.filter(v => v.status === 'In-Progress').length}
                 </span>
               </div>
               <div className="space-y-2">
                 {vehicles.filter(v => v.status === 'In-Progress').length === 0 ? (
                   <div className="text-center py-2">
-                    <p className="text-[13px] text-neutral-500 font-medium">All clear! Your inventory is fully documented.</p>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.55)]">All vehicles shot.</p>
                   </div>
                 ) : (
                   vehicles.filter(v => v.status === 'In-Progress').slice(0, 3).map(v => {
@@ -1339,17 +1339,17 @@ export default function InventoryList({
                     return (
                       <div key={v.id} className="flex items-center justify-between p-2 bg-neutral-900/40 rounded-lg border border-neutral-850/50">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded bg-amber-500/10 flex items-center justify-center">
-                            <Car size={12} className="text-amber-500" />
+                          <div className="w-6 h-6 rounded bg-[rgba(232,234,230,0.055)] flex items-center justify-center">
+                            <Car size={12} className="text-[rgba(232,234,230,0.55)]" />
                           </div>
                           <div>
-                            <p className="text-[13px] font-bold text-neutral-200">{v.year} {v.make}</p>
+                            <p className="text-[13px] font-medium text-[#E8EAE6]">{v.year} {v.make}</p>
                             <p className="text-[13px] text-neutral-500">Missing {missingCount} required shots</p>
                           </div>
                         </div>
                         <button 
                           onClick={() => onSelectVehicle(v)}
-                          className="text-[13px] font-bold text-indigo-400 hover:text-indigo-300"
+                          className="text-[13px] font-medium text-[#4FE3DC] hover:text-[#4FE3DC]/80"
                         >
                           Complete →
                         </button>

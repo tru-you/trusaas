@@ -56,27 +56,27 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
 
   let level: WebReadinessLevel = 'capture';
   let label = 'Capture in progress';
-  let color = '#F59E0B';
+  let color = '#8B8D89';
 
   if (vehicle.status === 'Listed' || vehicle.lastDmsExportAt) {
     level = 'listed';
     label = canPublishWeb ? 'Listed · web ready' : 'Exported to DMS';
-    color = canPublishWeb ? '#0EA5E9' : '#06b6d4';
+    color = '#4FE3DC';
   } else if (hasPhotos && scoreOk && vehicle.showOnWebsite === true) {
     level = 'web-ready';
     label = allRequired ? 'Published to web' : 'Published to web · finish remaining shots';
-    color = '#10B981';
+    color = '#4FE3DC';
   } else if (hasPhotos && scoreOk) {
     level = 'ready';
     label = allRequired ? 'Ready to publish' : 'Ready to publish · more shots recommended';
-    color = '#22C55E';
+    color = '#4FE3DC';
     if (vehicle.showOnWebsite !== true) {
       reasons.push('Not published to website yet');
     }
   } else if (allRequired) {
     level = 'ready';
     label = 'Shots complete · improve quality';
-    color = '#F97316';
+    color = '#8B8D89';
   }
 
   return {
