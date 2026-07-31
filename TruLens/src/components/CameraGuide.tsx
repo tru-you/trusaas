@@ -70,6 +70,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
   const activeSlot = DEFAULT_TEMPLATE.slots.find(s => s.id === selectedSlotId) || DEFAULT_TEMPLATE.slots[0];
 
   const allSlots = DEFAULT_TEMPLATE.slots;
+  const chipStripRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const strip = chipStripRef.current;
+    if (!strip) return;
+    const chip = strip.querySelector(`[data-slot="${selectedSlotId}"]`) as HTMLElement | null;
+    if (chip) chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [selectedSlotId]);
 
   // Progress tracker calculation
   const completedSlots = allSlots.filter(slot => !!photos[slot.id]);
@@ -706,7 +714,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
 
       {/* Shot list — one continuous strip, all slots */}
       <div className="bg-neutral-900 border-t border-neutral-850 py-2 shrink-0 z-10">
-        <div className="flex gap-2 overflow-x-auto pb-1 px-3 scrollbar-none">
+        <div ref={chipStripRef} className="flex gap-2 overflow-x-auto pb-1 px-3 scrollbar-none">
           {allSlots.map((slot, i) => {
             const isTaken = !!photos[slot.id];
             const isSelected = selectedSlotId === slot.id;
@@ -717,6 +725,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
               <button
                 key={slot.id}
                 type="button"
+                data-slot={slot.id}
                 onClick={() => setSelectedSlotId(slot.id)}
                 className={`slot-state shrink-0 px-3 py-2 rounded-lg text-[13px] font-semibold whitespace-nowrap cursor-pointer flex items-center gap-2 transition-all ${
                   isSelected
@@ -791,7 +800,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
                 }}
                 className="w-full py-2 rounded-xl text-[13px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] border border-white/10 transition-colors"
               >
-                Edit this shot first
+                Tag damage
               </button>
             )}
           </div>

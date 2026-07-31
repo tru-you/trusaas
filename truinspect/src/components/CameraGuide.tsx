@@ -685,16 +685,6 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
         {/* No car-shaped overlay — a purple silhouette over a real car never
             lines up and just gets in the way. The frame stays clean. */}
 
-        {/* Small in-frame label so the shooter always knows what this shot is
-            — only over an actual live feed. The "Ready to shoot this slot"
-            placeholder below is vertically centered in this same box when
-            there's no camera/file yet, and at top-3 this label sat directly
-            on top of it, the two texts overlapping into a garbled mess. */}
-        {(isCameraActive || customFile) && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-black/70 border border-white/15 px-3 py-1 rounded-full text-[13px] font-bold tracking-wide text-[#E8EAE6] pointer-events-none uppercase">
-            {activeSlot.name}
-          </div>
-        )}
 
         {/* Simulated AI overlays (bubble level, lighting pill) removed —
             they showed fake sensor data and cluttered the viewfinder. */}
