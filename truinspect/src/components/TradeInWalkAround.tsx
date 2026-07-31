@@ -253,20 +253,21 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
 
           {/* Condition */}
           <div className="mb-4">
-            <p className="text-[12px] text-neutral-500 mb-2 font-semibold">CONDITION</p>
+            <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Condition</p>
             <div className="flex gap-2">
               {(['Good', 'Fair', 'Poor', 'Needs Recon'] as InspectionCondition[]).map((c) => {
                 const active = item.condition === c;
+                const acceptable = c === 'Good' || c === 'Fair';
                 return (
                   <button
                     key={c}
                     type="button"
                     onClick={() => updateItem({ condition: c })}
-                    className={`flex-1 min-h-[40px] rounded-lg text-[12px] font-semibold border transition-colors ${
+                    className={`flex-1 min-h-[46px] rounded-lg text-[12px] font-medium border transition-colors ${
                       active
-                        ? c === 'Good' ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
-                        : c === 'Fair' ? 'bg-amber-500/15 border-amber-500/50 text-amber-300'
-                        : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
+                        ? acceptable
+                          ? 'bg-[#4FE3DC]/15 border-[#4FE3DC]/50 text-[#4FE3DC]'
+                          : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
                         : 'bg-neutral-950 border-neutral-800 text-neutral-400'
                     }`}
                   >
