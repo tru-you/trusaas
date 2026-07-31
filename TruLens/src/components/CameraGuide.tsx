@@ -591,28 +591,30 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
         <HelpCircle size={16} className="text-neutral-500 cursor-pointer" />
       </div>
 
-      {/* Shot count + progress bar */}
+      {/* Shot count + tick progress */}
       <div className="bg-neutral-900 border-b border-neutral-850 px-4 py-2 shrink-0 animate-in slide-in-from-top-2 duration-300">
         <div className="flex justify-between items-center mb-2">
-          <div className="flex items-center gap-2">
-            <Sparkles size={10} className="text-[#4FE3DC]" />
-            <span className="text-[13px] font-semibold text-neutral-200">Shot list</span>
-          </div>
-          <div className="flex items-center gap-2">
-             <div className="text-[13px] font-mono text-neutral-500">
-               {completedSlots.length}/{allSlots.length}
-             </div>
-             <div className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
-                <span className="text-[13px] font-bold text-[#4FE3DC]">{progressPercentage}%</span>
-             </div>
-          </div>
+          <span className="text-[13px] font-medium text-neutral-200">
+            {completedSlots.length} of {allSlots.length} captured
+          </span>
+          <span className="text-[13px] font-mono text-[#4FE3DC]">
+            {allSlots.length - completedSlots.length} to go
+          </span>
         </div>
 
-        <div className="relative h-1.5 w-full rounded-full bg-neutral-800 overflow-hidden">
-          <div
-            style={{ width: `${progressPercentage}%`, backgroundColor: progressPercentage === 100 ? '#10b981' : '#4FE3DC' }}
-            className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-          />
+        <div className="flex gap-[2px]">
+          {allSlots.map((slot) => (
+            <div
+              key={slot.id}
+              className={`flex-1 h-1.5 rounded-full transition-colors duration-300 ${
+                !!photos[slot.id]
+                  ? 'bg-[#4FE3DC]'
+                  : selectedSlotId === slot.id
+                  ? 'bg-[#4FE3DC]/40'
+                  : 'bg-[#E8EAE6]/14'
+              }`}
+            />
+          ))}
         </div>
       </div>
 
