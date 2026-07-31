@@ -186,7 +186,7 @@
   --color-neutral-850: rgba(232,234,230,0.07);
   --color-neutral-900: #0B0F17;
   --color-neutral-950: #06080D;
-  --color-trulens-purple: #4FE3DC;   /* capture / catalogue accent */
+  --color-tru-cyan: #4FE3DC;   /* capture / catalogue accent */
   --color-trulens-blue: #4FE3DC;      /* dashboard / analytics accent (logo blue) */
 
   /* TruSaaS rebrand: cyan accent everywhere — remap the legacy indigo/purple/violet
@@ -506,7 +506,7 @@ select:focus-visible {
    Unlayered, so it beats the Tailwind text utility. Opacity variants such as
    bg-cyan-600/20 are a different class token and are NOT matched, which is
    correct: those are dark tints that want light text. */
-.bg-trulens-purple,
+.bg-tru-cyan,
 .bg-cyan-400, .bg-cyan-500, .bg-cyan-600,
 .bg-teal-400, .bg-teal-500, .bg-teal-600,
 .bg-emerald-400, .bg-emerald-500, .bg-emerald-600,
