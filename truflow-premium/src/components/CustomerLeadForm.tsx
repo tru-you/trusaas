@@ -43,7 +43,7 @@ export default function CustomerLeadForm({ dealershipId, vehicles, onSuccess }: 
     return (
       <div className="card p-6 flex flex-col items-center justify-center text-center gap-4">
         <CheckCircle className="text-[color:var(--cyan)]" size={48} />
-        <h2 className="text-xl font-bold text-[color:var(--white)]">Enquiry Received!</h2>
+        <h2 className="text-xl font-semibold text-[color:var(--white)]">Enquiry Received!</h2>
         <p className="text-[16px] text-[rgba(232,234,230,0.72)]">Our sales team will get back to you shortly.</p>
       </div>
     );
@@ -51,7 +51,7 @@ export default function CustomerLeadForm({ dealershipId, vehicles, onSuccess }: 
 
   return (
     <form onSubmit={handleSubmit} className="card p-6 flex flex-col gap-4">
-      <h2 className="text-lg font-bold text-[color:var(--white)] mb-2">Dealership Enquiry</h2>
+      <h2 className="text-lg font-semibold text-[color:var(--white)] mb-2">Dealership Enquiry</h2>
       
       <div className="grid grid-cols-2 gap-4">
         <input type="text" placeholder="First Name" required className="input-field" onChange={e => setFormData(p => ({...p, firstName: e.target.value}))} />

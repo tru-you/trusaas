@@ -577,7 +577,7 @@ export default function App() {
         </div>
         <button 
           onClick={loadAllState}
-          className="px-4 py-2 bg-[color:var(--cyan)] on-fill rounded text-[13px] font-bold hover:bg-opacity-80"
+          className="px-4 py-2 bg-[color:var(--cyan)] on-fill rounded text-[13px] font-semibold hover:bg-opacity-80"
         >
           Retry Connection
         </button>
@@ -589,7 +589,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[color:var(--ink)] flex flex-col items-center justify-center p-6 text-[color:var(--white)] font-sans gap-3">
         <div className="w-12 h-12 rounded-full border-4 border-t-[color:var(--cyan)] border-[color:var(--cyan-faint)] animate-spin" />
-        <div className="font-bold text-[16px] tracking-wide">Starting TruFlow Premium…</div>
+        <div className="font-semibold text-[16px] tracking-wide">Starting TruFlow Premium…</div>
         <div className="text-[13px] text-[rgba(232,234,230,0.72)] text-center max-w-xs">
           Loading floor data from <span className="font-mono text-[color:var(--cyan)]">localhost:3001</span>.
           If this hangs, restart the server (`npm run dev` in truflow-premium).
@@ -597,7 +597,7 @@ export default function App() {
         <button
           type="button"
           onClick={loadAllState}
-          className="mt-2 px-4 py-2 rounded-lg bg-[color:var(--cyan)] on-fill text-[13px] font-bold"
+          className="mt-2 px-4 py-2 rounded-lg bg-[color:var(--cyan)] on-fill text-[13px] font-semibold"
         >
           Retry load
         </button>
@@ -1273,7 +1273,7 @@ export default function App() {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-[13px] font-bold tracking-normal text-[color:var(--white-dim)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] hover:bg-[color:var(--glass)] hover:text-[color:var(--white-dim)] transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-[13px] font-semibold tracking-normal text-[color:var(--white-dim)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] hover:bg-[color:var(--glass)] hover:text-[color:var(--white-dim)] transition-all cursor-pointer"
             title="Sign out of TruFlow"
           >
             <LogOut size={14} />
@@ -1283,7 +1283,7 @@ export default function App() {
       </aside>
 
       {/* Main Panel */}
-      <main className="flex-1 md:ml-[240px] min-h-0 px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:px-8 md:py-8 md:pb-[calc(2rem+env(safe-area-inset-bottom,0px))] z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+      <main className="flex-1 md:ml-[240px] min-h-0 px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:px-8 md:py-8 md:pb-[calc(2rem+env(safe-area-inset-bottom,0px))] z-10 flex flex-col gap-6 w-full">
         {/* Top Profile Bar - Hidden on mobile */}
         {/* The top bar was a row of pills on a hairline with nothing behind it,
             so it read as the first row of content rather than as chrome. It now
@@ -1359,7 +1359,7 @@ export default function App() {
              <button
                type="button"
                onClick={handleLogout}
-               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] hover:bg-[color:var(--glass)] hover:text-[color:var(--white-dim)] transition-all cursor-pointer border border-[color:var(--glass-line)] text-[13px] font-bold tracking-normal"
+               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] hover:bg-[color:var(--glass)] hover:text-[color:var(--white-dim)] transition-all cursor-pointer border border-[color:var(--glass-line)] text-[13px] font-semibold tracking-normal"
                title="Log out"
              >
                <LogOut size={14} />
@@ -1401,7 +1401,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => navigateTo("leads")}
-                className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
+                className="flex items-center gap-1.5 h-11 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
                 title="Leads that have never been replied to"
               >
                 <MessageSquare size={12} />
@@ -1412,7 +1412,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => navigateTo("tasks")}
-                className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
+                className="flex items-center gap-1.5 h-11 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
                 title="Promised for today, and anything already past its date"
               >
                 <CalendarClock size={12} />
@@ -1426,7 +1426,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => navigateTo("inventory")}
-                className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
+                className="flex items-center gap-1.5 h-11 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
                 title="Sold, not yet handed over"
               >
                 <Car size={12} />
@@ -1440,7 +1440,7 @@ export default function App() {
 
         {/* OVERVIEW SECTION */}
         {activeSection === "dashboard" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
             {/* Framed header. The plain heading read like a page title on a
                 form; a dealer opening this at 8am should see whose floor it is,
                 that it is live, and have the assistant one click away. */}
@@ -1458,7 +1458,7 @@ export default function App() {
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">
                   Dealership overview
                 </h1>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)]">
                   Stock, leads, workshop and money — one live view of the floor.
                 </p>
               </div>
@@ -1531,21 +1531,21 @@ export default function App() {
 
             {/* End of day summary Card */}
             {(selectedRole === 'manager' || selectedRole === 'owner') && (
-              <div className="card p-5 bg-gradient-to-r from-[color:var(--cyan-faint)] via-[color:var(--ink-2)] to-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg shadow-[color:var(--cyan-faint)]">
+              <div className="card p-5 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg shadow-[color:var(--cyan-faint)]">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-gradient-to-tr from-[color:var(--cyan-faint)] to-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan)]">
+                  <div className="p-3 rounded-xl bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan)]">
                     <TrendingUp size={24} />
                   </div>
                   <div>
                     <h3 className="font-sans text-base font-semibold tracking-tight text-[color:var(--white)]">End of day summary</h3>
-                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 max-w-xl leading-relaxed">
+                    <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 max-w-xl leading-relaxed">
                       Generate a detailed operational report including customer leads worked, vehicles sold, reconditioning layout, and gross yield margins for the past 24 hours.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowEODReport(true)}
-                  className="px-5 py-3 bg-gradient-to-r from-[color:var(--cyan-soft)] to-[color:var(--cyan)] hover:from-[color:var(--cyan)] hover:to-[color:var(--cyan)] text-[color:var(--ink)] rounded-xl text-[13px] font-bold shadow-lg shadow-[color:var(--cyan-faint)] hover:shadow-[color:var(--cyan-soft)] cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
+                  className="btn-primary px-5 py-3 rounded-xl text-[13px] cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
                 >
                   <Sparkles size={14} className="animate-pulse" />
                   Compile EOD Summary
@@ -1649,9 +1649,9 @@ export default function App() {
                         </div>
                       )}
                     </div>
-                    <h4 className="font-bold text-[13px] text-[color:var(--white)] truncate">{v.year} {v.make} {v.model}</h4>
+                    <h4 className="font-semibold text-[13px] text-[color:var(--white)] truncate">{v.year} {v.make} {v.model}</h4>
                     <p className="text-[13px] text-[rgba(232,234,230,0.72)] truncate mt-0.5">{v.transmission} / {v.fuelType}</p>
-                    <div className="text-[16px] font-bold text-[color:var(--cyan-bright)] mt-2">{formatZAR(v.retailPrice)}</div>
+                    <div className="text-[16px] font-semibold text-[color:var(--cyan-bright)] mt-2">{formatZAR(v.retailPrice)}</div>
                     <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-2 font-mono">Stock Ref: {v.stockNumber}</div>
                   </div>
                 ))}
@@ -1690,12 +1690,12 @@ export default function App() {
                         </td>
                         <td data-label="Model" className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
                         <td data-label="Channel" className="py-3 px-4">
-                          <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-bold tracking-normal">
+                          <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-semibold tracking-normal">
                             {l.source}
                           </span>
                         </td>
                         <td data-label="Stage" className="py-3 px-4">
-                          <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-bold tracking-normal">
+                          <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-semibold tracking-normal">
                             {l.status}
                           </span>
                         </td>
@@ -1703,7 +1703,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setLeadDetailId(l.id)}
-                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
+                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] transition-all font-semibold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
                           >
                             Review File
                           </button>
@@ -1767,7 +1767,7 @@ export default function App() {
                         </span>
                         <div
                           style={{ height: `${percent * 0.8}px` }}
-                          className="w-full bg-gradient-to-t from-[color:var(--cyan)] to-[color:var(--cyan)] rounded-t-sm opacity-70 group-hover:opacity-100 transition-all duration-200"
+                          className="w-full bg-[color:var(--cyan)] rounded-t-sm opacity-70 group-hover:opacity-100 transition-all duration-200"
                         />
                         <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-1">{days[idx]}</span>
                       </div>
@@ -1785,7 +1785,7 @@ export default function App() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Stock</h1>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
+                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5">
                   Manage live pre-owned floor assets and pricing
                   {state.vehicles.some((v: any) => (v.images?.length || 0) > 0) && (
                     <span className="text-[color:var(--cyan)] ml-2">
@@ -1806,7 +1806,7 @@ export default function App() {
                       })
                       .catch((err) => alert(err.message || "Refresh failed"));
                   }}
-                  className="btn btn-secondary text-[13px] font-bold px-3 py-2 flex items-center gap-2"
+                  className="btn btn-secondary text-[13px] font-semibold px-3 py-2 flex items-center gap-2"
                   title="Reload inventory from server (shows photos exported from TruLens)"
                 >
                   <RefreshCw size={12} /> Refresh photos
@@ -1818,7 +1818,7 @@ export default function App() {
                     value={inventorySearch}
                     onChange={(e) => setInventorySearch(e.target.value)}
                     placeholder="Search model, make, VIN..."
-                    className="w-full md:w-56 bg-[color:var(--glass)] border border-white/5 rounded-lg pl-9 pr-3 py-2 text-[13px] text-[color:var(--white)] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[color:var(--cyan)]"
+                    className="w-full md:w-56 bg-[color:var(--glass)] border border-white/5 rounded-lg pl-9 pr-3 py-2 text-[13px] md:text-[15px] text-[color:var(--white)] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[color:var(--cyan)]"
                   />
                 </div>
                 <Segmented
@@ -1889,17 +1889,17 @@ export default function App() {
                         {v.images && v.images.length > 0 ? (
                           <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                         ) : (
-                          <div className="w-14 h-14 bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] rounded-xl flex items-center justify-center text-[color:var(--ink)] font-semibold text-xl shadow-lg">
+                          <div className="w-14 h-14 bg-[color:var(--cyan)] rounded-xl flex items-center justify-center text-[color:var(--ink)] font-semibold text-xl shadow-lg">
                             {(v.make || "??").slice(0, 2).toUpperCase()}
                           </div>
                         )}
-                        <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[13px] font-bold font-mono tracking-wider  ${
+                        <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[13px] font-semibold font-mono tracking-wider  ${
                           v.status === "INVENTORY" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : v.status === "PENDING" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--glass)] text-[color:var(--muted)]"
                         }`}>
                           {v.status === "INVENTORY" ? "Showroom Floor" : v.status === "PENDING" ? "Sale Pending" : "Delivered"}
                         </span>
                         <span
-                          className="absolute top-3 left-3 px-2 py-0.5 rounded text-[13px] font-bold border max-w-[70%] truncate"
+                          className="absolute top-3 left-3 px-2 py-0.5 rounded text-[13px] font-semibold border max-w-[70%] truncate"
                           style={{ color: readiness.color, borderColor: readiness.color + "55", background: readiness.color + "22" }}
                           title={(readiness.reasons || []).join(" · ")}
                         >
@@ -1911,12 +1911,12 @@ export default function App() {
                       <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                         <div>
                           <h4 className="font-semibold text-[16px] text-[color:var(--white)] truncate">{v.year || ""} {v.make || "Vehicle"} {v.model || ""}</h4>
-                          <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
+                          <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5">
                             {v.trim || "Standard Specs"} · <span className="font-mono">{v.stockNumber}</span>
-                            {v.category === "select" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">Select</span>}
-                            {v.category === "performance" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-bold bg-red-500/15 text-red-400 border border-red-500/30">Performance</span>}
+                            {v.category === "select" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">Select</span>}
+                            {v.category === "performance" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-semibold bg-red-500/15 text-red-400 border border-red-500/30">Performance</span>}
                           </p>
-                          <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-wrap gap-x-2 gap-y-1 mt-2">
+                          <div className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] flex flex-wrap gap-x-2 gap-y-1 mt-2">
                             <span>{Number(v.mileage || 0).toLocaleString()} km</span>
                             <span>•</span>
                             <span>{v.transmission || "—"}</span>
@@ -1938,7 +1938,7 @@ export default function App() {
                           </div>
                           <div className="text-right">
                             <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Days in stock</div>
-                            <div className={`text-[13px] font-bold mt-0.5 ${ageTone}`}>{days} Days{days >= 60 ? " · age" : ""}</div>
+                            <div className={`text-[13px] font-semibold mt-0.5 ${ageTone}`}>{days} Days{days >= 60 ? " · age" : ""}</div>
                           </div>
                         </div>
 
@@ -1965,7 +1965,7 @@ export default function App() {
                           </button>
                           <button
                             type="button"
-                            className="px-2 py-2 rounded-lg text-[13px] font-bold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
+                            className="px-2 py-2 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
                             onClick={async () => {
                               try {
                                 await copyStockBlurb(v);
@@ -1989,7 +1989,7 @@ export default function App() {
 
         {/* WORKFLOW PIPELINE SECTION */}
         {activeSection === "workflow" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Reconditioning & Delivery Pipeline</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Control prep workflows for pre-owned stock</p>
@@ -2002,10 +2002,10 @@ export default function App() {
                 return (
                   <div key={stage} className="card bg-[color:var(--glass)] flex flex-col h-full min-h-[500px]">
                     <div className="card-header border-b border-white/5 px-4 py-3 flex justify-between items-center bg-[color:var(--glass)]">
-                      <span className="font-bold text-[13px]  text-[color:var(--white)]">
+                      <span className="font-semibold text-[13px]  text-[color:var(--white)]">
                         {stage === "INVENTORY" ? "Floor Inventory" : stage === "PENDING" ? "Processing Sale" : "Delivered"}
                       </span>
-                      <span className="px-2 py-0.5 bg-[color:var(--glass)] rounded-full text-[rgba(232,234,230,0.72)] text-[13px] font-bold">
+                      <span className="px-2 py-0.5 bg-[color:var(--glass)] rounded-full text-[rgba(232,234,230,0.72)] text-[13px] font-semibold">
                         {filtered.length}
                       </span>
                     </div>
@@ -2014,9 +2014,9 @@ export default function App() {
                       {filtered.map((v) => (
                         <div key={v.id} className="pipeline-card p-3 flex flex-col justify-between gap-3 shadow-md">
                           <div>
-                            <div className="font-bold text-[13px] text-[color:var(--white)] truncate">{v.year} {v.make} {v.model}</div>
+                            <div className="font-semibold text-[13px] text-[color:var(--white)] truncate">{v.year} {v.make} {v.model}</div>
                             <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Ref: {v.stockNumber} / {v.mileage.toLocaleString()} km</p>
-                            <p className="text-[13px] font-bold text-[color:var(--cyan-bright)] mt-2">{formatZAR(v.retailPrice)}</p>
+                            <p className="text-[13px] font-semibold text-[color:var(--cyan-bright)] mt-2">{formatZAR(v.retailPrice)}</p>
                           </div>
 
                           <div className="flex justify-between items-center border-t border-white/3 pt-3">
@@ -2026,7 +2026,7 @@ export default function App() {
                               {stage !== "INVENTORY" && (
                                 <button
                                   onClick={() => moveVehicle(v.id, v.status, "PREV")}
-                                  className="px-2 py-1 bg-[color:var(--glass)] border border-white/5 rounded text-[13px] font-bold hover:bg-white/10 transition-all cursor-pointer"
+                                  className="px-2 py-1 bg-[color:var(--glass)] border border-white/5 rounded text-[13px] font-semibold hover:bg-white/10 transition-all cursor-pointer"
                                 >
                                   &larr; Prev
                                 </button>
@@ -2034,7 +2034,7 @@ export default function App() {
                               {stage !== "SOLD" && (
                                 <button
                                   onClick={() => moveVehicle(v.id, v.status, "NEXT")}
-                                  className="px-2 py-1 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-bold hover:bg-[color:var(--cyan-soft)] transition-all cursor-pointer"
+                                  className="px-2 py-1 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-semibold hover:bg-[color:var(--cyan-soft)] transition-all cursor-pointer"
                                 >
                                   Next &rarr;
                                 </button>
@@ -2053,7 +2053,7 @@ export default function App() {
 
         {/* UPLOAD VEHICLE SECTION */}
         {activeSection === "upload" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
             <div className="flex justify-between items-start">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Add vehicle</h1>
@@ -2065,7 +2065,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => openTruLens()}
-                  className="btn btn-primary flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold"
+                  className="btn btn-primary flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-semibold"
                 >
                   <Camera size={12} /> Open TruLens
                 </button>
@@ -2085,7 +2085,7 @@ export default function App() {
                 <form onSubmit={handlePublishVehicle} className="flex flex-col gap-4">
                   {/* Showroom tier — which category page this car lands on */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Showroom Category</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Showroom Category</label>
                     <select
                       value={newVehicleForm.category}
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, category: e.target.value as NewVehicleForm["category"] }))}
@@ -2101,10 +2101,10 @@ export default function App() {
 
                   {/* Specification grid panel */}
                   <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-4 flex flex-col gap-3">
-                    <span className="text-[13px] font-bold font-mono tracking-wider  text-[color:var(--cyan)]">Showroom Vehicle Specifications</span>
+                    <span className="text-[13px] font-semibold font-mono tracking-wider  text-[color:var(--cyan)]">Showroom Vehicle Specifications</span>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Year</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Year</label>
                         <input
                           type="number"
                           value={newVehicleForm.year}
@@ -2113,7 +2113,7 @@ export default function App() {
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Make</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Make</label>
                         <input
                           type="text"
                           value={newVehicleForm.make}
@@ -2122,7 +2122,7 @@ export default function App() {
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Model</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Model</label>
                         <input
                           type="text"
                           value={newVehicleForm.model}
@@ -2131,7 +2131,7 @@ export default function App() {
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Trim Level</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Trim Level</label>
                         <input
                           type="text"
                           value={newVehicleForm.trim}
@@ -2143,7 +2143,7 @@ export default function App() {
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Engine</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Engine</label>
                         <input
                           type="text"
                           value={newVehicleForm.engine}
@@ -2152,7 +2152,7 @@ export default function App() {
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Transmission</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Transmission</label>
                         <select
                           value={newVehicleForm.transmission}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, transmission: e.target.value as NewVehicleForm["transmission"] }))}
@@ -2163,7 +2163,7 @@ export default function App() {
                         </select>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Fuel Type</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Fuel Type</label>
                         <select
                           value={newVehicleForm.fuelType}
                           onChange={(e) => setNewVehicleForm((p) => ({ ...p, fuelType: e.target.value as NewVehicleForm["fuelType"] }))}
@@ -2176,7 +2176,7 @@ export default function App() {
                         </select>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Body Type</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Body Type</label>
                         <input
                           type="text"
                           value={newVehicleForm.bodyType}
@@ -2228,7 +2228,7 @@ export default function App() {
                   </div>
 
                   <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] rounded-xl p-4 flex flex-col gap-2">
-                    <span className="text-[13px] font-bold font-mono tracking-wider  text-[color:var(--cyan)] flex items-center gap-2">
+                    <span className="text-[13px] font-semibold font-mono tracking-wider  text-[color:var(--cyan)] flex items-center gap-2">
                       <Camera size={12} /> Photos live in TruLens only
                     </span>
                     <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
@@ -2239,7 +2239,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => openTruLens(newVehicleForm.stockNumber)}
-                      className="self-start mt-1 text-[13px] font-bold tracking-normal px-3 py-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
+                      className="self-start mt-1 text-[13px] font-semibold tracking-normal px-3 py-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
                     >
                       Open TruLens for this stock #
                     </button>
@@ -2342,7 +2342,7 @@ export default function App() {
                 {byAge.length === 0 ? (
                   <p className="px-4 py-6 text-[13px] text-[rgba(232,234,230,0.55)]">No cars in stock yet.</p>
                 ) : (
-                  <table className="w-full text-[13px]">
+                  <table className="w-full text-[13px] stack-mobile">
                     <thead>
                       <tr className="text-[13px] text-[rgba(232,234,230,0.55)]">
                         <th className="text-left font-medium px-4 py-2">Vehicle</th>
@@ -2361,15 +2361,15 @@ export default function App() {
                         return (
                           <tr key={v.id} onClick={() => setSelectedDetailVehicle(v)}
                               className="border-t border-white/5 cursor-pointer hover:bg-white/[0.03]">
-                            <td className="px-4 py-3">
+                            <td data-label="Vehicle" className="px-4 py-3 text-[13px] md:text-[15px]">
                               <span className="text-[color:var(--white)]">{v.year} {v.make} {v.model}</span>
                               <span className="text-[13px] text-[rgba(232,234,230,0.55)] ml-2">{v.stockNumber}</span>
                             </td>
-                            <td className="px-3 py-3 text-right" style={{ color: band.tone }}>{days}d</td>
-                            <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.costPrice || 0)}</td>
-                            <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
-                            <td className="px-3 py-3 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.retailPrice || 0)}</td>
-                            <td className={`px-4 py-3 text-right font-medium ${m.rand < 0 ? "text-[color:var(--muted)]" : "text-[color:var(--white)]"}`}>
+                            <td data-label="Age" className="px-3 py-3 text-[13px] md:text-[15px] text-right" style={{ color: band.tone }}>{days}d</td>
+                            <td data-label="Cost" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.costPrice || 0)}</td>
+                            <td data-label="Recon" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
+                            <td data-label="Asking" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.retailPrice || 0)}</td>
+                            <td data-label="Margin" className={`px-4 py-3 text-[13px] md:text-[15px] text-right font-medium ${m.rand < 0 ? "text-[color:var(--muted)]" : "text-[color:var(--white)]"}`}>
                               {formatZAR(m.rand)}
                               <span className="text-[13px] text-[rgba(232,234,230,0.55)] ml-1.5">{m.pct.toFixed(0)}%</span>
                             </td>
@@ -2438,7 +2438,7 @@ export default function App() {
             <div className="flex gap-4 border-b border-white/5 pb-2">
               <button
                 onClick={() => setLeadCRMTab("kanban")}
-                className={`text-[13px] font-bold transition-all border-b-2 pb-2 cursor-pointer ${
+                className={`text-[13px] font-semibold transition-all border-b-2 pb-2 cursor-pointer ${
                   leadCrmTab === "kanban" ? "text-[color:var(--white)] border-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[color:var(--white)]"
                 }`}
               >
@@ -2446,7 +2446,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setLeadCRMTab("list")}
-                className={`text-[13px] font-bold transition-all border-b-2 pb-2 cursor-pointer ${
+                className={`text-[13px] font-semibold transition-all border-b-2 pb-2 cursor-pointer ${
                   leadCrmTab === "list" ? "text-[color:var(--white)] border-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[color:var(--white)]"
                 }`}
               >
@@ -2469,8 +2469,8 @@ export default function App() {
                   return (
                     <div key={stage} className="flex-1 min-w-[220px] max-w-[280px] bg-[color:var(--glass)] rounded-xl p-3 flex flex-col gap-3 min-h-[460px] border border-white/5">
                       <div className="flex justify-between items-center border-b border-white/5 pb-1">
-                        <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">{stage}</span>
-                        <span className="px-2 py-0.5 bg-[color:var(--glass)] rounded-full text-[13px] font-bold text-[rgba(232,234,230,0.72)]">{stageLeads.length}</span>
+                        <span className="text-[13px] font-semibold text-[color:var(--muted)]">{stage}</span>
+                        <span className="px-2 py-0.5 bg-[color:var(--glass)] rounded-full text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">{stageLeads.length}</span>
                       </div>
                       <div className="flex-1 flex flex-col gap-3">
                         {stageLeads.map((l) => (
@@ -2480,17 +2480,17 @@ export default function App() {
                             className="pipeline-card p-3 flex flex-col gap-1 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-98"
                           >
                             <div className="flex justify-between items-start">
-                              <div className="font-bold text-[13px] text-[color:var(--white)]">{l.firstName} {l.lastName}</div>
+                              <div className="font-medium text-[15px] text-[color:var(--white)]">{l.firstName} {l.lastName}</div>
                               {l.digitalScore >= 80 ? (
-                                <span className="bg-[color:var(--glass)] text-[color:var(--muted)] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[color:var(--glass-line)]">Hot</span>
+                                <span className="bg-[color:var(--cyan)] text-[color:var(--ink)] text-[12px] px-2 py-0.5 rounded font-medium tracking-normal">Hot</span>
                               ) : l.digitalScore >= 50 ? (
-                                <span className="bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[color:var(--cyan-faint)]">Warm</span>
+                                <span className="bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[12px] px-2 py-0.5 rounded font-medium tracking-normal border border-[color:var(--cyan-soft)]">Warm</span>
                               ) : (
-                                <span className="bg-[rgba(232,234,230,0.72)]/15 text-[rgba(232,234,230,0.72)] text-[13px] px-2 py-0.5 rounded font-semibold tracking-normal border border-[rgba(232,234,230,0.72)]/20">Cold</span>
+                                <span className="bg-[color:var(--glass)] text-[color:var(--muted)] text-[12px] px-2 py-0.5 rounded font-medium tracking-normal border border-[color:var(--glass-line)]">Cold</span>
                               )}
                             </div>
-                            <div className="text-[13px] text-[rgba(232,234,230,0.72)] truncate">{getVehicleLabel(l.vehicleId)}</div>
-                            <div className="text-[13px] text-[rgba(232,234,230,0.55)] mt-1">{l.source}</div>
+                            <div className="text-[13px] md:text-[15px] text-[color:var(--white-dim)] truncate">{getVehicleLabel(l.vehicleId)}</div>
+                            <div className="text-[12px] text-[color:var(--muted)] mt-1">{l.source}</div>
 
                             {/* The next step, and whether it has slipped. This is the
                                 line a salesperson should be reading, so it gets the weight. */}
@@ -2506,13 +2506,13 @@ export default function App() {
                             
                             <div className="flex justify-between items-center border-t border-white/3 pt-2 mt-2 gap-2">
                               <div className="flex items-center gap-2">
-                                <span className="text-[13px] text-[color:var(--cyan)] font-bold">Intent: {l.digitalScore}%</span>
+                                <span className="text-[13px] text-[color:var(--cyan)] font-semibold">Intent: {l.digitalScore}%</span>
                               </div>
                               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                 {l.phone && (
                                   <button
                                     type="button"
-                                    className="text-[13px] font-bold px-2 py-0.5 rounded bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"
+                                    className="text-[13px] font-semibold px-2 py-0.5 rounded bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"
                                     title="WhatsApp this lead"
                                     onClick={() => {
                                       const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, "27");
@@ -2562,22 +2562,22 @@ export default function App() {
                         .filter((l) => !filterOverdueOnly || (l.status === "New" || !l.lastContactedAt))
                         .map((l) => (
                           <tr key={l.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
-                            <td className="py-3 px-4 font-semibold text-[color:var(--white)]">
+                            <td className="py-3 px-4 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">
                               {l.firstName} {l.lastName}
                               <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{l.phone} / {l.email}</span>
                             </td>
-                            <td data-label="Asset" className="py-3 px-4 font-semibold">{getVehicleLabel(l.vehicleId)}</td>
+                            <td data-label="Asset" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{getVehicleLabel(l.vehicleId)}</td>
                             <td data-label="Origin" className="py-3 px-4">
-                              <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-bold tracking-normal">
+                              <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-semibold tracking-normal">
                                 {l.source}
                               </span>
                             </td>
                             <td data-label="Status" className="py-3 px-4">
-                              <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-bold tracking-normal">
+                              <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-semibold tracking-normal">
                                 {l.status}
                               </span>
                             </td>
-                            <td data-label="Agent" className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
+                            <td data-label="Agent" className="py-3 px-4 text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
                             <td className="py-3 px-4 text-right flex justify-end gap-2">
                               {l.phone && (
                                 <button
@@ -2588,14 +2588,14 @@ export default function App() {
                                     const text = `Hi ${l.firstName}, following up from the dealership re ${interest}. When works for a chat?`;
                                     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
                                   }}
-                                  className="px-3 py-2 bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-bold"
+                                  className="px-3 py-2 bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-semibold"
                                 >
                                   WhatsApp
                                 </button>
                               )}
                               <button
                                 onClick={() => setLeadDetailId(l.id)}
-                                className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-bold cursor-pointer transition-all shadow-md active:scale-95"
+                                className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-semibold cursor-pointer transition-all shadow-md active:scale-95"
                               >
                                 Review Profile
                               </button>
@@ -2612,7 +2612,7 @@ export default function App() {
 
         {/* LEAD SCORING SECTION */}
         {activeSection === "scoring" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Lead scoring</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate intent and prioritization indices</p>
@@ -2673,9 +2673,9 @@ export default function App() {
                       return (
                         <tr key={l.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
                           <td className="py-3 px-4 font-semibold text-[color:var(--white)]">{l.firstName} {l.lastName}</td>
-                          <td data-label="Intent score" className="py-3 px-4 font-mono font-bold text-[color:var(--cyan)] text-[16px]">{l.digitalScore}%</td>
+                          <td data-label="Intent score" className="py-3 px-4 font-mono font-semibold text-[color:var(--cyan)] text-[16px]">{l.digitalScore}%</td>
                           <td data-label="Rating" className="py-3 px-4">
-                            <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
+                            <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
                               hot ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : warm ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                             }`}>
                               {hot ? "Hot Target" : warm ? "Warm Prospect" : "Cold Prospect"}
@@ -2686,7 +2686,7 @@ export default function App() {
                           <td className="py-3 px-4 text-right">
                             <button
                               onClick={() => setLeadDetailId(l.id)}
-                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] transition-all font-bold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
+                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] transition-all font-semibold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
                             >
                               Analyze Intent
                             </button>
@@ -2736,25 +2736,25 @@ export default function App() {
                   <tbody>
                     {state.invoices.map((inv) => (
                       <tr key={inv.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
-                        <td className="py-3 px-4 font-mono font-bold text-[color:var(--white)]">{inv.invoiceNumber}</td>
-                        <td data-label="Bill to" className="py-3 px-4 font-semibold">{getLeadLabel(inv.leadId)}</td>
-                        <td data-label="Stock" className="py-3 px-4">{getVehicleLabel(inv.vehicleId)}</td>
-                        <td data-label="Total" className="py-3 px-4 font-mono font-bold text-[color:var(--cyan-bright)]">
+                        <td className="py-3 px-4 text-[13px] md:text-[15px] font-mono font-semibold text-[color:var(--white)]">{inv.invoiceNumber}</td>
+                        <td data-label="Bill to" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{getLeadLabel(inv.leadId)}</td>
+                        <td data-label="Stock" className="py-3 px-4 text-[13px] md:text-[15px]">{getVehicleLabel(inv.vehicleId)}</td>
+                        <td data-label="Total" className="py-3 px-4 text-[13px] md:text-[15px] font-mono font-semibold text-[color:var(--cyan-bright)]">
                           {formatZAR(inv.amount + (inv.additionalCharges || 0))}
                           {inv.additionalCharges ? <span className="text-[13px] text-[rgba(232,234,230,0.72)] block">{inv.chargeDescription}</span> : null}
                         </td>
                         <td data-label="Status" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
                             inv.status === "Paid" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {inv.status}
                           </span>
                         </td>
-                        <td data-label="Due" className="py-3 px-4 font-semibold">{inv.dueDate}</td>
+                        <td data-label="Due" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{inv.dueDate}</td>
                         <td className="py-3 px-4 text-right flex justify-end gap-2">
                           <button
                             onClick={() => setActiveInvoiceId(inv.id)}
-                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-semibold cursor-pointer shadow-md active:scale-95 transition-all"
                           >
                             View Record
                           </button>
@@ -2765,7 +2765,7 @@ export default function App() {
                                 alert("Invoice cleared!");
                                 loadAllState();
                               }}
-                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-bold cursor-pointer shadow-md active:scale-95 transition-all"
+                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-semibold cursor-pointer shadow-md active:scale-95 transition-all"
                             >
                               Finalize Payment
                             </button>
@@ -2823,13 +2823,13 @@ export default function App() {
                   <tbody>
                     {state.agreements.map((agr) => (
                       <tr key={agr.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
-                        <td className="py-3 px-4 font-mono font-bold text-[color:var(--white)]">{agr.agreementNumber}</td>
-                        <td data-label="Type" className="py-3 px-4 font-semibold">{agr.type}</td>
-                        <td data-label="Customer" className="py-3 px-4">{getLeadLabel(agr.leadId)}</td>
-                        <td data-label="Stock" className="py-3 px-4">{getVehicleLabel(agr.vehicleId)}</td>
-                        <td data-label="Value" className="py-3 px-4 font-mono font-bold text-[color:var(--cyan-bright)]">{formatZAR(agr.purchasePrice)}</td>
+                        <td className="py-3 px-4 text-[13px] md:text-[15px] font-mono font-semibold text-[color:var(--white)]">{agr.agreementNumber}</td>
+                        <td data-label="Type" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{agr.type}</td>
+                        <td data-label="Customer" className="py-3 px-4 text-[13px] md:text-[15px]">{getLeadLabel(agr.leadId)}</td>
+                        <td data-label="Stock" className="py-3 px-4 text-[13px] md:text-[15px]">{getVehicleLabel(agr.vehicleId)}</td>
+                        <td data-label="Value" className="py-3 px-4 text-[13px] md:text-[15px] font-mono font-semibold text-[color:var(--cyan-bright)]">{formatZAR(agr.purchasePrice)}</td>
                         <td data-label="Signature" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
                             agr.status === "Signed" || agr.status === "Completed" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--glass)] text-[color:var(--warning)]"
                           }`}>
                             {agr.status}
@@ -2838,7 +2838,7 @@ export default function App() {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setActiveAgreementId(agr.id)}
-                            className="px-3 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all shadow-md shadow-[color:var(--cyan-faint)]"
+                            className="px-3 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded text-[13px] font-semibold cursor-pointer active:scale-95 transition-all shadow-md shadow-[color:var(--cyan-faint)]"
                           >
                             Open Contract Terms
                           </button>
@@ -2879,7 +2879,7 @@ export default function App() {
 
         {/* CUSTOMER FORM SECTION */}
         {activeSection === "customer_form" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Add a customer</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Use this form for remote customer registration.</p>
@@ -2896,7 +2896,7 @@ export default function App() {
             <div className="flex justify-between items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Showroom Tasks</h1>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Configure daily operational checklists & reconditioning items</p>
+                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Configure daily operational checklists & reconditioning items</p>
               </div>
               <button onClick={() => setIsTaskModalOpen(true)} className="btn btn-primary">
                 + Log Directive Task
@@ -2924,22 +2924,22 @@ export default function App() {
                     {state.tasks.map((t) => (
                       <tr key={t.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
                         <td className="py-3 px-4">
-                          <span className="font-semibold text-[color:var(--white)] block">{t.title}</span>
-                          <span className="text-[13px] text-[rgba(232,234,230,0.72)] block mt-0.5">
+                          <span className="font-semibold text-[13px] md:text-[15px] text-[color:var(--white)] block">{t.title}</span>
+                          <span className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] block mt-0.5">
                             Focus: {getVehicleLabel(t.vehicleId || "")} / Lead: {getLeadLabel(t.leadId || "")}
                           </span>
                         </td>
                         <td data-label="Priority" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
                             t.priority === "Urgent" ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : t.priority === "High" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {t.priority}
                           </span>
                         </td>
-                        <td data-label="Assigned" className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getUserLabel(t.assignedUserId)}</td>
-                        <td data-label="Due" className="py-3 px-4">{t.dueDate}</td>
+                        <td data-label="Assigned" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold text-[rgba(232,234,230,0.72)]">{getUserLabel(t.assignedUserId)}</td>
+                        <td data-label="Due" className="py-3 px-4 text-[13px] md:text-[15px]">{t.dueDate}</td>
                         <td data-label="Status" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
                             t.status === "Completed" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {t.status}
@@ -2952,12 +2952,12 @@ export default function App() {
                                 await updateTask(t.id, { status: "Completed" });
                                 loadAllState();
                               }}
-                              className="px-3 py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-bold cursor-pointer active:scale-95 transition-all"
+                              className="px-3 py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-semibold cursor-pointer active:scale-95 transition-all"
                             >
                               Resolve
                             </button>
                           ) : (
-                            <span className="text-[color:var(--cyan)] font-bold text-[13px]">Resolved</span>
+                            <span className="text-[color:var(--cyan)] font-semibold text-[13px]">Resolved</span>
                           )}
                         </td>
                       </tr>
@@ -2975,7 +2975,7 @@ export default function App() {
             <div className="flex justify-between items-center gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Team</h1>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
+                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
                   {activeSeats} {activeSeats === 1 ? "person" : "people"} with access
                 </p>
               </div>
@@ -2990,7 +2990,7 @@ export default function App() {
                 also cover people who no longer have access. */}
             <div className="card p-4 flex flex-col gap-2">
               <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-1">
-                <span className="text-[13px] font-bold tracking-normal text-[rgba(232,234,230,0.72)]">Access</span>
+                <span className="text-[13px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)]">Access</span>
                 <span className="text-[13px] text-[rgba(232,234,230,0.72)]">{activeSeats} active</span>
               </div>
               {seats.length === 0 ? (
@@ -3001,7 +3001,7 @@ export default function App() {
                 seats.map((s) => (
                   <div key={s.accountId} className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-0">
                     <div className="min-w-0">
-                      <div className={`text-[13px] font-bold truncate ${s.isActive ? "text-[color:var(--white)]" : "text-[rgba(232,234,230,0.72)] line-through"}`}>
+                      <div className={`text-[13px] font-semibold truncate ${s.isActive ? "text-[color:var(--white)]" : "text-[rgba(232,234,230,0.72)] line-through"}`}>
                         {s.name}
                       </div>
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">
@@ -3011,14 +3011,14 @@ export default function App() {
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => handleRotateSeat(s.userId, s.name)}
-                        className="text-[13px]  font-bold text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"
+                        className="text-[13px]  font-semibold text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"
                         title="Issue a replacement code"
                       >
                         New code
                       </button>
                       <button
                         onClick={() => handleToggleSeat(s.userId, !s.isActive)}
-                        className={`text-[13px]  font-bold cursor-pointer ${s.isActive ? "text-[color:var(--muted)] hover:opacity-80" : "text-[color:var(--cyan)] hover:opacity-80"}`}
+                        className={`text-[13px]  font-semibold cursor-pointer ${s.isActive ? "text-[color:var(--muted)] hover:opacity-80" : "text-[color:var(--cyan)] hover:opacity-80"}`}
                       >
                         {s.isActive ? "Remove access" : "Restore"}
                       </button>
@@ -3036,11 +3036,11 @@ export default function App() {
                 return (
                   <div key={u.id} className="card p-4 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] flex items-center justify-center font-bold text-[13px] text-[color:var(--ink)]">
+                      <div className="w-9 h-9 rounded-full bg-[color:var(--cyan)] flex items-center justify-center font-semibold text-[13px] text-[color:var(--ink)]">
                         {u.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-bold text-[13px] text-[color:var(--white)]">{u.name}</div>
+                        <div className="font-semibold text-[13px] text-[color:var(--white)]">{u.name}</div>
                         <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">{u.role}</div>
                       </div>
                     </div>
@@ -3048,15 +3048,15 @@ export default function App() {
                     <div className="grid grid-cols-3 gap-2 text-center mt-1">
                       <div className="bg-[color:var(--glass)] border border-white/5 rounded p-2">
                         <div className="text-[16px] font-semibold text-[color:var(--white)]">{leadsAssigned}</div>
-                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Leads</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider mt-0.5">Leads</div>
                       </div>
                       <div className="bg-[color:var(--glass)] border border-white/5 rounded p-2">
                         <div className="text-[16px] font-semibold text-[color:var(--white)]">{dealsCompleted}</div>
-                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Sales</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider mt-0.5">Sales</div>
                       </div>
                       <div className="bg-[color:var(--glass)] border border-white/5 rounded p-2">
                         <div className="text-[16px] font-semibold text-[color:var(--white)]">{u.isActive ? "Online" : "Away"}</div>
-                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider mt-0.5">Status</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider mt-0.5">Status</div>
                       </div>
                     </div>
                   </div>
@@ -3092,18 +3092,18 @@ export default function App() {
                   <tbody>
                     {state.users.map((u) => (
                       <tr key={u.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
-                        <td className="py-3 px-4 font-semibold text-[color:var(--white)]">{u.name}</td>
-                        <td data-label="Email" className="py-3 px-4 font-semibold">{u.email}</td>
+                        <td className="py-3 px-4 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">{u.name}</td>
+                        <td data-label="Email" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{u.email}</td>
                         <td data-label="Role" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-bold tracking-normal ${
+                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
                             u.role === "admin" ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
                           }`}>
                             {u.role}
                           </span>
                         </td>
-                        <td data-label="Contact" className="py-3 px-4 text-[rgba(232,234,230,0.72)]">{u.phone}</td>
+                        <td data-label="Contact" className="py-3 px-4 text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)]">{u.phone}</td>
                         <td data-label="Access" className="py-3 px-4">
-                          <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-bold tracking-normal">
+                          <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-semibold tracking-normal">
                             {u.isActive ? "Authorized Profile" : "Archived"}
                           </span>
                         </td>
@@ -3118,7 +3118,7 @@ export default function App() {
 
         {/* LEASE AMORTIZATION CALCULATOR */}
         {activeSection === "payment" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Repayment calculator</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Model lease structures & monthly amortization schedules</p>
@@ -3143,7 +3143,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => openTruLens()}
-                className="btn btn-primary text-[13px] font-bold flex items-center gap-2 px-4 py-3"
+                className="btn btn-primary text-[13px] font-semibold flex items-center gap-2 px-4 py-3"
               >
                 <Camera size={14} /> Open TruLens capture
               </button>
@@ -3151,25 +3151,25 @@ export default function App() {
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-bold">With photos</div>
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">With photos</div>
                 <div className="text-2xl font-semibold text-[color:var(--cyan)] mt-1">
                   {filteredVehicles.filter(v => (v.images?.length || 0) > 0).length}
                 </div>
               </div>
               <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-bold">Need shoot</div>
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Need shoot</div>
                 <div className="text-2xl font-semibold text-[color:var(--warning)] mt-1">
                   {filteredVehicles.filter(v => computeDmsGalleryReadiness(v).level === "capture").length}
                 </div>
               </div>
               <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-bold">Web-ready gallery</div>
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Web-ready gallery</div>
                 <div className="text-2xl font-semibold text-[color:var(--cyan-bright)] mt-1">
                   {filteredVehicles.filter(v => computeDmsGalleryReadiness(v).webReady).length}
                 </div>
               </div>
               <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-bold">Public stock feed</div>
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Public stock feed</div>
                 <a
                   className="text-[13px] text-[color:var(--cyan-bright)] font-mono mt-2 block break-all hover:underline"
                   href={`/api/public/stock?dealer=${encodeURIComponent(getDealerSlug())}`}
@@ -3192,25 +3192,25 @@ export default function App() {
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-[rgba(232,234,230,0.45)] gap-2">
                           <Camera size={28} />
-                          <span className="text-[13px] font-bold tracking-normal">No gallery yet</span>
+                          <span className="text-[13px] font-semibold tracking-normal">No gallery yet</span>
                         </div>
                       )}
                       <span
-                        className="absolute top-2 left-2 text-[13px] font-bold px-2 py-0.5 rounded border"
+                        className="absolute top-2 left-2 text-[13px] font-semibold px-2 py-0.5 rounded border"
                         style={{ color: r.color, borderColor: r.color + "55", background: r.color + "22" }}
                         title={r.reasons.join(" · ")}
                       >
                         {r.label}
                       </span>
                       {r.photoCount > 0 && (
-                        <span className="absolute top-2 right-2 text-[13px] font-bold px-2 py-0.5 rounded bg-black/50 text-[color:var(--white)]">
+                        <span className="absolute top-2 right-2 text-[13px] font-semibold px-2 py-0.5 rounded bg-black/50 text-[color:var(--white)]">
                           {r.photoCount} photos
                         </span>
                       )}
                     </div>
                     <div className="p-3 flex flex-col gap-2 flex-1">
                       <div>
-                        <div className="text-[16px] font-bold text-[color:var(--white)]">{v.year} {v.make} {v.model}</div>
+                        <div className="text-[16px] font-semibold text-[color:var(--white)]">{v.year} {v.make} {v.model}</div>
                         <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{v.stockNumber}</div>
                       </div>
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)]">
@@ -3248,7 +3248,7 @@ export default function App() {
 
         {/* SETTINGS MODULE */}
         {activeSection === "settings" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8 max-w-7xl mx-auto w-full">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Settings</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
@@ -3265,7 +3265,7 @@ export default function App() {
             {getAccount()?.role === "admin" && (
               <div className="card border-[color:var(--cyan-soft)]">
                 <div className="card-header border-b border-white/5 px-5 py-3">
-                  <h3 className="font-bold text-[16px] text-[color:var(--white)] flex items-center gap-2">
+                  <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
                     <Download size={14} className="text-[color:var(--cyan-bright)]" /> Backup
                   </h3>
                 </div>
@@ -3401,7 +3401,7 @@ export default function App() {
             {/* Website stock widget embed — the one thing a dealer's web person needs */}
             <div className="card border-[color:var(--cyan-soft)]">
               <div className="card-header border-b border-white/5 px-5 py-3">
-                <h3 className="font-bold text-[16px] text-[color:var(--white)] flex items-center gap-2">
+                <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
                   <Code size={14} className="text-[color:var(--cyan-bright)]" /> Website stock widget
                 </h3>
               </div>
@@ -3414,7 +3414,7 @@ export default function App() {
                 </pre>
                 <button
                   type="button"
-                  className="self-start text-[13px] font-bold text-[color:var(--cyan-bright)] hover:underline"
+                  className="self-start text-[13px] font-semibold text-[color:var(--cyan-bright)] hover:underline"
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(stockWidgetSnippet(window.location.origin));
@@ -3433,7 +3433,7 @@ export default function App() {
                 was no way back to installing once it had been closed. */}
             <div className="card border-[color:var(--cyan-soft)]">
               <div className="card-header border-b border-white/5 px-5 py-3">
-                <h3 className="font-bold text-[16px] text-[color:var(--white)] flex items-center gap-2">
+                <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
                   <Download size={14} className="text-[color:var(--cyan-bright)]" /> Install TruFlow as an app
                 </h3>
               </div>
@@ -3895,17 +3895,17 @@ export default function App() {
               return (<>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Leads Worked</span>
+                <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]  font-mono">Leads Worked</span>
                 <span className="text-lg font-semibold text-[color:var(--white)]">{state.leads.length} Leads</span>
                 <span className="text-[13px] text-[color:var(--cyan)]">Active response</span>
               </div>
               <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]  font-mono">Cars Moved</span>
+                <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]  font-mono">Cars Moved</span>
                 <span className="text-lg font-semibold text-[color:var(--white)]">{sold.length} Units</span>
                 <span className="text-[13px] text-[color:var(--cyan)]">Closed Won status</span>
               </div>
               <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[13px] font-bold text-[color:var(--cyan-bright)]  font-mono">Net Profit</span>
+                <span className="text-[13px] font-semibold text-[color:var(--cyan-bright)]  font-mono">Net Profit</span>
                 <span className="text-lg font-semibold text-[color:var(--cyan)]">R {totalProfit.toLocaleString()}</span>
                 <span className="text-[13px] text-[color:var(--cyan)]">{marginPct}% avg margin</span>
               </div>
@@ -3914,15 +3914,15 @@ export default function App() {
             <div className="bg-[color:var(--ink)] rounded-xl border border-white/5 p-4 flex flex-col gap-3">
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Reconditioning Expenditures</span>
-                <span className="font-mono font-bold text-[color:var(--muted)]">- R {reconTotal.toLocaleString()}</span>
+                <span className="font-mono font-semibold text-[color:var(--muted)]">- R {reconTotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Gross Dealership Revenue</span>
-                <span className="font-mono font-bold text-[color:var(--white)]">R {totalRevenue.toLocaleString()}</span>
+                <span className="font-mono font-semibold text-[color:var(--white)]">R {totalRevenue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-[rgba(232,234,230,0.72)] font-medium">Unpaid invoices</span>
-                <span className="font-mono font-bold text-[color:var(--warning)]">R {state.invoices.filter(i => i.status === 'Sent').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}</span>
+                <span className="font-mono font-semibold text-[color:var(--warning)]">R {state.invoices.filter(i => i.status === 'Sent').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}</span>
               </div>
             </div>
 
@@ -3933,7 +3933,7 @@ export default function App() {
                 {sold.map(v => (
                   <div key={v.id} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-3 py-3 flex justify-between items-center text-[13px]">
                     <div>
-                      <span className="font-bold text-[color:var(--white)] block">{v.year} {v.make} {v.model} {v.trim}</span>
+                      <span className="font-semibold text-[color:var(--white)] block">{v.year} {v.make} {v.model} {v.trim}</span>
                       <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: {v.stockNumber}</span>
                     </div>
                     <span className="font-mono font-semibold text-[color:var(--cyan)]">R {((v.retailPrice || 0) - (v.costPrice || 0)).toLocaleString()} profit</span>
@@ -3960,7 +3960,7 @@ export default function App() {
                   addNotification("EOD Summary Dispatched", "The compiled daily operations summary has been emailed to stakeholders.", "info");
                   setShowEODReport(false);
                 }} 
-                className="px-4 py-2 bg-gradient-to-r from-[color:var(--cyan-faint)] to-[color:var(--cyan-soft)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan-bright)] hover:bg-[color:var(--cyan-soft)] rounded-xl text-[13px] font-bold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+                className="px-4 py-2 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan-bright)] hover:bg-[color:var(--cyan-soft)] rounded-xl text-[13px] font-semibold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
               >
                 📧 Email to Stakeholders
               </button>

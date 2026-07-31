@@ -330,12 +330,12 @@ export default function LeadDetailModal({
       <div className="bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.22)] rounded-2xl w-full max-w-[720px] max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl relative font-sans animate-in zoom-in-95 duration-150">
         
         {/* Border strip */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[color:var(--cyan)] via-[color:var(--cyan)] to-[color:var(--cyan)]"></div>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[color:var(--cyan)]"></div>
 
         {/* Header */}
         <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-[rgba(138,162,184,0.1)]">
           <div>
-            <span className="text-[13px] font-bold text-[color:var(--cyan)]  tracking-widest font-mono">CRM Pipeline Lead Folder</span>
+            <span className="text-[13px] font-semibold text-[color:var(--cyan)]  tracking-widest font-mono">CRM Pipeline Lead Folder</span>
             <h3 className="font-serif text-lg font-semibold text-[color:var(--white)] mt-0.5">
               Customer File — {lead.firstName} {lead.lastName}
             </h3>
@@ -354,7 +354,7 @@ export default function LeadDetailModal({
           <div className="flex gap-2 border-b border-[rgba(138,162,184,0.1)] pb-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
+              className={`px-3 py-2 min-h-[44px] text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "overview"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -364,7 +364,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("journey")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
+              className={`px-3 py-2 min-h-[44px] text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "journey"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -374,7 +374,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("comm")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
+              className={`px-3 py-2 min-h-[44px] text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "comm"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -384,7 +384,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("history")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
+              className={`px-3 py-2 min-h-[44px] text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "history"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -394,7 +394,7 @@ export default function LeadDetailModal({
             </button>
             <button
               onClick={() => setActiveTab("tasks")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
+              className={`px-3 py-2 min-h-[44px] text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === "tasks"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -404,7 +404,7 @@ export default function LeadDetailModal({
             </button>
              <button
               onClick={() => setActiveTab("finance")}
-              className={`px-3 py-2 text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1 ${
+              className={`px-3 py-2 min-h-[44px] text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1 ${
                 activeTab === "finance"
                   ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
@@ -422,13 +422,13 @@ export default function LeadDetailModal({
                 <div className="card !bg-[color:var(--glass)]">
                   <div className="card-body p-4 flex flex-col gap-2">
                     <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Contact Details</div>
-                    <div className="text-base font-bold text-[color:var(--white)]">{lead.firstName} {lead.lastName}</div>
+                    <div className="text-base font-semibold text-[color:var(--white)]">{lead.firstName} {lead.lastName}</div>
                     <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-col gap-2 mt-1">
                       <span className="flex items-center gap-2"><Phone size={13} className="text-[color:var(--cyan)]" /> {lead.phone}</span>
                       <span className="flex items-center gap-2"><Mail size={13} className="text-[color:var(--cyan)]" /> {lead.email}</span>
                     </div>
                     <div className="border-t border-white/5 mt-2 pt-2 text-[13px]">
-                      <span className="font-bold text-[color:var(--white)]">Notes:</span> <span className="text-[rgba(232,234,230,0.72)]">{lead.notes || "None logged"}</span>
+                      <span className="font-semibold text-[color:var(--white)]">Notes:</span> <span className="text-[rgba(232,234,230,0.72)]">{lead.notes || "None logged"}</span>
                     </div>
                   </div>
                 </div>
@@ -438,12 +438,12 @@ export default function LeadDetailModal({
                   <div className="card-body p-4 flex flex-col gap-2">
                     <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Session Attributes</div>
                     <div className="text-[13px] text-[rgba(232,234,230,0.72)] flex flex-col gap-2 leading-relaxed">
-                      <div><span className="font-bold text-[color:var(--white)]">Ad Source:</span> <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-bold tracking-normal">{lead.source}</span></div>
-                      <div><span className="font-bold text-[color:var(--white)]">Creation Stamp:</span> <span>{lead.createdAt}</span></div>
-                      <div><span className="font-bold text-[color:var(--white)]">Assigned Specialist:</span> <span>{assignedUser?.name || "Awaiting Pool Assign"}</span></div>
+                      <div><span className="font-semibold text-[color:var(--white)]">Ad Source:</span> <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-semibold tracking-normal">{lead.source}</span></div>
+                      <div><span className="font-semibold text-[color:var(--white)]">Creation Stamp:</span> <span>{lead.createdAt}</span></div>
+                      <div><span className="font-semibold text-[color:var(--white)]">Assigned Specialist:</span> <span>{assignedUser?.name || "Awaiting Pool Assign"}</span></div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="font-bold text-[color:var(--white)]">Intent Score:</span>
-                        <span className="font-mono text-[16px] font-bold text-[color:var(--cyan)] bg-[color:var(--cyan-faint)] px-2 py-0.5 rounded">{lead.digitalScore}%</span>
+                        <span className="font-semibold text-[color:var(--white)]">Intent Score:</span>
+                        <span className="font-mono text-[16px] font-semibold text-[color:var(--cyan)] bg-[color:var(--cyan-faint)] px-2 py-0.5 rounded">{lead.digitalScore}%</span>
                       </div>
                     </div>
                   </div>
@@ -456,10 +456,10 @@ export default function LeadDetailModal({
                   <div className="card-body p-4 flex items-center justify-between">
                     <div>
                       <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-1">Subject Vehicle Focus</div>
-                      <div className="text-[16px] font-bold text-[color:var(--white)]">{vehicle.year} {vehicle.make} {vehicle.model}</div>
+                      <div className="text-[16px] font-semibold text-[color:var(--white)]">{vehicle.year} {vehicle.make} {vehicle.model}</div>
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Stock No: {vehicle.stockNumber} / Price: R {vehicle.retailPrice.toLocaleString()}</div>
                     </div>
-                    <span className="px-2 py-1 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] font-bold tracking-normal rounded">
+                    <span className="px-2 py-1 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] font-semibold tracking-normal rounded">
                       {vehicle.status === "INVENTORY" ? "Active Showroom" : vehicle.status === "PENDING" ? "Finance Pending" : "Delivered"}
                     </span>
                   </div>
@@ -475,7 +475,7 @@ export default function LeadDetailModal({
                     <div className="flex items-center gap-2">
                       <Sparkles size={16} className="text-[color:var(--cyan)]" />
                       <div>
-                        <span className="text-[13px] font-bold text-[color:var(--cyan)] tracking-normal font-mono block">Dealer Assist qualification</span>
+                        <span className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono block">Dealer Assist qualification</span>
                         <span className="text-[13px] text-[rgba(232,234,230,0.72)]">What this customer did</span>
                       </div>
                     </div>
@@ -523,8 +523,8 @@ export default function LeadDetailModal({
                         }}
                         className="p-2 bg-[color:var(--glass)] border border-white/5 hover:border-[color:var(--cyan-soft)] hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[13px] text-[color:var(--cyan)] font-bold tracking-normal block font-mono">Action 01</span>
-                        <span className="text-[13px] font-bold text-[color:var(--white)] block mt-0.5 group-hover:text-[color:var(--cyan)]">Book Test Drive</span>
+                        <span className="text-[13px] text-[color:var(--cyan)] font-semibold tracking-normal block font-mono">Action 01</span>
+                        <span className="text-[13px] font-semibold text-[color:var(--white)] block mt-0.5 group-hover:text-[color:var(--cyan)]">Book Test Drive</span>
                         <span className="text-[13px] text-[rgba(232,234,230,0.72)] block mt-0.5">Call now & schedule date</span>
                       </button>
 
@@ -538,8 +538,8 @@ export default function LeadDetailModal({
                         }}
                         className="p-2 bg-[color:var(--glass)] border border-white/5 hover:border-[color:var(--cyan-soft)] hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[13px] text-[color:var(--cyan)] font-bold tracking-normal block font-mono">Action 02</span>
-                        <span className="text-[13px] font-bold text-[color:var(--white)] block mt-0.5 group-hover:text-[color:var(--cyan)]">Send pricing PDF</span>
+                        <span className="text-[13px] text-[color:var(--cyan)] font-semibold tracking-normal block font-mono">Action 02</span>
+                        <span className="text-[13px] font-semibold text-[color:var(--white)] block mt-0.5 group-hover:text-[color:var(--cyan)]">Send pricing PDF</span>
                         <span className="text-[13px] text-[rgba(232,234,230,0.72)] block mt-0.5">Push pricing template over WhatsApp</span>
                       </button>
 
@@ -552,8 +552,8 @@ export default function LeadDetailModal({
                         }}
                         className="p-2 bg-[color:var(--glass)] border border-white/5 hover:border-[color:var(--cyan-soft)] hover:bg-white/5 transition-all text-left rounded-lg group cursor-pointer"
                       >
-                        <span className="text-[13px] text-[color:var(--cyan)] font-bold tracking-normal block font-mono">Action 03</span>
-                        <span className="text-[13px] font-bold text-[color:var(--white)] block mt-0.5 group-hover:text-[color:var(--cyan)]">Generate OTP Document</span>
+                        <span className="text-[13px] text-[color:var(--cyan)] font-semibold tracking-normal block font-mono">Action 03</span>
+                        <span className="text-[13px] font-semibold text-[color:var(--white)] block mt-0.5 group-hover:text-[color:var(--cyan)]">Generate OTP Document</span>
                         <span className="text-[13px] text-[rgba(232,234,230,0.72)] block mt-0.5">Draft digital pre-agreement folder</span>
                       </button>
 
@@ -565,7 +565,7 @@ export default function LeadDetailModal({
               {/* Alerts */}
               {!lead.lastContactedAt && (
                 <div className="bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-xl p-4 text-[13px] text-[color:var(--muted)] font-medium leading-relaxed flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[color:var(--glass)] flex items-center justify-center font-bold text-[16px]">!</span>
+                  <span className="w-5 h-5 rounded-full bg-[color:var(--glass)] flex items-center justify-center font-semibold text-[16px]">!</span>
                   <span>Alert: This lead is currently uncontacted. Direct follow-up or automated introductory welcome email dispatch is highly advised.</span>
                 </div>
               )}
@@ -587,7 +587,7 @@ export default function LeadDetailModal({
                              <Icon size={12} className="text-[color:var(--cyan)]" />
                              <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono font-medium">{j.time}</div>
                           </div>
-                          <div className="text-[13px] font-bold text-[color:var(--white)] mt-0.5">{j.action}</div>
+                          <div className="text-[13px] font-semibold text-[color:var(--white)] mt-0.5">{j.action}</div>
                           <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{j.detail}</div>
                         </div>
                       )
@@ -653,7 +653,7 @@ export default function LeadDetailModal({
                         <button
                           type="button"
                           onClick={() => setEmailBody(templates.email())}
-                          className="flex items-center gap-1 text-[13px] font-bold text-[color:var(--cyan)] hover:text-[color:var(--white)] transition-colors cursor-pointer"
+                          className="flex items-center gap-1 text-[13px] font-semibold text-[color:var(--cyan)] hover:text-[color:var(--white)] transition-colors cursor-pointer"
                         >
                           <><Wand2 size={10} /> Use template</>
                         </button>
@@ -676,7 +676,7 @@ export default function LeadDetailModal({
                       <button
                         type="button"
                         onClick={() => setSmsBody(templates.sms())}
-                        className="flex items-center gap-1 text-[13px] font-bold text-[color:var(--cyan)] hover:text-[color:var(--white)] transition-colors cursor-pointer"
+                        className="flex items-center gap-1 text-[13px] font-semibold text-[color:var(--cyan)] hover:text-[color:var(--white)] transition-colors cursor-pointer"
                       >
                         <Wand2 size={10} /> Use template
                       </button>
@@ -697,12 +697,12 @@ export default function LeadDetailModal({
                     {/* LEFT PANE: CONTROLS & COMPOSER */}
                     <div className="flex flex-col gap-3">
                       <div className="flex justify-between items-center">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-bold">Compose Message</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Compose Message</label>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => setWhatsappBody(templates.whatsapp())}
-                            className="flex items-center gap-1 text-[13px] font-bold text-[color:var(--cyan)] bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] px-2 py-1 rounded-lg hover:bg-[color:var(--cyan-faint)] transition-all cursor-pointer"
+                            className="flex items-center gap-1 text-[13px] font-semibold text-[color:var(--cyan)] bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] px-2 py-1 rounded-lg hover:bg-[color:var(--cyan-faint)] transition-all cursor-pointer"
                           >
                             <Sparkles size={10} /> Use template
                           </button>
@@ -739,8 +739,8 @@ export default function LeadDetailModal({
                           {lead.firstName[0]}
                         </div>
                         <div className="flex-1">
-                          <div className="font-bold text-[13px] leading-tight">{lead.firstName} {lead.lastName}</div>
-                          <div className="text-[13px] text-[#25D366] font-bold">Online</div>
+                          <div className="font-semibold text-[13px] leading-tight">{lead.firstName} {lead.lastName}</div>
+                          <div className="text-[13px] text-[#25D366] font-semibold">Online</div>
                         </div>
                         <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse"></span>
                       </div>
@@ -767,7 +767,7 @@ export default function LeadDetailModal({
                       {/* Phone Footer */}
                       <div className="bg-[color:var(--ink-2)] border-t border-white/5 p-2 flex justify-between items-center text-[rgba(232,234,230,0.72)] font-mono text-[13px]">
                         <span>Secure Messaging Session</span>
-                        <span className="text-[#25D366] font-bold  tracking-widest text-[13px]">WhatsApp API Active</span>
+                        <span className="text-[#25D366] font-semibold  tracking-widest text-[13px]">WhatsApp API Active</span>
                       </div>
                     </div>
                   </div>
@@ -825,28 +825,28 @@ export default function LeadDetailModal({
               <div className="mt-4 border-t border-white/5 pt-4">
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-2">Communications Outbound logs</div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-[13px] text-[rgba(232,234,230,0.72)] text-left border-collapse">
+                  <table className="w-full text-[13px] text-[rgba(232,234,230,0.72)] text-left border-collapse stack-mobile">
                     <thead>
                       <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
-                        <th className="py-2 font-bold tracking-normal text-[13px]">Date</th>
-                        <th className="py-2 font-bold tracking-normal text-[13px]">Type</th>
-                        <th className="py-2 font-bold tracking-normal text-[13px]">Subject</th>
-                        <th className="py-2 font-bold tracking-normal text-[13px]">Sent by</th>
+                        <th className="py-2 font-semibold tracking-normal text-[13px]">Date</th>
+                        <th className="py-2 font-semibold tracking-normal text-[13px]">Type</th>
+                        <th className="py-2 font-semibold tracking-normal text-[13px]">Subject</th>
+                        <th className="py-2 font-semibold tracking-normal text-[13px]">Sent by</th>
                       </tr>
                     </thead>
                     <tbody>
                       {communications.map((c) => (
                         <tr key={c.id} className="border-b border-white/5 hover:bg-[color:var(--glass)]">
-                          <td className="py-3 font-medium">{c.sentAt}</td>
-                          <td className="py-3">
-                            <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-mono font-bold tracking-normal">
+                          <td data-label="Date" className="py-3 text-[13px] md:text-[15px] font-medium">{c.sentAt}</td>
+                          <td data-label="Type" className="py-3">
+                            <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-mono font-semibold tracking-normal">
                               {c.type}
                             </span>
                           </td>
-                          <td className="py-3 max-w-[280px] truncate font-semibold text-[color:var(--white)]">
+                          <td data-label="Subject" className="py-3 max-w-[280px] truncate text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">
                             {c.subject} <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{c.content}</span>
                           </td>
-                          <td className="py-3">{c.sentBy}</td>
+                          <td data-label="Sent by" className="py-3 text-[13px] md:text-[15px]">{c.sentBy}</td>
                         </tr>
                       ))}
                       {communications.length === 0 && (
@@ -869,28 +869,28 @@ export default function LeadDetailModal({
                 <div className="card-body p-4">
                   <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-2">DMS Lifecycle events</div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-[13px] text-[rgba(232,234,230,0.72)] border-collapse">
+                    <table className="w-full text-left text-[13px] text-[rgba(232,234,230,0.72)] border-collapse stack-mobile">
                       <thead>
                         <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
-                          <th className="py-2 font-bold tracking-normal text-[13px]">Date</th>
-                          <th className="py-2 font-bold tracking-normal text-[13px]">Who</th>
-                          <th className="py-2 font-bold tracking-normal text-[13px]">Action</th>
-                          <th className="py-2 font-bold tracking-normal text-[13px]">Outcome</th>
+                          <th className="py-2 font-semibold tracking-normal text-[13px]">Date</th>
+                          <th className="py-2 font-semibold tracking-normal text-[13px]">Who</th>
+                          <th className="py-2 font-semibold tracking-normal text-[13px]">Action</th>
+                          <th className="py-2 font-semibold tracking-normal text-[13px]">Outcome</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td className="py-3">{lead.createdAt}</td>
-                          <td className="py-3 font-mono">DMS CENTRAL</td>
-                          <td className="py-3 font-bold text-[color:var(--white)]">Lead Registered</td>
-                          <td className="py-3">Logged from {lead.source} source</td>
+                          <td data-label="Date" className="py-3 text-[13px] md:text-[15px]">{lead.createdAt}</td>
+                          <td data-label="Who" className="py-3 text-[13px] md:text-[15px] font-mono">DMS CENTRAL</td>
+                          <td data-label="Action" className="py-3 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">Lead Registered</td>
+                          <td data-label="Outcome" className="py-3 text-[13px] md:text-[15px]">Logged from {lead.source} source</td>
                         </tr>
                         {lead.lastContactedAt && (
                           <tr>
-                            <td className="py-3">{lead.lastContactedAt}</td>
-                            <td className="py-3 font-mono">MARC_VAN_DER_MERWE</td>
-                            <td className="py-3 font-bold text-[color:var(--white)]">Contact Completed</td>
-                            <td className="py-3">Sent</td>
+                            <td data-label="Date" className="py-3 text-[13px] md:text-[15px]">{lead.lastContactedAt}</td>
+                            <td data-label="Who" className="py-3 text-[13px] md:text-[15px] font-mono">MARC_VAN_DER_MERWE</td>
+                            <td data-label="Action" className="py-3 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">Contact Completed</td>
+                            <td data-label="Outcome" className="py-3 text-[13px] md:text-[15px]">Sent</td>
                           </tr>
                         )}
                       </tbody>
@@ -956,7 +956,7 @@ export default function LeadDetailModal({
                       </select>
                     </div>
                     <div className="col-span-6 md:col-span-2">
-                      <button type="submit" className="w-full bg-[color:var(--glass)] hover:bg-[color:var(--glass)] border border-white/15 text-[color:var(--white)] font-bold text-[13px] rounded-lg py-2 transition-all cursor-pointer h-full">
+                      <button type="submit" className="w-full bg-[color:var(--glass)] hover:bg-[color:var(--glass)] border border-white/15 text-[color:var(--white)] font-semibold text-[13px] rounded-lg py-2 transition-all cursor-pointer h-full">
                         Add Task
                       </button>
                     </div>
@@ -987,7 +987,7 @@ export default function LeadDetailModal({
                               </span>
                               <div className="flex items-center gap-2 mt-1">
                                 <span className="text-[13px] text-[rgba(232,234,230,0.72)] flex items-center gap-1"><Calendar size={10} /> {task.dueDate}</span>
-                                {task.priority === "High" && <span className="text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] px-2 py-0.5 rounded font-bold tracking-normal">High</span>}
+                                {task.priority === "High" && <span className="text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] px-2 py-0.5 rounded font-semibold tracking-normal">High</span>}
                               </div>
                             </div>
                           </div>
@@ -1009,7 +1009,7 @@ export default function LeadDetailModal({
               {documentsPanel && (
                 <div className="card !bg-[color:var(--glass)]">
                   <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[13px] font-bold text-[color:var(--cyan)] tracking-normal font-mono border-b border-white/5 pb-2">
+                    <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono border-b border-white/5 pb-2">
                       Documents for this buyer
                     </div>
                     {documentsPanel}
@@ -1026,18 +1026,18 @@ export default function LeadDetailModal({
                 <div className="card !bg-[color:var(--glass)]">
                   <div className="card-body p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                      <div className="text-[13px] font-bold text-[color:var(--cyan)] tracking-normal font-mono">Finance estimate</div>
-                      <span className="text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] px-2 py-0.5 rounded font-bold tracking-normal"></span>
+                      <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono">Finance estimate</div>
+                      <span className="text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] px-2 py-0.5 rounded font-semibold tracking-normal"></span>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex flex-col">
-                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Vehicle Price</span>
-                        <span className="text-[13px] font-mono font-bold text-[color:var(--cyan)]">{vehicle ? `R ${vehicle.retailPrice.toLocaleString()}` : "N/A"}</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider">Vehicle Price</span>
+                        <span className="text-[13px] font-mono font-semibold text-[color:var(--cyan)]">{vehicle ? `R ${vehicle.retailPrice.toLocaleString()}` : "N/A"}</span>
                       </div>
                       <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex flex-col">
-                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold tracking-wider">Est. Monthly</span>
-                        <span className="text-[13px] font-mono font-bold text-[rgba(232,234,230,0.72)]">{vehicle ? `R ${Math.round(vehicle.retailPrice * 0.0195).toLocaleString()}` : "N/A"}</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider">Est. Monthly</span>
+                        <span className="text-[13px] font-mono font-semibold text-[rgba(232,234,230,0.72)]">{vehicle ? `R ${Math.round(vehicle.retailPrice * 0.0195).toLocaleString()}` : "N/A"}</span>
                       </div>
                     </div>
 
@@ -1045,14 +1045,14 @@ export default function LeadDetailModal({
                       <button 
                         type="button"
                         onClick={() => alert("SMS with secure pre-approval link dispatched to customer cell.")}
-                        className="w-full py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan)] font-bold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan)] font-semibold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
                         <Phone size={11} /> Send Pre-Approval SMS Link
                       </button>
                       <button 
                         type="button"
                         onClick={() => alert("Bureau analysis complete. Passing probability score: 92%. Soft-check approved.")}
-                        className="w-full py-2 bg-[color:var(--glass)] hover:bg-white/10 border border-white/10 text-[color:var(--white)] font-bold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full py-2 bg-[color:var(--glass)] hover:bg-white/10 border border-white/10 text-[color:var(--white)] font-semibold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
                         <CheckCircle size={11} /> Soft credit bureau check
                       </button>
@@ -1063,12 +1063,12 @@ export default function LeadDetailModal({
                 {/* 2. Document Generator Panel */}
                 <div className="card !bg-[color:var(--glass)] border border-white/5">
                   <div className="card-body p-4 flex flex-col gap-3">
-                    <div className="text-[13px] font-bold text-[color:var(--white)] tracking-normal font-mono border-b border-white/5 pb-2">
+                    <div className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal font-mono border-b border-white/5 pb-2">
                       F&I Document Generator
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-bold">Select Agreement Template</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Select Agreement Template</label>
                       <select
                         value={docTypeToGenerate}
                         onChange={(e) => setDocTypeToGenerate(e.target.value as any)}
@@ -1111,7 +1111,7 @@ export default function LeadDetailModal({
                           setGeneratingDoc(false);
                         }
                       }}
-                      className="w-full py-3 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] font-bold text-[13px] tracking-normal rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
+                      className="w-full py-3 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] font-semibold text-[13px] tracking-normal rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
                     >
                       <FileSignature size={12} /> {generatingDoc ? "Drafting legal terms..." : "Generate Digital Document"}
                     </button>
@@ -1139,11 +1139,11 @@ export default function LeadDetailModal({
                           <div className="flex items-center gap-2">
                             <FileText size={13} className={selectedAgreementId === ag.id ? "text-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)]"} />
                             <div className="flex flex-col">
-                              <span className="text-[13px] font-bold">{ag.type}</span>
+                              <span className="text-[13px] font-semibold">{ag.type}</span>
                               <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{ag.id.substring(0, 8).toUpperCase()} • {ag.date}</span>
                             </div>
                           </div>
-                          <span className={`text-[13px] font-bold px-2 py-0.5 rounded  ${
+                          <span className={`text-[13px] font-semibold px-2 py-0.5 rounded  ${
                             ag.status === "Signed" 
                               ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" 
                               : "bg-[color:var(--glass)] text-[color:var(--muted)] animate-pulse"
@@ -1187,7 +1187,7 @@ export default function LeadDetailModal({
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-gray-400">
                     <FileSignature size={48} className="text-[rgba(232,234,230,0.72)] mb-3 opacity-40" />
-                    <h3 className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal mb-1">Signature</h3>
+                    <h3 className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal mb-1">Signature</h3>
                     <p className="text-[13px] max-w-sm text-[rgba(232,234,230,0.72)] leading-relaxed">
                       Select or generate a contract package from the left panel to display interactive legal layouts, finance amortization grids, and the digital signature pad.
                     </p>

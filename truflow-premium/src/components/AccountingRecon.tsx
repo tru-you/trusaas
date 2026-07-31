@@ -142,7 +142,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
     <div className="flex flex-col gap-6" id="accounting_recon_dashboard">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[color:var(--white)] flex items-center gap-2">
+          <h2 className="text-xl font-semibold tracking-tight text-[color:var(--white)] flex items-center gap-2">
             <FileSpreadsheet className="text-[color:var(--cyan)]" size={20} />
             Finance &amp; reconditioning
           </h2>
@@ -154,8 +154,8 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
         <div className="flex bg-[color:var(--ink-2)] border border-white/5 p-1 rounded-xl">
           <button
             onClick={() => setActiveTab("pl")}
-            className={`px-4 py-2 text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "pl" ? "bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+            className={`px-4 py-2 text-[13px] font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === "pl" ? "bg-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
             }`}
           >
             <Activity size={13} />
@@ -163,8 +163,8 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           </button>
           <button
             onClick={() => setActiveTab("recon")}
-            className={`px-4 py-2 text-[13px] font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === "recon" ? "bg-gradient-to-r from-[color:var(--cyan)] to-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+            className={`px-4 py-2 text-[13px] font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === "recon" ? "bg-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
             }`}
           >
             <Wrench size={13} />
@@ -178,32 +178,32 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
           <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
-              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold tracking-wider">Sales Revenue</span>
-              <span className="text-lg font-mono text-[color:var(--cyan)] font-bold">{formatZAR(revenueFromSales)}</span>
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Sales Revenue</span>
+              <span className="text-lg font-mono text-[color:var(--cyan)] font-semibold">{formatZAR(revenueFromSales)}</span>
               <span className="text-[13px] text-[rgba(232,234,230,0.72)] flex items-center gap-1"><ArrowUpRight size={10} className="text-[color:var(--cyan)]" /> From paid invoices</span>
             </div>
 
             <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
-              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold tracking-wider">Cost of Sales</span>
-              <span className="text-lg font-mono text-[color:var(--muted)] font-bold">{formatZAR(totalCostOfSales)}</span>
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Cost of Sales</span>
+              <span className="text-lg font-mono text-[color:var(--muted)] font-semibold">{formatZAR(totalCostOfSales)}</span>
               <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Units cost + recon</span>
             </div>
 
             <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
-              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold tracking-wider">Gross Profit</span>
-              <span className="text-lg font-mono text-[color:var(--white)] font-bold">{formatZAR(grossProfit)}</span>
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Gross Profit</span>
+              <span className="text-lg font-mono text-[color:var(--white)] font-semibold">{formatZAR(grossProfit)}</span>
               <span className="text-[13px] text-[color:var(--cyan)] font-semibold">{grossMarginPercentage.toFixed(1)}% margin</span>
             </div>
 
             <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
-              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold tracking-wider">Operating Expenses</span>
-              <span className="text-lg font-mono text-[color:var(--muted)] font-bold">{formatZAR(totalLedgerExpenses)}</span>
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Operating Expenses</span>
+              <span className="text-lg font-mono text-[color:var(--muted)] font-semibold">{formatZAR(totalLedgerExpenses)}</span>
               <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Marketing, rent &amp; ops</span>
             </div>
 
-            <div className="bg-gradient-to-br from-[color:var(--cyan-faint)] to-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-4 flex flex-col gap-2 col-span-2 md:col-span-1">
+            <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-4 flex flex-col gap-2 col-span-2 md:col-span-1">
               <span className="text-[13px] text-[color:var(--cyan)] font-semibold tracking-wider">Net Income</span>
-              <span className={`text-lg font-mono font-bold ${netProfit >= 0 ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"}`}>
+              <span className={`text-lg font-mono font-semibold ${netProfit >= 0 ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"}`}>
                 {formatZAR(netProfit)}
               </span>
               <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Bottom line</span>
@@ -212,7 +212,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
           <div className="lg:col-span-2 card p-5 flex flex-col gap-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-bold text-[16px] text-[color:var(--white)] flex items-center gap-2">
+              <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
                 <Briefcase size={14} className="text-[color:var(--cyan)]" />
                 Expense Ledger
               </h3>
@@ -222,40 +222,40 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-[13px] border-collapse">
+              <table className="w-full text-left text-[13px] border-collapse stack-mobile">
                 <thead>
                   <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)]">
-                    <th className="pb-3 font-bold tracking-normal text-[13px]">Date</th>
-                    <th className="pb-3 font-bold tracking-normal text-[13px]">Description</th>
-                    <th className="pb-3 font-bold tracking-normal text-[13px]">Category</th>
-                    <th className="pb-3 font-bold tracking-normal text-[13px]">Reference</th>
-                    <th className="pb-3 font-bold tracking-normal text-[13px] text-right">Amount</th>
-                    <th className="pb-3 font-bold tracking-normal text-[13px] text-center">Status</th>
+                    <th className="pb-3 font-semibold tracking-normal text-[13px]">Date</th>
+                    <th className="pb-3 font-semibold tracking-normal text-[13px]">Description</th>
+                    <th className="pb-3 font-semibold tracking-normal text-[13px]">Category</th>
+                    <th className="pb-3 font-semibold tracking-normal text-[13px]">Reference</th>
+                    <th className="pb-3 font-semibold tracking-normal text-[13px] text-right">Amount</th>
+                    <th className="pb-3 font-semibold tracking-normal text-[13px] text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {(state.expenses || []).map((e) => (
                     <tr key={e.id} className="hover:bg-[color:var(--glass)] transition-all group">
-                      <td className="py-3 font-mono text-[13px] text-[rgba(232,234,230,0.72)]">{e.date}</td>
-                      <td className="py-3 text-[color:var(--white)] font-semibold">{e.description}</td>
-                      <td className="py-3">
+                      <td data-label="Date" className="py-3 font-mono text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)]">{e.date}</td>
+                      <td data-label="Description" className="py-3 text-[13px] md:text-[15px] text-[color:var(--white)] font-semibold">{e.description}</td>
+                      <td data-label="Category" className="py-3">
                         <span className="bg-[color:var(--glass)] border border-white/5 text-[13px] text-[rgba(232,234,230,0.72)] px-2 py-0.5 rounded">
                           {e.category}
                         </span>
                       </td>
-                      <td className="py-3 font-mono text-[13px] text-[rgba(232,234,230,0.72)]">
+                      <td data-label="Reference" className="py-3 font-mono text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)]">
                         {e.referenceId || "—"}
                       </td>
-                      <td className="py-3 text-right font-mono font-bold text-[color:var(--white)]">
+                      <td data-label="Amount" className="py-3 text-right font-mono text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">
                         {formatZAR(e.amount)}
                       </td>
-                      <td className="py-3 text-center">
+                      <td data-label="Status" className="py-3 text-center">
                         {e.reconciled ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-faint)] font-semibold">
                             <Check size={8} /> Reconciled
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] font-semibold">
                             <AlertCircle size={8} /> Open
                           </span>
                         )}
@@ -274,15 +274,15 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             </div>
           </div>
 
-          <div className="card p-5 flex flex-col gap-4 bg-gradient-to-b from-[color:var(--glass-line)] to-[color:var(--glass-line)]">
+          <div className="card p-5 flex flex-col gap-4 bg-[color:var(--glass-line)]">
             <div>
-              <h3 className="font-bold text-[16px] text-[color:var(--white)]">Log Expense</h3>
+              <h3 className="font-semibold text-[16px] text-[color:var(--white)]">Log Expense</h3>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Rent, marketing, utilities or other overheads.</p>
             </div>
 
             <form onSubmit={handleAddExpenseSubmit} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]">Description / Payee</label>
+                <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Description / Payee</label>
                 <input
                   type="text"
                   placeholder="e.g. Randburg Car Polishers"
@@ -294,7 +294,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]">Amount (ZAR)</label>
+                  <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Amount (ZAR)</label>
                   <input
                     type="number"
                     placeholder="R 4500"
@@ -305,7 +305,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]">Category</label>
+                  <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Category</label>
                   <select
                     value={expenseForm.category}
                     onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
@@ -324,7 +324,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]">Date</label>
+                  <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Date</label>
                   <input
                     type="date"
                     value={expenseForm.date}
@@ -334,7 +334,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[13px] font-bold text-[rgba(232,234,230,0.72)]">Stock ID (optional)</label>
+                  <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Stock ID (optional)</label>
                   <input
                     type="text"
                     placeholder="e.g. PE-1042"
@@ -347,7 +347,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
               <button
                 type="submit"
-                className="w-full py-2 bg-[color:var(--cyan)] on-fill hover:bg-opacity-80 transition-all font-bold text-[13px] rounded-lg flex items-center justify-center gap-1 cursor-pointer mt-2"
+                className="w-full py-2 bg-[color:var(--cyan)] on-fill hover:bg-opacity-80 transition-all font-semibold text-[13px] rounded-lg flex items-center justify-center gap-1 cursor-pointer mt-2"
               >
                 <Plus size={14} /> Log Expense
               </button>
@@ -361,7 +361,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
           <div className="card p-5 flex flex-col gap-4">
             <div>
-              <h3 className="font-bold text-[16px] text-[color:var(--white)]">Select Vehicle</h3>
+              <h3 className="font-semibold text-[16px] text-[color:var(--white)]">Select Vehicle</h3>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Choose a vehicle to view or add recon tasks.</p>
             </div>
 
@@ -394,7 +394,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                       </div>
                     </div>
                     <div className="text-right flex flex-col gap-0.5">
-                      <span className="text-[13px] font-mono font-bold text-[color:var(--white)]">{formatZAR(totalRecon)}</span>
+                      <span className="text-[13px] font-mono font-semibold text-[color:var(--white)]">{formatZAR(totalRecon)}</span>
                       <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Recon cost</span>
                     </div>
                   </button>
@@ -408,7 +408,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
               <>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-white/5 pb-3">
                   <div>
-                    <h3 className="font-bold text-[16px] text-[color:var(--white)]">
+                    <h3 className="font-semibold text-[16px] text-[color:var(--white)]">
                       {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
                     </h3>
                     <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
@@ -416,14 +416,14 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     </p>
                   </div>
                   <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl px-4 py-2 flex flex-col items-end">
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold tracking-wider">Total Recon</span>
-                    <span className="text-[16px] font-mono font-bold text-[color:var(--cyan)]">{formatZAR(totalReconSpent)}</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Total Recon</span>
+                    <span className="text-[16px] font-mono font-semibold text-[color:var(--cyan)]">{formatZAR(totalReconSpent)}</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2 flex flex-col gap-4">
-                    <h4 className="text-[13px] font-bold tracking-normal text-[rgba(232,234,230,0.72)]">Tasks</h4>
+                    <h4 className="text-[13px] font-semibold tracking-normal text-[rgba(232,234,230,0.72)]">Tasks</h4>
 
                     <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto">
                       {reconTasks.map((task) => (
@@ -436,7 +436,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                             <div className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)]">
                               <span>{task.dateAdded}</span>
                               <span>·</span>
-                              <span className="font-bold text-[color:var(--white)]">{formatZAR(task.cost)}</span>
+                              <span className="font-semibold text-[color:var(--white)]">{formatZAR(task.cost)}</span>
                             </div>
                           </div>
 
@@ -472,13 +472,13 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
 
                   <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
                     <div>
-                      <h4 className="text-[13px] font-bold text-[color:var(--white)] tracking-normal">Add Recon Task</h4>
+                      <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Add Recon Task</h4>
                       <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Adds to this vehicle's cost.</p>
                     </div>
 
                     <form onSubmit={handleAddReconSubmit} className="flex flex-col gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold">Task / Vendor</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold">Task / Vendor</label>
                         <input
                           type="text"
                           placeholder="e.g. Dent Out Panelbeaters"
@@ -489,7 +489,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold">Cost (ZAR)</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold">Cost (ZAR)</label>
                         <input
                           type="number"
                           placeholder="R 3500"
@@ -500,7 +500,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] font-bold">Status</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold">Status</label>
                         <select
                           value={reconForm.status}
                           onChange={(e) => setReconForm({ ...reconForm, status: e.target.value as any })}

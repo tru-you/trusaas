@@ -129,7 +129,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
         <div className="flex items-center gap-2 bg-[color:var(--glass)] border border-white/5 rounded-xl p-1 w-full lg:w-auto">
           <button
             onClick={() => setModel('flat')}
-            className={`flex-1 lg:flex-none px-3 py-2 rounded-lg text-[13px] font-bold tracking-normal transition-all cursor-pointer ${
+            className={`flex-1 lg:flex-none px-3 py-2 rounded-lg text-[13px] font-semibold tracking-normal transition-all cursor-pointer ${
               model === 'flat' 
                 ? 'bg-[color:var(--cyan)] on-fill shadow-lg' 
                 : 'text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]'
@@ -139,7 +139,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
           </button>
           <button
             onClick={() => setModel('volume')}
-            className={`flex-1 lg:flex-none px-3 py-2 rounded-lg text-[13px] font-bold tracking-normal transition-all cursor-pointer ${
+            className={`flex-1 lg:flex-none px-3 py-2 rounded-lg text-[13px] font-semibold tracking-normal transition-all cursor-pointer ${
               model === 'volume' 
                 ? 'bg-[color:var(--cyan)] on-fill shadow-lg' 
                 : 'text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]'
@@ -149,7 +149,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
           </button>
           <button
             onClick={() => setModel('marginTier')}
-            className={`flex-1 lg:flex-none px-3 py-2 rounded-lg text-[13px] font-bold tracking-normal transition-all cursor-pointer ${
+            className={`flex-1 lg:flex-none px-3 py-2 rounded-lg text-[13px] font-semibold tracking-normal transition-all cursor-pointer ${
               model === 'marginTier' 
                 ? 'bg-[color:var(--cyan)] on-fill shadow-lg' 
                 : 'text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]'
@@ -169,14 +169,14 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                 <Percent size={14} />
               </div>
               <div>
-                <span className="font-bold text-[13px] text-[color:var(--white)] block">Flat Percentage of Gross Margin</span>
+                <span className="font-semibold text-[13px] text-[color:var(--white)] block">Flat Percentage of Gross Margin</span>
                 <span className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed block">
                   Commission is calculated as a fixed percentage of the gross profit margin (Retail Price - Cost Price) of each unit sold.
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-4 bg-[color:var(--ink)] px-4 py-3 rounded-xl border border-white/5 self-end md:self-auto min-w-[200px]">
-              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] ">Rate:</span>
+              <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] ">Rate:</span>
               <input 
                 type="range" 
                 min="5" 
@@ -197,13 +197,13 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                 <Layers size={14} />
               </div>
               <div>
-                <span className="font-bold text-[13px] text-[color:var(--white)] block">Sliding Scale by Deal Volume</span>
+                <span className="font-semibold text-[13px] text-[color:var(--white)] block">Sliding Scale by Deal Volume</span>
                 <span className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed block">
                   Encourage volume. Commision rates scale dynamically as sales reps close more units in the active period.
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-[13px] font-bold tracking-tight  min-w-[260px]">
+            <div className="grid grid-cols-3 gap-2 text-center text-[13px] font-semibold tracking-tight  min-w-[260px]">
               <div className="bg-[color:var(--ink)] border border-white/5 rounded-lg p-2 flex flex-col gap-0.5">
                 <span className="text-[rgba(232,234,230,0.72)] text-[13px] tracking-widest">1-2 units</span>
                 <span className="text-[color:var(--cyan-bright)]">8% Rate</span>
@@ -227,13 +227,13 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                 <Sliders size={14} />
               </div>
               <div>
-                <span className="font-bold text-[13px] text-[color:var(--white)] block">High-Margin Performance Tiers</span>
+                <span className="font-semibold text-[13px] text-[color:var(--white)] block">High-Margin Performance Tiers</span>
                 <span className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed block">
                   Protect dealership profits. Low-margin units receive a flat R1,500, while high-margin vehicles yield scaling percentages.
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-[13px] font-bold tracking-tight  min-w-[260px]">
+            <div className="grid grid-cols-3 gap-2 text-center text-[13px] font-semibold tracking-tight  min-w-[260px]">
               <div className="bg-[color:var(--ink)] border border-white/5 rounded-lg p-2 flex flex-col gap-0.5">
                 <span className="text-[rgba(232,234,230,0.72)] text-[13px] tracking-widest">&lt; R20k margin</span>
                 <span className="text-[color:var(--white)]">R1,500 Flat</span>
@@ -254,19 +254,19 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
       {/* Dealership Aggregate Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-[color:var(--ink)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
-          <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal">Total Showroom Sales</span>
+          <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal">Total Showroom Sales</span>
           <span className="text-lg font-semibold text-[color:var(--white)]">{totalUnitsSold} Units</span>
         </div>
         <div className="bg-[color:var(--ink)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
-          <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal">Gross Sales Revenue</span>
+          <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal">Gross Sales Revenue</span>
           <span className="text-lg font-semibold text-[color:var(--white)]">{formatZAR(totalDealershipRevenue)}</span>
         </div>
         <div className="bg-[color:var(--ink)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
-          <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal">Gross Profit Margin</span>
+          <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal">Gross Profit Margin</span>
           <span className="text-lg font-semibold text-[color:var(--cyan)]">{formatZAR(totalDealershipMargin)}</span>
         </div>
         <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-3 flex flex-col gap-1 shadow-lg shadow-[color:var(--cyan-faint)]">
-          <span className="text-[13px] font-bold text-[color:var(--cyan-bright)] tracking-normal">Estimated Comm. Pool</span>
+          <span className="text-[13px] font-semibold text-[color:var(--cyan-bright)] tracking-normal">Estimated Comm. Pool</span>
           <span className="text-lg font-semibold text-[color:var(--cyan)]">{formatZAR(totalDealershipCommission)}</span>
         </div>
       </div>
@@ -286,11 +286,11 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                 className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 cursor-pointer hover:bg-[color:var(--glass)] transition-all select-none"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[color:var(--cyan)] to-[color:var(--cyan)] flex items-center justify-center font-bold text-[13px] text-[color:var(--ink)]">
+                  <div className="w-8 h-8 rounded-full bg-[color:var(--cyan)] flex items-center justify-center font-semibold text-[13px] text-[color:var(--ink)]">
                     {rep.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <span className="font-bold text-[13px] text-[color:var(--white)] block">{rep.name}</span>
+                    <span className="font-semibold text-[13px] text-[color:var(--white)] block">{rep.name}</span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono  mt-0.5 block">
                       {closedWonLeads.length} {closedWonLeads.length === 1 ? 'deal' : 'deals'} finalized
                     </span>
@@ -299,11 +299,11 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
 
                 <div className="flex items-center gap-6 self-stretch sm:self-auto justify-between sm:justify-start">
                   <div className="text-right">
-                    <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-normal block">Margin Generated</span>
-                    <span className="text-[13px] font-bold text-[color:var(--white)]">{formatZAR(totalMargin)}</span>
+                    <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal block">Margin Generated</span>
+                    <span className="text-[13px] font-semibold text-[color:var(--white)]">{formatZAR(totalMargin)}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[13px] font-bold text-[color:var(--cyan-bright)] tracking-normal block">Est. Commission</span>
+                    <span className="text-[13px] font-semibold text-[color:var(--cyan-bright)] tracking-normal block">Est. Commission</span>
                     <span className="text-[13px] font-semibold text-[color:var(--cyan-bright)]">{formatZAR(commission)}</span>
                   </div>
                   <div className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] transition-colors p-1 rounded">
@@ -325,9 +325,9 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                         </div>
                       ) : (
                         <div className="overflow-x-auto">
-                          <table className="w-full text-left text-[13px] border-collapse">
+                          <table className="w-full text-left text-[13px] border-collapse stack-mobile">
                             <thead>
-                              <tr className="text-[rgba(232,234,230,0.72)]  tracking-widest text-[13px] border-b border-white/5">
+                              <tr className="text-[rgba(232,234,230,0.72)] text-[13px] border-b border-white/5">
                                 <th className="py-2 px-3">Vehicle</th>
                                 <th className="py-2 px-3 text-right">Retail Price</th>
                                 <th className="py-2 px-3 text-right">Cost Price</th>
@@ -338,14 +338,14 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                             <tbody>
                               {items.map((item, idx) => (
                                 <tr key={idx} className="border-b border-white/3 last:border-0 hover:bg-[color:var(--glass)]">
-                                  <td className="py-3 px-3 font-semibold text-[color:var(--white)]">
+                                  <td data-label="Vehicle" className="py-3 px-3 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">
                                     {item.vehicle.year} {item.vehicle.make} {item.vehicle.model}
                                     <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono ml-2">({item.vehicle.stockNumber})</span>
                                   </td>
-                                  <td className="py-3 px-3 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(item.vehicle.retailPrice)}</td>
-                                  <td className="py-3 px-3 text-right text-[rgba(232,234,230,0.72)]">{formatZAR(item.vehicle.costPrice)}</td>
-                                  <td className="py-3 px-3 text-right text-[color:var(--cyan)] font-bold">{formatZAR(item.margin)}</td>
-                                  <td className="py-3 px-3 text-right text-[color:var(--cyan-bright)] font-semibold">{formatZAR(item.commission)}</td>
+                                  <td data-label="Retail" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(item.vehicle.retailPrice)}</td>
+                                  <td data-label="Cost" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(item.vehicle.costPrice)}</td>
+                                  <td data-label="Gross" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[color:var(--cyan)] font-semibold">{formatZAR(item.margin)}</td>
+                                  <td data-label="Commission" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[color:var(--cyan-bright)] font-semibold">{formatZAR(item.commission)}</td>
                                 </tr>
                               ))}
                             </tbody>

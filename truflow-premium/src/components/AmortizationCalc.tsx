@@ -91,7 +91,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
           <div className="flex flex-col gap-1">
             <div className="flex justify-between text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">
               <span>Financing Term Duration</span>
-              <span className="text-[color:var(--cyan-bright)] font-bold font-mono">{term} Months</span>
+              <span className="text-[color:var(--cyan-bright)] font-semibold font-mono">{term} Months</span>
             </div>
             <input
               type="range"
@@ -107,7 +107,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
           <div className="flex flex-col gap-1">
             <div className="flex justify-between text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">
               <span>Residual Balloon Percentage Ratio</span>
-              <span className="text-[color:var(--cyan)] font-bold font-mono">{balloonPct}%</span>
+              <span className="text-[color:var(--cyan)] font-semibold font-mono">{balloonPct}%</span>
             </div>
             <input
               type="range"
@@ -135,19 +135,19 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
           <div className="grid grid-cols-2 gap-3 w-full text-left">
             <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(138,162,184,0.06)]">
               <div className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Net Principal</div>
-              <div className="text-[16px] font-bold text-[color:var(--white)] mt-0.5">{formatZAR(netPrincipal)}</div>
+              <div className="text-[16px] font-semibold text-[color:var(--white)] mt-0.5">{formatZAR(netPrincipal)}</div>
             </div>
             <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(138,162,184,0.06)]">
               <div className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Aggregate Interest</div>
-              <div className="text-[16px] font-bold text-[color:var(--white)] mt-0.5">{formatZAR(totalInterest)}</div>
+              <div className="text-[16px] font-semibold text-[color:var(--white)] mt-0.5">{formatZAR(totalInterest)}</div>
             </div>
             <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(138,162,184,0.06)]">
               <div className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Balloon Value</div>
-              <div className="text-[16px] font-bold text-[color:var(--white)] mt-0.5">{formatZAR(balloonAmount)}</div>
+              <div className="text-[16px] font-semibold text-[color:var(--white)] mt-0.5">{formatZAR(balloonAmount)}</div>
             </div>
             <div className="bg-[color:var(--glass)] rounded-lg p-3 border border-[rgba(138,162,184,0.06)]">
               <div className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-mono">Lifetime Total Cost</div>
-              <div className="text-[16px] font-bold text-[color:var(--white)] mt-0.5">{formatZAR(lifetimeCost)}</div>
+              <div className="text-[16px] font-semibold text-[color:var(--white)] mt-0.5">{formatZAR(lifetimeCost)}</div>
             </div>
           </div>
         </div>

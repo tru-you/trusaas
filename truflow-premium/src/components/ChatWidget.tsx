@@ -96,7 +96,7 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
           <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(138,162,184,0.1)] bg-[linear-gradient(90deg,rgba(20,102,224,0.1),rgba(21,199,192,0.05))]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[color:var(--cyan)] shadow-[var(--glow-cyan)]"></span>
-              <span className="font-bold text-[16px] text-[color:var(--white)]">Dealer Assist</span>
+              <span className="font-semibold text-[16px] text-[color:var(--white)]">Dealer Assist</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}

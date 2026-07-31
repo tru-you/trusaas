@@ -278,7 +278,7 @@ export default function DealershipAdmin({
   return (
     <div className="card border-[color:var(--cyan-soft)]">
       <div className="card-header border-b border-white/5 px-5 py-3 flex items-center justify-between gap-3">
-        <h3 className="font-bold text-[16px] text-[color:var(--white)] flex items-center gap-2">
+        <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
           <Building2 size={14} className="text-[color:var(--cyan-bright)]" /> Dealerships
         </h3>
         <button
@@ -375,7 +375,7 @@ export default function DealershipAdmin({
               {issued[d.id] && (
                 <div className="rounded-lg border border-[color:var(--cyan-soft)] bg-[color:var(--cyan-faint)] px-3 py-2 flex items-center justify-between gap-3 flex-wrap">
                   <div className="min-w-0">
-                    <div className="text-[13px] font-bold text-[color:var(--white)] tracking-wider">
+                    <div className="text-[13px] font-semibold text-[color:var(--white)] tracking-wider">
                       Shown once — save it now
                     </div>
                     <div className="font-mono text-[15px] text-[color:var(--white)] break-all">
@@ -418,7 +418,7 @@ export default function DealershipAdmin({
 
               {/* Inline product toggles — edit entitlements without recreating */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+                <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
                   Apps
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -437,7 +437,7 @@ export default function DealershipAdmin({
                           updateProducts(d, next);
                         }}
                         className={
-                          "px-2.5 py-1.5 rounded-lg border text-[13px] font-bold cursor-pointer transition-colors disabled:opacity-50 " +
+                          "px-2.5 py-1.5 rounded-lg border text-[13px] font-semibold cursor-pointer transition-colors disabled:opacity-50 " +
                           (on
                             ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)]"
                             : "bg-[color:var(--glass)] text-[color:var(--muted)] border-[color:var(--glass-line)] hover:text-[color:var(--white)]")
@@ -460,7 +460,7 @@ export default function DealershipAdmin({
               {(d.products || []).includes("flow-lite") && (
                 <div className="flex items-center justify-between gap-3 flex-wrap rounded-lg border border-[rgba(0,136,255,0.15)] bg-[rgba(0,136,255,0.06)] px-3 py-2">
                   <div className="min-w-0">
-                    <div className="text-[13px] font-bold text-[color:var(--white)] flex items-center gap-1.5">
+                    <div className="text-[13px] font-semibold text-[color:var(--white)] flex items-center gap-1.5">
                       <ExternalLink size={12} className="text-[#0088FF]" />
                       TruFlow Light
                     </div>
@@ -487,13 +487,13 @@ export default function DealershipAdmin({
 
         {/* ── add a dealership ─────────────────────────────────────────── */}
         <div className="rounded-xl border border-white/10 p-4 flex flex-col gap-3">
-          <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+          <div className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
             Add a dealership
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+              <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
                 Dealership name
               </span>
               <input
@@ -505,7 +505,7 @@ export default function DealershipAdmin({
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+              <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
                 Location
               </span>
               <input
@@ -517,7 +517,7 @@ export default function DealershipAdmin({
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+              <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
                 Slug — permanent
               </span>
               <input
@@ -532,7 +532,7 @@ export default function DealershipAdmin({
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+              <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
                 Website (optional)
               </span>
               <input
@@ -544,12 +544,12 @@ export default function DealershipAdmin({
             </label>
           </div>
 
-          <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider mt-1">
+          <div className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider mt-1">
             Document branding — appears on invoices &amp; agreements
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+              <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
                 Street address
               </span>
               <input
@@ -561,7 +561,7 @@ export default function DealershipAdmin({
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+              <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
                 CIPC registration no.
               </span>
               <input
@@ -573,7 +573,7 @@ export default function DealershipAdmin({
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+              <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
                 VAT number
               </span>
               <input
@@ -589,7 +589,7 @@ export default function DealershipAdmin({
               instance, so this is the whole of provisioning — there is no
               environment variable to edit and nothing to redeploy. */}
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+            <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
               Apps this dealership can sign in to
             </span>
             <div className="flex flex-wrap gap-2">
@@ -606,7 +606,7 @@ export default function DealershipAdmin({
                       )
                     }
                     className={
-                      "px-3 py-2 rounded-lg border text-[13px] font-bold cursor-pointer transition-colors " +
+                      "px-3 py-2 rounded-lg border text-[13px] font-semibold cursor-pointer transition-colors " +
                       (on
                         ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)]"
                         : "bg-[color:var(--glass)] text-[color:var(--muted)] border-[color:var(--glass-line)] hover:text-[color:var(--white)]")
@@ -646,7 +646,7 @@ export default function DealershipAdmin({
             type="button"
             onClick={addDealership}
             disabled={!canSave}
-            className="btn btn-primary self-start text-[13px] font-bold inline-flex items-center gap-1.5 disabled:opacity-40"
+            className="btn btn-primary self-start text-[13px] font-semibold inline-flex items-center gap-1.5 disabled:opacity-40"
           >
             <Plus size={14} />
             {saving ? "Adding…" : "Add dealership"}
@@ -656,7 +656,7 @@ export default function DealershipAdmin({
         {/* ── the one step that still needs Render ─────────────────────── */}
         {rows.length > 0 && (
           <div className="rounded-xl border border-white/10 p-4 flex flex-col gap-2">
-            <div className="text-[13px] font-bold text-[rgba(232,234,230,0.72)] tracking-wider">
+            <div className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
               Last step — TruLens codes on Render
             </div>
             <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">

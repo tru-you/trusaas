@@ -75,7 +75,7 @@ export default function InstallAppButton({
         <button
           type="button"
           onClick={handleClick}
-          className="btn btn-primary text-[13px] font-bold inline-flex items-center gap-2"
+          className="btn btn-primary text-[13px] font-semibold inline-flex items-center gap-2"
         >
           <Download size={14} />
           {available ? `Install ${appName}` : 'How to install'}
@@ -94,7 +94,7 @@ export default function InstallAppButton({
 
       {showIosSteps && (
         <div className="rounded-xl border border-white/10 bg-[color:var(--ink-2)] p-4">
-          <div className="flex items-center gap-2 text-[13px] font-bold text-[color:var(--white)] mb-2">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-[color:var(--white)] mb-2">
             <Smartphone size={14} style={{ color: accent }} />
             {ios ? 'On iPhone or iPad' : 'From your browser menu'}
           </div>

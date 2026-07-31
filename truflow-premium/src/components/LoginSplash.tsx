@@ -152,7 +152,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
           <button
             type="submit"
             disabled={busy}
-            className="w-full py-3 rounded-xl bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-bright)] disabled:opacity-60 on-fill font-bold text-[16px] cursor-pointer transition-colors"
+            className="w-full py-3 rounded-xl bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-bright)] disabled:opacity-60 on-fill font-semibold text-[16px] cursor-pointer transition-colors"
           >
             {busy ? 'Checking…' : 'Enter'}
           </button>
