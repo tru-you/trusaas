@@ -84,7 +84,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
                   <button
                     key={val}
                     type="button"
-                    onClick={() => setRating(val)}
+                    onClick={() => setRating(active ? undefined : val)}
                     className={`flex-1 py-3 rounded-xl text-[13px] font-semibold border flex items-center justify-center gap-2 transition-colors ${
                       active
                         ? tone === 'emerald'
@@ -168,14 +168,9 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
         <button
           type="button"
           onClick={save}
-          disabled={!rating}
-          className={`py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 ${
-            rating
-              ? 'bg-cyan-600 hover:bg-cyan-500 text-[#06080D]'
-              : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
-          }`}
+          className="py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-[#06080D]"
         >
-          <Save size={15} /> {rating ? 'Keep & next' : 'Rate it first'}
+          <Save size={15} /> Keep & next
         </button>
       </div>
     </div>

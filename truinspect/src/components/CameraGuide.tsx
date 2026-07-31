@@ -815,6 +815,15 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
           </label>
         </div>
 
+        {progressPercentage === 100 && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[#E8EAE6] text-[14px] font-semibold flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2"
+          >
+            <Check size={16} /> All shots captured — submit inspection
+          </button>
+        )}
 
       </div>
 
