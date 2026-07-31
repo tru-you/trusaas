@@ -14,6 +14,7 @@ import { DEFAULT_TEMPLATE } from '../templates';
 
 interface DamageTaggerProps {
   vehicle: Vehicle;
+  initialSlotId?: string;
   onBack: () => void;
   onSave: (damageFindings: Record<string, DamageFinding[]>) => Promise<void> | void;
 }
@@ -32,7 +33,7 @@ const SEVERITY_META: Record<number, { label: string; color: string }> = {
 
 const newId = () => `dmg_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
 
-export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerProps) {
+export default function DamageTagger({ vehicle, initialSlotId, onBack, onSave }: DamageTaggerProps) {
   // Only slots that actually have a photo can be tagged.
   const shotSlots = React.useMemo(
     () => DEFAULT_TEMPLATE.slots.filter((s) => vehicle.photos?.[s.id]),
@@ -42,7 +43,9 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
   const [findings, setFindings] = React.useState<Record<string, DamageFinding[]>>(
     () => JSON.parse(JSON.stringify(vehicle.damageFindings || {})),
   );
-  const [slotId, setSlotId] = React.useState<string>(shotSlots[0]?.id || '');
+  const [slotId, setSlotId] = React.useState<string>(
+    (initialSlotId && shotSlots.find(s => s.id === initialSlotId) ? initialSlotId : shotSlots[0]?.id) || '',
+  );
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [savedFlash, setSavedFlash] = React.useState(false);

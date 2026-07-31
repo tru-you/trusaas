@@ -335,7 +335,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
                       <img
                         src={it.photoUrl!}
                         alt={it.label}
-                        style={{ width: '100%', height: 'auto', maxHeight: '150px', objectFit: 'cover', display: 'block' }}
+                        style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block' }}
                       />
                       <div style={{ padding: '6px 8px' }}>
                         <span style={{ fontSize: '11px', color: '#334155', fontWeight: 600 }}>{it.label}</span>
@@ -381,7 +381,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
                         <img
                           src={it.photoUrl}
                           alt={it.label}
-                          style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '4px', marginBottom: '6px' }}
+                          style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '4px', marginBottom: '6px' }}
                         />
                       )}
                       <p style={{ fontWeight: 700, margin: '0 0 2px', fontSize: '11px' }}>{it.label}</p>

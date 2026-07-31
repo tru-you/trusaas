@@ -1,4 +1,14 @@
 /**
+ * COPY. Canonical version lives in truflow-premium/photoStore.ts — edit there
+ * and copy across, the same convention this repo already uses for brand.css and
+ * assets/brand/tokens.css. The two apps build separately and there is no npm
+ * workspace, so a shared import is not available yet; extracting these into one
+ * package is Tier 4 work.
+ *
+ * Keep the two byte-identical below this header. A divergence here means the
+ * same photo could be addressed differently by each product.
+ */
+/**
  * Photos as files, not as database rows.
  *
  * Every photo in this system is currently a base64 data URI stored inside
@@ -25,6 +35,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import sharp from "sharp";
 
 /** Where the bytes live. Under DATA_DIR so they sit on the mounted disk and
  *  survive a deploy, exactly like data.json does. */
@@ -192,6 +203,42 @@ export function asDataUri(value: unknown): string | null {
   if (isDataUri(value)) return value as string;
   if (isStoredRef(value)) return toDataUri(value);
   return null;
+}
+
+const MAX_DIMENSION = 1600;
+const JPEG_QUALITY = 82;
+
+export async function resizeDataUri(dataUri: string): Promise<string> {
+  const match = /^data:([a-z0-9.+/-]+);base64,(.*)$/i.exec(dataUri);
+  if (!match) return dataUri;
+
+  const mime = match[1].toLowerCase();
+  if (!mime.startsWith("image/")) return dataUri;
+
+  let buf: Buffer;
+  try {
+    buf = Buffer.from(match[2], "base64");
+  } catch {
+    return dataUri;
+  }
+
+  try {
+    const meta = await sharp(buf).metadata();
+    const w = meta.width || 0;
+    const h = meta.height || 0;
+    if (w <= MAX_DIMENSION && h <= MAX_DIMENSION) return dataUri;
+
+    const resized = await sharp(buf)
+      .rotate()
+      .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
+      .toBuffer();
+
+    return `data:image/jpeg;base64,${resized.toString("base64")}`;
+  } catch (err) {
+    console.error("[photoStore] resize failed, keeping original:", err);
+    return dataUri;
+  }
 }
 
 /** Bytes currently on disk, for reporting migration progress. */

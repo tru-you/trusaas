@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Car, Plus, Search, CheckCircle2, AlertCircle, AlertTriangle, RefreshCw, ChevronRight,
+  Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
   FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil} from 'lucide-react';
@@ -20,8 +20,6 @@ interface InventoryListProps {
   vehicles: Vehicle[];
   onSelectVehicle: (vehicle: Vehicle) => void;
   onViewReport?: (vehicle: Vehicle) => void;
-  /** Open the damage tagger for this vehicle. */
-  onTagDamage?: (vehicle: Vehicle) => void;
   onAddVehicle: (newVehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => void;
   onDeleteVehicle: (id: string) => void;
   onExportToDms?: (vehicle: Vehicle) => Promise<DmsExportResult>;
@@ -43,7 +41,6 @@ export default function InventoryList({
   vehicles,
   onSelectVehicle,
   onViewReport,
-  onTagDamage,
   onAddVehicle,
   onDeleteVehicle,
   onExportToDms,
@@ -1076,118 +1073,87 @@ export default function InventoryList({
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => onSelectVehicle(vehicle)}
-                        className="flex-1 min-w-[110px] flex items-center justify-center gap-2 text-[13px] font-semibold  tracking-wide text-[#E8EAE6] tl-btn-3d bg-indigo-600 hover:bg-indigo-500 cursor-pointer whitespace-nowrap px-2 py-2 rounded-lg border border-indigo-400/40 transition-colors shadow-sm"
+                        className="flex items-center justify-center gap-2 text-[13px] font-semibold text-[#E8EAE6] bg-tru-cyan hover:bg-cyan-500 on-fill cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2 rounded-lg transition-colors"
                         title="Open camera guide and take pictures"
                       >
-                        <Camera size={12} /> Take photos
+                        <Camera size={13} /> Capture
                       </button>
 
-                      {takenCount > 0 && (
-                        <button
-                          onClick={(e) => handleExportClick(e, vehicle)}
-                          disabled={exportingId === vehicle.id || !onExportToDms}
-                          title={`Push ${takenCount} photos to TruFlow DMS (match by stock #)`}
-                          className="flex items-center gap-1 text-[13px] font-bold text-emerald-400 hover:text-emerald-300 cursor-pointer whitespace-nowrap bg-emerald-500/10 px-2 py-2 rounded border border-emerald-500/20 transition-colors disabled:opacity-50 disabled:cursor-wait"
-                        >
-                          {exportingId === vehicle.id ? (
-                            <>
-                              <RefreshCw size={10} className="animate-spin" /> Exporting…
-                            </>
-                          ) : (
-                            <>
-                              Export to DMS <Download size={10} />
-                            </>
-                          )}
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => handleExportClick(e, vehicle)}
+                        disabled={takenCount === 0 || exportingId === vehicle.id || !onExportToDms}
+                        title={takenCount > 0 ? `Push ${takenCount} photos to TruFlow DMS` : 'Take photos first'}
+                        className="flex items-center justify-center gap-2 text-[13px] font-semibold cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2 rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-neutral-900 border-[rgba(232,234,230,0.14)] text-[#E8EAE6] hover:bg-neutral-800"
+                      >
+                        {exportingId === vehicle.id ? (
+                          <><RefreshCw size={13} className="animate-spin" /> Syncing</>
+                        ) : (
+                          <><Download size={13} /> Export</>
+                        )}
+                      </button>
 
-                      {/* Was text-[#E8EAE6] on this cyan fill — near-white on #4FE3DC is
-                          about 1.3:1, i.e. not readable at all. The guard in index.css
-                          that catches this only lists the solid bg-cyan-* utilities, and
-                          a gradient paints background-IMAGE, so nothing matched it.
-                          .on-fill is the system's answer for type on an accent fill. */}
-                      {/* Damage tagging needs a real photo to pin a mark to, so
-                          it appears on the same condition as the report. */}
-                      {takenCount > 0 && onTagDamage && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onTagDamage(vehicle);
-                          }}
-                          title="Tag damage on the captured photos"
-                          className="flex items-center justify-center gap-1 text-[13px] font-bold cursor-pointer whitespace-nowrap px-2 py-2 rounded transition-colors bg-neutral-900 border border-neutral-800 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6]"
-                        >
-                          Damage <AlertTriangle size={10} />
-                        </button>
-                      )}
-                      {takenCount > 0 && onViewReport && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onViewReport(vehicle);
-                          }}
-                          title="Open inspection report with score, findings & damage photos"
-                          className="on-fill flex items-center justify-center gap-1 text-[13px] font-bold cursor-pointer whitespace-nowrap px-2 py-2 rounded transition-colors shadow-sm"
-                          style={{ background: 'linear-gradient(120deg, #4FE3DC, #4FE3DC)' }}
-                        >
-                          Report <FileText size={10} />
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onViewReport?.(vehicle); }}
+                        disabled={takenCount === 0}
+                        title={takenCount > 0 ? 'Open inspection report' : 'Take photos first'}
+                        className="flex items-center justify-center gap-2 text-[13px] font-semibold cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2 rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-neutral-900 border-[rgba(232,234,230,0.14)] text-[#E8EAE6] hover:bg-neutral-800"
+                      >
+                        <FileText size={13} /> Report
+                      </button>
 
-                      {onUpdateVehicle && isStructurallyWebReady(vehicle) && (
-                        <button
-                          type="button"
-                          disabled={publishingId === vehicle.id}
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            setPublishingId(vehicle.id);
-                            const nextShow = !vehicle.showOnWebsite;
-                            const saved = await onUpdateVehicle(vehicle, {
-                              showOnWebsite: nextShow,
-                              status: nextShow && vehicle.status === 'In-Progress' ? 'Ready' : vehicle.status,
-                              dealerName: dealershipName,
-                              dealerWhatsApp: dealerWhatsApp || vehicle.dealerWhatsApp,
-                            });
-                            if (saved && onExportToDms) {
-                              await onExportToDms(saved).catch(() => {});
-                            }
-                            setPublishingId(null);
-                            if (saved) {
-                              setExportToast({
-                                type: 'ok',
-                                text: nextShow
-                                  ? `${vehicle.stockNumber} published to website feed`
-                                  : `${vehicle.stockNumber} removed from website feed`,
-                              });
-                              setTimeout(() => setExportToast(null), 3200);
-                            } else {
-                              setExportToast({ type: 'err', text: 'Could not update publish status' });
-                              setTimeout(() => setExportToast(null), 3200);
-                            }
-                          }}
-                          title={
-                            vehicle.showOnWebsite
-                              ? 'Remove from public website stock feed'
-                              : 'One-tap publish to dealer website stock feed'
+                      <button
+                        type="button"
+                        disabled={!onUpdateVehicle || !isStructurallyWebReady(vehicle) || publishingId === vehicle.id}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (!onUpdateVehicle) return;
+                          setPublishingId(vehicle.id);
+                          const nextShow = !vehicle.showOnWebsite;
+                          const saved = await onUpdateVehicle(vehicle, {
+                            showOnWebsite: nextShow,
+                            status: nextShow && vehicle.status === 'In-Progress' ? 'Ready' : vehicle.status,
+                            dealerName: dealershipName,
+                            dealerWhatsApp: dealerWhatsApp || vehicle.dealerWhatsApp,
+                          });
+                          if (saved && onExportToDms) {
+                            await onExportToDms(saved).catch(() => {});
                           }
-                          className={`flex items-center gap-1 text-[13px] font-bold cursor-pointer whitespace-nowrap px-2 py-2 rounded border transition-colors disabled:opacity-50 ${
-                            vehicle.showOnWebsite
-                              ? 'bg-sky-500/15 text-sky-300 border-sky-500/30 hover:bg-sky-500/25'
-                              : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/25 hover:bg-cyan-500/20'
-                          }`}
-                        >
-                          {publishingId === vehicle.id ? (
-                            <RefreshCw size={10} className="animate-spin" />
-                          ) : (
-                            <ExternalLink size={10} />
-                          )}
-                          {vehicle.showOnWebsite ? 'On web · Unpublish' : 'Publish to web'}
-                        </button>
-                      )}
+                          setPublishingId(null);
+                          if (saved) {
+                            setExportToast({
+                              type: 'ok',
+                              text: nextShow
+                                ? `${vehicle.stockNumber} published to website feed`
+                                : `${vehicle.stockNumber} removed from website feed`,
+                            });
+                            setTimeout(() => setExportToast(null), 3200);
+                          } else {
+                            setExportToast({ type: 'err', text: 'Could not update publish status' });
+                            setTimeout(() => setExportToast(null), 3200);
+                          }
+                        }}
+                        title={
+                          vehicle.showOnWebsite
+                            ? 'Remove from public website stock feed'
+                            : 'Publish to dealer website stock feed'
+                        }
+                        className={`flex items-center justify-center gap-2 text-[13px] font-semibold cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2 rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                          vehicle.showOnWebsite
+                            ? 'bg-sky-500/15 text-sky-300 border-sky-500/30 hover:bg-sky-500/25'
+                            : 'bg-neutral-900 border-[rgba(232,234,230,0.14)] text-[#E8EAE6] hover:bg-neutral-800'
+                        }`}
+                      >
+                        {publishingId === vehicle.id ? (
+                          <RefreshCw size={13} className="animate-spin" />
+                        ) : (
+                          <ExternalLink size={13} />
+                        )}
+                        {vehicle.showOnWebsite ? 'Unpublish' : 'Publish'}
+                      </button>
                     </div>
                   </div>
                 </div>

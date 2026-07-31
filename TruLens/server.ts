@@ -15,6 +15,7 @@ import {
   put as putPhoto,
   isStoredRef,
   asDataUri,
+  resizeDataUri,
   stats as photoStats,
 } from './photoStore';
 import { DEFAULT_TEMPLATE } from './src/templates';
@@ -1178,7 +1179,8 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const photos = { ...(existingData.photos || {}), [slotId]: base64Image };
+    const resized = await resizeDataUri(base64Image);
+    const photos = { ...(existingData.photos || {}), [slotId]: resized };
     const quality = { ...(existingData.quality || {}) };
     if (qualityReport) {
       quality[slotId] = qualityReport;

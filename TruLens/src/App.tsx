@@ -110,6 +110,8 @@ export default function App() {
   const [activeSlotId, setActiveSlotId] = React.useState<string | null>(null);
   const [activeImageSrc, setActiveImageSrc] = React.useState<string | null>(null);
   const [activeQualityReport, setActiveQualityReport] = React.useState<QualityReport | null>(null);
+  const [damageReturnTo, setDamageReturnTo] = React.useState<'camera' | 'inventory'>('inventory');
+  const [damageInitialSlot, setDamageInitialSlot] = React.useState<string | undefined>(undefined);
   
   // Sync status state
   const [syncStatus, setSyncStatus] = React.useState<'synced' | 'syncing' | 'error'>('synced');
@@ -316,7 +318,13 @@ export default function App() {
         })(),
       };
     }));
-    setActiveView('camera');
+    if (assessment?.rating === 'damage') {
+      setDamageReturnTo('camera');
+      setDamageInitialSlot(targetSlot);
+      setActiveView('damage');
+    } else {
+      setActiveView('camera');
+    }
     setActiveImageSrc(null);
     setActiveSlotId(null);
     setActiveQualityReport(null);
@@ -360,8 +368,9 @@ export default function App() {
     setSyncStatus('syncing');
     try {
       const token = await user.getIdToken();
+      const { photos, quality, closeups, ...vehicleWithoutMedia } = vehicle;
       const next = {
-        ...vehicle,
+        ...vehicleWithoutMedia,
         ...patch,
         id: vehicle.id,
         updatedAt: new Date().toISOString(),
@@ -488,7 +497,6 @@ export default function App() {
                 vehicles={vehicles}
                 onSelectVehicle={handleSelectVehicle}
                 onViewReport={handleViewReport}
-                onTagDamage={(v) => { setActiveVehicleId(v.id); setActiveView('damage'); }}
                 onAddVehicle={handleAddVehicle}
                 onDeleteVehicle={handleDeleteVehicle}
                 onExportToDms={handleExportToDms}
@@ -518,7 +526,8 @@ export default function App() {
           {activeView === 'damage' && activeVehicle && (
             <DamageTagger
               vehicle={activeVehicle}
-              onBack={() => setActiveView('inventory')}
+              initialSlotId={damageInitialSlot}
+              onBack={() => setActiveView(damageReturnTo)}
               onSave={async (damageFindings) => {
                 /* Persisted through the same upsert every other vehicle change
                    uses — POST /api/inventory merges the body over the stored

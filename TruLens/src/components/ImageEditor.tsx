@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, Save, RotateCcw, Check, AlertTriangle, MinusCircle, Camera, X } from 'lucide-react';
+import { ChevronLeft, Save, RotateCcw, Check, AlertTriangle, MinusCircle } from 'lucide-react';
 import { Vehicle, QualityReport, PointResult } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 
@@ -24,27 +24,12 @@ export default function ImageEditor({
   const existing = vehicle.slotAssessment?.[slotId];
   const [rating, setRating] = React.useState<PointResult['rating']>(existing?.rating);
   const [note, setNote] = React.useState(existing?.comment || '');
-  const [closeups, setCloseups] = React.useState<string[]>(vehicle.closeups?.[slotId] || []);
   const [rotation, setRotation] = React.useState(0);
-  const closeupInputRef = React.useRef<HTMLInputElement | null>(null);
-
-  const isDamage = rating === 'damage';
-
-  const addCloseup = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    e.target.value = '';
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (ev.target?.result) setCloseups((prev) => [...prev, ev.target!.result as string]);
-    };
-    reader.readAsDataURL(f);
-  };
 
   const save = async () => {
     const assessment: PointResult = { rating, comment: note.trim() || undefined };
     const finalImage = rotation === 0 ? imageSrc : await rotateDataUrl(imageSrc, rotation);
-    onSave(finalImage, qualityReport, assessment, isDamage ? closeups : []);
+    onSave(finalImage, qualityReport, assessment, []);
   };
 
   const qualityBand = qualityReport.overallScore >= 80 ? 'text-emerald-400' :
@@ -119,43 +104,12 @@ export default function ImageEditor({
             />
           </div>
 
-          {/* Damage close-ups */}
-          {isDamage && (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 space-y-3">
-              <p className="text-[13px] font-semibold text-rose-300 flex items-center gap-2">
-                <AlertTriangle size={13} /> Add a close-up of the damage
+          {/* Damage hint */}
+          {rating === 'damage' && (
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 px-3 py-2">
+              <p className="text-[13px] text-rose-300 flex items-center gap-2">
+                <AlertTriangle size={13} /> Damage tagger opens after you save this shot
               </p>
-              <div className="flex flex-wrap gap-2">
-                {closeups.map((src, i) => (
-                  <div key={i} className="relative">
-                    <img src={src} alt={`close-up ${i + 1}`} className="w-16 h-16 rounded-lg object-cover border border-neutral-700" />
-                    <button
-                      type="button"
-                      onClick={() => setCloseups((prev) => prev.filter((_, j) => j !== i))}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-neutral-900 border border-neutral-700 flex items-center justify-center text-neutral-300"
-                      aria-label="Remove close-up"
-                    >
-                      <X size={11} />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => closeupInputRef.current?.click()}
-                  className="w-16 h-16 rounded-lg border-2 border-dashed border-rose-500/40 text-rose-300 flex flex-col items-center justify-center gap-0.5"
-                >
-                  <Camera size={16} />
-                  <span className="text-[13px] font-bold">Close-up</span>
-                </button>
-              </div>
-              <input
-                ref={closeupInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={addCloseup}
-              />
             </div>
           )}
 

@@ -392,8 +392,9 @@ export default function App() {
     setSyncStatus('syncing');
     try {
       const token = await user.getIdToken();
+      const { photos, quality, closeups, ...vehicleWithoutMedia } = vehicle;
       const next = {
-        ...vehicle,
+        ...vehicleWithoutMedia,
         ...patch,
         id: vehicle.id,
         updatedAt: new Date().toISOString(),
