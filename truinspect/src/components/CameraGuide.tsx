@@ -512,7 +512,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
 
   const renderGuideOverlay = () => (
     <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <g stroke="currentColor" strokeWidth="0.7" fill="none" opacity="0.55" className="text-trulens-purple">
+      <g stroke="currentColor" strokeWidth="0.7" fill="none" opacity="0.55" className="text-tru-cyan">
         <path d="M 8,16 L 8,10 L 16,10" />
         <path d="M 92,16 L 92,10 L 84,10" />
         <path d="M 8,84 L 8,90 L 16,90" />
@@ -520,8 +520,8 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
       </g>
       <rect x="16" y="26" width="68" height="48" rx="2"
             stroke="currentColor" strokeWidth="0.5" strokeDasharray="1.5,2"
-            fill="none" opacity="0.35" className="text-trulens-purple" />
-      <line x1="30" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="0.4" opacity="0.25" className="text-trulens-purple" />
+            fill="none" opacity="0.35" className="text-tru-cyan" />
+      <line x1="30" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="0.4" opacity="0.25" className="text-tru-cyan" />
     </svg>
   );
 

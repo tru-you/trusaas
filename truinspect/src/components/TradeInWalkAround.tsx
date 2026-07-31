@@ -142,14 +142,14 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
               <ArrowLeft size={18} />
             </button>
             <div className="min-w-0">
-              <h1 className="text-[16px] font-bold tracking-tight">Trade-In Appraisal</h1>
+              <h1 className="text-[16px] font-semibold tracking-tight">Trade-in appraisal</h1>
               <p className="text-[13px] text-neutral-400 truncate">
                 {vehicle.year} {vehicle.make} {vehicle.model}
               </p>
             </div>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-[13px] font-bold text-neutral-300">{completedCount}/{items.length}</div>
+            <div className="text-[13px] font-medium text-[#E8EAE6]">{completedCount}/{items.length}</div>
             <div className="text-[13px] text-cyan-400 font-semibold">
               R {totalRecon.toLocaleString('en-ZA')} recon
             </div>
@@ -172,11 +172,11 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
       <div className="flex-1 overflow-y-auto p-4 pb-32">
         <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[15px] font-bold text-neutral-100">
+            <h2 className="text-[15px] font-semibold text-[#E8EAE6]">
               Step {currentStep + 1}: {item.label}
             </h2>
             {item.isCompleted && (
-              <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
+              <CheckCircle2 size={20} className="text-[#4FE3DC] shrink-0" />
             )}
           </div>
 
@@ -234,12 +234,12 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
                     key={opt.value}
                     type="button"
                     onClick={() => updateItem({ status: opt.value })}
-                    className={`flex-1 min-w-[120px] min-h-[44px] rounded-lg text-[13px] font-semibold border transition-colors ${
+                    className={`flex-1 min-w-[120px] min-h-[46px] rounded-lg text-[13px] font-medium border transition-colors ${
                       active
                         ? isGood
-                          ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
-                          : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
-                        : 'bg-neutral-950 border-neutral-800 text-neutral-400'
+                          ? 'bg-cyan-500/10 border-cyan-500/55 text-cyan-300'
+                          : 'bg-rose-500/12 border-rose-500/45 text-rose-300'
+                        : 'bg-[rgba(232,234,230,0.055)] border-[rgba(232,234,230,0.14)] text-[rgba(232,234,230,0.55)]'
                     }`}
                   >
                     {opt.label}
@@ -278,7 +278,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
 
           {/* Recon cost */}
           <div>
-            <p className="text-[12px] text-neutral-500 mb-2 font-semibold">ESTIMATED REPAIR / REPLACEMENT COST (R)</p>
+            <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Estimated repair / replacement cost (R)</p>
             <input
               type="number"
               min={0}
@@ -286,7 +286,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
               onChange={(e) => updateItem({ estimatedRepairCost: Math.max(0, Number(e.target.value) || 0) })}
               placeholder="0"
               autoFocus={needsReconCost(item.status)}
-              className={`w-full px-4 py-3 rounded-xl text-[15px] font-semibold border focus:outline-none ${
+              className={`w-full px-4 min-h-[46px] rounded-xl text-[15px] font-medium border focus:outline-none ${
                 needsReconCost(item.status)
                   ? 'bg-red-950/30 border-red-500/50 text-red-200 placeholder-red-400/50 focus:border-red-400'
                   : 'bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:border-cyan-500/40'
@@ -306,7 +306,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
                 idx === currentStep
                   ? 'bg-cyan-400 ring-2 ring-cyan-400/30'
                   : it.isCompleted
-                    ? 'bg-emerald-500/60'
+                    ? 'bg-cyan-500/60'
                     : 'bg-neutral-700'
               }`}
               title={`${idx + 1}. ${it.label}`}
@@ -322,7 +322,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           type="button"
           disabled={currentStep === 0}
           onClick={() => setCurrentStep((s) => s - 1)}
-          className="flex-1 py-3 rounded-xl border border-neutral-800 text-neutral-300 text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-30"
+          className="flex-1 min-h-[52px] rounded-xl border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[15px] font-medium flex items-center justify-center gap-2 disabled:opacity-30"
         >
           <ArrowLeft size={14} /> Prev
         </button>
@@ -330,7 +330,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           <button
             type="button"
             onClick={() => setCurrentStep((s) => s + 1)}
-            className="flex-1 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[13px] font-semibold flex items-center justify-center gap-2"
+            className="flex-1 min-h-[52px] rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[15px] font-semibold flex items-center justify-center gap-2"
           >
             Next <ArrowRight size={14} />
           </button>

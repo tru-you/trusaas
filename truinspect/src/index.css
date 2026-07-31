@@ -182,7 +182,7 @@
   
   /* Were #22d3ee and #3B82F6 — stock Tailwind, never rebranded, so TruInspect
      ran a brighter bluer accent than TruLens on the same screens. */
-  --color-trulens-purple: #4FE3DC;   /* capture / catalogue accent */
+  --color-tru-cyan: #4FE3DC;   /* capture / catalogue accent */
   --color-trulens-blue: #4FE3DC;     /* dashboard / analytics accent (logo blue) */
 
   /* TruSaaS rebrand: cyan accent everywhere — remap the legacy indigo/purple/violet
@@ -458,7 +458,7 @@ body { background: var(--bg-base); color: var(--text-primary); font-family: var(
    Unlayered, so it beats the Tailwind text utility. Opacity variants such as
    bg-cyan-600/20 are a different class token and are NOT matched, which is
    correct: those are dark tints that want light text. */
-.bg-trulens-purple,
+.bg-tru-cyan,
 .bg-cyan-400, .bg-cyan-500, .bg-cyan-600,
 .bg-teal-400, .bg-teal-500, .bg-teal-600,
 .bg-emerald-400, .bg-emerald-500, .bg-emerald-600,

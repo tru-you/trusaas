@@ -537,7 +537,7 @@ export default function InventoryList({
           <button
             onClick={() => { setEditingVehicle(null); setShowAddForm(!showAddForm); }}
             aria-label={showAddForm ? (editingVehicle ? 'Close edit form' : 'Close new vehicle form') : 'Add a vehicle'}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 rounded-lg bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 rounded-lg bg-tru-cyan hover:bg-tru-cyan/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
           >
             <Plus size={18} />
           </button>
@@ -553,8 +553,8 @@ export default function InventoryList({
             <div className="flex items-center gap-2 border-b border-neutral-850 pb-2">
               <span className="text-[13px] font-semibold text-neutral-300 flex items-center gap-2">
                 {editingVehicle
-                  ? <><Pencil size={14} className="text-trulens-purple" /> Edit vehicle</>
-                  : <><Plus size={14} className="text-trulens-purple" /> New vehicle</>}
+                  ? <><Pencil size={14} className="text-tru-cyan" /> Edit vehicle</>
+                  : <><Plus size={14} className="text-tru-cyan" /> New vehicle</>}
               </span>
             </div>
 
@@ -586,7 +586,7 @@ export default function InventoryList({
                   placeholder="e.g., Ford"
                   value={make}
                   onChange={(e) => setMake(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 />
               </div>
               <div>
@@ -597,7 +597,7 @@ export default function InventoryList({
                   placeholder="e.g., Mustang"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 />
               </div>
               <div>
@@ -608,7 +608,7 @@ export default function InventoryList({
                   value={mileage}
                   onChange={(e) => setMileage(e.target.value.replace(/[^\d]/g, ''))}
                   placeholder="e.g. 78400"
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 />
               </div>
             </div>
@@ -622,7 +622,7 @@ export default function InventoryList({
                   placeholder="2024"
                   value={year}
                   onChange={(e) => setYear(Number(e.target.value))}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan font-mono"
                 />
               </div>
               <div>
@@ -632,7 +632,7 @@ export default function InventoryList({
                   placeholder="GT Premium"
                   value={trim}
                   onChange={(e) => setTrim(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 />
               </div>
               <div>
@@ -642,7 +642,7 @@ export default function InventoryList({
                   placeholder="35000"
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan font-mono"
                 />
               </div>
               <div>
@@ -652,7 +652,7 @@ export default function InventoryList({
                   placeholder="STK-10293"
                   value={stockNumber}
                   onChange={(e) => setStockNumber(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan font-mono"
                 />
               </div>
               <div>
@@ -662,7 +662,7 @@ export default function InventoryList({
                   placeholder="Magnetic Gray"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 />
               </div>
               <div>
@@ -670,7 +670,7 @@ export default function InventoryList({
                 <select
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 >
                   <option value="Sedan">Sedan</option>
                   <option value="SUV">SUV</option>
@@ -686,7 +686,7 @@ export default function InventoryList({
                 <select
                   value={transmission}
                   onChange={(e) => setTransmission(e.target.value as 'Automatic' | 'Manual')}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 >
                   <option value="Manual">Manual</option>
                   <option value="Automatic">Automatic</option>
@@ -697,7 +697,7 @@ export default function InventoryList({
                 <select
                   value={fuelType}
                   onChange={(e) => setFuelType(e.target.value as 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric')}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 >
                   <option value="Petrol">Petrol</option>
                   <option value="Diesel">Diesel</option>
@@ -710,7 +710,7 @@ export default function InventoryList({
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'In-Progress' | 'Ready')}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
                 >
                   <option value="In-Progress">In-Progress</option>
                   <option value="Ready">Ready</option>
@@ -723,7 +723,7 @@ export default function InventoryList({
                   placeholder="17 characters"
                   value={vin}
                   onChange={(e) => setVin(e.target.value.toUpperCase())}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan font-mono"
                 />
               </div>
             </div>
@@ -738,7 +738,7 @@ export default function InventoryList({
               </button>
               <button
                 type="submit"
-                className="flex-1 py-2 bg-trulens-purple hover:bg-trulens-purple/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
+                className="flex-1 py-2 bg-tru-cyan hover:bg-tru-cyan/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
               >
                 {editingVehicle ? <><Pencil size={14} /> Save changes</> : <><Plus size={14} /> Add vehicle</>}
               </button>
