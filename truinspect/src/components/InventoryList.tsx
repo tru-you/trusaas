@@ -478,7 +478,7 @@ export default function InventoryList({
           <div className="text-[13px] font-semibold text-[#E8EAE6] truncate leading-tight">
             {dealershipName}
           </div>
-          <div className="text-[11px] text-neutral-400 leading-tight truncate">
+          <div className="text-[12px] text-neutral-400 leading-tight truncate">
             {fleet.total === 0
               ? 'No vehicles yet'
               : fleet.needPhotos.length > 0
@@ -1045,7 +1045,7 @@ export default function InventoryList({
                           className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-emerald-300 hover:text-emerald-200 cursor-pointer bg-emerald-500/10 min-h-[44px] rounded-lg border border-emerald-500/25 transition-colors"
                         >
                           <BarChart3 size={12} /> Trade-In
-                          {vehicle.tradeInData && <span className="ml-0.5 text-[10px]">✓</span>}
+                          {vehicle.tradeInData && <span className="ml-0.5 text-[12px]">✓</span>}
                         </button>
                       )}
 
@@ -1245,7 +1245,7 @@ export default function InventoryList({
                 <Lightbulb size={14} />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-[11px] font-bold text-neutral-400 tracking-widest">DO NEXT</span>
+                <span className="text-[12px] font-medium text-[rgba(232,234,230,0.55)]">Do next</span>
                 <p className="text-[16px] font-semibold text-[#E8EAE6] leading-snug mt-1">
                   {nextAction.head}
                 </p>
@@ -1260,7 +1260,7 @@ export default function InventoryList({
                         style={{ width: `${Math.round((fleet.complete / fleet.total) * 100)}%` }}
                       />
                     </div>
-                    <span className="text-[11px] font-mono text-neutral-400 shrink-0">
+                    <span className="text-[12px] font-mono text-neutral-400 shrink-0">
                       {fleet.complete}/{fleet.total} signed off
                     </span>
                   </div>
@@ -1438,7 +1438,7 @@ export default function InventoryList({
             </div>
 
             <div className="pt-8 pb-4 flex flex-col items-center opacity-40">
-              <span className="text-[13px] text-neutral-500  tracking-[0.2em] font-bold">Powered by TruSaaS</span>
+              <span className="text-[13px] text-[rgba(232,234,230,0.32)]">Powered by TruSaaS</span>
             </div>
           </div>
         )}

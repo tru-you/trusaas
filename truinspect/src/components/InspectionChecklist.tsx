@@ -75,7 +75,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
       <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
         {(DEFAULT_TEMPLATE.disclosureQuestions || []).map(section => (
           <div key={section.section}>
-            <h2 className="text-[13px] font-semibold  tracking-[0.2em] text-cyan-400 mb-2">
+            <h2 className="text-[13px] font-medium text-[rgba(232,234,230,0.55)] mb-2">
               {section.section}
             </h2>
             <div className="space-y-2">
@@ -94,7 +94,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <p className="text-[11px] font-medium text-neutral-200 leading-snug flex-1">
+                      <p className="text-[12px] font-medium text-neutral-200 leading-snug flex-1">
                         {item.q}
                       </p>
                       {isFlagged
@@ -144,7 +144,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
           type="button"
           onClick={() => handleSave(false)}
           disabled={saving}
-          className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#E8EAE6] text-[13px] font-semibold  tracking-widest flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#E8EAE6] text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
         >
           <Save size={14} />
           {saving ? 'Saving…' : savedFlash ? 'Saved ✓' : 'Save checklist'}

@@ -145,7 +145,7 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
       </div>
 
       {stale && dealerships.length > 0 && (
-        <p className="mt-3 text-[11px] text-center text-[rgba(232,234,230,0.55)]">
+        <p className="mt-3 text-[12px] text-center text-[rgba(232,234,230,0.55)]">
           Offline — showing the last known list.
         </p>
       )}

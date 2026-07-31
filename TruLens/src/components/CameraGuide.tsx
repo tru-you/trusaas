@@ -737,7 +737,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
                     : 'slot-state--idle'
                 }`}
               >
-                <span className="text-[11px] opacity-60">{i + 1}</span>
+                <span className="text-[12px] opacity-60">{i + 1}</span>
                 {isTaken ? (
                   <Check size={10} className="font-semibold" />
                 ) : isNext ? (
@@ -966,14 +966,14 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
                         className="w-full h-full object-cover" 
                         referrerPolicy="no-referrer"
                       />
-                      <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[11px] text-center font-mono py-0.5 truncate px-1 text-neutral-300">
+                      <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[12px] text-center font-mono py-0.5 truncate px-1 text-neutral-300">
                         {item.fileName}
                       </span>
                     </div>
 
                     {/* Slot Match Controller */}
                     <div className="flex-1 min-w-0">
-                      <label className="text-[13px]  font-bold text-neutral-400 tracking-wider block mb-1">
+                      <label className="text-[13px] font-medium text-[rgba(232,234,230,0.55)] block mb-1">
                         Assign Photographic Slot
                       </label>
                       <select

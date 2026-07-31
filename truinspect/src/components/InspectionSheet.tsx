@@ -132,7 +132,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
       <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
         {grouped.map(({ group, items }) => (
           <div key={group}>
-            <h2 className="text-[13px] font-semibold tracking-[0.15em] text-cyan-400 mb-2">{group}</h2>
+            <h2 className="text-[13px] font-medium text-[rgba(232,234,230,0.55)] mb-2">{group}</h2>
             <div className="space-y-2">
               {items.map((p) => {
                 const r = points[p.id] || {};

@@ -278,7 +278,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       {/* Signed off by — on-screen only, value prints on the report footer */}
       <div className="no-print bg-slate-950/60 border-b border-white/10">
         <div className="max-w-5xl mx-auto px-3 py-3">
-          <div className="text-[11px] font-bold tracking-widest text-neutral-400 mb-2">SIGNED OFF BY</div>
+          <div className="text-[12px] font-medium text-[rgba(232,234,230,0.55)] mb-2">Signed off by</div>
           <input
             type="text"
             defaultValue={vehicle.capturedBy || ''}
@@ -290,7 +290,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             className="w-full px-3 py-3 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
           />
           {!vehicle.capturedBy && (
-            <p className="text-[11px] text-amber-300/90 mt-2">
+            <p className="text-[12px] text-amber-300/90 mt-2">
               No name recorded — the signature line prints blank on the report.
             </p>
           )}

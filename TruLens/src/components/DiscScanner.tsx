@@ -340,7 +340,7 @@ export default function DiscScanner({
               {hint || 'Tap “Take a photo” and fill the frame with just the barcode.'}
             </p>
             {diag && (
-              <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[11px] font-mono text-[rgba(232,234,230,0.4)]">
+              <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[12px] font-mono text-[rgba(232,234,230,0.4)]">
                 {diag}
               </span>
             )}

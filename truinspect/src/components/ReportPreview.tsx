@@ -258,8 +258,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           signature block. */}
       <div className="no-print bg-slate-950/60 border-b border-white/10">
         <div className="max-w-5xl mx-auto px-3 py-3">
-          <div className="text-[11px] font-bold tracking-widest text-neutral-400 mb-2">
-            SIGNED OFF BY
+          <div className="text-[12px] font-medium text-[rgba(232,234,230,0.55)] mb-2">
+            Signed off by
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input
@@ -284,7 +284,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             />
           </div>
           {(!vehicle.inspectorName || !vehicle.vin) && (
-            <p className="text-[11px] text-amber-300/90 mt-2">
+            <p className="text-[12px] text-amber-300/90 mt-2">
               {!vehicle.vin && !vehicle.inspectorName
                 ? 'No VIN and no inspector recorded — both print blank on the report.'
                 : !vehicle.vin

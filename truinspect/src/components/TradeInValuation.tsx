@@ -135,7 +135,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-3 flex items-center gap-3">
             {sources.map((s) => (
               <div key={s.name} className="flex-1 text-center">
-                <p className="text-[11px] text-neutral-500 font-semibold">{s.name}</p>
+                <p className="text-[12px] text-neutral-500 font-semibold">{s.name}</p>
                 <p className="text-[13px] font-bold text-neutral-300">
                   {s.count > 0 ? `${s.count} listings · ${fmt(s.avg!)}` : 'No results'}
                 </p>
@@ -188,8 +188,8 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
 
         {/* Recon cost (read-only summary) */}
         <div className="rounded-xl border border-neutral-800 bg-neutral-900/70 p-4 flex items-center justify-between">
-          <span className="text-[13px] text-neutral-400 font-semibold">Total Recon Costs</span>
-          <span className={`text-[16px] font-bold ${totalRecon > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+          <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Total recon costs</span>
+          <span className={`text-[16px] font-medium font-mono ${totalRecon > 0 ? 'text-rose-400' : 'text-[rgba(232,234,230,0.55)]'}`}>
             - {fmt(totalRecon)}
           </span>
         </div>
@@ -197,8 +197,8 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
         {/* Margin (dealer only) */}
         <div className="rounded-xl border border-neutral-800 bg-neutral-900/70 p-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-[12px] text-neutral-500 font-semibold">DEALER MARGIN %</label>
-            <span className="text-[11px] text-neutral-600">(hidden on customer export)</span>
+            <label className="text-[12px] text-[rgba(232,234,230,0.55)]">Dealer margin</label>
+            <span className="text-[12px] text-neutral-600">(hidden on customer export)</span>
           </div>
           <input
             type="number"
@@ -212,8 +212,8 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
 
         {/* Final calculation */}
         <div className="rounded-2xl border-2 border-cyan-500/40 bg-cyan-950/20 p-5">
-          <p className="text-[12px] text-cyan-400 font-semibold tracking-[0.1em] mb-1">FINAL TRADE-IN OFFER</p>
-          <p className="text-[28px] font-black text-cyan-300">
+          <p className="text-[13px] text-[#4FE3DC] mb-2">Final trade-in offer</p>
+          <p className="text-[38px] font-semibold text-[#E8EAE6] tracking-[-0.022em]">
             {valuation.averageRetailPrice !== null && valuation.averageRetailPrice > 0
               ? fmt(valuation.finalTradeInValue)
               : '—'}

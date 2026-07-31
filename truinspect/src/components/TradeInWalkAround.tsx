@@ -165,7 +165,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
         </div>
 
         {/* Category label */}
-        <p className="text-[11px] tracking-[0.15em] text-cyan-400 mt-2 font-semibold">{categoryForStep}</p>
+        <p className="text-[12px] text-[rgba(232,234,230,0.55)] mt-2">{categoryForStep}</p>
       </div>
 
       {/* Current step card */}

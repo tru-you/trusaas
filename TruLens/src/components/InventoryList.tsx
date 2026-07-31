@@ -497,7 +497,7 @@ export default function InventoryList({
           <div className="text-[13px] font-semibold text-[#E8EAE6] truncate leading-tight">
             {dealershipName}
           </div>
-          <div className="text-[11px] text-neutral-400 leading-tight truncate">
+          <div className="text-[12px] text-neutral-400 leading-tight truncate">
             {fleet.total === 0
               ? 'No vehicles yet'
               : fleet.shortOfPublish.length > 0
@@ -1012,12 +1012,12 @@ export default function InventoryList({
                               user's own label and belongs. On the card, the derived
                               stage is the one that cannot be wrong. */}
                           {vehicle.lastDmsExportAt && (
-                            <span className="text-[11px] text-neutral-500 font-mono" title={vehicle.lastDmsExportAt}>
+                            <span className="text-[12px] text-neutral-500 font-mono" title={vehicle.lastDmsExportAt}>
                               Exported {new Date(vehicle.lastDmsExportAt).toLocaleDateString()}
                             </span>
                           )}
                           <span
-                            className="text-[11px] font-bold px-2 py-0.5 rounded border"
+                            className="text-[12px] font-bold px-2 py-0.5 rounded border"
                             style={{ color: readiness.color, borderColor: readiness.color + '40', background: readiness.color + '14' }}
                             title={readiness.reasons.join(' · ') || readiness.label}
                           >
@@ -1368,7 +1368,7 @@ export default function InventoryList({
                 <Lightbulb size={14} />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-[11px] font-bold text-neutral-400 tracking-widest">DO NEXT</span>
+                <span className="text-[12px] font-medium text-[rgba(232,234,230,0.55)]">Do next</span>
                 <p className="text-[16px] font-semibold text-[#E8EAE6] leading-snug mt-1">
                   {nextAction.head}
                 </p>
@@ -1383,7 +1383,7 @@ export default function InventoryList({
                         style={{ width: `${Math.round((fleet.done / fleet.total) * 100)}%` }}
                       />
                     </div>
-                    <span className="text-[11px] font-mono text-neutral-400 shrink-0">
+                    <span className="text-[12px] font-mono text-neutral-400 shrink-0">
                       {fleet.done}/{fleet.total} complete
                     </span>
                   </div>
@@ -1462,7 +1462,7 @@ export default function InventoryList({
                 </p>
                 <div className="flex items-center justify-between gap-3 rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-3">
                   <div className="min-w-0">
-                    <div className="text-[11px] text-neutral-600 uppercase tracking-wide">Target</div>
+                    <div className="text-[12px] text-[rgba(232,234,230,0.55)]">Target</div>
                     <div className="text-[13px] font-mono text-[#E8EAE6] truncate">{DMS_URL}</div>
                   </div>
                   <button
@@ -1585,7 +1585,7 @@ export default function InventoryList({
             </div>
 
             <div className="pt-8 pb-4 flex flex-col items-center opacity-40">
-              <span className="text-[13px] text-neutral-600 tracking-[0.15em] font-bold">Powered by TruSaaS</span>
+              <span className="text-[13px] text-[rgba(232,234,230,0.32)]">Powered by TruSaaS</span>
             </div>
           </div>
         )}

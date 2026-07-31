@@ -730,7 +730,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
                     : 'slot-state--idle'
                 }`}
               >
-                <span className="text-[11px] opacity-60">{i + 1}</span>
+                <span className="text-[12px] opacity-60">{i + 1}</span>
                 {isTaken ? (
                   <Check size={10} className="font-semibold" />
                 ) : isNext ? (
@@ -934,7 +934,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onBulkPh
 
                     {/* Slot Match Controller */}
                     <div className="flex-1 min-w-0">
-                      <label className="text-[13px]  font-bold text-neutral-400 tracking-wider block mb-1">
+                      <label className="text-[13px] font-medium text-[rgba(232,234,230,0.55)] block mb-1">
                         Assign Photographic Slot
                       </label>
                       <select
