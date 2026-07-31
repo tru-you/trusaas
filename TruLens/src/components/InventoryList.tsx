@@ -593,113 +593,120 @@ export default function InventoryList({
         {/* Add vehicle Form Box */}
         {showAddForm && (
           <form onSubmit={handleSubmit} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 space-y-4 shadow-xl animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-neutral-850 pb-2">
-              <span className="text-[13px] font-bold text-neutral-300 flex items-center gap-2">
+            <div className="flex items-center gap-2 border-b border-neutral-850 pb-2">
+              <span className="text-[13px] font-semibold text-neutral-300 flex items-center gap-2">
                 {editingVehicle
                   ? <><Pencil size={14} className="text-trulens-purple" /> Edit vehicle</>
                   : <><Plus size={14} className="text-trulens-purple" /> New vehicle</>}
               </span>
-              <button
-                type="button"
-                onClick={() => setScanningDisc(true)}
-                className="flex items-center gap-2 text-[13px] font-semibold px-3 py-1 rounded-full bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/30"
-              >
-                <ScanLine size={12} /> Scan disc
-              </button>
             </div>
 
+            <button
+              type="button"
+              onClick={() => setScanningDisc(true)}
+              className="w-full py-3 rounded-xl bg-[#4FE3DC]/10 border border-[#4FE3DC]/30 text-[#4FE3DC] text-[14px] font-semibold flex items-center justify-center gap-2 hover:bg-[#4FE3DC]/15 transition-colors"
+            >
+              <ScanLine size={16} /> Scan licence disc
+            </button>
+
             {scanNote && (
-              <p className="text-[13px] text-[rgba(232,234,230,0.72)] -mt-1">{scanNote}</p>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)]">{scanNote}</p>
             )}
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-neutral-800" />
+              <span className="text-[12px] text-neutral-500">or enter by hand</span>
+              <div className="flex-1 h-px bg-neutral-800" />
+            </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Make *</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Make *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g., Ford"
                   value={make}
                   onChange={(e) => setMake(e.target.value)}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Model *</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Model *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g., Mustang"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Year</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Year</label>
                 <input
                   type="number"
                   placeholder="2024"
                   value={year}
                   onChange={(e) => setYear(Number(e.target.value))}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Trim</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Trim</label>
                 <input
                   type="text"
                   placeholder="GT Premium"
                   value={trim}
                   onChange={(e) => setTrim(e.target.value)}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Price (R)</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Price (R)</label>
                 <input
                   type="number"
                   placeholder="35000"
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Stock #</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Stock #</label>
                 <input
                   type="text"
                   placeholder="STK-10293"
                   value={stockNumber}
                   onChange={(e) => setStockNumber(e.target.value)}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
                 />
               </div>
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Colour</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Colour</label>
                 <input
                   type="text"
                   placeholder="Magnetic Gray"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Vehicle type</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Vehicle type</label>
                 <select
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 >
                   <option value="Sedan">Sedan</option>
                   <option value="SUV">SUV</option>
@@ -715,7 +722,7 @@ export default function InventoryList({
                   can supply. inputMode numeric so a yard phone opens the number
                   pad rather than a full keyboard. */}
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Mileage (km) *</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Mileage (km) *</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -723,26 +730,26 @@ export default function InventoryList({
                   value={mileage}
                   onChange={(e) => setMileage(e.target.value.replace(/[^\d]/g, ''))}
                   placeholder="e.g. 78400"
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 />
               </div>
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Transmission</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Transmission</label>
                 <select
                   value={transmission}
                   onChange={(e) => setTransmission(e.target.value as 'Automatic' | 'Manual')}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 >
                   <option value="Manual">Manual</option>
                   <option value="Automatic">Automatic</option>
                 </select>
               </div>
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Fuel</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Fuel</label>
                 <select
                   value={fuelType}
                   onChange={(e) => setFuelType(e.target.value as 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric')}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 >
                   <option value="Petrol">Petrol</option>
                   <option value="Diesel">Diesel</option>
@@ -751,11 +758,11 @@ export default function InventoryList({
                 </select>
               </div>
               <div>
-                <label className="text-[13px] text-neutral-400 font-bold block mb-1">Status</label>
+                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'In-Progress' | 'Ready')}
-                  className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
+                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple"
                 >
                   <option value="In-Progress">In-Progress</option>
                   <option value="Ready">Ready</option>
@@ -764,13 +771,13 @@ export default function InventoryList({
             </div>
 
             <div>
-              <label className="text-[13px] text-neutral-400 font-bold block mb-1">VIN (17 characters)</label>
+              <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">VIN (17 characters)</label>
               <input
                 type="text"
                 placeholder="Scan disc or enter VIN"
                 value={vin}
                 onChange={(e) => setVin(e.target.value.toUpperCase())}
-                className="w-full bg-neutral-900 text-[13px] px-2 py-2 rounded border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
+                className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-trulens-purple font-mono"
               />
             </div>
 
