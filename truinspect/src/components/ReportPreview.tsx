@@ -252,11 +252,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const hero = vehicle.photos?.front_bumper || Object.values(vehicle.photos || {})[0];
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-slate-900 text-slate-100">
+    <div className="h-full w-full overflow-y-auto bg-[#06080D] text-[#E8EAE6]">
       {/* Signed off after the inspection, before the report goes anywhere.
           On screen only — the printed VIR shows the values on its own
           signature block. */}
-      <div className="no-print bg-slate-950/60 border-b border-white/10">
+      <div className="no-print bg-[#0B0F17] border-b border-white/10">
         <div className="max-w-5xl mx-auto px-3 py-3">
           <div className="text-[12px] font-medium text-[rgba(232,234,230,0.55)] mb-2">
             Signed off by
@@ -270,7 +270,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 if (v !== (vehicle.inspectorName || '')) onVehicleUpdated?.({ ...vehicle, inspectorName: v });
               }}
               placeholder="Inspector name"
-              className="w-full px-3 py-3 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
+              className="w-full px-3 py-3 rounded-lg bg-[#06080D] border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
             />
             <input
               type="text"
@@ -280,7 +280,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 if (v !== (vehicle.inspectorRole || '')) onVehicleUpdated?.({ ...vehicle, inspectorRole: v });
               }}
               placeholder="Designation (e.g. Workshop Manager)"
-              className="w-full px-3 py-3 rounded-lg bg-slate-900 border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
+              className="w-full px-3 py-3 rounded-lg bg-[#06080D] border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
             />
           </div>
           {(!vehicle.inspectorName || !vehicle.vin) && (
@@ -295,9 +295,9 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
         </div>
       </div>
 
-      <div className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-white/10 no-print">
+      <div className="sticky top-0 z-50 bg-[#0B0F17]/95 backdrop-blur border-b border-white/10 no-print">
         <div className="max-w-5xl mx-auto px-3 py-3 flex flex-wrap items-center justify-between gap-2">
-          <button onClick={onBack} className="flex items-center gap-2 text-slate-300 hover:text-[#E8EAE6] text-[16px] font-medium">
+          <button onClick={onBack} className="flex items-center gap-2 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] text-[16px] font-medium">
             <ArrowLeft size={16} /> Back
           </button>
           <div className="flex flex-wrap items-center gap-2">
@@ -316,11 +316,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               onClick={exportHtml}
               disabled={exporting}
               title="Downloads a single file with every photo embedded — opens offline and survives being emailed"
-              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200 disabled:opacity-50"
+              className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-[rgba(232,234,230,0.72)] disabled:opacity-50"
             >
               <FileText size={12} /> {exporting ? 'Embedding…' : 'HTML'}
             </button>
-            <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-slate-200">
+            <button onClick={() => window.print()} className="flex items-center gap-1 px-3 py-2 bg-white/5 rounded-lg text-[13px] font-bold text-[rgba(232,234,230,0.72)]">
               <Printer size={12} /> Print
             </button>
             <button onClick={() => runPdf()} disabled={generating}
@@ -335,18 +335,18 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       {/* Hidden-on-screen sales pack used only for PDF (also shown in print if user wants) */}
       <div className="max-w-5xl mx-auto p-3 space-y-4">
         {/* On-screen inspection summary card */}
-        <div className="no-print rounded-xl border border-white/10 bg-slate-950/60 p-3 text-[13px]">
+        <div className="no-print rounded-xl border border-white/10 bg-[#0B0F17] p-3 text-[13px]">
           <div className="flex justify-between gap-2">
             <div>
-              <div className="text-[13px] tracking-normal text-slate-500 font-bold">Inspection status</div>
+              <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.55)] font-bold">Inspection status</div>
               <div className="font-bold text-[16px] text-cyan-300">{condition.label}</div>
-              <div className="text-slate-400 mt-1">
+              <div className="text-[rgba(232,234,230,0.55)] mt-1">
                 Photos {readiness.requiredTaken}/{readiness.requiredTotal}
                 {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
                 {` · ${checklistFlags.length} checklist flag${checklistFlags.length === 1 ? '' : 's'}`}
               </div>
             </div>
-            <div className="text-right text-slate-500 text-[13px] max-w-[200px]">
+            <div className="text-right text-[rgba(232,234,230,0.55)] text-[13px] max-w-[200px]">
               Export the report as PDF or standalone HTML when capture and checklist are complete.
             </div>
           </div>
