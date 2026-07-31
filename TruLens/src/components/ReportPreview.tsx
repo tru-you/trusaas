@@ -385,17 +385,17 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report h1 { font-weight:800; font-size:30px; letter-spacing:-.025em; margin:0 0 6px; overflow-wrap:break-word; }
             .tl-report .subhead { font-size:13px; color:rgba(248,250,252,.72); margin-bottom:18px; }
             .tl-report .score-strip { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-            .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; min-width:0; }
+            .tl-report .score-big { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:flex; gap:14px; align-items:center; min-width:0; overflow:hidden; }
             .tl-report .score-ring { width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-            .tl-report .vehicle-facts { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
-            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.12em; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; }
-            .tl-report .vehicle-facts .v { font-weight:700; font-size:13px; margin-top:2px; overflow-wrap:break-word; word-break:break-all; }
+            .tl-report .vehicle-facts { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; min-width:0; overflow:hidden; }
+            .tl-report .vehicle-facts .k { font-size:9px; letter-spacing:.1em; color:rgba(248,250,252,.5); font-family:ui-monospace,monospace; white-space:nowrap; }
+            .tl-report .vehicle-facts .v { font-weight:700; font-size:12px; margin-top:2px; overflow-wrap:break-word; word-break:break-all; }
             .tl-report section { padding: 12mm 16mm; overflow:hidden; }
             .tl-report h2 { font-weight:800; font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
             .tl-report .grades { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
-            @media (max-width:600px) {
-              .tl-report .grades { grid-template-columns:repeat(3,1fr); }
+            @media (max-width:720px) {
               .tl-report .score-strip { grid-template-columns:1fr; }
+              .tl-report .grades { grid-template-columns:repeat(3,1fr); }
               .tl-report .cover { padding: 10mm 5mm 8mm; }
               .tl-report section { padding: 8mm 5mm; }
               .tl-report .foot { padding: 14px 5mm; }
