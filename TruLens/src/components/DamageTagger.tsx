@@ -204,7 +204,7 @@ export default function DamageTagger({ vehicle, onBack, onSave }: DamageTaggerPr
               <img src={vehicle.photos[s.id]} alt={s.name} className="w-16 h-12 object-cover" />
               <span className="block text-[13px] leading-tight px-1 py-0.5 text-neutral-300 truncate bg-neutral-900">{s.name}</span>
               {count > 0 && (
-                <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-[13px] font-bold text-black flex items-center justify-center">{count}</span>
+                <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-[#E8EAE6] text-[13px] font-semibold flex items-center justify-center">{count}</span>
               )}
             </button>
           );

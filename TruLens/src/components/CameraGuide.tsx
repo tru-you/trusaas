@@ -888,7 +888,7 @@ export default function CameraGuide({ vehicle, onBack, onPhotoCaptured, onEditRe
             <div className="flex items-center gap-2">
               <Images className="text-[#4FE3DC]" size={18} />
               <div>
-                <h3 className="text-[13px] font-bold text-[#E8EAE6]">Bulk Camera Roll Importer</h3>
+                <h3 className="text-[13px] font-medium text-[#E8EAE6]">Bulk Camera Roll Importer</h3>
                 <p className="text-[13px] text-neutral-400">Streamline inventory lot photography bulk processing</p>
               </div>
             </div>
