@@ -17,16 +17,21 @@ interface SlotReviewProps {
   imageSrc: string;
   onBack: () => void;
   onSave: (mainImage: string, assessment: PointResult, closeups: string[]) => void;
+  onNavigateSlot?: (slotId: string) => void;
 }
 
-export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }: SlotReviewProps) {
+export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave, onNavigateSlot }: SlotReviewProps) {
   const slot = DEFAULT_TEMPLATE.slots.find((s) => s.id === slotId);
+  const slotIndex = DEFAULT_TEMPLATE.slots.findIndex((s) => s.id === slotId);
+  const nextSlot = DEFAULT_TEMPLATE.slots.find((s, i) => i > slotIndex && !vehicle.photos?.[s.id]);
+  const capturedNeighbours = DEFAULT_TEMPLATE.slots.filter((s) => !!vehicle.photos?.[s.id] && s.id !== slotId);
   const existing = vehicle.slotAssessment?.[slotId];
   const [rating, setRating] = React.useState<PointResult['rating']>(existing?.rating);
   const [note, setNote] = React.useState(existing?.comment || '');
   const [closeups, setCloseups] = React.useState<string[]>(vehicle.closeups?.[slotId] || []);
   const [rotation, setRotation] = React.useState(0);
   const closeupInputRef = React.useRef<HTMLInputElement | null>(null);
+  const neighbourStripRef = React.useRef<HTMLDivElement | null>(null);
 
   const isDamage = rating === 'damage';
 
@@ -51,19 +56,19 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
     <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       {/* Header */}
       <div className="bg-neutral-950 px-4 py-3 flex items-center justify-between border-b border-neutral-850 shrink-0">
-        <button onClick={onBack} className="p-1 rounded-full hover:bg-neutral-800 text-neutral-300" aria-label="Retake">
+        <button onClick={onBack} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/5 text-neutral-300" aria-label="Back">
           <ChevronLeft size={20} />
         </button>
         <div className="text-center min-w-0">
-          <p className="text-[13px] font-bold tracking-wide text-cyan-400 truncate">{slot?.name || 'Review shot'}</p>
-          <p className="text-[13px] text-neutral-400">Assess it now — condition & note</p>
+          <p className="text-[14px] font-semibold text-cyan-400 truncate">{slot?.name || 'Review shot'}</p>
+          <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Shot {slotIndex + 1} of {DEFAULT_TEMPLATE.slots.length}</p>
         </div>
-        <div className="w-10" />
+        <div className="w-11" />
       </div>
 
       <div className="flex-1 overflow-y-auto">
         {/* The real photo */}
-        <div className="photo-review bg-black flex items-center justify-center p-3" style={{ minHeight: 200 }}>
+        <div className="photo-review bg-black flex items-center justify-center p-3 relative" style={{ minHeight: 200 }}>
           <img
             src={imageSrc}
             alt={slot?.name}
@@ -71,28 +76,35 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
             className="max-w-full max-h-[42vh] object-contain transition-transform"
             referrerPolicy="no-referrer"
           />
+          <button
+            type="button"
+            onClick={() => setRotation((r) => (r + 90) % 360)}
+            className="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-black/60 border border-[rgba(232,234,230,0.2)] text-[rgba(232,234,230,0.7)] flex items-center justify-center"
+            aria-label="Rotate"
+          >
+            <RotateCcw size={15} />
+          </button>
         </div>
 
         <div className="p-4 space-y-4">
           {/* Condition score */}
           <div>
-            <p className="text-[13px] text-neutral-500 font-bold mb-2">Condition of this part</p>
+            <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Condition</p>
             <div className="flex gap-2">
-              {([['ok', 'OK', Check, 'emerald'], ['note', 'Note', MinusCircle, 'amber'], ['damage', 'Damage', AlertTriangle, 'rose']] as const).map(([val, label, Icon, tone]) => {
+              {([['ok', 'OK', Check], ['note', 'Note', MinusCircle], ['damage', 'Damage', AlertTriangle]] as const).map(([val, label, Icon]) => {
                 const active = rating === val;
+                const costsMoney = val === 'damage';
                 return (
                   <button
                     key={val}
                     type="button"
                     onClick={() => setRating(active ? undefined : val)}
-                    className={`flex-1 py-3 rounded-xl text-[13px] font-semibold border flex items-center justify-center gap-2 transition-colors ${
+                    className={`flex-1 min-h-[46px] rounded-xl text-[13px] border flex items-center justify-center gap-2 transition-colors ${
                       active
-                        ? tone === 'emerald'
-                          ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
-                          : tone === 'amber'
-                            ? 'bg-amber-500/15 border-amber-500/50 text-amber-300'
-                            : 'bg-rose-500/15 border-rose-500/50 text-rose-300'
-                        : 'bg-neutral-900 border-neutral-800 text-neutral-400'
+                        ? costsMoney
+                          ? 'bg-rose-500/12 border-rose-500/45 text-rose-300 font-medium'
+                          : 'bg-cyan-500/10 border-cyan-500/55 text-cyan-300 font-medium'
+                        : 'bg-[rgba(232,234,230,0.055)] border-[rgba(232,234,230,0.14)] text-[rgba(232,234,230,0.55)]'
                     }`}
                   >
                     <Icon size={14} /> {label}
@@ -104,13 +116,13 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
 
           {/* Note */}
           <div>
-            <p className="text-[13px] text-neutral-500 font-bold mb-2">Note</p>
+            <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Note</p>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="What you see — e.g. 15cm scratch, lower door"
-              className="w-full px-3 py-3 bg-neutral-900 border border-neutral-800 rounded-xl text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+              className="w-full px-3 min-h-[46px] bg-neutral-900 border border-neutral-800 rounded-xl text-[14px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
             />
           </div>
 
@@ -137,10 +149,10 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
                 <button
                   type="button"
                   onClick={() => closeupInputRef.current?.click()}
-                  className="w-16 h-16 rounded-lg border-2 border-dashed border-rose-500/40 text-rose-300 flex flex-col items-center justify-center gap-0.5"
+                  className="w-16 min-h-[64px] rounded-lg border-2 border-dashed border-rose-500/40 text-rose-300 flex flex-col items-center justify-center gap-0.5"
                 >
                   <Camera size={16} />
-                  <span className="text-[13px] font-bold">Close-up</span>
+                  <span className="text-[12px] font-medium">Close-up</span>
                 </button>
               </div>
               <input
@@ -153,22 +165,49 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave }
               />
             </div>
           )}
+          {/* Up next */}
+          {nextSlot && (
+            <div className="flex items-center gap-2 rounded-xl bg-[rgba(232,234,230,0.055)] border border-[rgba(232,234,230,0.14)] px-3.5 py-2.5">
+              <span className="text-[12px] text-[rgba(232,234,230,0.55)]">Up next</span>
+              <span className="text-[13px] font-medium text-[#E8EAE6] truncate">{nextSlot.name}</span>
+            </div>
+          )}
+
+          {/* Neighbour thumbnails */}
+          {capturedNeighbours.length > 0 && onNavigateSlot && (
+            <div>
+              <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Captured shots</p>
+              <div ref={neighbourStripRef} className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                {capturedNeighbours.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => onNavigateSlot(s.id)}
+                    className="shrink-0 w-[60px] rounded-lg overflow-hidden border border-[rgba(232,234,230,0.14)] hover:border-cyan-500/40 transition-colors"
+                  >
+                    <img src={vehicle.photos![s.id]} alt={s.name} className="w-full h-[44px] object-cover" referrerPolicy="no-referrer" />
+                    <p className="text-[10px] text-[rgba(232,234,230,0.55)] px-1 py-0.5 truncate text-center">{s.name}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="shrink-0 p-3 border-t border-neutral-900 bg-neutral-950/95 grid grid-cols-2 gap-2">
+      <div className="shrink-0 p-3 border-t border-neutral-900 bg-neutral-950/95 flex gap-2">
         <button
           type="button"
-          onClick={() => setRotation((r) => (r + 90) % 360)}
-          className="py-3 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-200 text-[13px] font-semibold flex items-center justify-center gap-2"
+          onClick={onBack}
+          className="flex-1 min-h-[56px] rounded-xl bg-[rgba(232,234,230,0.055)] border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[14px] font-medium flex items-center justify-center gap-2"
         >
-          <RotateCcw size={15} /> Rotate
+          <RotateCcw size={15} /> Retake
         </button>
         <button
           type="button"
           onClick={save}
-          className="py-3 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-[#06080D]"
+          className="flex-[1.3] min-h-[56px] rounded-xl text-[14px] font-semibold flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500"
         >
           <Save size={15} /> Keep & next
         </button>
