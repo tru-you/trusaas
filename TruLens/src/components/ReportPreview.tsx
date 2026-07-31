@@ -443,7 +443,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </div>
 
             {/* Accent bar */}
-            <div style={{ width:60, height:3, borderRadius:2, background:'linear-gradient(90deg,#4FE3DC,#4D9BFF)', margin:'0 auto 14px' }} />
+            <div style={{ width:60, height:3, borderRadius:2, background:'linear-gradient(90deg,#4FE3DC,#4FE3DC)', margin:'0 auto 14px' }} />
             <div style={{ fontSize:10, fontWeight:700, letterSpacing:'.14em', color:'rgba(79,227,220,.7)', marginBottom:6, textAlign:'center' }}>VEHICLE CONDITION REPORT</div>
             <h1 style={{ textAlign:'center' }}>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
             <div className="subhead" style={{ textAlign:'center' }}>
