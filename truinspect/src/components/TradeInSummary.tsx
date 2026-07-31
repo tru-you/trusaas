@@ -3,7 +3,7 @@ import { ArrowLeft, Download, Printer, Star, Pen, Clock } from 'lucide-react';
 import { Vehicle } from '../types';
 import {
   InspectionItem, ValuationState, TradeInData,
-  computeOverallRating, needsReconCost, deriveReportId,
+  computeOverallRating, deriveReportId,
 } from '../types/inspection';
 import truinspectLogo from '../assets/images/truinspect-logo.svg';
 import trudealerLockup from '../assets/images/trudealer-lockup.png';
@@ -230,6 +230,26 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
     { name: 'Interior, History & Verification', items: items.filter(i => i.category === 'Interior, History & Verification') },
   ];
 
+  /* Worst condition in the category wins the pill — a category with one
+     "Poor" item should not read as Good because the rest are fine. */
+  const conditionRank: Record<string, number> = { Good: 0, Fair: 1, 'Needs Recon': 2, Poor: 3 };
+  const categoryGrade = (catItems: InspectionItem[]): { label: string; cls: string } => {
+    if (!catItems.length) return { label: '—', cls: 'good' };
+    const worst = catItems.reduce((w, i) => (conditionRank[i.condition] > conditionRank[w] ? i.condition : w), 'Good');
+    if (worst === 'Good') return { label: 'Good', cls: 'good' };
+    if (worst === 'Fair') return { label: 'Fair', cls: 'fair' };
+    return { label: worst === 'Needs Recon' ? 'Needs Recon' : 'Poor', cls: 'poor' };
+  };
+
+  /* Valuation build-up: market average, then each item carrying a recon
+   * deduction, then the final offer. The dealer margin is applied inside
+   * finalTradeInValue but never itemised here — margin is dealer-only. */
+  const reconAdjustments = items.filter(i => i.estimatedRepairCost > 0);
+  const linkedVirId = deriveReportId(vehicle, 'VIR');
+  const validUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-ZA', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  });
+
   return (
     <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       {/* Header */}
@@ -271,163 +291,272 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
 
       <div className="flex-1 overflow-y-auto pb-24">
         {/* ===== PRINTABLE REPORT (white bg for export) ===== */}
-        <div
-          ref={reportRef}
-          className="mx-auto max-w-[210mm] bg-white text-gray-900 p-6"
-          style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '12px', lineHeight: '1.5' }}
-        >
-          {/* Cover header */}
-          <div style={{ background: 'linear-gradient(135deg,#0B0F17 0%,#1E293B 55%,#0B3B5A 100%)', borderRadius: '12px', padding: '24px 20px 20px', marginBottom: '20px', color: '#F8FAFC' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
-              <div>
-                <img src={truinspectLogo} alt="TruInspect" style={{ height: 40, width: 'auto' }} />
-                <p style={{ fontSize: '11px', fontWeight: 600, opacity: 0.75, marginTop: 6 }}>{dealerName}</p>
-              </div>
-              <div style={{ textAlign: 'right', fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: 'rgba(248,250,252,.62)' }}>
-                <img src={trudealerLockup} alt="TruDealer" style={{ height: 26, width: 'auto', display: 'block', marginLeft: 'auto', marginBottom: 6 }} />
-                <div>ID: {deriveReportId(vehicle)}</div>
-                <div><Clock size={9} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />{now}</div>
-              </div>
+        <div ref={reportRef} className="ti-report">
+          {/* ── Palette note ──────────────────────────────────────────────
+              This document is WHITE paper. The app shell around it is
+              near-black. Every colour token below is dark ink on white
+              (--ink / --ink-2 / --muted / --faint), never the app's light
+              on-dark text tokens — a light token on this page prints as
+              blank paper. */}
+          <style>{`
+            .ti-report {
+              --paper:#FFFFFF; --ink:#121A26; --ink-2:#3A4553; --muted:#6E6656; --faint:#A79D8C;
+              --line:rgba(18,26,38,.12); --line-soft:rgba(18,26,38,.06);
+              --cyan:#07889B; --cyan-bg:rgba(7,136,155,.06); --cyan-lit:#00E0F5;
+              --green:#1A7A3A; --green-bg:rgba(26,122,58,.08);
+              --amber:#B07A26; --amber-bg:rgba(176,122,38,.08);
+              --red:#B03226; --red-bg:rgba(176,50,38,.08);
+              --night:#080C14;
+              --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+              --display: Georgia, 'Times New Roman', serif;
+              --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+              width: 100%; max-width: 210mm; margin: 0 auto; background: var(--paper); color: var(--ink);
+              font-family: var(--sans); font-size: 12px; line-height: 1.5; box-sizing: border-box;
+              padding: 12mm 14mm; border-radius: 12px; overflow: hidden;
+            }
+            .ti-report *, .ti-report *::before, .ti-report *::after { box-sizing: border-box; }
+            .ti-report h1, .ti-report h2, .ti-report h3, .ti-report h4 { font-family: var(--display); font-weight: 400; letter-spacing: -0.02em; }
+
+            /* Header */
+            .ti-report .ti-hdr { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid var(--ink); margin-bottom: 18px; }
+            .ti-report .ti-hdr-left img.logo { height: 32px; width: auto; display: block; }
+            .ti-report .ti-hdr-left .dealer { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+            .ti-report .ti-hdr-right { text-align: right; }
+            .ti-report .ti-hdr-right .doc-type { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); font-weight: 700; }
+            .ti-report .ti-hdr-right .doc-id { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+            /* Valuation hero */
+            .ti-report .val-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-bottom: 20px; break-inside: avoid; page-break-inside: avoid; }
+            .ti-report .val-box { padding: 16px 18px; border-radius: 8px; text-align: center; }
+            .ti-report .val-box.market { background: var(--cyan-bg); border: 1px solid rgba(7,136,155,.25); }
+            .ti-report .val-box.offer { background: linear-gradient(178deg, var(--night), #132132); border: 1px solid rgba(7,136,155,.5); }
+            .ti-report .val-box .lbl { font-family: var(--mono); font-size: 9px; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 8px; }
+            .ti-report .val-box.market .lbl { color: var(--cyan); }
+            .ti-report .val-box.offer .lbl { color: var(--cyan-lit); }
+            .ti-report .val-box .price { font-family: var(--display); line-height: 1; letter-spacing: -0.02em; }
+            .ti-report .val-box.market .price { font-size: 30px; color: var(--ink); }
+            .ti-report .val-box.offer .price { font-size: 34px; color: #fff; }
+            .ti-report .val-box .price .sym { font-family: var(--display); font-style: italic; font-size: 18px; }
+            .ti-report .val-box.market .price .sym { color: var(--amber); }
+            .ti-report .val-box.offer .price .sym { color: var(--cyan-lit); }
+            .ti-report .val-box .sub { font-size: 10px; margin-top: 8px; }
+            .ti-report .val-box.market .sub { color: var(--ink-2); }
+            .ti-report .val-box.offer .sub { color: rgba(245,241,232,.6); }
+
+            /* Vehicle info */
+            .ti-report .vehicle { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin-bottom: 20px; }
+            .ti-report .vehicle .row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--line-soft); }
+            .ti-report .vehicle .row .k { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+            .ti-report .vehicle .row .v { font-size: 12px; font-weight: 600; color: var(--ink); text-align: right; }
+
+            /* Section titles */
+            .ti-report .section-title { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; break-after: avoid; page-break-after: avoid; }
+            .ti-report .section-title .n { font-family: var(--mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--amber); font-weight: 600; }
+            .ti-report .section-title .ln { flex: 1; height: 1px; background: var(--line); }
+
+            /* Photo grid */
+            .ti-report .photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin-bottom: 20px; }
+            .ti-report .photo { aspect-ratio: 4/3; border-radius: 4px; border: 1px solid var(--line); overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
+            .ti-report .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+            .ti-report .photo .cap { position: relative; margin-top: -22px; padding: 3px 6px; font-size: 9px; font-weight: 600; color: #fff; background: linear-gradient(to top, rgba(8,12,20,.75), transparent); }
+            .ti-report .photo.hero { grid-column: span 2; grid-row: span 2; }
+
+            /* Condition summary */
+            .ti-report .cond-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3mm; margin-bottom: 20px; }
+            .ti-report .cond { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; break-inside: avoid; page-break-inside: avoid; }
+            .ti-report .cond .lbl { font-size: 11px; color: var(--ink-2); }
+            .ti-report .cond .grade { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 100px; }
+            .ti-report .cond .grade.good { color: var(--green); background: var(--green-bg); }
+            .ti-report .cond .grade.fair { color: var(--amber); background: var(--amber-bg); }
+            .ti-report .cond .grade.poor { color: var(--red); background: var(--red-bg); }
+            .ti-report .cond-overall { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border: 2px solid; border-radius: 8px; margin-bottom: 12px; }
+
+            /* Valuation build-up */
+            .ti-report .adjustments { margin-bottom: 20px; }
+            .ti-report .adj { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+            .ti-report .adj .desc { font-size: 11px; color: var(--ink-2); }
+            .ti-report .adj .impact { font-family: var(--mono); font-size: 11px; font-weight: 600; text-align: right; }
+            .ti-report .adj .impact.neg { color: var(--red); }
+            .ti-report .adj .impact.pos { color: var(--green); }
+            .ti-report .adj .impact.neutral { color: var(--muted); }
+            .ti-report .adj.total { border-bottom: 2px solid var(--ink); padding: 9px 0; }
+            .ti-report .adj.total .desc { font-weight: 700; color: var(--ink); font-size: 12.5px; }
+            .ti-report .adj.total .impact { font-size: 12.5px; color: var(--ink); }
+
+            /* Validity */
+            .ti-report .validity { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; padding: 12px 14px; background: var(--cyan-bg); border-radius: 6px; margin-bottom: 20px; break-inside: avoid; page-break-inside: avoid; }
+            .ti-report .validity .item .k { font-family: var(--mono); font-size: 8.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--cyan); margin-bottom: 3px; }
+            .ti-report .validity .item .v { font-size: 11.5px; font-weight: 600; color: var(--ink); }
+
+            /* Dealer sign-off */
+            .ti-report .signoff { break-inside: avoid; page-break-inside: avoid; margin-bottom: 4px; }
+            .ti-report .signoff table { width: 100%; font-size: 12px; border-collapse: collapse; }
+            .ti-report .signoff td { padding: 4px 0; }
+            .ti-report .signoff td.k { color: var(--muted); width: 140px; }
+            .ti-report .signoff td.v { font-weight: 600; color: var(--ink); }
+
+            /* Signature row */
+            .ti-report .sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line); break-inside: avoid; page-break-inside: avoid; }
+            .ti-report .sig { padding-top: 8px; min-height: 54px; }
+            .ti-report .sig img.sig-img { height: 48px; display: block; margin-bottom: 4px; }
+            .ti-report .sig .line { border-top: 1px solid var(--ink); padding-top: 4px; }
+            .ti-report .sig .lbl { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+            /* Disclaimer + footer */
+            .ti-report .disclaimer { font-size: 9.5px; line-height: 1.5; color: var(--faint); margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+            .ti-report .ti-foot { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+            .ti-report .ti-foot .am { color: var(--amber); }
+            .ti-report .ti-foot .foot-right { display: flex; align-items: center; gap: 8px; }
+            .ti-report .ti-foot img.foot-logo { height: 16px; width: auto; }
+
+            @media (max-width: 720px) {
+              .ti-report { padding: 6mm 5mm; }
+              .ti-report .vehicle, .ti-report .cond-grid, .ti-report .validity, .ti-report .sig-row { grid-template-columns: 1fr; }
+              .ti-report .photos { grid-template-columns: repeat(2, 1fr); }
+              .ti-report .photo.hero { grid-column: span 2; grid-row: span 1; }
+            }
+            @media print {
+              .ti-report { max-width: 100% !important; width: 100% !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; }
+            }
+          `}</style>
+
+          {/* Header */}
+          <div className="ti-hdr">
+            <div className="ti-hdr-left">
+              <img className="logo" src={truinspectLogo} alt="TruInspect" />
+              {dealerName && <div className="dealer">{dealerName}</div>}
             </div>
-            <div style={{ width: 50, height: 3, borderRadius: 2, background: 'linear-gradient(90deg,#4FE3DC,#4FE3DC)', marginBottom: 10 }} />
-            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '.14em', color: 'rgba(79,227,220,.7)', marginBottom: 6 }}>TRADE-IN APPRAISAL REPORT</div>
-            <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 4px', color: '#F8FAFC', letterSpacing: '-0.025em' }}>
-              {vehicle.year} {vehicle.make} {vehicle.model}
-            </h1>
-            <p style={{ fontSize: '13px', color: 'rgba(248,250,252,.72)', margin: 0 }}>
-              {vehicle.trim} · Stock <b>{vehicle.stockNumber}</b>
-            </p>
+            <div className="ti-hdr-right">
+              <div className="doc-type">Trade-in Valuation</div>
+              <div className="doc-id">{deriveReportId(vehicle)} · {now}</div>
+            </div>
           </div>
 
-          {/* Vehicle details + rating */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px' }}>
-                {vehicle.year} {vehicle.make} {vehicle.model}
-              </h2>
-              <table style={{ fontSize: '12px', borderCollapse: 'collapse' }}>
-                <tbody>
-                  <tr><td style={{ color: '#6B7280', paddingRight: '16px' }}>Variant</td><td style={{ fontWeight: 600 }}>{vehicle.trim || '—'}</td></tr>
-                  <tr><td style={{ color: '#6B7280', paddingRight: '16px' }}>Mileage</td><td style={{ fontWeight: 600 }}>{(vehicle.mileage || 0).toLocaleString('en-ZA')} km</td></tr>
-                  <tr><td style={{ color: '#6B7280', paddingRight: '16px' }}>VIN</td><td style={{ fontWeight: 600 }}>{vehicle.vin || '—'}</td></tr>
-                  <tr><td style={{ color: '#6B7280', paddingRight: '16px' }}>Stock #</td><td style={{ fontWeight: 600 }}>{vehicle.stockNumber || '—'}</td></tr>
-                </tbody>
-              </table>
+          {/* Valuation hero */}
+          <div className="val-hero">
+            <div className="val-box market">
+              <div className="lbl">Market average</div>
+              <div className="price">
+                <span className="sym">R </span>
+                {valuation.averageRetailPrice != null ? valuation.averageRetailPrice.toLocaleString('en-ZA') : '—'}
+              </div>
+              <div className="sub">Based on current market retail pricing</div>
             </div>
-            <div style={{ textAlign: 'center', padding: '12px 24px', border: `2px solid ${ratingColor}`, borderRadius: '12px' }}>
-              <p style={{ fontSize: '28px', fontWeight: 800, color: ratingColor, margin: 0 }}>
-                {overallRating.toFixed(1)}
-              </p>
-              <p style={{ fontSize: '11px', color: ratingColor, fontWeight: 600, margin: 0 }}>/ 5.0</p>
-              <p style={{ fontSize: '12px', fontWeight: 700, color: ratingColor, margin: '4px 0 0' }}>{ratingLabel}</p>
+            <div className="val-box offer">
+              <div className="lbl">Trade-in offer</div>
+              <div className="price"><span className="sym">R </span>{valuation.finalTradeInValue.toLocaleString('en-ZA')}</div>
+              <div className="sub">Condition-adjusted · valid {validUntil}</div>
             </div>
+          </div>
+
+          {/* Vehicle info */}
+          <div className="vehicle">
+            <div className="row"><span className="k">Make / Model</span><span className="v">{vehicle.year} {vehicle.make} {vehicle.model}</span></div>
+            <div className="row"><span className="k">Variant</span><span className="v">{vehicle.trim || '—'}</span></div>
+            <div className="row"><span className="k">VIN</span><span className="v">{vehicle.vin || '—'}</span></div>
+            <div className="row"><span className="k">Stock #</span><span className="v">{vehicle.stockNumber || '—'}</span></div>
+            <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
+            <div className="row"><span className="k">Odometer</span><span className="v">{(vehicle.mileage || 0).toLocaleString('en-ZA')} km</span></div>
           </div>
 
           {/* Photo gallery */}
           {photosWithLabel.length > 0 && (
-              <div style={{ marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0D9488', borderBottom: '2px solid #0D9488', paddingBottom: '4px', marginBottom: '10px' }}>
-                  Inspection Photos ({photosWithLabel.length})
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                  {photosWithLabel.map((it) => (
-                    <div key={it.id} style={{ border: '1px solid #E5E7EB', borderRadius: '12px', overflow: 'hidden' }}>
-                      <img
-                        src={it.photoUrl!}
-                        alt={it.label}
-                        style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block' }}
-                      />
-                      <div style={{ padding: '6px 8px' }}>
-                        <span style={{ fontSize: '11px', color: '#334155', fontWeight: 600 }}>{it.label}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <>
+              <div className="section-title"><span className="n">Inspection Photos ({photosWithLabel.length})</span><span className="ln"></span></div>
+              <div className="photos">
+                {photosWithLabel.map((it, i) => (
+                  <div key={it.id} className={`photo${i === 0 ? ' hero' : ''}`}>
+                    <img src={it.photoUrl!} alt={it.label} />
+                    <div className="cap">{it.label}</div>
+                  </div>
+                ))}
               </div>
+            </>
           )}
 
-          {/* Valuation banner — margin is applied but not itemised on the report */}
-          <div style={{ background: '#F0FDFA', border: '2px solid #0D9488', borderRadius: '12px', padding: '24px', marginBottom: '20px', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '.12em', color: '#0D9488', margin: '0 0 6px' }}>TRADE-IN OFFER</p>
-            <p style={{ fontSize: '28px', fontWeight: 800, color: '#0D9488', margin: 0 }}>
-              {fmt(valuation.finalTradeInValue)}
-            </p>
-            <p style={{ fontSize: '11px', color: '#64748B', margin: '8px 0 0' }}>
-              Based on current market retail pricing, less estimated reconditioning costs.
-            </p>
+          {/* Condition summary */}
+          <div className="section-title"><span className="n">Condition Summary</span><span className="ln"></span></div>
+          <div className="cond-overall" style={{ borderColor: ratingColor }}>
+            <span style={{ fontSize: 12, color: 'var(--ink-2)', fontWeight: 600 }}>Overall condition</span>
+            <span style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 14, color: ratingColor }}>
+              {overallRating.toFixed(1)} / 5.0 · {ratingLabel}
+            </span>
+          </div>
+          <div className="cond-grid">
+            {categories.map((cat) => {
+              const g = categoryGrade(cat.items);
+              return (
+                <div className="cond" key={cat.name}>
+                  <span className="lbl">{cat.name}</span>
+                  <span className={`grade ${g.cls}`}>{g.label}</span>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Itemized grid */}
-          {categories.map((cat) => (
-            <div key={cat.name} style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0D9488', borderBottom: '2px solid #0D9488', paddingBottom: '4px', marginBottom: '8px' }}>
-                {cat.name}
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
-                {cat.items.map((it) => {
-                  const bad = needsReconCost(it.status);
-                  return (
-                    <div
-                      key={it.id}
-                      style={{
-                        border: `1px solid ${bad ? '#FCA5A5' : '#E5E7EB'}`,
-                        borderRadius: '8px',
-                        padding: '8px',
-                        background: bad ? '#FEF2F2' : '#FAFAFA',
-                        fontSize: '11px',
-                      }}
-                    >
-                      {it.photoUrl && (
-                        <img
-                          src={it.photoUrl}
-                          alt={it.label}
-                          style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '4px', marginBottom: '6px' }}
-                        />
-                      )}
-                      <p style={{ fontWeight: 700, margin: '0 0 2px', fontSize: '11px' }}>{it.label}</p>
-                      <p style={{ color: bad ? '#DC2626' : '#16A34A', fontWeight: 600, margin: 0 }}>{it.status.replace(/_/g, ' ')}</p>
-                      <p style={{ color: '#6B7280', margin: 0 }}>{it.condition}</p>
-                      {it.estimatedRepairCost > 0 && (
-                        <p style={{ color: '#DC2626', fontWeight: 700, margin: '2px 0 0' }}>
-                          Recon: {fmt(it.estimatedRepairCost)}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+          {/* Valuation build-up */}
+          <div className="section-title"><span className="n">Valuation Build-up</span><span className="ln"></span></div>
+          <div className="adjustments">
+            <div className="adj">
+              <span className="desc">Market average</span>
+              <span className="impact neutral">
+                {valuation.averageRetailPrice != null ? fmt(valuation.averageRetailPrice) : '—'}
+              </span>
             </div>
-          ))}
+            {reconAdjustments.map((it) => (
+              <div className="adj" key={it.id}>
+                <span className="desc">{it.label} — {it.status.replace(/_/g, ' ').toLowerCase()}</span>
+                <span className="impact neg">− {fmt(it.estimatedRepairCost)}</span>
+              </div>
+            ))}
+            <div className="adj total">
+              <span className="desc">Trade-in offer</span>
+              <span className="impact">{fmt(valuation.finalTradeInValue)}</span>
+            </div>
+          </div>
+
+          {/* Validity strip */}
+          <div className="validity">
+            <div className="item"><div className="k">Offer valid</div><div className="v">7 days from inspection</div></div>
+            <div className="item"><div className="k">Expires</div><div className="v">{validUntil}</div></div>
+            <div className="item"><div className="k">Linked VIR</div><div className="v">{linkedVirId}</div></div>
+          </div>
 
           {/* Dealer sign-off */}
-          <div style={{ borderTop: '2px solid #E5E7EB', paddingTop: '16px', marginTop: '24px', pageBreakInside: 'avoid' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0D9488', marginBottom: '12px' }}>
-              Dealer Sign-Off
-            </h3>
-            <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+          <div className="section-title"><span className="n">Dealer Sign-Off</span><span className="ln"></span></div>
+          <div className="signoff">
+            <table>
               <tbody>
-                <tr><td style={{ color: '#6B7280', padding: '4px 0', width: '140px' }}>Dealership</td><td style={{ fontWeight: 600 }}>{dealerName}</td></tr>
-                <tr><td style={{ color: '#6B7280', padding: '4px 0' }}>Inspector</td><td style={{ fontWeight: 600 }}>{inspectorName || '—'}</td></tr>
-                <tr><td style={{ color: '#6B7280', padding: '4px 0' }}>Contact</td><td style={{ fontWeight: 600 }}>{contactPhone || '—'}</td></tr>
-                <tr><td style={{ color: '#6B7280', padding: '4px 0' }}>Date</td><td style={{ fontWeight: 600 }}>{now}</td></tr>
+                <tr><td className="k">Dealership</td><td className="v">{dealerName || '—'}</td></tr>
+                <tr><td className="k">Inspector</td><td className="v">{inspectorName || '—'}</td></tr>
+                <tr><td className="k">Contact</td><td className="v">{contactPhone || '—'}</td></tr>
+                <tr><td className="k">Date</td><td className="v">{now}</td></tr>
               </tbody>
             </table>
-            {signatureUrl && (
-              <div style={{ marginTop: '12px' }}>
-                <p style={{ fontSize: '11px', color: '#6B7280', marginBottom: '4px' }}>Digital Signature:</p>
-                <img src={signatureUrl} alt="Signature" style={{ height: '60px', border: '1px solid #E5E7EB', borderRadius: '4px' }} />
-              </div>
-            )}
           </div>
 
-          <div style={{ height: 3, background: 'linear-gradient(90deg,#4FE3DC,#4FE3DC,#4FE3DC)', marginTop: 24, borderRadius: 2 }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: '12px 0', fontSize: '10px', color: '#64748B', fontFamily: 'ui-monospace, monospace', letterSpacing: '.08em' }}>
-            <span>Prepared by <b style={{ color: '#0D9488' }}>{dealerName}</b> · powered by <b>TruInspect</b></span>
-            <img src={trudealerLockup} alt="TruDealer" style={{ height: 18, width: 'auto' }} />
+          {/* Signature row */}
+          <div className="sig-row">
+            <div className="sig">
+              {signatureUrl && <img className="sig-img" src={signatureUrl} alt="Dealer signature" />}
+              <div className="line"><div className="lbl">Dealer representative</div></div>
+            </div>
+            <div className="sig">
+              <div className="line"><div className="lbl">Vehicle owner</div></div>
+            </div>
           </div>
-          <p style={{ textAlign: 'center', fontSize: '9px', color: '#94A3B8', margin: 0 }}>
-            Trade-in valuation at a moment in time — subject to physical verification.
-          </p>
+
+          <div className="disclaimer">
+            This valuation is based on current market data and the physical condition observed during inspection. It is not a guarantee of resale value. The trade-in offer is subject to final verification of vehicle documentation, outstanding finance settlement, and registration transfer. Offer expires on the date stated above. Full inspection report available under the linked VIR reference.
+          </div>
+
+          <div className="ti-foot">
+            <span className="am">Prepared by {dealerName || '—'} · powered by TruDealer</span>
+            <span className="foot-right">
+              <img className="foot-logo" src={trudealerLockup} alt="TruDealer" />
+              <span>{deriveReportId(vehicle)}</span>
+            </span>
+          </div>
         </div>
 
         {/* === APP-ONLY SECTIONS (not in export ref) === */}
