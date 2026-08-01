@@ -409,6 +409,19 @@ if (LOCAL_MODE) {
   console.log('────────────────────────────────────────────');
 }
 
+/* Safety net: without an access code, per-dealer codes or an explicit token
+   secret, TOKEN_SECRET falls back to sha256('trulens-dev') and the local-mode
+   branches accept any Bearer string — fine on a laptop, a hole in prod. Warn
+   only, never exit; an outage is worse than a noisy log line. */
+if (!ACCESS_CODE && DEALER_CODES.length === 0 && !process.env.TRULENS_TOKEN_SECRET) {
+  console.warn('────────────────────────────────────────────');
+  console.warn(' WARNING: no auth secret configured.');
+  console.warn(' Set TRULENS_ACCESS_CODE, TRULENS_DEALER_CODES or');
+  console.warn(' TRULENS_TOKEN_SECRET. Without one, any Bearer token');
+  console.warn(' is accepted — safe locally, NOT in production.');
+  console.warn('────────────────────────────────────────────');
+}
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
