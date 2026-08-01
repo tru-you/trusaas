@@ -3202,7 +3202,7 @@ app.get("/api/widget/inventory.js", (req, res) => {
 
 // --- HTML / WORDPRESS INTEGRATION API ENDPOINTS ---
 app.post("/api/integration/webhook-lead", (req, res) => {
-  const { firstName, lastName, phone, email, notes, vehicleId, dealershipId, dealerSlug } = req.body;
+  const { firstName, lastName, phone, email, notes, vehicleId, dealershipId, dealerSlug, source, journey } = req.body;
   if (!firstName || !phone) {
     return res.status(400).json({ error: "Missing required fields: firstName and phone are mandatory." });
   }
@@ -3243,12 +3243,12 @@ app.post("/api/integration/webhook-lead", (req, res) => {
       stageChangedAt: new Date().toISOString().slice(0, 10),
       digitalScore: Math.floor(Math.random() * 30) + 60, // Warm/Hot lead from web
       vehicleId: vehicleId || state.vehicles[0]?.id || "",
-      source: "WordPress Plugin",
-      notes: notes || "Submitted via external website integration (WordPress Form).",
+      source: source || "Website Form",
+      notes: notes || "Submitted via external website integration.",
       createdAt: new Date().toISOString().split('T')[0],
       assignedUserId: "u1",
       lastContactedAt: new Date().toISOString().split('T')[0],
-      journey: []
+      journey: Array.isArray(journey) ? journey.slice(0, 50) : []
     };
 
     state.leads.unshift(newLead);
