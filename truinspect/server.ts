@@ -319,6 +319,21 @@ if (LOCAL_MODE) {
   console.log('────────────────────────────────────────────');
 }
 
+/* Safety net: with none of these three set, HAS_REAL_TOKEN_SECRET is false and
+   the authenticate middleware falls through to the open-door local branch —
+   fine on a dev laptop, a hole in prod. TruFlow issues codes via SYNC_KEY, so
+   on Render at least that one should always be present; this warns loudly if a
+   redeploy ever drops it. Log only, never exit — an outage is worse than a
+   noisy log line. */
+if (!HAS_REAL_TOKEN_SECRET) {
+  console.warn('────────────────────────────────────────────');
+  console.warn(' WARNING: no auth secret configured.');
+  console.warn(' Set TRUFLOW_SYNC_KEY (or TRUINSPECT_ACCESS_CODE /');
+  console.warn(' TRUINSPECT_TOKEN_SECRET). Without one, any Bearer');
+  console.warn(' token is accepted — safe locally, NOT in production.');
+  console.warn('────────────────────────────────────────────');
+}
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
