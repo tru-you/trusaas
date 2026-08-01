@@ -42,7 +42,9 @@
     z: attr("data-z", "999990"),
     accent: attr("data-accent", "#4FE3DC"),
     accent2: attr("data-accent-2", ""),
-    accent3: attr("data-accent-3", "")
+    accent3: attr("data-accent-3", ""),
+    flowUrl: attr("data-flow", ""),
+    slug: attr("data-slug", "")
   };
 
   var ID = "tru-afford";
@@ -542,6 +544,26 @@
         ].join("\n");
         if (!cfg.wa) return;
         window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+        if (cfg.slug && cfg.flowUrl) {
+          var names = (state.name || "").trim().split(/\s+/);
+          try {
+            fetch(cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                dealerSlug: cfg.slug,
+                firstName: names[0] || "TruAfford",
+                lastName: names.slice(1).join(" ") || "Lead",
+                phone: state.phone || "",
+                email: "",
+                source: "TruAfford Widget",
+                notes: msg
+              }),
+              mode: "cors",
+              keepalive: true
+            }).catch(function () {});
+          } catch (e) {}
+        }
       });
     }
   }

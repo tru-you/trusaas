@@ -205,6 +205,20 @@ export async function createLead(
   lead: Omit<Lead, "id" | "createdAt" | "lastContactedAt" | "status" | "assignedUserId" | "digitalScore">
     & { digitalScore?: number },
 ): Promise<Lead> {
+  try {
+    const res = await authFetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(lead),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.lead) return body.lead as Lead;
+    }
+  } catch (err) {
+    console.warn("createLead server failed, local fallback", err);
+  }
+
   const newL = {
     ...lead,
     id: 'l' + Date.now(),
@@ -212,8 +226,6 @@ export async function createLead(
     lastContactedAt: new Date().toISOString(),
     status: 'New' as const,
     assignedUserId: 'u1',
-    // Same fallback the server uses, so a lead scores the same whichever path
-    // created it.
     digitalScore: lead.digitalScore ?? Math.floor(Math.random() * 41) + 50,
   } as Lead;
   await updateState(s => s.leads.push(newL));

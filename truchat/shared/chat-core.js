@@ -401,7 +401,16 @@
       };
       saveLeadEntry(entry, LS_KEY);
       if (s.qualified || force) {
-        postWebhook(CFG.leadWebhook, { type: "truchat_lead", dealer: CFG.dealerName, entry: entry });
+        var names = (s.name || "").trim().split(/\s+/);
+        postWebhook(CFG.leadWebhook, {
+          dealerSlug: CFG.dealerSlug || "",
+          firstName: names[0] || "TruChat",
+          lastName: names.slice(1).join(" ") || "Lead",
+          phone: s.phone || "",
+          email: "",
+          source: "TruChat Widget",
+          notes: entry.ticket || ("TruChat lead — interest: " + (s.vehicleInterest || "general"))
+        });
       }
       if (typeof options.onLead === "function") options.onLead(entry);
     }
