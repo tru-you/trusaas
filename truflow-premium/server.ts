@@ -3241,8 +3241,15 @@ app.post("/api/integration/webhook-lead", (req, res) => {
       nextAction: "First contact",
       nextActionAt: new Date().toISOString().slice(0, 10),
       stageChangedAt: new Date().toISOString().slice(0, 10),
-      digitalScore: Math.floor(Math.random() * 30) + 60, // Warm/Hot lead from web
-      vehicleId: vehicleId || state.vehicles[0]?.id || "",
+      // The widget's qualifier already scored this lead — honour it when sent,
+      // fall back to a random warm/hot band only when the widget doesn't score.
+      digitalScore: typeof req.body.digitalScore === "number"
+        ? req.body.digitalScore
+        : Math.floor(Math.random() * 30) + 60,
+      /* Was `state.vehicles[0]?.id` — the first vehicle GLOBALLY, so a lead
+         from Dealer B's site attached to Dealer A's front-of-list car. Scope
+         to the dealership the lead belongs to, or leave empty. */
+      vehicleId: vehicleId || state.vehicles.find(v => v.dealershipId === leadDealershipId)?.id || "",
       source: source || "Website Form",
       notes: notes || "Submitted via external website integration.",
       createdAt: new Date().toISOString().split('T')[0],
