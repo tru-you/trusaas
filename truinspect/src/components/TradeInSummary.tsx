@@ -318,7 +318,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             .ti-report h1, .ti-report h2, .ti-report h3, .ti-report h4 { font-family: var(--display); font-weight: 400; letter-spacing: -0.02em; }
 
             /* Header */
-            .ti-report .ti-hdr { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid var(--ink); margin-bottom: 18px; }
+            .ti-report .ti-hdr { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid var(--ink); margin-bottom: 18px; break-inside: avoid; page-break-inside: avoid; }
             .ti-report .ti-hdr-left img.logo { height: 32px; width: auto; display: block; }
             .ti-report .ti-hdr-left .dealer { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 6px; }
             .ti-report .ti-hdr-right { text-align: right; }
@@ -355,7 +355,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             .ti-report .section-title .ln { flex: 1; height: 1px; background: var(--line); }
 
             /* Photo grid */
-            .ti-report .photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin-bottom: 20px; }
+            .ti-report .photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5mm; margin-bottom: 20px; break-inside: avoid; page-break-inside: avoid; }
             .ti-report .photo { aspect-ratio: 4/3; border-radius: 4px; border: 1px solid var(--line); overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
             .ti-report .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
             .ti-report .photo .cap { position: relative; margin-top: -22px; padding: 3px 6px; font-size: 9px; font-weight: 600; color: #fff; background: linear-gradient(to top, rgba(8,12,20,.75), transparent); }
@@ -416,7 +416,15 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
               .ti-report .photo.hero { grid-column: span 2; grid-row: span 1; }
             }
             @media print {
-              .ti-report { max-width: 100% !important; width: 100% !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; }
+              .no-print { display: none !important; }
+              body, html { background: #fff !important; margin: 0; padding: 0; overflow: visible !important; }
+              .ti-report { max-width: 100% !important; width: 100% !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; padding: 8mm 10mm !important; }
+              .ti-report .ti-hdr { break-inside: avoid; page-break-inside: avoid; }
+              .ti-report .val-hero { break-inside: avoid; page-break-inside: avoid; }
+              .ti-report .photos { break-inside: avoid; page-break-inside: avoid; }
+              .ti-report .photo, .ti-report .cond, .ti-report .signoff, .ti-report .sig-row, .ti-report .validity { break-inside: avoid; page-break-inside: avoid; }
+              .ti-report .section-title { break-after: avoid; page-break-after: avoid; }
+              .ti-report img { max-height: 120px; }
             }
           `}</style>
 
