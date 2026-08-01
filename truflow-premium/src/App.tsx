@@ -39,6 +39,7 @@ import {
   MessageSquare,
   CalendarClock,
   Download,
+  MoreHorizontal,
 } from "lucide-react";
 
 import {
@@ -655,6 +656,7 @@ export default function App() {
      waiting when it is still open and has never been contacted. */
   const openLeads = state.leads.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost");
   const awaitingReply = openLeads.filter((l) => !l.lastContactedAt);
+  const negotiatingCount = openLeads.filter((l) => l.status === "Negotiating").length;
   const oldestWaitMs = awaitingReply.reduce((worst, l) => {
     const waited = Date.now() - new Date(l.createdAt).getTime();
     return Number.isFinite(waited) && waited > worst ? waited : worst;
@@ -1184,19 +1186,90 @@ export default function App() {
         />
       )}
 
-      {/* Sidebar - Desktop & Mobile Drawer */}
+      {/* Mobile More sheet. Same filteredNavigation, same navigateTo — anything
+          already reachable from the bottom tab bar is filtered out so nothing
+          shows up twice, and role filtering carries over unchanged. */}
+      {(() => {
+        const TAB_IDS = new Set(["dashboard", "leads", "inventory", "tasks"]);
+        const sheetNav = filteredNavigation
+          .map((g) => ({ ...g, items: g.items.filter((i) => !TAB_IDS.has(i.id)) }))
+          .filter((g) => g.items.length > 0);
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-hidden={!sidebarOpen}
+            style={{ paddingBottom: "calc(1.25rem + var(--safe-b))" }}
+            className={`md:hidden fixed left-0 right-0 bottom-0 max-h-[80vh] z-[180] rounded-t-3xl bg-[color:var(--ink-2)] border-t border-[color:var(--glass-line)] shadow-[0_-18px_40px_-12px_rgba(0,0,0,0.6)] transition-transform duration-300 ${
+              sidebarOpen ? "translate-y-0" : "translate-y-full"
+            } flex flex-col`}
+          >
+            <div className="pt-3 pb-1 flex justify-center shrink-0">
+              <span className="block h-1 w-10 rounded-full bg-[color:var(--glass-line)]" aria-hidden="true" />
+            </div>
+            <div className="flex items-center justify-between px-5 pb-2 shrink-0">
+              <span className="text-[length:var(--t-lead)] font-semibold text-[color:var(--white)]">More</span>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close menu"
+                className="h-9 w-9 grid place-items-center rounded-lg text-[color:var(--white-dim)] hover:bg-white/5 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 pb-2 flex flex-col gap-4">
+              {sheetNav.map((group) => (
+                <div key={group.category} className="flex flex-col gap-1.5">
+                  <span className="font-mono text-[length:var(--t-micro)] text-[color:var(--muted)] tracking-wide font-semibold px-1">
+                    {group.category}
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {group.items.map((n) => {
+                      const Icon = n.icon;
+                      const active = activeSection === n.id;
+                      return (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => navigateTo(n.id)}
+                          className={`flex items-center gap-2 px-3 py-3 min-h-11 text-[13px] font-semibold rounded-xl text-left border cursor-pointer ${
+                            active
+                              ? "bg-[color:var(--cyan-faint)] text-[color:var(--white)] border-[color:var(--cyan-soft)]"
+                              : "bg-[color:var(--glass)] text-[color:var(--white-dim)] border-[color:var(--glass-line)]"
+                          }`}
+                        >
+                          <Icon size={15} className={active ? "text-[color:var(--cyan)]" : "text-[color:var(--blue)]"} />
+                          <span className="truncate">{n.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="mt-1 w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-[13px] font-semibold text-[color:var(--white-dim)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
+              >
+                <LogOut size={14} />
+                Log out
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Sidebar - Desktop only. Below md the drawer becomes a bottom sheet
+          rendered separately below, so a phone never carries an off-canvas
+          navigation model. */}
       <aside
-        /* aria-hidden when closed so a screen reader doesn't read out ten nav
-           items that are parked off-screen. */
-        aria-hidden={!sidebarOpen && typeof window !== "undefined" && window.innerWidth < 768}
         style={{
           paddingTop: "calc(1.25rem + var(--safe-t))",
           paddingBottom: "calc(1.25rem + var(--safe-b))",
           paddingLeft: "calc(1.25rem + var(--safe-l))",
         }}
-        className={`glass-sidebar fixed left-0 top-0 bottom-0 w-[240px] pr-5 flex flex-col z-[180] transition-transform duration-300 md:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className="glass-sidebar hidden md:flex fixed left-0 top-0 bottom-0 w-[240px] pr-5 flex-col z-[180]"
       >
         <div className="mb-6 flex flex-col items-center">
           <div className="w-full flex items-center justify-center px-1">
@@ -1283,7 +1356,7 @@ export default function App() {
       </aside>
 
       {/* Main Panel */}
-      <main className="flex-1 md:ml-[240px] min-h-0 px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:px-8 md:py-8 md:pb-[calc(2rem+env(safe-area-inset-bottom,0px))] z-10 flex flex-col gap-6 w-full">
+      <main className="flex-1 md:ml-[240px] min-h-0 px-4 py-6 pb-[calc(76px+env(safe-area-inset-bottom,0px))] md:px-8 md:py-8 md:pb-[calc(2rem+env(safe-area-inset-bottom,0px))] z-10 flex flex-col gap-6 w-full">
         {/* Top Profile Bar - Hidden on mobile */}
         {/* The top bar was a row of pills on a hairline with nothing behind it,
             so it read as the first row of content rather than as chrome. It now
@@ -1368,75 +1441,61 @@ export default function App() {
            </div>
         </div>
 
-        {/* Mobile Header Bar */}
-        {/* Same treatment on the phone. top offset clears the notch on an
-            installed PWA and falls back to 0.5rem everywhere else. */}
-        <div
-          style={{ top: "calc(0.5rem + var(--safe-t))" }}
-          className="flex flex-col gap-2 md:hidden sticky z-[60] rounded-xl px-3 py-2 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]"
-        >
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open menu"
-              aria-expanded={sidebarOpen}
-              className="text-[color:var(--white)] h-11 w-11 shrink-0 grid place-items-center hover:bg-white/5 rounded-lg cursor-pointer"
+        {/* Mobile Header — the section a dealer is on, plus one number worth
+            reading, plus Assist. Navigation itself moved to the bottom tab bar
+            and the More sheet; the hamburger, logo and counter strip are gone.
+            top offset clears the notch on an installed PWA. */}
+        {(() => {
+          const navMatch = groupedNavigation
+            .flatMap((g) => g.items)
+            .find((n) => n.id === activeSection);
+          const metaMap: Record<string, { title: string; sub: string }> = {
+            dashboard: {
+              title: "Today",
+              sub: `${dealershipLabel} · ${todayLabel}`,
+            },
+            leads: {
+              title: "Leads",
+              sub: `${awaitingReply.length} waiting · ${negotiatingCount} negotiating`,
+            },
+            inventory: {
+              title: "Stock",
+              sub: `${state.vehicles.length} vehicles · ${inPrepCount} going out`,
+            },
+            tasks: {
+              title: "Tasks",
+              sub: `${dueTodayCount} due today${overdueCount > 0 ? ` · ${overdueCount} late` : ""}`,
+            },
+          };
+          const meta = metaMap[activeSection] || {
+            title: navMatch?.label || "TruFlow",
+            sub: dealershipLabel,
+          };
+          return (
+            <div
+              style={{ top: "calc(0.5rem + var(--safe-t))" }}
+              className="flex items-center gap-3 md:hidden sticky z-[60] rounded-xl px-3 py-2 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]"
             >
-              <Menu size={20} />
-            </button>
-            <img src={logo} alt="TruFlow Premium" className="h-9 w-auto max-w-[150px] object-contain logo-float" />
-            <button
-              type="button"
-              onClick={() => setAssistOpen(true)}
-              className="flex items-center gap-1.5 h-11 px-4 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] cursor-pointer text-[13px] font-semibold ml-auto shrink-0"
-              title="Ask Dealer Assist"
-            >
-              <Sparkles size={14} />
-              Assist
-            </button>
-          </div>
-
-          <div className="relative">
-            <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-[length:var(--t-lead)] font-semibold text-[color:var(--white)] leading-tight truncate">
+                  {meta.title}
+                </span>
+                <span className="text-[length:var(--t-micro)] text-[color:var(--muted)] truncate">
+                  {meta.sub}
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={() => navigateTo("leads")}
-                className="flex items-center gap-1.5 h-11 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
-                title="Leads that have never been replied to"
+                onClick={() => setAssistOpen(true)}
+                aria-label="Ask Dealer Assist"
+                title="Ask Dealer Assist"
+                className="h-11 w-11 shrink-0 grid place-items-center rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] cursor-pointer"
               >
-                <MessageSquare size={12} />
-                <span className="font-semibold">{awaitingReply.length}</span>
-                <span>waiting</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigateTo("tasks")}
-                className="flex items-center gap-1.5 h-11 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
-                title="Promised for today, and anything already past its date"
-              >
-                <CalendarClock size={12} />
-                <span className="font-semibold">{dueTodayCount}</span>
-                <span>due</span>
-                {overdueCount > 0 && (
-                  <span className="text-[color:var(--muted)] font-semibold">· {overdueCount} late</span>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigateTo("inventory")}
-                className="flex items-center gap-1.5 h-11 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] cursor-pointer text-[length:var(--t-micro)] shrink-0"
-                title="Sold, not yet handed over"
-              >
-                <Car size={12} />
-                <span className="font-semibold">{inPrepCount}</span>
-                <span>going out</span>
+                <Sparkles size={16} />
               </button>
             </div>
-            <div className="pointer-events-none absolute top-0 right-0 bottom-0.5 w-6 bg-gradient-to-l from-[color:var(--ink-2)] to-transparent rounded-r-xl" />
-          </div>
-        </div>
+          );
+        })()}
 
         {/* OVERVIEW SECTION */}
         {activeSection === "dashboard" && (
@@ -1470,8 +1529,11 @@ export default function App() {
               </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Stats Row. The mobile counter strip used to live in the header
+                (waiting / due / going out); that strip is gone, so those three
+                figures fold into the stats grid as full-detail cards. Only the
+                unanswered-lead card is allowed the cyan border. */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Needs a reply — deliberately first. This is the only number on
                   the overview that is actionable the moment the dealer opens
                   the app, so it leads and it is the only one allowed to go red. */}
@@ -1498,6 +1560,18 @@ export default function App() {
                 </div>
               </button>
               <button
+                onClick={() => navigateTo("tasks")}
+                className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
+              >
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Due today</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={dueTodayCount} /></div>
+                <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
+                  {overdueCount > 0
+                    ? `${overdueCount} already late`
+                    : "Nothing overdue"}
+                </div>
+              </button>
+              <button
                 onClick={() => navigateTo("inventory")}
                 className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
               >
@@ -1507,6 +1581,16 @@ export default function App() {
                   {agedStockCount > 0
                     ? `${agedStockCount} over ${AGED_DAYS} days`
                     : `None over ${AGED_DAYS} days`}
+                </div>
+              </button>
+              <button
+                onClick={() => navigateTo("workflow")}
+                className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
+              >
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Going out</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={inPrepCount} /></div>
+                <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
+                  {inPrepCount > 0 ? "Sold, awaiting hand-over" : "Nothing pending delivery"}
                 </div>
               </button>
               <div className="stat-card p-4">
@@ -1989,7 +2073,7 @@ export default function App() {
 
         {/* WORKFLOW PIPELINE SECTION */}
         {activeSection === "workflow" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 w-full">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Reconditioning & Delivery Pipeline</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Control prep workflows for pre-owned stock</p>
@@ -2612,7 +2696,7 @@ export default function App() {
 
         {/* LEAD SCORING SECTION */}
         {activeSection === "scoring" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 w-full">
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Lead scoring</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate intent and prioritization indices</p>
@@ -2675,8 +2759,12 @@ export default function App() {
                           <td className="py-3 px-4 font-semibold text-[color:var(--white)]">{l.firstName} {l.lastName}</td>
                           <td data-label="Intent score" className="py-3 px-4 font-mono font-semibold text-[color:var(--cyan)] text-[16px]">{l.digitalScore}%</td>
                           <td data-label="Rating" className="py-3 px-4">
-                            <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
-                              hot ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : warm ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
+                            <span className={`px-2 py-0.5 rounded text-[13px] font-medium tracking-normal ${
+                              hot
+                                ? "bg-[color:var(--cyan)] text-[color:var(--ink)]"
+                                : warm
+                                ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]"
+                                : "bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)]"
                             }`}>
                               {hot ? "Hot Target" : warm ? "Warm Prospect" : "Cold Prospect"}
                             </span>
@@ -3469,6 +3557,104 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* Mobile bottom tab bar. Five destinations: the four things a dealer
+            touches hourly, plus a More opener for everything else. Above md the
+            permanent sidebar is the navigation and this stays hidden. */}
+        {(() => {
+          const AVAILABLE = new Set(
+            filteredNavigation.flatMap((g) => g.items.map((i) => i.id))
+          );
+          const tabs: Array<{
+            id: string;
+            label: string;
+            icon: typeof Home;
+            action: () => void;
+            active: boolean;
+            badge?: number;
+          }> = [];
+          if (AVAILABLE.has("dashboard")) {
+            tabs.push({
+              id: "dashboard",
+              label: "Today",
+              icon: Home,
+              action: () => navigateTo("dashboard"),
+              active: activeSection === "dashboard",
+            });
+          }
+          if (AVAILABLE.has("leads")) {
+            tabs.push({
+              id: "leads",
+              label: "Leads",
+              icon: Users,
+              action: () => navigateTo("leads"),
+              active: activeSection === "leads",
+              badge: awaitingReply.length,
+            });
+          }
+          if (AVAILABLE.has("inventory")) {
+            tabs.push({
+              id: "inventory",
+              label: "Stock",
+              icon: Car,
+              action: () => navigateTo("inventory"),
+              active: activeSection === "inventory",
+            });
+          }
+          if (AVAILABLE.has("tasks")) {
+            tabs.push({
+              id: "tasks",
+              label: "Tasks",
+              icon: CheckSquare,
+              action: () => navigateTo("tasks"),
+              active: activeSection === "tasks",
+              badge: overdueCount > 0 ? overdueCount : undefined,
+            });
+          }
+          tabs.push({
+            id: "more",
+            label: "More",
+            icon: MoreHorizontal,
+            action: () => setSidebarOpen(true),
+            active: sidebarOpen,
+          });
+          return (
+            <nav
+              aria-label="Primary"
+              style={{ paddingBottom: "calc(14px + var(--safe-b))" }}
+              className="md:hidden fixed left-0 right-0 bottom-0 z-[190] bg-[color:var(--ink-2)]/95 backdrop-blur-md border-t border-[color:var(--glass-line)] pt-2 px-1"
+            >
+              <ul className="flex items-stretch justify-around">
+                {tabs.map((t) => {
+                  const Icon = t.icon;
+                  return (
+                    <li key={t.id} className="flex-1">
+                      <button
+                        type="button"
+                        onClick={t.action}
+                        aria-current={t.active ? "page" : undefined}
+                        aria-label={t.label}
+                        className={`w-full min-h-[52px] flex flex-col items-center justify-center gap-0.5 rounded-lg cursor-pointer relative ${
+                          t.active ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"
+                        }`}
+                      >
+                        <span className="relative">
+                          <Icon size={20} />
+                          {t.badge && t.badge > 0 ? (
+                            <span className="absolute -top-1 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[color:var(--cyan)] text-[color:var(--ink)] text-[10px] font-semibold grid place-items-center leading-none">
+                              {t.badge > 99 ? "99+" : t.badge}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="text-[11px] font-medium">{t.label}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          );
+        })()}
       </main>
 
       {/* Dealer Assist. Opens from the top bar — no floating launcher. */}

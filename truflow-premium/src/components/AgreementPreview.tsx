@@ -341,7 +341,7 @@ export default function AgreementPreview({ agreement, lead, vehicle, dealership,
                     />
                     <button
                       onClick={clearCanvas}
-                      className="absolute bottom-2 right-2 p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all flex items-center gap-1 text-[13px] font-semibold"
+                      className="absolute bottom-2 right-2 p-2 bg-[color:var(--glass)] hover:bg-[color:var(--glass-line)] text-[color:var(--white-dim)] rounded-lg transition-all flex items-center gap-1 text-[13px] font-semibold"
                     >
                       <RotateCcw size={10} /> Clear Pad
                     </button>

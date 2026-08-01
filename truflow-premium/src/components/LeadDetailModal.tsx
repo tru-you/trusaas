@@ -482,16 +482,16 @@ export default function LeadDetailModal({
                     
                     {/* Dynamic Hot/Warm/Cold Rating Badge */}
                     {lead.digitalScore >= 75 ? (
-                      <span className="flex items-center gap-2 px-3 py-1 bg-[color:var(--glass)] text-[color:var(--muted)] text-[13px] font-semibold tracking-normal rounded-lg border border-[color:var(--glass-line)] shadow-[0_0_12px_rgba(239,68,68,0.2)] font-mono">
-                        Hot 🔥 (High Intent: {lead.digitalScore}%)
+                      <span className="px-3 py-1 bg-[color:var(--cyan)] text-[color:var(--ink)] text-[13px] font-medium rounded-lg">
+                        Hot · {lead.digitalScore}%
                       </span>
                     ) : lead.digitalScore >= 50 ? (
-                      <span className="flex items-center gap-2 px-3 py-1 bg-[color:var(--glass)] text-[color:var(--warning)] text-[13px] font-semibold tracking-normal rounded-lg border border-[color:var(--glass)] font-mono">
-                        Warm ☀️ (Engaged: {lead.digitalScore}%)
+                      <span className="px-3 py-1 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] font-medium rounded-lg border border-[color:var(--cyan-soft)]">
+                        Warm · {lead.digitalScore}%
                       </span>
                     ) : (
-                      <span className="flex items-center gap-2 px-3 py-1 bg-sky-500/15 text-sky-400 text-[13px] font-semibold tracking-normal rounded-lg border border-sky-500/20 font-mono">
-                        Cold ❄️ (Nurture: {lead.digitalScore}%)
+                      <span className="px-3 py-1 bg-[color:var(--glass)] text-[color:var(--muted)] text-[13px] font-medium rounded-lg border border-[color:var(--glass-line)]">
+                        Cold · {lead.digitalScore}%
                       </span>
                     )}
                   </div>
@@ -582,7 +582,7 @@ export default function LeadDetailModal({
                       const Icon = j.action.includes('Viewed') ? Eye : j.action.includes('Requested') ? Sparkles : ShoppingCart;
                       return (
                         <div key={idx} className="relative">
-                          <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[color:var(--cyan)] border-2 border-white/10 shadow-[0_0_8px_rgba(20,102,224,0.5)]"></span>
+                          <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full bg-[color:var(--cyan)] border-2 border-white/10"></span>
                           <div className="flex items-center gap-2">
                              <Icon size={12} className="text-[color:var(--cyan)]" />
                              <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono font-medium">{j.time}</div>
@@ -752,12 +752,12 @@ export default function LeadDetailModal({
                             key={idx}
                             className={`max-w-[85%] rounded-lg px-3 py-2 leading-relaxed text-[13px] relative flex flex-col gap-0.5 shadow-sm ${
                               msg.sender === "agent"
-                                ? "bg-[#dcf8c6] text-gray-900 self-end rounded-tr-none"
-                                : "bg-[color:var(--ink-2)] text-gray-100 self-start rounded-tl-none border border-white/5"
+                                ? "bg-[color:var(--cyan-faint)] text-[color:var(--white)] self-end rounded-tr-none border border-[color:var(--cyan-soft)]"
+                                : "bg-[color:var(--glass)] text-[color:var(--white)] self-start rounded-tl-none border border-white/5"
                             }`}
                           >
                             <span>{msg.text}</span>
-                            <span className={`text-[13px] self-end mt-0.5 ${msg.sender === "agent" ? "text-gray-400" : "text-gray-400 font-mono"}`}>
+                            <span className={`text-[13px] self-end mt-0.5 text-[color:var(--muted)] ${msg.sender === "agent" ? "" : "font-mono"}`}>
                               {msg.time}
                             </span>
                           </div>

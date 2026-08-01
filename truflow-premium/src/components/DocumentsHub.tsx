@@ -153,24 +153,24 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
     const previewHtml = doc.mimeType.startsWith("image/")
       ? `<img src="${doc.fileData}" style="max-width:100%;display:block;margin:0 auto 24px" />`
       : doc.mimeType === "application/pdf"
-      ? `<iframe src="${doc.fileData}" style="width:100%;height:70vh;border:1px solid #ddd;margin-bottom:24px"></iframe>`
-      : `<p style="color:#666">${doc.fileName} (preview not available for this file type)</p>`;
+      ? `<iframe src="${doc.fileData}" style="width:100%;height:70vh;border:1px solid rgba(6,8,13,0.12);margin-bottom:24px"></iframe>`
+      : `<p style="color:rgba(6,8,13,0.55)">${doc.fileName} (preview not available for this file type)</p>`;
     const sigHtml = doc.signature
       ? doc.signature.startsWith("TYPED:")
-        ? `<div style="font-family:cursive;font-size:22px;border-bottom:1px solid #333;display:inline-block;padding:6px 20px 4px">${doc.signature.replace("TYPED:", "")}</div>`
+        ? `<div style="font-family:cursive;font-size:22px;border-bottom:1px solid #06080D;display:inline-block;padding:6px 20px 4px">${doc.signature.replace("TYPED:", "")}</div>`
         : `<img src="${doc.signature}" style="max-height:60px" />`
-      : `<span style="color:#c00">Unsigned</span>`;
+      : `<span style="color:#B86A6A">Unsigned</span>`;
     win.document.write(`
       <html>
         <head><title>${doc.fileName}</title></head>
-        <body style="font-family:system-ui,-apple-system,sans-serif;padding:40px;color:#1a1a2e;background:#fff">
+        <body style="font-family:system-ui,-apple-system,sans-serif;padding:40px;color:#06080D;background:#fff">
           <h2 style="margin:0 0 4px">${doc.fileName}</h2>
-          <p style="color:#666;font-size:12px;margin:0 0 24px">Uploaded ${formatDate(doc.uploadedAt)}</p>
+          <p style="color:rgba(6,8,13,0.55);font-size:12px;margin:0 0 24px">Uploaded ${formatDate(doc.uploadedAt)}</p>
           ${previewHtml}
-          <div style="margin-top:24px;border-top:1px solid #ddd;padding-top:16px">
-            <div style="font-size:11px;color:#666;letter-spacing:.05em;margin-bottom:6px">Signature</div>
+          <div style="margin-top:24px;border-top:1px solid rgba(6,8,13,0.12);padding-top:16px">
+            <div style="font-size:11px;color:rgba(6,8,13,0.55);letter-spacing:.05em;margin-bottom:6px">Signature</div>
             ${sigHtml}
-            ${doc.signedBy ? `<div style="font-size:12px;color:#333;margin-top:8px">Signed by ${doc.signedBy} on ${formatDate(doc.signedAt)}</div>` : ""}
+            ${doc.signedBy ? `<div style="font-size:12px;color:rgba(6,8,13,0.72);margin-top:8px">Signed by ${doc.signedBy} on ${formatDate(doc.signedAt)}</div>` : ""}
           </div>
           <script>window.print();</script>
         </body>
