@@ -674,7 +674,7 @@ export default function App() {
               vehicle={activeVehicle}
               items={tradeInItems}
               valuation={tradeInValuation}
-              onBack={() => setActiveView('trade-in-valuation')}
+              onBack={() => setActiveView('inventory')}
               onSave={handleSaveTradeIn}
             />
           )}

@@ -5,25 +5,196 @@
       "name": "MKR Auto Sales",
       "location": "Johannesburg",
       "slug": "mkr-autosales",
-      "websiteUrl": "https://mkrauto.netlify.app"
+      "websiteUrl": "https://mkrauto.netlify.app",
+      "products": [
+        "lens",
+        "flow",
+        "flow-lite",
+        "inspect",
+        "live",
+        "value"
+      ]
     },
     {
       "id": "d2",
       "name": "Cars on Caledon",
       "location": "Kariega, Eastern Cape",
       "slug": "cars-on-caledon",
-      "websiteUrl": "https://www.carsoncaledon.co.za"
+      "websiteUrl": "https://www.carsoncaledon.co.za",
+      "products": [
+        "lens",
+        "flow",
+        "flow-lite",
+        "inspect",
+        "live",
+        "value"
+      ]
     },
     {
       "id": "true-cars",
       "name": "True Cars",
       "location": "Port Elizabeth",
       "slug": "true-cars",
-      "websiteUrl": "https://www.true-cars.co.za"
+      "websiteUrl": "https://www.true-cars.co.za",
+      "products": [
+        "lens",
+        "flow",
+        "flow-lite",
+        "inspect",
+        "live",
+        "value"
+      ]
     }
   ],
-  "vehicles": [],
-  "leads": [],
+  "vehicles": [
+    {
+      "id": "v_lens_1785519719910",
+      "year": 2026,
+      "make": "Toyota",
+      "model": "Corolla",
+      "trim": "",
+      "status": "INVENTORY",
+      "retailPrice": 24995,
+      "costPrice": 0,
+      "mileage": 50000,
+      "transmission": "Manual",
+      "fuelType": "Petrol",
+      "stockNumber": "STK-297134",
+      "dateAcquired": "2026-07-31",
+      "daysInInventory": 1,
+      "description": "Imported from TruLens · 2026 Toyota Corolla",
+      "bodyType": "SUV",
+      "engine": "",
+      "vin": "",
+      "color": "",
+      "images": [
+        "/media/36f059ce65f81a84cf4586fa7c0491a4e6f925880dfefd1ee1f081803994ba25.jpg"
+      ],
+      "damagePhotos": [],
+      "vinPhotos": [],
+      "serviceBookPhotos": [],
+      "extrasPhotos": [],
+      "lastPhotoSync": "2026-07-31T17:41:59.911Z",
+      "reconTasks": [],
+      "source": "trulens",
+      "dealershipId": "d1",
+      "showOnWebsite": false
+    },
+    {
+      "id": "demo_v3",
+      "year": 2018,
+      "make": "Ford",
+      "model": "EcoSport",
+      "trim": "1.5 Ambiente",
+      "status": "INVENTORY",
+      "retailPrice": 199900,
+      "costPrice": 172000,
+      "mileage": 96800,
+      "transmission": "Manual",
+      "fuelType": "Petrol",
+      "stockNumber": "DEMO-102",
+      "dateAcquired": "2026-05-18",
+      "daysInInventory": 74,
+      "description": "2018 Ford EcoSport — sample stock for the demo.",
+      "bodyType": "SUV",
+      "images": [],
+      "reconTasks": [],
+      "dealershipId": "demo",
+      "showOnWebsite": true
+    },
+    {
+      "id": "demo_v2",
+      "year": 2021,
+      "make": "Volkswagen",
+      "model": "Polo",
+      "trim": "1.0 TSI Comfortline",
+      "status": "INVENTORY",
+      "retailPrice": 269900,
+      "costPrice": 228000,
+      "mileage": 52300,
+      "transmission": "Manual",
+      "fuelType": "Petrol",
+      "stockNumber": "DEMO-101",
+      "dateAcquired": "2026-06-20",
+      "daysInInventory": 41,
+      "description": "2021 Volkswagen Polo — sample stock for the demo.",
+      "bodyType": "Hatchback",
+      "images": [],
+      "reconTasks": [
+        {
+          "id": "demo_r1",
+          "name": "Valet & polish",
+          "cost": 1800,
+          "status": "Completed",
+          "dateAdded": "2026-07-31"
+        }
+      ],
+      "dealershipId": "demo",
+      "showOnWebsite": true
+    },
+    {
+      "id": "demo_v1",
+      "year": 2020,
+      "make": "Toyota",
+      "model": "Hilux",
+      "trim": "2.4 GD-6 SRX",
+      "status": "INVENTORY",
+      "retailPrice": 379900,
+      "costPrice": 318000,
+      "mileage": 112000,
+      "transmission": "Manual",
+      "fuelType": "Diesel",
+      "stockNumber": "DEMO-100",
+      "dateAcquired": "2026-07-19",
+      "daysInInventory": 12,
+      "description": "2020 Toyota Hilux — sample stock for the demo.",
+      "bodyType": "Bakkie",
+      "images": [],
+      "reconTasks": [],
+      "dealershipId": "demo",
+      "showOnWebsite": true
+    }
+  ],
+  "leads": [
+    {
+      "id": "demo_l2",
+      "firstName": "Annelie",
+      "lastName": "Botha",
+      "phone": "082 000 0002",
+      "email": "annelie@example.co.za",
+      "vehicleId": "demo_v2",
+      "source": "Walk-in",
+      "status": "Contacted",
+      "assignedUserId": "u1",
+      "createdAt": "2026-07-22",
+      "lastContactedAt": "2026-07-22",
+      "digitalScore": 64,
+      "notes": "Wants a trade-in valuation.",
+      "nextAction": "Follow up",
+      "nextActionAt": "2026-07-27",
+      "stageChangedAt": "2026-07-22",
+      "dealershipId": "demo"
+    },
+    {
+      "id": "demo_l1",
+      "firstName": "Sipho",
+      "lastName": "Ndlovu",
+      "phone": "079 000 0001",
+      "email": "sipho@example.co.za",
+      "vehicleId": "demo_v1",
+      "source": "Website",
+      "status": "New",
+      "assignedUserId": "u1",
+      "createdAt": "2026-07-31",
+      "lastContactedAt": null,
+      "digitalScore": 82,
+      "notes": "Asked about finance on the Hilux.",
+      "nextAction": "First contact",
+      "nextActionAt": "2026-07-31",
+      "stageChangedAt": "2026-07-31",
+      "dealershipId": "demo"
+    }
+  ],
   "tasks": [],
   "invoices": [],
   "agreements": [],
@@ -43,5 +214,8 @@
     "liveReceptionist": true,
     "seoAeo": true,
     "syndication": true
+  },
+  "migrations": {
+    "prunedSeedDealers": true
   }
 }

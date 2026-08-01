@@ -105,9 +105,14 @@ export default function DealershipAdmin({
   const [savingProductsFor, setSavingProductsFor] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
   const deleteDealership = async (d: Dealership) => {
-    if (!confirm(`Delete ${d.name}? Their stock, leads and history stay in the system but their code will stop working.`)) return;
+    if (confirmingDelete !== d.id) {
+      setConfirmingDelete(d.id);
+      return;
+    }
+    setConfirmingDelete(null);
     setDeleting(d.id);
     try {
       const res = await authFetch(`/api/dealerships/${d.id}`, { method: "DELETE" });
@@ -364,10 +369,17 @@ export default function DealershipAdmin({
                   <button
                     type="button"
                     onClick={() => deleteDealership(d)}
+                    onBlur={() => { if (confirmingDelete === d.id) setConfirmingDelete(null); }}
                     disabled={deleting === d.id}
-                    className="btn bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] text-[13px] inline-flex items-center gap-1.5 disabled:opacity-50 hover:text-red-400 hover:border-red-400/30"
+                    className={
+                      "btn text-[13px] inline-flex items-center gap-1.5 disabled:opacity-50 " +
+                      (confirmingDelete === d.id
+                        ? "bg-red-500/20 text-red-400 border border-red-400/40"
+                        : "bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] hover:text-red-400 hover:border-red-400/30")
+                    }
                   >
                     <Trash2 size={13} />
+                    {confirmingDelete === d.id && "Confirm?"}
                   </button>
                 </div>
               </div>
