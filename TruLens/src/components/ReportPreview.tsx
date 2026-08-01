@@ -387,7 +387,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .doc-body { padding: 10mm 12mm 8mm; overflow: hidden; }
 
             /* Header band */
-            .tl-report .hdr { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding-bottom:10px; margin-bottom:16px; border-bottom:2.5px solid var(--ink); }
+            .tl-report .hdr { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding-bottom:10px; margin-bottom:16px; border-bottom:2.5px solid var(--ink); break-inside:avoid; page-break-inside:avoid; }
             .tl-report .hdr-left { display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap; }
             .tl-report .hdr-left img.logo { height:28px; width:auto; flex:none; }
             .tl-report .hdr-left img.lockup { height:16px; width:auto; flex:none; margin-left:6px; }
@@ -426,7 +426,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .vehicle .row .v { font-size:10.5px; font-weight:700; color:var(--ink); text-align:right; overflow-wrap:break-word; word-break:break-word; }
 
             /* Photo grid — hero 2x2 */
-            .tl-report .photos { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:18px; }
+            .tl-report .photos { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:18px; break-inside:avoid; page-break-inside:avoid; }
             .tl-report .photo { position:relative; aspect-ratio:4/3; background:var(--line-soft); border-radius:6px; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; overflow:hidden; break-inside:avoid; }
             .tl-report .photo img { width:100%; height:100%; object-fit:cover; display:block; }
             .tl-report .photo span.slot { font-family:var(--mono); font-size:6.8px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); text-align:center; padding:4px; }
@@ -481,7 +481,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report table.checklist th { font-family:var(--mono); font-size:7.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 
             /* Gallery */
-            .tl-report .gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
+            .tl-report .gallery { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; break-inside:avoid; page-break-inside:avoid; }
             .tl-report .photo-tile { border:1px solid var(--line); border-radius:6px; overflow:hidden; break-inside:avoid; }
             .tl-report .photo-tile img { width:100%; height:auto; max-height:130px; object-fit:cover; display:block; }
             .tl-report .photo-tile .cap { padding:6px 8px; font-size:9px; color:var(--ink-2); font-family:var(--mono); overflow-wrap:break-word; }
@@ -517,9 +517,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               .tl-report { max-width:100% !important; width:100% !important; border-radius:0 !important; box-shadow:none !important; margin:0 !important; }
               .tl-report .doc-body { padding:8mm 10mm; }
               .tl-report img { max-height:120px; }
-              .tl-report .photos { grid-template-columns:repeat(4,1fr); }
-              .tl-report .gallery { grid-template-columns:repeat(3,1fr); }
-              .tl-report .panel, .tl-report .finding, .tl-report .photo-tile, .tl-report .photo, .tl-report .card, .tl-report .q-card, .tl-report .damage-card { break-inside:avoid; }
+              .tl-report .hdr { break-inside:avoid; page-break-inside:avoid; }
+              .tl-report .verdict { break-inside:avoid; page-break-inside:avoid; }
+              .tl-report .photos { grid-template-columns:repeat(4,1fr); break-inside:avoid; page-break-inside:avoid; }
+              .tl-report .gallery { grid-template-columns:repeat(3,1fr); break-inside:avoid; page-break-inside:avoid; }
+              .tl-report .damage-grid { break-inside:avoid; page-break-inside:avoid; }
+              .tl-report .section-title { break-after:avoid; page-break-after:avoid; }
+              .tl-report .panel, .tl-report .finding, .tl-report .photo-tile, .tl-report .photo, .tl-report .card, .tl-report .q-card, .tl-report .damage-card, .tl-report .sig-row { break-inside:avoid; page-break-inside:avoid; }
               .tl-report table { break-inside:auto; }
               .tl-report tr { break-inside:avoid; }
             }
