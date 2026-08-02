@@ -674,9 +674,15 @@ export default function App() {
 
   /** Whose floor this is. Matches the signed-in dealership first, then
    *  falls back so the banner never renders a bare "· live". */
+  const currentDealership = (state?.dealerships || []).find((d: any) => d.id === dealershipId);
   const dealershipLabel =
-    (state?.dealerships || []).find((d: any) => d.id === dealershipId)?.name
+    currentDealership?.name
     || account?.label || "Your dealership";
+  // The embed snippet was reading from a localStorage default that ships as
+  // "mkr-autosales", so every dealer's Settings page showed MKR. Prefer the
+  // signed-in dealership's slug; fall through to the stored value only for the
+  // master admin, who has no dealership of their own.
+  const currentDealerSlug = currentDealership?.slug || (isMasterAdmin ? undefined : dealershipId);
   const todayLabel = new Date().toLocaleDateString("en-ZA", {
     day: "numeric",
     month: "long",
@@ -3262,11 +3268,11 @@ export default function App() {
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Public stock feed</div>
                 <a
                   className="text-[13px] text-[color:var(--cyan-bright)] font-mono mt-2 block break-all hover:underline"
-                  href={`/api/public/stock?dealer=${encodeURIComponent(getDealerSlug())}`}
+                  href={`/api/public/stock?dealer=${encodeURIComponent(currentDealerSlug || getDealerSlug())}`}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  /api/public/stock?dealer={getDealerSlug()}
+                  /api/public/stock?dealer={currentDealerSlug || getDealerSlug()}
                 </a>
               </div>
             </div>
@@ -3500,14 +3506,14 @@ export default function App() {
                   Drop this snippet into the dealer's website to show their live inventory. The widget pulls from the public stock feed automatically.
                 </p>
                 <pre className="text-[13px] bg-black/50 border border-white/10 rounded-xl p-3 overflow-x-auto text-[rgba(232,234,230,0.72)] font-mono whitespace-pre-wrap">
-                  {stockWidgetSnippet(window.location.origin)}
+                  {stockWidgetSnippet(window.location.origin, currentDealerSlug)}
                 </pre>
                 <button
                   type="button"
                   className="self-start text-[13px] font-semibold text-[color:var(--cyan-bright)] hover:underline"
                   onClick={async () => {
                     try {
-                      await navigator.clipboard.writeText(stockWidgetSnippet(window.location.origin));
+                      await navigator.clipboard.writeText(stockWidgetSnippet(window.location.origin, currentDealerSlug));
                       setEmbedCopied(true);
                       setTimeout(() => setEmbedCopied(false), 1600);
                     } catch { /* ignore */ }

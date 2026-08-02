@@ -58,18 +58,22 @@ export function openTruLens(stockNumber?: string) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-export function publicStockPath(origin = typeof window !== "undefined" ? window.location.origin : ""): string {
-  return `${origin}/api/public/stock?dealer=${encodeURIComponent(getDealerSlug())}`;
+export function publicStockPath(
+  origin = typeof window !== "undefined" ? window.location.origin : "",
+  slug?: string,
+): string {
+  return `${origin}/api/public/stock?dealer=${encodeURIComponent(slug || getDealerSlug())}`;
 }
 
-export function stockWidgetSnippet(apiOrigin: string): string {
+export function stockWidgetSnippet(apiOrigin: string, slug?: string): string {
   const api = `${apiOrigin.replace(/\/$/, "")}/api/public/stock`;
+  const dealer = slug || getDealerSlug();
   return `<!-- TruSaaS live stock -->
 <div id="trusass-stock"></div>
 <script
   src="${apiOrigin.replace(/\/$/, "")}/embed/stock-widget.js"
   data-api="${api}"
-  data-dealer="${getDealerSlug()}"
+  data-dealer="${dealer}"
   data-theme="light"
 ></script>`;
 }

@@ -1580,6 +1580,17 @@ app.put("/api/tasks/:id", (req, res) => {
   res.json({ message: "Task updated.", task: state.tasks[index] });
 });
 
+app.delete("/api/tasks/:id", (req, res) => {
+  const state = readState();
+  const before = state.tasks.length;
+  state.tasks = state.tasks.filter(t => t.id !== req.params.id);
+  if (state.tasks.length === before) {
+    return res.status(404).json({ error: "Task not found" });
+  }
+  writeState(state);
+  res.json({ message: "Task deleted." });
+});
+
 // Invoices Accounting API
 app.get("/api/invoices", (req: any, res) => {
   const state = readState();

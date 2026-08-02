@@ -111,6 +111,21 @@ export async function refreshFromServer(): Promise<DMSState> {
 }
 
 export async function updateSettings(settings: Partial<DMSState['settings']>): Promise<DMSState['settings']> {
+  // Server-first; the local-only write here was wiped by the next fetchState().
+  try {
+    const res = await authFetch("/api/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      // Server responds with the settings object directly.
+      if (body && typeof body === "object") return body as DMSState['settings'];
+    }
+  } catch (err) {
+    console.warn("updateSettings server failed, local fallback", err);
+  }
   const state = await updateState(s => { Object.assign(s.settings, settings); });
   return state.settings;
 }
@@ -167,30 +182,25 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
 }
 
 export async function addReconTask(vehicleId: string, task: Omit<Vehicle['reconTasks'][0], 'id'>) {
+  // No dedicated /api/inventory/:id/recon route on the server, but the general
+  // PUT /api/inventory/:id accepts the whole vehicle payload, so we push the
+  // updated reconTasks array through updateVehicle. Same reason as
+  // updateLead — a bare local mutation gets wiped by fetchState().
   const newTask = { ...task, id: 'rc-' + Date.now() };
-  await updateState(s => {
-    const v = s.vehicles.find(v => v.id === vehicleId);
-    if (v) {
-      if (!v.reconTasks) v.reconTasks = [];
-      v.reconTasks.push(newTask);
-    }
-  });
+  const state = await fetchState();
+  const v = state.vehicles.find(x => x.id === vehicleId);
+  const nextTasks = [...(v?.reconTasks || []), newTask];
+  await updateVehicle(vehicleId, { reconTasks: nextTasks } as Partial<Vehicle>);
   return newTask;
 }
 
 export async function updateReconTask(vehicleId: string, taskId: string, updates: Partial<Vehicle['reconTasks'][0]>) {
-  let updated;
-  await updateState(s => {
-    const v = s.vehicles.find(v => v.id === vehicleId);
-    if (v && v.reconTasks) {
-      const idx = v.reconTasks.findIndex(t => t.id === taskId);
-      if (idx !== -1) {
-        v.reconTasks[idx] = { ...v.reconTasks[idx], ...updates };
-        updated = v.reconTasks[idx];
-      }
-    }
-  });
-  return updated;
+  const state = await fetchState();
+  const v = state.vehicles.find(x => x.id === vehicleId);
+  if (!v?.reconTasks) return undefined;
+  const nextTasks = v.reconTasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
+  await updateVehicle(vehicleId, { reconTasks: nextTasks } as Partial<Vehicle>);
+  return nextTasks.find(t => t.id === taskId);
 }
 
 /**
@@ -263,12 +273,38 @@ export async function updateLead(id: string, updates: Partial<Lead>): Promise<Le
 }
 
 export async function createTask(task: Omit<Task, "id">): Promise<Task> {
+  try {
+    const res = await authFetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.task) return body.task as Task;
+    }
+  } catch (err) {
+    console.warn("createTask server failed, local fallback", err);
+  }
   const newT = { ...task, id: 't' + Date.now() } as Task;
   await updateState(s => s.tasks.push(newT));
   return newT;
 }
 
 export async function updateTask(id: string, updates: Partial<Task>): Promise<Task> {
+  try {
+    const res = await authFetch(`/api/tasks/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.task) return body.task as Task;
+    }
+  } catch (err) {
+    console.warn("updateTask server failed, local fallback", err);
+  }
   let updated;
   await updateState(s => {
     const idx = s.tasks.findIndex(t => t.id === id);
@@ -281,12 +317,41 @@ export async function updateTask(id: string, updates: Partial<Task>): Promise<Ta
 }
 
 export async function createInvoice(invoice: Omit<Invoice, "id" | "invoiceNumber">): Promise<Invoice> {
+  // Same story as updateLead/updateVehicle: local push gets wiped by the next
+  // fetchState() (server truth wins), so an auto-generated invoice from a
+  // Closed Won never survived a refresh. Persist to server; fall back local.
+  try {
+    const res = await authFetch("/api/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(invoice),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.invoice) return body.invoice as Invoice;
+    }
+  } catch (err) {
+    console.warn("createInvoice server failed, local fallback", err);
+  }
   const newI = { ...invoice, id: 'inv' + Date.now(), invoiceNumber: 'INV-' + Date.now() } as Invoice;
   await updateState(s => s.invoices.push(newI));
   return newI;
 }
 
 export async function createAgreement(agreement: Omit<Agreement, "id" | "agreementNumber">): Promise<Agreement> {
+  try {
+    const res = await authFetch("/api/agreements", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(agreement),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.agreement) return body.agreement as Agreement;
+    }
+  } catch (err) {
+    console.warn("createAgreement server failed, local fallback", err);
+  }
   const newA = { ...agreement, id: 'agr' + Date.now(), agreementNumber: 'AGR-' + Date.now() } as Agreement;
   await updateState(s => s.agreements.push(newA));
   return newA;
@@ -389,12 +454,38 @@ export async function setSeatActive(userId: string, isActive: boolean): Promise<
 }
 
 export async function addCommunication(comm: Omit<Communication, "id" | "sentAt">): Promise<Communication> {
+  try {
+    const res = await authFetch("/api/communications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(comm),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.communication) return body.communication as Communication;
+    }
+  } catch (err) {
+    console.warn("addCommunication server failed, local fallback", err);
+  }
   const newC = { ...comm, id: 'c' + Date.now(), sentAt: new Date().toISOString() } as Communication;
   await updateState(s => s.communications.push(newC));
   return newC;
 }
 
 export async function createExpense(expense: Omit<Expense, "id">): Promise<Expense> {
+  try {
+    const res = await authFetch("/api/expenses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(expense),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.expense) return body.expense as Expense;
+    }
+  } catch (err) {
+    console.warn("createExpense server failed, local fallback", err);
+  }
   const newE = { ...expense, id: 'exp' + Date.now() } as Expense;
   await updateState(s => s.expenses.push(newE));
   return newE;
@@ -460,6 +551,19 @@ export async function autoAssignLeads(): Promise<{ message: string; assignments:
 }
 
 export async function updateAgreement(id: string, updates: Partial<Agreement>): Promise<Agreement> {
+  try {
+    const res = await authFetch(`/api/agreements/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.agreement) return body.agreement as Agreement;
+    }
+  } catch (err) {
+    console.warn("updateAgreement server failed, local fallback", err);
+  }
   let updated;
   await updateState(s => {
     const idx = s.agreements.findIndex(a => a.id === id);
@@ -472,6 +576,13 @@ export async function updateAgreement(id: string, updates: Partial<Agreement>): 
 }
 
 export async function updateInvoice(id: string, updates: Partial<Invoice>): Promise<Invoice> {
+  // The server has PUT /api/invoices/:id/pay for the paid transition but no
+  // general PUT /api/invoices/:id, so a partial update here can't fully
+  // persist. Route the pay case through payInvoice; anything else lives
+  // locally until the general route lands.
+  if (updates.status === "Paid") {
+    return payInvoice(id);
+  }
   let updated;
   await updateState(s => {
     const idx = s.invoices.findIndex(i => i.id === id);
@@ -483,10 +594,12 @@ export async function updateInvoice(id: string, updates: Partial<Invoice>): Prom
   return updated as Invoice;
 }
 
-/* NOTE: the server has no DELETE /api/tasks/:id, so this genuinely is
-   local-only and a deleted task reappears on refresh. Left as-is rather than
-   faking it — the route needs adding server-side first. */
 export async function deleteTask(id: string): Promise<void> {
+  const res = await authFetch(`/api/tasks/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 404) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error || `Could not delete task (server said ${res.status}).`);
+  }
   await updateState(s => { s.tasks = s.tasks.filter(t => t.id !== id); });
 }
 
@@ -499,6 +612,19 @@ export async function askCRM(query: string): Promise<string> {
 }
 
 export async function reconcileExpense(id: string, reconciled: boolean): Promise<Expense> {
+  try {
+    const res = await authFetch(`/api/expenses/${id}/reconcile`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reconciled }),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.expense) return body.expense as Expense;
+    }
+  } catch (err) {
+    console.warn("reconcileExpense server failed, local fallback", err);
+  }
   let updated;
   await updateState(s => {
     const idx = s.expenses.findIndex(e => e.id === id);
@@ -528,6 +654,18 @@ export async function deleteVehicle(id: string): Promise<void> {
 }
 
 export async function payInvoice(id: string): Promise<Invoice> {
+  try {
+    const res = await authFetch(`/api/invoices/${id}/pay`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.invoice) return body.invoice as Invoice;
+    }
+  } catch (err) {
+    console.warn("payInvoice server failed, local fallback", err);
+  }
   let updated;
   await updateState(s => {
     const idx = s.invoices.findIndex(i => i.id === id);
