@@ -1207,8 +1207,9 @@ export default function App() {
             <div className="pt-3 pb-1 flex justify-center shrink-0">
               <span className="block h-1 w-10 rounded-full bg-[color:var(--glass-line)]" aria-hidden="true" />
             </div>
-            <div className="flex items-center justify-between px-5 pb-2 shrink-0">
-              <span className="text-[length:var(--t-lead)] font-semibold text-[color:var(--white)]">More</span>
+            <div className="flex items-center gap-3 px-5 pb-2 shrink-0">
+              <img src={logo} alt="TruFlow" className="h-9 w-auto max-w-[130px] object-contain shrink-0" />
+              <span className="text-[length:var(--t-lead)] font-semibold text-[color:var(--white)] flex-1">More</span>
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
@@ -1476,6 +1477,7 @@ export default function App() {
               style={{ top: "calc(0.5rem + var(--safe-t))" }}
               className="flex items-center gap-3 md:hidden sticky z-[60] rounded-xl px-3 py-2 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]"
             >
+              <img src="/favicon.svg" alt="TruFlow" className="h-9 w-9 shrink-0 rounded-lg" />
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-[length:var(--t-lead)] font-semibold text-[color:var(--white)] leading-tight truncate">
                   {meta.title}
