@@ -23,6 +23,10 @@ npm-debug.log*
 .fly
 data/local-inventory.json
 **/data/local-inventory.json
+# Local runtime captures & uploads (regenerated when the apps run locally)
+**/data/media/
+**/data/web3d/
+Truflow-premium/media/
 
 # OS / editor
 .idea/
