@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Lead, Vehicle, User, Communication, Task, Agreement } from "../types";
 import { getAccount } from "../lib/session";
-import { fetchState, updateLead, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
+import { fetchState, updateLead, updateVehicle, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
 import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature } from "lucide-react";
 import AgreementPreview from "./AgreementPreview";
 
@@ -272,39 +272,19 @@ export default function LeadDetailModal({
 
   const handleSaveStatus = async () => {
     try {
+      const closingWon = leadStatus === "Closed Won" && lead.status !== "Closed Won";
       await updateLead(lead.id, { status: leadStatus as any });
-      
-      if (leadStatus === "Closed Won" && lead.status !== "Closed Won") {
-        // Auto-generate documents for Closed Won
-        if (vehicle) {
-          await createAgreement({
-            leadId: lead.id,
-            vehicleId: vehicle.id,
-            purchasePrice: vehicle.retailPrice,
-            depositAmount: 0,
-            type: "Vehicle Sale",
-            status: "Pending Signature"
-          });
-          
-          await createInvoice({
-            leadId: lead.id,
-            vehicleId: vehicle.id,
-            amount: vehicle.retailPrice,
-            additionalCharges: crmSetupFee ? 5000 : 0,
-            chargeDescription: crmSetupFee ? "CRM Setup, Workflow & Training Fee" : "",
-            paymentMethod: "Bank Finance",
-            status: "Sent",
-            dueDate: new Date().toISOString().slice(0, 10)
-          });
-          
-          alert("Lead stage updated successfully! OTP, Invoice, and Delivery Note auto-generated.");
-        } else {
-          alert("Lead stage updated successfully!");
-        }
+      // Closing the deal moves the car with it — one action, so a Closed-Won
+      // lead can never leave its vehicle still showing "in stock". No document
+      // generation here; dealers invoice from their own systems, and the rest of
+      // the close-out lives in Deal Readiness.
+      if (closingWon && vehicle && vehicle.status !== "SOLD") {
+        await updateVehicle(vehicle.id, { status: "SOLD" as any });
+        alert("Deal closed — lead marked Closed Won and the vehicle marked Sold.");
       } else {
-        alert("Lead stage updated successfully!");
+        alert("Lead stage updated.");
       }
-      
+
       onRefresh();
       onClose();
     } catch (err) {
@@ -1001,203 +981,96 @@ export default function LeadDetailModal({
             </div>
           )}
 
-          {activeTab === "finance" && (
-            <div className="flex flex-col gap-5 animate-in fade-in duration-150">
-
-              {/* This buyer's paperwork. Same upload + e-sign flow the standalone
-                  Documents screen used, now filed against the lead it belongs to. */}
-              {documentsPanel && (
-                <div className="card !bg-[color:var(--glass)]">
-                  <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono border-b border-white/5 pb-2">
-                      Documents for this buyer
-                    </div>
-                    {documentsPanel}
-                  </div>
-                </div>
-              )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-              
-              {/* LEFT COLUMN: CONTROLS & SELECTION (5 COLS) */}
-              <div className="lg:col-span-5 flex flex-col gap-4">
-                
-                {/* 1. Pre-Approval Simulator */}
+          {activeTab === "finance" && (() => {
+            const CHECK_ITEMS = [
+              { key: "natis", label: "NATIS" },
+              { key: "roadworthy", label: "Roadworthy" },
+              { key: "invoiced", label: "Invoiced" },
+              { key: "depositReceived", label: "Deposit" },
+              { key: "delivered", label: "Delivered" },
+            ] as const;
+            const FINANCE_OPTS = ["N/A", "Submitted", "Approved", "Declined"] as const;
+            const cl: any = lead.dealChecklist || {};
+            const done =
+              CHECK_ITEMS.filter((i) => cl[i.key]).length +
+              (cl.financeStatus && cl.financeStatus !== "N/A" ? 1 : 0);
+            const total = CHECK_ITEMS.length + 1;
+            const patchChecklist = async (patch: any) => {
+              await updateLead(lead.id, { dealChecklist: { ...(lead.dealChecklist || {}), ...patch } as any });
+              loadLocalLead();
+              onRefresh();
+            };
+            const estMonthly = vehicle ? Math.round(vehicle.retailPrice * 0.0195) : 0;
+            return (
+              <div className="flex flex-col gap-5 animate-in fade-in duration-150">
+                {/* Deal readiness — status of the steps to close and hand over this
+                    deal. Dealers raise invoices/contracts in their own systems; we
+                    only record what's done, so nothing sensitive is stored here. */}
                 <div className="card !bg-[color:var(--glass)]">
                   <div className="card-body p-4 flex flex-col gap-3">
                     <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                      <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono">Finance estimate</div>
-                      <span className="text-[13px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] px-2 py-0.5 rounded font-semibold tracking-normal"></span>
+                      <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono">Deal readiness</div>
+                      <span className="text-[13px] text-[rgba(232,234,230,0.55)] tabular-nums">{done}/{total} done</span>
                     </div>
-                    
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                      The steps to close and hand over. Invoices and contracts stay in your own systems — this just tracks what's done.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {CHECK_ITEMS.map((item) => {
+                        const on = !!cl[item.key];
+                        return (
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => patchChecklist({ [item.key]: !on })}
+                            aria-pressed={on}
+                            className={`px-3 py-1.5 rounded-full text-[13px] font-semibold border cursor-pointer transition-colors active:scale-95 ${
+                              on
+                                ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)]"
+                                : "text-[rgba(232,234,230,0.72)] border-[color:var(--glass-line)] hover:text-[color:var(--white)] hover:border-white/20"
+                            }`}
+                          >
+                            {on ? "\u2713 " : ""}{item.label}
+                          </button>
+                        );
+                      })}
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)]">
+                        Finance
+                        <select
+                          value={cl.financeStatus || "N/A"}
+                          onChange={(e) => patchChecklist({ financeStatus: e.target.value })}
+                          className="bg-transparent text-[color:var(--white)] outline-none cursor-pointer"
+                        >
+                          {FINANCE_OPTS.map((o) => (
+                            <option key={o} value={o} className="bg-[color:var(--ink-2)]">{o}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Repayment estimate — indicative, seeded from this deal's vehicle.
+                    Full terms live in the Repayment calculator. */}
+                <div className="card !bg-[color:var(--glass)]">
+                  <div className="card-body p-4 flex flex-col gap-3">
+                    <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono border-b border-white/5 pb-2">Repayment estimate</div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex flex-col">
-                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider">Vehicle Price</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold">Vehicle price</span>
                         <span className="text-[13px] font-mono font-semibold text-[color:var(--cyan)]">{vehicle ? `R ${vehicle.retailPrice.toLocaleString()}` : "N/A"}</span>
                       </div>
                       <div className="bg-black/30 border border-white/5 p-3 rounded-xl flex flex-col">
-                        <span className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider">Est. Monthly</span>
-                        <span className="text-[13px] font-mono font-semibold text-[rgba(232,234,230,0.72)]">{vehicle ? `R ${Math.round(vehicle.retailPrice * 0.0195).toLocaleString()}` : "N/A"}</span>
+                        <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold">Est. monthly*</span>
+                        <span className="text-[13px] font-mono font-semibold text-[rgba(232,234,230,0.72)]">{estMonthly ? `R ${estMonthly.toLocaleString()}` : "N/A"}</span>
                       </div>
                     </div>
-
-                    <div className="flex flex-col gap-2">
-                      <button 
-                        type="button"
-                        onClick={() => alert("SMS with secure pre-approval link dispatched to customer cell.")}
-                        className="w-full py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan)] font-semibold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <Phone size={11} /> Send Pre-Approval SMS Link
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => alert("Bureau analysis complete. Passing probability score: 92%. Soft-check approved.")}
-                        className="w-full py-2 bg-[color:var(--glass)] hover:bg-white/10 border border-white/10 text-[color:var(--white)] font-semibold text-[13px]  rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <CheckCircle size={11} /> Soft credit bureau check
-                      </button>
-                    </div>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.55)]">*Rough guide only. Use the Repayment calculator for deposit, rate, balloon and term.</p>
                   </div>
                 </div>
-
-                {/* 2. Document Generator Panel */}
-                <div className="card !bg-[color:var(--glass)] border border-white/5">
-                  <div className="card-body p-4 flex flex-col gap-3">
-                    <div className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal font-mono border-b border-white/5 pb-2">
-                      F&I Document Generator
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Select Agreement Template</label>
-                      <select
-                        value={docTypeToGenerate}
-                        onChange={(e) => setDocTypeToGenerate(e.target.value as any)}
-                        className="bg-[color:var(--ink-2)] border border-white/10 rounded-lg p-2 text-[13px] text-[color:var(--white)] outline-none"
-                      >
-                        <option value="Offer to Purchase">Offer to Purchase (OTP)</option>
-                        <option value="Finance Application">Finance Application</option>
-                        <option value="Vehicle Sale">Sales Agreement (Deed of Sale)</option>
-                      </select>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={generatingDoc}
-                      onClick={async () => {
-                        setGeneratingDoc(true);
-                        try {
-                          const docType = docTypeToGenerate === "Offer to Purchase" 
-                            ? "Offer to Purchase" 
-                            : docTypeToGenerate === "Finance Application" 
-                            ? "Finance Application" 
-                            : "Vehicle Sale";
-
-                          const newAg = await createAgreement({
-                            leadId: lead.id,
-                            vehicleId: vehicle?.id || "",
-                            purchasePrice: vehicle?.retailPrice || 320000,
-                            depositAmount: 0,
-                            type: docType,
-                            status: "Pending Signature",
-                            date: new Date().toISOString().split('T')[0]
-                          });
-
-                          alert(`Generated draft for ${docType} contract package successfully!`);
-                          loadLocalLead();
-                          setSelectedAgreementId(newAg.id);
-                        } catch (err) {
-                          alert("Failed to draft contract.");
-                        } finally {
-                          setGeneratingDoc(false);
-                        }
-                      }}
-                      className="w-full py-3 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] font-semibold text-[13px] tracking-normal rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
-                    >
-                      <FileSignature size={12} /> {generatingDoc ? "Drafting legal terms..." : "Generate Digital Document"}
-                    </button>
-                  </div>
-                </div>
-
-                {/* 3. Generated Documents list */}
-                <div className="card !bg-[color:var(--glass)] border border-white/5">
-                  <div className="card-body p-4 flex flex-col gap-2">
-                    <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">
-                      Draft Folders ({agreements.length})
-                    </div>
-                    <div className="flex flex-col gap-2 mt-1">
-                      {agreements.map((ag) => (
-                        <button
-                          key={ag.id}
-                          type="button"
-                          onClick={() => setSelectedAgreementId(ag.id)}
-                          className={`w-full p-3 text-left rounded-lg border transition-all cursor-pointer flex items-center justify-between ${
-                            selectedAgreementId === ag.id
-                              ? "bg-[color:var(--cyan-faint)] border-[color:var(--cyan)] text-[color:var(--white)]"
-                              : "bg-black/20 border-white/5 text-[rgba(232,234,230,0.72)] hover:bg-black/30"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <FileText size={13} className={selectedAgreementId === ag.id ? "text-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)]"} />
-                            <div className="flex flex-col">
-                              <span className="text-[13px] font-semibold">{ag.type}</span>
-                              <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{ag.id.substring(0, 8).toUpperCase()} • {ag.date}</span>
-                            </div>
-                          </div>
-                          <span className={`text-[13px] font-semibold px-2 py-0.5 rounded  ${
-                            ag.status === "Signed" 
-                              ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" 
-                              : "bg-[color:var(--glass)] text-[color:var(--muted)] animate-pulse"
-                          }`}>
-                            {ag.status}
-                          </span>
-                        </button>
-                      ))}
-                      {agreements.length === 0 && (
-                        <div className="text-center py-4 text-[13px] text-[rgba(232,234,230,0.72)] italic">
-                          No digital contract packages generated yet.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
               </div>
-
-              {/* RIGHT COLUMN: DOCUMENT VIEW & SIGNATURE PAD (7 COLS) */}
-              <div className="lg:col-span-7 border border-white/5 bg-[color:var(--ink)] rounded-2xl overflow-hidden p-4 min-h-[500px] flex flex-col">
-                {selectedAgreementId && agreements.find(a => a.id === selectedAgreementId) ? (
-                  <AgreementPreview
-                    agreement={agreements.find(a => a.id === selectedAgreementId)!}
-                    lead={lead}
-                    vehicle={vehicle || undefined}
-                    onSignAgreement={async (id, signedBy) => {
-                      try {
-                        await updateAgreement(id, {
-                          status: "Signed",
-                          signedBy,
-                          signedAt: new Date().toISOString()
-                        });
-                        alert("Legal contract signed and secured with blockchain integrity receipt!");
-                        loadLocalLead();
-                      } catch (err) {
-                        alert("Failed to record digital signature.");
-                      }
-                    }}
-                  />
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-gray-400">
-                    <FileSignature size={48} className="text-[rgba(232,234,230,0.72)] mb-3 opacity-40" />
-                    <h3 className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal mb-1">Signature</h3>
-                    <p className="text-[13px] max-w-sm text-[rgba(232,234,230,0.72)] leading-relaxed">
-                      Select or generate a contract package from the left panel to display interactive legal layouts, finance amortization grids, and the digital signature pad.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-            </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Footer */}
@@ -1215,12 +1088,6 @@ export default function LeadDetailModal({
           </button>
           
           <div className="flex gap-2 w-full sm:w-auto">
-            {leadStatus === "Closed Won" && (
-              <label className="flex items-center gap-2 text-[13px] text-[color:var(--white)] cursor-pointer bg-[color:var(--glass)] px-2 py-2 rounded-lg">
-                <input type="checkbox" checked={crmSetupFee} onChange={(e) => setCrmSetupFee(e.target.checked)} />
-                CRM Setup & Training Fee (R 5,000)
-              </label>
-            )}
             <select
               value={leadStatus}
               onChange={(e) => setLeadStatus(e.target.value)}

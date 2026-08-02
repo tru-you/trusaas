@@ -122,6 +122,18 @@ export interface Lead {
   nextActionAt?: string | null;
   /** When the lead last moved stage — lets you see deals stuck in Negotiating. */
   stageChangedAt?: string;
+  /** Deal readiness — status of the steps to close and hand over, tracked as
+   *  flags rather than stored documents. The dealer keeps the actual paperwork
+   *  in their own systems; this just records what's done, so nothing sensitive
+   *  (bank statements, IDs) ever lives on the server. */
+  dealChecklist?: {
+    natis?: boolean;
+    roadworthy?: boolean;
+    invoiced?: boolean;
+    depositReceived?: boolean;
+    financeStatus?: 'N/A' | 'Submitted' | 'Approved' | 'Declined';
+    delivered?: boolean;
+  };
 }
 
 export interface Task {

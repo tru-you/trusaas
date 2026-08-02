@@ -11,6 +11,7 @@ import {
   Receipt,
   FileSignature,
   CheckSquare,
+  ClipboardCheck,
   Award,
   LayoutGrid,
   Calculator,
@@ -55,6 +56,7 @@ import {
   autoAssignLeads,
   createTask,
   updateTask,
+  deleteTask,
   createInvoice,
   payInvoice,
   createAgreement,
@@ -696,6 +698,15 @@ export default function App() {
   const agedStockCount = state.vehicles.filter(
     (v) => v.status !== "SOLD" && (v.daysInInventory ?? 0) > AGED_DAYS
   ).length;
+  /* The headline money figure is deal value less what was spent making the car
+     ready — sale price minus recon, summed over sold units. It replaces the old
+     invoice-derived "Banked" number, which assumed the DMS raised the invoice;
+     dealers invoice from their own systems, so that number was never real. */
+  const soldVehicles = state.vehicles.filter((v) => v.status === "SOLD");
+  const grossAfterRecon = soldVehicles.reduce(
+    (sum, v) => sum + ((v.retailPrice || 0) - reconSpend(v)),
+    0
+  );
   const outstandingRevenue = state.invoices
     .filter((i) => i.status !== "Paid")
     .reduce((sum, i) => sum + i.amount, 0);
@@ -727,6 +738,18 @@ export default function App() {
     ).length;
   // Sold but not yet handed over — these have a customer expecting a date.
   const inPrepCount = state.vehicles.filter((v) => v.status === "PENDING").length;
+
+  /* Nav "needs attention" signals — one shared rule per destination, so the
+     bottom bar and the sidebar read from the same source. Each value is a
+     genuine to-do count: leads waiting on a first reply, overdue tasks/actions,
+     and stock that can't sell yet because it has no photos / an incomplete
+     listing. Rendered as a dot on mobile (a number on a tab is noise) and as a
+     count on desktop, and only when the value is > 0. */
+  const navAttention: Record<string, number> = {
+    leads: awaitingReply.length,
+    tasks: overdueCount,
+    inventory: notOnline.blocked,
+  };
 
   // Grouped menu sections for elegant layout
   const groupedNavigation = [
@@ -771,8 +794,7 @@ export default function App() {
          inputs before they are worth a menu entry. */
       category: "Deals & Finance",
       items: [
-        { id: "invoices", label: "Invoices", icon: FileSpreadsheet },
-        { id: "agreements", label: "Agreements", icon: FileSignature },
+        { id: "deal_readiness", label: "Deal Readiness", icon: ClipboardCheck },
         { id: "payment", label: "Repayment calculator", icon: Calculator },
       ]
     },
@@ -800,12 +822,12 @@ export default function App() {
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
         ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web',
-         'invoices', 'agreements', 'payment'].includes(item.id)
+         'deal_readiness', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
         ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings',
-         'invoices', 'agreements', 'payment', 'integration'].includes(item.id)
+         'deal_readiness', 'payment'].includes(item.id)
       );
     }
     return { ...group, items };
@@ -878,6 +900,21 @@ export default function App() {
       addNotification("Removed from stock", `${label} is no longer on the floor.`, "info");
     } catch (err: any) {
       addNotification("Could not remove vehicle", err?.message || "Something went wrong.", "warning");
+    }
+  };
+
+  /* Tasks accumulate — completed and stale ones clutter the list with no way to
+     clear them. A direct per-row delete keeps it tidy. Guarded by a confirm
+     because it removes the task for the whole dealership and isn't reversible,
+     matching the stock-removal flow. */
+  const handleDeleteTask = async (id: string, title: string) => {
+    if (!confirm(`Delete "${title}"?\n\nThis removes the task for everyone and cannot be undone.`)) return;
+    try {
+      await deleteTask(id);
+      loadAllState();
+      addNotification("Task deleted", `"${title}" was removed from the list.`, "info");
+    } catch (err: any) {
+      addNotification("Could not delete task", err?.message || "Something went wrong.", "warning");
     }
   };
 
@@ -1011,22 +1048,6 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-  };
-
-  const handleCreateInvoiceSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await createInvoice(newInvoiceForm);
-    setIsInvoiceModalOpen(false);
-    setNewInvoiceForm({ leadId: state.leads[0]?.id || "", vehicleId: state.vehicles[0]?.id || "", amount: state.vehicles[0]?.retailPrice || 0, paymentMethod: "Bank Transfer", status: "Sent", dueDate: new Date().toISOString().slice(0, 10) });
-    loadAllState();
-  };
-
-  const handleCreateAgreementSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await createAgreement(newAgreementForm);
-    setIsAgreementModalOpen(false);
-    setNewAgreementForm({ leadId: state.leads[0]?.id || "", vehicleId: state.vehicles[0]?.id || "", purchasePrice: state.vehicles[0]?.retailPrice || 0, depositAmount: 50000, type: "Vehicle Sale", status: "Pending Signature" });
-    loadAllState();
   };
 
   const handleCreateTaskSubmit = async (e: React.FormEvent) => {
@@ -1172,7 +1193,7 @@ export default function App() {
     !isLoggedIn ? (
       <LoginSplash onLogin={handleLogin} />
     ) : (
-      <div className="min-h-full flex-1 bg-[color:var(--ink)] text-[color:var(--white)] flex relative select-none perspective-scene">
+      <div className="min-h-full flex-1 bg-[color:var(--ink)] text-[color:var(--white)] relative select-none perspective-scene">
         {/* Scroll indicator */}
         <div className="scroll-progress transition-transform" />
 
@@ -1341,6 +1362,14 @@ export default function App() {
                     )}
                     <Icon size={15} className={active ? "text-[color:var(--cyan)]" : "text-[color:var(--blue)]"} />
                     {n.label}
+                    {navAttention[n.id] > 0 && (
+                      <span
+                        aria-label={`${navAttention[n.id]} awaiting action`}
+                        className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[11px] font-semibold grid place-items-center leading-none tabular-nums"
+                      >
+                        {navAttention[n.id] > 99 ? "99+" : navAttention[n.id]}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -1363,7 +1392,7 @@ export default function App() {
       </aside>
 
       {/* Main Panel */}
-      <main className="flex-1 md:ml-[240px] min-h-0 px-4 py-6 pb-[calc(96px_+_env(safe-area-inset-bottom,0px))] md:px-8 md:py-8 md:pb-[calc(2rem_+_env(safe-area-inset-bottom,0px))] z-10 flex flex-col gap-6 w-full">
+      <main className="flex-1 md:ml-[240px] min-h-0 px-4 py-6 pb-[calc(96px_+_env(safe-area-inset-bottom,0px))] md:px-8 md:py-8 md:pb-[calc(2rem_+_env(safe-area-inset-bottom,0px))] z-10 flex flex-col gap-6 w-full md:w-auto">
         {/* Top Profile Bar - Hidden on mobile */}
         {/* The top bar was a row of pills on a hairline with nothing behind it,
             so it read as the first row of content rather than as chrome. It now
@@ -1611,12 +1640,12 @@ export default function App() {
                 </div>
               </div>
               <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Banked</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--cyan-bright)] mt-1"><Counter value={totalRevenue} prefix="R " /></div>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Gross after recon</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--cyan-bright)] mt-1"><Counter value={grossAfterRecon} prefix="R " /></div>
                 <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                  {outstandingRevenue > 0
-                    ? `R${outstandingRevenue.toLocaleString("en-ZA")} still owed`
-                    : "Nothing outstanding"}
+                  {soldVehicles.length > 0
+                    ? `${soldVehicles.length} sold · deal value less recon`
+                    : "No units sold yet"}
                 </div>
               </div>
             </div>
@@ -1804,68 +1833,6 @@ export default function App() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ANALYTICS SECTION */}
-        {activeSection === "analytics" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-            <div>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Traffic Analytics</h1>
-              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Showroom visitors & conversion metrics</p>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Monthly Page Views</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1">12,847</div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">+24% traffic growth</div>
-              </div>
-              <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Filter views</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1">8,432</div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">+18% high-intent actions</div>
-              </div>
-              <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Lead Conversion Rate</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1">
-                  {Math.round((state.leads.length / 8432) * 1000) / 10}%
-                </div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Standard industry index</div>
-              </div>
-              <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Average View Time</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1">2m 14s</div>
-                <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Normal retention</div>
-              </div>
-            </div>
-
-            {/* Weekly chart mock */}
-            <div className="card">
-              <div className="card-header px-4 py-3 border-b border-white/5">
-                <h3 className="font-semibold text-[16px]">Weekly Traffic Activity Overview</h3>
-              </div>
-              <div className="card-body p-4 flex flex-col gap-2">
-                <div className="flex items-end justify-around h-44 bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 gap-2">
-                  {[1240, 1940, 1590, 2470, 2120, 3010, 2650].map((val, idx) => {
-                    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-                    const percent = (val / 3010) * 100;
-                    return (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
-                        <span className="text-[13px] text-[color:var(--cyan)] font-mono opacity-0 group-hover:opacity-100 transition-opacity">
-                          {val}
-                        </span>
-                        <div
-                          style={{ height: `${percent * 0.8}px` }}
-                          className="w-full bg-[color:var(--cyan)] rounded-t-sm opacity-70 group-hover:opacity-100 transition-all duration-200"
-                        />
-                        <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-1">{days[idx]}</span>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
             </div>
           </div>
@@ -2702,262 +2669,105 @@ export default function App() {
           </div>
         )}
 
-        {/* LEAD SCORING SECTION */}
-        {activeSection === "scoring" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200 w-full">
-            <div>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Lead scoring</h1>
-              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Evaluate intent and prioritization indices</p>
-            </div>
+        {/* DEAL READINESS SECTION — replaces the old Invoices + Agreements
+            generators. Dealers issue invoices and contracts from their own
+            systems; here we track only the status of each step to close and
+            hand a deal over, so no customer documents live on the server. */}
+        {activeSection === "deal_readiness" && (() => {
+          const CHECK_ITEMS = [
+            { key: "natis", label: "NATIS" },
+            { key: "roadworthy", label: "Roadworthy" },
+            { key: "invoiced", label: "Invoiced" },
+            { key: "depositReceived", label: "Deposit" },
+            { key: "delivered", label: "Delivered" },
+          ] as const;
+          const FINANCE_OPTS = ["N/A", "Submitted", "Approved", "Declined"] as const;
+          const deals = filteredLeads.filter(
+            (l) => l.status === "Negotiating" || l.status === "Closed Won"
+          );
+          const patchChecklist = async (lead: any, patch: any) => {
+            await updateLead(lead.id, { dealChecklist: { ...(lead.dealChecklist || {}), ...patch } });
+            loadAllState();
+          };
+          return (
+            <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+              <div>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Deal Readiness</h1>
+                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium max-w-2xl">
+                  What's outstanding to close and hand over each deal. Invoices and contracts stay in your own systems — this only tracks the steps, so no customer paperwork is stored here.
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Hot Targets</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--muted)] mt-1">
-                  {state.leads.filter((l) => l.digitalScore >= 75).length}
+              {deals.length === 0 ? (
+                <div className="card p-8 text-center text-[13px] text-[rgba(232,234,230,0.72)]">
+                  No active deals yet. A deal appears here once a lead reaches <span className="text-[color:var(--white)] font-semibold">Negotiating</span>.
                 </div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">High purchase velocity</div>
-              </div>
-              <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Warm prospects</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--warning)] mt-1">
-                  {state.leads.filter((l) => l.digitalScore >= 50 && l.digitalScore < 75).length}
-                </div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Nurturing schedule</div>
-              </div>
-              <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cold prospects</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[rgba(232,234,230,0.72)] mt-1">
-                  {state.leads.filter((l) => l.digitalScore < 50).length}
-                </div>
-                <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold mt-1">Inactive page views</div>
-              </div>
-              <div className="stat-card p-4">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Average lead score</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--cyan)] mt-1">
-                  {Math.round(state.leads.reduce((sum, l) => sum + l.digitalScore, 0) / state.leads.length)}%
-                </div>
-                <div className="text-[13px] text-[color:var(--cyan)] font-semibold mt-1">Very interested</div>
-              </div>
-            </div>
-
-            {/* Matrix Card table */}
-            <div className="card">
-              <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-[16px]">Lead scores</h3>
-              </div>
-              <div className="card-body p-0 overflow-x-auto">
-                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
-                  <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Score</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Rating</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Source</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right">Priority</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {state.leads.map((l) => {
-                      const hot = l.digitalScore >= 75;
-                      const warm = l.digitalScore >= 50 && l.digitalScore < 75;
-                      return (
-                        <tr key={l.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
-                          <td className="py-3 px-4 font-semibold text-[color:var(--white)]">{l.firstName} {l.lastName}</td>
-                          <td data-label="Intent score" className="py-3 px-4 font-mono font-semibold text-[color:var(--cyan)] text-[16px]">{l.digitalScore}%</td>
-                          <td data-label="Rating" className="py-3 px-4">
-                            <span className={`px-2 py-0.5 rounded text-[13px] font-medium tracking-normal ${
-                              hot
-                                ? "bg-[color:var(--cyan)] text-[color:var(--ink)]"
-                                : warm
-                                ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]"
-                                : "bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)]"
-                            }`}>
-                              {hot ? "Hot Target" : warm ? "Warm Prospect" : "Cold Prospect"}
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {deals.map((lead) => {
+                    const cl: any = lead.dealChecklist || {};
+                    const done =
+                      CHECK_ITEMS.filter((i) => cl[i.key]).length +
+                      (cl.financeStatus && cl.financeStatus !== "N/A" ? 1 : 0);
+                    const total = CHECK_ITEMS.length + 1;
+                    return (
+                      <div key={lead.id} className="card p-4 flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <div className="min-w-0">
+                            <span className="font-semibold text-[15px] text-[color:var(--white)] block truncate">
+                              {lead.firstName} {lead.lastName}
                             </span>
-                          </td>
-                          <td data-label="Source" className="py-3 px-4">{l.source}</td>
-                          <td data-label="Vehicle" className="py-3 px-4 font-semibold text-[rgba(232,234,230,0.72)]">{getVehicleLabel(l.vehicleId)}</td>
-                          <td className="py-3 px-4 text-right">
-                            <button
-                              onClick={() => setLeadDetailId(l.id)}
-                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] transition-all font-semibold rounded-lg text-[13px] cursor-pointer shadow-lg shadow-[color:var(--cyan-faint)] active:scale-95"
+                            <span className="block text-[13px] text-[rgba(232,234,230,0.72)] truncate">
+                              {getVehicleLabel(lead.vehicleId)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-[13px] text-[rgba(232,234,230,0.55)] tabular-nums">{done}/{total}</span>
+                            <span className="px-2 py-0.5 rounded text-[13px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]">
+                              {lead.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {CHECK_ITEMS.map((item) => {
+                            const on = !!cl[item.key];
+                            return (
+                              <button
+                                key={item.key}
+                                type="button"
+                                onClick={() => patchChecklist(lead, { [item.key]: !on })}
+                                aria-pressed={on}
+                                className={`px-3 py-1.5 rounded-full text-[13px] font-semibold border cursor-pointer transition-colors active:scale-95 ${
+                                  on
+                                    ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)]"
+                                    : "text-[rgba(232,234,230,0.72)] border-[color:var(--glass-line)] hover:text-[color:var(--white)] hover:border-white/20"
+                                }`}
+                              >
+                                {on ? "✓ " : ""}{item.label}
+                              </button>
+                            );
+                          })}
+                          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)]">
+                            Finance
+                            <select
+                              value={cl.financeStatus || "N/A"}
+                              onChange={(e) => patchChecklist(lead, { financeStatus: e.target.value })}
+                              className="bg-transparent text-[color:var(--white)] outline-none cursor-pointer"
                             >
-                              Analyze Intent
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                              {FINANCE_OPTS.map((o) => (
+                                <option key={o} value={o} className="bg-[color:var(--ink-2)]">{o}</option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        )}
-
-        {/* INVOICES SECTION */}
-
-        {activeSection === "invoices" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-            <div className="flex justify-between items-center gap-4">
-              <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Invoices</h1>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Track accounts receivable and sales transactions</p>
-              </div>
-              <button onClick={() => setIsInvoiceModalOpen(true)} className="btn btn-primary">
-                + Draft Invoice
-              </button>
-            </div>
-
-            {/* Invoices list */}
-            <div className="card">
-              <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-[16px]">Invoices</h3>
-              </div>
-              <div className="card-body p-0 overflow-x-auto">
-                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
-                  <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Reference</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Total</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Status</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Due Date</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {state.invoices.map((inv) => (
-                      <tr key={inv.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
-                        <td className="py-3 px-4 text-[13px] md:text-[15px] font-mono font-semibold text-[color:var(--white)]">{inv.invoiceNumber}</td>
-                        <td data-label="Bill to" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{getLeadLabel(inv.leadId)}</td>
-                        <td data-label="Stock" className="py-3 px-4 text-[13px] md:text-[15px]">{getVehicleLabel(inv.vehicleId)}</td>
-                        <td data-label="Total" className="py-3 px-4 text-[13px] md:text-[15px] font-mono font-semibold text-[color:var(--cyan-bright)]">
-                          {formatZAR(inv.amount + (inv.additionalCharges || 0))}
-                          {inv.additionalCharges ? <span className="text-[13px] text-[rgba(232,234,230,0.72)] block">{inv.chargeDescription}</span> : null}
-                        </td>
-                        <td data-label="Status" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
-                            inv.status === "Paid" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
-                          }`}>
-                            {inv.status}
-                          </span>
-                        </td>
-                        <td data-label="Due" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{inv.dueDate}</td>
-                        <td className="py-3 px-4 text-right flex justify-end gap-2">
-                          <button
-                            onClick={() => setActiveInvoiceId(inv.id)}
-                            className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-semibold cursor-pointer shadow-md active:scale-95 transition-all"
-                          >
-                            View Record
-                          </button>
-                          {inv.status !== "Paid" && (
-                            <button
-                              onClick={async () => {
-                                await payInvoice(inv.id);
-                                alert("Invoice cleared!");
-                                loadAllState();
-                              }}
-                              className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-semibold cursor-pointer shadow-md active:scale-95 transition-all"
-                            >
-                              Finalize Payment
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* PDF Printable component integration */}
-            {activeInvoiceId && (
-              <InvoicePreview
-                invoice={state.invoices.find((i) => i.id === activeInvoiceId)!}
-                lead={state.leads.find((l) => l.id === state.invoices.find((i) => i.id === activeInvoiceId)?.leadId)}
-                vehicle={state.vehicles.find((v) => v.id === state.invoices.find((i) => i.id === activeInvoiceId)?.vehicleId)}
-                dealership={dealershipId ? (state?.dealerships || []).find((d: any) => d.id === dealershipId) : undefined}
-              />
-            )}
-          </div>
-        )}
-
-        {/* AGREEMENTS SECTION */}
-        {activeSection === "agreements" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-            <div className="flex justify-between items-center gap-4">
-              <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Signed agreements</h1>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Signed documents</p>
-              </div>
-              <button onClick={() => setIsAgreementModalOpen(true)} className="btn btn-primary">
-                + Start New Contract
-              </button>
-            </div>
-
-            <div className="card">
-              <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-[16px]">Signed agreements</h3>
-              </div>
-              <div className="card-body p-0 overflow-x-auto">
-                <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
-                  <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Agreement ID</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Type</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Value</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Signed</th>
-                      <th className="py-3 px-4 text-right font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {state.agreements.map((agr) => (
-                      <tr key={agr.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
-                        <td className="py-3 px-4 text-[13px] md:text-[15px] font-mono font-semibold text-[color:var(--white)]">{agr.agreementNumber}</td>
-                        <td data-label="Type" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{agr.type}</td>
-                        <td data-label="Customer" className="py-3 px-4 text-[13px] md:text-[15px]">{getLeadLabel(agr.leadId)}</td>
-                        <td data-label="Stock" className="py-3 px-4 text-[13px] md:text-[15px]">{getVehicleLabel(agr.vehicleId)}</td>
-                        <td data-label="Value" className="py-3 px-4 text-[13px] md:text-[15px] font-mono font-semibold text-[color:var(--cyan-bright)]">{formatZAR(agr.purchasePrice)}</td>
-                        <td data-label="Signature" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
-                            agr.status === "Signed" || agr.status === "Completed" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--glass)] text-[color:var(--warning)]"
-                          }`}>
-                            {agr.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => setActiveAgreementId(agr.id)}
-                            className="px-3 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded text-[13px] font-semibold cursor-pointer active:scale-95 transition-all shadow-md shadow-[color:var(--cyan-faint)]"
-                          >
-                            Open Contract Terms
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {activeAgreementId && (
-              <AgreementPreview
-                agreement={state.agreements.find((a) => a.id === activeAgreementId)!}
-                lead={state.leads.find((l) => l.id === state.agreements.find((a) => a.id === activeAgreementId)?.leadId)}
-                vehicle={state.vehicles.find((v) => v.id === state.agreements.find((a) => a.id === activeAgreementId)?.vehicleId)}
-                dealership={dealershipId ? (state?.dealerships || []).find((d: any) => d.id === dealershipId) : undefined}
-                onSignAgreement={handleSignAgreement}
-              />
-            )}
-          </div>
-        )}
-
+          );
+        })()}
         {/* ACCOUNTING & RECON SECTION */}
         {activeSection === "accounting_recon" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
@@ -3042,19 +2852,29 @@ export default function App() {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right">
-                          {t.status !== "Completed" ? (
+                          <div className="flex items-center justify-end gap-2 w-full">
+                            {t.status !== "Completed" ? (
+                              <button
+                                onClick={async () => {
+                                  await updateTask(t.id, { status: "Completed" });
+                                  loadAllState();
+                                }}
+                                className="px-3 py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-semibold cursor-pointer active:scale-95 transition-all"
+                              >
+                                Resolve
+                              </button>
+                            ) : (
+                              <span className="text-[color:var(--cyan)] font-semibold text-[13px]">Resolved</span>
+                            )}
                             <button
-                              onClick={async () => {
-                                await updateTask(t.id, { status: "Completed" });
-                                loadAllState();
-                              }}
-                              className="px-3 py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-semibold cursor-pointer active:scale-95 transition-all"
+                              onClick={() => handleDeleteTask(t.id, t.title)}
+                              aria-label={`Delete task: ${t.title}`}
+                              title="Delete task"
+                              className="p-2 rounded text-[color:var(--muted)] hover:text-[color:var(--warning)] hover:bg-[color:var(--glass)] cursor-pointer active:scale-95 transition-all"
                             >
-                              Resolve
+                              <Trash2 size={15} />
                             </button>
-                          ) : (
-                            <span className="text-[color:var(--cyan)] font-semibold text-[13px]">Resolved</span>
-                          )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -3579,7 +3399,7 @@ export default function App() {
             icon: typeof Home;
             action: () => void;
             active: boolean;
-            badge?: number;
+            dot?: boolean;
           }> = [];
           if (AVAILABLE.has("dashboard")) {
             tabs.push({
@@ -3597,7 +3417,7 @@ export default function App() {
               icon: Users,
               action: () => navigateTo("leads"),
               active: activeSection === "leads",
-              badge: awaitingReply.length,
+              dot: navAttention.leads > 0,
             });
           }
           if (AVAILABLE.has("inventory")) {
@@ -3607,6 +3427,7 @@ export default function App() {
               icon: Car,
               action: () => navigateTo("inventory"),
               active: activeSection === "inventory",
+              dot: navAttention.inventory > 0,
             });
           }
           if (AVAILABLE.has("tasks")) {
@@ -3616,7 +3437,7 @@ export default function App() {
               icon: CheckSquare,
               action: () => navigateTo("tasks"),
               active: activeSection === "tasks",
-              badge: overdueCount > 0 ? overdueCount : undefined,
+              dot: navAttention.tasks > 0,
             });
           }
           tabs.push({
@@ -3648,10 +3469,11 @@ export default function App() {
                       >
                         <span className="relative">
                           <Icon size={20} />
-                          {t.badge && t.badge > 0 ? (
-                            <span className="absolute -top-1 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[color:var(--cyan)] text-[color:var(--ink)] text-[10px] font-semibold grid place-items-center leading-none">
-                              {t.badge > 99 ? "99+" : t.badge}
-                            </span>
+                          {t.dot ? (
+                            <span
+                              aria-label="Needs attention"
+                              className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[color:var(--cyan)] ring-2 ring-[color:var(--ink-2)]"
+                            />
                           ) : null}
                         </span>
                         <span className="text-[11px] font-medium">{t.label}</span>
@@ -3730,124 +3552,6 @@ export default function App() {
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" onClick={() => setIsLeadModalOpen(false)} className="btn btn-secondary">Cancel</button>
                 <button type="submit" className="btn btn-primary">Commit Lead File</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Invoice Modal */}
-      {isInvoiceModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-4 md:p-6 flex flex-col gap-4">
-            <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">New invoice</h3>
-              <button onClick={() => setIsInvoiceModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"><X size={16} /></button>
-            </div>
-            <form onSubmit={handleCreateInvoiceSubmit} className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Link to Lead Account</label>
-                <select value={newInvoiceForm.leadId} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] font-sans">
-                  {state.leads.map((l) => (
-                    <option key={l.id} className="bg-[color:var(--ink-2)]" value={l.id}>{l.firstName} {l.lastName}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Acquired Inventory</label>
-                <select
-                  value={newInvoiceForm.vehicleId}
-                  onChange={(e) => {
-                    const matchedVeh = state.vehicles.find((v) => v.id === e.target.value);
-                    setNewInvoiceForm((p) => ({ ...p, vehicleId: e.target.value, amount: matchedVeh?.retailPrice || 0 }));
-                  }}
-                  className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] font-sans"
-                >
-                  {state.vehicles.map((v) => (
-                    <option key={v.id} className="bg-[color:var(--ink-2)]" value={v.id}>{v.year} {v.make} {v.model}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Amount (ZAR)</label>
-                  <input type="number" required value={newInvoiceForm.amount} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, amount: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Due Date</label>
-                  <input type="date" required value={newInvoiceForm.dueDate} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, dueDate: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors font-sans" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Finance Category</label>
-                <select value={newInvoiceForm.paymentMethod} onChange={(e) => setNewInvoiceForm((p) => ({ ...p, paymentMethod: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] font-sans">
-                  <option className="bg-[color:var(--ink-2)]" value="Bank Transfer">Direct EFT / Bank Transfer</option>
-                  <option className="bg-[color:var(--ink-2)]" value="Dealer Finance">Dealer Arranged Finance</option>
-                  <option className="bg-[color:var(--ink-2)]" value="Cash">Cash Payment</option>
-                </select>
-              </div>
-              <div className="flex justify-end gap-2 mt-2">
-                <button type="button" onClick={() => setIsInvoiceModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Generate Invoice</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Agreement Modal */}
-      {isAgreementModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[500px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-4 md:p-6 flex flex-col gap-4">
-            <div className="flex justify-between items-center border-b border-white/5 pb-3">
-              <h3 className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">New agreement</h3>
-              <button onClick={() => setIsAgreementModalOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"><X size={16} /></button>
-            </div>
-            <form onSubmit={handleCreateAgreementSubmit} className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Party Purchaser</label>
-                <select value={newAgreementForm.leadId} onChange={(e) => setNewAgreementForm((p) => ({ ...p, leadId: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] font-sans">
-                  {state.leads.map((l) => (
-                    <option key={l.id} className="bg-[color:var(--ink-2)]" value={l.id}>{l.firstName} {l.lastName}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Subject Vehicle</label>
-                <select
-                  value={newAgreementForm.vehicleId}
-                  onChange={(e) => {
-                    const matchedVeh = state.vehicles.find((v) => v.id === e.target.value);
-                    setNewAgreementForm((p) => ({ ...p, vehicleId: e.target.value, purchasePrice: matchedVeh?.retailPrice || 0 }));
-                  }}
-                  className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] font-sans"
-                >
-                  {state.vehicles.map((v) => (
-                    <option key={v.id} className="bg-[color:var(--ink-2)]" value={v.id}>{v.year} {v.make} {v.model}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Negotiated Price</label>
-                  <input type="number" required value={newAgreementForm.purchasePrice} onChange={(e) => setNewAgreementForm((p) => ({ ...p, purchasePrice: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Deposit amount</label>
-                  <input type="number" required value={newAgreementForm.depositAmount} onChange={(e) => setNewAgreementForm((p) => ({ ...p, depositAmount: parseFloat(e.target.value) || 0 }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Contract Class</label>
-                <select value={newAgreementForm.type} onChange={(e) => setNewAgreementForm((p) => ({ ...p, type: e.target.value as any }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] font-sans">
-                  <option className="bg-[color:var(--ink-2)]" value="Vehicle Sale">Vehicle Purchase Deed</option>
-                  <option className="bg-[color:var(--ink-2)]" value="Deposit Hold">Securing Holding Deposit</option>
-                  <option className="bg-[color:var(--ink-2)]" value="Trade-In Transfer">Trade-In Exchange Agreement</option>
-                </select>
-              </div>
-              <div className="flex justify-end gap-2 mt-2">
-                <button type="button" onClick={() => setIsAgreementModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Publish Contract File</button>
               </div>
             </form>
           </div>
