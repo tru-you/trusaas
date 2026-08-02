@@ -188,53 +188,8 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               {photoCount} gallery photo{photoCount === 1 ? "" : "s"} · stock media only (no in-DMS camera)
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Publish lives here as well as in TruLens.
-                The flag decides whether the dealer's website shows the car, and
-                until now nothing in this app could set it — `showOnWebsite`
-                existed only as a type. A dealer running TruFlow as their DMS
-                had to open the capture app to put their own stock live, and a
-                car added here by hand could not be published at all. The public
-                feed requires showOnWebsite === true, so this is the switch that
-                decides it. */}
-            <button
-              type="button"
-              disabled={publishing}
-              onClick={async () => {
-                setPublishing(true);
-                try {
-                  await onUpdateVehicle(vehicle.id, {
-                    showOnWebsite: !isPublished,
-                  } as Partial<Vehicle>);
-                } finally {
-                  setPublishing(false);
-                }
-              }}
-              title={
-                isPublished
-                  ? "Remove this vehicle from the dealer website feed"
-                  : "Show this vehicle on the dealer website"
-              }
-              className={
-                "inline-flex items-center gap-2 text-[13px] px-4 min-h-[36px] cursor-pointer disabled:opacity-50 " +
-                (isPublished ? "tru-btn-secondary" : "btn-primary on-fill")
-              }
-            >
-              <Globe size={12} />
-              {publishing
-                ? "Saving…"
-                : isPublished
-                ? "On website"
-                : "Publish to website"}
-            </button>
-            <button
-              type="button"
-              onClick={() => openTruLens(vehicle.stockNumber)}
-              className="tru-btn-secondary inline-flex items-center gap-2 text-[13px] px-4 min-h-[36px] cursor-pointer"
-            >
-              <Camera size={12} /> Complete shoot in TruLens
-            </button>
-          </div>
+          {/* Publish / open-in-TruLens / remove regrouped into the footer at the
+              bottom of the detail panel — the top bar is now just status. */}
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
@@ -260,7 +215,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               so cap the image to ~a third of the viewport and keep it contained —
               full-bleed is a desktop treatment. The info panel below then gets
               real room. */}
-          <div className="flex items-center justify-center min-h-[160px] max-h-[32svh] md:flex-1 md:min-h-[300px] md:max-h-[480px]">
+          <div className="flex items-center justify-center min-h-[120px] max-h-[24svh] md:flex-1 md:min-h-[300px] md:max-h-[480px]">
             <img
               src={imagesList[safeIndex]}
               alt={`${vehicle.make} ${vehicle.model}`}
@@ -305,7 +260,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
         </div>
 
         {/* RIGHT COLUMN: DETAIL SPECS, INSPECTION & RECON TABS */}
-        <div className="md:w-2/5 max-md:flex-1 max-md:min-h-0 p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
+        <div className="md:w-2/5 max-md:flex-1 max-md:min-h-0 p-4 md:p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
           <div>
             {/* Header */}
             <div className="flex justify-between items-start border-b border-white/5 pb-3 mb-4">
@@ -326,16 +281,8 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     Return to stock
                   </button>
                 )}
-                {onDeleteVehicle && (
-                  <button
-                    onClick={() => onDeleteVehicle(vehicle.id)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[color:var(--glass-line)] bg-[color:var(--glass)] text-[color:var(--muted)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
-                    title="Remove this unit from stock"
-                  >
-                    <Trash2 size={14} />
-                    Remove
-                  </button>
-                )}
+                {/* Remove moved to the footer — it no longer sits next to the
+                    close X in near-identical styling. */}
                 <button aria-label="Close"
                   onClick={onClose}
                   className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] p-1 rounded-lg transition-all cursor-pointer"
@@ -348,7 +295,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             {/* Underlined tab row. A segmented control whose active segment is a
                 filled cyan key makes the loudest object in the panel a label for
                 where you already are; underlining it frees the cyan for Publish. */}
-            <div className="flex gap-1 border-b border-white/10 mb-4 text-[13px] font-semibold overflow-x-auto scrollbar-thin">
+            <div className="flex gap-2 border-b border-white/10 mb-3 text-[13px] font-semibold overflow-x-auto scrollbar-thin">
               <button
                 onClick={() => setActiveTab("specs")}
                 className={`px-3 py-2 flex items-center justify-center gap-1 border-b-2 -mb-px whitespace-nowrap transition-colors cursor-pointer ${
@@ -1004,7 +951,49 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             )}
           </div>
 
-          {/* MOBILE PHONE SIMULATOR HUB */}
+          {/* Footer — the one action that leaves the modal (Publish) over the two
+              exits. Remove is a destructive ghost here, no longer beside the X. */}
+          <div className="shrink-0 pt-3 mt-3 border-t border-white/10 flex flex-col gap-2">
+            <button
+              type="button"
+              disabled={publishing}
+              onClick={async () => {
+                setPublishing(true);
+                try {
+                  await onUpdateVehicle(vehicle.id, { showOnWebsite: !isPublished } as Partial<Vehicle>);
+                } finally {
+                  setPublishing(false);
+                }
+              }}
+              title={isPublished ? "Remove this vehicle from the dealer website feed" : "Show this vehicle on the dealer website"}
+              className={
+                "w-full min-h-[44px] inline-flex items-center justify-center gap-2 text-[14px] cursor-pointer disabled:opacity-50 " +
+                (isPublished ? "tru-btn-secondary" : "btn-primary on-fill")
+              }
+            >
+              <Globe size={14} />
+              {publishing ? "Saving…" : isPublished ? "On website — tap to unpublish" : "Publish to website"}
+            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => openTruLens(vehicle.stockNumber)}
+                className="tru-btn-ghost min-h-[44px] inline-flex items-center justify-center gap-2 text-[13px] cursor-pointer"
+              >
+                <Camera size={14} /> Open in TruLens
+              </button>
+              {onDeleteVehicle && (
+                <button
+                  type="button"
+                  onClick={() => onDeleteVehicle(vehicle.id)}
+                  title="Remove this unit from stock"
+                  className="min-h-[44px] inline-flex items-center justify-center gap-2 text-[13px] rounded-[10px] text-[rgba(184,106,106,0.85)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
+                >
+                  <Trash2 size={14} /> Remove from stock
+                </button>
+              )}
+            </div>
+          </div>
         </div>
         </div>{/* end md:flex row */}
       </div>

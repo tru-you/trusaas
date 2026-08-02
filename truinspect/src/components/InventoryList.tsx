@@ -448,53 +448,35 @@ export default function InventoryList({
   return (
     <div id="inventory-list-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       
-      {/* App Header */}
-      <div className="tl-appbar px-3.5 py-3 flex items-center gap-3 shrink-0">
-        {/* Was a wordmark, a wide gap, and two buttons. The gap now carries the
-            two things that matter on a yard phone: whose vehicles these are, and
-            how much is left.
-
-            The "Sync" button is gone. It was wired to fetchInventory — a local
-            refetch, not a cloud sync — and TruInspect is standalone, so a cloud
-            icon labelled Sync described something that never happened. */}
-        <div className="font-display font-semibold text-[16px] tracking-tight shrink-0">
-          <span className="text-neutral-200">Tru</span><span className="text-[#4FE3DC]">Inspect</span>
-        </div>
-
-        <div className="h-7 w-px bg-white/12 shrink-0" aria-hidden="true" />
-
-        <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-semibold text-[#E8EAE6] truncate leading-tight">
-            {dealershipName}
-          </div>
-          <div className="text-[12px] text-neutral-400 leading-tight truncate">
-            {fleet.total === 0
-              ? 'No vehicles yet'
-              : fleet.needPhotos.length > 0
-                ? `${fleet.complete}/${fleet.total} signed off · ${fleet.needPhotos.length} need photos`
-                : fleet.needSignoff.length > 0
-                  ? `${fleet.complete}/${fleet.total} signed off · ${fleet.needSignoff.length} unsigned`
-                  : `${fleet.complete}/${fleet.total} signed off`}
+      {/* App header — the .tl-appbar is retired (62px of chrome that said what
+          one line of type says better). A plain page title, a count, and one
+          quiet ghost action. */}
+      <div className="px-4 pt-4 pb-1 flex items-start justify-between gap-3 shrink-0">
+        <div className="flex items-start gap-2.5 min-w-0">
+          <img src="/icons/icon-192.png" alt="" className="h-7 w-7 rounded-[7px] shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <h1 className="text-[17px] font-semibold text-[#E8EAE6] truncate leading-tight">{dealershipName}</h1>
+            <p className="text-[13px] text-neutral-400 leading-tight truncate mt-0.5">
+              {fleet.total === 0
+                ? 'No vehicles yet'
+                : fleet.needPhotos.length > 0
+                  ? `${fleet.complete}/${fleet.total} signed off · ${fleet.needPhotos.length} need photos`
+                  : fleet.needSignoff.length > 0
+                    ? `${fleet.complete}/${fleet.total} signed off · ${fleet.needSignoff.length} unsigned`
+                    : `${fleet.complete}/${fleet.total} signed off`}
+            </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={loggingOut}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] transition-all cursor-pointer disabled:opacity-50"
-            aria-label={user?.email ? `Sign out (${user.email})` : 'Sign out'}
-            title={user?.email ? `Sign out (${user.email})` : 'Sign out'}
-          >
-            {/* Was a red-bordered button labelled "Out". Red is reserved here for
-                errors and destructive actions, and signing out is neither — it
-                was the loudest thing in the header. "Out" is also not a word for
-                this; the icon is, and Settings still carries a spelled-out
-                "Log out" for anyone who wants the longer route. */}
-            {loggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="flex items-center justify-center h-10 w-10 rounded-[10px] shrink-0 text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer disabled:opacity-50"
+          aria-label={user?.email ? `Sign out (${user.email})` : 'Sign out'}
+          title={user?.email ? `Sign out (${user.email})` : 'Sign out'}
+        >
+          {loggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={18} />}
+        </button>
       </div>
 
       {/* The tab switcher used to sit here and the three-up stat grid under it.
@@ -514,19 +496,19 @@ export default function InventoryList({
             {/* Search & Add New Toggle */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500" size={14} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={16} />
             <input
               type="text"
-              placeholder="Search VIN, Stock, Make..."
+              placeholder="Search VIN, stock, make…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-neutral-950 text-[13px] text-neutral-200 pl-9 pr-3 min-h-[44px] rounded-lg border border-neutral-850 focus:border-indigo-500 outline-none placeholder-neutral-500 font-mono"
+              className="w-full h-11 bg-[rgba(232,234,230,0.04)] text-[15px] text-neutral-200 pl-10 pr-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] focus:border-[#4FE3DC] outline-none placeholder-neutral-500 font-mono transition-colors"
             />
           </div>
           <button
             onClick={() => { setEditingVehicle(null); setShowAddForm(!showAddForm); }}
             aria-label={showAddForm ? (editingVehicle ? 'Close edit form' : 'Close new vehicle form') : 'Add a vehicle'}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0 rounded-lg bg-tru-cyan hover:bg-tru-cyan/90 text-[#E8EAE6] shadow-md cursor-pointer transition-transform"
+            className="bg-tru-cyan on-fill h-11 w-11 flex items-center justify-center shrink-0 cursor-pointer"
           >
             <Plus size={18} />
           </button>
@@ -803,7 +785,9 @@ export default function InventoryList({
             Each chip carries its own count: the number is the reason you would
             tap it, and it is what the deleted stat grid was there to tell you. */}
         <div className="overflow-x-auto scrollbar-none">
-          <div className="flex items-center gap-1.5">
+          {/* Underlined tab row, not filled pills — the active tab carries the
+              cyan underline; the count is the reason you'd tap it. */}
+          <div className="flex items-center gap-4 w-max border-b border-white/10">
             {([
               { id: 'All' as const, label: 'All' },
               { id: 'In-Progress' as const, label: 'In progress' },
@@ -818,20 +802,17 @@ export default function InventoryList({
                   key={f.id}
                   type="button"
                   onClick={() => setActiveFilter(f.id)}
-                  className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[13px] font-semibold tracking-normal whitespace-nowrap border transition-colors cursor-pointer ${
-                    on
-                      ? 'bg-[#4FE3DC] border-[#4FE3DC] text-[#06080D]'
-                      : 'bg-white/[0.04] border-white/10 text-neutral-300 hover:border-white/20'
+                  className={`flex items-center gap-1.5 px-0.5 py-2 -mb-px border-b-2 text-[13px] font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                    on ? 'text-[#E8EAE6] border-[#4FE3DC]' : 'text-neutral-400 border-transparent hover:text-[#E8EAE6]'
                   }`}
                 >
                   {f.label}
-                  <span className={`font-mono text-[12px] ${on ? 'text-[#06080D]/70' : 'text-neutral-500'}`}>
+                  <span className={`font-mono text-[12px] ${on ? 'text-[#4FE3DC]' : 'text-neutral-600'}`}>
                     {count}
                   </span>
                 </button>
               );
             })}
-
           </div>
         </div>
 
