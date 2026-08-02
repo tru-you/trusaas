@@ -156,7 +156,7 @@ export default function Login() {
             <button
               type="button"
               onClick={enterDemoMode}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl tl-btn-3d text-[15px] font-semibold tracking-normal"
+              className="w-full flex items-center justify-center gap-2 min-h-[52px] rounded-xl tl-btn-3d text-[16px] font-semibold tracking-normal"
             >
               <Monitor size={16} />
               Continue offline
@@ -193,7 +193,7 @@ export default function Login() {
                   placeholder="Access code"
                   autoComplete="current-password"
                   aria-invalid={!!codeError}
-                  className="block w-full pl-11 pr-14 py-3.5 bg-white/[0.04] border border-white/10 rounded-xl text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] focus:outline-none focus:border-[#4FE3DC]/60 focus:bg-white/[0.06] transition-all"
+                  className="block w-full pl-11 pr-14 h-[52px] bg-white/[0.04] border border-white/10 rounded-xl shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] focus:outline-none focus:border-[#4FE3DC]/60 focus:bg-white/[0.06] transition-all"
                 />
                 <button
                   type="button"
@@ -220,7 +220,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={codeBusy || server === 'checking'}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl tl-btn-3d text-[15px] font-semibold tracking-normal disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 min-h-[52px] rounded-xl tl-btn-3d text-[16px] font-semibold tracking-normal disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {codeBusy ? (
                 <>

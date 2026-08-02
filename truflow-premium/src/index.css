@@ -350,19 +350,74 @@ button.glass-panel:hover, a.glass-panel:hover, [role="button"].glass-panel:hover
   opacity: 0.85;
 }
 
-/* Primary is a cyan fill with ink text — cyan on white fails contrast, which
-   is why the holding site never does it. The four stacked inset/outset shadows
-   that used to mould these are gone. */
+/* Primary — 2c "sculpted", the single canonical declaration. Cyan fill with ink
+   text (cyan-on-white fails contrast, so the ink is load-bearing). Thickness not
+   shine: a solid darker side, one 1px top hairline, one ambient shadow — never a
+   gradient, no letterpress. This rule is unlayered, so it beats the `@utility
+   btn-primary` below WITHOUT !important; the six !important flags and the two
+   duplicate .btn-primary declarations this file used to carry are gone. Fill is
+   --tru-cyan-500 (was --tru-cyan-400, which glared on ink). Desk-tier sizing
+   (36px / 10px radius) is applied per-screen in markup, not here. */
 .btn-primary {
-  background: var(--cyan) !important;
-  color: var(--text-on-accent) !important;
-  border: 1px solid transparent !important;
-  box-shadow: none !important;
-  font-weight: var(--w-semibold) !important;
-  transition: background 0.15s ease, transform 0.1s ease !important;
+  background: var(--tru-cyan-500);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 10px;
+  font-weight: var(--w-semibold);
+  text-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    0 5px 0 var(--tru-cyan-800),
+    0 10px 22px -8px rgba(0,0,0,0.95);
+  transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
 }
-.btn-primary:hover { background: var(--cyan-bright) !important; }
-.btn-primary:active { transform: translateY(1px); }
+.btn-primary:hover { background: var(--tru-cyan-400); }
+.btn-primary:active {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    0 1px 0 var(--tru-cyan-800),
+    0 2px 6px -3px rgba(0,0,0,0.9);
+}
+.btn-primary:disabled {
+  background: rgba(232,234,230,0.08);
+  color: var(--faint);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+
+/* Secondary — a raised neutral, same depth vocabulary as primary. Replaces the
+   bg-white/5 + border-white/10 buttons swept per the screen notes. */
+.tru-btn-secondary {
+  background: var(--tru-ink-700);
+  border: none;
+  color: var(--white);
+  border-radius: 10px;
+  font-weight: var(--w-medium);
+  box-shadow:
+    inset 0 1px 0 rgba(232,234,230,0.10),
+    0 4px 0 var(--tru-ink-900),
+    0 8px 18px -8px rgba(0,0,0,0.95);
+  transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
+}
+.tru-btn-secondary:hover { background: var(--tru-ink-600); }
+.tru-btn-secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--tru-ink-900), 0 2px 6px -3px rgba(0,0,0,0.9);
+}
+
+/* Ghost — the only flat tier. No fill, no side, no shadow. */
+.tru-btn-ghost {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--white-dim);
+  border-radius: 10px;
+  font-weight: var(--w-medium);
+  transition: background 120ms ease, color 120ms ease;
+}
+.tru-btn-ghost:hover { background: rgba(232,234,230,0.06); color: var(--white); }
 
 /* Scroll progress */
 .scroll-progress {
@@ -405,7 +460,9 @@ button.glass-panel:hover, a.glass-panel:hover, [role="button"].glass-panel:hover
 .animate-pulse-custom.is-working { animation: demoPulse 1.8s ease-in-out infinite; }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-medium text-[13px] transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+  /* Desk tier: 10px radius (one step down from the field's 12px), ~36px tall.
+     The pill is retired from buttons — kept only for filter chips and status. */
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-[10px] font-medium text-[13px] transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
 }
 
 @utility btn-primary {
@@ -437,18 +494,19 @@ button.glass-panel:hover, a.glass-panel:hover, [role="button"].glass-panel:hover
   animation: progress-shrink 10s linear forwards;
 }
 
-/* Text on a cyan (or any light) fill. Light-on-cyan fails contrast badly —
-   these read as ghosted. The text-shadow is a letterpress highlight: it lifts
-   the lettering off the fill without resorting to a drop shadow. */
+/* Text on a cyan (or any light) fill stays ink, never paper — the override is
+   load-bearing (~1.3:1 otherwise); keep it. The letterpress text-shadow and the
+   icon drop-shadow that used to sit here are gone: both were date-stamps and
+   reduced label contrast on the fill. */
 .on-fill,
 .btn-primary {
   color: var(--text-on-accent) !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
+  text-shadow: none;
   font-weight: var(--w-semibold);
 }
 .on-fill svg, .btn-primary svg {
   color: var(--ink);
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.30));
+  filter: none;
 }
 
 /* ── Keyboard focus ──────────────────────────────────────────────────────
@@ -530,6 +588,8 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  /* The sculpted press travel is a transform, not a duration — kill it too. */
+  .btn-primary:active, .tru-btn-secondary:active { transform: none; }
 }
 
 /* ── Safe area ───────────────────────────────────────────────────────────
@@ -590,28 +650,10 @@ select:focus-visible {
 }
 
 /* ── Depth on controls ───────────────────────────────────────────────────
-   The brand vocabulary is "a lit top hairline and one soft shadow" and cards
-   already get it — buttons were explicitly stripped to box-shadow: none, which
-   left the primary action reading as a flat cyan sticker and the secondary
-   buttons as barely-there outlines. These use the *same* two ingredients as
-   .card rather than inventing a new treatment, so nothing here is a glow and
-   no colour changes. */
-.btn-primary {
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.30) inset,
-    0 1px 2px rgba(0, 0, 0, 0.45),
-    0 6px 16px -8px rgba(0, 0, 0, 0.75) !important;
-}
-.btn-primary:hover {
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.38) inset,
-    0 2px 4px rgba(0, 0, 0, 0.45),
-    0 10px 22px -10px rgba(0, 0, 0, 0.8) !important;
-}
-.btn-primary:active {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.5) inset !important;
-}
+   The primary's depth now lives in the single canonical .btn-primary rule near
+   the top of this file (sculpted side + one hairline + one ambient shadow). The
+   three duplicate box-shadow declarations that used to sit here — the last-wins
+   pair the regression checklist flagged — have been removed. */
 
 /* Secondary / ghost buttons: the lit top edge alone is enough to read them as
    raised. Matched on the glass background they already use, so this needs no

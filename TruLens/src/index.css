@@ -245,43 +245,8 @@
   pointer-events: none;
 }
 
-/* Soft card lift + glass */
-.tl-card-lift {
-  --mx: 50%;
-  --my: 40%;
-  position: relative;
-  overflow: hidden;
-  /* Was a paper-to-ink gradient: 75% #E8EAE6 at the top fading to near-black.
-     The card is built for light text — the component asks for bg-neutral-950 —
-     but this unlayered rule overrode it, so every line sat on a silver band.
-     Reported from the yard as unreadable, and the screenshot bears it out.
-     saturate() is gone too: these cards carry vehicle thumbnails, and tinting
-     the chrome around a photo is what §1.3 exists to prevent. */
-  background: var(--bg-raised);
-  transition: transform 200ms cubic-bezier(.22,1,.36,1), border-color 180ms ease, box-shadow 200ms ease;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.06) inset,
-    0 14px 32px -18px rgba(0,0,0,0.7);
-}
-.tl-card-lift::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(280px circle at var(--mx) var(--my), rgb(var(--accent-rgb) / 0.14), transparent 60%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  z-index: 0;
-}
-.tl-card-lift:hover {
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.1) inset,
-    0 20px 40px -16px var(--accent-glow);
-}
-.tl-card-lift > * {
-  position: relative;
-  z-index: 1;
-}
+/* .tl-card-lift (cursor-tracking lift + glass) retired — depth lives on the
+   controls now, and the class no longer appears in any component. */
 
 /* Deep-link highlight when opened from Flow ?stock= */
 @keyframes tl-stock-pulse {
@@ -297,51 +262,76 @@
 /* Moulded control surfaces — matches the chrome/cyan of the TruSaaS 3D lockups.
    Plain (unlayered) CSS, so these win over the Tailwind bg-* utilities on the
    same element without needing the classNames stripped. */
-.tl-btn-3d {
-  /* Was a three-stop gradient opening on --tru-cyan-300 (#7FF0EA), noticeably
-     brighter than the brand. On a large primary button that is a lot of
-     luminance sitting in view all day, and it is not the brand colour. Now
-     #4FE3DC itself, with only enough gradient to keep the surface reading as
-     a physical button rather than a flat rectangle. */
-  background: linear-gradient(180deg, var(--tru-cyan-400) 0%, var(--tru-cyan-400) 55%, var(--tru-cyan-500) 100%);
-  border: 1px solid rgba(255,255,255,0.22);
-  /* Ink, not paper. Every caller passes text-[#E8EAE6], which on this cyan
-     fill is 1.3:1 — "Install app" and "Take pictures" were near-invisible in
-     the yard. The letterpress text-shadow below was already written for dark
-     type on a light fill, so the rule always intended ink; the utility class
-     was quietly winning. Unlayered, so it beats the Tailwind colour. */
+/* Primary — 2c "sculpted". Thickness not shine: a solid darker side (0 5px 0),
+   one 1px top hairline stated once, one ambient shadow. Never a gradient, no
+   letterpress. Press travels (translateY 4px) and the side collapses to 0 1px 0.
+   Unlayered so it still beats the Tailwind bg-* / rounded-* utilities. */
+.tl-btn-3d,
+.btn-primary,
+.bg-tru-cyan {
+  background: var(--tru-cyan-500);
   color: var(--text-on-accent);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  border: none;
+  border-radius: 12px;
+  font-weight: var(--w-semibold);
+  text-shadow: none;
   box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,0.8),
-    inset 0 -3px 6px rgba(0,45,66,0.45),
-    0 6px 16px -5px rgb(var(--accent-rgb) / 0.28),
-    0 14px 30px -12px rgba(0,0,0,0.8);
-  transition: transform 90ms ease, box-shadow 90ms ease, filter 90ms ease;
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    0 5px 0 var(--tru-cyan-800),
+    0 10px 22px -8px rgba(0,0,0,0.95);
+  transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
 }
-.tl-btn-3d:hover { filter: brightness(1.07); }
-.tl-btn-3d:active {
-  transform: translateY(2px);
+.tl-btn-3d:hover,
+.btn-primary:hover { background: var(--tru-cyan-400); }
+.tl-btn-3d:active,
+.btn-primary:active {
+  transform: translateY(4px);
   box-shadow:
-    inset 0 3px 8px rgba(0,45,66,0.6),
-    inset 0 -1px 0 rgba(255,255,255,0.25),
-    0 2px 6px -3px rgba(0,0,0,0.7);
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    0 1px 0 var(--tru-cyan-800),
+    0 2px 6px -3px rgba(0,0,0,0.9);
 }
-.tl-btn-3d:disabled { filter: saturate(0.4) brightness(0.7); transform: none; }
+.tl-btn-3d:disabled,
+.btn-primary:disabled {
+  background: rgba(232,234,230,0.08);
+  color: var(--faint);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
 
-.tl-btn-3d-dark {
-  background: linear-gradient(180deg, var(--tru-ink-800) 0%, var(--tru-ink-800) 55%, var(--tru-ink-900) 100%);
-  border: 1px solid rgba(255,255,255,0.11);
+/* Secondary — a raised neutral. Same depth vocabulary as primary (dark side +
+   one hairline), never the fill of the card behind it. Supersedes .tl-btn-3d-dark. */
+.tru-btn-secondary {
+  background: var(--tru-ink-700);
+  border: none;
+  color: var(--white);
+  border-radius: 12px;
+  font-weight: var(--w-medium);
   box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,0.13),
-    inset 0 -3px 6px rgba(0,0,0,0.55),
-    0 4px 12px -4px rgba(0,0,0,0.75);
-  transition: transform 90ms ease, box-shadow 90ms ease;
+    inset 0 1px 0 rgba(232,234,230,0.10),
+    0 4px 0 var(--tru-ink-900),
+    0 8px 18px -8px rgba(0,0,0,0.95);
+  transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
 }
-.tl-btn-3d-dark:active {
-  transform: translateY(2px);
-  box-shadow: inset 0 3px 7px rgba(0,0,0,0.7), 0 1px 3px -1px rgba(0,0,0,0.6);
+.tru-btn-secondary:hover { background: var(--tru-ink-600); }
+.tru-btn-secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--tru-ink-900), 0 2px 6px -3px rgba(0,0,0,0.9);
 }
+
+/* Ghost — the only flat tier. No fill, no side, no shadow: that is what keeps a
+   card of four controls from reading as four decisions. */
+.tru-btn-ghost {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--white-dim);
+  border-radius: 12px;
+  font-weight: var(--w-medium);
+  transition: background 120ms ease, color 120ms ease;
+}
+.tru-btn-ghost:hover { background: rgba(232,234,230,0.06); color: var(--white); }
 
 /* Glass panels in app chrome */
 .tl-glass {
@@ -385,18 +375,19 @@
 
 body { background: var(--bg-base); color: var(--text-primary); }
 
-/* Text on a cyan (or any light) fill. Light-on-cyan fails contrast badly —
-   these read as ghosted. The text-shadow is a letterpress highlight: it lifts
-   the lettering off the fill without resorting to a drop shadow. */
+/* Text on a cyan (or any light) fill stays ink, never paper — light-on-cyan is
+   ~1.3:1, so this override is load-bearing; keep it. The letterpress text-shadow
+   and the icon drop-shadow that used to sit here are gone: both were 2012
+   date-stamps and were reducing label contrast on the fill, not adding it. */
 .on-fill,
 .btn-primary {
   color: var(--text-on-accent) !important;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.38);
+  text-shadow: none;
   font-weight: var(--w-semibold);
 }
 .on-fill svg, .btn-primary svg {
   color: var(--text-on-accent);
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.30));
+  filter: none;
 }
 
 /* ── Keyboard focus ──────────────────────────────────────────────────────
@@ -422,6 +413,7 @@ select:focus-visible {
   border-color: transparent;
 }
 /* Skip the ring on a cyan fill — it disappears into the button. */
+.tl-btn-3d:focus-visible,
 .btn-primary:focus-visible,
 .on-fill:focus-visible {
   outline-color: var(--text-primary);
@@ -453,26 +445,37 @@ select:focus-visible {
    Quiet pass / amber retake / red for system errors only. Success is silent. */
 /* Plain (unlayered) CSS so these win over the Tailwind colour utilities on
    the same element without stripping every className. */
+/* The chips join the button family — same tiers, one radius, only the bodies
+   changed. Idle is a flat 12% hairline; the sculpted depth is carried only by
+   the active and captured states so the eye still lands on where you are. */
 [data-app="trulens"] .slot-state {
   background: transparent;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(232,234,230,0.12);
   color: var(--text-secondary);
 }
 [data-app="trulens"] .slot-state--idle:hover { border-color: var(--border-strong); }
 
-/* Selected / in progress — the one place the eye should go. */
+/* Active = the primary key — the one place the eye should go. */
 [data-app="trulens"] .slot-state--active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--text-on-accent);
+  background: var(--tru-cyan-500);
+  border: none;
+  color: var(--tru-ink-900);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    0 4px 0 var(--tru-cyan-800),
+    0 8px 16px -8px rgba(0,0,0,0.9);
 }
 
-/* Captured. Neutral by design: a wall of cyan ticks competes with the
-   active chip and the shooter loses track of where they are. */
+/* Captured = the secondary key. Neutral by design: a wall of cyan ticks
+   competes with the active chip and the shooter loses track of where they are. */
 [data-app="trulens"] .slot-state--captured {
-  background: var(--bg-overlay);
-  border-color: var(--border-subtle);
+  background: var(--tru-ink-700);
+  border: none;
   color: var(--text-primary);
+  box-shadow:
+    inset 0 1px 0 rgba(232,234,230,0.10),
+    0 3px 0 var(--tru-ink-900),
+    0 6px 14px -8px rgba(0,0,0,0.9);
 }
 
 /* Amber, not red — red reads as system fault, amber reads as "do it again". */
@@ -533,19 +536,6 @@ select:focus-visible {
 }
 
 
-/* ── Hover effects are desktop-only ──────────────────────────────────────
-   .tl-card-lift tracks the pointer with a radial glow and lifts on hover.
-   This is a touch-first app: hover does not exist on the device it is used
-   on, and the pointermove listener that drives it fires throughout every
-   scroll — paying scroll cost on a phone for an effect nobody there can see.
-   Gated so touch devices skip it entirely. */
-@media (hover: hover) and (pointer: fine) {
-  .tl-card-lift:hover {
-    transform: translateY(-3px) scale(1.01);
-  }
-  .tl-card-lift:hover::before { opacity: 1; }
-}
-
 /* ── Reduced motion ──────────────────────────────────────────────────────
    Neither field app honoured this, while the TruAfford widget and the chat
    pages both did — so the two apps people hold for a whole shift were the
@@ -560,7 +550,6 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .tl-card-lift:hover { transform: none; }
 }
 
 /* ══ Mobile field hardening ══════════════════════════════════════════════
@@ -757,19 +746,15 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-/* Press feedback, since the platform highlight is gone. Weight it on the
-   element rather than a colour change so it reads through sunlight. */
-button:active,
-[role="button"]:active,
-label:has(> input[type="file"]):active {
-  transform: scale(0.97);
-  transition: transform 60ms ease-out;
-}
-.tl-btn-3d:active,
-.tl-btn-3d-dark:active,
+/* Press feedback lives on the raised tiers themselves now — the sculpted travel
+   (translateY on :active, side collapsing to 0 1px 0) replaces both the old
+   global scale(0.97) and the .tl-btn-3d translateY(2px) shadow swap. Overlay
+   buttons that sit on no tier keep a small positional press. */
 button.absolute:active { transform: translateY(2px); }
 @media (prefers-reduced-motion: reduce) {
-  button:active, [role="button"]:active { transform: none; }
+  button:active, [role="button"]:active,
+  .tl-btn-3d:active, .btn-primary:active,
+  .tru-btn-secondary:active { transform: none; }
 }
 
 /* ── Type floor ──────────────────────────────────────────────────────────

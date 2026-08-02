@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Camera, ChevronLeft, AlertCircle,
   Check, Upload, HelpCircle, Images, Loader2, Trash2, X,
-  RotateCcw} from 'lucide-react';
+  RotateCcw, SkipForward} from 'lucide-react';
 import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -102,7 +102,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
       // These messages named tiles that no longer exist ("Bulk Roll"), told a
       // phone user to "click", and described the device as a PC. Each one now
       // names the control on screen and the tap that fixes it.
-      setCameraError('This browser cannot open the camera. Add photos with One photo or Many photos below.');
+      setCameraError('This browser cannot open the camera. Use Import below to add a photo.');
       setCameraRetrying(false);
       return;
     }
@@ -147,11 +147,11 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         'The browser is blocking the camera. Allow it from the camera icon in the address bar, then tap Retry live camera — or add photos from below.'
       );
     } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
-      setCameraError('No camera on this device. Add photos with One photo or Many photos below — the rest of the shoot works the same.');
+      setCameraError('No camera on this device. Use Import below to add a photo — the rest of the shoot works the same.');
     } else if (name === 'NotReadableError' || name === 'TrackStartError') {
       setCameraError('Another app is using the camera. Close it and tap Retry live camera, or add a photo from below.');
     } else {
-      setCameraError('The live camera is not available here. One photo and Many photos still work for every shot.');
+      setCameraError('The live camera is not available here. Import still works for every shot.');
     }
     setCameraRetrying(false);
   }, []);
@@ -553,7 +553,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
    */
   const renderGuideOverlay = () => (
     <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <g stroke="#4FE3DC" strokeWidth="0.7" fill="none" opacity="0.55">
+      <g stroke="#4FE3DC" strokeWidth="0.4" fill="none" opacity="0.5">
         <path d="M 8,16 L 8,10 L 16,10" />
         <path d="M 92,16 L 92,10 L 84,10" />
         <path d="M 8,84 L 8,90 L 16,90" />
@@ -572,64 +572,47 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
       {/* Hidden processing canvas */}
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Top Navigation */}
-      <div className="bg-neutral-900/90 px-4 py-3 flex items-center justify-between border-b border-neutral-850 z-20 shrink-0">
-        <button 
-          onClick={onBack}
-          className="p-1 rounded-full hover:bg-neutral-800 text-neutral-300 flex items-center justify-center cursor-pointer"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        {/* The vehicle is what the shooter needs to confirm they are on, so it
-            leads. "Guide Overlay View" led instead — a name for a screen you are
-            already looking at, set in wide-tracked bold, which is the loudest
-            thing on the page saying the least. */}
-        <div className="text-center min-w-0">
-          <p className="text-[15px] text-[#E8EAE6] font-semibold truncate max-w-[220px]">
-            {vehicle.year} {vehicle.make} {vehicle.model}
-          </p>
-          <p className="text-[12px] text-[rgba(232,234,230,0.55)]">Viewfinder</p>
-        </div>
-        <HelpCircle size={16} className="text-neutral-500 cursor-pointer" />
-      </div>
-
-      {/* Shot count + tick progress */}
-      <div className="bg-neutral-900 border-b border-neutral-850 px-4 py-2 shrink-0 animate-in slide-in-from-top-2 duration-300">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-[13px] font-medium text-neutral-200">
-            {completedSlots.length} of {allSlots.length} captured
-          </span>
-          <span className="text-[13px] font-mono text-[#4FE3DC]">
-            {allSlots.length - completedSlots.length} to go
-          </span>
-        </div>
-
-        <div className="flex gap-[2px]">
-          {allSlots.map((slot) => (
-            <div
-              key={slot.id}
-              className={`flex-1 h-1.5 rounded-full transition-colors duration-300 ${
-                !!photos[slot.id]
-                  ? 'bg-[#4FE3DC]'
-                  : selectedSlotId === slot.id
-                  ? 'bg-[#4FE3DC]/40'
-                  : 'bg-[#E8EAE6]/14'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Viewfinder Main View */}
-      {/* min-h gives the viewfinder a floor so it does not compress to a
-          letterbox on short screens. svh not vh: the mobile address bar
-          collapses on scroll, and vh would change the framing mid-shoot. */}
-      <div className="capture-preview relative flex-1 min-h-[46svh] bg-black flex flex-col justify-center overflow-hidden">
+      {/* Viewfinder — fills all remaining height. The nav, count and tick bars
+          that used to stack above it (~170px of chrome) are now overlays on the
+          feed itself, so the camera starts at the top of the screen. */}
+      <div className="capture-preview relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
+
+        {/* Header overlay — back · vehicle + count · help, with the progress bar.
+            Container is click-through; only the two buttons take pointer events. */}
+        <div className="absolute top-0 inset-x-0 z-30 px-4 pt-3 pb-6 bg-gradient-to-b from-black/75 via-black/40 to-transparent pointer-events-none">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={onBack}
+              className="pointer-events-auto h-9 w-9 rounded-[12px] flex items-center justify-center text-[#E8EAE6] hover:bg-white/10 cursor-pointer"
+              title="Back"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <div className="text-center min-w-0 px-2">
+              <p className="text-[15px] text-[#E8EAE6] font-semibold truncate max-w-[220px]">
+                {vehicle.year} {vehicle.make} {vehicle.model}
+              </p>
+              <p className="text-[12px] font-mono text-[#4FE3DC]">
+                {completedSlots.length} / {allSlots.length} · {allSlots.length - completedSlots.length} to go
+              </p>
+            </div>
+            <HelpCircle size={16} className="pointer-events-auto text-neutral-300 shrink-0" />
+          </div>
+          {/* Was a 19-segment tick strip — three indicators counting the same
+              thing. One 3px bar now. */}
+          <div className="mt-2 h-[3px] rounded-full bg-[rgba(232,234,230,0.14)] overflow-hidden">
+            <div
+              className="h-full bg-[#4FE3DC] transition-all duration-300"
+              style={{ width: `${Math.round((completedSlots.length / Math.max(allSlots.length, 1)) * 100)}%` }}
+            />
+          </div>
+        </div>
+
         {captureHint && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-3 py-2 rounded-full bg-black/70 border border-white/15 text-[13px] font-bold text-[#E8EAE6] shadow-lg animate-in fade-in slide-in-from-top-1">
+          <div className="absolute top-[76px] left-1/2 -translate-x-1/2 z-30 px-3 py-2 rounded-xl bg-black/70 border border-white/15 text-[13px] font-semibold text-[#E8EAE6] shadow-lg animate-in fade-in slide-in-from-top-1">
             {captureHint}
           </div>
         )}
@@ -700,26 +683,19 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             verdict, so they reported confidence they did not have. They also sat
             on top of the only region that has to stay readable while framing a
             car, on a screen that is already too short. */}
-        {/* Slot identity overlay on the viewfinder frame */}
-        <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between p-3">
-          <div className="flex items-start justify-between">
-            <div className="bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2">
-              <span className="text-[11px] font-mono text-[#4FE3DC]">Shot {activeSlotIndex + 1} of {allSlots.length}</span>
-              <p className="text-[17px] font-semibold text-[#E8EAE6] leading-tight">{activeSlot.name}</p>
-            </div>
-            <div className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${
-              activeSlot.required
-                ? 'bg-[#4FE3DC]/15 text-[#4FE3DC] border border-[#4FE3DC]/25'
-                : 'bg-black/60 backdrop-blur-sm text-neutral-400 border border-white/10'
-            }`}>
+        {/* Slot identity — bottom-left on the feed, on a scrim instead of black
+            pills. Name at 17/600, description under it. */}
+        <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none px-4 pt-10 pb-3 bg-gradient-to-t from-black/75 via-black/35 to-transparent">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono text-[#4FE3DC]">Shot {activeSlotIndex + 1} / {allSlots.length}</span>
+            <span className={`text-[11px] font-medium ${activeSlot.required ? 'text-[#4FE3DC]' : 'text-neutral-400'}`}>
               {activeSlot.required ? 'Required' : 'Optional'}
-            </div>
+            </span>
           </div>
-          <div className="bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2">
-            <p className="text-[13px] text-neutral-300 leading-normal">
-              {activeSlot.description || 'Frame the panel inside the guide outline before capturing.'}
-            </p>
-          </div>
+          <p className="text-[17px] font-semibold text-[#E8EAE6] leading-tight mt-0.5">{activeSlot.name}</p>
+          <p className="text-[13px] text-neutral-300 leading-normal mt-0.5 max-w-[80%]">
+            {activeSlot.description || 'Frame the panel inside the guide outline before capturing.'}
+          </p>
         </div>
       </div>
 
@@ -743,7 +719,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
                 type="button"
                 data-slot={slot.id}
                 onClick={() => setSelectedSlotId(slot.id)}
-                className={`slot-state shrink-0 w-[110px] h-[74px] px-2.5 py-2.5 rounded-[18px] cursor-pointer flex flex-col items-center justify-between text-center transition-all ${
+                className={`slot-state shrink-0 w-24 h-[68px] px-2.5 py-2 rounded-[12px] cursor-pointer flex flex-col items-center justify-between text-center transition-all ${
                   isSelected
                     ? 'slot-state--active'
                     : isTaken
@@ -786,7 +762,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
               <button
                 type="button"
                 onClick={() => setPendingShot(null)}
-                className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-semibold text-[16px] bg-white/5 border border-white/15 text-[#E8EAE6] active:scale-[0.98] transition-all"
+                className="tru-btn-ghost flex-1 py-4 flex items-center justify-center gap-2 text-[16px]"
               >
                 <RotateCcw size={18} /> Redo
               </button>
@@ -799,7 +775,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
                   setTimeout(() => setCaptureHint(null), 1200);
                   onPhotoCaptured(s.slotId, s.base64, s.report);
                 }}
-                className="flex-[2] py-4 rounded-2xl flex items-center justify-center gap-2 font-semibold text-[16px] bg-[#4FE3DC] text-[#06080D] active:scale-[0.98] transition-all"
+                className="btn-primary on-fill flex-[2] py-4 flex items-center justify-center gap-2 text-[16px]"
               >
                 <Check size={18} strokeWidth={2.5} /> Keep & next
               </button>
@@ -820,9 +796,12 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           </div>
         ) : (
         <div className="flex items-center justify-center gap-4">
+          {/* Import — native camera capture when the live feed is off, a file
+              picker when it is on. One control; both mean "put an image in this slot". */}
           {!isCameraActive ? (
-            <label className="w-[50px] h-[50px] rounded-full flex flex-col items-center justify-center cursor-pointer border transition-colors bg-amber-600/20 border-amber-500/40 text-amber-300 hover:bg-amber-600/30">
-              <Camera size={16} className="text-amber-400" />
+            <label className="tru-btn-secondary w-[52px] h-[52px] flex flex-col items-center justify-center gap-0.5 cursor-pointer" title="Take a photo with the device camera">
+              <Camera size={18} />
+              <span className="text-[11px]">Import</span>
               <input
                 type="file"
                 accept="image/*"
@@ -832,8 +811,9 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
               />
             </label>
           ) : (
-            <label className="w-[50px] h-[50px] rounded-full flex flex-col items-center justify-center cursor-pointer border transition-colors bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-neutral-300">
-              <Upload size={16} className="text-neutral-400" />
+            <label className="tru-btn-secondary w-[52px] h-[52px] flex flex-col items-center justify-center gap-0.5 cursor-pointer" title="Import a photo from a file">
+              <Upload size={18} />
+              <span className="text-[11px]">Import</span>
               <input
                 ref={singleUploadRef}
                 type="file"
@@ -847,23 +827,33 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           <button
             type="button"
             onClick={handleCapture}
-            className="w-[88px] h-[88px] rounded-full flex flex-col items-center justify-center gap-1 cursor-pointer shadow-lg active:scale-[0.95] transition-all disabled:opacity-60 bg-[#4FE3DC] text-[#06080D] border-4 border-[#4FE3DC]/30"
+            className="btn-primary on-fill w-16 h-16 flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+            style={{ borderRadius: 16 }}
             title="Take picture for this slot"
           >
-            <Camera size={24} strokeWidth={2.5} />
-            <span className="text-[11px] font-semibold">Shoot</span>
+            <Camera size={20} strokeWidth={2.5} />
+            <span className="text-[13px] font-semibold">Shoot</span>
           </button>
 
-          <label className="w-[50px] h-[50px] rounded-full flex flex-col items-center justify-center cursor-pointer border transition-colors bg-neutral-900 border-neutral-800 hover:bg-neutral-850 text-[#4FE3DC]">
-            <Images size={16} className="text-[#4FE3DC]" />
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleBulkFileUpload}
-              className="hidden"
-            />
-          </label>
+          {/* Skip — move to the next slot without capturing this one. Was
+              genuinely missing; replaces the bulk-import control here. */}
+          <button
+            type="button"
+            onClick={() => {
+              const idx = allSlots.findIndex((s) => s.id === selectedSlotId);
+              const next = allSlots[idx + 1];
+              if (next) {
+                setSelectedSlotId(next.id);
+                setCustomFile(null);
+              }
+            }}
+            disabled={allSlots.findIndex((s) => s.id === selectedSlotId) >= allSlots.length - 1}
+            className="tru-btn-secondary w-[52px] h-[52px] flex flex-col items-center justify-center gap-0.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Skip to the next slot"
+          >
+            <SkipForward size={18} />
+            <span className="text-[11px]">Skip</span>
+          </button>
         </div>
         )}
 
@@ -871,7 +861,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           <button
             type="button"
             onClick={onComplete || onBack}
-            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[#E8EAE6] text-[14px] font-semibold flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2"
+            className="tru-btn-secondary w-full py-3 text-[14px] flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2"
           >
             <Check size={16} /> All shots captured — review & publish
           </button>

@@ -77,8 +77,6 @@ import { Vehicle, Lead, Task, Invoice, Agreement, User, Communication, Expense, 
 
 import Counter from "./components/Counter";
 import ChatWidget from "./components/ChatWidget";
-import InvoicePreview from "./components/InvoicePreview";
-import AgreementPreview from "./components/AgreementPreview";
 import DocumentsHub from "./components/DocumentsHub";
 import PwaInstallBanner from "./components/PwaInstallBanner";
 import InstallAppButton from "./components/InstallAppButton";
@@ -1586,7 +1584,7 @@ export default function App() {
 
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={() => navigateTo("upload")} className="btn btn-primary">
-                  + New Inventory
+                  New inventory
                 </button>
               </div>
             </div>
@@ -1691,10 +1689,10 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => setShowEODReport(true)}
-                  className="btn-primary px-5 py-3 rounded-xl text-[13px] cursor-pointer active:scale-95 transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
+                  className="btn-primary px-5 py-3 text-[13px] cursor-pointer transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
                 >
-                  <Sparkles size={14} className="animate-pulse" />
-                  Compile EOD Summary
+                  <Sparkles size={14} />
+                  Compile summary
                 </button>
               </div>
             )}
@@ -2075,8 +2073,7 @@ export default function App() {
         {activeSection === "workflow" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 w-full">
             <div>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Reconditioning & Delivery Pipeline</h1>
-              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Control prep workflows for pre-owned stock</p>
+              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Recon</h1>
             </div>
 
             {/* Stages Grid columns */}
@@ -2084,23 +2081,21 @@ export default function App() {
               {["INVENTORY", "PENDING", "SOLD"].map((stage) => {
                 const filtered = state.vehicles.filter((v) => v.status === stage);
                 return (
-                  <div key={stage} className="card bg-[color:var(--glass)] flex flex-col h-full min-h-[500px]">
-                    <div className="card-header border-b border-white/5 px-4 py-3 flex justify-between items-center bg-[color:var(--glass)]">
-                      <span className="font-semibold text-[13px]  text-[color:var(--white)]">
-                        {stage === "INVENTORY" ? "Floor Inventory" : stage === "PENDING" ? "Processing Sale" : "Delivered"}
+                  <div key={stage} className="flex flex-col h-full min-h-[500px]">
+                    <div className="border-b border-white/10 px-1 py-2.5 flex justify-between items-baseline">
+                      <span className="font-semibold text-[13px] text-[color:var(--white)]">
+                        {stage === "INVENTORY" ? "On the floor" : stage === "PENDING" ? "Processing" : "Delivered"}
                       </span>
-                      <span className="px-2 py-0.5 bg-[color:var(--glass)] rounded-full text-[rgba(232,234,230,0.72)] text-[13px] font-semibold">
-                        {filtered.length}
-                      </span>
+                      <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{filtered.length}</span>
                     </div>
 
-                    <div className="p-3 flex-1 flex flex-col gap-3 min-h-[300px]">
+                    <div className="pt-3 flex-1 flex flex-col gap-3 min-h-[300px]">
                       {filtered.map((v) => (
-                        <div key={v.id} className="pipeline-card p-3 flex flex-col justify-between gap-3 shadow-md">
+                        <div key={v.id} className="pipeline-card p-3 flex flex-col justify-between gap-3">
                           <div>
                             <div className="font-semibold text-[13px] text-[color:var(--white)] truncate">{v.year} {v.make} {v.model}</div>
                             <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Ref: {v.stockNumber} / {v.mileage.toLocaleString()} km</p>
-                            <p className="text-[13px] font-semibold text-[color:var(--cyan-bright)] mt-2">{formatZAR(v.retailPrice)}</p>
+                            <p className="text-[15px] font-mono font-semibold text-[color:var(--white)] mt-2">{formatZAR(v.retailPrice)}</p>
                           </div>
 
                           <div className="flex justify-between items-center border-t border-white/3 pt-3">
@@ -2110,17 +2105,17 @@ export default function App() {
                               {stage !== "INVENTORY" && (
                                 <button
                                   onClick={() => moveVehicle(v.id, v.status, "PREV")}
-                                  className="px-2 py-1 bg-[color:var(--glass)] border border-white/5 rounded text-[13px] font-semibold hover:bg-white/10 transition-all cursor-pointer"
+                                  className="tru-btn-ghost px-2.5 min-h-[32px] text-[13px] cursor-pointer"
                                 >
-                                  &larr; Prev
+                                  {stage === "PENDING" ? "Back to floor" : "Back to sale"}
                                 </button>
                               )}
                               {stage !== "SOLD" && (
                                 <button
                                   onClick={() => moveVehicle(v.id, v.status, "NEXT")}
-                                  className="px-2 py-1 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-semibold hover:bg-[color:var(--cyan-soft)] transition-all cursor-pointer"
+                                  className="tru-btn-ghost px-2.5 min-h-[32px] text-[13px] cursor-pointer"
                                 >
-                                  Next &rarr;
+                                  {stage === "INVENTORY" ? "Move to sale" : "Deliver"}
                                 </button>
                               )}
                             </div>
@@ -2500,20 +2495,19 @@ export default function App() {
                 >
                   {filterOverdueOnly ? "Show All Leads" : "Show overdue"}
                 </button>
-                <button 
-                  onClick={handleAutoAssign} 
+                {/* De-glowed: a convenience action, not the loudest control in
+                    the section. Ghost, no cyan fill, no pulse; the count is the
+                    reason you'd tap it. */}
+                <button
+                  onClick={handleAutoAssign}
                   disabled={isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)}
-                  className={`px-3 py-2 rounded-lg border text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-cyan-500/10 ${
-                    isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)
-                      ? "bg-[color:var(--glass)] border-white/5 text-[rgba(232,234,230,0.72)] cursor-not-allowed"
-                      : "bg-[color:var(--cyan-faint)] border-[color:var(--cyan-soft)] text-[color:var(--cyan-bright)] hover:bg-[color:var(--cyan-soft)] hover:border-[color:var(--cyan-soft)]"
-                  }`}
+                  className="tru-btn-ghost px-3 min-h-[36px] text-[13px] flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Sparkles size={14} className={isAutoAssigning ? "animate-pulse" : ""} />
-                  {isAutoAssigning ? "AI Agent Working..." : "Auto-assign"}
+                  <Sparkles size={14} className={isAutoAssigning ? "animate-spin" : ""} />
+                  {isAutoAssigning ? "Assigning…" : `Auto-assign ${state?.leads.filter(l => l.status === "New").length ?? 0} new`}
                 </button>
                 <button onClick={() => setIsLeadModalOpen(true)} className="btn btn-primary">
-                  + New Lead
+                  New lead
                 </button>
               </div>
             </div>
@@ -2632,8 +2626,8 @@ export default function App() {
                 <div className="card-body p-0 overflow-x-auto">
                   <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
                     <thead>
-                      <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
-                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
+                      <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px]">
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Customer</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Origin</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Status</th>
@@ -2652,14 +2646,10 @@ export default function App() {
                             </td>
                             <td data-label="Asset" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{getVehicleLabel(l.vehicleId)}</td>
                             <td data-label="Origin" className="py-3 px-4">
-                              <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-semibold tracking-normal">
-                                {l.source}
-                              </span>
+                              <span className="text-[13px] text-[rgba(232,234,230,0.72)]">{l.source}</span>
                             </td>
                             <td data-label="Status" className="py-3 px-4">
-                              <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-semibold tracking-normal">
-                                {l.status}
-                              </span>
+                              <span className="text-[13px] font-medium text-[color:var(--white)]">{l.status}</span>
                             </td>
                             <td data-label="Agent" className="py-3 px-4 text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)]">{getUserLabel(l.assignedUserId)}</td>
                             <td className="py-3 px-4 text-right flex justify-end gap-2">
@@ -2679,9 +2669,9 @@ export default function App() {
                               )}
                               <button
                                 onClick={() => setLeadDetailId(l.id)}
-                                className="px-4 py-2 bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-soft)] text-[color:var(--ink)] rounded-lg text-[13px] font-semibold cursor-pointer transition-all shadow-md active:scale-95"
+                                className="tru-btn-secondary px-4 min-h-[36px] text-[13px] cursor-pointer"
                               >
-                                Review Profile
+                                Review
                               </button>
                             </td>
                           </tr>
@@ -2746,44 +2736,64 @@ export default function App() {
                               {getVehicleLabel(lead.vehicleId)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-[13px] text-[rgba(232,234,230,0.55)] tabular-nums">{done}/{total}</span>
-                            <span className="px-2 py-0.5 rounded text-[13px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]">
-                              {lead.status}
-                            </span>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <span className="text-[13px] font-medium text-[rgba(232,234,230,0.72)]">{lead.status}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[13px] text-[rgba(232,234,230,0.55)] tabular-nums">{done}/{total}</span>
+                              <div className="w-14 h-[3px] rounded-full bg-[rgba(232,234,230,0.12)] overflow-hidden">
+                                <div className="h-full bg-[color:var(--cyan)] transition-all" style={{ width: `${total > 0 ? Math.round((done / total) * 100) : 0}%` }} />
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {CHECK_ITEMS.map((item) => {
-                            const on = !!cl[item.key];
-                            return (
-                              <button
-                                key={item.key}
-                                type="button"
-                                onClick={() => patchChecklist(lead, { [item.key]: !on })}
-                                aria-pressed={on}
-                                className={`px-3 py-1.5 rounded-full text-[13px] font-semibold border cursor-pointer transition-colors active:scale-95 ${
-                                  on
-                                    ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)]"
-                                    : "text-[rgba(232,234,230,0.72)] border-[color:var(--glass-line)] hover:text-[color:var(--white)] hover:border-white/20"
-                                }`}
-                              >
-                                {on ? "✓ " : ""}{item.label}
-                              </button>
-                            );
-                          })}
-                          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)]">
-                            Finance
-                            <select
-                              value={cl.financeStatus || "N/A"}
-                              onChange={(e) => patchChecklist(lead, { financeStatus: e.target.value })}
-                              className="bg-transparent text-[color:var(--white)] outline-none cursor-pointer"
-                            >
-                              {FINANCE_OPTS.map((o) => (
-                                <option key={o} value={o} className="bg-[color:var(--ink-2)]">{o}</option>
-                              ))}
-                            </select>
-                          </label>
+                        <div className="flex flex-col gap-3">
+                          {/* Real checkboxes: a half-done deal now reads its state
+                              from the box, not from half-lit buttons. */}
+                          <div className="flex flex-wrap gap-x-5 gap-y-2.5">
+                            {CHECK_ITEMS.map((item) => {
+                              const on = !!cl[item.key];
+                              return (
+                                <button
+                                  key={item.key}
+                                  type="button"
+                                  onClick={() => patchChecklist(lead, { [item.key]: !on })}
+                                  aria-pressed={on}
+                                  className="flex items-center gap-2 text-[13px] cursor-pointer"
+                                >
+                                  <span
+                                    className="flex items-center justify-center w-[18px] h-[18px] rounded-[5px] transition-all shrink-0"
+                                    style={on
+                                      ? { background: "var(--cyan)", color: "var(--ink)" }
+                                      : { boxShadow: "inset 0 0 0 1px rgba(232,234,230,0.22), inset 0 2px 3px rgba(0,0,0,0.4)" }}
+                                  >
+                                    {on && <Check size={12} strokeWidth={3} />}
+                                  </span>
+                                  <span className={on ? "text-[color:var(--white)]" : "text-[rgba(232,234,230,0.72)]"}>{item.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {/* Finance is one choice, not four toggles — a tab row. */}
+                          <div>
+                            <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] block mb-1.5">Finance</span>
+                            <div className="flex gap-1 flex-wrap">
+                              {FINANCE_OPTS.map((o) => {
+                                const active = (cl.financeStatus || "N/A") === o;
+                                return (
+                                  <button
+                                    key={o}
+                                    type="button"
+                                    onClick={() => patchChecklist(lead, { financeStatus: o })}
+                                    className={`px-3 min-h-[32px] rounded-[8px] text-[13px] font-medium cursor-pointer transition-colors ${
+                                      active ? "tru-btn-secondary" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+                                    }`}
+                                  >
+                                    {o}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     );
@@ -2826,23 +2836,31 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex justify-between items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Showroom Tasks</h1>
-                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Configure daily operational checklists & reconditioning items</p>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Tasks</h1>
+                {(() => {
+                  const open = state.tasks.filter((t) => t.status !== "Completed").length;
+                  const done = state.tasks.length - open;
+                  return (
+                    <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
+                      {open} open · {done} done
+                    </p>
+                  );
+                })()}
               </div>
               <button onClick={() => setIsTaskModalOpen(true)} className="btn btn-primary">
-                + Log Directive Task
+                New task
               </button>
             </div>
 
             {/* Checklist records */}
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-[16px]">Showroom Tasks</h3>
+                <h3 className="font-semibold text-[16px]">Tasks</h3>
               </div>
               <div className="card-body p-0 overflow-x-auto">
                 <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
+                    <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] font-mono">
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Task</th>
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Priority</th>
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Assigned to</th>
@@ -2853,28 +2871,23 @@ export default function App() {
                   </thead>
                   <tbody>
                     {state.tasks.map((t) => (
-                      <tr key={t.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
+                      <tr key={t.id} className={`border-b border-white/[0.06] hover:bg-[color:var(--glass)] ${t.status === "Completed" ? "opacity-45" : ""}`}>
                         <td className="py-3 px-4">
-                          <span className="font-semibold text-[13px] md:text-[15px] text-[color:var(--white)] block">{t.title}</span>
+                          <span className={`font-semibold text-[13px] md:text-[15px] text-[color:var(--white)] block ${t.status === "Completed" ? "line-through" : ""}`}>{t.title}</span>
                           <span className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] block mt-0.5">
                             Focus: {getVehicleLabel(t.vehicleId || "")} / Lead: {getLeadLabel(t.leadId || "")}
                           </span>
                         </td>
                         <td data-label="Priority" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
-                            t.priority === "Urgent" ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : t.priority === "High" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
-                          }`}>
+                          <span className="text-[13px] font-medium text-[color:var(--white-dim)] inline-flex items-center gap-1.5">
+                            {t.priority === "Urgent" && <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--state-attention)]" />}
                             {t.priority}
                           </span>
                         </td>
                         <td data-label="Assigned" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold text-[rgba(232,234,230,0.72)]">{getUserLabel(t.assignedUserId)}</td>
                         <td data-label="Due" className="py-3 px-4 text-[13px] md:text-[15px]">{t.dueDate}</td>
                         <td data-label="Status" className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[13px] font-semibold tracking-normal ${
-                            t.status === "Completed" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)]"
-                          }`}>
-                            {t.status}
-                          </span>
+                          <span className="text-[13px] font-medium text-[rgba(232,234,230,0.72)]">{t.status}</span>
                         </td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-2 w-full">
@@ -2884,18 +2897,18 @@ export default function App() {
                                   await updateTask(t.id, { status: "Completed" });
                                   loadAllState();
                                 }}
-                                className="px-3 py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] rounded text-[13px] font-semibold cursor-pointer active:scale-95 transition-all"
+                                className="tru-btn-ghost px-3 min-h-[36px] text-[13px] cursor-pointer"
                               >
                                 Resolve
                               </button>
                             ) : (
-                              <span className="text-[color:var(--cyan)] font-semibold text-[13px]">Resolved</span>
+                              <Check size={16} className="text-[color:var(--cyan)]" />
                             )}
                             <button
                               onClick={() => handleDeleteTask(t.id, t.title)}
                               aria-label={`Delete task: ${t.title}`}
                               title="Delete task"
-                              className="p-2 rounded text-[color:var(--muted)] hover:text-[color:var(--warning)] hover:bg-[color:var(--glass)] cursor-pointer active:scale-95 transition-all"
+                              className="flex items-center justify-center h-9 w-9 rounded-[10px] text-[rgba(232,234,230,0.55)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
                             >
                               <Trash2 size={15} />
                             </button>
@@ -2921,7 +2934,7 @@ export default function App() {
                 </p>
               </div>
               <button onClick={() => { setIssuedCode(null); setSeatError(""); setIsUserModalOpen(true); }} className="btn btn-primary">
-                + Add staff member
+                Add staff
               </button>
             </div>
 
@@ -3022,7 +3035,7 @@ export default function App() {
               <div className="card-body p-0 overflow-x-auto">
                 <table className="stack-mobile w-full text-[13px] text-left border-collapse min-w-[600px]">
                   <thead>
-                    <tr className="border-b border-white/5 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
+                    <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] font-mono">
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Assigned to</th>
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Email</th>
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Role</th>
@@ -3676,8 +3689,8 @@ export default function App() {
                   Give this code to <b className="text-[color:var(--white)]">{issuedCode.name}</b>. It won't be
                   shown again — if it goes missing, issue a new one from the staff list.
                 </p>
-                <div className="bg-[color:var(--ink)] border border-[color:var(--cyan-soft)] rounded-xl px-4 py-4 text-center">
-                  <span className="text-xl font-semibold font-mono tracking-[0.2em] text-[color:var(--white)] select-all">{issuedCode.code}</span>
+                <div className="bg-[rgba(232,234,230,0.04)] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] rounded-[12px] px-4 py-4 text-center">
+                  <span className="text-[22px] font-semibold font-mono tracking-[0.2em] text-[color:var(--white)] select-all">{issuedCode.code}</span>
                 </div>
                 <div className="flex justify-end gap-2">
                   <button

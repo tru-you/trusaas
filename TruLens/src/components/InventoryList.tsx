@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
-  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil} from 'lucide-react';
+  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown} from 'lucide-react';
 import trulensLogo from '../assets/images/trulens-wordmark.png';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -60,6 +60,11 @@ export default function InventoryList({
   /** Extra filter: web readiness for floor managers */
   const [readinessFilter, setReadinessFilter] = React.useState<'ALL' | 'NEEDS' | 'READY'>('ALL');
   const [showAddForm, setShowAddForm] = React.useState(false);
+  /* Progressive disclosure for the add/edit form: the three (now four) fields
+     someone types at the car stay visible; the rest sit behind this toggle.
+     The field values live in component state, not the inputs, so collapsing the
+     block never loses what was typed. */
+  const [showAllFields, setShowAllFields] = React.useState(false);
   const [editingVehicle, setEditingVehicle] = React.useState<Vehicle | null>(null);
   const [currentTab, setCurrentTab] = React.useState<'catalog' | 'dashboard' | 'settings'>('catalog');
   const [exportingId, setExportingId] = React.useState<string | null>(null);
@@ -118,25 +123,10 @@ export default function InventoryList({
     return () => window.clearTimeout(t);
   }, [highlightStock, vehicles]);
 
-  // Glass pointer glow on vehicle cards
-  React.useEffect(() => {
-    const root = document.getElementById('inventory-list-container');
-    if (!root) return;
-    /* Desktop only. The glow it drives is behind @media (hover: hover), so on a
-       phone this listener fired through every scroll and wrote CSS custom
-       properties on cards for an effect that device can never show. */
-    if (!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches) return;
-    const onMove = (e: PointerEvent) => {
-      const card = (e.target as HTMLElement)?.closest?.('.tl-card-lift') as HTMLElement | null;
-      if (!card) return;
-      const r = card.getBoundingClientRect();
-      card.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
-      card.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
-    };
-    root.addEventListener('pointermove', onMove, { passive: true });
-    return () => root.removeEventListener('pointermove', onMove);
-  }, []);
-  
+  /* The cursor-tracking card glow (.tl-card-lift) is retired — depth lives on
+     the controls now, not the cards — so the pointermove listener that drove it
+     is gone with it. */
+
   /**
    * What the yard should do next, derived from the actual fleet.
    *
@@ -589,21 +579,34 @@ export default function InventoryList({
 
         {/* Add vehicle Form Box */}
         {showAddForm && (
-          <form onSubmit={handleSubmit} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 space-y-4 shadow-xl animate-in fade-in duration-200">
-            <div className="flex items-center gap-2 border-b border-neutral-850 pb-2">
-              <span className="text-[13px] font-semibold text-neutral-300 flex items-center gap-2">
-                {editingVehicle
-                  ? <><Pencil size={14} className="text-tru-cyan" /> Edit vehicle</>
-                  : <><Plus size={14} className="text-tru-cyan" /> New vehicle</>}
-              </span>
+          <form onSubmit={handleSubmit} className="bg-neutral-950 border border-neutral-800 rounded-2xl p-4 space-y-4 shadow-xl animate-in fade-in duration-200">
+            {/* Header — a real title, a one-line subtitle, and a ghost close. */}
+            <div className="flex items-start justify-between border-b border-neutral-850 pb-3">
+              <div>
+                <h3 className="text-[20px] font-semibold text-[#E8EAE6] leading-tight">
+                  {editingVehicle ? 'Edit vehicle' : 'New vehicle'}
+                </h3>
+                <p className="text-[13px] text-[rgba(232,234,230,0.55)] mt-0.5">
+                  {editingVehicle ? 'Update this stock unit’s details.' : 'Scan the licence disc, or enter the basics by hand.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowAddForm(false); setEditingVehicle(null); }}
+                className="tru-btn-ghost h-9 w-9 flex items-center justify-center shrink-0 cursor-pointer"
+                title="Close"
+              >
+                <X size={18} />
+              </button>
             </div>
 
+            {/* Scan is the primary: it fills nine fields from one photo. */}
             <button
               type="button"
               onClick={() => setScanningDisc(true)}
-              className="w-full py-3 rounded-xl bg-[#4FE3DC]/10 border border-[#4FE3DC]/30 text-[#4FE3DC] text-[14px] font-semibold flex items-center justify-center gap-2 hover:bg-[#4FE3DC]/15 transition-colors"
+              className="btn-primary on-fill w-full min-h-[52px] flex items-center justify-center gap-2 text-[16px] cursor-pointer"
             >
-              <ScanLine size={16} /> Scan licence disc
+              <ScanLine size={18} /> Scan licence disc
             </button>
 
             {scanNote && (
@@ -616,32 +619,35 @@ export default function InventoryList({
               <div className="flex-1 h-px bg-neutral-800" />
             </div>
 
-            {/* Required fields — full width, stacked */}
-            <div className="space-y-2">
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Make</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g., Ford"
-                  value={make}
-                  onChange={(e) => setMake(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                />
+            {/* The fields someone actually types at the car. Make and model stay
+                separate. Everything is 48px, 12px radius, recessed, 16px text. */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Make</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g., Ford"
+                    value={make}
+                    onChange={(e) => setMake(e.target.value)}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Model</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g., Mustang"
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
+                  />
+                </div>
               </div>
               <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Model</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g., Mustang"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                />
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Mileage (km)</label>
+                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Mileage (km)</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -649,139 +655,153 @@ export default function InventoryList({
                   value={mileage}
                   onChange={(e) => setMileage(e.target.value.replace(/[^\d]/g, ''))}
                   placeholder="e.g. 78400"
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                />
-              </div>
-            </div>
-
-            {/* Listing detail — 2-col grid */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Year</label>
-                <input
-                  type="number"
-                  placeholder="2024"
-                  value={year}
-                  onChange={(e) => setYear(Number(e.target.value))}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan font-mono"
+                  className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                 />
               </div>
               <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Trim</label>
-                <input
-                  type="text"
-                  placeholder="GT Premium"
-                  value={trim}
-                  onChange={(e) => setTrim(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                />
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Price (R)</label>
+                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Price (R)</label>
                 <input
                   type="number"
                   placeholder="35000"
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Stock #</label>
-                <input
-                  type="text"
-                  placeholder="STK-10293"
-                  value={stockNumber}
-                  onChange={(e) => setStockNumber(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Colour</label>
-                <input
-                  type="text"
-                  placeholder="Magnetic Gray"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                />
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Vehicle type</label>
-                <select
-                  value={vehicleType}
-                  onChange={(e) => setVehicleType(e.target.value)}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                >
-                  <option value="Sedan">Sedan</option>
-                  <option value="SUV">SUV</option>
-                  <option value="Bakkie / Truck">Bakkie / Truck</option>
-                  <option value="Hatchback">Hatchback</option>
-                  <option value="Crossover">Crossover</option>
-                  <option value="Coupe">Coupe</option>
-                  <option value="Convertible">Convertible</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Transmission</label>
-                <select
-                  value={transmission}
-                  onChange={(e) => setTransmission(e.target.value as 'Automatic' | 'Manual')}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                >
-                  <option value="Manual">Manual</option>
-                  <option value="Automatic">Automatic</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Fuel</label>
-                <select
-                  value={fuelType}
-                  onChange={(e) => setFuelType(e.target.value as 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric')}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                >
-                  <option value="Petrol">Petrol</option>
-                  <option value="Diesel">Diesel</option>
-                  <option value="Hybrid">Hybrid</option>
-                  <option value="Electric">Electric</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">Status</label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as 'In-Progress' | 'Ready')}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan"
-                >
-                  <option value="In-Progress">In-Progress</option>
-                  <option value="Ready">Ready</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-[12px] text-[rgba(232,234,230,0.55)] block mb-1">VIN</label>
-                <input
-                  type="text"
-                  placeholder="17 characters"
-                  value={vin}
-                  onChange={(e) => setVin(e.target.value.toUpperCase())}
-                  className="w-full min-h-[46px] bg-neutral-900 text-[15px] px-3 py-2.5 rounded-lg border border-neutral-800 text-[#E8EAE6] outline-none focus:border-tru-cyan font-mono"
+                  className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                 />
               </div>
             </div>
 
-            <div className="flex gap-2 pt-1 border-t border-neutral-850">
+            {/* Everything else behind one disclosure. Values live in component
+                state, so collapsing this never loses what was typed, and the
+                submit payload is unchanged. */}
+            <button
+              type="button"
+              onClick={() => setShowAllFields((v) => !v)}
+              className="tru-btn-ghost w-full min-h-[44px] flex items-center justify-between px-3 text-[13px] cursor-pointer"
+            >
+              <span>{showAllFields ? 'Fewer details' : 'Year, trim, colour, VIN, stock # — more details'}</span>
+              <ChevronDown size={16} className={`transition-transform ${showAllFields ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showAllFields && (
+              <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-150">
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Year</label>
+                  <input
+                    type="number"
+                    placeholder="2024"
+                    value={year}
+                    onChange={(e) => setYear(Number(e.target.value))}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Trim</label>
+                  <input
+                    type="text"
+                    placeholder="GT Premium"
+                    value={trim}
+                    onChange={(e) => setTrim(e.target.value)}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Stock #</label>
+                  <input
+                    type="text"
+                    placeholder="STK-10293"
+                    value={stockNumber}
+                    onChange={(e) => setStockNumber(e.target.value)}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Colour</label>
+                  <input
+                    type="text"
+                    placeholder="Magnetic Gray"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Vehicle type</label>
+                  <select
+                    value={vehicleType}
+                    onChange={(e) => setVehicleType(e.target.value)}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC] transition-colors"
+                  >
+                    <option value="Sedan">Sedan</option>
+                    <option value="SUV">SUV</option>
+                    <option value="Bakkie / Truck">Bakkie / Truck</option>
+                    <option value="Hatchback">Hatchback</option>
+                    <option value="Crossover">Crossover</option>
+                    <option value="Coupe">Coupe</option>
+                    <option value="Convertible">Convertible</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Transmission</label>
+                  <select
+                    value={transmission}
+                    onChange={(e) => setTransmission(e.target.value as 'Automatic' | 'Manual')}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC] transition-colors"
+                  >
+                    <option value="Manual">Manual</option>
+                    <option value="Automatic">Automatic</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Fuel</label>
+                  <select
+                    value={fuelType}
+                    onChange={(e) => setFuelType(e.target.value as 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric')}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC] transition-colors"
+                  >
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Electric">Electric</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Status</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as 'In-Progress' | 'Ready')}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] outline-none focus:border-[#4FE3DC] transition-colors"
+                  >
+                    <option value="In-Progress">In-Progress</option>
+                    <option value="Ready">Ready</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">VIN</label>
+                  <input
+                    type="text"
+                    placeholder="17 characters"
+                    value={vin}
+                    onChange={(e) => setVin(e.target.value.toUpperCase())}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Ranked, not 50/50: the action on top, the way out below. */}
+            <div className="pt-1 border-t border-neutral-850 space-y-2">
+              <button
+                type="submit"
+                className="btn-primary on-fill w-full min-h-[48px] flex items-center justify-center gap-2 text-[15px] cursor-pointer"
+              >
+                {editingVehicle ? <><Pencil size={15} /> Save changes</> : <><Plus size={15} /> Add vehicle</>}
+              </button>
               <button
                 type="button"
                 onClick={() => { setShowAddForm(false); setEditingVehicle(null); }}
-                className="flex-1 py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-[13px] font-bold cursor-pointer"
+                className="tru-btn-ghost w-full min-h-[44px] flex items-center justify-center text-[13px] cursor-pointer"
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 py-2 bg-tru-cyan hover:bg-tru-cyan/90 text-[#E8EAE6] rounded-lg text-[13px] font-bold cursor-pointer shadow-md flex items-center justify-center gap-1"
-              >
-                {editingVehicle ? <><Pencil size={14} /> Save changes</> : <><Plus size={14} /> Add vehicle</>}
               </button>
             </div>
           </form>
@@ -944,7 +964,7 @@ export default function InventoryList({
                   key={vehicle.id}
                   ref={(el) => { cardRefs.current[vehicle.id] = el; }}
                   data-stock={vehicle.stockNumber}
-                  className={`tl-card-lift bg-neutral-950 rounded-xl border border-neutral-800/80 p-3 hover:border-indigo-500/40 hover:bg-neutral-950/90 flex flex-col gap-2 relative ${
+                  className={`bg-neutral-950 rounded-2xl border border-neutral-800/80 p-3 hover:border-[rgba(232,234,230,0.20)] hover:bg-neutral-950/90 flex flex-col gap-2 relative ${
                     isHighlighted ? 'tl-stock-highlight' : ''
                   }`}
                 >
@@ -972,7 +992,7 @@ export default function InventoryList({
                         {/* The one thing scanned for on this screen, so it takes
                             the top of the scale. Everything else on the card was
                             the same 13px, which is why the list read as a wall. */}
-                        <h3 className="text-[17px] font-bold text-[#E8EAE6] leading-tight tracking-[-0.01em] flex items-center gap-2">
+                        <h3 className="text-[17px] font-semibold text-[#E8EAE6] leading-tight tracking-[-0.01em] flex items-center gap-2">
                           {vehicle.year} {vehicle.make} {vehicle.model}
                           {isHighlighted && (
                             <span className="text-[13px] font-semibold tracking-normal text-cyan-300 bg-cyan-500/20 border border-cyan-500/40 px-2 py-0.5 rounded">
@@ -991,11 +1011,11 @@ export default function InventoryList({
                               e.stopPropagation();
                               if (vehicle.stockNumber) copyStockNumber(vehicle.stockNumber, vehicle.id);
                             }}
-                            className="text-[13px] font-mono bg-neutral-900 px-2 py-0.5 rounded text-neutral-400 border border-neutral-800 hover:border-indigo-500/50 hover:text-indigo-300 flex items-center gap-1"
+                            className="text-[12px] font-mono text-[rgba(232,234,230,0.42)] hover:text-[rgba(232,234,230,0.72)] flex items-center gap-1"
                             title="Copy stock number"
                           >
                             {vehicle.stockNumber}
-                            {copiedStockId === vehicle.id ? <Check size={9} className="text-emerald-400" /> : <Copy size={9} />}
+                            {copiedStockId === vehicle.id ? <Check size={9} className="text-[#4FE3DC]" /> : <Copy size={9} />}
                           </button>
                           {/* The vehicle.status chip stood here. It is a field somebody
                               sets by hand, while the chip beside it is derived from the
@@ -1012,8 +1032,8 @@ export default function InventoryList({
                             </span>
                           )}
                           <span
-                            className="text-[12px] font-bold px-2 py-0.5 rounded border"
-                            style={{ color: readiness.color, borderColor: readiness.color + '40', background: readiness.color + '14' }}
+                            className="text-[12px] font-semibold"
+                            style={{ color: readiness.color }}
                             title={readiness.reasons.join(' · ') || readiness.label}
                           >
                             {readiness.label}
@@ -1029,10 +1049,10 @@ export default function InventoryList({
                           startEditing(vehicle);
                           document.getElementById('inventory-scroll-container')?.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        className="p-1 text-neutral-600 hover:text-[#4FE3DC] rounded hover:bg-neutral-900 cursor-pointer"
+                        className="flex items-center justify-center h-9 w-9 rounded-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-[rgba(232,234,230,0.06)] cursor-pointer transition-colors"
                         title="Edit vehicle details"
                       >
-                        <Pencil size={13} />
+                        <Pencil size={16} />
                       </button>
                       <button
                         onClick={(e) => {
@@ -1041,10 +1061,10 @@ export default function InventoryList({
                             onDeleteVehicle(vehicle.id);
                           }
                         }}
-                        className="p-1 text-neutral-600 hover:text-red-400 rounded hover:bg-neutral-900 cursor-pointer"
+                        className="flex items-center justify-center h-9 w-9 rounded-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
                         title="Delete vehicle"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -1063,7 +1083,7 @@ export default function InventoryList({
                           {totalRequired > 0 ? Math.round((requiredTaken / totalRequired) * 100) : 100}%
                         </span>
                       </div>
-                      <div className="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden relative">
+                      <div className="w-full bg-[rgba(232,234,230,0.08)] h-[3px] rounded-full overflow-hidden relative">
                         <div
                           className={`h-full rounded-full transition-all duration-500 relative overflow-hidden ${
                             requiredTaken === totalRequired ? 'bg-emerald-500' : 'bg-indigo-500'
@@ -1073,87 +1093,95 @@ export default function InventoryList({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    {/* One primary (the job), a 3-up ghost row (the extras). Was a
+                        cyan fill, two grey fills and a blue fill at equal weight,
+                        which said nothing on the card was the job. */}
+                    <div className="flex flex-col gap-2">
                       <button
                         type="button"
                         onClick={() => onSelectVehicle(vehicle)}
-                        className="flex items-center justify-center gap-2 text-[13px] font-semibold text-[#E8EAE6] bg-tru-cyan hover:bg-cyan-500 on-fill cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2 rounded-lg transition-colors"
+                        className="btn-primary on-fill flex items-center justify-center gap-2 text-[15px] cursor-pointer whitespace-nowrap w-full min-h-[44px] px-2 py-2"
                         title="Open camera guide and take pictures"
                       >
-                        <Camera size={13} /> Capture
+                        <Camera size={15} /> Take pictures
                       </button>
 
-                      <button
-                        onClick={(e) => handleExportClick(e, vehicle)}
-                        disabled={takenCount === 0 || exportingId === vehicle.id || !onExportToDms}
-                        title={takenCount > 0 ? `Push ${takenCount} photos to TruFlow DMS` : 'Take photos first'}
-                        className="flex items-center justify-center gap-2 text-[13px] font-semibold cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2 rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-neutral-900 border-[rgba(232,234,230,0.14)] text-[#E8EAE6] hover:bg-neutral-800"
-                      >
-                        {exportingId === vehicle.id ? (
-                          <><RefreshCw size={13} className="animate-spin" /> Syncing</>
-                        ) : (
-                          <><Download size={13} /> Export</>
-                        )}
-                      </button>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          onClick={(e) => handleExportClick(e, vehicle)}
+                          disabled={takenCount === 0 || exportingId === vehicle.id || !onExportToDms}
+                          title={takenCount > 0 ? `Push ${takenCount} photos to TruFlow DMS` : 'Take photos first'}
+                          className="tru-btn-ghost flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          {exportingId === vehicle.id ? (
+                            <><RefreshCw size={13} className="animate-spin" /> Syncing</>
+                          ) : (
+                            <><Download size={13} /> Export</>
+                          )}
+                        </button>
 
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onViewReport?.(vehicle); }}
-                        disabled={takenCount === 0}
-                        title={takenCount > 0 ? 'Open inspection report' : 'Take photos first'}
-                        className="flex items-center justify-center gap-2 text-[13px] font-semibold cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2 rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-neutral-900 border-[rgba(232,234,230,0.14)] text-[#E8EAE6] hover:bg-neutral-800"
-                      >
-                        <FileText size={13} /> Report
-                      </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onViewReport?.(vehicle); }}
+                          disabled={takenCount === 0}
+                          title={takenCount > 0 ? 'Open inspection report' : 'Take photos first'}
+                          className="tru-btn-ghost flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <FileText size={13} /> Report
+                        </button>
 
-                      <button
-                        type="button"
-                        disabled={!onUpdateVehicle || !isStructurallyWebReady(vehicle) || publishingId === vehicle.id}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          if (!onUpdateVehicle) return;
-                          setPublishingId(vehicle.id);
-                          const nextShow = !vehicle.showOnWebsite;
-                          const saved = await onUpdateVehicle(vehicle, {
-                            showOnWebsite: nextShow,
-                            status: nextShow && vehicle.status === 'In-Progress' ? 'Ready' : vehicle.status,
-                            dealerName: dealershipName,
-                            dealerWhatsApp: dealerWhatsApp || vehicle.dealerWhatsApp,
-                          });
-                          if (saved && onExportToDms) {
-                            await onExportToDms(saved).catch(() => {});
-                          }
-                          setPublishingId(null);
-                          if (saved) {
-                            setExportToast({
-                              type: 'ok',
-                              text: nextShow
-                                ? `${vehicle.stockNumber} published to website feed`
-                                : `${vehicle.stockNumber} removed from website feed`,
+                        {/* Publish: a secondary when the car is web-ready, a disabled
+                            control when it isn't — never a coloured button that
+                            refuses. No blue anywhere. */}
+                        <button
+                          type="button"
+                          disabled={!onUpdateVehicle || !isStructurallyWebReady(vehicle) || publishingId === vehicle.id}
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!onUpdateVehicle) return;
+                            setPublishingId(vehicle.id);
+                            const nextShow = !vehicle.showOnWebsite;
+                            const saved = await onUpdateVehicle(vehicle, {
+                              showOnWebsite: nextShow,
+                              status: nextShow && vehicle.status === 'In-Progress' ? 'Ready' : vehicle.status,
+                              dealerName: dealershipName,
+                              dealerWhatsApp: dealerWhatsApp || vehicle.dealerWhatsApp,
                             });
-                            setTimeout(() => setExportToast(null), 3200);
-                          } else {
-                            setExportToast({ type: 'err', text: 'Could not update publish status' });
-                            setTimeout(() => setExportToast(null), 3200);
+                            if (saved && onExportToDms) {
+                              await onExportToDms(saved).catch(() => {});
+                            }
+                            setPublishingId(null);
+                            if (saved) {
+                              setExportToast({
+                                type: 'ok',
+                                text: nextShow
+                                  ? `${vehicle.stockNumber} published to website feed`
+                                  : `${vehicle.stockNumber} removed from website feed`,
+                              });
+                              setTimeout(() => setExportToast(null), 3200);
+                            } else {
+                              setExportToast({ type: 'err', text: 'Could not update publish status' });
+                              setTimeout(() => setExportToast(null), 3200);
+                            }
+                          }}
+                          title={
+                            vehicle.showOnWebsite
+                              ? 'Remove from public website stock feed'
+                              : 'Publish to dealer website stock feed'
                           }
-                        }}
-                        title={
-                          vehicle.showOnWebsite
-                            ? 'Remove from public website stock feed'
-                            : 'Publish to dealer website stock feed'
-                        }
-                        className={`flex items-center justify-center gap-2 text-[13px] font-semibold cursor-pointer whitespace-nowrap min-h-[44px] px-2 py-2 rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                          vehicle.showOnWebsite
-                            ? 'bg-sky-500/15 text-sky-300 border-sky-500/30 hover:bg-sky-500/25'
-                            : 'bg-neutral-900 border-[rgba(232,234,230,0.14)] text-[#E8EAE6] hover:bg-neutral-800'
-                        }`}
-                      >
-                        {publishingId === vehicle.id ? (
-                          <RefreshCw size={13} className="animate-spin" />
-                        ) : (
-                          <ExternalLink size={13} />
-                        )}
-                        {vehicle.showOnWebsite ? 'Unpublish' : 'Publish'}
-                      </button>
+                          className={`flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 rounded-[12px] transition-colors disabled:cursor-not-allowed ${
+                            isStructurallyWebReady(vehicle)
+                              ? 'tru-btn-secondary'
+                              : 'text-[rgba(232,234,230,0.30)]'
+                          }`}
+                        >
+                          {publishingId === vehicle.id ? (
+                            <RefreshCw size={13} className="animate-spin" />
+                          ) : (
+                            <ExternalLink size={13} />
+                          )}
+                          {vehicle.showOnWebsite ? 'Unpublish' : 'Publish'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
