@@ -40,10 +40,13 @@ interface VehicleDetailModalProps {
    *  confirming — this just asks for it. Optional, so the modal still renders
    *  for anywhere that shouldn't offer deletion. */
   onDeleteVehicle?: (id: string) => Promise<void>;
+  /** Cancellation flow: put a sold unit back in stock (which re-lists it on the
+   *  website) and reopen the deal that closed on it. Optional. */
+  onReturnToStock?: (vehicle: Vehicle) => void | Promise<void>;
   settings?: any;
 }
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, settings, documentsPanel}: VehicleDetailModalProps) {
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -311,6 +314,16 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{vehicle.trim || "Standard Trim Specs"}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                {onReturnToStock && vehicle.status === "SOLD" && (
+                  <button
+                    onClick={() => onReturnToStock(vehicle)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[color:var(--glass-line)] bg-[color:var(--glass)] text-[color:var(--cyan)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
+                    title="Cancellation — put this car back in stock and reopen the deal"
+                  >
+                    <RefreshCw size={14} />
+                    Return to stock
+                  </button>
+                )}
                 {onDeleteVehicle && (
                   <button
                     onClick={() => onDeleteVehicle(vehicle.id)}

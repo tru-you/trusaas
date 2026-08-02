@@ -858,6 +858,28 @@ export default function App() {
     loadAllState();
   };
 
+  /** Cancellation: a closed sale fell through. Put the car back in stock — which
+   *  re-lists it on the website, since the public feed only publishes INVENTORY
+   *  — and reopen the deal that closed on it, so the two statuses don't drift the
+   *  other way. The mirror of the Closed-Won → Sold close-out. */
+  const handleReturnToStock = async (v: Vehicle) => {
+    const label = `${v.year} ${v.make} ${v.model}`;
+    if (!confirm(`Return ${label} to stock?\n\nThis re-lists it on your website and reopens the linked deal.`)) return;
+    try {
+      await updateVehicle(v.id, { status: "INVENTORY" as any });
+      const wonLead = state.leads.find((l) => l.vehicleId === v.id && l.status === "Closed Won");
+      if (wonLead) await updateLead(wonLead.id, { status: "Negotiating" as any });
+      loadAllState();
+      addNotification(
+        "Returned to stock",
+        `${label} is back in inventory and live on your website again${wonLead ? ", and its deal was reopened" : ""}.`,
+        "info",
+      );
+    } catch (err: any) {
+      addNotification("Could not return to stock", err?.message || "Something went wrong.", "warning");
+    }
+  };
+
   /** Remove a unit from stock.
    *  Deleting a car that a deal, invoice or lead points at leaves those records
    *  referencing something that no longer exists — the lead's vehicle shows as
@@ -1226,7 +1248,10 @@ export default function App() {
             role="dialog"
             aria-modal="true"
             aria-hidden={!sidebarOpen}
-            style={{ paddingBottom: "calc(1.25rem + var(--safe-b))" }}
+            /* Clear the fixed bottom tab bar (≈74px + safe-area, z-190) that
+               renders on top of this sheet — otherwise the last item in the
+               scroll area, Log out, sits behind it and can't be tapped. */
+            style={{ paddingBottom: "calc(88px + var(--safe-b))" }}
             className={`md:hidden fixed left-0 right-0 bottom-0 max-h-[80vh] z-[180] rounded-t-3xl bg-[color:var(--ink-2)] border-t border-[color:var(--glass-line)] shadow-[0_-18px_40px_-12px_rgba(0,0,0,0.6)] transition-transform duration-300 ${
               sidebarOpen ? "translate-y-0" : "translate-y-full"
             } flex flex-col`}
@@ -3743,6 +3768,7 @@ export default function App() {
           onClose={() => setSelectedDetailVehicle(null)}
           onUpdateVehicle={handleUpdateVehicle}
           onDeleteVehicle={handleDeleteVehicle}
+          onReturnToStock={handleReturnToStock}
           settings={state.settings}
           documentsPanel={
             <DocumentsHub
