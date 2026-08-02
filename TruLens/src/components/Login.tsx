@@ -253,9 +253,9 @@ export default function Login() {
             rel="noopener noreferrer"
             className="text-[rgba(232,234,230,0.72)] hover:text-[#4FE3DC] transition-colors"
           >
-            TruSaaS
+            TruDealer
           </a>
-          {' · Guided capture · v1.0'}
+          {' — Future Automotive · V 1.2'}
         </p>
       </div>
     </div>

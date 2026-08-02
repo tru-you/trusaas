@@ -322,7 +322,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           type="button"
           disabled={currentStep === 0}
           onClick={() => setCurrentStep((s) => s - 1)}
-          className="flex-1 min-h-[52px] rounded-xl border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[15px] font-medium flex items-center justify-center gap-2 disabled:opacity-30"
+          className="tru-btn-secondary flex-1 min-h-[52px] text-[15px] flex items-center justify-center gap-2 disabled:opacity-30"
         >
           <ArrowLeft size={14} /> Prev
         </button>
@@ -330,7 +330,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           <button
             type="button"
             onClick={() => setCurrentStep((s) => s + 1)}
-            className="flex-1 min-h-[52px] rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[15px] font-semibold flex items-center justify-center gap-2"
+            className="btn-primary on-fill flex-1 min-h-[52px] text-[15px] flex items-center justify-center gap-2"
           >
             Next <ArrowRight size={14} />
           </button>
@@ -339,7 +339,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
             type="button"
             disabled={!canSubmit || isUploading}
             onClick={() => onComplete(items)}
-            className="flex-1 min-h-[52px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[#E8EAE6] text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+            className="btn-primary on-fill flex-1 min-h-[52px] text-[15px] flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <CheckCircle2 size={14} /> {isUploading ? 'Saving photos…' : 'Continue to Valuation'}
           </button>

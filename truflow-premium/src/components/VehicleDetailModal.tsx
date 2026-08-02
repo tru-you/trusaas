@@ -256,12 +256,15 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             </button>
           )}
 
-          {/* Core Display frame */}
-          <div className="flex-1 flex items-center justify-center min-h-[300px] max-h-[480px]">
+          {/* Core Display frame. On mobile the modal stacks (gallery over info),
+              so cap the image to ~a third of the viewport and keep it contained —
+              full-bleed is a desktop treatment. The info panel below then gets
+              real room. */}
+          <div className="flex items-center justify-center min-h-[160px] max-h-[32svh] md:flex-1 md:min-h-[300px] md:max-h-[480px]">
             <img
               src={imagesList[safeIndex]}
               alt={`${vehicle.make} ${vehicle.model}`}
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full max-w-full object-contain rounded-lg md:rounded-none"
             />
           </div>
 
@@ -302,7 +305,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
         </div>
 
         {/* RIGHT COLUMN: DETAIL SPECS, INSPECTION & RECON TABS */}
-        <div className="md:w-2/5 p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
+        <div className="md:w-2/5 max-md:flex-1 max-md:min-h-0 p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
           <div>
             {/* Header */}
             <div className="flex justify-between items-start border-b border-white/5 pb-3 mb-4">

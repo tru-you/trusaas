@@ -625,7 +625,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="w-full min-h-[52px] rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+          className="btn-primary on-fill w-full min-h-[52px] text-[15px] flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {saving ? 'Saving…' : 'Save Trade-In Appraisal'}
         </button>

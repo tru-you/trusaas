@@ -123,7 +123,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           type="button"
           onClick={handleFetchValuation}
           disabled={fetching}
-          className="w-full py-4 rounded-xl bg-[#4FE3DC] text-[#06080D] text-[14px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg active:scale-[0.98] transition-all"
+          className="btn-primary on-fill w-full min-h-[52px] flex items-center justify-center gap-2 text-[16px] disabled:opacity-60"
         >
           {fetching ? <Loader2 size={18} className="animate-spin" /> : <Zap size={18} />}
           {fetching ? 'Fetching…' : 'Fetch Market Value'}
@@ -154,7 +154,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                 href={valuation.searchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 min-h-[44px] rounded-lg bg-[rgba(232,234,230,0.055)] border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[13px] font-semibold"
+                className="tru-btn-secondary inline-flex items-center gap-2 px-4 min-h-[44px] text-[13px]"
               >
                 <ExternalLink size={14} /> AutoTrader
               </a>
@@ -163,7 +163,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                   href={carsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 min-h-[44px] rounded-lg bg-[rgba(232,234,230,0.055)] border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[13px] font-semibold"
+                  className="tru-btn-secondary inline-flex items-center gap-2 px-4 min-h-[44px] text-[13px]"
                 >
                   <ExternalLink size={14} /> Cars.co.za
                 </a>
@@ -231,7 +231,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           type="button"
           disabled={valuation.averageRetailPrice === null || valuation.averageRetailPrice <= 0}
           onClick={() => onComplete(valuation)}
-          className="w-full min-h-[52px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[#E8EAE6] text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40"
+          className="tru-btn-secondary w-full min-h-[52px] text-[15px] flex items-center justify-center gap-2 disabled:opacity-40"
         >
           Continue to Summary <ArrowRight size={14} />
         </button>
