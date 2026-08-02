@@ -233,6 +233,23 @@ export async function createLead(
 }
 
 export async function updateLead(id: string, updates: Partial<Lead>): Promise<Lead> {
+  // Persist to server first — a local-only push here used to get silently
+  // wiped by the very next fetchState() (server truth wins), so lead status
+  // changes never actually survived a refresh.
+  try {
+    const res = await authFetch(`/api/leads/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.lead) return body.lead as Lead;
+    }
+  } catch (err) {
+    console.warn("updateLead server failed, local fallback", err);
+  }
+
   let updated;
   await updateState(s => {
     const idx = s.leads.findIndex(l => l.id === id);
