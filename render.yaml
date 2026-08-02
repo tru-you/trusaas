@@ -11,7 +11,9 @@
 #   trusaas-trade.onrender.com    → TruTrade         (trutrade) → trade.tru-saas.com
 #                                   (renamed from trusaas-value 2026-07-31; old service discontinued, domain repointed)
 #
-# TruFlow Lite retired 2026-07-25 — see the note where its block used to be.
+# TruFlow Lite (the old separate codebase) retired 2026-07-25. The current
+# TruFlow Light console is a static client served by trusaas-premium at
+# /light — it is NOT a service of its own; see §2.
 #
 # STABILITY (see STABILITY.md):
 #   - Services are on paid starter plan → always-on, no spin-down. Do NOT
@@ -107,21 +109,27 @@ services:
       - key: GEMINI_API_KEY
         sync: false
 
-  # ── 2. TruFlow Lite — RETIRED 2026-07-25 ──────────────────────────────────
+  # ── 2. TruFlow Light — lightweight dealer console (NOT a separate service) ──
   #
-  # Removed outright rather than left commented, so a Blueprint sync cannot
-  # resurrect it. Lite was a second codebase carrying a stripped copy of
-  # Premium, its "login" was `password === '2026'` in client JS, and it had no
-  # disk — state reset on every deploy, which is why its seed cars kept
-  # reappearing. The tier split is gone: there is one product, TruFlow.
+  # Served by trusaas-premium at flow.tru-saas.com/light (server.ts mounts
+  # express.static on public/light). It has no service block and no disk of its
+  # own — it is a thin client that signs into the Premium API with a dealer
+  # code. Deploy source is truflow-premium/public/light/index.html; the
+  # maintained source of truth is truflow-light/index.html (one self-contained
+  # file — edit there, then copy to public/light). Rebranded to the cyan suite
+  # identity 2026-08-02, so it no longer ships the old blue "LITE" mark.
+  # truflow-light/ is therefore NOT pending deletion.
   #
-  # flow.tru-saas.com is now a custom domain on trusaas-premium, so every
-  # dealer embed already pointing at flow. keeps working. premium.tru-saas.com
-  # is kept as an alias for the same reason. flow. is the canonical hostname —
-  # use it in links, docs and dealer training; logins are per-origin, so
-  # mixing the two logs people out.
+  # Do NOT confuse this with the old TruFlow *Lite* — a second full codebase
+  # whose "login" was `password === '2026'` in client JS and which had no disk
+  # (its seed cars kept reappearing). That tier was RETIRED 2026-07-25 and
+  # removed outright rather than left commented, so a Blueprint sync cannot
+  # resurrect it. There is one DMS product, TruFlow; Light is only its console.
   #
-  # truflow-light/ is still in the repo pending deletion.
+  # flow.tru-saas.com is a custom domain on trusaas-premium, so every dealer
+  # embed already pointing at flow. keeps working. premium.tru-saas.com is kept
+  # as an alias. flow. is the canonical hostname — use it in links, docs and
+  # dealer training; logins are per-origin, so mixing the two logs people out.
 
   # ── 2b. TruView — live guided vehicle walkthrough (WebRTC, no app for buyer) ─
   - type: web
