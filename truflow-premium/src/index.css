@@ -744,11 +744,14 @@ a[class*="bg-[color:var(--glass)]"]:active {
 /* ── Page gutters on a notched phone ─────────────────────────────────────
    <main> carries px-4; in landscape on a notched device that 16px sits under
    the camera cutout. max() keeps the existing gutter everywhere else and only
-   grows it where the inset is real, so portrait is untouched. */
+   grows it where the inset is real, so portrait is untouched.
+   NOTE: padding-bottom is NOT set here — this rule is unlayered CSS and would
+   silently beat the Tailwind pb-[calc(96px+env(...))] utility on <main>,
+   clamping the mobile gap over the bottom tab bar to 24px. Bottom padding
+   lives with the class where the tab-bar height is accounted for. */
 @media (max-width: 767px) {
   main {
     padding-left: max(1rem, var(--safe-l));
     padding-right: max(1rem, var(--safe-r));
-    padding-bottom: max(1.5rem, var(--safe-b));
   }
 }
