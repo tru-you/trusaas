@@ -3601,9 +3601,11 @@ app.post("/api/integration/webhook-zernio", (req, res) => {
   }
   console.log(`[trusocial] Webhook received: event=${payload.event || payload.type || "unknown"}`);
 
-  const event = payload.event || payload.type;
-  const profileId = payload.profileId || payload.data?.profileId;
-  const accountId = payload.accountId || payload.data?.accountId;
+  const event = payload.event;
+  // Zernio nests account fields under payload.account, post fields under payload.post
+  const acct = payload.account || {};
+  const profileId = acct.profileId || payload.profileId;
+  const accountId = acct.accountId || payload.accountId;
 
   const state = readState();
 
@@ -3619,13 +3621,13 @@ app.post("/api/integration/webhook-zernio", (req, res) => {
       state.socialAccounts.push({
         accountId,
         dealershipId: dealer.id,
-        platform: payload.platform || payload.data?.platform || "unknown",
-        username: payload.username || payload.data?.username,
+        platform: acct.platform || "unknown",
+        username: acct.username || acct.displayName,
         connectedAt: new Date().toISOString(),
       });
     }
     writeState(state);
-    console.log(`[trusocial] account.connected: ${accountId} → dealer ${dealer.id}`);
+    console.log(`[trusocial] account.connected: ${accountId} (${acct.platform}/${acct.username}) → dealer ${dealer.id}`);
   } else if (event === "account.disconnected") {
     state.socialAccounts = (state.socialAccounts || []).filter((a) => a.accountId !== accountId);
     writeState(state);
