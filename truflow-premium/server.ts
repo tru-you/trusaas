@@ -3446,14 +3446,10 @@ app.post("/api/social/toggle", async (req: any, res) => {
   const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
   if (!dealer) return res.status(404).json({ error: "Dealership not found" });
 
-  (dealer as any).truSocialEnabled = enabled;
-
   if (enabled && !(dealer as any).zernioProfileId) {
     if (!ZERNIO_API_KEY) {
-      writeState(state);
       return res.status(503).json({
-        error: "Zernio API key not configured — TruSocial enabled but profile provisioning unavailable",
-        dealer,
+        error: "Zernio API key not configured — cannot enable TruSocial",
       });
     }
     try {
@@ -3468,7 +3464,6 @@ app.post("/api/social/toggle", async (req: any, res) => {
       if (!zRes.ok) {
         const body = await zRes.text();
         console.error(`[trusocial] Zernio profile creation failed: ${zRes.status} ${body}`);
-        writeState(state);
         return res.status(502).json({ error: "Zernio profile creation failed", detail: body });
       }
       const profile = await zRes.json();
@@ -3476,10 +3471,11 @@ app.post("/api/social/toggle", async (req: any, res) => {
       console.log(`[trusocial] Provisioned Zernio profile ${(dealer as any).zernioProfileId} for ${dealer.id}`);
     } catch (err: any) {
       console.error(`[trusocial] Zernio API error:`, err?.message);
-      writeState(state);
       return res.status(502).json({ error: "Could not reach Zernio API" });
     }
   }
+
+  (dealer as any).truSocialEnabled = enabled;
 
   writeState(state);
   res.json({ dealer });
