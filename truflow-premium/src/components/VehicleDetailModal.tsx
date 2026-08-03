@@ -1,16 +1,16 @@
 import React, { useState, useRef } from "react";
 import { Vehicle } from "../types";
 import { openTruLens } from "../lib/productConfig";
-import { 
-  X, 
-  Camera, 
-  Upload, 
-  Smartphone, 
-  Check, 
-  Trash2, 
-  ChevronLeft, 
-  ChevronRight, 
-  QrCode, 
+import {
+  X,
+  Camera,
+  Upload,
+  Smartphone,
+  Check,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  QrCode,
   Zap,
   Grid,
   Shield,
@@ -26,8 +26,21 @@ import {
   Facebook,
   Globe,
   Send,
-  Search
+  Search,
+  Loader2,
+  MessageCircle,
+  Linkedin,
+  Instagram
 } from "lucide-react";
+import { authFetch } from "../lib/session";
+
+interface SocialAccount {
+  accountId: string;
+  dealershipId: string;
+  platform: string;
+  username?: string;
+  connectedAt: string;
+}
 
 interface VehicleDetailModalProps {
   /** Documents filed against this vehicle, rendered as its own tab. */
@@ -44,13 +57,22 @@ interface VehicleDetailModalProps {
    *  website) and reopen the deal that closed on it. Optional. */
   onReturnToStock?: (vehicle: Vehicle) => void | Promise<void>;
   settings?: any;
+  dealershipId?: string;
 }
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel}: VehicleDetailModalProps) {
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Social publish states
+  const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
+  const [socialLoading, setSocialLoading] = useState(false);
+  const [selectedAccounts, setSelectedAccounts] = useState<Set<string>>(new Set());
+  const [socialCaption, setSocialCaption] = useState("");
+  const [socialPublishing, setSocialPublishing] = useState(false);
+  const [socialResult, setSocialResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   // Elite DMS States
   const [activeTab, setActiveTab] = useState<"specs" | "inspection" | "recon" | "syndication" | "docs">("specs");
@@ -163,6 +185,57 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       [target.field]: source.filter((_, i) => i !== target.index),
     } as any);
     setActiveImageIndex(Math.max(0, indexToDelete - 1));
+  };
+
+  // Load connected social accounts when syndication tab opens
+  const loadSocialAccounts = async () => {
+    if (!dealershipId) return;
+    setSocialLoading(true);
+    try {
+      const res = await authFetch(`/api/social/accounts?dealershipId=${encodeURIComponent(dealershipId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSocialAccounts(data.accounts || []);
+      }
+    } catch { /* best-effort */ }
+    setSocialLoading(false);
+  };
+
+  const buildDefaultCaption = () =>
+    `${vehicle.year} ${vehicle.make} ${vehicle.model} (${vehicle.transmission})\n` +
+    `${vehicle.mileage.toLocaleString()} km · ${vehicle.fuelType}\n` +
+    `R ${Math.round(vehicle.retailPrice).toLocaleString("en-ZA")}\n\n` +
+    (vehicle.description ? vehicle.description + "\n\n" : "") +
+    `Contact us to book a test-drive or secure this vehicle!`;
+
+  const handleSocialPublish = async () => {
+    if (!dealershipId || !selectedAccounts.size) return;
+    setSocialPublishing(true);
+    setSocialResult(null);
+    try {
+      const res = await authFetch("/api/social/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dealershipId,
+          vehicleId: vehicle.id,
+          caption: socialCaption,
+          accountIds: Array.from(selectedAccounts),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Publish failed");
+      setSocialResult({ ok: true, message: `Published to ${data.platforms?.join(", ") || "selected channels"}` });
+      setSelectedAccounts(new Set());
+    } catch (err: any) {
+      setSocialResult({ ok: false, message: err?.message || "Publish failed" });
+    }
+    setSocialPublishing(false);
+  };
+
+  const handleWhatsAppShare = () => {
+    const text = socialCaption || buildDefaultCaption();
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   // No stand-in photo. This fell back to a stock image of an unrelated car,
@@ -884,71 +957,171 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               </div>
             )}
 
-            {/* TAB 5: SYNDICATION HUB */}
-            {activeTab === "syndication" && settings?.syndication && (
+            {/* TAB 5: SOCIAL PUBLISH */}
+            {activeTab === "syndication" && settings?.syndication && (() => {
+              const PLATFORM_META: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
+                facebook:          { label: "Facebook",         icon: <Facebook size={14} />,       color: "#1877F2" },
+                instagram:         { label: "Instagram",        icon: <Instagram size={14} />,      color: "#E4405F" },
+                "google-business": { label: "Google Business",  icon: <Globe size={14} />,          color: "#4285F4" },
+                linkedin:          { label: "LinkedIn",         icon: <Linkedin size={14} />,       color: "#0A66C2" },
+              };
+
+              // Load accounts on first render of this tab
+              if (!socialLoading && socialAccounts.length === 0 && dealershipId && settings?.truSocial) {
+                loadSocialAccounts();
+                if (!socialCaption) setSocialCaption(buildDefaultCaption());
+              }
+
+              const toggleAccount = (id: string) => {
+                setSelectedAccounts((prev) => {
+                  const next = new Set(prev);
+                  next.has(id) ? next.delete(id) : next.add(id);
+                  return next;
+                });
+              };
+
+              return (
               <div className="space-y-4 animate-in fade-in duration-200">
+                {/* Caption */}
                 <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
                   <div className="flex items-center gap-2">
-                    <Share2 size={18} className="text-[color:var(--cyan)]" />
-                    <div>
-                      <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Marketplace listings</h4>
-                      <p className="text-[13px] text-[rgba(232,234,230,0.72)]">Distribute inventory to partner networks</p>
-                    </div>
+                    <Share2 size={14} className="text-[color:var(--cyan)]" />
+                    <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Social post</h4>
                   </div>
-
-                  <div className="space-y-2 mt-2">
-                    {/* AutoTrader */}
-                    <div className="bg-black/30 border border-white/5 rounded-lg p-3 flex justify-between items-center">
-                      <div className="flex flex-col">
-                        <span className="text-[color:var(--white)] text-[13px] font-semibold">AutoTrader SA</span>
-                        <span className="text-[rgba(232,234,230,0.72)] text-[13px]">Premium listings</span>
-                      </div>
-                      <button
-                        onClick={() => alert("Simulated push to AutoTrader successful.")}
-                        className="px-3 py-2 bg-[color:var(--glass)] hover:bg-[color:var(--glass)] text-[color:var(--warning)] text-[13px] font-semibold rounded tracking-normal transition-all"
-                      >
-                        Publish
-                      </button>
-                    </div>
-
-                    {/* Cars.co.za */}
-                    <div className="bg-black/30 border border-white/5 rounded-lg p-3 flex justify-between items-center">
-                      <div className="flex flex-col">
-                        <span className="text-[color:var(--white)] text-[13px] font-semibold">Cars.co.za</span>
-                        <span className="text-[rgba(232,234,230,0.72)] text-[13px]">Marketplace network</span>
-                      </div>
-                      <button
-                        onClick={() => alert("Simulated push to Cars.co.za successful.")}
-                        className="px-3 py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] font-semibold rounded tracking-normal transition-all"
-                      >
-                        Publish
-                      </button>
-                    </div>
-
-                    {/* Facebook Marketplace */}
-                    <div className="bg-black/30 border border-white/5 rounded-lg p-3 flex justify-between items-center">
-                      <div className="flex flex-col">
-                        <span className="text-[color:var(--white)] text-[13px] font-semibold">Facebook Marketplace</span>
-                        <span className="text-[rgba(232,234,230,0.72)] text-[13px]">Social Commerce</span>
-                      </div>
-                      <button
-                        onClick={() => alert("Simulated push to Facebook Marketplace successful.")}
-                        className="px-3 py-2 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] text-[13px] font-semibold rounded tracking-normal transition-all"
-                      >
-                        Publish
-                      </button>
-                    </div>
-                  </div>
-                  
+                  <textarea
+                    value={socialCaption}
+                    onChange={(e) => setSocialCaption(e.target.value)}
+                    placeholder="Write your social caption..."
+                    rows={5}
+                    className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-[13px] text-[rgba(232,234,230,0.85)] placeholder:text-[rgba(232,234,230,0.35)] outline-none resize-none leading-relaxed focus:border-[color:var(--cyan-soft)] transition-colors"
+                  />
                   <button
-                    onClick={() => alert("1-Click Bulk Syndicate completed. Inventory synced to all selected platforms.")}
-                    className="w-full mt-2 py-2 bg-[color:var(--cyan)] hover:bg-opacity-90 on-fill font-semibold text-[13px] rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 tracking-normal"
+                    type="button"
+                    onClick={() => setSocialCaption(buildDefaultCaption())}
+                    className="self-start px-3 py-1.5 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg transition-colors cursor-pointer"
                   >
-                    <Send size={14} /> Syndicate to All Selected
+                    <RefreshCw size={11} className="inline mr-1.5 -mt-px" />
+                    Reset to default
                   </button>
                 </div>
+
+                {/* Connected channels via Zernio */}
+                {settings?.truSocial && dealershipId && (
+                  <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+                    <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Publish to connected channels</h4>
+
+                    {socialLoading ? (
+                      <div className="flex items-center gap-2 py-3 text-[13px] text-[rgba(232,234,230,0.55)]">
+                        <Loader2 size={13} className="animate-spin" /> Loading accounts...
+                      </div>
+                    ) : socialAccounts.length === 0 ? (
+                      <p className="text-[13px] text-[rgba(232,234,230,0.55)] py-2">
+                        No social accounts connected. Go to Settings &rarr; TruSocial to connect.
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {socialAccounts.map((acc) => {
+                          const meta = PLATFORM_META[acc.platform] || { label: acc.platform, icon: <Globe size={14} />, color: "var(--cyan)" };
+                          const selected = selectedAccounts.has(acc.accountId);
+                          return (
+                            <button
+                              key={acc.accountId}
+                              type="button"
+                              onClick={() => toggleAccount(acc.accountId)}
+                              className={
+                                "flex items-center gap-3 rounded-lg border p-3 transition-all cursor-pointer text-left " +
+                                (selected
+                                  ? "border-[color:var(--cyan-soft)] bg-[color:var(--cyan-faint)]"
+                                  : "border-white/5 bg-black/20 hover:border-white/15")
+                              }
+                            >
+                              <div
+                                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                                style={{ background: meta.color + "20", color: meta.color }}
+                              >
+                                {meta.icon}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[13px] font-semibold text-[color:var(--white)]">{meta.label}</div>
+                                {acc.username && (
+                                  <div className="text-[13px] text-[rgba(232,234,230,0.55)] truncate">@{acc.username}</div>
+                                )}
+                              </div>
+                              <div className={
+                                "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors " +
+                                (selected
+                                  ? "border-[color:var(--cyan)] bg-[color:var(--cyan)]"
+                                  : "border-white/20")
+                              }>
+                                {selected && <Check size={12} className="text-[color:var(--ink)]" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Publish button */}
+                    {socialAccounts.length > 0 && (
+                      <button
+                        type="button"
+                        disabled={socialPublishing || !selectedAccounts.size || !socialCaption.trim()}
+                        onClick={handleSocialPublish}
+                        className="w-full py-2.5 bg-[color:var(--cyan)] hover:bg-opacity-90 on-fill font-semibold text-[13px] rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {socialPublishing ? (
+                          <><Loader2 size={13} className="animate-spin" /> Publishing...</>
+                        ) : (
+                          <><Send size={13} /> Publish to {selectedAccounts.size || ""} selected</>
+                        )}
+                      </button>
+                    )}
+
+                    {socialResult && (
+                      <div className={
+                        "text-[13px] px-3 py-2 rounded-lg border " +
+                        (socialResult.ok
+                          ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                          : "text-red-400 bg-red-500/10 border-red-500/20")
+                      }>
+                        {socialResult.message}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Quick share — always available, no Zernio needed */}
+                <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+                  <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Quick share</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={handleWhatsAppShare}
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-white/5 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 text-[13px] font-semibold transition-colors cursor-pointer"
+                    >
+                      <MessageCircle size={14} /> WhatsApp
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(socialCaption || buildDefaultCaption());
+                        setSocialResult({ ok: true, message: "Caption copied to clipboard" });
+                      }}
+                      className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-white/5 bg-[color:var(--glass)] text-[color:var(--muted)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
+                    >
+                      <FileText size={14} /> Copy caption
+                    </button>
+                  </div>
+                </div>
+
+                {/* Marketplace (coming soon) */}
+                <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3 opacity-50">
+                  <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Marketplace syndication</h4>
+                  <p className="text-[13px] text-[rgba(232,234,230,0.55)]">AutoTrader SA, Cars.co.za — coming soon</p>
+                </div>
               </div>
-            )}
+              );
+            })()}
           </div>
 
           {/* Footer — the one action that leaves the modal (Publish) over the two

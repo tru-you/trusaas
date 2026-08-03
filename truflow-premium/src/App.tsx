@@ -3803,6 +3803,7 @@ export default function App() {
           onDeleteVehicle={handleDeleteVehicle}
           onReturnToStock={handleReturnToStock}
           settings={state.settings}
+          dealershipId={dealershipId || selectedDetailVehicle?.dealershipId}
           documentsPanel={
             <DocumentsHub
               embedded

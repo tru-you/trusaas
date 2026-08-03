@@ -3625,6 +3625,70 @@ app.post("/api/social/disconnect", async (req: any, res) => {
   res.json({ ok: true });
 });
 
+// Publish a vehicle post to selected Zernio-connected social accounts
+app.post("/api/social/publish", async (req: any, res) => {
+  const { dealershipId, vehicleId, caption, accountIds } = req.body || {};
+  if (!dealershipId || !vehicleId || !caption || !Array.isArray(accountIds) || !accountIds.length)
+    return res.status(400).json({ error: "dealershipId, vehicleId, caption, and accountIds[] required" });
+
+  const state = readState();
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  if (!dealer || !(dealer as any).truSocialEnabled || !(dealer as any).zernioProfileId)
+    return res.status(400).json({ error: "TruSocial not enabled for this dealer" });
+
+  for (const aid of accountIds) {
+    if (!dealerOwnsSocialAccount(state, dealershipId, aid))
+      return res.status(403).json({ error: `Account ${aid} does not belong to this dealer` });
+  }
+
+  const vehicle = state.vehicles.find((v: any) => v.id === vehicleId);
+  if (!vehicle) return res.status(404).json({ error: "Vehicle not found" });
+
+  const webImages = (vehicle.images || []).filter((img: string) => img.startsWith("http"));
+  const mediaItems: { url: string; type: string }[] = [];
+  for (const imgUrl of webImages.slice(0, 4)) {
+    try {
+      const presignRes = await fetch(`${ZERNIO_BASE}/v1/media/presign`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${ZERNIO_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: `vehicle-${vehicleId}.jpg`, contentType: "image/jpeg" }),
+      });
+      if (!presignRes.ok) continue;
+      const { uploadUrl, publicUrl } = await presignRes.json();
+      const imgRes = await fetch(imgUrl);
+      if (!imgRes.ok) continue;
+      const imgBuf = await imgRes.arrayBuffer();
+      await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": "image/jpeg" }, body: Buffer.from(imgBuf) });
+      mediaItems.push({ url: publicUrl, type: "image" });
+    } catch (err: any) {
+      console.error(`[trusocial] Media upload failed:`, err?.message);
+    }
+  }
+
+  const accounts = (state.socialAccounts || []).filter((a) => accountIds.includes(a.accountId));
+  const platforms = accounts.map((a) => ({ platform: a.platform, accountId: a.accountId }));
+
+  try {
+    const postBody: any = { content: caption, platforms, publishNow: true };
+    if (mediaItems.length) postBody.mediaItems = mediaItems;
+    const postRes = await fetch(`${ZERNIO_BASE}/v1/posts`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${ZERNIO_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify(postBody),
+    });
+    const postData = await postRes.json();
+    if (!postRes.ok) {
+      console.error(`[trusocial] Zernio publish error:`, postData);
+      return res.status(502).json({ error: postData.message || "Zernio publish failed" });
+    }
+    console.log(`[trusocial] Published to ${platforms.map((p: any) => p.platform).join(", ")} for dealer ${dealershipId}`);
+    res.json({ ok: true, postId: postData._id || postData.id, platforms: platforms.map((p: any) => p.platform) });
+  } catch (err: any) {
+    console.error(`[trusocial] Publish error:`, err?.message);
+    res.status(502).json({ error: "Failed to reach Zernio" });
+  }
+});
+
 // Zernio webhook receiver — single endpoint, all dealers route through it.
 // Registered once at the Zernio team level (up to 10 endpoints per team).
 app.post("/api/integration/webhook-zernio", (req, res) => {
