@@ -3435,8 +3435,8 @@ function dealerOwnsSocialAccount(state: DMSState, dealershipId: string, accountI
 
 // Toggle TruSocial ON/OFF + Zernio profile provisioning
 app.post("/api/social/toggle", async (req: any, res) => {
-  if (req.auth?.role !== "admin" && req.auth?.role !== "manager")
-    return res.status(403).json({ error: "Manager or admin required" });
+  if (!req.auth?.role || !["admin", "manager", "principal"].includes(req.auth.role))
+    return res.status(403).json({ error: "Dealer login required" });
 
   const { dealershipId, enabled } = req.body || {};
   if (!dealershipId || typeof enabled !== "boolean")
