@@ -1,0 +1,1134 @@
+/* ==============================================================
+   TRUECARS SA — FLAGSHIP AESTHETIC LAYER
+   Loads LAST. Overrides site.css to shift the demo from
+   "competent dealer template" to "premier automotive showroom".
+
+   Design POV: dark editorial gallery. Ink navy dominates,
+   teal for signal, one amber accent for prices only.
+   Fraunces italic gets rare, deliberate spotlights.
+   ============================================================== */
+
+:root {
+  /* -- Palette re-balance -- */
+  --ink:          #06101B;
+  --ink-1:        #0A1420;
+  --ink-2:        #0E1B2E;
+  --ink-3:        #142640;
+  --teal-bright:  #7FE9E3;
+  --teal:         #4FE3DC;
+  --amber:        #F5B461;   /* single accent — prices only */
+  --amber-hot:    #FFB870;
+
+  /* Retune the site's status greens so they stop clashing against navy.
+     --ok used to be #22C55E (kelly / poison-apple) — swap for a deeper
+     emerald that reads confident rather than shrill. WA gets its own
+     softened teal-green so the FAB isn't a lime scream. */
+  --ok:     #10B981 !important;   /* was #22C55E */
+  --ok-2:   #0E9F70;
+  --wa:     #1EBE73 !important;   /* was #25D366 */
+  --wa-deep:#0F8A50 !important;
+
+  /* -- Motion -- */
+  --ease-out-quart: cubic-bezier(.165,.84,.44,1);
+  --ease-spring:    cubic-bezier(.34,1.4,.64,1);
+}
+
+/* Style the "good / great-price" badge into the palette explicitly */
+.vbadge.good, .vbadge.ev {
+  background: linear-gradient(135deg, rgba(16,185,129,.16), rgba(20,158,152,.12)) !important;
+  color: #6EE7B7 !important;
+  border: 1px solid rgba(16,185,129,.34) !important;
+}
+
+/* WhatsApp button — keep the green cue, drop the volume.
+   Deliberately dark enough that white label text clears 4.5:1
+   (the usual #25D366 only reaches ~2.6:1 with white). */
+.btn-wa, a.btn-wa, button.btn-wa {
+  background: linear-gradient(140deg, #0E8250, #095F38) !important;
+  color: #FFFFFF !important;
+  box-shadow:
+    0 12px 28px -14px rgba(9,95,56,.6),
+    inset 0 1px 0 rgba(255,255,255,.14) !important;
+}
+.btn-wa:hover { filter: brightness(1.14); }
+.btn-wa svg { color: #FFFFFF !important; }
+
+/* TruPrice "below market" tag — was white on mid teal-green (3.8:1).
+   Recast as a dark chip with teal type, matching the badge system. */
+.truecar-tag, .truecar-tag.win {
+  background: rgba(16,185,129,.13) !important;
+  border: 1px solid rgba(16,185,129,.36) !important;
+  color: #6EE7B7 !important;
+  padding: 6px 11px !important;
+  border-radius: 100px !important;
+}
+.truecar-tag b, .truecar-tag.win b { color: #C8FBE4 !important; font-weight: 600 !important; }
+.truecar-tag svg, .truecar-tag.win svg { color: #6EE7B7 !important; }
+/* on light panels the same chip needs dark green type */
+.buy-card .truecar-tag, .vir-report .truecar-tag,
+.buy-card .truecar-tag.win, .vir-report .truecar-tag.win {
+  color: #0B6B4F !important;
+  background: rgba(16,185,129,.12) !important;
+}
+.buy-card .truecar-tag b, .vir-report .truecar-tag b { color: #064E3B !important; }
+
+/* -- 1 · GLOBAL DARK CANVAS ---------------------------------- */
+html, body {
+  background: var(--ink);
+  color: #E8EEF6;
+  font-variant-numeric: tabular-nums;
+}
+body {
+  background:
+    radial-gradient(1200px 700px at 12% -10%, rgba(20,102,224,.14), transparent 60%),
+    radial-gradient(900px  600px at 92% 108%, rgba(21,199,192,.10), transparent 62%),
+    var(--ink);
+  min-height: 100vh;
+}
+
+/* Grain overlay — 2% noise, blended over everything */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997;
+  opacity: .06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .7 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
+  background-size: 240px 240px;
+}
+
+/* Flip generic "white surface" sections dark */
+section, .why-tcsa, .stats-band, .featured, .storyband, .buybox, .services,
+.budget-band, .performance-band, main, footer {
+  background: transparent !important;
+  color: #E8EEF6 !important;
+}
+section h1, section h2, section h3, section p, section li,
+section .lede, section .kicker {
+  color: inherit !important;
+}
+section p { color: rgba(232,238,246,.72) !important; }
+
+/* Explicit "light panel" opt-in for the trust/finance moment */
+.tc-light-panel {
+  background: linear-gradient(180deg, #F4F8FC, #EAF1F9) !important;
+  color: var(--ink-1) !important;
+  border-radius: 28px;
+}
+.tc-light-panel * { color: inherit !important; }
+
+/* ==============================================================
+   CONTRAST REPAIR
+   The dark flip left two failure classes behind:
+     (a) components that kept a WHITE background but inherited
+         light text  → invisible
+     (b) components that lost their white background but kept
+         ink-coloured text → invisible
+   Fix both by converting the remaining light islands into proper
+   dark glass surfaces and re-colouring their text.
+   ============================================================== */
+
+/* -- (a) White islands → dark glass surfaces -- */
+.step,
+.map-stage,
+.why-card-tcsa,
+.map-info-card,
+.quote-person,
+.steps-grid > *,
+.why-grid > * {
+  background: linear-gradient(180deg, rgba(20,38,64,.62), rgba(10,20,32,.82)) !important;
+  border: 1px solid rgba(127,233,227,.1) !important;
+  box-shadow:
+    0 28px 64px -30px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+/* -- (b) Ink-coloured text inside dark surfaces → light -- */
+.step, .step *,
+.map-stage, .map-stage *,
+.why-card-tcsa, .why-card-tcsa *,
+.map-info-card, .map-info-card *,
+.quote-person, .quote-person * {
+  color: #E8EEF6;
+}
+/* Headings inside those cards stay brightest */
+.step h3, .step h4, .step h5,
+.why-card-tcsa h3, .why-card-tcsa h4, .why-card-tcsa h5,
+.map-info-card h3, .map-info-card h4,
+.wstat, .quote-sig {
+  color: #F4F8FC !important;
+}
+/* Numerals / stats get the teal signal */
+.step .n, .step .num, .wstat, .wstat-n {
+  color: var(--teal-bright) !important;
+}
+
+/* -- Muted greys: lift to pass 4.5:1 on ink navy -- */
+.vcard-meta .m span,
+.quote-role,
+.map-tag,
+.step p, .step span,
+.why-card-tcsa p,
+.map-stage span,
+.map-info-card span {
+  color: rgba(232,238,246,.72) !important;
+}
+
+/* Global: the two dim grey tokens are unreadable on dark.
+   Re-point them rather than chasing every consumer. */
+:root {
+  --grey:       #9FB0C6 !important;   /* was #8291A6 */
+  --grey-2:     #B8C4D4 !important;
+  --grey-dark:  #94A6BC !important;   /* was #465468 — invisible on dark */
+}
+
+/* -- SVG map: land + labels for a dark stage -- */
+.map-stage svg path[fill="#fff"],
+.map-stage svg path[fill="#FFF"],
+.map-stage svg path[fill="white"] {
+  fill: rgba(20,38,64,.9) !important;
+}
+.map-stage svg text { fill: rgba(232,238,246,.8) !important; }
+.map-stage svg path[stroke] { stroke: rgba(127,233,227,.22) !important; }
+
+/* -- Keep gradient-backed buttons/pills legible (they were false
+      positives in the audit — ink on gold/teal is correct) -- */
+.btn-gold { color: #06101B !important; }
+.tcsa-lens-dot { color: #04222A !important; }
+
+/* -- Feature lists: <b> inherited ink and vanished on dark -- */
+.feat-list b, .feat-list strong,
+.feat-list li, .feat-list span {
+  color: #F4F8FC !important;
+}
+.feat-list li { color: rgba(232,238,246,.78) !important; }
+.feat-list b, .feat-list strong { color: var(--teal-bright) !important; }
+
+/* -- Step numerals: blue on dark was 3.3:1 -- */
+.step-num {
+  color: var(--teal-bright) !important;
+  background: rgba(127,233,227,.1) !important;
+  border: 1px solid rgba(127,233,227,.24) !important;
+}
+
+/* -- TruOrbit/VIR viewer legend sits on a LIGHT panel by design
+      (the VIR report is intentionally a white page). Darken the
+      legend text rather than lightening it. -- */
+.w3d-legend, .w3d-legend * {
+  color: #3D4B5C !important;
+}
+.w3d-legend b, .w3d-legend strong { color: #1B2838 !important; }
+
+/* ==============================================================
+   LIGHT-SURFACE COMPONENTS
+   These panels are deliberately light — the VIR report is a WHITE
+   document by design, and the buy/spec/calculator cards read as
+   paperwork. The dark flip must NOT lighten their text. Everything
+   inside them gets ink typography.
+   ============================================================== */
+.vir-report, .vir360, .buy-card, .calc, .spec-grid, .spec,
+.tchek-stat, .dmg, .modal, .tc-light-panel,
+.inv-card, .ic-body, .ic-actions, .lead-card, .portal-card {
+  color: #1B2838 !important;
+}
+.vir-report *, .vir360 *, .buy-card *, .calc *, .spec-grid *, .spec *,
+.tchek-stat *, .dmg *, .modal *, .tc-light-panel *,
+.inv-card *, .lead-card *, .portal-card * {
+  color: #2A3A4D !important;
+}
+/* Avatar chips carry initials on a tinted circle — the light-panel
+   ink rule made them invisible. Give them their own dark surface. */
+.puser, .lav, .avatar, .quote-avatar, .lead-avatar {
+  background-image: linear-gradient(135deg, #0B49B0, #1466E0) !important;
+  background-color: #0B49B0 !important;
+  color: #FFFFFF !important;
+}
+.puser *, .lav *, .avatar *, .lead-avatar * { color: #FFFFFF !important; }
+
+/* Viewer hint overlay sits on top of photography — needs its own
+   scrim to stay readable regardless of the frame beneath it. */
+.w3d-hint {
+  color: #FFFFFF !important;
+  background: #0B1622 !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(127,233,227,.24) !important;
+  border-radius: 100px !important;
+  padding: 7px 14px !important;
+  text-shadow: 0 1px 6px rgba(0,0,0,.5);
+}
+.w3d-hint * { color: #FFFFFF !important; }
+
+/* Portal console action buttons — ink on white, danger stays red */
+.inv-card button, .ic-actions button, .lead-card button,
+.portal-card button {
+  color: #16212E !important;
+}
+.inv-card button.danger, .ic-actions button.danger,
+.lead-card button.danger, button.danger {
+  color: #B42318 !important;
+}
+/* Headings + key figures inside light panels go full ink */
+.vir-report h1, .vir-report h2, .vir-report h3, .vir-report h4,
+.buy-card h1, .buy-card h2, .buy-card h3, .buy-card h4,
+.calc h2, .calc h3, .calc h4,
+.modal h2, .modal h3, .modal h4,
+.spec .v, .tchek-stat .v, .buy-card .price-now, .buy-card .price {
+  color: #0A1420 !important;
+}
+/* Muted labels inside light panels — dark enough to pass 4.5:1 */
+.vir-report .k, .spec .k, .tchek-stat .k, .buy-card .k,
+.calc label, .spec-grid .k, .dmg .k {
+  color: #55677D !important;
+}
+/* Eyebrows/accents inside light panels need a darker teal */
+.vir-report .eyebrow, .vir360 .eyebrow,
+.buy-card .eyebrow, .calc .eyebrow,
+.vir-report .eyebrow.teal, .buy-card .eyebrow.teal {
+  color: #0B7F7A !important;
+}
+/* Blue accents on light: darken so they pass on white */
+.vir-report a, .buy-card a:not(.btn), .calc a:not(.btn),
+.spec-grid a, .modal a:not(.btn) {
+  color: #0B49B0 !important;
+}
+/* Buttons keep their own treatment inside light panels */
+.buy-card .btn, .calc .btn, .modal .btn, .vir-report .btn { color: #fff !important; }
+.buy-card .btn-gold, .calc .btn-gold, .modal .btn-gold { color: #06101B !important; }
+.buy-card .btn-ghost, .calc .btn-ghost, .modal .btn-ghost {
+  color: #1B2838 !important;
+  border-color: rgba(27,40,56,.22) !important;
+}
+
+/* -- GENUINELY dark sub-islands nested inside light panels ------
+   Only components whose background is actually opaque and dark:
+   the calculator readout (#06101B gradient) and the dark
+   "Download report" button. Both need light text.
+   NOTE: .tchek-ai-section is NOT in this list — its gradient is
+   alpha .02/.03, so it renders as the WHITE VIR report beneath it
+   and must keep ink text. */
+.calc-out, .calc-out *,
+button.print, button.print *,
+.vir-actions .print, .vir-actions .print * {
+  color: #E8EEF6 !important;
+}
+.calc-out b, .calc-out strong, .calc-out .m {
+  color: var(--teal-bright) !important;
+}
+.calc-out .lbl { color: rgba(232,238,246,.7) !important; }
+
+/* The AI-damage band is effectively white — keep ink typography */
+.tchek-ai-section, .tchek-ai-section * { color: #2A3A4D !important; }
+.tchek-ai-section h2, .tchek-ai-section h3, .tchek-ai-section h4,
+.tchek-ai-section .v, .tchek-ai-section .tchek-stat .v {
+  color: #0A1420 !important;
+}
+.tchek-ai-section .tchek-powered, .tchek-ai-section .k,
+.tchek-ai-section .tchek-desc {
+  color: #55677D !important;
+}
+.tchek-ai-section b, .tchek-ai-section strong { color: #0B5F5B !important; }
+
+/* Badges on light surfaces need darker ink than on dark ones */
+.buy-card .vbadge.gold, .vir-report .vbadge.gold,
+.spec-grid .vbadge.gold {
+  color: #6B5216 !important;
+  background: rgba(201,162,75,.18) !important;
+  border-color: rgba(201,162,75,.45) !important;
+}
+.buy-card .vbadge.good, .vir-report .vbadge.good {
+  color: #0B6B4F !important;
+  background: rgba(16,185,129,.14) !important;
+  border-color: rgba(16,185,129,.4) !important;
+}
+.buy-card .vbadge.hot, .vir-report .vbadge.hot {
+  color: #8A4A12 !important;
+  background: rgba(245,180,97,.18) !important;
+  border-color: rgba(245,180,97,.45) !important;
+}
+
+/* -- Small solid-fill chips/buttons carrying WHITE labels -------
+   The stock blue→bright-blue gradient averages ~#307FEF, giving
+   white only 4.27:1. Darken the ramp on these specific elements so
+   white labels clear 4.5:1 without changing the brand hue. */
+.qs-go, .w3d-badge, .quote-avatar, .di, .bl,
+.steps-grid .n, .step .n, .fin-steps .n, .wiz-steps .n,
+.flow-step .n, .flow-step .num, .bank .bl,
+.vs-step-n, .vs-step .n, .tech-step-n {
+  background-image: linear-gradient(135deg, #0B49B0, #1466E0) !important;
+  background-color: #0B49B0 !important;
+  color: #FFFFFF !important;
+}
+.qs-go svg, .w3d-badge svg { color: #FFFFFF !important; }
+
+/* -- Legacy Autoxloo cyan (#00A1DD → #0077A8) -------------------
+   Off-palette against TruDealer navy AND only reaches ~2.9:1 with
+   white labels. Re-point every surface that still uses it to the
+   brand blue ramp, dark enough for white text to clear 4.5:1. */
+.ax-cta, .ax-band, .pkg-head, .pkg-ltr, .why-num,
+.vs-step-n, .tech-cta, .ax-strip {
+  background-image: linear-gradient(135deg, #0B49B0, #1466E0) !important;
+  background-color: #0B49B0 !important;
+}
+.ax-cta, .ax-cta *, .pkg-ltr, .why-num, .vs-step-n {
+  color: #FFFFFF !important;
+}
+.ax-cta .btn, .tech-cta .btn { color: #0B49B0 !important; background: #fff !important; }
+
+/* QR / code boxes are dark tiles that can sit inside light panels */
+.qr, .qr * {
+  color: #FFFFFF !important;
+  background-color: #16212E !important;
+}
+
+/* -- Page-level strays ---------------------------------------- */
+/* ev.html: results counter inherited ink and vanished on dark */
+.results-count, .results-count * { color: #E8EEF6 !important; }
+.results-count b, .results-count strong { color: var(--teal-bright) !important; }
+
+/* Raw brand blue on dark backgrounds fails 4.5:1 — lift to the
+   bright variant everywhere it's used as body/label text. */
+.stat .n, .step-num, .count-n, .results-count b,
+.vcard-meta .m svg { color: var(--blue-bright) !important; }
+
+/* -- 2 · TYPOGRAPHY SCALE ------------------------------------ */
+
+/* Reset all H1/H2 first so the new scale wins without :where nesting */
+h1, h2, h3 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-optical-sizing: auto;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+  color: #F4F8FC;
+}
+
+h1, .h-display {
+  font-weight: 300 !important;
+  font-size: clamp(56px, 8.6vw, 132px) !important;
+  line-height: .92 !important;
+  letter-spacing: -.045em !important;
+  font-variation-settings: "opsz" 144;
+}
+h1 em, .h-display em, .h-editorial {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--teal-bright);
+}
+
+.h-editorial {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(40px, 5.4vw, 84px);
+  line-height: 1;
+  letter-spacing: -.025em;
+  font-variation-settings: "opsz" 144;
+}
+
+h2 {
+  font-size: clamp(28px, 3vw, 44px) !important;
+  font-weight: 500 !important;
+  line-height: 1.05 !important;
+  letter-spacing: -.028em !important;
+}
+
+h3 {
+  font-size: clamp(18px, 1.6vw, 22px) !important;
+  font-weight: 600 !important;
+  letter-spacing: -.02em !important;
+}
+
+p { text-wrap: pretty; }
+
+/* -- 3 · EYEBROWS (injected by flagship.js) ------------------ */
+
+.fs-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  margin: 0 0 22px;
+  padding: 0;
+  opacity: .95;
+}
+.fs-eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+  opacity: .55;
+}
+.fs-eyebrow .fs-pulse {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 0 rgba(79,227,220,.6);
+  animation: fsPulse 1.8s ease-out infinite;
+}
+@keyframes fsPulse {
+  0%  { box-shadow: 0 0 0 0 rgba(79,227,220,.55); }
+  70% { box-shadow: 0 0 0 9px rgba(79,227,220,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(79,227,220,0); }
+}
+
+/* -- Style the site's pre-existing .eyebrow so it matches our tokens -- */
+.eyebrow, .kicker {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
+  font-weight: 500 !important;
+  font-size: 10.5px !important;
+  letter-spacing: .24em !important;
+  text-transform: uppercase !important;
+  color: var(--teal-bright) !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 9px;
+}
+.eyebrow::before, .kicker::before {
+  content: "";
+  width: 28px; height: 1px;
+  background: currentColor;
+  opacity: .55;
+}
+.eyebrow.teal { color: var(--teal-bright) !important; }
+
+/* -- 4 · CARDS: editorial index ------------------------------ */
+
+.vcard, .veh-card, .card, .product-card, [data-veh-card],
+.featured .card, .featured-grid > * {
+  background: linear-gradient(180deg, rgba(20,38,64,.7), rgba(10,20,32,.85)) !important;
+  border: 1px solid rgba(127,233,227,.08) !important;
+  border-radius: 18px !important;
+  overflow: hidden;
+  transition: border-color .35s var(--ease-out-quart),
+              transform .45s var(--ease-out-quart),
+              box-shadow .45s var(--ease-out-quart);
+  position: relative;
+}
+.vcard:hover, .veh-card:hover, .card:hover, .product-card:hover, [data-veh-card]:hover {
+  border-color: rgba(127,233,227,.32) !important;
+  transform: translateY(-3px);
+  box-shadow:
+    0 40px 80px -30px rgba(0,0,0,.7),
+    0 0 44px -18px rgba(79,227,220,.28);
+}
+
+.vcard-body { padding: 22px 22px 24px !important; background: transparent !important; }
+.vcard-title {
+  font-family: 'Fraunces', Georgia, serif !important;
+  font-weight: 500 !important;
+  font-size: clamp(18px, 1.5vw, 22px) !important;
+  letter-spacing: -.02em !important;
+  color: #F4F8FC !important;
+  line-height: 1.15 !important;
+}
+.vcard-variant {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
+  font-size: 10.5px !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase !important;
+  color: rgba(232,238,246,.55) !important;
+  margin-top: 6px !important;
+}
+
+/* Price → the ONE amber accent (editorial size, tabular nums) */
+.vcard-price, .veh-card .price, .card .price, [data-price] {
+  font-family: 'Fraunces', Georgia, serif !important;
+  font-weight: 500 !important;
+  font-size: clamp(28px, 2.6vw, 40px) !important;
+  letter-spacing: -.03em !important;
+  color: var(--amber) !important;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-top: 14px !important;
+  display: flex !important;
+  flex-direction: column;
+  gap: 8px;
+}
+.vcard-price .pm {
+  display: block;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+  color: rgba(232,238,246,.48) !important;
+  margin-top: 2px !important;
+}
+
+/* Meta line + individual pills */
+.vcard-meta {
+  margin-top: 16px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(127,233,227,.1) !important;
+  display: flex !important;
+  gap: 14px !important;
+  flex-wrap: wrap;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
+  font-size: 10.5px !important;
+  letter-spacing: .1em !important;
+  text-transform: uppercase !important;
+  color: rgba(232,238,246,.62) !important;
+}
+.vcard-meta .m { display: inline-flex; align-items: center; gap: 6px; }
+.vcard-meta .m svg { width: 12px; height: 12px; opacity: .7; }
+
+/* Media */
+.vcard-media { background: #06101B !important; }
+.vcard-media img {
+  transition: transform .7s var(--ease-out-quart), filter .35s ease;
+}
+.vcard:hover .vcard-media img,
+.vcard:hover img { transform: scale(1.045); filter: saturate(1.08) contrast(1.05); }
+
+/* Badges on-card: crisp mono chips */
+.vbadge {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
+  font-weight: 500 !important;
+  font-size: 9.5px !important;
+  letter-spacing: .18em !important;
+  text-transform: uppercase !important;
+  padding: 5px 10px !important;
+  border-radius: 100px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  backdrop-filter: blur(6px);
+}
+.vbadge.hot  { background: rgba(245,180,97,.14) !important; color: var(--amber-hot) !important; border-color: rgba(245,180,97,.35) !important; }
+.vbadge.good { background: rgba(127,233,227,.12) !important; color: var(--teal-bright) !important; border-color: rgba(127,233,227,.3) !important; }
+.vbadge.gold { background: rgba(233,199,116,.14) !important; color: #E7CD84 !important; border-color: rgba(233,199,116,.35) !important; }
+
+/* TruPrice tag */
+.truecar-tag {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
+  font-size: 10.5px !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+  color: var(--teal-bright) !important;
+  margin-top: 10px !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+}
+.truecar-tag b { color: #F4F8FC; font-weight: 500; }
+
+/* Editorial index: every 5th featured card oversized */
+.v-grid, .featured-grid, .cars-grid, .veh-grid, .grid-cars {
+  display: grid !important;
+  grid-template-columns: repeat(12, minmax(0,1fr)) !important;
+  gap: clamp(14px, 1.6vw, 22px) !important;
+}
+.v-grid > *, .featured-grid > *, .cars-grid > *, .veh-grid > *, .grid-cars > * {
+  grid-column: span 4;
+}
+@media (max-width: 1024px) {
+  .v-grid > *, .featured-grid > *, .cars-grid > *, .veh-grid > *, .grid-cars > * {
+    grid-column: span 6;
+  }
+}
+@media (max-width: 640px) {
+  .v-grid > *, .featured-grid > *, .cars-grid > *, .veh-grid > *, .grid-cars > * {
+    grid-column: span 12;
+  }
+}
+/* Every 5th card is a hero card at desktop */
+.v-grid > :nth-child(5n+1),
+.featured-grid > :nth-child(5n+1),
+.cars-grid > :nth-child(5n+1) {
+  grid-column: span 8;
+}
+@media (max-width: 1024px) {
+  .v-grid > :nth-child(5n+1),
+  .featured-grid > :nth-child(5n+1),
+  .cars-grid > :nth-child(5n+1) { grid-column: span 12; }
+}
+
+/* -- 4.5 · BRANDED "PHOTO UNAVAILABLE" STATE ------------------
+   Shown only on a genuine image failure. Deliberately reads as a
+   system state, never as a broken page — and never shows a
+   different vehicle than the listing. */
+.fs-nophoto {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(20,102,224,.12), transparent 62%),
+    linear-gradient(165deg, #0E1B2E, #06101B);
+  color: rgba(127,233,227,.55);
+  text-align: center;
+  padding: 18px;
+}
+.fs-nophoto svg {
+  width: 44%;
+  max-width: 180px;
+  height: auto;
+  opacity: .38;
+}
+.fs-nophoto__make {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(15px, 1.4vw, 19px);
+  font-weight: 500;
+  letter-spacing: -.01em;
+  color: rgba(244,248,252,.82);
+}
+.fs-nophoto__note {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(127,233,227,.6);
+}
+/* the media box must be a positioning context for the overlay */
+.vcard-media, .budget-car { position: relative; }
+
+/* -- 5 · BUTTONS: sharpen ------------------------------------ */
+
+.btn, a.btn, button.btn {
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  border-radius: 100px;
+  transition: transform .3s var(--ease-spring),
+              box-shadow .3s ease,
+              filter .2s ease,
+              background .2s ease,
+              color .2s ease;
+}
+.btn:hover  { transform: translateY(-2px); filter: brightness(1.06); }
+.btn:active { transform: translateY(0) scale(.98); }
+
+.btn-grad {
+  background: linear-gradient(120deg, #0B4DB0 0%, #1466E0 50%, #4D9BFF 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow:
+    0 14px 32px -14px rgba(20,102,224,.7),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+.btn-grad:hover {
+  box-shadow:
+    0 22px 46px -14px rgba(20,102,224,.75),
+    0 0 40px -14px rgba(79,155,255,.5),
+    inset 0 1px 0 rgba(255,255,255,.22);
+}
+
+/* Primary text-CTA — editorial "→" underline that grows */
+.fs-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  position: relative;
+  padding-bottom: 4px;
+}
+.fs-cta::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  height: 1px;
+  width: 30%;
+  background: currentColor;
+  transition: width .5s var(--ease-out-quart);
+}
+.fs-cta:hover::after { width: 100%; }
+.fs-cta .arr { transition: transform .35s var(--ease-spring); }
+.fs-cta:hover .arr { transform: translateX(6px); }
+
+/* -- 6 · FOCUS RING (accessible + on-brand) ------------------ */
+:where(a, button, [role="button"], input, select, textarea):focus-visible {
+  outline: 2px solid var(--teal-bright);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* -- 7 · CUSTOM CURSOR (pointer devices only) ---------------- */
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+  html { cursor: none; }
+  a, button, [role="button"], input, select, textarea, label, .veh-card, .card { cursor: none; }
+
+  .fs-cursor {
+    position: fixed;
+    top: 0; left: 0;
+    width: 22px; height: 22px;
+    border: 1.5px solid var(--teal-bright);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999998;
+    transform: translate(-50%, -50%);
+    transition:
+      width .28s var(--ease-spring),
+      height .28s var(--ease-spring),
+      background .2s ease,
+      border-color .2s ease,
+      opacity .2s ease;
+    mix-blend-mode: difference;
+    will-change: transform;
+  }
+  .fs-cursor.is-hover {
+    width: 54px; height: 54px;
+    background: rgba(127,233,227,.14);
+    border-color: rgba(127,233,227,.85);
+  }
+  .fs-cursor.is-down { width: 16px; height: 16px; }
+}
+
+/* -- 8 · TruOrbit SIGNATURE SECTION -------------------------- */
+
+.tru-orbit {
+  position: relative;
+  min-height: 220vh;         /* scroll-linked orbit runs across this */
+  padding: 12vh 0;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 700px at 50% 20%, rgba(20,102,224,.16), transparent 60%),
+    linear-gradient(180deg, #050B14 0%, #06101B 60%, #0A1420 100%);
+  border-top: 1px solid rgba(127,233,227,.08);
+  border-bottom: 1px solid rgba(127,233,227,.08);
+}
+.tru-orbit__sticky {
+  position: sticky;
+  top: 12vh;
+  height: 76vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  place-items: center;
+}
+.tru-orbit__stage {
+  position: relative;
+  width: min(1280px, 92vw);
+  aspect-ratio: 16 / 9;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .tru-orbit__stage {
+    grid-template-columns: 1fr;
+    aspect-ratio: auto;
+  }
+}
+.tru-orbit__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(127,233,227,.18);
+  transform: scale(.85) rotate(0deg);
+  transform-origin: 50% 55%;
+}
+.tru-orbit__car {
+  position: relative;
+  grid-column: 2;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  color: #A7D6F1;
+  filter: drop-shadow(0 60px 60px rgba(0,0,0,.6));
+}
+@media (max-width: 900px) {
+  .tru-orbit__car { grid-column: 1; }
+}
+.tru-orbit__photo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 60px 120px -40px rgba(0,0,0,.75),
+    0 0 60px -30px rgba(127,233,227,.28),
+    inset 0 0 0 1px rgba(127,233,227,.14);
+  background: linear-gradient(135deg, #0A1420, #06101B);
+}
+/* 36 frames stacked; only .is-live paints */
+.tru-orbit__photo .tru-orbit__frame-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center 55%;
+  opacity: 0;
+  transition: opacity .12s linear;
+  filter: contrast(1.06) saturate(1.05) brightness(.97);
+}
+.tru-orbit__photo .tru-orbit__frame-img.is-live { opacity: 1; }
+/* Slow teal light-sweep across the photo like a scanner */
+.tru-orbit__photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(6,16,27,.35) 0%, transparent 30%, transparent 70%, rgba(6,16,27,.55) 100%),
+    radial-gradient(circle at 50% 105%, rgba(127,233,227,.22), transparent 55%);
+  pointer-events: none;
+}
+.tru-orbit__sweep {
+  position: absolute;
+  top: 0; bottom: 0; left: -35%;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(127,233,227,.28), transparent);
+  filter: blur(6px);
+  animation: tcOrbitSweep 6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes tcOrbitSweep {
+  0%   { transform: translateX(0); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(450%); opacity: 0; }
+}
+.tru-orbit__spot {
+  position: absolute;
+  bottom: -6%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 88%;
+  height: 110px;
+  background: radial-gradient(ellipse at center, rgba(127,233,227,.28), transparent 68%);
+  filter: blur(14px);
+  pointer-events: none;
+}
+.tru-orbit__hud {
+  position: absolute;
+  right: -12px;
+  bottom: -18px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(6,16,27,.85);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid rgba(127,233,227,.22);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  text-align: right;
+  max-width: 320px;
+  box-shadow: 0 24px 60px -22px rgba(0,0,0,.6);
+}
+.tru-orbit__hud-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #F4F8FC;
+  letter-spacing: -.015em;
+  line-height: 1.1;
+}
+.tru-orbit__hud-sub {
+  margin-top: 6px;
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(232,238,246,.6);
+}
+.tru-orbit__hud-sub b { color: var(--teal-bright); font-weight: 500; }
+
+@media (max-width: 900px) {
+  .tru-orbit__hud { position: static; margin-top: 20px; text-align: left; max-width: none; }
+}
+.tru-orbit__quote {
+  grid-column: 1;
+  z-index: 5;
+  padding-right: clamp(20px, 3vw, 48px);
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(32px, 5vw, 76px);
+  line-height: 1;
+  letter-spacing: -.025em;
+  color: #F4F8FC;
+  text-wrap: balance;
+  pointer-events: none;
+  text-shadow: 0 8px 32px rgba(0,0,0,.55);
+}
+@media (max-width: 900px) {
+  .tru-orbit__quote {
+    grid-column: 1;
+    padding-right: 0;
+    text-align: center;
+    margin: 0 auto 24px;
+  }
+}
+.tru-orbit__quote small {
+  display: block;
+  margin-top: 22px;
+  font: 500 11px/1 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  font-style: normal;
+}
+.tru-orbit__frame {
+  position: absolute;
+  bottom: 4vh; left: 5vw;
+  font: 500 11px/1 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: rgba(232,238,246,.55);
+}
+.tru-orbit__frame b { color: var(--teal-bright); font-weight: 500; }
+
+/* Tag pins reveal as the orbit spins */
+.tru-orbit__tags { position: absolute; inset: 0; pointer-events: none; }
+.tru-orbit__tag {
+  position: absolute;
+  font: 500 10px/1 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .5s ease, transform .5s var(--ease-out-quart);
+  padding-left: 44px;
+}
+.tru-orbit__tag::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  width: 36px; height: 1px;
+  background: currentColor;
+  transform-origin: 0 50%;
+}
+.tru-orbit__tag::after {
+  content: "";
+  position: absolute;
+  left: 36px; top: 50%;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translate(-3px,-3px);
+}
+.tru-orbit__tag.is-live { opacity: 1; transform: none; }
+
+/* Positions */
+.tru-orbit__tag--1 { top: 22%; left: 12%; }
+.tru-orbit__tag--2 { top: 38%; right: 8%; text-align: right; padding-left: 0; padding-right: 44px; }
+.tru-orbit__tag--2::before { left: auto; right: 0; }
+.tru-orbit__tag--2::after  { left: auto; right: 36px; transform: translate(3px,-3px); }
+.tru-orbit__tag--3 { top: 62%; left: 14%; }
+.tru-orbit__tag--4 { top: 74%; right: 12%; text-align: right; padding-left: 0; padding-right: 44px; }
+.tru-orbit__tag--4::before { left: auto; right: 0; }
+.tru-orbit__tag--4::after  { left: auto; right: 36px; transform: translate(3px,-3px); }
+
+/* -- 9 · FOOTER MOMENT --------------------------------------- */
+
+.fs-outro {
+  position: relative;
+  padding: 22vh 0 14vh;
+  background:
+    radial-gradient(900px 600px at 50% 0%, rgba(20,102,224,.14), transparent 65%),
+    linear-gradient(180deg, #050B14, #020610);
+  text-align: center;
+  overflow: hidden;
+}
+.fs-outro::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 30%;
+  width: 1px; height: 40%;
+  background: linear-gradient(180deg, transparent, var(--teal-bright), transparent);
+  opacity: .35;
+  transform: translateX(-50%);
+}
+.fs-outro__eyebrow {
+  font: 500 11px/1 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  margin-bottom: 42px;
+}
+h2.fs-outro__line, .fs-outro__line {
+  font-family: 'Fraunces', Georgia, serif !important;
+  font-style: italic !important;
+  font-weight: 300 !important;
+  font-size: clamp(38px, 7vw, 108px) !important;
+  line-height: 1 !important;
+  letter-spacing: -.03em !important;
+  color: #F4F8FC !important;
+  text-wrap: balance;
+  max-width: 22ch;
+  margin: 0 auto !important;
+}
+.fs-outro__line span { color: var(--teal-bright); font-weight: 400; }
+.fs-outro__meta {
+  margin-top: 60px;
+  font: 500 11px/1.8 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(232,238,246,.5);
+}
+.fs-outro__meta b { color: rgba(232,238,246,.85); font-weight: 500; }
+
+/* -- 10 · MOBILE TRIMS --------------------------------------- */
+@media (max-width: 720px) {
+  /* Hide TruAfford launcher until user scrolls past hero */
+  body.fs-below-hero #tru-afford-root { opacity: 1; transition: opacity .35s ease; }
+  #tru-afford-root { opacity: 0; pointer-events: none; }
+  body.fs-below-hero #tru-afford-root { pointer-events: auto; }
+
+  /* TruOrbit shorter */
+  .tru-orbit { min-height: 180vh; }
+  .tru-orbit__sticky { height: 68vh; }
+}
+
+/* -- 11 · REDUCED MOTION ------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+  .fs-cursor { display: none !important; }
+}
+
+/* -- 12 · TABULAR NUMBERS EVERYWHERE ------------------------- */
+.n, .price, .stat, [data-count], .veh-card, [data-veh-card] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- 13 · LIVE PULSE CHIP (reusable) ------------------------- */
+.fs-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 11px/1 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  padding: 6px 14px 6px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(127,233,227,.28);
+  background: rgba(127,233,227,.06);
+  white-space: nowrap;
+}
+.fs-live i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 0 rgba(79,227,220,.6);
+  animation: fsPulse 1.8s ease-out infinite;
+}
+
+/* -- 14 · MOBILE FIXES ---------------------------------------- */
+@media (max-width: 900px) {
+  /* Hide LIVE chip so hamburger stays visible */
+  .fs-live[data-nav] { display: none; }
+  /* Hide scroll-linked TruOrbit section (causes overflow, keep #web3d) */
+  .tru-orbit { display: none !important; }
+}
+@media (max-width: 640px) {
+  /* Constrain #web3d on mobile */
+  #web3d { overflow: hidden; }
+  #web3d .split { gap: 24px; }
+  #web3d .split-copy { min-width: 0; overflow-wrap: break-word; word-break: break-word; }
+  #web3d .split-media { display: none; }
+  #web3d .feat-list span { word-break: break-word; }
+}

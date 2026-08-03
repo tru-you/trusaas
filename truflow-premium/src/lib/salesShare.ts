@@ -49,15 +49,45 @@ export function buildStockWhatsAppBlurb(
   );
 }
 
-/** Opens WhatsApp (web/app) with prefilled stock blurb */
-export function openStockWhatsApp(
+async function fetchImageAsFile(url: string, index: number): Promise<File | null> {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const ext = blob.type === "image/webp" ? "webp" : blob.type === "image/png" ? "png" : "jpg";
+    return new File([blob], `vehicle-${index + 1}.${ext}`, { type: blob.type });
+  } catch {
+    return null;
+  }
+}
+
+/** Opens WhatsApp (web/app) with prefilled stock blurb + images via Web Share API */
+export async function openStockWhatsApp(
   v: Parameters<typeof buildStockWhatsAppBlurb>[0],
   phoneOverride?: string
 ) {
-  const digits = (phoneOverride || getDealerWaNumber()).replace(/\D/g, "");
   const text = buildStockWhatsAppBlurb(v);
+
+  // Try Web Share API with images (mobile browsers)
+  if (navigator.share && v.images?.length) {
+    const imageUrls = v.images.slice(0, 4);
+    const files = (
+      await Promise.all(imageUrls.map((url, i) => fetchImageAsFile(url, i)))
+    ).filter((f): f is File => f !== null);
+
+    if (files.length && navigator.canShare?.({ files })) {
+      try {
+        await navigator.share({ text, files });
+        return;
+      } catch (e: unknown) {
+        if (e instanceof Error && e.name === "AbortError") return;
+      }
+    }
+  }
+
+  // Fallback: wa.me text-only link
+  const digits = (phoneOverride || getDealerWaNumber()).replace(/\D/g, "");
   if (!digits) {
-    // No number: still open shareable text via wa.me without number (user picks contact) — use clipboard fallback
     void navigator.clipboard?.writeText(text).catch(() => undefined);
     alert(
       "WhatsApp number not set.\n\nBlurb copied to clipboard.\n\nSet your sales WhatsApp in Settings (e.g. 2766…)."

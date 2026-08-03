@@ -90,6 +90,55 @@ export default function LeadDetailModal({
   const [whatsappHistory, setWhatsappHistory] = useState<{ sender: "agent" | "customer"; text: string; time: string }[]>([]);
   const [aiGeneratingReply, setAiGeneratingReply] = useState(false);
 
+  // Contact action log
+  type ContactEntry = { leadId: string; channel: "call" | "whatsapp" | "email"; outcome?: string; note?: string; timestamp: string };
+  const [contactLog, setContactLog] = useState<ContactEntry[]>([]);
+  const [pendingAction, setPendingAction] = useState<{ leadId: string; channel: "call" | "whatsapp"; startedAt: number } | null>(null);
+  const [logToast, setLogToast] = useState<{ channel: "call" | "whatsapp" } | null>(null);
+  const [logOutcome, setLogOutcome] = useState("Connected");
+  const [logNote, setLogNote] = useState("");
+
+  // Visibility API: detect return from call/WhatsApp
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState !== "visible" || !pendingAction) return;
+      if (Date.now() - pendingAction.startedAt >= 3000) {
+        setLogToast({ channel: pendingAction.channel });
+        setLogOutcome("Connected");
+        setLogNote("");
+      }
+      setPendingAction(null);
+    };
+    document.addEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
+  }, [pendingAction]);
+
+  const startContactAction = (channel: "call" | "whatsapp" | "email") => {
+    if (channel === "email") {
+      const subj = vehicle ? `Re: ${vehicle.year} ${vehicle.make} ${vehicle.model}` : "";
+      window.open(`mailto:${lead?.email}?subject=${encodeURIComponent(subj)}`, "_self");
+      setContactLog(prev => [...prev, { leadId, channel, timestamp: new Date().toISOString() }]);
+      return;
+    }
+    const digits = (lead?.phone || "").replace(/\D/g, "");
+    if (channel === "call") {
+      window.location.href = `tel:${digits}`;
+    } else {
+      window.open(`https://wa.me/${digits}`, "_blank", "noopener,noreferrer");
+    }
+    setPendingAction({ leadId, channel, startedAt: Date.now() });
+  };
+
+  const saveLogEntry = () => {
+    if (!logToast) return;
+    setContactLog(prev => [...prev, {
+      leadId, channel: logToast.channel,
+      outcome: logOutcome, note: logNote || undefined,
+      timestamp: new Date().toISOString(),
+    }]);
+    setLogToast(null);
+  };
+
   const loadLocalLead = () => {
     // This called `fetch("/api/state")` directly, bypassing the api helpers and
     // so sending no session token. It 401'd every time, `lead` stayed null, and
@@ -407,6 +456,31 @@ export default function LeadDetailModal({
                       <span className="flex items-center gap-2"><Phone size={13} className="text-[color:var(--cyan)]" /> {lead.phone}</span>
                       <span className="flex items-center gap-2"><Mail size={13} className="text-[color:var(--cyan)]" /> {lead.email}</span>
                     </div>
+                    {/* Contact action buttons */}
+                    <div className="flex gap-2 mt-3 border-t border-white/5 pt-3">
+                      {/* Call — mobile only (no native dialer on desktop) */}
+                      <button
+                        type="button"
+                        onClick={() => startContactAction("call")}
+                        className="md:hidden flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan)]/20 transition-colors cursor-pointer"
+                      >
+                        <Phone size={13} /> Call
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startContactAction("whatsapp")}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 transition-colors cursor-pointer"
+                      >
+                        <Smartphone size={13} /> WhatsApp
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startContactAction("email")}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)] hover:bg-white/10 transition-colors cursor-pointer"
+                      >
+                        <Mail size={13} /> Email
+                      </button>
+                    </div>
                     <div className="border-t border-white/5 mt-2 pt-2 text-[13px]">
                       <span className="font-semibold text-[color:var(--white)]">Notes:</span> <span className="text-[rgba(232,234,230,0.72)]">{lead.notes || "None logged"}</span>
                     </div>
@@ -554,6 +628,33 @@ export default function LeadDetailModal({
 
           {activeTab === "journey" && (
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
+              {/* Contact activity log */}
+              {contactLog.length > 0 && (
+                <div className="card !bg-[color:var(--glass)]">
+                  <div className="card-body p-4">
+                    <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-4">Contact Activity</div>
+                    <div className="relative border-l border-white/10 pl-6 flex flex-col gap-6 ml-2">
+                      {contactLog.filter(e => e.leadId === leadId).map((entry, idx) => {
+                        const EntryIcon = entry.channel === "call" ? Phone : entry.channel === "whatsapp" ? Smartphone : Mail;
+                        const label = entry.channel === "call" ? "Phone call" : entry.channel === "whatsapp" ? "WhatsApp" : "Email sent";
+                        const color = entry.channel === "whatsapp" ? "text-[#25D366]" : "text-[color:var(--cyan)]";
+                        return (
+                          <div key={idx} className="relative">
+                            <span className={`absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white/10 ${entry.channel === "whatsapp" ? "bg-[#25D366]" : "bg-[color:var(--cyan)]"}`}></span>
+                            <div className="flex items-center gap-2">
+                              <EntryIcon size={12} className={color} />
+                              <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono font-medium">{new Date(entry.timestamp).toLocaleString()}</div>
+                            </div>
+                            <div className="text-[13px] font-semibold text-[color:var(--white)] mt-0.5">{label}{entry.outcome ? ` — ${entry.outcome}` : ""}</div>
+                            {entry.note && <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">{entry.note}</div>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="card !bg-[color:var(--glass)]">
                 <div className="card-body p-4">
                   <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-4">Website Pre-Enquiry Analytics Activity Log</div>
@@ -1110,6 +1211,46 @@ export default function LeadDetailModal({
         </div>
 
       </div>
+
+      {/* Log-a-note toast (call / WhatsApp only) */}
+      {logToast && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[min(380px,calc(100%-32px))] bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.22)] rounded-xl p-4 shadow-2xl z-[210] animate-in slide-in-from-bottom-4 duration-200">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[13px] font-semibold text-[color:var(--white)] flex items-center gap-2">
+              {logToast.channel === "call" ? <Phone size={14} className="text-[color:var(--cyan)]" /> : <Smartphone size={14} className="text-[#25D366]" />}
+              Log this {logToast.channel === "call" ? "call" : "WhatsApp"}?
+            </span>
+            <button onClick={() => setLogToast(null)} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] p-1 cursor-pointer"><X size={14} /></button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <select
+              value={logOutcome}
+              onChange={e => setLogOutcome(e.target.value)}
+              className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none"
+            >
+              <option value="Connected">Connected</option>
+              <option value="No Answer">No Answer</option>
+              <option value="Voicemail">Voicemail</option>
+              <option value="N/A">N/A</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Note (optional)"
+              value={logNote}
+              onChange={e => setLogNote(e.target.value)}
+              className="bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none placeholder:text-[color:var(--muted)]"
+            />
+            <button
+              type="button"
+              onClick={saveLogEntry}
+              className="btn btn-primary btn-sm w-full"
+            >
+              <CheckCircle size={13} /> Save to timeline
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
