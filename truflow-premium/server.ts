@@ -389,7 +389,8 @@ function isPublicPath(p: string): boolean {
     p.startsWith("/api/feed/") ||
     p.startsWith("/api/widget/") ||
     p === "/api/integration/webhook-lead" ||
-    p === "/api/integration/webhook-zernio"
+    p === "/api/integration/webhook-zernio" ||
+    p === "/api/social/callback"
   );
 }
 
@@ -3508,7 +3509,8 @@ app.get("/api/social/connect/:platform", async (req: any, res) => {
     return res.status(503).json({ error: "Zernio API key not configured" });
 
   const platform = req.params.platform;
-  const redirectUrl = `${req.protocol}://${req.get("host")}/api/social/callback`;
+  const proto = req.get("x-forwarded-proto") || req.protocol;
+  const redirectUrl = `${proto}://${req.get("host")}/api/social/callback`;
 
   try {
     const zRes = await fetch(
