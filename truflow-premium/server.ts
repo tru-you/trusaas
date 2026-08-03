@@ -3461,13 +3461,23 @@ app.post("/api/social/toggle", async (req: any, res) => {
         },
         body: JSON.stringify({ name: dealer.id }),
       });
-      if (!zRes.ok) {
-        const body = await zRes.text();
-        console.error(`[trusocial] Zernio profile creation failed: ${zRes.status} ${body}`);
-        return res.status(502).json({ error: "Zernio profile creation failed", detail: body });
+      const zBody = await zRes.json();
+      if (zRes.status === 409) {
+        // Profile already exists — recover the existing ID
+        const existingId = zBody?.details?.existingProfileId;
+        if (existingId) {
+          (dealer as any).zernioProfileId = existingId;
+          console.log(`[trusocial] Recovered existing Zernio profile ${existingId} for ${dealer.id}`);
+        } else {
+          return res.status(502).json({ error: "Profile already exists but could not recover ID", detail: zBody });
+        }
+      } else if (!zRes.ok) {
+        console.error(`[trusocial] Zernio profile creation failed: ${zRes.status}`, zBody);
+        return res.status(502).json({ error: "Zernio profile creation failed", detail: zBody });
+      } else {
+        const profile = zBody.profile || zBody;
+        (dealer as any).zernioProfileId = profile._id || profile.id;
       }
-      const profile = await zRes.json();
-      (dealer as any).zernioProfileId = profile._id || profile.id;
       console.log(`[trusocial] Provisioned Zernio profile ${(dealer as any).zernioProfileId} for ${dealer.id}`);
     } catch (err: any) {
       console.error(`[trusocial] Zernio API error:`, err?.message);
