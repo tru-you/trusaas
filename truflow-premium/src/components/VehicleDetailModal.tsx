@@ -959,25 +959,83 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
             {/* TAB 5: SOCIAL PUBLISH */}
             {activeTab === "syndication" && settings?.syndication && (() => {
-              const PLATFORM_META: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-                facebook:          { label: "Facebook",         icon: <Facebook size={14} />,       color: "#1877F2" },
-                instagram:         { label: "Instagram",        icon: <Instagram size={14} />,      color: "#E4405F" },
-                "google-business": { label: "Google Business",  icon: <Globe size={14} />,          color: "#4285F4" },
-                linkedin:          { label: "LinkedIn",         icon: <Linkedin size={14} />,       color: "#0A66C2" },
-              };
+              const ALL_PLATFORMS = [
+                { id: "facebook",         label: "Facebook",        icon: <Facebook size={14} />,       color: "#1877F2" },
+                { id: "instagram",        label: "Instagram",       icon: <Instagram size={14} />,      color: "#E4405F" },
+                { id: "google-business",  label: "Google Business", icon: <Globe size={14} />,          color: "#4285F4" },
+                { id: "linkedin",         label: "LinkedIn",        icon: <Linkedin size={14} />,       color: "#0A66C2" },
+                { id: "whatsapp",         label: "WhatsApp",        icon: <MessageCircle size={14} />,  color: "#25D366" },
+              ];
 
               // Load accounts on first render of this tab
-              if (!socialLoading && socialAccounts.length === 0 && dealershipId && settings?.truSocial) {
+              if (!socialLoading && socialAccounts.length === 0 && dealershipId) {
                 loadSocialAccounts();
-                if (!socialCaption) setSocialCaption(buildDefaultCaption());
               }
+              if (!socialCaption) setSocialCaption(buildDefaultCaption());
 
-              const toggleAccount = (id: string) => {
+              const connectedMap = new Map(socialAccounts.map((a) => [a.platform, a]));
+
+              const togglePlatform = (platformId: string) => {
+                if (platformId === "whatsapp") {
+                  // WhatsApp is a toggle for the direct-share selection
+                  setSelectedAccounts((prev) => {
+                    const next = new Set(prev);
+                    next.has("whatsapp") ? next.delete("whatsapp") : next.add("whatsapp");
+                    return next;
+                  });
+                  return;
+                }
+                const acc = connectedMap.get(platformId);
+                if (!acc) return; // not connected — click does nothing
                 setSelectedAccounts((prev) => {
                   const next = new Set(prev);
-                  next.has(id) ? next.delete(id) : next.add(id);
+                  next.has(acc.accountId) ? next.delete(acc.accountId) : next.add(acc.accountId);
                   return next;
                 });
+              };
+
+              const zernioSelected = Array.from(selectedAccounts).filter((id) => id !== "whatsapp");
+              const whatsappSelected = selectedAccounts.has("whatsapp");
+
+              const handlePublishAll = async () => {
+                setSocialPublishing(true);
+                setSocialResult(null);
+                const results: string[] = [];
+
+                // Publish to Zernio channels
+                if (zernioSelected.length && dealershipId) {
+                  try {
+                    const res = await authFetch("/api/social/publish", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        dealershipId,
+                        vehicleId: vehicle.id,
+                        caption: socialCaption,
+                        accountIds: zernioSelected,
+                      }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Publish failed");
+                    results.push(data.platforms?.join(", ") || "social channels");
+                  } catch (err: any) {
+                    setSocialResult({ ok: false, message: err?.message || "Publish failed" });
+                    setSocialPublishing(false);
+                    return;
+                  }
+                }
+
+                // WhatsApp direct share
+                if (whatsappSelected) {
+                  handleWhatsAppShare();
+                  results.push("WhatsApp");
+                }
+
+                if (results.length) {
+                  setSocialResult({ ok: true, message: `Published to ${results.join(", ")}` });
+                }
+                setSelectedAccounts(new Set());
+                setSocialPublishing(false);
               };
 
               return (
@@ -992,126 +1050,119 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     value={socialCaption}
                     onChange={(e) => setSocialCaption(e.target.value)}
                     placeholder="Write your social caption..."
-                    rows={5}
+                    rows={4}
                     className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-[13px] text-[rgba(232,234,230,0.85)] placeholder:text-[rgba(232,234,230,0.35)] outline-none resize-none leading-relaxed focus:border-[color:var(--cyan-soft)] transition-colors"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setSocialCaption(buildDefaultCaption())}
-                    className="self-start px-3 py-1.5 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg transition-colors cursor-pointer"
-                  >
-                    <RefreshCw size={11} className="inline mr-1.5 -mt-px" />
-                    Reset to default
-                  </button>
-                </div>
-
-                {/* Connected channels via Zernio */}
-                {settings?.truSocial && dealershipId && (
-                  <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                    <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Publish to connected channels</h4>
-
-                    {socialLoading ? (
-                      <div className="flex items-center gap-2 py-3 text-[13px] text-[rgba(232,234,230,0.55)]">
-                        <Loader2 size={13} className="animate-spin" /> Loading accounts...
-                      </div>
-                    ) : socialAccounts.length === 0 ? (
-                      <p className="text-[13px] text-[rgba(232,234,230,0.55)] py-2">
-                        No social accounts connected. Go to Settings &rarr; TruSocial to connect.
-                      </p>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {socialAccounts.map((acc) => {
-                          const meta = PLATFORM_META[acc.platform] || { label: acc.platform, icon: <Globe size={14} />, color: "var(--cyan)" };
-                          const selected = selectedAccounts.has(acc.accountId);
-                          return (
-                            <button
-                              key={acc.accountId}
-                              type="button"
-                              onClick={() => toggleAccount(acc.accountId)}
-                              className={
-                                "flex items-center gap-3 rounded-lg border p-3 transition-all cursor-pointer text-left " +
-                                (selected
-                                  ? "border-[color:var(--cyan-soft)] bg-[color:var(--cyan-faint)]"
-                                  : "border-white/5 bg-black/20 hover:border-white/15")
-                              }
-                            >
-                              <div
-                                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                                style={{ background: meta.color + "20", color: meta.color }}
-                              >
-                                {meta.icon}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-[13px] font-semibold text-[color:var(--white)]">{meta.label}</div>
-                                {acc.username && (
-                                  <div className="text-[13px] text-[rgba(232,234,230,0.55)] truncate">@{acc.username}</div>
-                                )}
-                              </div>
-                              <div className={
-                                "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors " +
-                                (selected
-                                  ? "border-[color:var(--cyan)] bg-[color:var(--cyan)]"
-                                  : "border-white/20")
-                              }>
-                                {selected && <Check size={12} className="text-[color:var(--ink)]" />}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Publish button */}
-                    {socialAccounts.length > 0 && (
-                      <button
-                        type="button"
-                        disabled={socialPublishing || !selectedAccounts.size || !socialCaption.trim()}
-                        onClick={handleSocialPublish}
-                        className="w-full py-2.5 bg-[color:var(--cyan)] hover:bg-opacity-90 on-fill font-semibold text-[13px] rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        {socialPublishing ? (
-                          <><Loader2 size={13} className="animate-spin" /> Publishing...</>
-                        ) : (
-                          <><Send size={13} /> Publish to {selectedAccounts.size || ""} selected</>
-                        )}
-                      </button>
-                    )}
-
-                    {socialResult && (
-                      <div className={
-                        "text-[13px] px-3 py-2 rounded-lg border " +
-                        (socialResult.ok
-                          ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-                          : "text-red-400 bg-red-500/10 border-red-500/20")
-                      }>
-                        {socialResult.message}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Quick share — always available, no Zernio needed */}
-                <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                  <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Quick share</h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={handleWhatsAppShare}
-                      className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-white/5 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 text-[13px] font-semibold transition-colors cursor-pointer"
+                      onClick={() => setSocialCaption(buildDefaultCaption())}
+                      className="px-3 py-1.5 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg transition-colors cursor-pointer"
                     >
-                      <MessageCircle size={14} /> WhatsApp
+                      <RefreshCw size={11} className="inline mr-1.5 -mt-px" />Reset
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         navigator.clipboard.writeText(socialCaption || buildDefaultCaption());
-                        setSocialResult({ ok: true, message: "Caption copied to clipboard" });
+                        setSocialResult({ ok: true, message: "Caption copied" });
                       }}
-                      className="flex items-center justify-center gap-2 py-2.5 rounded-lg border border-white/5 bg-[color:var(--glass)] text-[color:var(--muted)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
+                      className="px-3 py-1.5 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg transition-colors cursor-pointer"
                     >
-                      <FileText size={14} /> Copy caption
+                      <FileText size={11} className="inline mr-1.5 -mt-px" />Copy
                     </button>
                   </div>
+                </div>
+
+                {/* All platform channels */}
+                <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+                  <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Choose where to post</h4>
+
+                  {socialLoading ? (
+                    <div className="flex items-center gap-2 py-3 text-[13px] text-[rgba(232,234,230,0.55)]">
+                      <Loader2 size={13} className="animate-spin" /> Loading channels...
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {ALL_PLATFORMS.map((plat) => {
+                        const isWhatsApp = plat.id === "whatsapp";
+                        const connected = isWhatsApp || connectedMap.has(plat.id);
+                        const acc = connectedMap.get(plat.id);
+                        const isSelected = isWhatsApp
+                          ? selectedAccounts.has("whatsapp")
+                          : acc ? selectedAccounts.has(acc.accountId) : false;
+
+                        return (
+                          <button
+                            key={plat.id}
+                            type="button"
+                            onClick={() => togglePlatform(plat.id)}
+                            disabled={!connected}
+                            className={
+                              "flex items-center gap-3 rounded-lg border p-3 transition-all text-left " +
+                              (isSelected
+                                ? "border-[color:var(--cyan-soft)] bg-[color:var(--cyan-faint)] cursor-pointer"
+                                : connected
+                                  ? "border-white/5 bg-black/20 hover:border-white/15 cursor-pointer"
+                                  : "border-white/5 bg-black/10 opacity-50 cursor-default")
+                            }
+                          >
+                            <div
+                              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                              style={{ background: plat.color + "20", color: plat.color }}
+                            >
+                              {plat.icon}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[13px] font-semibold text-[color:var(--white)]">{plat.label}</div>
+                              <div className="text-[13px] text-[rgba(232,234,230,0.55)] truncate">
+                                {isWhatsApp
+                                  ? "Opens WhatsApp with caption"
+                                  : connected
+                                    ? `@${acc?.username || "connected"}`
+                                    : "Contact support to connect"}
+                              </div>
+                            </div>
+                            <div className={
+                              "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors " +
+                              (isSelected
+                                ? "border-[color:var(--cyan)] bg-[color:var(--cyan)]"
+                                : connected
+                                  ? "border-white/20"
+                                  : "border-white/10")
+                            }>
+                              {isSelected && <Check size={12} className="text-[color:var(--ink)]" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Publish button */}
+                  <button
+                    type="button"
+                    disabled={socialPublishing || (!zernioSelected.length && !whatsappSelected) || !socialCaption.trim()}
+                    onClick={handlePublishAll}
+                    className="w-full py-2.5 bg-[color:var(--cyan)] hover:bg-opacity-90 on-fill font-semibold text-[13px] rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed mt-1"
+                  >
+                    {socialPublishing ? (
+                      <><Loader2 size={13} className="animate-spin" /> Publishing...</>
+                    ) : (
+                      <><Send size={13} /> Publish to {selectedAccounts.size} selected</>
+                    )}
+                  </button>
+
+                  {socialResult && (
+                    <div className={
+                      "text-[13px] px-3 py-2 rounded-lg border " +
+                      (socialResult.ok
+                        ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                        : "text-red-400 bg-red-500/10 border-red-500/20")
+                    }>
+                      {socialResult.message}
+                    </div>
+                  )}
                 </div>
 
                 {/* Marketplace (coming soon) */}
