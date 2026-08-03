@@ -169,7 +169,7 @@ services:
       - key: TRUTRADE_MODEL
         value: claude-sonnet-5
 
-  # ── 3. TruFlow Premium — full DMS / media / recon ─────────────────────────
+  # ── 3. TruFlow Premium — full DMS / media / recon / TruSocial ──────────────
   - type: web
     name: trusaas-premium
     runtime: node
@@ -206,6 +206,18 @@ services:
       - key: ADMIN_ACCESS_CODE
         sync: false
       - key: GEMINI_API_KEY
+        sync: false
+      # ── TruSocial (Zernio integration) ──
+      # Team-level API key from docs.zernio.com. Required for profile
+      # provisioning, OAuth connect, and account sync.
+      - key: ZERNIO_API_KEY
+        sync: false
+      # Optional webhook auth. Format: "HeaderName:secretvalue" — if set,
+      # POST /api/integration/webhook-zernio checks this custom header.
+      # If unset, the webhook endpoint accepts all POSTs (still validates
+      # payload structure). Configure the matching header on Zernio's
+      # webhook settings page.
+      - key: ZERNIO_WEBHOOK_SECRET
         sync: false
 
   # ── 4. TruChat API — hosted Claude chat brain for static sites ────────────
