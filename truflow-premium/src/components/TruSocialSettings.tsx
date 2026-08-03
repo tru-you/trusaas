@@ -18,10 +18,12 @@ const PLATFORMS = [
 
 export default function TruSocialSettings({
   dealershipId,
+  dealerName,
   truSocialEnabled,
   onNotify,
 }: {
   dealershipId: string;
+  dealerName?: string;
   truSocialEnabled: boolean;
   onNotify: (title: string, message: string, type?: "info" | "warning" | "error") => void;
 }) {
@@ -111,7 +113,7 @@ export default function TruSocialSettings({
     <div className="card border-[color:var(--glass-line)]">
       <div className="card-header border-b border-white/5 px-5 py-3 flex items-center justify-between gap-3">
         <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
-          <Share2 size={14} className="text-[color:var(--cyan-bright)]" /> TruSocial
+          <Share2 size={14} className="text-[color:var(--cyan-bright)]" /> TruSocial{dealerName ? ` — ${dealerName}` : ""}
         </h3>
         <button
           type="button"

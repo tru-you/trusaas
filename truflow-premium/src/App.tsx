@@ -3353,16 +3353,24 @@ export default function App() {
               </Suspense>
             )}
 
-            {/* TruSocial — connect and auto-publish to social channels */}
-            {dealershipId && (currentDealership as any)?.products?.includes("social") && (
-              <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
-                <TruSocialSettings
-                  dealershipId={dealershipId}
-                  truSocialEnabled={!!(currentDealership as any)?.truSocialEnabled}
-                  onNotify={addNotification}
-                />
-              </Suspense>
-            )}
+            {/* TruSocial — connect and auto-publish to social channels.
+                For a dealer login, show their own panel. For master admin,
+                show one panel per dealer that has the "social" product. */}
+            {(() => {
+              const socialDealers = dealershipId
+                ? (currentDealership as any)?.products?.includes("social") ? [currentDealership] : []
+                : (state?.dealerships || []).filter((d: any) => (d.products || []).includes("social"));
+              return socialDealers.map((d: any) => (
+                <Suspense key={d.id} fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+                  <TruSocialSettings
+                    dealershipId={d.id}
+                    dealerName={dealershipId ? undefined : d.name}
+                    truSocialEnabled={!!d.truSocialEnabled}
+                    onNotify={addNotification}
+                  />
+                </Suspense>
+              ));
+            })()}
 
             {/* Website stock widget embed — the one thing a dealer's web person needs */}
             <div className="card border-[color:var(--cyan-soft)]">
