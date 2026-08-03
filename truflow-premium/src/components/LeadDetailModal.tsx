@@ -456,29 +456,31 @@ export default function LeadDetailModal({
                       <span className="flex items-center gap-2"><Phone size={13} className="text-[color:var(--cyan)]" /> {lead.phone}</span>
                       <span className="flex items-center gap-2"><Mail size={13} className="text-[color:var(--cyan)]" /> {lead.email}</span>
                     </div>
-                    {/* Contact action buttons */}
+                    {/* Contact action buttons — icon-only on mobile, label on desktop */}
                     <div className="flex gap-2 mt-3 border-t border-white/5 pt-3">
-                      {/* Call — mobile only (no native dialer on desktop) */}
                       <button
                         type="button"
                         onClick={() => startContactAction("call")}
-                        className="md:hidden flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan)]/20 transition-colors cursor-pointer"
+                        title="Call"
+                        className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan)]/20 transition-colors cursor-pointer"
                       >
-                        <Phone size={13} /> Call
+                        <Phone size={15} />
                       </button>
                       <button
                         type="button"
                         onClick={() => startContactAction("whatsapp")}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 transition-colors cursor-pointer"
+                        title="WhatsApp"
+                        className="w-9 h-9 md:flex-1 flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-semibold bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 transition-colors cursor-pointer"
                       >
-                        <Smartphone size={13} /> WhatsApp
+                        <Smartphone size={15} /><span className="hidden md:inline">WhatsApp</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => startContactAction("email")}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)] hover:bg-white/10 transition-colors cursor-pointer"
+                        title="Email"
+                        className="w-9 h-9 md:flex-1 flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)] hover:bg-white/10 transition-colors cursor-pointer"
                       >
-                        <Mail size={13} /> Email
+                        <Mail size={15} /><span className="hidden md:inline">Email</span>
                       </button>
                     </div>
                     <div className="border-t border-white/5 mt-2 pt-2 text-[13px]">
