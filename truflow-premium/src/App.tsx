@@ -89,6 +89,7 @@ const LeadDetailModal = lazy(() => import("./components/LeadDetailModal"));
 const AccountingRecon = lazy(() => import("./components/AccountingRecon"));
 const VehicleDetailModal = lazy(() => import("./components/VehicleDetailModal"));
 const DealershipAdmin = lazy(() => import("./components/DealershipAdmin"));
+const TruSocialSettings = lazy(() => import("./components/TruSocialSettings"));
 import AmortizationCalc from "./components/AmortizationCalc";
 import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
@@ -3349,6 +3350,17 @@ export default function App() {
             {getAccount()?.role === "admin" && (
               <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
                 <DealershipAdmin onNotify={addNotification} />
+              </Suspense>
+            )}
+
+            {/* TruSocial — connect and auto-publish to social channels */}
+            {dealershipId && (currentDealership as any)?.products?.includes("social") && (
+              <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+                <TruSocialSettings
+                  dealershipId={dealershipId}
+                  truSocialEnabled={!!(currentDealership as any)?.truSocialEnabled}
+                  onNotify={addNotification}
+                />
               </Suspense>
             )}
 

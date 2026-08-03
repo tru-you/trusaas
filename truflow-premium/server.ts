@@ -148,7 +148,7 @@ const DEFAULT_DEALERSHIP_ID = "d1";
  *  holding every dealer's code in plaintext on the Render dashboard — and
  *  restarting TruLens so it took effect. Once per product, per dealer, and
  *  revoking access meant editing that string and redeploying again. */
-const PRODUCTS = ["lens", "flow", "flow-lite", "inspect", "live", "value"] as const;
+const PRODUCTS = ["lens", "flow", "flow-lite", "inspect", "live", "value", "social"] as const;
 type ProductName = (typeof PRODUCTS)[number];
 
 /** Collections whose rows belong to exactly one dealership.
@@ -388,7 +388,8 @@ function isPublicPath(p: string): boolean {
     p.startsWith("/api/public/") ||
     p.startsWith("/api/feed/") ||
     p.startsWith("/api/widget/") ||
-    p === "/api/integration/webhook-lead"
+    p === "/api/integration/webhook-lead" ||
+    p === "/api/integration/webhook-zernio"
   );
 }
 
@@ -864,6 +865,7 @@ const DEFAULT_MOCK_STATE: DMSState = {
     liveReceptionist: true,
     seoAeo: true,
     syndication: true,
+    truSocial: false,
   }
 };
 
@@ -3406,6 +3408,234 @@ Respond strictly with valid JSON matching the required schema.`;
     }
     res.status(500).json({ error: 'AI analysis failed', details: error instanceof Error ? error.message : String(error) });
   }
+});
+
+// --- TRUSOCIAL — ZERNIO INTEGRATION ---
+
+const ZERNIO_API_KEY = process.env.ZERNIO_API_KEY || "";
+const ZERNIO_BASE = "https://api.zernio.com";
+const ZERNIO_WEBHOOK_SECRET = process.env.ZERNIO_WEBHOOK_SECRET || "";
+
+/** Look up a dealer by their stored zernioProfileId. */
+function dealerByZernioProfile(state: DMSState, profileId: string): Dealership | undefined {
+  return state.dealerships.find((d: any) => d.zernioProfileId === profileId);
+}
+
+/** accountId → dealer isolation check.
+ *
+ *  CRITICAL: Zernio does NOT enforce dealer isolation at the API level — we do.
+ *  Every request that references an accountId must pass through this check
+ *  BEFORE acting on it. The frontend must never be trusted with raw accountIds
+ *  without server-side verification against this map. */
+function dealerOwnsSocialAccount(state: DMSState, dealershipId: string, accountId: string): boolean {
+  return (state.socialAccounts || []).some(
+    (a) => a.accountId === accountId && a.dealershipId === dealershipId
+  );
+}
+
+// Toggle TruSocial ON/OFF + Zernio profile provisioning
+app.post("/api/social/toggle", async (req: any, res) => {
+  if (req.auth?.role !== "admin" && req.auth?.role !== "manager")
+    return res.status(403).json({ error: "Manager or admin required" });
+
+  const { dealershipId, enabled } = req.body || {};
+  if (!dealershipId || typeof enabled !== "boolean")
+    return res.status(400).json({ error: "dealershipId and enabled (boolean) required" });
+
+  const state = readState();
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  if (!dealer) return res.status(404).json({ error: "Dealership not found" });
+
+  (dealer as any).truSocialEnabled = enabled;
+
+  if (enabled && !(dealer as any).zernioProfileId) {
+    if (!ZERNIO_API_KEY) {
+      writeState(state);
+      return res.status(503).json({
+        error: "Zernio API key not configured — TruSocial enabled but profile provisioning unavailable",
+        dealer,
+      });
+    }
+    try {
+      const zRes = await fetch(`${ZERNIO_BASE}/v1/profiles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${ZERNIO_API_KEY}`,
+        },
+        body: JSON.stringify({ name: dealer.id }),
+      });
+      if (!zRes.ok) {
+        const body = await zRes.text();
+        console.error(`[trusocial] Zernio profile creation failed: ${zRes.status} ${body}`);
+        writeState(state);
+        return res.status(502).json({ error: "Zernio profile creation failed", detail: body });
+      }
+      const profile = await zRes.json();
+      (dealer as any).zernioProfileId = profile._id || profile.id;
+      console.log(`[trusocial] Provisioned Zernio profile ${(dealer as any).zernioProfileId} for ${dealer.id}`);
+    } catch (err: any) {
+      console.error(`[trusocial] Zernio API error:`, err?.message);
+      writeState(state);
+      return res.status(502).json({ error: "Could not reach Zernio API" });
+    }
+  }
+
+  writeState(state);
+  res.json({ dealer });
+});
+
+// Get OAuth connect URL for a platform
+app.get("/api/social/connect/:platform", async (req: any, res) => {
+  const dealershipId = req.query.dealershipId as string;
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId query param required" });
+
+  const state = readState();
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  if (!dealer) return res.status(404).json({ error: "Dealership not found" });
+  if (!(dealer as any).zernioProfileId)
+    return res.status(400).json({ error: "TruSocial not provisioned for this dealer" });
+  if (!(dealer as any).truSocialEnabled)
+    return res.status(400).json({ error: "TruSocial is disabled for this dealer" });
+
+  if (!ZERNIO_API_KEY)
+    return res.status(503).json({ error: "Zernio API key not configured" });
+
+  const platform = req.params.platform;
+  const redirectUrl = `${req.protocol}://${req.get("host")}/api/social/callback`;
+
+  try {
+    const zRes = await fetch(
+      `${ZERNIO_BASE}/v1/connect/${encodeURIComponent(platform)}?profileId=${(dealer as any).zernioProfileId}&redirect_url=${encodeURIComponent(redirectUrl)}&headless=true`,
+      { headers: { Authorization: `Bearer ${ZERNIO_API_KEY}` } }
+    );
+    if (!zRes.ok) {
+      const body = await zRes.text();
+      return res.status(502).json({ error: "Zernio connect failed", detail: body });
+    }
+    const data = await zRes.json();
+    res.json({ authUrl: data.authUrl || data.url });
+  } catch (err: any) {
+    res.status(502).json({ error: "Could not reach Zernio API" });
+  }
+});
+
+// OAuth callback — redirect back to the dealer settings UI
+app.get("/api/social/callback", (_req, res) => {
+  // The actual account linking happens via Zernio's webhook (account.connected).
+  // This endpoint just returns the dealer to the TruSocial settings page.
+  res.send(`<!DOCTYPE html><html><body><script>
+    window.opener ? window.close() : (window.location.href = "/#settings");
+  </script><p>Connected — you can close this tab.</p></body></html>`);
+});
+
+// List connected accounts for a dealer
+app.get("/api/social/accounts", (req: any, res) => {
+  const dealershipId = req.query.dealershipId as string;
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId required" });
+
+  const state = readState();
+  const accounts = (state.socialAccounts || []).filter((a) => a.dealershipId === dealershipId);
+  res.json({ accounts });
+});
+
+// Disconnect a social account
+app.post("/api/social/disconnect", async (req: any, res) => {
+  const { dealershipId, accountId } = req.body || {};
+  if (!dealershipId || !accountId)
+    return res.status(400).json({ error: "dealershipId and accountId required" });
+
+  const state = readState();
+  // accountId→dealer isolation check
+  if (!dealerOwnsSocialAccount(state, dealershipId, accountId))
+    return res.status(403).json({ error: "Account does not belong to this dealer" });
+
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  if (!dealer || !(dealer as any).zernioProfileId)
+    return res.status(400).json({ error: "TruSocial not provisioned" });
+
+  if (ZERNIO_API_KEY) {
+    try {
+      await fetch(`${ZERNIO_BASE}/v1/accounts/${accountId}/disconnect`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${ZERNIO_API_KEY}` },
+      });
+    } catch (err: any) {
+      console.error(`[trusocial] Zernio disconnect error:`, err?.message);
+    }
+  }
+
+  state.socialAccounts = (state.socialAccounts || []).filter((a) => a.accountId !== accountId);
+  writeState(state);
+  res.json({ ok: true });
+});
+
+// Zernio webhook receiver — single endpoint, all dealers route through it.
+// Registered once at the Zernio team level (up to 10 endpoints per team).
+app.post("/api/integration/webhook-zernio", express.raw({ type: "application/json" }), (req, res) => {
+  // Verify webhook signature before processing any payload
+  if (ZERNIO_WEBHOOK_SECRET) {
+    const signature = req.headers["x-zernio-signature"] as string;
+    const rawBody = typeof req.body === "string" ? req.body : req.body.toString("utf-8");
+    const expected = crypto.createHmac("sha256", ZERNIO_WEBHOOK_SECRET).update(rawBody).digest("hex");
+    if (!signature || signature !== expected) {
+      console.warn("[trusocial] Webhook signature mismatch — rejecting");
+      return res.status(401).json({ error: "Invalid signature" });
+    }
+  }
+
+  let payload: any;
+  try {
+    payload = typeof req.body === "string" ? JSON.parse(req.body) : JSON.parse(req.body.toString("utf-8"));
+  } catch {
+    return res.status(400).json({ error: "Invalid JSON" });
+  }
+
+  const event = payload.event || payload.type;
+  const profileId = payload.profileId || payload.data?.profileId;
+  const accountId = payload.accountId || payload.data?.accountId;
+
+  const state = readState();
+
+  if (event === "account.connected") {
+    const dealer = dealerByZernioProfile(state, profileId);
+    if (!dealer) {
+      console.warn(`[trusocial] account.connected for unknown profileId=${profileId}`);
+      return res.json({ ok: true, ignored: true });
+    }
+    if (!state.socialAccounts) state.socialAccounts = [];
+    const existing = state.socialAccounts.find((a) => a.accountId === accountId);
+    if (!existing) {
+      state.socialAccounts.push({
+        accountId,
+        dealershipId: dealer.id,
+        platform: payload.platform || payload.data?.platform || "unknown",
+        username: payload.username || payload.data?.username,
+        connectedAt: new Date().toISOString(),
+      });
+    }
+    writeState(state);
+    console.log(`[trusocial] account.connected: ${accountId} → dealer ${dealer.id}`);
+  } else if (event === "account.disconnected") {
+    state.socialAccounts = (state.socialAccounts || []).filter((a) => a.accountId !== accountId);
+    writeState(state);
+    console.log(`[trusocial] account.disconnected: ${accountId}`);
+  } else if (event === "post.published" || event === "post.failed") {
+    // Update publish status on the stock listing that triggered it.
+    // The post metadata should carry our vehicleId in the external reference.
+    const vehicleRef = payload.externalId || payload.data?.externalId || payload.metadata?.vehicleId;
+    if (vehicleRef) {
+      const vehicle = state.vehicles.find((v: any) => v.id === vehicleRef || v.stockNumber === vehicleRef);
+      if (vehicle) {
+        (vehicle as any).socialPublishStatus = event === "post.published" ? "published" : "failed";
+        (vehicle as any).socialPublishAt = new Date().toISOString();
+        writeState(state);
+      }
+    }
+    console.log(`[trusocial] ${event}: ref=${vehicleRef || "none"}`);
+  }
+
+  res.json({ ok: true });
 });
 
 // --- VITE DEV SERVER / PRODUCTION ROUTER ---

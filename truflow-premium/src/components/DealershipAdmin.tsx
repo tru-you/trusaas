@@ -44,6 +44,7 @@ const PRODUCT_OPTIONS: Array<{ id: string; label: string; hint: string }> = [
   { id: "inspect", label: "TruInspect", hint: "Condition report / VIR" },
   { id: "live", label: "TruLive", hint: "Live video walkaround" },
   { id: "value", label: "TruValue", hint: "Live video trade-in appraisal" },
+  { id: "social", label: "TruSocial", hint: "Auto-publish stock to social channels" },
 ];
 
 /** Mirrors the server's rule exactly, so the form fails before the request does. */

@@ -22,6 +22,19 @@ export interface Dealership {
   registrationNumber?: string;
   /** SARS VAT reference number. */
   vatNumber?: string;
+  /** Zernio profile ID — provisioned when TruSocial is enabled for this dealer. */
+  zernioProfileId?: string;
+  /** Whether TruSocial is active (UI shown, publishes triggered). */
+  truSocialEnabled?: boolean;
+}
+
+/** A social account connected via Zernio, mapped to exactly one dealer. */
+export interface SocialAccount {
+  accountId: string;
+  dealershipId: string;
+  platform: string;
+  username?: string;
+  connectedAt: string;
 }
 
 export interface Vehicle {
@@ -261,6 +274,8 @@ export interface DMSState {
   digitalProducts?: DigitalProduct[];
   digitalSales?: DigitalSale[];
   settings?: PremiumSettings;
+  /** Zernio social accounts mapped to dealers — the accountId→dealer lookup. */
+  socialAccounts?: SocialAccount[];
 }
 
 export type PlanTier = 'lite' | 'standard' | 'premium';
@@ -277,6 +292,7 @@ export interface PremiumSettings {
   liveReceptionist: boolean;
   seoAeo: boolean;
   syndication: boolean;
+  truSocial: boolean;
 }
 
 export const PLAN_DEFAULTS: Record<PlanTier, PremiumSettings> = {
@@ -292,6 +308,7 @@ export const PLAN_DEFAULTS: Record<PlanTier, PremiumSettings> = {
     liveReceptionist: false,
     seoAeo: false,
     syndication: false,
+    truSocial: false,
   },
   standard: {
     tier: 'standard',
@@ -305,6 +322,7 @@ export const PLAN_DEFAULTS: Record<PlanTier, PremiumSettings> = {
     liveReceptionist: false,
     seoAeo: false,
     syndication: false,
+    truSocial: false,
   },
   premium: {
     tier: 'premium',
@@ -318,6 +336,7 @@ export const PLAN_DEFAULTS: Record<PlanTier, PremiumSettings> = {
     liveReceptionist: true,
     seoAeo: true,
     syndication: true,
+    truSocial: false,
   },
 };
 
