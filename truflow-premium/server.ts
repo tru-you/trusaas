@@ -3537,12 +3537,59 @@ app.get("/api/social/callback", (_req, res) => {
   </script><p>Connected — you can close this tab.</p></body></html>`);
 });
 
-// List connected accounts for a dealer
-app.get("/api/social/accounts", (req: any, res) => {
+// List connected accounts for a dealer — pulls live from Zernio and syncs local store
+app.get("/api/social/accounts", async (req: any, res) => {
   const dealershipId = req.query.dealershipId as string;
   if (!dealershipId) return res.status(400).json({ error: "dealershipId required" });
 
   const state = readState();
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  const profileId = (dealer as any)?.zernioProfileId;
+
+  // If we have a Zernio profile, fetch live accounts and sync our local store
+  if (profileId && ZERNIO_API_KEY) {
+    try {
+      const zRes = await fetch(
+        `${ZERNIO_BASE}/v1/accounts?profileId=${profileId}&status=connected`,
+        { headers: { Authorization: `Bearer ${ZERNIO_API_KEY}` } }
+      );
+      if (zRes.ok) {
+        const zData = await zRes.json();
+        const zAccounts = zData.accounts || [];
+        if (!state.socialAccounts) state.socialAccounts = [];
+
+        // Sync: add any Zernio accounts we don't have locally
+        let changed = false;
+        for (const za of zAccounts) {
+          const aid = za._id || za.accountId;
+          if (!state.socialAccounts.some((a) => a.accountId === aid)) {
+            state.socialAccounts.push({
+              accountId: aid,
+              dealershipId,
+              platform: za.platform || "unknown",
+              username: za.username || za.displayName,
+              connectedAt: za.connectedAt || new Date().toISOString(),
+            });
+            changed = true;
+            console.log(`[trusocial] Synced account ${aid} (${za.platform}/${za.username}) → dealer ${dealershipId}`);
+          }
+        }
+
+        // Remove local accounts that Zernio no longer has
+        const zIds = new Set(zAccounts.map((za: any) => za._id || za.accountId));
+        const before = state.socialAccounts.length;
+        state.socialAccounts = state.socialAccounts.filter(
+          (a) => a.dealershipId !== dealershipId || zIds.has(a.accountId)
+        );
+        if (state.socialAccounts.length !== before) changed = true;
+
+        if (changed) writeState(state);
+      }
+    } catch (err: any) {
+      console.error(`[trusocial] Failed to sync accounts from Zernio:`, err?.message);
+    }
+  }
+
   const accounts = (state.socialAccounts || []).filter((a) => a.dealershipId === dealershipId);
   res.json({ accounts });
 });
