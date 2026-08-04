@@ -565,16 +565,38 @@ if (apiKey) {
    inventory in Lens — a cross-dealer read leak. */
 type LensScope = { uid: string; dealerSlug?: string | null };
 
+/* 7-day Lens retention: once a vehicle has been in the DMS for a week, Flow
+   is the source of truth and the Lens copy is deleted. Sweep runs lazily on
+   every listVehicles call — no cron, no scheduler. A vehicle that never
+   gets listed still eventually goes when someone opens the inventory. */
+const LENS_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+function isExpired(v: any, nowMs: number): boolean {
+  const first = v.firstDmsExportAt;
+  if (!first) return false;
+  const t = Date.parse(first);
+  if (!Number.isFinite(t)) return false;
+  return nowMs - t > LENS_RETENTION_MS;
+}
+
 async function listVehicles(user: LensScope): Promise<any[]> {
   const { uid, dealerSlug } = user;
+  const nowMs = Date.now();
+
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
+    const before = store.vehicles.length;
+    /* Drop expired rows in place before scoping — sweep applies globally so
+       any dealer opening their list also cleans anything they own that has
+       aged out. */
+    store.vehicles = store.vehicles.filter((v) => !isExpired(v, nowMs));
+    if (store.vehicles.length !== before) writeLocalStore(store);
     const list = store.vehicles
       .filter((v) => passesScope(v, user))
       .map(normalizeVehicle)
       .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
     return list;
   }
+
   /* Firestore query: prefer dealerSlug when the token has one, fall back to
      ownerId. The passesScope helper is JS-only, so we still need a where()
      that narrows the result set before it comes back. Legacy untagged rows
@@ -583,7 +605,25 @@ async function listVehicles(user: LensScope): Promise<any[]> {
     ? fdb.collection('vehicles').where('dealerSlug', '==', dealerSlug)
     : fdb.collection('vehicles').where('ownerId', '==', uid);
   const snapshot = await query.orderBy('updatedAt', 'desc').get();
-  return snapshot.docs.map((doc) => normalizeVehicle(doc.data()));
+
+  const kept: any[] = [];
+  const expiredRefs: any[] = [];
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data() as any;
+    if (isExpired(data, nowMs)) {
+      expiredRefs.push(doc.ref);
+    } else {
+      kept.push(normalizeVehicle(data));
+    }
+  });
+  /* Fire and forget the deletes — a failed delete just leaves the row for
+     the next sweep, no need to block the list response or crash on error. */
+  if (expiredRefs.length) {
+    Promise.all(expiredRefs.map((r) => r.delete())).catch((err) => {
+      console.warn('[retention] lazy sweep failed for one or more docs:', err?.message || err);
+    });
+  }
+  return kept;
 }
 
 /* Scoping rules for both read paths:
@@ -1179,10 +1219,16 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
       return res.json({ success: true, vehicle: saved });
     }
 
+    /* Timestamp fallback so no capture ever lands without a stock number.
+       Format keeps codes sortable and human-readable, and the second-level
+       precision makes collision from a single phone effectively impossible.
+       Never overwrites a dealer-typed value. */
+    const stockNumberFallback = 'STK-' + now.replace(/[-:T.Z]/g, '').slice(0, 14);
     const newVehicle = {
       ...vehicleData,
       ownerId: userId,
       dealerSlug: dealerSlug ?? vehicleData.dealerSlug,
+      stockNumber: vehicleData.stockNumber || stockNumberFallback,
       createdAt: now,
       updatedAt: now,
       photos: vehicleData.photos || {},
@@ -1752,11 +1798,16 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       });
     }
 
+    const nowIso = new Date().toISOString();
     const exportMeta: any = {
       // Remember which dealer this capture belongs to. Without it this app's
       // own public feed can't tell one dealer's stock from another's.
       dealerSlug: dealerSlug || vehicle.dealerSlug || undefined,
-      lastDmsExportAt: new Date().toISOString(),
+      lastDmsExportAt: nowIso,
+      /* Anchor for the 7-day Lens retention window. Only set on the FIRST
+         successful export — re-exports must not push the deletion out or a
+         busy vehicle would live in Lens forever. */
+      firstDmsExportAt: vehicle.firstDmsExportAt || nowIso,
       lastDmsExportStatus: dmsData.synced ? 'success' : 'partial',
       lastDmsVehicleId: dmsData.vehicle?.id || null,
       lastDmsStockNumber: dmsData.vehicle?.stockNumber || vehicle.stockNumber,

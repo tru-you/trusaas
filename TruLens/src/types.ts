@@ -54,6 +54,10 @@ export interface Vehicle {
   /** Set after a successful TruFlow DMS export */
   lastDmsExportAt?: string;
   lastDmsExportStatus?: string;
+  /* Set once on the first successful DMS export. Anchors the 7-day Lens
+     retention window — Lens deletes the vehicle from its own store 7 days
+     after this timestamp, at which point Flow is the sole source of truth. */
+  firstDmsExportAt?: string;
   lastDmsVehicleId?: string | null;
   lastDmsStockNumber?: string;
   /** Damage tagged by hand on a captured photo, keyed by photo slot id.
