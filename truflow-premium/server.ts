@@ -2230,7 +2230,10 @@ app.post("/api/sync/pull-photos", async (req, res) => {
     if (Array.isArray(lensVehicle?.damage)) {
       state.vehicles[idx].damage = lensVehicle.damage;
       state.vehicles[idx].vir = capOverallVir(computeVirFromDamage(lensVehicle.damage));
-      state.vehicles[idx].virReport = buildVirReport(lensVehicle.damage);
+      state.vehicles[idx].virReport = buildVirReport({
+        slotAssessment: lensVehicle.slotAssessment,
+        damage: lensVehicle.damage,
+      });
     }
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     writeState(state);
@@ -2419,7 +2422,10 @@ app.post("/api/sync/push-photos", (req, res) => {
         fuelType: vehicleMeta.fuelType || "Petrol",
         damage: Array.isArray(vehicleMeta.damage) ? vehicleMeta.damage : undefined,
         vir: Array.isArray(vehicleMeta.damage) ? capOverallVir(computeVirFromDamage(vehicleMeta.damage)) : undefined,
-        virReport: Array.isArray(vehicleMeta.damage) ? buildVirReport(vehicleMeta.damage) : undefined,
+        virReport: buildVirReport({
+          slotAssessment: vehicleMeta.slotAssessment,
+          damage: vehicleMeta.damage,
+        }),
         slotAssessment: vehicleMeta.slotAssessment || undefined,
         stockNumber:
           matchStock ||
@@ -2510,7 +2516,10 @@ app.post("/api/sync/push-photos", (req, res) => {
     if (Array.isArray(vehicleMeta.damage)) {
       (state.vehicles[idx] as any).damage = vehicleMeta.damage;
       (state.vehicles[idx] as any).vir = capOverallVir(computeVirFromDamage(vehicleMeta.damage));
-      (state.vehicles[idx] as any).virReport = buildVirReport(vehicleMeta.damage);
+      (state.vehicles[idx] as any).virReport = buildVirReport({
+        slotAssessment: vehicleMeta.slotAssessment,
+        damage: vehicleMeta.damage,
+      });
     }
     if (vehicleMeta.vir != null && !Array.isArray(vehicleMeta.damage)) {
       (state.vehicles[idx] as any).vir = capOverallVir(Number(vehicleMeta.vir));
@@ -2520,6 +2529,14 @@ app.post("/api/sync/push-photos", (req, res) => {
     }
     if (vehicleMeta.slotAssessment && Object.keys(vehicleMeta.slotAssessment).length) {
       (state.vehicles[idx] as any).slotAssessment = vehicleMeta.slotAssessment;
+      /* Refresh the per-panel virReport whenever slot ratings change, even
+         if no damage[] entry was sent. Otherwise a re-export that only
+         corrected a slot rating would leave the report stale. */
+      const existingDamage = (state.vehicles[idx] as any).damage;
+      (state.vehicles[idx] as any).virReport = buildVirReport({
+        slotAssessment: vehicleMeta.slotAssessment,
+        damage: Array.isArray(existingDamage) ? existingDamage : undefined,
+      });
     }
     /* Re-publishing or un-publishing in TruLens now reaches the website. Only
        applied when the client actually sends a boolean, so a push that says
@@ -2719,21 +2736,47 @@ function capOverallVir(score: number): number {
   return Math.min(90, score);
 }
 
-/** Build virReport sections by grouping damage by panel. */
-function buildVirReport(damage: { panel: string; severity: number; type: string }[]):
-  { section: string; score: number; status: 'Pass' | 'Attention' }[] {
-  const panels = new Map<string, { severity: number }[]>();
-  for (const d of damage) {
-    const key = d.panel || 'General';
-    if (!panels.has(key)) panels.set(key, []);
-    panels.get(key)!.push(d);
+/** Build virReport sections. Each entry describes a panel's inspection
+ *  outcome as a rating + optional note — no numeric per-panel score, per
+ *  the "no such thing as a used car scoring 100/100" rule (2026-08-04).
+ *  Prefers slotAssessment (Lens's per-slot ratings with optional comment);
+ *  falls back to grouping the damage[] array when slotAssessment is absent,
+ *  for legacy vehicles captured before slot ratings existed. */
+type VirReportEntry = { section: string; rating: 'ok' | 'note' | 'damage'; note?: string };
+function titleCaseSlot(k: string): string {
+  return k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+function buildVirReport(input: {
+  slotAssessment?: Record<string, { rating?: string; comment?: string }>;
+  damage?: { panel?: string; severity?: number; type?: string; note?: string }[];
+}): VirReportEntry[] {
+  const sa = input.slotAssessment;
+  if (sa && typeof sa === 'object' && Object.keys(sa).length) {
+    return Object.keys(sa).map((k) => {
+      const slot = sa[k] || {};
+      const rating = String(slot.rating || '').toLowerCase();
+      const cleanRating: 'ok' | 'note' | 'damage' =
+        rating === 'damage' ? 'damage' : rating === 'note' ? 'note' : 'ok';
+      const entry: VirReportEntry = { section: titleCaseSlot(k), rating: cleanRating };
+      if (slot.comment) entry.note = slot.comment;
+      return entry;
+    });
   }
-  const sections: { section: string; score: number; status: 'Pass' | 'Attention' }[] = [];
-  for (const [panel, findings] of panels) {
-    const score = computeVirFromDamage(findings);
-    sections.push({ section: panel, score, status: score >= 80 ? 'Pass' : 'Attention' });
+  const damage = input.damage;
+  if (Array.isArray(damage) && damage.length) {
+    /* Legacy path: no slot ratings, only a damage findings array.
+       Each finding becomes one section with rating='damage'. */
+    return damage.map((d) => {
+      const entry: VirReportEntry = {
+        section: d.panel || 'General',
+        rating: 'damage',
+      };
+      const note = d.note || d.type;
+      if (note) entry.note = note;
+      return entry;
+    });
   }
-  return sections;
+  return [];
 }
 
 /** Showroom tiers a dealer can shelve a vehicle into. Anything else is

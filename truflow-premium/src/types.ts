@@ -98,8 +98,11 @@ export interface Vehicle {
    *  never sent anywhere. */
   vir?: number;
   /** The inspection findings per section, so a dealer site can render the
-   *  report instead of linking a buyer into an app they cannot open. */
-  virReport?: { section: string; score: number; status: 'Pass' | 'Attention' }[];
+   *  report instead of linking a buyer into an app they cannot open. Shape
+   *  changed 2026-08-04 from numeric score to a binary rating + optional
+   *  note — no such thing as a used car scoring 100 per panel, and the
+   *  data model doesn't carry a real score anyway. */
+  virReport?: { section: string; rating: 'ok' | 'note' | 'damage'; note?: string }[];
   /** Damage tagged by hand in TruLens, pinned to a point on a specific photo.
    *  Only human-confirmed findings ever arrive here. */
   damage?: {

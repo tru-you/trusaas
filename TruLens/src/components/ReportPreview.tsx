@@ -231,8 +231,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Export failed');
+      /* Frames drive the 360 spin (one exterior-panel capture per orbit
+         position). Damage tags are optional overlays placed ON the spin,
+         not what makes it work — so the message names them separately. */
       setWeb3dMsg(
-        `Web 3D ready · ${data.frames ?? pkg.frames.length} frames · ${data.damageTags ?? pkg.damageTags.length} damage tags · ${pkg.background}`
+        `Web 3D ready · ${data.frames ?? pkg.frames.length} panel frames · ${data.damageTags ?? pkg.damageTags.length} damage overlays · ${pkg.background}`
       );
       onVehicleUpdated?.({
         ...vehicle,
