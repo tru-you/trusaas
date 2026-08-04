@@ -17,17 +17,22 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport }: Pu
   const slots = DEFAULT_TEMPLATE.slots;
   const exteriorSlots = slots.filter(s => s.category === 'exterior' || s.phase === 2);
   const exteriorPresent = exteriorSlots.filter(s => !!photos[s.id]).length;
+  const nonCore = slots.filter(s => s.tier !== 'core');
+  const nonCoreTaken = nonCore.filter(s => !!photos[s.id]).length;
 
   const conditions: { label: string; met: boolean }[] = [
     {
-      label: `${readiness.requiredTaken} of ${readiness.requiredTotal} required shots captured`,
-      met: readiness.requiredTaken === readiness.requiredTotal,
+      // Core, not the old required[] set — every slot is optional, so
+      // requiredTaken/requiredTotal read "0 of 0" and falsely showed green.
+      label: `${readiness.coreTaken} of ${readiness.coreTotal} core shots captured`,
+      met: readiness.coreTotal > 0 && readiness.coreTaken === readiness.coreTotal,
     },
     {
-      label: readiness.overallScore !== null
-        ? `VIR score ${readiness.overallScore} / 100 — ${readiness.overallScore >= 70 ? 'clears' : 'below'} the 70 threshold`
-        : 'VIR score — pending',
-      met: readiness.overallScore === null || readiness.overallScore >= 70,
+      // TruLens states a dealer-declared condition, not a graded VIR score.
+      label: readiness.conditionDeclared
+        ? 'Condition declared'
+        : 'Condition not declared — state it on the report',
+      met: readiness.conditionDeclared,
     },
     {
       label: `${exteriorPresent} of ${exteriorSlots.length} exterior panels present`,
@@ -35,11 +40,10 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport }: Pu
     },
     {
       label: (() => {
-        const optionalTotal = slots.length - readiness.requiredTotal;
-        const optionalSkipped = optionalTotal - readiness.optionalTaken;
-        return optionalSkipped > 0
-          ? `${optionalSkipped} optional shots skipped — listing still publishes`
-          : `All ${optionalTotal} optional shots captured`;
+        const skipped = nonCore.length - nonCoreTaken;
+        return skipped > 0
+          ? `${skipped} optional shots skipped — listing still publishes`
+          : `All ${nonCore.length} optional shots captured`;
       })(),
       met: true,
     },
