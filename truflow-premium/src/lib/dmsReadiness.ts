@@ -18,8 +18,11 @@ export interface DmsGalleryReadiness {
   reasons: string[];
 }
 
-/** Target gallery size when only DMS image arrays exist (~required exterior + key shots) */
-export const WEB_GALLERY_TARGET = 12;
+/* Target gallery size when only DMS image arrays exist. Aligned to TruLens's
+   retail "core" set — the 8 exterior-lap panels + interior + odometer = 10 — so a
+   complete core capture reads as web-ready here instead of "almost ready". Was 12,
+   which left a full 10-shot core stuck below target and showing "not ready". */
+export const WEB_GALLERY_TARGET = 10;
 export const MIN_USEFUL_GALLERY = 6;
 
 export function computeDmsGalleryReadiness(v: {

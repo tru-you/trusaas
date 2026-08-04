@@ -49,6 +49,16 @@ test("counts images + extrasPhotos, not images alone", async () => {
   assert.equal(r.level, "ready");
 });
 
+test("a complete 10-shot core capture reads as web-ready", async () => {
+  const { computeDmsGalleryReadiness } = await loadReadiness();
+  // TruLens core = 8 exterior-lap panels (images) + interior + odometer (extras).
+  const core = { images: img(8), extrasPhotos: img(2), status: "INVENTORY" };
+  const r = computeDmsGalleryReadiness(core);
+  assert.equal(r.photoCount, 10, "8 exterior + 2 extras = the 10-shot core");
+  assert.equal(r.webReady, true, "a full core capture must reach web-ready");
+  assert.equal(r.level, "ready");
+});
+
 test("a genuinely thin gallery is still held back", async () => {
   const { computeDmsGalleryReadiness } = await loadReadiness();
 
