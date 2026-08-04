@@ -990,6 +990,16 @@ function toPublicFromLens(v: any, origin: string = '') {
        the report block only when there is one to render. */
     virReport: damage.length ? buildVirReport(damage) : undefined,
     damage: damage.length ? damage : undefined,
+    /* Dealer-declared condition — TruLens retail "no damage reported" statement,
+       not a graded VIR. Mirrors TruFlow's feed so a site gets the same line from
+       either source. Tagged damage takes precedence over a "no damage" claim. */
+    conditionLabel: (() => {
+      const d = (v as any).conditionDeclaration;
+      if (damage.length) return `Visible damage reported — ${damage.length} item${damage.length === 1 ? '' : 's'}`;
+      if (d && d.noVisibleDamage) return 'No damage reported';
+      return undefined;
+    })(),
+    conditionDeclaration: (v as any).conditionDeclaration || undefined,
     daysInStock: null,
     source: 'trulens',
     updatedAt: v.updatedAt || v.lastDmsExportAt || null,
@@ -1763,6 +1773,10 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
         slotAssessment: Object.keys((vehicle as any).slotAssessment || {}).length
           ? (vehicle as any).slotAssessment
           : undefined,
+        /* Dealer's condition declaration — TruLens is retail (declared
+           condition), not a graded VIR. Carries the "no damage reported"
+           statement through to the DMS and on to the dealer's website. */
+        conditionDeclaration: (vehicle as any).conditionDeclaration || undefined,
         description: vehicle.aiListingDescription || undefined,
       },
       photos,

@@ -2235,6 +2235,13 @@ app.post("/api/sync/pull-photos", async (req, res) => {
         damage: lensVehicle.damage,
       });
     }
+    /* Dealer's condition declaration (retail "no damage reported" statement) —
+       stored so the public feed and the dealer site can surface it. Only set
+       when TruLens sent one, so it never overwrites an existing declaration with
+       undefined on a photos-only re-sync. */
+    if (lensVehicle?.conditionDeclaration) {
+      (state.vehicles[idx] as any).conditionDeclaration = lensVehicle.conditionDeclaration;
+    }
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     writeState(state);
 
@@ -2854,6 +2861,19 @@ function toPublicVehicle(v: any, source: string = "premium", origin: string = ""
        reads car.damage and has never had anything to read. */
     damage: Array.isArray(v.damage) && v.damage.length ? v.damage : undefined,
     slotAssessment: v.slotAssessment && Object.keys(v.slotAssessment).length ? v.slotAssessment : undefined,
+    /* Dealer-declared condition — TruLens is retail (declared condition), not a
+       graded VIR. `conditionLabel` is the plain line a site renders; the raw
+       declaration rides alongside for anything that wants the detail. Absent
+       until the dealer declared, so a site never implies a clean bill from
+       silence. Tagged damage takes precedence over a "no damage" claim. */
+    conditionLabel: (() => {
+      const d = (v as any).conditionDeclaration;
+      const dmgCount = Array.isArray(v.damage) ? v.damage.length : 0;
+      if (dmgCount) return `Visible damage reported — ${dmgCount} item${dmgCount === 1 ? "" : "s"}`;
+      if (d && d.noVisibleDamage) return "No damage reported";
+      return undefined;
+    })(),
+    conditionDeclaration: (v as any).conditionDeclaration || undefined,
     daysInStock: v.daysInInventory ?? null,
     source: v.source || source,
     updatedAt: v.lastPhotoSync || v.updatedAt || null,
