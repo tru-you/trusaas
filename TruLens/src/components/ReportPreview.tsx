@@ -8,8 +8,6 @@ import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
-import type { TemplateSlot } from '../template';
-import { ICONS } from '../iconMap';
 import trulensLockup from '../assets/images/trulens-wordmark.png';
 import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
@@ -17,20 +15,6 @@ interface ReportPreviewProps {
   vehicle: Vehicle;
   onBack: () => void;
   onVehicleUpdated?: (v: Vehicle) => void;
-}
-
-const CONDITION_SCALE = [
-  { min: 4.5, band: '5.0 – 4.5', label: 'Excellent', meaning: 'Minor blemishes only. Retail ready.', color: '#16A34A' },
-  { min: 3.5, band: '4.4 – 3.5', label: 'Good', meaning: 'Light cosmetic wear consistent with age.', color: '#65A30D' },
-  { min: 2.5, band: '3.4 – 2.5', label: 'Fair', meaning: 'Visible defects recorded. Attention advised.', color: '#CA8A04' },
-  { min: 0,   band: '2.4 – 1.0', label: 'Poor', meaning: 'Significant damage documented below.', color: '#DC2626' },
-];
-
-function conditionBand(stars: number | null) {
-  if (stars === null) {
-    return { label: 'Not yet assessed', meaning: 'No damage findings recorded.', color: '#475569' };
-  }
-  return CONDITION_SCALE.find(b => stars >= b.min) ?? CONDITION_SCALE[CONDITION_SCALE.length - 1];
 }
 
 function severityMeta(sev: number) {
@@ -71,23 +55,6 @@ function computeCondition(vehicle: Vehicle) {
   return { stars, label, findings: all, hasInput };
 }
 
-function captureBand(score: number | null) {
-  if (score === null) return { label: 'Not captured', color: '#475569' };
-  if (score >= 80) return { label: 'Good', color: '#16A34A' };
-  if (score >= 60) return { label: 'Usable', color: '#CA8A04' };
-  return { label: 'Re-shoot', color: '#DC2626' };
-}
-
-function scoreForSlots(vehicle: Vehicle, slots: TemplateSlot[]): number | null {
-  const captured = slots.map(s => vehicle.quality?.[s.id]).filter(Boolean) as QualityReport[];
-  if (captured.length === 0) return null;
-  return Math.round(captured.reduce((sum, q) => sum + q.overallScore, 0) / captured.length);
-}
-
-const PHASES = DEFAULT_TEMPLATE.phases
-  .filter(p => p.reportCard)
-  .map(p => ({ id: p.id, name: p.reportCard!.label, icon: ICONS[p.reportCard!.iconKey] }));
-
 export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
@@ -117,7 +84,23 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
   const readiness = useMemo(() => computeWebReadiness(brandedVehicle), [brandedVehicle]);
   const condition = useMemo(() => computeCondition(vehicle), [vehicle]);
-  const band = conditionBand(condition.hasInput ? condition.stars : null);
+
+  /* TruLens is not a graded VIR (that's TruInspect) — this report states a plain,
+     dealer-declared condition. `clear` = dealer declared no visible damage;
+     `damage` = visible damage tagged and shown; `undeclared` = not answered yet,
+     so silence is never presented as a clean bill. */
+  const findings = condition.findings;
+  const declared = vehicle.conditionDeclaration || null;
+  const conditionState: 'clear' | 'damage' | 'undeclared' =
+    findings.length > 0 ? 'damage' : declared?.noVisibleDamage ? 'clear' : 'undeclared';
+  const conditionText =
+    conditionState === 'clear'
+      ? 'No damage reported'
+      : conditionState === 'damage'
+      ? `Visible damage reported — ${findings.length} item${findings.length === 1 ? '' : 's'}`
+      : 'Condition not declared';
+  const condColor = conditionState === 'clear' ? '#16A34A' : conditionState === 'damage' ? '#B03226' : '#6E6656';
+  const coreSlots = DEFAULT_TEMPLATE.slots.filter((s) => s.tier === 'core');
   const waBlurb = useMemo(
     () => whatsAppSalesBlurb(brandedVehicle, readiness, { dealerName, waNumber: dealerWa || undefined }),
     [brandedVehicle, readiness, dealerName, dealerWa]
@@ -127,14 +110,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     ? `/embed/web3d-viewer.html?stock=${encodeURIComponent(vehicle.stockNumber)}`
     : null;
 
-  const phaseScores = PHASES.map(p => {
-    const slots = DEFAULT_TEMPLATE.slots.filter(s => s.phase === p.id);
-    return { ...p, slots, score: scoreForSlots(vehicle, slots) };
-  });
-
   const capturedPhotos = DEFAULT_TEMPLATE.slots.filter(s => vehicle.photos?.[s.id]);
-  const requiredSlots = DEFAULT_TEMPLATE.slots.filter(s => s.required);
-  const requiredTaken = requiredSlots.filter(s => vehicle.photos?.[s.id]).length;
 
   const reportId = `TL-${(vehicle.stockNumber || vehicle.id).toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
   const generatedAt = new Date().toLocaleString('en-ZA', {
@@ -267,6 +243,20 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     }
   };
 
+  /* The dealer's condition declaration — the honest core of a TruLens report.
+     One explicit statement rather than a graded score, so "no damage reported"
+     is a claim the dealer made, not silence we dressed up. */
+  const declareCondition = (noVisibleDamage: boolean) => {
+    onVehicleUpdated?.({
+      ...vehicle,
+      conditionDeclaration: {
+        noVisibleDamage,
+        declaredAt: new Date().toISOString(),
+        declaredBy: vehicle.capturedBy || undefined,
+      },
+    });
+  };
+
   const hero = vehicle.photos?.front_bumper || Object.values(vehicle.photos || {})[0];
 
   return (
@@ -302,9 +292,9 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="flex flex-wrap items-center gap-2">
             <span
               className="text-[13px] font-bold px-2 py-1 rounded-full border"
-              style={{ color: band.color, borderColor: band.color + '55', background: band.color + '18' }}
+              style={{ color: condColor, borderColor: condColor + '55', background: condColor + '18' }}
             >
-              {condition.hasInput ? `${condition.stars.toFixed(1)}/5` : 'No findings'}
+              {conditionText}
             </span>
             <button onClick={handleCopyWa} className="flex items-center gap-1 px-3 py-2 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-[13px] font-bold text-emerald-300">
               {waCopied ? <Check size={12} /> : <MessageCircle size={12} />} WhatsApp
@@ -356,15 +346,57 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="flex justify-between gap-2">
             <div>
               <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.55)] font-bold">Condition report</div>
-              <div className="font-bold text-[16px]" style={{ color: band.color }}>{condition.label}</div>
+              <div className="font-bold text-[16px]" style={{ color: condColor }}>{conditionText}</div>
               <div className="text-[rgba(232,234,230,0.55)] mt-1">
-                Photos {capturedPhotos.length}/{DEFAULT_TEMPLATE.slots.length}
-                {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
+                Core photos {coreSlots.filter((s) => vehicle.photos?.[s.id]).length}/{coreSlots.length}
+                {` · ${findings.length} damage tag${findings.length === 1 ? '' : 's'}`}
               </div>
             </div>
             <div className="text-right text-[rgba(232,234,230,0.55)] text-[13px] max-w-[200px]">
               {readiness.reasons.length ? readiness.reasons.join(' · ') : 'Ready for website.'}
             </div>
+          </div>
+
+          {/* Condition declaration — the dealer's explicit statement. Disabled to
+              "no visible damage" once damage is tagged, since that would be a
+              false claim; the report then reads "visible damage reported". */}
+          <div className="mt-3 pt-3 border-t border-white/10">
+            <div className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Condition declaration</div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => declareCondition(true)}
+                disabled={findings.length > 0}
+                className={`flex-1 py-2 rounded-lg text-[13px] font-bold border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  conditionState === 'clear'
+                    ? 'bg-emerald-600/25 border-emerald-500/40 text-emerald-300'
+                    : 'bg-white/5 border-white/10 text-[rgba(232,234,230,0.72)] hover:bg-white/10'
+                }`}
+              >
+                No visible damage
+              </button>
+              <button
+                type="button"
+                onClick={() => declareCondition(false)}
+                className={`flex-1 py-2 rounded-lg text-[13px] font-bold border transition-colors ${
+                  conditionState === 'damage' || (declared && !declared.noVisibleDamage)
+                    ? 'bg-amber-600/25 border-amber-500/40 text-amber-300'
+                    : 'bg-white/5 border-white/10 text-[rgba(232,234,230,0.72)] hover:bg-white/10'
+                }`}
+              >
+                Damage tagged below
+              </button>
+            </div>
+            {conditionState === 'undeclared' && (
+              <p className="text-[12px] text-amber-300/90 mt-2">
+                Declare the vehicle's condition — a listing isn't ready until this is stated.
+              </p>
+            )}
+            {findings.length > 0 && (
+              <p className="text-[12px] text-[rgba(232,234,230,0.55)] mt-2">
+                {findings.length} damage tag{findings.length === 1 ? '' : 's'} recorded — the report shows them below.
+              </p>
+            )}
           </div>
         </div>
 
@@ -551,21 +583,22 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               </div>
             </div>
 
-            {/* Verdict banner */}
+            {/* Condition banner — a dealer declaration, not a graded score */}
             {(() => {
-              const verdictClass = !condition.hasInput ? 'unknown' : condition.stars >= 3.5 ? 'pass' : condition.stars >= 2.5 ? 'caution' : 'fail';
-              const VerdictIcon = !condition.hasInput ? ClipboardList : condition.stars >= 3.5 ? CheckCircle2 : condition.stars >= 2.5 ? AlertTriangle : AlertTriangle;
-              const verdictHeading = !condition.hasInput ? 'Not Yet Assessed' : `Condition — ${band.label}`;
+              const verdictClass = conditionState === 'clear' ? 'pass' : conditionState === 'damage' ? 'caution' : 'unknown';
+              const VerdictIcon = conditionState === 'clear' ? CheckCircle2 : conditionState === 'damage' ? AlertTriangle : ClipboardList;
+              const sub =
+                conditionState === 'clear'
+                  ? 'Dealer reports no visible damage on the captured photos.'
+                  : conditionState === 'damage'
+                  ? 'Visible damage tagged and shown below.'
+                  : 'Condition not yet declared by the dealer.';
               return (
                 <div className={`verdict ${verdictClass}`}>
                   <div className="icon"><VerdictIcon size={18} /></div>
                   <div className="body">
-                    <h3>{verdictHeading}</h3>
-                    <p>{band.meaning} · {condition.findings.length} damage tag{condition.findings.length === 1 ? '' : 's'} · {capturedPhotos.length}/{DEFAULT_TEMPLATE.slots.length} photos captured.</p>
-                  </div>
-                  <div className="score">
-                    <div className="num">{condition.hasInput ? condition.stars.toFixed(1) : '—'}</div>
-                    <div className="lbl">/ 5 condition</div>
+                    <h3>{conditionText}</h3>
+                    <p>{sub} · {coreSlots.filter((s) => vehicle.photos?.[s.id]).length}/{coreSlots.length} core photos captured.</p>
                   </div>
                 </div>
               );
@@ -626,25 +659,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               );
             })()}
 
-            {/* Photo capture quality */}
-            <div className="section-title"><span className="n"><Award size={11} /> Photo capture quality</span><span className="ln" /></div>
-            <div className="prose" style={{ fontStyle:'italic', marginTop:-4 }}>
-              How well each section was photographed — this describes the images, not the vehicle.
-            </div>
-            <div className="quality-grid">
-              {phaseScores.map(p => {
-                const g = captureBand(p.score);
-                const Icon = p.icon;
-                return (
-                  <div className="q-card" key={p.id}>
-                    <div className="phase-name"><Icon size={10} style={{ color: g.color }} />{p.name}</div>
-                    <div className="q-label" style={{ color: g.color }}>{g.label}</div>
-                    <div className="q-score">{p.score !== null ? `${p.score}/100` : '—'}</div>
-                  </div>
-                );
-              })}
-            </div>
-
             {/* Panel condition grades */}
             {(() => {
               const sa = vehicle.slotAssessment || {};
@@ -677,19 +691,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
             {/* Damage findings */}
             <div className="section-title"><span className="n"><AlertTriangle size={11} /> Damage findings</span><span className="ln" /></div>
-            {condition.hasInput && (
-              <div className="card" style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <div style={{ fontFamily:'var(--display)', fontWeight:600, fontSize:22, color: condition.stars >= 3.5 ? 'var(--green)' : condition.stars >= 2.5 ? 'var(--amber)' : 'var(--red)' }}>
-                  {condition.stars.toFixed(1)}<span style={{ fontSize:11, color:'var(--muted)' }}>/5</span>
-                </div>
-                <div>
-                  <div style={{ fontWeight:700, fontSize:11 }}>Condition score</div>
-                  <div style={{ fontSize:10, color:'var(--ink-2)' }}>{condition.label} · {condition.findings.length} tag{condition.findings.length === 1 ? '' : 's'} across {Object.keys(vehicle.damageFindings || {}).length} photos</div>
-                </div>
-              </div>
-            )}
             {condition.findings.length === 0 ? (
-              <div className="no-issues"><CheckCircle2 size={13} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> No damage tagged on captured photos.</div>
+              <div className="no-issues"><CheckCircle2 size={13} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> {conditionState === 'clear' ? 'No damage reported — dealer declared the vehicle free of visible damage.' : 'No damage tagged on the captured photos.'}</div>
             ) : (
               condition.findings.map((f, i) => {
                 const sev = severityMeta(f.severity);
@@ -759,23 +762,24 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               );
             })()}
 
-            {/* Required photo checklist */}
-            {requiredSlots.length > 0 && (
+            {/* Core photo checklist — the honest listing minimum. Shows exactly
+                which of the core shots are on the car so a gap is visible, not
+                hidden. Photo-quality grading was removed — this is about coverage,
+                not how the images scored. */}
+            {coreSlots.length > 0 && (
               <>
-                <div className="section-title"><span className="n"><ClipboardList size={11} /> Required photos</span><span className="ln" /></div>
+                <div className="section-title"><span className="n"><ClipboardList size={11} /> Core photos</span><span className="ln" /></div>
                 <table className="checklist">
                   <thead>
-                    <tr><th>Shot</th><th>Status</th><th>Quality</th></tr>
+                    <tr><th>Shot</th><th>Status</th></tr>
                   </thead>
                   <tbody>
-                    {requiredSlots.map(s => {
+                    {coreSlots.map(s => {
                       const has = !!vehicle.photos?.[s.id];
-                      const q = vehicle.quality?.[s.id];
                       return (
                         <tr key={s.id}>
                           <td>{s.name}</td>
                           <td style={{ color: has ? 'var(--green)' : 'var(--red)', fontWeight:700 }}>{has ? 'Captured' : 'Missing'}</td>
-                          <td>{q ? q.overallScore : '—'}</td>
                         </tr>
                       );
                     })}
@@ -819,21 +823,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>
                   Captured {generatedAt}
                 </div>
-              </div>
-            </div>
-
-            {/* Condition scale legend */}
-            <div className="card" style={{ marginTop:10 }}>
-              <div className="k">Condition scale</div>
-              {CONDITION_SCALE.map(b => (
-                <div className="scale-row" key={b.label}>
-                  <b className="band" style={{ color: b.color }}>{b.band}</b>
-                  <b className="label">{b.label}</b>
-                  <span style={{ opacity:.85 }}>{b.meaning}</span>
-                </div>
-              ))}
-              <div style={{ fontSize:9.5, color:'var(--muted)', marginTop:8 }}>
-                Weighted from tagged damage severity. Not a mechanical assessment.
               </div>
             </div>
 

@@ -33,6 +33,12 @@ export interface TemplateSlot {
   idealAngle: { pitch: number; roll: number; yaw: number };
   phase: number; // -> TemplatePhase.id
   category: string;
+  /* Retail capture tier (TruLens only — TruInspect ignores this and stays a full
+     graded VIR). `core` = the honest minimum for a listing, `recommended` adds
+     trust, `extra` shows only on request. Stamped onto the slots below rather
+     than written into each literal so this list stays byte-identical to the
+     canonical / Truinspect copies for `git diff`. */
+  tier?: 'core' | 'recommended' | 'extra';
 }
 
 export interface TemplatePhase {
@@ -330,6 +336,26 @@ const SLOTS: TemplateSlot[] = [
     category: 'Interior, History & Verification',
   },
 ];
+
+/* Retail capture tiers — TruLens only. `core` is the honest listing minimum: the
+   eight exterior-lap panels (which also build the TruOrbit 360, so every side of
+   the car is shown — damage can't be hidden by having fewer angles) plus one
+   interior and the odometer. `extra` is shown only on request. Everything else is
+   `recommended`. Stamped here so the 27 slot literals above stay identical to the
+   canonical / Truinspect copies. TruInspect never reads `tier`, so its deep flow
+   is untouched. */
+export const CORE_SLOT_IDS = new Set<string>([
+  'front_bumper', 'fender_front_right', 'door_front_right', 'quarter_rear_right',
+  'rear_bumper', 'quarter_rear_left', 'door_front_left', 'fender_front_left',
+  'interior_cabin', 'odometer',
+]);
+const EXTRA_SLOT_IDS = new Set<string>([
+  'bonnet', 'door_rear_right', 'door_rear_left', 'spare_wheel', 'vehicle_jack',
+  'roof_sunroof', 'spare_keys',
+]);
+for (const s of SLOTS) {
+  s.tier = CORE_SLOT_IDS.has(s.id) ? 'core' : EXTRA_SLOT_IDS.has(s.id) ? 'extra' : 'recommended';
+}
 
 const PHASES: TemplatePhase[] = [
   { id: 1, name: 'Front & Engine', reportCard: { label: 'Front & Engine', iconKey: 'wrench' } },

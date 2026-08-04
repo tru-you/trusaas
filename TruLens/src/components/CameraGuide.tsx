@@ -26,9 +26,14 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   /* Lazy initializer so this only runs once, at mount — reopening a
      partially-shot vehicle should resume at the first real gap, not always
      reset to slot 1. */
-  const [selectedSlotId, setSelectedSlotId] = React.useState<string>(
-    () => DEFAULT_TEMPLATE.slots.find((s) => !vehicle.photos?.[s.id])?.id || DEFAULT_TEMPLATE.slots[0].id,
-  );
+  const [selectedSlotId, setSelectedSlotId] = React.useState<string>(() => {
+    // Resume at the first empty CORE shot, then any empty shot, then slot 1 —
+    // so onboarding leads with the ~10 that make a car listing-ready.
+    const p = vehicle.photos || {};
+    const firstEmptyCore = DEFAULT_TEMPLATE.slots.find((s) => s.tier === 'core' && !p[s.id]);
+    const firstEmptyAny = DEFAULT_TEMPLATE.slots.find((s) => !p[s.id]);
+    return (firstEmptyCore || firstEmptyAny || DEFAULT_TEMPLATE.slots[0]).id;
+  });
   const [isCameraActive, setIsCameraActive] = React.useState(false);
   const [hasCamPermission, setHasCamPermission] = React.useState<boolean | null>(null);
   const [cameraError, setCameraError] = React.useState<string | null>(null);
@@ -72,6 +77,14 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   const activeSlotIndex = DEFAULT_TEMPLATE.slots.findIndex(s => s.id === selectedSlotId);
 
   const allSlots = DEFAULT_TEMPLATE.slots;
+  // Core = the honest listing minimum; the rest sit behind an "add more" toggle
+  // so onboarding a car reads as ~10 guided shots, not 27 fields.
+  const coreSlots = allSlots.filter((s) => s.tier === 'core');
+  const moreSlots = allSlots.filter((s) => s.tier !== 'core');
+  const coreDone = coreSlots.filter((s) => !!photos[s.id]).length;
+  const moreDone = moreSlots.filter((s) => !!photos[s.id]).length;
+  const listingReady = coreSlots.length > 0 && coreDone === coreSlots.length;
+  const [showMore, setShowMore] = React.useState(false);
   const chipStripRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -526,8 +539,15 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   React.useEffect(() => {
     const count = Object.keys(photos).length;
     if (count > prevPhotoCount.current) {
-      const next = DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
+      // Advance through CORE first, then anything else — so the guided flow
+      // completes the listing minimum before offering the optional shots.
+      const next =
+        DEFAULT_TEMPLATE.slots.find((s) => s.tier === 'core' && !photos[s.id]) ||
+        DEFAULT_TEMPLATE.slots.find((s) => !photos[s.id]);
       if (next) {
+        // Reveal the optional strip when the next shot lives there, or its chip
+        // would be hidden behind the collapsed toggle.
+        if (next.tier !== 'core') setShowMore(true);
         setSelectedSlotId(next.id);
         setCustomFile(null);
         setCaptureHint(`Saved · Next: ${next.name}`);
@@ -566,6 +586,42 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
     </svg>
   );
 
+  // The next shot to take, core-first — drives the pulsing "next" chip.
+  const nextSlotId = (
+    allSlots.find((s) => s.tier === 'core' && !photos[s.id]) ||
+    allSlots.find((s) => !photos[s.id])
+  )?.id;
+
+  const renderChip = (slot: (typeof allSlots)[number]) => {
+    const i = allSlots.indexOf(slot);
+    const isTaken = !!photos[slot.id];
+    const isSelected = selectedSlotId === slot.id;
+    const isNext = !isTaken && slot.id === nextSlotId;
+    return (
+      <button
+        key={slot.id}
+        type="button"
+        data-slot={slot.id}
+        onClick={() => setSelectedSlotId(slot.id)}
+        className={`slot-state shrink-0 w-24 h-[68px] px-2.5 py-2 rounded-[12px] cursor-pointer flex flex-col items-center justify-between text-center transition-all ${
+          isSelected
+            ? 'slot-state--active'
+            : isTaken
+            ? 'slot-state--captured'
+            : isNext
+            ? 'slot-state--next'
+            : 'slot-state--idle'
+        }`}
+      >
+        <span className="flex items-center justify-between w-full">
+          <span className="text-[11px] font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
+          {isTaken && <Check size={12} />}
+        </span>
+        <span className="text-[12px] font-medium leading-tight line-clamp-2">{slot.name}</span>
+      </button>
+    );
+  };
+
   return (
     <div id="camera-guide-container" className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden relative">
       
@@ -596,17 +652,21 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
                 {vehicle.year} {vehicle.make} {vehicle.model}
               </p>
               <p className="text-[12px] font-mono text-[#4FE3DC]">
-                {completedSlots.length} / {allSlots.length} · {allSlots.length - completedSlots.length} to go
+                {listingReady
+                  ? `Listing-ready · ${completedSlots.length}/${allSlots.length} shots`
+                  : `Core ${coreDone}/${coreSlots.length} · ${completedSlots.length}/${allSlots.length} shots`}
               </p>
             </div>
             <HelpCircle size={16} className="pointer-events-auto text-neutral-300 shrink-0" />
           </div>
           {/* Was a 19-segment tick strip — three indicators counting the same
               thing. One 3px bar now. */}
+          {/* Bar tracks CORE progress — the goal is a listing-ready car, and the
+              optional shots beyond core shouldn't make the bar look unfinished. */}
           <div className="mt-2 h-[3px] rounded-full bg-[rgba(232,234,230,0.14)] overflow-hidden">
             <div
               className="h-full bg-[#4FE3DC] transition-all duration-300"
-              style={{ width: `${Math.round((completedSlots.length / Math.max(allSlots.length, 1)) * 100)}%` }}
+              style={{ width: `${Math.round((coreDone / Math.max(coreSlots.length, 1)) * 100)}%` }}
             />
           </div>
         </div>
@@ -688,8 +748,8 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none px-4 pt-10 pb-3 bg-gradient-to-t from-black/75 via-black/35 to-transparent">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono text-[#4FE3DC]">Shot {activeSlotIndex + 1} / {allSlots.length}</span>
-            <span className={`text-[11px] font-medium ${activeSlot.required ? 'text-[#4FE3DC]' : 'text-neutral-400'}`}>
-              {activeSlot.required ? 'Required' : 'Optional'}
+            <span className={`text-[11px] font-medium ${activeSlot.tier === 'core' ? 'text-[#4FE3DC]' : 'text-neutral-400'}`}>
+              {activeSlot.tier === 'core' ? 'Core shot' : activeSlot.tier === 'recommended' ? 'Recommended' : 'Optional'}
             </span>
           </div>
           <p className="text-[17px] font-semibold text-[#E8EAE6] leading-tight mt-0.5">{activeSlot.name}</p>
@@ -704,39 +764,27 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           a flex child won't shrink below its content size. */}
       <div className="flex-1 min-h-0 overflow-y-auto">
 
-      {/* Shot list — one continuous strip, all slots */}
+      {/* Shot list — Core shots lead; the optional rest sit behind a toggle so
+          onboarding reads as ~10 guided shots rather than 27 fields. */}
       <div className="bg-neutral-900 border-t border-neutral-850 py-2 shrink-0 z-10">
         <div ref={chipStripRef} className="flex gap-2 overflow-x-auto pb-1 px-3 scrollbar-none">
-          {allSlots.map((slot, i) => {
-            const isTaken = !!photos[slot.id];
-            const isSelected = selectedSlotId === slot.id;
-            const isNext =
-              !isTaken &&
-              slot.id === (allSlots.find((s) => !photos[s.id])?.id);
-            return (
-              <button
-                key={slot.id}
-                type="button"
-                data-slot={slot.id}
-                onClick={() => setSelectedSlotId(slot.id)}
-                className={`slot-state shrink-0 w-24 h-[68px] px-2.5 py-2 rounded-[12px] cursor-pointer flex flex-col items-center justify-between text-center transition-all ${
-                  isSelected
-                    ? 'slot-state--active'
-                    : isTaken
-                    ? 'slot-state--captured'
-                    : isNext
-                    ? 'slot-state--next'
-                    : 'slot-state--idle'
-                }`}
-              >
-                <span className="flex items-center justify-between w-full">
-                  <span className="text-[11px] font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
-                  {isTaken && <Check size={12} />}
-                </span>
-                <span className="text-[12px] font-medium leading-tight line-clamp-2">{slot.name}</span>
-              </button>
-            );
-          })}
+          {coreSlots.map((slot) => renderChip(slot))}
+        </div>
+        <div className="px-3 pt-2">
+          <button
+            type="button"
+            onClick={() => setShowMore((v) => !v)}
+            className="text-[12px] font-semibold text-neutral-400 hover:text-[#E8EAE6] flex items-center gap-1.5 cursor-pointer transition-colors"
+          >
+            {showMore
+              ? 'Hide optional shots'
+              : `Add more shots (optional) · ${moreDone}/${moreSlots.length}`}
+          </button>
+          {showMore && (
+            <div className="flex gap-2 overflow-x-auto pb-1 mt-2 scrollbar-none">
+              {moreSlots.map((slot) => renderChip(slot))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -857,13 +905,16 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         </div>
         )}
 
-        {progressPercentage === 100 && (
+        {listingReady && (
           <button
             type="button"
             onClick={onComplete || onBack}
             className="tru-btn-secondary w-full py-3 text-[14px] flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2"
           >
-            <Check size={16} /> All shots captured — review & publish
+            <Check size={16} />{' '}
+            {progressPercentage === 100
+              ? 'All shots captured — review & publish'
+              : 'Core shots done — review & publish'}
           </button>
         )}
 

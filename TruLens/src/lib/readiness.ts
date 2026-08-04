@@ -10,6 +10,17 @@ export interface WebReadiness {
   requiredTotal: number;
   requiredTaken: number;
   optionalTaken: number;
+  /** Core = the honest listing minimum (tier === 'core'). This is what
+   *  "listing-ready" is measured against now, not the toothless all-optional
+   *  required[] set. */
+  coreTotal: number;
+  coreTaken: number;
+  missingCore: string[];
+  /** Dealer has answered the condition declaration (no-damage / damage-shown).
+   *  Not a hard gate on export — Lens stays permissive — but a listing isn't
+   *  "ready" until the dealer has made the honest statement. */
+  conditionDeclared: boolean;
+  listingReady: boolean;
   overallScore: number | null;
   missingRequired: string[];
   canExportDms: boolean;
@@ -32,22 +43,34 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
   const requiredTaken = required.filter((s) => !!photos[s.id]).length;
   const optionalTaken = optional.filter((s) => !!photos[s.id]).length;
   const missingRequired = required.filter((s) => !photos[s.id]).map((s) => s.name);
+
+  // Core = the honest listing minimum (the exterior lap + interior + odometer).
+  const core = DEFAULT_TEMPLATE.slots.filter((s) => s.tier === 'core');
+  const coreTaken = core.filter((s) => !!photos[s.id]).length;
+  const missingCore = core.filter((s) => !photos[s.id]).map((s) => s.name);
+  const conditionDeclared = vehicle.conditionDeclaration != null;
+  const listingReady = missingCore.length === 0 && conditionDeclared;
+
   const score = overallScore(vehicle);
   const reasons: string[] = [];
 
-  if (missingRequired.length) {
-    reasons.push(`${missingRequired.length} required shots missing`);
+  if (missingCore.length) {
+    reasons.push(`${missingCore.length} core shot${missingCore.length === 1 ? '' : 's'} still to take`);
+  }
+  if (!conditionDeclared) {
+    reasons.push('Condition not declared yet');
   }
   if (score !== null && score < 70) {
-    reasons.push(`VIR score ${score}/100 is below 70`);
+    reasons.push(`Photo-quality score ${score}/100 is below 70`);
   }
   if (!Object.keys(photos).length) {
     reasons.push('No photos captured');
   }
 
-  const allRequired = missingRequired.length === 0;
   const hasPhotos = Object.keys(photos).length > 0;
   const scoreOk = score === null || score >= 70;
+  // Export stays permissive by design — a light shoot must sync as cleanly as a
+  // full one — so this gates on photos, not on core/declaration.
   const canExportDms = hasPhotos;
   const canPublishWeb =
     hasPhotos &&
@@ -64,19 +87,15 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
     color = '#4FE3DC';
   } else if (hasPhotos && scoreOk && vehicle.showOnWebsite === true) {
     level = 'web-ready';
-    label = allRequired ? 'Published to web' : 'Published to web · finish remaining shots';
+    label = listingReady ? 'Published to web' : 'Published to web · finish core + condition';
     color = '#4FE3DC';
   } else if (hasPhotos && scoreOk) {
     level = 'ready';
-    label = allRequired ? 'Ready to publish' : 'Ready to publish · more shots recommended';
-    color = '#4FE3DC';
-    if (vehicle.showOnWebsite !== true) {
+    label = listingReady ? 'Listing-ready' : 'Getting there · finish core + condition';
+    color = listingReady ? '#4FE3DC' : '#8B8D89';
+    if (vehicle.showOnWebsite !== true && listingReady) {
       reasons.push('Not published to website yet');
     }
-  } else if (allRequired) {
-    level = 'ready';
-    label = 'Shots complete · improve quality';
-    color = '#8B8D89';
   }
 
   return {
@@ -86,6 +105,11 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
     requiredTotal: required.length,
     requiredTaken,
     optionalTaken,
+    coreTotal: core.length,
+    coreTaken,
+    missingCore,
+    conditionDeclared,
+    listingReady,
     overallScore: score,
     missingRequired,
     canExportDms,

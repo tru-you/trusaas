@@ -68,6 +68,17 @@ export interface Vehicle {
   damageFindings?: Record<string, DamageFinding[]>;
   /** Per-slot condition assessment from the review screen (OK / Note / Damage) */
   slotAssessment?: Record<string, PointResult>;
+  /** Dealer's plain condition declaration for the retail listing. TruLens is NOT
+   *  a graded VIR (that's TruInspect) — this is an explicit, honest statement of
+   *  what the dealer is claiming: either "no visible damage reported" or that
+   *  the visible damage shown in damageFindings is everything. Absent until the
+   *  dealer answers on the review screen, so silence is never read as a claim. */
+  conditionDeclaration?: {
+    /** true = dealer declares no visible damage; false = damage tagged & shown */
+    noVisibleDamage: boolean;
+    declaredAt: string;
+    declaredBy?: string;
+  };
   /** Close-up photos of damage, keyed by slot id */
   closeups?: Record<string, string[]>;
   /** Name of the person who captured / signed off on this vehicle */
