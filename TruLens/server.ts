@@ -565,11 +565,15 @@ if (apiKey) {
    inventory in Lens — a cross-dealer read leak. */
 type LensScope = { uid: string; dealerSlug?: string | null };
 
-/* 7-day Lens retention: once a vehicle has been in the DMS for a week, Flow
-   is the source of truth and the Lens copy is deleted. Sweep runs lazily on
-   every listVehicles call — no cron, no scheduler. A vehicle that never
-   gets listed still eventually goes when someone opens the inventory. */
-const LENS_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+/* 14-day Lens retention: once a vehicle has been in the DMS for two weeks,
+   Flow is the source of truth and the Lens copy is deleted. Sweep runs
+   lazily on every listVehicles call — no cron, no scheduler. A vehicle
+   that never gets listed still eventually goes when someone opens the
+   inventory. Flow also proactively clears Lens on a hard delete via the
+   /api/sync/vehicle callback; sold status is deliberately NOT a trigger
+   because deals fall through and a sold-then-unsold vehicle should still
+   be editable in Lens if it's inside the retention window. */
+const LENS_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 function isExpired(v: any, nowMs: number): boolean {
   const first = v.firstDmsExportAt;
   if (!first) return false;
