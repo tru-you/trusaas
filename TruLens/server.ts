@@ -557,42 +557,62 @@ if (apiKey) {
 
 // ==================== INVENTORY HELPERS ====================
 
-async function listVehicles(userId: string): Promise<any[]> {
+/* Scope arg: dealerSlug is authoritative when the device is signed in with a
+   dealer code. ownerId (which phone captured it) is the legacy fallback for
+   pre-tagging captures and for local-demo mode where no dealer is bound.
+   Before this, listVehicles filtered by ownerId alone, so a phone that
+   captured for dealer A and later signed in with dealer B's code saw A's
+   inventory in Lens — a cross-dealer read leak. */
+type LensScope = { uid: string; dealerSlug?: string | null };
+
+async function listVehicles(user: LensScope): Promise<any[]> {
+  const { uid, dealerSlug } = user;
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
     // PC demo: show all local vehicles (owner may differ between Firebase login vs demo)
-    const isDemo = userId === 'local-demo-user';
+    const isDemo = uid === 'local-demo-user';
     const list = store.vehicles
-      .filter((v) => isDemo || !v.ownerId || v.ownerId === userId)
+      .filter((v) => {
+        if (isDemo) return true;
+        if (dealerSlug) return (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealerSlug;
+        return !v.ownerId || v.ownerId === uid;
+      })
       .map(normalizeVehicle)
       .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
     return list;
   }
-  const snapshot = await fdb
-    .collection('vehicles')
-    .where('ownerId', '==', userId)
-    .orderBy('updatedAt', 'desc')
-    .get();
+  const query = dealerSlug
+    ? fdb.collection('vehicles').where('dealerSlug', '==', dealerSlug)
+    : fdb.collection('vehicles').where('ownerId', '==', uid);
+  const snapshot = await query.orderBy('updatedAt', 'desc').get();
   return snapshot.docs.map((doc) => normalizeVehicle(doc.data()));
 }
 
-async function getVehicle(id: string, userId?: string): Promise<any | null> {
+async function getVehicle(id: string, user?: LensScope): Promise<any | null> {
+  const uid = user?.uid;
+  const dealerSlug = user?.dealerSlug;
   if (LOCAL_MODE || !fdb) {
     const found = readLocalStore().vehicles.find((v) => v.id === id);
     if (!found) return null;
-    // Demo / local: allow open even if ownerId differs
-    if (
-      userId &&
-      userId !== 'local-demo-user' &&
-      found.ownerId &&
-      found.ownerId !== userId
-    ) {
+    // Demo / local: allow open even if scope differs
+    if (uid === 'local-demo-user') return normalizeVehicle(found);
+    /* dealerSlug is authoritative when bound; a mismatched capture must not
+       leak across dealers even on a single-vehicle read (Flow deep-link,
+       photo re-upload, delete). */
+    if (dealerSlug && (found.dealerSlug || LENS_DEFAULT_DEALER_SLUG) !== dealerSlug) {
+      return null;
+    }
+    if (!dealerSlug && uid && found.ownerId && found.ownerId !== uid) {
       return null;
     }
     return normalizeVehicle(found);
   }
   const doc = await fdb.collection('vehicles').doc(id).get();
-  return doc.exists ? normalizeVehicle(doc.data()) : null;
+  if (!doc.exists) return null;
+  const data = doc.data() as any;
+  if (dealerSlug && (data.dealerSlug || LENS_DEFAULT_DEALER_SLUG) !== dealerSlug) return null;
+  if (!dealerSlug && uid && data.ownerId && data.ownerId !== uid) return null;
+  return normalizeVehicle(data);
 }
 
 /** Move a capture's photos onto disk, leaving references in the record.
@@ -989,7 +1009,7 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
     // Stamp vehicle if we can
     if (vehicleId) {
       try {
-        const v = await getVehicle(vehicleId, req.user.uid);
+        const v = await getVehicle(vehicleId, req.user);
         if (v) {
           await saveVehicle({
             ...v,
@@ -1117,7 +1137,7 @@ app.get('/api/public/stock', async (req, res) => {
 // 1. Get all vehicles
 app.get('/api/inventory', authenticate, async (req: any, res) => {
   try {
-    const vehicles = await listVehicles(req.user.uid);
+    const vehicles = await listVehicles(req.user);
     res.json(vehicles);
   } catch (error) {
     console.error('GET /api/inventory - Error:', error);
@@ -1136,7 +1156,7 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
     }
 
     const now = new Date().toISOString();
-    const existing = await getVehicle(vehicleData.id, userId);
+    const existing = await getVehicle(vehicleData.id, req.user);
 
     if (existing) {
       if (!LOCAL_MODE && existing.ownerId && existing.ownerId !== userId) {
@@ -1180,7 +1200,7 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
       return res.status(400).json({ error: 'vehicleId, slotId, and base64Image are required' });
     }
 
-    const existingData = await getVehicle(vehicleId, userId);
+    const existingData = await getVehicle(vehicleId, req.user);
     if (!existingData) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -1244,7 +1264,7 @@ app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
   try {
     const id = req.params.id;
     const userId = req.user.uid;
-    const data = await getVehicle(id, userId);
+    const data = await getVehicle(id, req.user);
     if (!data) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -1576,7 +1596,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       });
     }
 
-    const vehicle = await getVehicle(vehicleId, userId);
+    const vehicle = await getVehicle(vehicleId, req.user);
     if (!vehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
