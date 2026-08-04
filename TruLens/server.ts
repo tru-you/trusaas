@@ -569,18 +569,16 @@ async function listVehicles(user: LensScope): Promise<any[]> {
   const { uid, dealerSlug } = user;
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
-    // PC demo: show all local vehicles (owner may differ between Firebase login vs demo)
-    const isDemo = uid === 'local-demo-user';
     const list = store.vehicles
-      .filter((v) => {
-        if (isDemo) return true;
-        if (dealerSlug) return (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealerSlug;
-        return !v.ownerId || v.ownerId === uid;
-      })
+      .filter((v) => passesScope(v, user))
       .map(normalizeVehicle)
       .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
     return list;
   }
+  /* Firestore query: prefer dealerSlug when the token has one, fall back to
+     ownerId. The passesScope helper is JS-only, so we still need a where()
+     that narrows the result set before it comes back. Legacy untagged rows
+     captured by this user are still reachable via the ownerId branch. */
   const query = dealerSlug
     ? fdb.collection('vehicles').where('dealerSlug', '==', dealerSlug)
     : fdb.collection('vehicles').where('ownerId', '==', uid);
@@ -588,31 +586,32 @@ async function listVehicles(user: LensScope): Promise<any[]> {
   return snapshot.docs.map((doc) => normalizeVehicle(doc.data()));
 }
 
+/* Scoping rules for both read paths:
+   - local-demo-user always wins (dev/PC demo mode).
+   - Explicitly tagged vehicle → the token's dealerSlug must match.
+   - Untagged (legacy) vehicle → fall back to ownerId match. Using the
+     default-dealer fallback for access decisions was a bug — it 404'd the
+     rightful owner of any legacy capture that predates dealer tagging. */
+function passesScope(record: any, user?: LensScope): boolean {
+  if (!user) return true;
+  if (user.uid === 'local-demo-user') return true;
+  if (record.dealerSlug) {
+    return !user.dealerSlug || record.dealerSlug === user.dealerSlug;
+  }
+  if (user.uid && record.ownerId && record.ownerId !== user.uid) return false;
+  return true;
+}
+
 async function getVehicle(id: string, user?: LensScope): Promise<any | null> {
-  const uid = user?.uid;
-  const dealerSlug = user?.dealerSlug;
   if (LOCAL_MODE || !fdb) {
     const found = readLocalStore().vehicles.find((v) => v.id === id);
     if (!found) return null;
-    // Demo / local: allow open even if scope differs
-    if (uid === 'local-demo-user') return normalizeVehicle(found);
-    /* dealerSlug is authoritative when bound; a mismatched capture must not
-       leak across dealers even on a single-vehicle read (Flow deep-link,
-       photo re-upload, delete). */
-    if (dealerSlug && (found.dealerSlug || LENS_DEFAULT_DEALER_SLUG) !== dealerSlug) {
-      return null;
-    }
-    if (!dealerSlug && uid && found.ownerId && found.ownerId !== uid) {
-      return null;
-    }
-    return normalizeVehicle(found);
+    return passesScope(found, user) ? normalizeVehicle(found) : null;
   }
   const doc = await fdb.collection('vehicles').doc(id).get();
   if (!doc.exists) return null;
   const data = doc.data() as any;
-  if (dealerSlug && (data.dealerSlug || LENS_DEFAULT_DEALER_SLUG) !== dealerSlug) return null;
-  if (!dealerSlug && uid && data.ownerId && data.ownerId !== uid) return null;
-  return normalizeVehicle(data);
+  return passesScope(data, user) ? normalizeVehicle(data) : null;
 }
 
 /** Move a capture's photos onto disk, leaving references in the record.
@@ -1158,6 +1157,11 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
     const now = new Date().toISOString();
     const existing = await getVehicle(vehicleData.id, req.user);
 
+    /* Stamp dealerSlug on every save. Without this, new captures were saved
+       untagged, and the next read (upload-photo) 404'd because the scoping
+       check fell back to the default dealer instead of the true owner. */
+    const dealerSlug = req.user?.dealerSlug || existing?.dealerSlug || undefined;
+
     if (existing) {
       if (!LOCAL_MODE && existing.ownerId && existing.ownerId !== userId) {
         return res.status(403).json({ error: 'Forbidden' });
@@ -1166,6 +1170,7 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
         ...existing,
         ...vehicleData,
         ownerId: existing.ownerId || userId,
+        dealerSlug: dealerSlug ?? vehicleData.dealerSlug,
         updatedAt: now,
         photos: vehicleData.photos ?? existing.photos ?? {},
         quality: vehicleData.quality ?? existing.quality ?? {},
@@ -1177,6 +1182,7 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
     const newVehicle = {
       ...vehicleData,
       ownerId: userId,
+      dealerSlug: dealerSlug ?? vehicleData.dealerSlug,
       createdAt: now,
       updatedAt: now,
       photos: vehicleData.photos || {},
