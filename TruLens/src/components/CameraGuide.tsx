@@ -631,7 +631,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
       {/* Viewfinder — fills all remaining height. The nav, count and tick bars
           that used to stack above it (~170px of chrome) are now overlays on the
           feed itself, so the camera starts at the top of the screen. */}
-      <div className="capture-preview relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
+      <div className="capture-preview relative flex-1 min-h-0 bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
@@ -759,13 +759,13 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         </div>
       </div>
 
-      {/* Below-viewfinder chrome: scrolls when the viewfinder's min-h
-          leaves less than the chrome needs. min-h-0 is required — without it
-          a flex child won't shrink below its content size. */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
-
       {/* Shot list — Core shots lead; the optional rest sit behind a toggle so
-          onboarding reads as ~10 guided shots rather than 27 fields. */}
+          onboarding reads as ~10 guided shots rather than 27 fields. The chip
+          strip and the console below are pinned siblings (no scroll wrapper), so
+          Shoot / Keep / proceed stay reachable and the viewfinder above flexes to
+          fill the rest — a bigger preview with controls always in reach. Adding
+          the optional toggle inside the old scroll area had pushed the console
+          past the fold. */}
       <div className="bg-neutral-900 border-t border-neutral-850 py-2 shrink-0 z-10">
         <div ref={chipStripRef} className="flex gap-2 overflow-x-auto pb-1 px-3 scrollbar-none">
           {coreSlots.map((slot) => renderChip(slot))}
@@ -920,7 +920,6 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
 
       </div>
 
-      </div>{/* end below-viewfinder scroll wrapper */}
 
       {/* Bulk Importer Overlay Modal */}
       {isBulkModalOpen && (

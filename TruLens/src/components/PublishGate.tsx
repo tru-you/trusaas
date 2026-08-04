@@ -8,11 +8,29 @@ interface PublishGateProps {
   vehicle: Vehicle;
   onBack: () => void;
   onPublish: () => void;
-  onExport: () => void;
+  /** Runs the real DMS push and resolves with its outcome so the gate can show
+   *  a Sending state and surface a failure rather than navigating away blind. */
+  onExport: () => Promise<{ success: boolean; error?: string }>;
 }
 
 export default function PublishGate({ vehicle, onBack, onPublish, onExport }: PublishGateProps) {
   const readiness = computeWebReadiness(vehicle);
+  const [exporting, setExporting] = React.useState(false);
+  const [exportErr, setExportErr] = React.useState<string | null>(null);
+
+  const doExport = async () => {
+    setExporting(true);
+    setExportErr(null);
+    try {
+      const r = await onExport();
+      // On success the parent navigates away; only a failure stays to report.
+      if (r && r.success === false) setExportErr(r.error || 'Export failed — try again.');
+    } catch {
+      setExportErr('Export failed — try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
   const photos = vehicle?.photos || {};
   const slots = DEFAULT_TEMPLATE.slots;
   const exteriorSlots = slots.filter(s => s.category === 'exterior' || s.phase === 2);
@@ -132,15 +150,23 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport }: Pu
         >
           <Globe size={15} /> Publish to website feed
         </button>
+        {exportErr && (
+          <p className="text-[13px] text-rose-300 text-center px-2">{exportErr}</p>
+        )}
         <button
           type="button"
-          disabled={!readiness.canExportDms}
-          onClick={onExport}
+          disabled={!readiness.canExportDms || exporting}
+          onClick={doExport}
           className="w-full min-h-[52px] rounded-xl bg-[rgba(232,234,230,0.055)] border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[15px] font-medium flex items-center justify-center gap-2 disabled:opacity-40"
         >
-          {/* State-aware label: first push = "Send to DMS", subsequent pushes
-             = "Re-Export to DMS" so the corrective-sync action reads clearly. */}
-          <Upload size={15} /> {(vehicle as any).lastDmsExportAt ? 'Re-Export to DMS' : 'Send to DMS'}
+          {/* State-aware label: Sending while the push runs, then first push =
+             "Send to DMS" / subsequent = "Re-Export to DMS". */}
+          <Upload size={15} />{' '}
+          {exporting
+            ? 'Sending to DMS…'
+            : (vehicle as any).lastDmsExportAt
+            ? 'Re-Export to DMS'
+            : 'Send to DMS'}
         </button>
       </div>
     </div>

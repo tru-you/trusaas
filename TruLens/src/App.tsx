@@ -590,14 +590,15 @@ export default function App() {
               vehicle={activeVehicle}
               onBack={() => setActiveView('camera')}
               onPublish={() => setActiveView('report')}
-              onExport={() => {
-                // Actually push to the DMS — this was a nav-only stub, so the
-                // gate's "Send to DMS" button did nothing and the export had to
-                // be run again from the inventory list. Fire-and-forget with a
-                // catch (syncStatus reflects progress), same as the report view's
-                // publish-triggered export, then show the report.
-                handleExportToDms(activeVehicle).catch(() => {});
-                setActiveView('report');
+              onExport={async () => {
+                // Actually push to the DMS (was a nav-only stub). Awaited so the
+                // gate can show a "Sending…" state and only leave once it's done —
+                // landing on the inventory list, where the used-state DMS button
+                // confirms it went. The result is returned so the gate can surface
+                // a failure instead of silently navigating away.
+                const r = await handleExportToDms(activeVehicle);
+                if (r.success) setActiveView('inventory');
+                return r;
               }}
             />
           )}
