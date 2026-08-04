@@ -270,44 +270,46 @@ export default function App() {
       }
       setSyncStatus('synced');
 
-      /* Autoexport the Web 3D spin as well when the frame set is smooth
-         enough (≥6 of the 8 canonical orbit positions). Without this, a
+      /* Autoexport the TruOrbit Web3D spin alongside the DMS push, so a
          dealer who never clicked the small "3D" button in the report
-         preview shipped vehicles to their site with no 360 spin — and
-         Flow has no button to fix it later, so the miss becomes
-         permanent once the 14-day Lens retention window closes.
-         Failure is silent (logged, not surfaced): DMS export already
-         succeeded, and the dealer can still hit the 3D button manually
-         if they need to retry inside the retention window. */
-      (async () => {
-        try {
-          const mergedVehicle = data.vehicle ? { ...vehicle, ...data.vehicle } : vehicle;
-          const pkg = await buildWeb3DPackage(mergedVehicle as Vehicle);
-          const MIN_ORBIT_FRAMES = 6;
-          if (pkg.frames.length < MIN_ORBIT_FRAMES && !pkg.video) return;
+         preview still gets a 360 on their site. Awaited (was previously
+         fire-and-forget) so the returned DmsExportResult can tell the
+         caller whether TruOrbit made it — the InventoryList toast reads
+         that flag to say "TruOrbit ✓" or "no TruOrbit". The old flag
+         was breakdown.walkaround, but the walkaround video slot was
+         removed from the template, so that field never populated. Adds
+         a few seconds to the perceived Send-to-DMS wait — acceptable,
+         because getting the 360 published is the point. */
+      let truOrbit = false;
+      try {
+        const mergedVehicle = data.vehicle ? { ...vehicle, ...data.vehicle } : vehicle;
+        const pkg = await buildWeb3DPackage(mergedVehicle as Vehicle);
+        const MIN_ORBIT_FRAMES = 6;
+        if (pkg.frames.length >= MIN_ORBIT_FRAMES || pkg.video) {
           const w3Res = await fetch('/api/export/web-3d', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ vehicleId: mergedVehicle.id, package: pkg }),
           });
-          if (!w3Res.ok) {
+          if (w3Res.ok) {
+            const w3Data = await w3Res.json().catch(() => ({}));
+            setVehicles((prev) =>
+              prev.map((v) =>
+                v.id === mergedVehicle.id
+                  ? { ...v, lastWeb3dExportAt: new Date().toISOString(), web3dPublicPath: w3Data.publicUrl }
+                  : v
+              )
+            );
+            truOrbit = true;
+          } else {
             console.warn('[web3d autoexport] failed', w3Res.status);
-            return;
           }
-          const w3Data = await w3Res.json().catch(() => ({}));
-          setVehicles((prev) =>
-            prev.map((v) =>
-              v.id === mergedVehicle.id
-                ? { ...v, lastWeb3dExportAt: new Date().toISOString(), web3dPublicPath: w3Data.publicUrl }
-                : v
-            )
-          );
-        } catch (err) {
-          console.warn('[web3d autoexport] error', err);
         }
-      })();
+      } catch (err) {
+        console.warn('[web3d autoexport] error', err);
+      }
 
-      return data;
+      return { ...data, truOrbit };
     } catch (e) {
       console.error('DMS export failed:', e);
       setSyncStatus('error');

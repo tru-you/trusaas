@@ -418,12 +418,14 @@ export default function InventoryList({
       const result = await onExportToDms(vehicle);
       if (result.success) {
         const b = result.breakdown;
-        /* The walkaround is called out on its own, and its ABSENCE is stated
-           rather than left blank. Every other entry here is omitted when zero,
-           which is right for photo categories — but a missing 360 is the one
-           thing worth saying out loud. An export that silently carried no video
-           read exactly like one that did, and the only way to tell them apart
-           was to go and read the dealer's public feed afterwards. */
+        /* TruOrbit (the Web3D spin) is called out on its own — its ABSENCE
+           is stated rather than left blank. Every other entry here is
+           omitted when zero, which is right for photo categories, but a
+           missing 360 is the one thing worth saying out loud. Reads
+           result.truOrbit (set by handleExportToDms after awaiting the
+           Web3D autoexport). The old breakdown.walkaround check was for
+           the retired video-slot field, which never populates — so the
+           toast always said "no TruOrbit" regardless of actual state. */
         const parts = b
           ? [
               b.mainImages ? `${b.mainImages} main` : null,
@@ -431,7 +433,7 @@ export default function InventoryList({
               b.damage ? `${b.damage} damage` : null,
               b.vin ? `${b.vin} VIN` : null,
               b.serviceBook ? `${b.serviceBook} service` : null,
-              b.walkaround ? 'Tru Orbit ✓' : 'no Tru Orbit',
+              result.truOrbit ? 'TruOrbit ✓' : 'no TruOrbit',
             ].filter(Boolean).join(', ')
           : `${takenCount} photos`;
         setExportToast({

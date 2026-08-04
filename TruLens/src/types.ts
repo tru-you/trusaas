@@ -90,6 +90,12 @@ export interface DmsExportResult {
   message?: string;
   error?: string;
   details?: unknown;
+  /** Whether the TruOrbit Web3D spin was autoexported alongside the DMS
+   *  push. Set by handleExportToDms after awaiting the autoexport so the
+   *  confirmation toast can say "TruOrbit ✓" or "no TruOrbit" accurately.
+   *  Replaces the old breakdown.walkaround check, which pointed at a
+   *  video-slot field that was removed from the capture template. */
+  truOrbit?: boolean;
   breakdown?: {
     mainImages: number;
     extras: number;
