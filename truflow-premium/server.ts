@@ -2491,6 +2491,16 @@ app.post("/api/sync/push-photos", (req, res) => {
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     if (vehicleMeta.vin) (state.vehicles[idx] as any).vin = vehicleMeta.vin;
     if (vehicleMeta.color) (state.vehicles[idx] as any).color = vehicleMeta.color;
+    /* make/model/year/trim were only set on initial create, so a Lens edit
+       correcting a typo (Ford → Audi, wrong year) never reached the DMS on
+       re-export. Now conditional: sent = updated, omitted = left alone, so
+       older Lens builds that don't send them don't clobber good values. */
+    if (vehicleMeta.make) state.vehicles[idx].make = vehicleMeta.make;
+    if (vehicleMeta.model) state.vehicles[idx].model = vehicleMeta.model;
+    if (vehicleMeta.trim != null) (state.vehicles[idx] as any).trim = vehicleMeta.trim;
+    if (vehicleMeta.year) {
+      state.vehicles[idx].year = parseInt(vehicleMeta.year, 10) || state.vehicles[idx].year;
+    }
     if (vehicleMeta.mileage != null) {
       state.vehicles[idx].mileage = parseInt(vehicleMeta.mileage, 10) || state.vehicles[idx].mileage;
     }

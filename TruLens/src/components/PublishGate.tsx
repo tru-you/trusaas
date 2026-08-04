@@ -134,7 +134,9 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport }: Pu
           onClick={onExport}
           className="w-full min-h-[52px] rounded-xl bg-[rgba(232,234,230,0.055)] border border-[rgba(232,234,230,0.14)] text-[#E8EAE6] text-[15px] font-medium flex items-center justify-center gap-2 disabled:opacity-40"
         >
-          <Upload size={15} /> Export to DMS only
+          {/* State-aware label: first push = "Send to DMS", subsequent pushes
+             = "Re-Export to DMS" so the corrective-sync action reads clearly. */}
+          <Upload size={15} /> {(vehicle as any).lastDmsExportAt ? 'Re-Export to DMS' : 'Send to DMS'}
         </button>
       </div>
     </div>
