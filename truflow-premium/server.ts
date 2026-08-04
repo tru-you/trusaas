@@ -2229,7 +2229,7 @@ app.post("/api/sync/pull-photos", async (req, res) => {
     // never exposed as the vehicle condition score.
     if (Array.isArray(lensVehicle?.damage)) {
       state.vehicles[idx].damage = lensVehicle.damage;
-      state.vehicles[idx].vir = computeVirFromDamage(lensVehicle.damage);
+      state.vehicles[idx].vir = capOverallVir(computeVirFromDamage(lensVehicle.damage));
       state.vehicles[idx].virReport = buildVirReport(lensVehicle.damage);
     }
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
@@ -2418,7 +2418,7 @@ app.post("/api/sync/push-photos", (req, res) => {
         transmission: vehicleMeta.transmission || "Automatic",
         fuelType: vehicleMeta.fuelType || "Petrol",
         damage: Array.isArray(vehicleMeta.damage) ? vehicleMeta.damage : undefined,
-        vir: Array.isArray(vehicleMeta.damage) ? computeVirFromDamage(vehicleMeta.damage) : undefined,
+        vir: Array.isArray(vehicleMeta.damage) ? capOverallVir(computeVirFromDamage(vehicleMeta.damage)) : undefined,
         virReport: Array.isArray(vehicleMeta.damage) ? buildVirReport(vehicleMeta.damage) : undefined,
         slotAssessment: vehicleMeta.slotAssessment || undefined,
         stockNumber:
@@ -2509,11 +2509,11 @@ app.post("/api/sync/push-photos", (req, res) => {
     if (vehicleMeta.description) (state.vehicles[idx] as any).description = vehicleMeta.description;
     if (Array.isArray(vehicleMeta.damage)) {
       (state.vehicles[idx] as any).damage = vehicleMeta.damage;
-      (state.vehicles[idx] as any).vir = computeVirFromDamage(vehicleMeta.damage);
+      (state.vehicles[idx] as any).vir = capOverallVir(computeVirFromDamage(vehicleMeta.damage));
       (state.vehicles[idx] as any).virReport = buildVirReport(vehicleMeta.damage);
     }
     if (vehicleMeta.vir != null && !Array.isArray(vehicleMeta.damage)) {
-      (state.vehicles[idx] as any).vir = vehicleMeta.vir;
+      (state.vehicles[idx] as any).vir = capOverallVir(Number(vehicleMeta.vir));
     }
     if (Array.isArray(vehicleMeta.inspection)) {
       (state.vehicles[idx] as any).inspection = vehicleMeta.inspection;
@@ -2707,6 +2707,16 @@ function computeVirFromDamage(damage: { severity: number }[]): number {
   const penalties: Record<number, number> = { 1: 2, 2: 5, 3: 10, 4: 18, 5: 30 };
   const total = damage.reduce((s, d) => s + (penalties[d.severity] ?? 5), 0);
   return Math.max(0, Math.round(100 - total));
+}
+
+/** Cap the OVERALL vehicle VIR score at 90 for public display.
+ *  No used car is genuinely 100/100 — anything at that ceiling is a
+ *  lazy capture (all slots blindly OK, no damage tags added). Real
+ *  inspection detail can still drop the score below 90 accurately.
+ *  Per-panel scores in virReport are NOT capped — a clean panel is
+ *  honestly 100 on its own row. */
+function capOverallVir(score: number): number {
+  return Math.min(90, score);
 }
 
 /** Build virReport sections by grouping damage by panel. */
