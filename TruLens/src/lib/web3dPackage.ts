@@ -156,25 +156,32 @@ export async function approxBackgroundless(dataUrl: string): Promise<{ image: st
 function collectDamageTags(vehicle: Vehicle): DamageTag[] {
   const tags: DamageTag[] = [];
   const photos = vehicle.photos || {};
-  const quality = vehicle.quality || {};
+  const findingsBySlot = vehicle.damageFindings || {};
 
-  // Any slot with detected issues — the 27-slot list has no dedicated
-  // freeform "recon/damage" slot, so every finding comes from a real angle.
-  PHOTO_SLOTS.forEach((slot) => {
-    const issues = quality[slot.id]?.aiAnalysis?.detectedIssues;
-    if (!issues) return;
-    const list = Array.isArray(issues) ? issues : [String(issues)];
-    const orbit = ORBIT_SLOTS.find((o) => o.id === slot.id);
-    list.forEach((label, i) => {
-      if (!String(label).trim()) return;
+  /* Only dealer-tagged damage from the DamageTagger reaches the customer-
+     facing 360 spin. The previous version read vehicle.quality[slot].
+     aiAnalysis.detectedIssues, which is PHOTO-quality analysis (blurry,
+     reflective, dark) not vehicle damage — a clean car with a slightly
+     blurry photo shipped with spurious "damage" pins on the orbit while
+     the VIR report correctly showed no damage tagged. Confusing to the
+     customer and inconsistent between the two views on the same page.
+     AI-suggested findings still appear here IF a human confirmed them
+     (per DamageFinding.confirmed) — an unreviewed suggestion is a
+     maybe, not a finding. */
+  Object.keys(findingsBySlot).forEach((slotId) => {
+    const findings = findingsBySlot[slotId];
+    if (!Array.isArray(findings)) return;
+    const orbit = ORBIT_SLOTS.find((o) => o.id === slotId);
+    findings.forEach((f, i) => {
+      if (f.confirmed === false) return;
       tags.push({
-        id: `${slot.id}-${i}`,
-        label: String(label),
-        severity: /crack|dent|rust|leak|broken/i.test(String(label)) ? 'critical' : 'attention',
+        id: f.id || `${slotId}-${i}`,
+        label: f.note || `${f.damageType} — ${f.panel}`,
+        severity: f.severity >= 4 ? 'critical' : f.severity >= 2 ? 'attention' : 'info',
         azimuth: orbit?.azimuth ?? 0.2,
-        elevation: 0.45 + (i % 3) * 0.08,
-        slotId: slot.id,
-        thumb: photos[slot.id],
+        elevation: typeof f.y === 'number' ? f.y : 0.45,
+        slotId,
+        thumb: photos[slotId],
       });
     });
   });
