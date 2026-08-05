@@ -49,16 +49,16 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
   const coreTaken = core.filter((s) => !!photos[s.id]).length;
   const missingCore = core.filter((s) => !photos[s.id]).map((s) => s.name);
   const conditionDeclared = vehicle.conditionDeclaration != null;
-  const listingReady = missingCore.length === 0 && conditionDeclared;
+  /* Listing-ready = the core photo set (10 shots, uploaded or taken). The
+     condition declaration is a separate, optional step that feeds the website's
+     "No damage reported" line — it no longer gates readiness. */
+  const listingReady = missingCore.length === 0;
 
   const score = overallScore(vehicle);
   const reasons: string[] = [];
 
   if (missingCore.length) {
     reasons.push(`${missingCore.length} core shot${missingCore.length === 1 ? '' : 's'} still to take`);
-  }
-  if (!conditionDeclared) {
-    reasons.push('Condition not declared yet');
   }
   if (score !== null && score < 70) {
     reasons.push(`Photo-quality score ${score}/100 is below 70`);
@@ -87,11 +87,13 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
     color = '#4FE3DC';
   } else if (hasPhotos && scoreOk && vehicle.showOnWebsite === true) {
     level = 'web-ready';
-    label = listingReady ? 'Published to web' : 'Published to web · finish core + condition';
+    label = listingReady ? 'Published to web' : 'Published to web · finish core shots';
     color = '#4FE3DC';
   } else if (hasPhotos && scoreOk) {
     level = 'ready';
-    label = listingReady ? 'Listing-ready' : 'Getting there · finish core + condition';
+    label = listingReady
+      ? 'Listing-ready'
+      : `Getting there · ${missingCore.length} core shot${missingCore.length === 1 ? '' : 's'} to take`;
     color = listingReady ? '#4FE3DC' : '#8B8D89';
     if (vehicle.showOnWebsite !== true && listingReady) {
       reasons.push('Not published to website yet');

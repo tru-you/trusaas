@@ -815,8 +815,8 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           </div>
         )}
 
-        {/* Dynamic SVG Guide Silhouette */}
-        {renderGuideOverlay()}
+        {/* No framing-guide overlay — the camera view carries only the panel
+            label and shot count below. */}
 
         {/* Real-time Gyro / Bubble Level Circle Overlay */}
         {/* The level bubble and the lighting readout were removed from the
@@ -825,19 +825,12 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             verdict, so they reported confidence they did not have. They also sat
             on top of the only region that has to stay readable while framing a
             car, on a screen that is already too short. */}
-        {/* Slot identity — bottom-left on the feed, on a scrim instead of black
-            pills. Name at 17/600, description under it. */}
+        {/* Slot identity — bottom-left on the feed. Just the panel label and the
+            shot count; the framing guide and the per-shot instructions were
+            removed so the live view stays clean. */}
         <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none px-4 pt-10 pb-3 bg-gradient-to-t from-black/75 via-black/35 to-transparent">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-[#4FE3DC]">Shot {activeSlotIndex + 1} / {allSlots.length}</span>
-            <span className={`text-[11px] font-medium ${activeSlot.tier === 'core' ? 'text-[#4FE3DC]' : 'text-neutral-400'}`}>
-              {activeSlot.tier === 'core' ? 'Core shot' : activeSlot.tier === 'recommended' ? 'Recommended' : 'Optional'}
-            </span>
-          </div>
+          <span className="text-[11px] font-mono text-[#4FE3DC]">Shot {activeSlotIndex + 1} / {allSlots.length}</span>
           <p className="text-[17px] font-semibold text-[#E8EAE6] leading-tight mt-0.5">{activeSlot.name}</p>
-          <p className="text-[13px] text-neutral-300 leading-normal mt-0.5 max-w-[80%]">
-            {activeSlot.description || 'Frame the panel inside the guide outline before capturing.'}
-          </p>
         </div>
       </div>
 
