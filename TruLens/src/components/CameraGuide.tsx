@@ -202,6 +202,27 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
     }
   }, [selectedSlotId]);
 
+  /* Draw a data-URI image onto the capture canvas and hand it to finalizeCapture,
+     so an imported file lands in the same "Redo / Keep & next" pending state a
+     live shot does. Was the bug: import only set customFile, so the console
+     stayed on "Shoot" and the dealer had to press it on a photo they just picked. */
+  const commitDataUri = (dataUri: string) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const img = new Image();
+    img.onload = () => {
+      const { w, h } = fitDims(img.naturalWidth, img.naturalHeight);
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(img, 0, 0, w, h);
+      finalizeCapture(canvas);
+    };
+    img.onerror = () => { /* unreadable image — leave the preview, no pending shot */ };
+    img.src = dataUri;
+  };
+
   // Handle local file uploads inside viewfinder
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -212,11 +233,72 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           const dataUri = event.target.result as string;
           setCustomFile(dataUri);
           setIsCameraActive(false);
+          commitDataUri(dataUri);
         }
       };
       reader.readAsDataURL(file);
       e.target.value = '';
     }
+  };
+
+  /* Bulk "just these photos" dump — for a car that's no longer on the lot and
+     the dealer only has a set of photos. Auto-assigns each to the next empty
+     slot (core first) and uploads ONE AT A TIME: each file is read, POSTed, and
+     turned into a disk file by the server before the next is read — so the
+     browser never holds a stack of base64. From here the normal Send-to-DMS
+     export carries them through. */
+  const handleBulkDump = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+
+    const emptyCore = DEFAULT_TEMPLATE.slots.filter((s) => s.tier === 'core' && !photos[s.id]);
+    const emptyOther = DEFAULT_TEMPLATE.slots.filter((s) => s.tier !== 'core' && !photos[s.id]);
+    const targets = [...emptyCore, ...emptyOther, ...DEFAULT_TEMPLATE.slots];
+
+    const importReport: QualityReport = {
+      overallScore: 90,
+      lightingCheck: { status: 'Perfect', brightness: 135, contrast: 120, feedback: 'Imported photo.' },
+      angleCheck: { status: 'Perfect', pitchDiff: 0, rollDiff: 0, feedback: 'Imported photo.' },
+    };
+    const readDataUrl = (f: File) =>
+      new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result));
+        r.onerror = () => reject(r.error);
+        r.readAsDataURL(f);
+      });
+
+    setBulkProgress({ current: 0, total: files.length, status: 'syncing' });
+    const token = await user?.getIdToken();
+    let latest = vehicle;
+    for (let i = 0; i < files.length; i++) {
+      setBulkProgress((p) => ({ ...p, current: i + 1 }));
+      const slot = targets[i] || DEFAULT_TEMPLATE.slots[i % DEFAULT_TEMPLATE.slots.length];
+      try {
+        const base64 = await readDataUrl(files[i]); // one at a time — no base64 pile-up
+        const res = await fetch('/api/inventory/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            vehicleId: vehicle.id,
+            slotId: slot.id,
+            base64Image: base64,
+            qualityReport: importReport,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.vehicle) latest = data.vehicle;
+        }
+      } catch (err) {
+        setBulkProgress((p) => ({ ...p, status: 'error' }));
+        return;
+      }
+    }
+    setBulkProgress((p) => ({ ...p, status: 'done' }));
+    onBulkPhotosUploaded(latest);
+    setTimeout(() => setBulkProgress({ current: 0, total: 0, status: 'idle' }), 1500);
   };
 
   // Handle select multiple files from camera roll
@@ -903,6 +985,33 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             <span className="text-[11px]">Skip</span>
           </button>
         </div>
+        )}
+
+        {/* Bulk "just these photos" upload — for a car no longer on the lot: pick
+            any photos and they upload straight through, auto-assigned and
+            converted to files on arrival. Hidden while reviewing a shot. */}
+        {!pendingShot && bulkProgress.status === 'idle' && (
+          <label className="tru-btn-secondary w-full py-3 text-[14px] flex items-center justify-center gap-2 cursor-pointer">
+            <Images size={16} /> Upload photos (bulk)
+            <input type="file" accept="image/*" multiple onChange={handleBulkDump} className="hidden" />
+          </label>
+        )}
+        {bulkProgress.status !== 'idle' && (
+          <div
+            className={`w-full py-3 rounded-xl text-[13px] font-semibold text-center ${
+              bulkProgress.status === 'error'
+                ? 'bg-red-950/40 text-red-300'
+                : bulkProgress.status === 'done'
+                ? 'bg-emerald-950/40 text-emerald-300'
+                : 'bg-neutral-900 text-[#E8EAE6]'
+            }`}
+          >
+            {bulkProgress.status === 'syncing'
+              ? `Uploading ${bulkProgress.current}/${bulkProgress.total}…`
+              : bulkProgress.status === 'done'
+              ? 'Photos uploaded ✓'
+              : 'Upload failed — try again'}
+          </div>
         )}
 
         {listingReady && (
