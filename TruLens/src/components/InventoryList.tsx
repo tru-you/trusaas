@@ -136,11 +136,13 @@ export default function InventoryList({
    */
   const fleet = React.useMemo(() => {
     const rows = vehicles.map(v => ({ v, r: computeWebReadiness(v) }));
+    // Listing-readiness is the 10-shot CORE set now. Every slot is optional, so
+    // the old missingRequired[] was always empty and read every car as "done".
     const shortOfPublish = rows
-      .filter(({ r }) => r.missingRequired.length > 0)
-      .sort((a, b) => a.r.missingRequired.length - b.r.missingRequired.length);
-    const readyToExport = rows.filter(({ v, r }) => r.missingRequired.length === 0 && !v.lastDmsExportAt);
-    const done = rows.filter(({ r }) => r.missingRequired.length === 0).length;
+      .filter(({ r }) => !r.listingReady)
+      .sort((a, b) => a.r.missingCore.length - b.r.missingCore.length);
+    const readyToExport = rows.filter(({ v, r }) => r.listingReady && !v.lastDmsExportAt);
+    const done = rows.filter(({ r }) => r.listingReady).length;
     return { rows, shortOfPublish, readyToExport, done, total: rows.length };
   }, [vehicles]);
 
@@ -151,7 +153,7 @@ export default function InventoryList({
     }
     if (fleet.shortOfPublish.length > 0) {
       const nearest = fleet.shortOfPublish[0];
-      const missing = nearest.r.missingRequired;
+      const missing = nearest.r.missingCore;
       const name = `${nearest.v.year} ${nearest.v.make} ${nearest.v.model}`.trim();
       return {
         head: `${fleet.shortOfPublish.length} ${fleet.shortOfPublish.length === 1 ? 'vehicle is' : 'vehicles are'} short of publishing`,
@@ -161,10 +163,10 @@ export default function InventoryList({
     if (fleet.readyToExport.length > 0) {
       return {
         head: `${fleet.readyToExport.length} ready to send to TruFlow`,
-        body: 'Every required shot is captured. Export to publish them.',
+        body: 'Every core shot is captured. Export to publish them.',
       };
     }
-    return { head: 'Everything captured', body: `All ${fleet.total} vehicles have their required shots.` };
+    return { head: 'Everything captured', body: `All ${fleet.total} vehicles are listing-ready.` };
   }, [fleet]);
 
   // Settings state (persisted for VIR / share branding)
@@ -921,8 +923,8 @@ export default function InventoryList({
               const photos = vehicle.photos || {};
               const takenCount = Object.keys(photos).length;
               const totalCount = DEFAULT_TEMPLATE.slots.length;
-              const requiredTaken = DEFAULT_TEMPLATE.slots.filter(s => s.required && !!photos[s.id]).length;
-              const totalRequired = DEFAULT_TEMPLATE.slots.filter(s => s.required).length;
+              const coreTaken = DEFAULT_TEMPLATE.slots.filter(s => s.tier === 'core' && !!photos[s.id]).length;
+              const totalCore = DEFAULT_TEMPLATE.slots.filter(s => s.tier === 'core').length;
               const readiness = computeWebReadiness(vehicle);
               /* Photos are files now, so the hero is usually "/media/<hash>.jpg"
                  rather than a data URI. Testing only for data: left every
@@ -1053,22 +1055,20 @@ export default function InventoryList({
                   <div className="mt-1 pt-2 border-t border-neutral-900 flex flex-col gap-3">
                     <div className="flex-1">
                       <div className="flex justify-between text-[13px] text-neutral-400 mb-1 font-mono">
-                        {/* Was "Required Guide Completion: 7 of 19 (37%)" directly
-                            under a chip already reading "Photos 7/19" — the same
-                            fact twice, once in product vocabulary and once in
-                            plain numbers. The chip keeps the count; this line
-                            keeps the percentage the bar is drawing. */}
-                        <span>Required photos</span>
+                        {/* The chip above keeps the raw count; this line is the
+                            percentage the bar draws — CORE shots, not the old
+                            all-optional "required" set that always read 100%. */}
+                        <span>Core photos</span>
                         <span className="font-bold text-neutral-200">
-                          {totalRequired > 0 ? Math.round((requiredTaken / totalRequired) * 100) : 100}%
+                          {totalCore > 0 ? Math.round((coreTaken / totalCore) * 100) : 0}%
                         </span>
                       </div>
                       <div className="w-full bg-[rgba(232,234,230,0.08)] h-[3px] rounded-full overflow-hidden relative">
                         <div
                           className={`h-full rounded-full transition-all duration-500 relative overflow-hidden ${
-                            requiredTaken === totalRequired ? 'bg-emerald-500' : 'bg-indigo-500'
-                          } ${requiredTaken > 0 && requiredTaken < totalRequired ? 'tl-progress-sheen' : ''}`}
-                          style={{ width: `${totalRequired > 0 ? Math.round((requiredTaken / totalRequired) * 100) : 100}%` }}
+                            coreTaken === totalCore ? 'bg-emerald-500' : 'bg-indigo-500'
+                          } ${coreTaken > 0 && coreTaken < totalCore ? 'tl-progress-sheen' : ''}`}
+                          style={{ width: `${totalCore > 0 ? Math.round((coreTaken / totalCore) * 100) : 0}%` }}
                         />
                       </div>
                     </div>

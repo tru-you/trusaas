@@ -33,7 +33,13 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport }: Pu
   };
   const photos = vehicle?.photos || {};
   const slots = DEFAULT_TEMPLATE.slots;
-  const exteriorSlots = slots.filter(s => s.category === 'exterior' || s.phase === 2);
+  // The 8 exterior-lap CORE panels (all core shots except the two interior
+  // ones) — these build the TruOrbit 360, so every side is shown. Basing the
+  // check on core means a listing-ready car reads all-green instead of a false
+  // red for skipped optional angles. (Was `category === 'exterior'`, which never
+  // matched the template's 'Clockwise Exterior' category and only worked via the
+  // phase===2 fallback — which demanded all 16 exterior shots.)
+  const exteriorSlots = slots.filter(s => s.tier === 'core' && s.id !== 'interior_cabin' && s.id !== 'odometer');
   const exteriorPresent = exteriorSlots.filter(s => !!photos[s.id]).length;
   const nonCore = slots.filter(s => s.tier !== 'core');
   const nonCoreTaken = nonCore.filter(s => !!photos[s.id]).length;
@@ -121,7 +127,7 @@ export default function PublishGate({ vehicle, onBack, onPublish, onExport }: Pu
                   className={`aspect-square rounded-lg overflow-hidden border ${
                     photo
                       ? 'border-[rgba(232,234,230,0.14)]'
-                      : slot.required
+                      : slot.tier === 'core'
                         ? 'border-rose-500/40 bg-rose-500/5'
                         : 'border-[rgba(232,234,230,0.08)] bg-[rgba(232,234,230,0.03)]'
                   }`}

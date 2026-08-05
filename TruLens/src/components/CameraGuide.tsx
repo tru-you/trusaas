@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  Camera, ChevronLeft, AlertCircle,
-  Check, Upload, HelpCircle, Images, Loader2, Trash2, X,
+  Camera, ChevronLeft,
+  Check, Upload, HelpCircle, Images, X,
   RotateCcw, SkipForward} from 'lucide-react';
 import { Vehicle, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,24 +48,16 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   const streamRef = React.useRef<MediaStream | null>(null);
 
   // Simulated vehicle visualizer state (for fallback / testing)
-  const [simRotation, setSimRotation] = React.useState(45); // Degrees (Yaw)
   const [simPitch, setSimPitch] = React.useState(12); // Pitch (Phone vertical level)
   const [simRoll, setSimRoll] = React.useState(0); // Roll (Phone horizontal level)
-  const [simBrightness, setSimBrightness] = React.useState(130); // 0-255
+  const simBrightness = 130; // constant — there is no live light metering behind it
   const [customFile, setCustomFile] = React.useState<string | null>(null);
 
   // Auto-level assistant toggle
 
-  // Bulk upload state variables
-  interface BulkImageItem {
-    id: string;
-    fileName: string;
-    base64: string;
-    slotId: string;
-    qualityReport: QualityReport;
-  }
-  const [bulkItems, setBulkItems] = React.useState<BulkImageItem[]>([]);
-  const [isBulkModalOpen, setIsBulkModalOpen] = React.useState(false);
+  // Live bulk-upload progress — drives the auto-assign "Upload photos (bulk)"
+  // path below. The old per-photo slot-mapping modal was retired, so this is
+  // the only bulk state left.
   const [bulkProgress, setBulkProgress] = React.useState<{ current: number; total: number; status: 'idle' | 'syncing' | 'done' | 'error' }>({
     current: 0,
     total: 0,
@@ -196,7 +188,6 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   // Update simulator's ideal rotation when slot changes
   React.useEffect(() => {
     if (activeSlot) {
-      setSimRotation(activeSlot.idealAngle.yaw);
       setSimPitch(activeSlot.idealAngle.pitch + Math.floor(Math.random() * 6 - 3));
       setSimRoll(Math.floor(Math.random() * 4 - 2));
     }
@@ -299,116 +290,6 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
     setBulkProgress((p) => ({ ...p, status: 'done' }));
     onBulkPhotosUploaded(latest);
     setTimeout(() => setBulkProgress({ current: 0, total: 0, status: 'idle' }), 1500);
-  };
-
-  // Handle select multiple files from camera roll
-  const handleBulkFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const newItems: BulkImageItem[] = [];
-    let loadedCount = 0;
-
-    // We try to auto-assign slots sequentially to make bulk processing extremely fast
-    const unfilledRequired = DEFAULT_TEMPLATE.slots.filter(s => s.required && !photos[s.id]);
-    const unfilledAll = DEFAULT_TEMPLATE.slots.filter(s => !photos[s.id]);
-    const assignableSlots = unfilledRequired.length > 0 ? unfilledRequired : (unfilledAll.length > 0 ? unfilledAll : DEFAULT_TEMPLATE.slots);
-
-    Array.from(files).forEach((file, idx) => {
-      const fileObj = file as File;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          const base64 = event.target.result as string;
-          // Auto assign slot
-          const slot = assignableSlots[idx % assignableSlots.length] || DEFAULT_TEMPLATE.slots[0];
-          
-          const defaultReport: QualityReport = {
-            overallScore: 94,
-            lightingCheck: {
-              status: 'Perfect',
-              brightness: 135,
-              contrast: 120,
-              feedback: 'Balanced ambient lighting detected from camera roll import.'
-            },
-            angleCheck: {
-              status: 'Perfect',
-              pitchDiff: 0,
-              rollDiff: 0,
-              feedback: 'Imported photo framing accepted.'
-            }
-          };
-
-          newItems.push({
-            id: `bulk-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
-            fileName: fileObj.name,
-            base64,
-            slotId: slot.id,
-            qualityReport: defaultReport
-          });
-        }
-        loadedCount++;
-        if (loadedCount === files.length) {
-          setBulkItems(prev => [...prev, ...newItems]);
-          setBulkProgress({ current: 0, total: files.length, status: 'idle' });
-          setIsBulkModalOpen(true);
-        }
-      };
-      reader.readAsDataURL(fileObj);
-    });
-  };
-
-  // Perform bulk sequential upload of all mapped photos
-  const handleSyncBulkPhotos = async () => {
-    if (bulkItems.length === 0) return;
-
-    setBulkProgress({ current: 0, total: bulkItems.length, status: 'syncing' });
-
-    let latestVehicleState = vehicle;
-
-    const token = await user?.getIdToken();
-
-    for (let i = 0; i < bulkItems.length; i++) {
-      const item = bulkItems[i];
-      setBulkProgress(prev => ({ ...prev, current: i + 1 }));
-
-      try {
-        const res = await fetch('/api/inventory/upload-photo', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            vehicleId: vehicle.id,
-            slotId: item.slotId,
-            base64Image: item.base64,
-            qualityReport: item.qualityReport
-          })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          latestVehicleState = data.vehicle;
-        }
-      } catch (err) {
-        console.error(`Error uploading bulk item ${item.fileName}:`, err);
-        setBulkProgress(prev => ({ ...prev, status: 'error' }));
-        return;
-      }
-    }
-
-    setBulkProgress(prev => ({ ...prev, status: 'done' }));
-    
-    // Update local vehicle state in the App component
-    onBulkPhotosUploaded(latestVehicleState);
-
-    // Close the bulk modal after a successful sync
-    setTimeout(() => {
-      setIsBulkModalOpen(false);
-      setBulkItems([]);
-      setBulkProgress({ current: 0, total: 0, status: 'idle' });
-    }, 1500);
   };
 
   // Custom helper to generate red "NONE" bypass for Service Book
@@ -641,32 +522,6 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
     }
     prevPhotoCount.current = count;
   }, [photos]);
-
-  // Render SVG guide overlay path lines
-  /**
-   * A calm framing guide instead of a traced car silhouette.
-   *
-   * The old overlay drew a dashed car shape per body type over the live camera.
-   * It never lined up with the actual car — no outline can match every make,
-   * model and angle — so it just cluttered the viewfinder and fought the real
-   * vehicle. Photographers frame with brackets and a target zone, not a traced
-   * outline: fill the frame, keep it level, shoot. Universal, quiet, and it
-   * works for any vehicle.
-   */
-  const renderGuideOverlay = () => (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <g stroke="#4FE3DC" strokeWidth="0.4" fill="none" opacity="0.5">
-        <path d="M 8,16 L 8,10 L 16,10" />
-        <path d="M 92,16 L 92,10 L 84,10" />
-        <path d="M 8,84 L 8,90 L 16,90" />
-        <path d="M 92,84 L 92,90 L 84,90" />
-      </g>
-      <rect x="16" y="26" width="68" height="48" rx="2"
-            stroke="#4FE3DC" strokeWidth="0.5" strokeDasharray="1.5,2"
-            fill="none" opacity="0.35" />
-      <line x1="30" y1="50" x2="70" y2="50" stroke="#4FE3DC" strokeWidth="0.4" opacity="0.25" />
-    </svg>
-  );
 
   // The next shot to take, core-first — drives the pulsing "next" chip.
   const nextSlotId = (
@@ -1021,166 +876,6 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         )}
 
       </div>
-
-
-      {/* Bulk Importer Overlay Modal */}
-      {isBulkModalOpen && (
-        <div className="absolute inset-0 bg-neutral-950/98 z-50 flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="px-4 py-4 border-b border-neutral-850 bg-neutral-900 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-              <Images className="text-[#4FE3DC]" size={18} />
-              <div>
-                <h3 className="text-[13px] font-medium text-[#E8EAE6]">Bulk Camera Roll Importer</h3>
-                <p className="text-[13px] text-neutral-400">Streamline inventory lot photography bulk processing</p>
-              </div>
-            </div>
-            {bulkProgress.status === 'idle' && (
-              <button 
-                onClick={() => {
-                  setIsBulkModalOpen(false);
-                  setBulkItems([]);
-                }}
-                className="p-1 rounded-full hover:bg-neutral-800 text-neutral-400 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            )}
-          </div>
-
-          {/* Sync Progress Banner */}
-          {bulkProgress.status !== 'idle' && (
-            <div className="bg-indigo-950/40 border-b border-indigo-900/30 px-4 py-3 space-y-2 shrink-0">
-              <div className="flex justify-between items-center text-[13px]">
-                <span className="font-semibold text-indigo-300 flex items-center gap-2">
-                  {bulkProgress.status === 'syncing' ? (
-                    <>
-                      <Loader2 size={13} className="animate-spin text-[#4FE3DC]" />
-                      <span>Syncing bulk photos to Lot ({bulkProgress.current} / {bulkProgress.total})</span>
-                    </>
-                  ) : bulkProgress.status === 'done' ? (
-                    <span className="text-emerald-400 flex items-center gap-2 font-bold">
-                      <Check size={14} className="font-semibold" /> All photos bulk-synced successfully!
-                    </span>
-                  ) : (
-                    <span className="text-red-400">Error syncing photos. Try again.</span>
-                  )}
-                </span>
-                <span className="text-[13px] font-mono text-neutral-400">
-                  {Math.round((bulkProgress.current / bulkProgress.total) * 100)}%
-                </span>
-              </div>
-              <div className="w-full bg-neutral-900 rounded-full h-1.5 overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-300 ${bulkProgress.status === 'done' ? 'bg-emerald-500' : 'bg-indigo-500'}`}
-                  style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Bulk Images List */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-            {bulkItems.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2 text-neutral-500">
-                <Upload size={32} />
-                <p className="text-[13px]">Select photos from your device to start mapping</p>
-              </div>
-            ) : (
-              bulkItems.map((item) => {
-                const isTaken = !!photos[item.slotId];
-                return (
-                  <div key={item.id} className="bg-neutral-900 rounded-xl p-3 border border-neutral-850 flex gap-3 items-center relative hover:border-neutral-800 transition-colors">
-                    {/* Thumbnail */}
-                    <div className="w-14 h-14 rounded-lg bg-black border border-neutral-800 overflow-hidden shrink-0 relative">
-                      <img 
-                        src={item.base64} 
-                        alt="Bulk item thumbnail" 
-                        className="w-full h-full object-cover" 
-                        referrerPolicy="no-referrer"
-                      />
-                      <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[12px] text-center font-mono py-0.5 truncate px-1 text-neutral-300">
-                        {item.fileName}
-                      </span>
-                    </div>
-
-                    {/* Slot Match Controller */}
-                    <div className="flex-1 min-w-0">
-                      <label className="text-[13px] font-medium text-[rgba(232,234,230,0.55)] block mb-1">
-                        Assign Photographic Slot
-                      </label>
-                      <select
-                        value={item.slotId}
-                        disabled={bulkProgress.status === 'syncing'}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setBulkItems(prev => prev.map(p => p.id === item.id ? { ...p, slotId: val } : p));
-                        }}
-                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg text-[13px] py-1 px-2 text-neutral-200 focus:border-indigo-500 focus:outline-none"
-                      >
-                        {DEFAULT_TEMPLATE.slots.map(slot => (
-                          <option key={slot.id} value={slot.id}>
-                            {slot.name} {slot.required ? '(Required)' : ''}
-                          </option>
-                        ))}
-                      </select>
-
-                      {/* Info / Overwrite alert helper */}
-                      {isTaken && (
-                        <p className="text-[13px] text-amber-400 font-medium flex items-center gap-1 mt-1 font-sans">
-                          <AlertCircle size={9} /> Already has a photo. This will replace it.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Delete item action */}
-                    {bulkProgress.status === 'idle' && (
-                      <button
-                        onClick={() => {
-                          setBulkItems(prev => prev.filter(p => p.id !== item.id));
-                        }}
-                        className="p-2 bg-red-950/20 hover:bg-red-950/40 text-red-400 border border-red-950/40 rounded-lg cursor-pointer shrink-0"
-                        title="Remove photo"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Action Footer */}
-          <div className="p-4 border-t border-neutral-850 bg-neutral-900/80 flex items-center gap-3 shrink-0">
-            <button
-              onClick={() => {
-                setIsBulkModalOpen(false);
-                setBulkItems([]);
-              }}
-              disabled={bulkProgress.status === 'syncing'}
-              className="flex-1 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-[13px] font-bold text-neutral-400 hover:bg-neutral-900 cursor-pointer disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSyncBulkPhotos}
-              disabled={bulkItems.length === 0 || bulkProgress.status === 'syncing'}
-              className="flex-1 py-2 tl-btn-3d bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 rounded-xl text-[13px] font-semibold text-[#E8EAE6] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed shadow-md"
-            >
-              {bulkProgress.status === 'syncing' ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" /> Syncing ({bulkProgress.current}/{bulkProgress.total})...
-                </>
-              ) : (
-                <>
-                  <Upload size={14} /> Sync {bulkItems.length} Photos
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
 
     </div>
   );

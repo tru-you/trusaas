@@ -7,9 +7,6 @@ export interface WebReadiness {
   level: WebReadinessLevel;
   label: string;
   color: string;
-  requiredTotal: number;
-  requiredTaken: number;
-  optionalTaken: number;
   /** Core = the honest listing minimum (tier === 'core'). This is what
    *  "listing-ready" is measured against now, not the toothless all-optional
    *  required[] set. */
@@ -22,7 +19,6 @@ export interface WebReadiness {
   conditionDeclared: boolean;
   listingReady: boolean;
   overallScore: number | null;
-  missingRequired: string[];
   canExportDms: boolean;
   canPublishWeb: boolean;
   reasons: string[];
@@ -38,11 +34,6 @@ function overallScore(vehicle: Vehicle): number | null {
 /** Shared Ready-for-web rules across TruLens → DMS → website */
 export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
   const photos = vehicle.photos || {};
-  const required = DEFAULT_TEMPLATE.slots.filter((s) => s.required);
-  const optional = DEFAULT_TEMPLATE.slots.filter((s) => !s.required);
-  const requiredTaken = required.filter((s) => !!photos[s.id]).length;
-  const optionalTaken = optional.filter((s) => !!photos[s.id]).length;
-  const missingRequired = required.filter((s) => !photos[s.id]).map((s) => s.name);
 
   // Core = the honest listing minimum (the exterior lap + interior + odometer).
   const core = DEFAULT_TEMPLATE.slots.filter((s) => s.tier === 'core');
@@ -104,16 +95,12 @@ export function computeWebReadiness(vehicle: Vehicle): WebReadiness {
     level,
     label,
     color,
-    requiredTotal: required.length,
-    requiredTaken,
-    optionalTaken,
     coreTotal: core.length,
     coreTaken,
     missingCore,
     conditionDeclared,
     listingReady,
     overallScore: score,
-    missingRequired,
     canExportDms,
     canPublishWeb,
     reasons,
@@ -133,7 +120,7 @@ export function whatsAppSalesBlurb(
     `${vehicle.trim || 'Standard'} · ${vehicle.color || ''}\n` +
     `Stock *${vehicle.stockNumber}* · R ${price}\n` +
     `TruLens VIR: ${score} · ${readiness.label}\n` +
-    `Photos: ${readiness.requiredTaken}/${readiness.requiredTotal} required\n` +
+    `Photos: ${readiness.coreTaken}/${readiness.coreTotal} core shots\n` +
     `\n${dealer}` +
     (opts?.waNumber || vehicle.dealerWhatsApp
       ? `\nWhatsApp: ${opts?.waNumber || vehicle.dealerWhatsApp}`
