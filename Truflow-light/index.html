@@ -258,6 +258,39 @@ a{text-decoration:none;color:var(--accent);}
 .ld-tl-detail{font-size:var(--t-small);color:var(--paper-dim);margin-top:2px;line-height:1.5;word-break:break-word;}
 .ld-empty{padding:14px;text-align:center;color:var(--muted);font-size:var(--t-small);}
 @media(max-width:560px){.ld-panel{width:100%;max-width:100%;}.ld-mk{flex-basis:96px;}}
+
+/* ── Vehicle detail / edit drawer ───────────────────────────────────────── */
+.inv-card{cursor:pointer;}
+.vd-photos{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;}
+.vd-photos img{width:118px;height:78px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--glass-line);flex-shrink:0;background:var(--ink-inset);}
+.vd-photos .vd-noimg{display:flex;align-items:center;gap:9px;width:100%;padding:14px;border:1px dashed var(--border-subtle);border-radius:var(--r-sm);color:var(--muted);font-size:var(--t-small);}
+.vd-photos .vd-noimg svg{width:20px;height:20px;flex-shrink:0;color:var(--faint);}
+.vd-fields{margin-bottom:6px;}
+.vd-toggle{display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--glass-line);border-radius:var(--r-sm);background:var(--ink-overlay);margin:2px 0 18px;}
+.vd-toggle .vt-txt{flex:1;min-width:0;}
+.vd-toggle .vt-t{font-weight:600;font-size:var(--t-small);color:var(--paper);}
+.vd-toggle .vt-s{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.vd-switch{width:46px;height:27px;border-radius:100px;background:var(--ink-inset);border:1px solid var(--border-subtle);position:relative;cursor:pointer;flex-shrink:0;transition:background .2s,border-color .2s;}
+.vd-switch::after{content:"";position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s;}
+.vd-switch.on{background:var(--accent-faint);border-color:var(--accent);}
+.vd-switch.on::after{transform:translateX(19px);background:var(--accent);}
+.vd-foot{display:flex;gap:10px;margin-top:14px;}
+.vd-save{flex:1;justify-content:center;}
+.btn-danger{background:transparent;border:1px solid var(--border-subtle);color:var(--muted);}
+.btn-danger:hover{border-color:var(--danger);color:var(--danger);transform:translateY(-1px);}
+.vd-price-lg{font-family:var(--sans);font-weight:600;font-size:var(--t-h3);color:var(--paper);}
+
+/* ── Mobile bottom tab bar (sidebar is hidden ≤860px) ───────────────────── */
+.pmnav{display:none;}
+@media(max-width:860px){
+  .pmnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:450;background:var(--ink-raised);border-top:1px solid var(--glass-line);padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px));backdrop-filter:blur(20px) saturate(140%);}
+  .pmnav .mtab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:.01em;cursor:pointer;border-radius:var(--r-sm);transition:color .2s;}
+  .pmnav .mtab svg{width:20px;height:20px;}
+  .pmnav .mtab.on{color:var(--accent);}
+  .pmnav .mtab.mtab-out{color:var(--faint);}
+  .pwrap{padding-bottom:96px;}
+  .ld-panel,.ld-scroll{padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));}
+}
 </style>
 </head>
 <body>
@@ -394,8 +427,10 @@ a{text-decoration:none;color:var(--accent);}
             <button class="mpill on" data-status="All">All</button>
             <button class="mpill" data-status="New">New</button>
             <button class="mpill" data-status="Contacted">Contacted</button>
+            <button class="mpill" data-status="Test Drive Scheduled">Test Drive</button>
             <button class="mpill" data-status="Negotiating">Negotiating</button>
             <button class="mpill" data-status="Closed Won">Won</button>
+            <button class="mpill" data-status="Closed Lost">Lost</button>
           </div>
         </div>
         <div class="mcount" id="leadCount">&mdash; leads</div>
@@ -407,7 +442,9 @@ a{text-decoration:none;color:var(--accent);}
           <div class="msearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" id="invSearch" placeholder="Search make, model or year..."></div>
           <div class="mpills" id="invPills">
             <button class="mpill on" data-status="All">All</button>
+            <button class="mpill" data-status="inStock">In Stock</button>
             <button class="mpill" data-status="published">Published</button>
+            <button class="mpill" data-status="SOLD">Sold</button>
           </div>
           <button class="btn btn-accent btn-sm madd" data-goto="viewUpload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>Add Vehicle</button>
         </div>
@@ -446,7 +483,7 @@ a{text-decoration:none;color:var(--accent);}
               </div>
               <div class="uf-card">
                 <h3><span class="nic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="22" height="5"/><path d="M3 8v13h18V8M9 12h6"/></svg></span>Listing</h3>
-                <div class="uf-vir-note">New vehicles start in your DMS as unpublished stock. Use TruLens to capture photos, then publish to your storefront from TruFlow.</div>
+                <div class="uf-vir-note">New vehicles start <b>unpublished</b>. Capture photos in TruLens, then open the vehicle from Inventory and switch on <b>Live on website</b> to publish it to your storefront.</div>
               </div>
               <button type="submit" class="btn btn-accent uf-submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:16px;height:16px"><path d="M20 6L9 17l-5-5"/></svg>Add to Inventory</button>
             </div>
@@ -461,6 +498,18 @@ a{text-decoration:none;color:var(--accent);}
   <div class="ld-scrim" id="ldScrim">
     <aside class="ld-panel" id="ldPanel" role="dialog" aria-modal="true" aria-label="Lead detail"></aside>
   </div>
+
+  <div class="ld-scrim" id="vdScrim">
+    <aside class="ld-panel" id="vdPanel" role="dialog" aria-modal="true" aria-label="Vehicle detail"></aside>
+  </div>
+
+  <nav class="pmnav" aria-label="Primary">
+    <button type="button" class="mtab on" data-view="viewDashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span>Home</span></button>
+    <button type="button" class="mtab" data-view="viewLeads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg><span>Leads</span></button>
+    <button type="button" class="mtab" data-view="viewInventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="22" height="5"/><path d="M3 8v13h18V8M9 12h6"/></svg><span>Stock</span></button>
+    <button type="button" class="mtab" data-view="viewUpload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg><span>Add</span></button>
+    <button type="button" class="mtab mtab-out" id="mnavOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Sign out</span></button>
+  </nav>
 </div>
 
 <script>
@@ -570,7 +619,10 @@ a{text-decoration:none;color:var(--accent);}
   }
 
   function loadInventory(){
-    api('GET','/api/inventory').then(function(vehicles){
+    /* /api/all-vehicles returns the dealer's whole stock INCLUDING sold cars
+       (dealer-scoped server-side). /api/inventory hides SOLD, which would make
+       a car vanish the moment it's marked sold and leave no way to see it. */
+    api('GET','/api/all-vehicles').then(function(vehicles){
       cachedStock=Array.isArray(vehicles)?vehicles:[];
       renderAllInvViews();
     }).catch(function(){cachedStock=[];renderAllInvViews();});
@@ -668,7 +720,7 @@ a{text-decoration:none;color:var(--accent);}
     var status=v.status||'INVENTORY';
     var displayStatus=status==='INVENTORY'?'In Stock':status==='SOLD'?'Sold':status;
     var c=STATUS_COLOR[status]||'#6E7681';
-    var el=document.createElement('div');el.className='inv-card';
+    var el=document.createElement('div');el.className='inv-card';el.setAttribute('data-veh',v.id||'');
     var price=v.retailPrice||v.price||0;
     var hero=(v.images&&v.images.length)?v.images[0]:(v.heroImage||null);
     var imgHtml=hero
@@ -693,8 +745,9 @@ a{text-decoration:none;color:var(--accent);}
 
   function renderDashInv(){
     dashInvBoard.innerHTML='';
-    if(!cachedStock.length){dashInvBoard.innerHTML='<div class="inv-empty">No vehicles yet. Add stock via Upload or TruLens.</div>';return;}
-    cachedStock.slice(0,4).forEach(function(v){dashInvBoard.appendChild(invCard(v));});
+    var active=cachedStock.filter(function(v){return v.status!=='SOLD';});
+    if(!active.length){dashInvBoard.innerHTML='<div class="inv-empty">No vehicles yet. Add stock via Upload or TruLens.</div>';return;}
+    active.slice(0,4).forEach(function(v){dashInvBoard.appendChild(invCard(v));});
     dashInvBoard.style.display='grid';dashInvBoard.style.gridTemplateColumns='repeat(auto-fill,minmax(220px,1fr))';dashInvBoard.style.gap='14px';dashInvBoard.style.padding='18px 20px';
   }
 
@@ -702,7 +755,9 @@ a{text-decoration:none;color:var(--accent);}
     var q=(invSearch.value||'').toLowerCase().trim();
     var all=cachedStock.slice();
     if(invStatusFilter!=='All')all=all.filter(function(v){
+      if(invStatusFilter==='inStock')return v.status==='INVENTORY';
       if(invStatusFilter==='published')return v.status==='INVENTORY'&&v.showOnWebsite===true;
+      if(invStatusFilter==='SOLD')return v.status==='SOLD';
       return v.status===invStatusFilter;
     });
     if(q)all=all.filter(function(v){return((v.make||'')+' '+(v.model||'')+' '+v.year+(v.trim?' '+v.trim:'')).toLowerCase().includes(q);});
@@ -714,13 +769,17 @@ a{text-decoration:none;color:var(--accent);}
 
   function renderAllInvViews(){
     renderDashInv();renderInv();
-    document.getElementById('navInvCount').textContent=cachedStock.length;
-    document.getElementById('kInv').textContent=cachedStock.length;
+    /* cachedStock now includes SOLD cars (so they stay manageable), so the
+       stock counts must exclude them or the dealer's "in stock" number is
+       inflated by everything they've ever sold. */
+    var active=cachedStock.filter(function(v){return v.status!=='SOLD';});
+    document.getElementById('navInvCount').textContent=active.length;
+    document.getElementById('kInv').textContent=active.length;
     var published=cachedStock.filter(function(v){return v.status==='INVENTORY'&&v.showOnWebsite===true;}).length;
     document.getElementById('kInvPub').textContent=published+' published';
-    var withPhotos=cachedStock.filter(function(v){return(v.images&&v.images.length>0);}).length;
+    var withPhotos=active.filter(function(v){return(v.images&&v.images.length>0);}).length;
     document.getElementById('kPhotos').textContent=withPhotos;
-    var withVir=cachedStock.filter(function(v){return typeof v.vir==='number';}).length;
+    var withVir=active.filter(function(v){return typeof v.vir==='number';}).length;
     document.getElementById('kVir').textContent=withVir;
   }
 
@@ -768,6 +827,7 @@ a{text-decoration:none;color:var(--accent);}
   function showView(id){
     document.querySelectorAll('.pview').forEach(function(v){v.classList.toggle('active',v.id===id);});
     document.querySelectorAll('.pnav-item[data-view]').forEach(function(i){i.classList.toggle('on',i.getAttribute('data-view')===id);});
+    document.querySelectorAll('.pmnav .mtab[data-view]').forEach(function(i){i.classList.toggle('on',i.getAttribute('data-view')===id);});
     document.getElementById('viewTitle').textContent=TITLES[id]||'TruFlow Light';
     window.scrollTo({top:0,behavior:'instant'});
   }
@@ -775,6 +835,10 @@ a{text-decoration:none;color:var(--accent);}
   document.querySelectorAll('.pnav-item[data-view]').forEach(function(item){
     item.addEventListener('click',function(){showView(item.getAttribute('data-view'));});
   });
+  document.querySelectorAll('.pmnav .mtab[data-view]').forEach(function(item){
+    item.addEventListener('click',function(){showView(item.getAttribute('data-view'));});
+  });
+  document.getElementById('mnavOut').addEventListener('click',doLogout);
   document.body.addEventListener('click',function(e){
     var g=e.target.closest('[data-goto]');if(g)showView(g.getAttribute('data-goto'));
   });
@@ -898,6 +962,169 @@ a{text-decoration:none;color:var(--accent);}
      drawer live without wiping a half-typed note. */
   var _renderAllLeadViews=renderAllLeadViews;
   renderAllLeadViews=function(){_renderAllLeadViews();if(drawerOpen()){if(findLead(openLeadId))renderLeadDetail();else closeLead();}};
+
+  /* ── Vehicle detail / edit drawer ───────────────────────────────────────
+     Inventory is a two-way tool now: tap a card to edit price/specs, toggle
+     storefront visibility, change status, or delete. Field edits commit on
+     Save; the publish switch and status pills commit immediately (like the
+     lead status pills), all via PUT /api/inventory/:id. Delete uses DELETE.
+     Every write is dealer-scoped server-side (mayTouchVehicle). */
+  var vdScrim=document.getElementById('vdScrim');
+  var vdPanel=document.getElementById('vdPanel');
+  var openVehId=null;
+  var BODY_OPTS=['','SUV','Hatchback','Sedan','Bakkie','Coupe'];
+  var FUEL_OPTS=['Petrol','Diesel','Hybrid','Electric'];
+  var TRANS_OPTS=['Automatic','Manual'];
+  var VEH_STATUSES=[['INVENTORY','In Stock'],['SOLD','Sold'],['TRADE_IN','Trade-in'],['RECON','Recon']];
+
+  function curVeh(){for(var i=0;i<cachedStock.length;i++){if(cachedStock[i].id===openVehId)return cachedStock[i];}return null;}
+  function vehDrawerOpen(){return vdScrim.classList.contains('open');}
+  function openVeh(id){openVehId=id;renderVehDetail();vdScrim.classList.add('open');document.body.style.overflow='hidden';}
+  function closeVeh(){openVehId=null;vdScrim.classList.remove('open');document.body.style.overflow='';}
+
+  function optionList(list,sel){return list.map(function(o){
+    var val=typeof o==='string'?o:o[0],lbl=typeof o==='string'?(o||'--'):o[1];
+    return '<option value="'+esc(val)+'"'+(val===sel?' selected':'')+'>'+esc(lbl)+'</option>';
+  }).join('');}
+
+  function renderVehDetail(){
+    var v=curVeh();if(!v){closeVeh();return;}
+    /* Preserve any in-progress field edits across an immediate re-render (a
+       status or publish change rebuilds the panel — a half-typed price must
+       survive it). */
+    var prev={},had=!!document.getElementById('vdPrice');
+    if(had)['vdPrice','vdTruPrice','vdKm','vdTrim','vdBody','vdFuel','vdTrans','vdDesc'].forEach(function(id){var el=document.getElementById(id);if(el)prev[id]=el.value;});
+    var fv=function(id,fallback){return had&&prev[id]!==undefined?prev[id]:fallback;};
+
+    var title=((v.year||'')+' '+(v.make||'')+' '+(v.model||'')+(v.trim?' '+v.trim:'')).replace(/\s+/g,' ').trim();
+    var status=v.status||'INVENTORY';
+    var displayStatus=status==='INVENTORY'?'In Stock':status==='SOLD'?'Sold':status;
+    var sc=STATUS_COLOR[status]||'#6E7681';
+    var pub=v.showOnWebsite===true&&status==='INVENTORY';
+
+    var photos;
+    if(v.images&&v.images.length){
+      photos='<div class="vd-photos">'+v.images.slice(0,12).map(function(src){return '<img src="'+esc(src)+'" alt="'+esc(title)+'" loading="lazy">';}).join('')+'</div>';
+    }else{
+      photos='<div class="vd-photos"><div class="vd-noimg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 17h14l-1.5-5H6.5L5 17zM8 12l1-4h6l1 4"/><circle cx="7.5" cy="17" r="1.4"/><circle cx="16.5" cy="17" r="1.4"/></svg><span>No photos yet — capture them in TruLens, then export to publish.</span></div></div>';
+    }
+
+    var meta=[];
+    if(v.stockNumber)meta.push(['Stock #',esc(v.stockNumber)]);
+    if(typeof v.vir==='number')meta.push(['VIR score',v.vir+' / 100']);
+    if(v.dateAcquired)meta.push(['Added',esc(v.dateAcquired)]);
+    meta.push(['Source',esc(v.source==='trulens'?'TruLens capture':(v.source||'Manual'))]);
+    var metaHtml='<div class="ld-meta">';
+    meta.forEach(function(m){metaHtml+='<div class="ld-mrow"><span class="ld-mk">'+m[0]+'</span><span class="ld-mv">'+m[1]+'</span></div>';});
+    metaHtml+='</div>';
+
+    var pubSub=status!=='INVENTORY'?'Only in-stock cars can show on the website.':(pub?'Buyers can see this car on your storefront now.':'Hidden from your storefront until you publish.');
+    var toggle='<div class="ld-lbl">Storefront</div><div class="vd-toggle"><div class="vt-txt"><div class="vt-t">Live on website</div><div class="vt-s" id="vdPubSub">'+pubSub+'</div></div><div class="vd-switch'+(pub?' on':'')+'" id="vdPub" role="switch" aria-checked="'+(pub?'true':'false')+'" tabindex="0"></div></div>';
+
+    var stp='<div class="ld-lbl">Status</div><div class="ld-status" id="vdStatus">';
+    VEH_STATUSES.forEach(function(s){stp+='<button type="button" class="ld-spill'+(s[0]===status?' on':'')+'" data-vstatus="'+s[0]+'">'+esc(s[1])+'</button>';});
+    stp+='</div>';
+
+    var fields='<div class="ld-lbl">Details</div><div class="vd-fields">'+
+      '<div class="uf-row2"><div class="uf-field"><label>Asking price (ZAR)</label><input type="number" id="vdPrice" value="'+esc(fv('vdPrice',v.retailPrice||v.price||''))+'"></div>'+
+      '<div class="uf-field"><label>TruPrice (ZAR)</label><input type="number" id="vdTruPrice" value="'+esc(fv('vdTruPrice',v.truPrice||''))+'"></div></div>'+
+      '<div class="uf-row2"><div class="uf-field"><label>Mileage (km)</label><input type="number" id="vdKm" value="'+esc(fv('vdKm',v.mileage||''))+'"></div>'+
+      '<div class="uf-field"><label>Variant / Trim</label><input type="text" id="vdTrim" value="'+esc(fv('vdTrim',v.trim||''))+'"></div></div>'+
+      '<div class="uf-row3"><div class="uf-field"><label>Body</label><select id="vdBody">'+optionList(BODY_OPTS,fv('vdBody',v.bodyType||''))+'</select></div>'+
+      '<div class="uf-field"><label>Fuel</label><select id="vdFuel">'+optionList(FUEL_OPTS,fv('vdFuel',v.fuelType||'Petrol'))+'</select></div>'+
+      '<div class="uf-field"><label>Trans</label><select id="vdTrans">'+optionList(TRANS_OPTS,fv('vdTrans',v.transmission||'Automatic'))+'</select></div></div>'+
+      '<div class="uf-field"><label>Description</label><textarea id="vdDesc" class="ld-note" style="min-height:70px">'+esc(fv('vdDesc',v.description||''))+'</textarea></div></div>';
+
+    var foot='<div class="vd-foot"><button type="button" class="btn btn-accent vd-save" data-vsave>Save changes</button><button type="button" class="btn btn-danger" data-vdel>Delete</button></div>';
+
+    vdPanel.innerHTML='<div class="ld-head"><div class="lav" style="background:'+sc+'22;color:'+sc+'">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px"><path d="M5 17h14l-1.5-5H6.5L5 17zM7 17v2M17 17v2M8 12l1-4h6l1 4"/><circle cx="7.5" cy="17" r="1.4"/><circle cx="16.5" cy="17" r="1.4"/></svg></div>'+
+      '<div class="ld-id"><div class="ld-name">'+esc(title||'Vehicle')+'</div><div class="ld-sub"><span class="vd-price-lg">'+fmtPrice(v.retailPrice||v.price||0)+'</span> &middot; <span style="color:'+sc+'">'+esc(displayStatus)+'</span></div></div>'+
+      '<button type="button" class="ld-close" data-vdclose aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>'+
+      '<div class="ld-scroll">'+photos+metaHtml+toggle+stp+fields+foot+'</div>';
+  }
+
+  function patchVeh(id,updates,okMsg){
+    return api('PUT','/api/inventory/'+id,updates).then(function(res){
+      if(res&&res.vehicle){for(var i=0;i<cachedStock.length;i++){if(cachedStock[i].id===res.vehicle.id){cachedStock[i]=res.vehicle;break;}}}
+      renderAllInvViews();
+      if(okMsg)toast(okMsg);
+      return res;
+    });
+  }
+
+  function saveVehFields(){
+    var v=curVeh();if(!v)return;
+    var g=function(id){var el=document.getElementById(id);return el?el.value:'';};
+    var updates={
+      retailPrice:parseInt(g('vdPrice'),10)||0,
+      truPrice:parseInt(g('vdTruPrice'),10)||undefined,
+      mileage:parseInt(g('vdKm'),10)||0,
+      trim:g('vdTrim').trim(),
+      bodyType:g('vdBody'),
+      fuelType:g('vdFuel'),
+      transmission:g('vdTrans'),
+      description:g('vdDesc').trim()
+    };
+    var btn=vdPanel.querySelector('[data-vsave]');if(btn){btn.disabled=true;btn.textContent='Saving…';}
+    patchVeh(v.id,updates,'Vehicle updated').then(function(){renderVehDetail();})
+      .catch(function(){toast('Could not save — check connection');if(btn){btn.disabled=false;btn.textContent='Save changes';}});
+  }
+
+  function togglePublish(){
+    var v=curVeh();if(!v)return;
+    if((v.status||'INVENTORY')!=='INVENTORY'){toast('Mark the car In Stock before publishing');return;}
+    var next=!(v.showOnWebsite===true);
+    patchVeh(v.id,{showOnWebsite:next},next?'Published to storefront':'Hidden from storefront').then(function(){
+      var nv=curVeh(),pub=!!(nv&&nv.showOnWebsite===true),sw=document.getElementById('vdPub');
+      if(sw){sw.classList.toggle('on',pub);sw.setAttribute('aria-checked',pub?'true':'false');}
+      var sub=document.getElementById('vdPubSub');if(sub)sub.textContent=pub?'Buyers can see this car on your storefront now.':'Hidden from your storefront until you publish.';
+    }).catch(function(){toast('Could not update visibility');});
+  }
+
+  function setVehStatus(s){
+    var v=curVeh();if(!v||v.status===s)return;
+    patchVeh(v.id,{status:s},'Status → '+(s==='INVENTORY'?'In Stock':s==='SOLD'?'Sold':s)).then(function(){renderVehDetail();})
+      .catch(function(){toast('Could not update status');});
+  }
+
+  function deleteVeh(){
+    var v=curVeh();if(!v)return;
+    var title=((v.year||'')+' '+(v.make||'')+' '+(v.model||'')).replace(/\s+/g,' ').trim()||'this vehicle';
+    if(!window.confirm('Delete '+title+'? This removes it from your inventory'+(v.source==='trulens'?' and its TruLens photos':'')+'. This cannot be undone.'))return;
+    var btn=vdPanel.querySelector('[data-vdel]');if(btn){btn.disabled=true;btn.textContent='Deleting…';}
+    api('DELETE','/api/inventory/'+v.id).then(function(){
+      cachedStock=cachedStock.filter(function(x){return x.id!==v.id;});
+      closeVeh();renderAllInvViews();toast(title+' deleted');
+    }).catch(function(){toast('Could not delete vehicle');if(btn){btn.disabled=false;btn.textContent='Delete';}});
+  }
+
+  function vehClick(e){
+    if(e.target.closest('a,button'))return;
+    var card=e.target.closest('.inv-card[data-veh]');if(!card)return;
+    var id=card.getAttribute('data-veh');if(id)openVeh(id);
+  }
+  invGrid.addEventListener('click',vehClick);
+  dashInvBoard.addEventListener('click',vehClick);
+
+  vdScrim.addEventListener('click',function(e){if(e.target===vdScrim)closeVeh();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&vehDrawerOpen())closeVeh();});
+  vdPanel.addEventListener('click',function(e){
+    if(e.target.closest('[data-vdclose]')){closeVeh();return;}
+    if(e.target.closest('[data-vsave]')){saveVehFields();return;}
+    if(e.target.closest('[data-vdel]')){deleteVeh();return;}
+    if(e.target.closest('#vdPub')){togglePublish();return;}
+    var sp=e.target.closest('[data-vstatus]');if(sp){setVehStatus(sp.getAttribute('data-vstatus'));return;}
+  });
+  vdPanel.addEventListener('keydown',function(e){
+    if((e.key==='Enter'||e.key===' ')&&e.target.id==='vdPub'){e.preventDefault();togglePublish();}
+  });
+
+  /* Keep the open vehicle drawer coherent with the 30s poll: if the car was
+     deleted elsewhere, close it; otherwise leave the drawer untouched so an
+     in-progress edit is never wiped. */
+  var _renderAllInvViews=renderAllInvViews;
+  renderAllInvViews=function(){_renderAllInvViews();if(vehDrawerOpen()&&!curVeh())closeVeh();};
 })();
 </script>
 </body>

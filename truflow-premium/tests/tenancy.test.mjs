@@ -129,6 +129,26 @@ test("an edit cannot move a vehicle into another dealership", () => {
   );
 });
 
+test("the inventory list read is dealer-scoped", () => {
+  /* GET /api/inventory requires a token, so its only callers are signed-in
+     dealer consoles (the Light console's stock tab). It returned
+     state.vehicles unscoped, so any dealer saw every other dealer's cars —
+     the same leak /api/state and /api/leads already guard. The read must run
+     through scopeToDealer, like every other tenant-scoped list. */
+  const get = body.slice(body.indexOf('app.get("/api/inventory"'));
+  const handler = get.slice(0, get.indexOf('app.get("/api/all-vehicles"'));
+  assert.match(
+    handler,
+    /scopeToDealer\(\s*state\.vehicles\s*,\s*req\.auth\s*\)/,
+    "GET /api/inventory must scope vehicles to the caller's dealership"
+  );
+  assert.doesNotMatch(
+    handler,
+    /let\s+results\s*=\s*state\.vehicles\s*;/,
+    "must not start from the full, unscoped vehicle list"
+  );
+});
+
 test("every tenant-scoped collection is stamped on load", () => {
   /* If a collection holds dealer data but is not listed, its rows stay untagged
      — and now that the fallbacks are gone, untagged means invisible. */

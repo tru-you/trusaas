@@ -1304,13 +1304,20 @@ app.post("/api/state/reset", (req: any, res) => {
   res.json({ message: "All dealership data reset to the seed.", state: DEFAULT_MOCK_STATE });
 });
 
-// Inventory Feed (WordPress Plugin and external integrations)
-app.get("/api/inventory", (req, res) => {
+// Signed-in inventory list (the Light console's stock tab reads this).
+// MUST be dealer-scoped: this endpoint requires a token (it is not in
+// isPublicPath), so the only callers are authenticated dealer consoles.
+// It returned state.vehicles unscoped, so a signed-in dealer saw EVERY
+// dealer's cars — the same cross-tenant leak /api/state and /api/leads
+// already guard against. Admins still see everything (scopeToDealer passes
+// them through). External websites/WordPress read the public feed instead
+// (GET /api/public/stock?dealer=<slug>), which is scoped by slug.
+app.get("/api/inventory", (req: any, res) => {
   const state = readState();
   const search = (req.query.search as string || "").toLowerCase();
   const status = req.query.status as string || "ALL";
 
-  let results = state.vehicles;
+  let results = scopeToDealer(state.vehicles, req.auth);
 
   if (status !== "ALL") {
     results = results.filter(v => v.status === status);
@@ -1373,12 +1380,22 @@ app.post("/api/inventory", (req, res) => {
     // Showroom tier. Left unset when not supplied so the website falls back to
     // its own heuristic rather than defaulting everything into one category.
     category: CATEGORY_VALUES.includes(req.body.category) ? req.body.category : undefined,
-    truPrice: req.body.truPrice ? parseFloat(req.body.truPrice) : undefined
+    truPrice: req.body.truPrice ? parseFloat(req.body.truPrice) : undefined,
+    // Storefront visibility. Honour the caller's flag, but default to FALSE —
+    // a car added by hand has no photos yet, and the intended flow (both the
+    // Premium "add on floor → shoot in TruLens → export" copy and Light's
+    // upload note) is that it stays off the website until the dealer publishes
+    // it. Stored as an explicit boolean so the readState backfill — which flips
+    // *unset* legacy rows to true — can never silently republish it. Without
+    // this, create dropped the field and the backfill put every new car live
+    // the instant it was added.
+    showOnWebsite:
+      typeof req.body.showOnWebsite === "boolean" ? req.body.showOnWebsite : false
   };
 
   state.vehicles.unshift(newVehicle);
   writeState(state);
-  res.status(201).json({ message: "Vehicle published successfully.", vehicle: newVehicle });
+  res.status(201).json({ message: "Vehicle added to inventory.", vehicle: newVehicle });
 });
 
 // Update vehicle status/details
