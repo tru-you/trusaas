@@ -17,7 +17,7 @@ import {
   isDataUri,
   stats as photoStats,
 } from "./photoStore";
-import { tidyStr, cleanModelName } from "./saNormalize";
+import { tidyStr, cleanModelName, normaliseExtras } from "./saNormalize";
 /**
  * The state shape is shared with the client rather than inferred here.
  *
@@ -2503,7 +2503,7 @@ app.post("/api/sync/pull-photos", async (req, res) => {
       (state.vehicles[idx] as any).conditionDeclaration = lensVehicle.conditionDeclaration;
     }
     if (Array.isArray(lensVehicle?.optionalExtras)) {
-      state.vehicles[idx].optionalExtras = lensVehicle.optionalExtras;
+      state.vehicles[idx].optionalExtras = normaliseExtras(lensVehicle.optionalExtras);
     }
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
     writeState(state);
@@ -2738,7 +2738,7 @@ app.post("/api/sync/push-photos", (req, res) => {
            deliberate act. Explicit rather than undefined so the legacy backfill
            in readState can't later mistake it for a pre-flag row. */
         showOnWebsite: typeof showOnWebsite === "boolean" ? showOnWebsite : false,
-        optionalExtras: Array.isArray(vehicleMeta.optionalExtras) ? vehicleMeta.optionalExtras : undefined,
+        optionalExtras: normaliseExtras(vehicleMeta.optionalExtras),
       };
 
       state.vehicles.unshift(newVehicle);

@@ -211,6 +211,63 @@ function normalizeQuality(raw: any): Record<string, any> {
 }
 
 /** Ensure every vehicle is safe for the UI (never crash on missing photos/price). */
+// ── Optional-extras normaliser ──────────────────────────────────
+// Folds free-text variants ("tow bar", "towbar", "tow-bar") into one
+// canonical label so filters, feeds, and dealer sites all agree.
+// "Part-leather" deliberately does NOT fold into "Leather Seats".
+// Table-stakes features (power steering, electric windows, central
+// locking, ABS, airbags) are dropped — listing them adds noise.
+const EXTRAS_ALIASES: [RegExp, string][] = [
+  [/\btow\s*-?\s*bar\b|\btow\s*-?\s*hitch\b/i, 'Towbar'],
+  [/\bcarplay\b|\bandroid\s*auto\b|\bsmartphone\s*mirror/i, 'Apple CarPlay / Android Auto'],
+  [/\bpdc\b|\bparking\s*sensor/i, 'Park Distance Control'],
+  [/\bpark\s*assist\b/i, 'Park Distance Control'],
+  [/\bsat\s*-?\s*nav\b|\bgps\b|\bbuilt.in\s*nav/i, 'Navigation'],
+  [/\bbi.xenon\b|\bhid\b|\bled\s*head/i, 'LED / Xenon Headlights'],
+  [/\breverse\s*cam|\brear\s*cam|\bback.up\s*cam/i, 'Reverse Camera'],
+  [/\b360.?\s*cam/i, '360° Camera'],
+  [/\bblind\s*spot/i, 'Blind Spot Monitor'],
+  [/\blane\s*(keep|assist|depart)/i, 'Lane Assist'],
+  [/\badaptive\s*cruise/i, 'Adaptive Cruise Control'],
+  [/\bheated\s*seat/i, 'Heated Seats'],
+  [/\belectric\s*seat|\bpower\s*seat/i, 'Electric Seats'],
+  [/\bkeyless/i, 'Keyless Entry & Start'],
+  [/\bdual.zone|\bclimate\s*control/i, 'Dual-Zone Climate Control'],
+  [/\bsunroof|\bpanoramic/i, 'Sunroof / Panoramic Roof'],
+  [/\balloy\s*wheel|\bmag\s*wheel/i, 'Alloy Wheels'],
+  [/\broof\s*rail/i, 'Roof Rails'],
+  [/\btint/i, 'Tinted Windows'],
+  [/\bdigital\s*cockpit|\bvirtual\s*cockpit/i, 'Digital Cockpit'],
+  [/\bawd\b|\b4wd\b|\b4x4\b|\ball.wheel/i, 'AWD / 4WD'],
+  [/\bbluetooth/i, 'Bluetooth'],
+];
+const EXTRAS_DROP = /\bpower\s*steer|\belectric\s*window|\bcentral\s*lock|\b[ae]\.?b\.?s\b|\bairbag/i;
+// "part-leather" must NOT fold into "Leather Seats"
+const LEATHER_YES = /\bleather\s*seat|\bfull\s*leather/i;
+const LEATHER_NO = /\bpart.leather/i;
+
+function normaliseExtras(raw: unknown): string[] | undefined {
+  if (!Array.isArray(raw) || !raw.length) return undefined;
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const item of raw) {
+    const s = String(item || '').trim();
+    if (!s || EXTRAS_DROP.test(s)) continue;
+    let label = s;
+    // Leather has a special guard
+    if (LEATHER_YES.test(s) && !LEATHER_NO.test(s)) {
+      label = 'Leather Seats';
+    } else {
+      for (const [re, canonical] of EXTRAS_ALIASES) {
+        if (re.test(s)) { label = canonical; break; }
+      }
+    }
+    const key = label.toLowerCase();
+    if (!seen.has(key)) { seen.add(key); out.push(label); }
+  }
+  return out.length ? out : undefined;
+}
+
 function normalizeVehicle(raw: any): any {
   if (!raw || typeof raw !== 'object') return raw;
   const photosIn = raw.photos && typeof raw.photos === 'object' ? raw.photos : {};
@@ -238,6 +295,7 @@ function normalizeVehicle(raw: any): any {
     status: raw.status || 'In-Progress',
     photos,
     quality: normalizeQuality(raw.quality),
+    optionalExtras: normaliseExtras(raw.optionalExtras),
   };
 }
 
