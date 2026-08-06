@@ -258,7 +258,9 @@ function writeLocalStore(store: LocalStore) {
   try {
     if (!fs.existsSync(LOCAL_DATA_DIR)) fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
     const safe = { vehicles: (store.vehicles || []).map(normalizeVehicle) };
-    fs.writeFileSync(LOCAL_DATA_FILE, JSON.stringify(safe, null, 2), 'utf-8');
+    const tmp = `${LOCAL_DATA_FILE}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(safe, null, 2), 'utf-8');
+    fs.renameSync(tmp, LOCAL_DATA_FILE);
   } catch (e) {
     console.error('Local store write error:', e);
   }
@@ -1155,7 +1157,10 @@ app.get('/api/dealerships', async (_req, res) => {
 
 app.get('/api/public/stock', async (req, res) => {
   try {
-    const dealer = String(req.query.dealer || 'demo');
+    const dealer = String(req.query.dealer || '');
+    if (!dealer) {
+      return res.status(400).json({ success: false, error: 'dealer query parameter is required' });
+    }
     let vehicles: any[] = [];
     if (LOCAL_MODE || !fdb) {
       vehicles = readLocalStore().vehicles.map(normalizeVehicle);
@@ -1163,15 +1168,9 @@ app.get('/api/public/stock', async (req, res) => {
       const snapshot = await fdb.collection('vehicles').get();
       vehicles = snapshot.docs.map((d) => normalizeVehicle(d.data()));
     }
-    // A named dealer site must only ever see its OWN captures. Vehicles
-    // captured before dealer tagging existed carry no slug — those fall to the
-    // pilot dealer rather than being shown to everyone. "demo" sees all.
-    const scoped =
-      dealer === 'demo'
-        ? vehicles
-        : vehicles.filter(
-            (v: any) => (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealer
-          );
+    const scoped = vehicles.filter(
+      (v: any) => (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealer
+    );
     const publicList = scoped.map((v: any) => toPublicFromLens(v, originOf(req))).filter(Boolean);
     res.json({
       success: true,
@@ -1209,12 +1208,12 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
     }
 
     const now = new Date().toISOString();
+    const { dealerSlug: _claimedSlug, ownerId: _drop, createdAt: _dropCreated, ...safeData } = vehicleData;
     const existing = await getVehicle(vehicleData.id, req.user);
 
-    /* Stamp dealerSlug on every save. Without this, new captures were saved
-       untagged, and the next read (upload-photo) 404'd because the scoping
-       check fell back to the default dealer instead of the true owner. */
-    const dealerSlug = req.user?.dealerSlug || existing?.dealerSlug || undefined;
+    /* Token-pinned dealerSlug wins; then existing record; body is last resort
+       (legacy shared-code tokens where the picker is the only signal). */
+    const dealerSlug = req.user?.dealerSlug || existing?.dealerSlug || _claimedSlug || undefined;
 
     if (existing) {
       if (!LOCAL_MODE && existing.ownerId && existing.ownerId !== userId) {
@@ -1222,9 +1221,9 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
       }
       const updatedVehicle = {
         ...existing,
-        ...vehicleData,
+        ...safeData,
         ownerId: existing.ownerId || userId,
-        dealerSlug: dealerSlug ?? vehicleData.dealerSlug,
+        dealerSlug,
         updatedAt: now,
         photos: vehicleData.photos ?? existing.photos ?? {},
         quality: vehicleData.quality ?? existing.quality ?? {},
@@ -1239,9 +1238,9 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
        Never overwrites a dealer-typed value. */
     const stockNumberFallback = 'STK-' + now.replace(/[-:T.Z]/g, '').slice(0, 14);
     const newVehicle = {
-      ...vehicleData,
+      ...safeData,
       ownerId: userId,
-      dealerSlug: dealerSlug ?? vehicleData.dealerSlug,
+      dealerSlug,
       stockNumber: vehicleData.stockNumber || stockNumberFallback,
       createdAt: now,
       updatedAt: now,
@@ -1423,7 +1422,7 @@ app.delete('/api/sync/vehicle', (req, res) => {
 });
 
 // 5. AI Photo Quality Inspection & Listing Description Writer (Gemini)
-app.post('/api/gemini/analyze', async (req, res) => {
+app.post('/api/gemini/analyze', authenticate, async (req: any, res) => {
   const { base64Image, slotName, vehicleInfo } = req.body;
 
   if (!base64Image) {
