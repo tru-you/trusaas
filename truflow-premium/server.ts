@@ -1579,8 +1579,9 @@ app.post("/api/inventory", (req, res) => {
     // Falls back to the session, like every other create. Without this a dealer
     // adding a car by hand got it filed to the default dealership and it
     // vanished from their own stock list.
-    dealershipId:
-      req.body.dealershipId || dealerIdForSlug(req.body.dealerSlug) || ownerDealership(req),
+    dealershipId: req.auth?.role === "admin"
+      ? (req.body.dealershipId || dealerIdForSlug(req.body.dealerSlug) || ownerDealership(req))
+      : req.auth?.dealershipId,
     // Showroom tier. Left unset when not supplied so the website falls back to
     // its own heuristic rather than defaulting everything into one category.
     category: CATEGORY_VALUES.includes(req.body.category) ? req.body.category : undefined,
@@ -1753,9 +1754,11 @@ app.put("/api/leads/:id", (req: any, res) => {
     return res.status(403).json({ error: "Not your lead." });
   }
 
+  const { dealershipId: _drop, ...updates } = req.body;
   state.leads[index] = {
     ...state.leads[index],
-    ...req.body
+    ...updates,
+    dealershipId: state.leads[index].dealershipId,
   };
 
   writeState(state);
@@ -1809,9 +1812,11 @@ app.put("/api/tasks/:id", (req: any, res) => {
     return res.status(403).json({ error: "Not your task." });
   }
 
+  const { dealershipId: _drop, ...taskUpdates } = req.body;
   state.tasks[index] = {
     ...state.tasks[index],
-    ...req.body
+    ...taskUpdates,
+    dealershipId: state.tasks[index].dealershipId,
   };
 
   writeState(state);
@@ -1907,9 +1912,11 @@ app.put("/api/agreements/:id", (req: any, res) => {
     return res.status(403).json({ error: "Not your agreement." });
   }
 
+  const { dealershipId: _drop, ...agrUpdates } = req.body;
   state.agreements[index] = {
     ...state.agreements[index],
-    ...req.body
+    ...agrUpdates,
+    dealershipId: state.agreements[index].dealershipId,
   };
 
   writeState(state);
