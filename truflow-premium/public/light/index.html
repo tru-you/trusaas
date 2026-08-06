@@ -378,8 +378,15 @@ button,input,textarea{font-family:inherit;}
       })
       .catch(function(){btn.disabled=false;btn.textContent="Sign in";errEl.textContent="Can't reach the server. Try again.";});
   }
+  // Data safety: on sign-out, drop everything the service worker cached for this
+  // dealer (leads + stock, incl. customer PII) so it can't linger on the device
+  // or be served offline to whoever signs in next on a shared/yard handset.
+  function clearAppCaches(){
+    try{ if(window.caches&&caches.keys){caches.keys().then(function(keys){keys.forEach(function(k){caches.delete(k);});}).catch(function(){});} }catch(e){}
+  }
   function doLogout(){
     try{localStorage.removeItem("tflx_token");localStorage.removeItem("tflx_auth");}catch(e){}
+    clearAppCaches();
     TOKEN="";AUTH=null;$("#gate").classList.remove("hide");$("#app").style.display="none";$("#gateCode").value="";
   }
   function enterApp(){
