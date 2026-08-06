@@ -17,6 +17,7 @@ import {
   isDataUri,
   stats as photoStats,
 } from "./photoStore";
+import { tidyStr, cleanModelName } from "./saNormalize";
 /**
  * The state shape is shared with the client rather than inferred here.
  *
@@ -1345,15 +1346,60 @@ app.get("/api/all-vehicles", (req: any, res) => {
   res.json(scopeToDealer(state.vehicles, req.auth));
 });
 
+/** One-off tidy of make/model/trim across ALL stored vehicles. Admin only.
+ *
+ *  The write paths above now normalise on the way in, so nothing NEW arrives
+ *  dirty — but rows already on disk (raw disc "Vw 370 - Golf" models, trailing
+ *  spaces from manual entry) stay as they are until something rewrites them.
+ *  This walks the whole store and applies the same normaliser.
+ *
+ *  Dry-run by default: it returns the before/after for every row it WOULD
+ *  change and writes nothing, so the diff can be eyeballed on real data first.
+ *  Send { "confirm": "NORMALIZE" } to apply and persist. Idempotent — a second
+ *  run finds nothing to change. Back up first (the change isn't reversible). */
+app.post("/api/admin/normalize-vehicles", (req: any, res) => {
+  if (req.auth?.role !== "admin") {
+    return res.status(403).json({ error: "Admin only." });
+  }
+  const apply = req.body?.confirm === "NORMALIZE";
+  const state = readState();
+  const changes: any[] = [];
+
+  for (const v of state.vehicles as any[]) {
+    const next = {
+      make: tidyStr(v.make),
+      model: cleanModelName(v.model),
+      trim: tidyStr(v.trim),
+    };
+    const diff: any = {};
+    for (const k of ["make", "model", "trim"] as const) {
+      if (v[k] !== next[k]) diff[k] = { from: v[k], to: next[k] };
+    }
+    if (Object.keys(diff).length) {
+      changes.push({ id: v.id, stockNumber: v.stockNumber, dealershipId: v.dealershipId, ...diff });
+      if (apply) Object.assign(v, next);
+    }
+  }
+
+  if (apply) writeState(state);
+  res.json({
+    applied: apply,
+    ...(apply ? {} : { note: 'Dry run — nothing written. Send { "confirm": "NORMALIZE" } to apply.' }),
+    scanned: state.vehicles.length,
+    changed: changes.length,
+    changes,
+  });
+});
+
 // Mobile App Upload / Web Upload API
 app.post("/api/inventory", (req, res) => {
   const state = readState();
   const newVehicle = {
     id: "v_" + Date.now(),
     year: parseInt(req.body.year) || 2026,
-    make: req.body.make || "Generic",
-    model: req.body.model || "Asset",
-    trim: req.body.trim || "",
+    make: tidyStr(req.body.make) || "Generic",
+    model: cleanModelName(req.body.model) || "Asset",
+    trim: tidyStr(req.body.trim) || "",
     status: req.body.status || "INVENTORY",
     retailPrice: parseFloat(req.body.retailPrice) || 0,
     costPrice: parseFloat(req.body.costPrice) || 0,
@@ -1430,6 +1476,12 @@ app.put("/api/inventory/:id", (req: any, res) => {
   for (const field of VEHICLE_PHOTO_FIELDS) {
     if (Array.isArray(body[field])) body[field] = putPhotos(body[field]);
   }
+  // Tidy the identity fields on the way in, same as every other write path, so
+  // a hand edit (or a Light save) can't reintroduce a trailing space or a raw
+  // disc "Vw 370 - Golf" model.
+  if ("make" in body) body.make = tidyStr(body.make);
+  if ("model" in body) body.model = cleanModelName(body.model);
+  if ("trim" in body) body.trim = tidyStr(body.trim);
 
   state.vehicles[index] = {
     ...state.vehicles[index],
@@ -2431,9 +2483,9 @@ app.post("/api/sync/push-photos", (req, res) => {
       const newVehicle: Vehicle = {
         id: "v_lens_" + Date.now(),
         year: parseInt(vehicleMeta.year, 10) || new Date().getFullYear(),
-        make: vehicleMeta.make || "Unknown",
-        model: vehicleMeta.model || "Vehicle",
-        trim: vehicleMeta.trim || "",
+        make: tidyStr(vehicleMeta.make) || "Unknown",
+        model: cleanModelName(vehicleMeta.model) || "Vehicle",
+        trim: tidyStr(vehicleMeta.trim) || "",
         status: "INVENTORY",
         retailPrice: parseFloat(vehicleMeta.price ?? vehicleMeta.retailPrice) || 0,
         costPrice: parseFloat(vehicleMeta.costPrice) || 0,
@@ -2525,9 +2577,9 @@ app.post("/api/sync/push-photos", (req, res) => {
        correcting a typo (Ford → Audi, wrong year) never reached the DMS on
        re-export. Now conditional: sent = updated, omitted = left alone, so
        older Lens builds that don't send them don't clobber good values. */
-    if (vehicleMeta.make) state.vehicles[idx].make = vehicleMeta.make;
-    if (vehicleMeta.model) state.vehicles[idx].model = vehicleMeta.model;
-    if (vehicleMeta.trim != null) (state.vehicles[idx] as any).trim = vehicleMeta.trim;
+    if (vehicleMeta.make) state.vehicles[idx].make = tidyStr(vehicleMeta.make);
+    if (vehicleMeta.model) state.vehicles[idx].model = cleanModelName(vehicleMeta.model);
+    if (vehicleMeta.trim != null) (state.vehicles[idx] as any).trim = tidyStr(vehicleMeta.trim);
     if (vehicleMeta.year) {
       state.vehicles[idx].year = parseInt(vehicleMeta.year, 10) || state.vehicles[idx].year;
     }
