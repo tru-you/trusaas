@@ -1029,7 +1029,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 </style>
 <link rel="stylesheet" href="coc-widgets.css?v=20260805a">
 <link rel="stylesheet" href="coc-site.css?v=20260805a">
-<link rel="stylesheet" href="coc-fixes.css?v=20260807b">
+<link rel="stylesheet" href="coc-fixes.css?v=20260807f">
 </head>
 <body>
 <a class="coc-skip" href="#showroom">Skip to showroom</a>
@@ -2004,6 +2004,43 @@ observeAll();
   if(document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded", initTradeToggle);
   } else { initTradeToggle(); }
+
+  /* TruForm CTA wiring — delegated.
+     The glue block further down binds click handlers directly to
+     #sellValuation / #visitEnquire once TruForm reports an instance. That
+     block demonstrably runs (it hides the .tf-launcher in the same pass),
+     but the handlers were not firing: TruForm.open was never called and the
+     anchors fell through to their wa.me href, so "Get a Free Valuation" and
+     "Book a Viewing" quietly stopped opening the form. The buttons carry the
+     .rv reveal classes and get re-rendered, which drops directly-bound
+     listeners.
+     Delegating from document survives any re-render, and guards against
+     double-firing if the direct binding is present and working. */
+  document.addEventListener("click", function(e){
+    var el = e.target.closest && e.target.closest("#sellValuation,#visitEnquire");
+    if(!el) return;
+    var form = window.TruForm;
+    if(!form || typeof form.open !== "function") return;   // let the wa.me href work as fallback
+
+    /* CAPTURE phase deliberately. Measured on these two anchors: by the time
+       a document-level BUBBLE listener would run, defaultPrevented is already
+       true AND the event never arrives at all — something upstream calls both
+       preventDefault() and stopPropagation() on them. A bubble-phase delegate
+       therefore never fires, which is why the CTAs went quiet. Capture runs
+       before any of that, so this is the only placement that reliably works.
+       Consequently there is no defaultPrevented guard here — it would always
+       bail. Double-open is prevented by checking the form's own state. */
+    var host = document.querySelector('[id^="tru-form-"][id$="-host"]');
+    var tf = host && host.shadowRoot ? host.shadowRoot.getElementById("tf") : null;
+    if(tf && tf.classList.contains("is-open")) return;      // already open
+
+    e.preventDefault();
+    if(el.id === "sellValuation"){
+      form.open({ source: "Sell / Trade-in", interest: "Valuation" });
+    } else {
+      form.open({ source: "Visit", interest: "Viewing" });
+    }
+  }, true);
   /* keyboard users get the same behaviour */
   document.addEventListener("keydown", function(e){
     if(e.key !== "Enter") return;
