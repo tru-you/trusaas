@@ -3441,7 +3441,7 @@ app.delete("/api/portals/:id", (req, res) => {
 });
 
 // Push inventory to all active portals (webhook-based)
-app.post("/api/portals/sync", async (req, res) => {
+app.post("/api/portals/sync", async (req: any, res) => {
   const state = readState();
   const portals = readPortals();
   const activePortals = portals.filter(p => p.active && p.webhookUrl);
@@ -3620,7 +3620,7 @@ app.post("/api/integration/webhook-lead", (req, res) => {
   }
 });
 
-app.post("/api/integration/sync-inventory", (req, res) => {
+app.post("/api/integration/sync-inventory", (req: any, res) => {
   try {
     const state = readState();
     const activeVehicles = scopeToDealer(state.vehicles, req.auth).filter(v => v.status === "INVENTORY");
