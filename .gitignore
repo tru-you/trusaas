@@ -31,6 +31,7 @@ Truflow-premium/media/
 Truflow-premium/shared.json
 Truflow-premium/dealer-*.json
 Truflow-premium/.per-dealer-migrated
+Truflow-premium/backups/
 
 # OS / editor
 .idea/

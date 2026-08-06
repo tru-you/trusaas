@@ -2517,7 +2517,7 @@ app.post("/api/sync/pull-photos", async (req, res) => {
 });
 
 // Sync ALL vehicles — batch pull from AutoLens
-app.post("/api/sync/pull-all", async (req, res) => {
+app.post("/api/sync/pull-all", async (req: any, res) => {
   try {
     const state = readState();
 
@@ -2526,10 +2526,11 @@ app.post("/api/sync/pull-all", async (req, res) => {
     let syncedCount = 0;
     const results: { stockNumber: string; status: string }[] = [];
 
-    // Optional dealer scope — batch-pulling for one dealer must not reach into
-    // another dealer's captures that happen to share a stock number.
+    // Enforce dealer scope from auth; body slug is a fallback for admin only
     const wantSlug = (req.body || {}).dealerSlug;
-    const wantId = wantSlug ? dealerIdForSlug(wantSlug) : undefined;
+    const wantId = req.auth?.role === "admin"
+      ? (wantSlug ? dealerIdForSlug(wantSlug) : undefined)
+      : req.auth?.dealershipId;
 
     for (const doc of snapshot.docs) {
       const lensVehicle = doc.data();
@@ -2882,9 +2883,10 @@ app.post("/api/sync/web3d", (req, res) => {
 });
 
 // Check sync status — which DMS vehicles have AutoLens photos available
-app.get("/api/sync/status", async (req, res) => {
+app.get("/api/sync/status", async (req: any, res) => {
   try {
     const state = readState();
+    const vehicles = scopeToDealer(state.vehicles, req.auth);
 
     const snapshot = await lensFirestore.collection("vehicles").get();
 
@@ -2897,7 +2899,7 @@ app.get("/api/sync/status", async (req, res) => {
       });
     }
 
-    const syncStatus = state.vehicles.map((v: any) => {
+    const syncStatus = vehicles.map((v: any) => {
       const lens = lensVehicles.get(v.stockNumber);
       return {
         stockNumber: v.stockNumber,
@@ -4130,5 +4132,47 @@ async function startServer() {
     console.log(`TruFlow Premium on 0.0.0.0:${PORT} (trusaas-premium.onrender.com)`);
   });
 }
+
+// --- AUTOMATED DAILY BACKUP ---
+// Writes a rotating set of backups to DATA_DIR. Keeps the last 7 days.
+// Runs inside the server process so it needs no external cron or S3.
+
+const BACKUP_DIR = path.join(DATA_DIR, "backups");
+const BACKUP_KEEP_DAYS = 7;
+const BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function runBackup(): void {
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+
+    const stamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const backupFile = path.join(BACKUP_DIR, `backup-${stamp}.json`);
+
+    const state = readState();
+    const tmp = backupFile + ".tmp";
+    fs.writeFileSync(tmp, JSON.stringify(state, null, 2), "utf-8");
+    fs.renameSync(tmp, backupFile);
+
+    // Prune old backups
+    const files = fs.readdirSync(BACKUP_DIR)
+      .filter(f => f.startsWith("backup-") && f.endsWith(".json"))
+      .sort();
+    while (files.length > BACKUP_KEEP_DAYS) {
+      const old = files.shift()!;
+      fs.unlinkSync(path.join(BACKUP_DIR, old));
+      console.log(`[backup] pruned ${old}`);
+    }
+
+    console.log(`[backup] saved ${path.basename(backupFile)} (${(Buffer.byteLength(JSON.stringify(state)) / 1024 / 1024).toFixed(1)} MB)`);
+  } catch (err: any) {
+    console.error("[backup] failed:", err?.message);
+  }
+}
+
+// First backup shortly after boot (30s delay so migrations finish), then daily
+setTimeout(() => {
+  runBackup();
+  setInterval(runBackup, BACKUP_INTERVAL_MS);
+}, 30_000);
 
 startServer();
