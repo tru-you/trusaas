@@ -169,6 +169,114 @@ const TENANT_SCOPED_COLLECTIONS = [
   "users",
 ] as const;
 
+const SHARED_FILE = path.join(DATA_DIR, "shared.json");
+const MIGRATED_FLAG = path.join(DATA_DIR, ".per-dealer-migrated");
+
+type TenantKey = (typeof TENANT_SCOPED_COLLECTIONS)[number];
+
+interface SharedState {
+  dealerships: Dealership[];
+  settings: DMSState["settings"];
+  socialAccounts?: DMSState["socialAccounts"];
+  migrations?: Record<string, boolean>;
+}
+
+type DealerData = { [K in TenantKey]: any[] };
+
+function dealerFile(id: string): string {
+  return path.join(DATA_DIR, `dealer-${id}.json`);
+}
+
+function readShared(): SharedState {
+  if (fs.existsSync(SHARED_FILE)) {
+    return JSON.parse(fs.readFileSync(SHARED_FILE, "utf-8"));
+  }
+  return {
+    dealerships: DEFAULT_MOCK_STATE.dealerships,
+    settings: DEFAULT_MOCK_STATE.settings,
+    socialAccounts: [],
+    migrations: {},
+  };
+}
+
+function writeShared(shared: SharedState): void {
+  const tmp = SHARED_FILE + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(shared, null, 2), "utf-8");
+  fs.renameSync(tmp, SHARED_FILE);
+}
+
+function readDealerData(id: string): DealerData {
+  const f = dealerFile(id);
+  if (fs.existsSync(f)) {
+    return JSON.parse(fs.readFileSync(f, "utf-8"));
+  }
+  const empty: any = {};
+  for (const k of TENANT_SCOPED_COLLECTIONS) empty[k] = [];
+  return empty;
+}
+
+function writeDealerData(id: string, data: DealerData): void {
+  const target = dealerFile(id);
+  const tmp = target + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2), "utf-8");
+  fs.renameSync(tmp, target);
+}
+
+function allDealerIds(): string[] {
+  const ids: string[] = [];
+  for (const f of fs.readdirSync(DATA_DIR)) {
+    const m = f.match(/^dealer-(.+)\.json$/);
+    if (m) ids.push(m[1]);
+  }
+  return ids;
+}
+
+function isPerDealerMode(): boolean {
+  return fs.existsSync(MIGRATED_FLAG);
+}
+
+function migrateToPerDealerFiles(): void {
+  if (fs.existsSync(MIGRATED_FLAG)) return;
+  if (!fs.existsSync(DATA_FILE)) return;
+
+  console.log("[migration] Splitting data.json into per-dealer files...");
+  const raw = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+
+  const shared: SharedState = {
+    dealerships: raw.dealerships || [],
+    settings: raw.settings || {},
+    socialAccounts: raw.socialAccounts || [],
+    migrations: raw.migrations || {},
+  };
+
+  const buckets = new Map<string, DealerData>();
+  for (const key of TENANT_SCOPED_COLLECTIONS) {
+    const rows: any[] = raw[key] || [];
+    for (const row of rows) {
+      const did = row.dealershipId || "orphan";
+      if (did === "orphan") {
+        console.warn(`[migration] Orphan row in ${key}: ${row.id}`);
+      }
+      if (!buckets.has(did)) {
+        const empty: any = {};
+        for (const k of TENANT_SCOPED_COLLECTIONS) empty[k] = [];
+        buckets.set(did, empty);
+      }
+      buckets.get(did)![key].push(row);
+    }
+  }
+
+  writeShared(shared);
+  buckets.forEach((data, id) => {
+    writeDealerData(id, data);
+    const count = TENANT_SCOPED_COLLECTIONS.reduce((n, k) => n + (data[k] || []).length, 0);
+    console.log(`[migration] dealer-${id}.json — ${count} rows`);
+  });
+
+  fs.writeFileSync(MIGRATED_FLAG, new Date().toISOString(), "utf-8");
+  console.log("[migration] Done. Old data.json kept as backup.");
+}
+
 /* Photos live beside the state as files rather than inside it as base64.
    See photoStore.ts for why. Initialised here, after DATA_DIR is known and
    before the route below is registered — express.static resolves its root at
@@ -457,6 +565,13 @@ function scopeToDealer<T extends { dealershipId?: string }>(rows: T[], auth: any
  *  pilot dealer and vanishes from the list of whoever actually created it. */
 function ownerDealership(req: any): string | undefined {
   return req.auth?.role === "admin" ? req.body?.dealershipId : req.auth?.dealershipId;
+}
+
+/** Check that a record belongs to the caller. Admins may touch any record. */
+function mayTouch(row: { dealershipId?: string } | undefined, auth: any): boolean {
+  if (!row) return false;
+  if (auth?.role === "admin") return true;
+  return row.dealershipId === auth?.dealershipId;
 }
 
 app.post("/api/auth/login", (req, res) => {
@@ -872,112 +987,103 @@ const DEFAULT_MOCK_STATE: DMSState = {
 };
 
 // State Helper Functions
+
+function backfillShared(shared: SharedState): SharedState {
+  shared.settings = { ...DEFAULT_MOCK_STATE.settings, ...(shared.settings || {}) };
+
+  if (!Array.isArray(shared.dealerships) || !shared.dealerships.length) {
+    shared.dealerships = DEFAULT_MOCK_STATE.dealerships;
+  } else {
+    shared.dealerships = shared.dealerships.map((d: any) => {
+      const seed = DEFAULT_MOCK_STATE.dealerships.find((x: any) => x.id === d.id);
+      return seed ? { ...d, ...seed } : d;
+    });
+    const existingIds = new Set(shared.dealerships.map((d: any) => d.id));
+    for (const seed of DEFAULT_MOCK_STATE.dealerships) {
+      if (!existingIds.has(seed.id)) shared.dealerships.push({ ...seed });
+    }
+  }
+
+  shared.migrations = shared.migrations || {};
+  if (!shared.migrations.prunedSeedDealers) {
+    const retired = new Set(["d3", "demo"]);
+    shared.dealerships = shared.dealerships.filter((d: any) => !retired.has(d.id));
+    shared.migrations.prunedSeedDealers = true;
+  }
+
+  for (const d of shared.dealerships || []) {
+    if (!Array.isArray((d as any).products) || !(d as any).products.length) {
+      (d as any).products = [...PRODUCTS];
+    }
+  }
+
+  return shared;
+}
+
+function backfillVehicles(vehicles: any[]): void {
+  for (const v of vehicles) {
+    if (!v.images) v.images = [];
+    if (!v.reconTasks) v.reconTasks = [];
+    if (typeof v.showOnWebsite !== "boolean") v.showOnWebsite = true;
+  }
+}
+
 function readState(): DMSState {
+  if (isPerDealerMode()) {
+    try {
+      const shared = backfillShared(readShared());
+      const merged: any = {
+        ...shared,
+      };
+      for (const key of TENANT_SCOPED_COLLECTIONS) merged[key] = [];
+
+      for (const id of allDealerIds()) {
+        const dd = readDealerData(id);
+        for (const key of TENANT_SCOPED_COLLECTIONS) {
+          merged[key].push(...(dd[key] || []));
+        }
+      }
+
+      backfillVehicles(merged.vehicles);
+      return merged;
+    } catch (err) {
+      console.error("Error reading per-dealer state:", err);
+      return DEFAULT_MOCK_STATE;
+    }
+  }
+
+  // Legacy monolithic path (pre-migration)
   try {
-    // Prefer the live file on the disk; fall back to the repo seed on first boot.
     const src = fs.existsSync(DATA_FILE) ? DATA_FILE : SEED_FILE;
     if (fs.existsSync(src)) {
-      const data = fs.readFileSync(src, "utf-8");
-      const parsed = JSON.parse(data);
-      if (!parsed.expenses) {
-        parsed.expenses = DEFAULT_MOCK_STATE.expenses;
-      }
-      // Merged, not all-or-nothing. settings gained tier, truLens, truInspect
-      // and multiPortalSync after existing state files were written, and an
-      // `if (!parsed.settings)` check never fires for a file that already has
-      // the older six keys — so those four stayed undefined, which is falsy,
-      // and this instance ran the premium product with the capture app,
-      // inspections and portal sync all gated off. Seed first so anything the
-      // dealer has actually chosen still wins. Same shape as the dealerships
-      // backfill below.
+      const parsed = JSON.parse(fs.readFileSync(src, "utf-8"));
+      if (!parsed.expenses) parsed.expenses = DEFAULT_MOCK_STATE.expenses;
       parsed.settings = { ...DEFAULT_MOCK_STATE.settings, ...(parsed.settings || {}) };
-      if (!parsed.documents) {
-        parsed.documents = [];
-      }
-      // Older state files predate multi-dealer support and have no dealerships
-      // array — without it the Add-Vehicle dealer picker renders empty and
-      // every hand-added car lands on the default dealer's website.
+      if (!parsed.documents) parsed.documents = [];
+
       if (!Array.isArray(parsed.dealerships) || !parsed.dealerships.length) {
         parsed.dealerships = DEFAULT_MOCK_STATE.dealerships;
       } else {
-        // Backfill fields added after a dealership was first written — an
-        // existing state file keeps its dealerships, so new keys like the
-        // dealer's own websiteUrl would never appear without this.
         parsed.dealerships = parsed.dealerships.map((d: any) => {
           const seed = DEFAULT_MOCK_STATE.dealerships.find((x: any) => x.id === d.id);
-          return seed ? { ...d, ...seed } : d; // platform-managed website/slug: seed wins
+          return seed ? { ...d, ...seed } : d;
         });
-        // Add seed dealerships that don't exist in the state file yet — so a
-        // new dealer added to DEFAULT_MOCK_STATE appears after a redeploy
-        // without needing to manually POST via the admin panel.
         const existingIds = new Set(parsed.dealerships.map((d: any) => d.id));
         for (const seed of DEFAULT_MOCK_STATE.dealerships) {
           if (!existingIds.has(seed.id)) parsed.dealerships.push({ ...seed });
         }
       }
 
-      /* Retire the seeded "Truecars" (d3) and "Demo Dealership" rows.
-       *
-       * Dropping them from DEFAULT_MOCK_STATE is necessary but not sufficient:
-       * an instance whose state file already lists them keeps them, and the
-       * backfill directly above would re-add them from the seed if they were
-       * still in it. Both halves are needed for them to actually go away.
-       *
-       * Their vehicles go with them — d3 never had any, and demo's are the
-       * DEMO-1xx placeholders with no capture and no photos behind them. A
-       * marker makes this a one-off rather than a standing rule that would
-       * quietly delete a dealership someone later creates reusing either id.
-       */
       parsed.migrations = parsed.migrations || {};
       if (!parsed.migrations.prunedSeedDealers) {
         const retired = new Set(["d3", "demo"]);
         parsed.dealerships = parsed.dealerships.filter((d: any) => !retired.has(d.id));
-        parsed.vehicles = (parsed.vehicles || []).filter(
-          (v: any) => !retired.has(v.dealershipId)
-        );
+        parsed.vehicles = (parsed.vehicles || []).filter((v: any) => !retired.has(v.dealershipId));
         parsed.migrations.prunedSeedDealers = true;
       }
-      parsed.vehicles.forEach((v: any) => {
-        if (!v.images) v.images = [];
-        if (!v.reconTasks) v.reconTasks = [];
-        /* Publish state has to be an explicit boolean.
-         *
-         * The public feed used to read "unset" as published, while TruLens's
-         * own feed requires showOnWebsite === true — so the same car was live
-         * on a TruFlow-backed site and absent from a TruLens-backed one, and a
-         * capture nobody had pressed Publish on could still reach a dealer's
-         * website. The feed is strict now, which means every row predating the
-         * flag needs a value or it would vanish from a live site on deploy.
-         *
-         * true is the value that preserves exactly what those rows already do
-         * today. New vehicles set the flag explicitly at creation, so this only
-         * ever catches legacy rows — it cannot silently republish a car that
-         * was deliberately unpublished, because that one holds false. */
-        if (typeof v.showOnWebsite !== "boolean") v.showOnWebsite = true;
-      });
 
-      /* Every tenant-scoped row must name its dealership explicitly.
-       *
-       * Ten places compared `row.dealershipId || DEFAULT_DEALERSHIP_ID`, which
-       * made "no dealership" silently mean d1 — a real dealership with a live
-       * website, not a neutral bucket. That default is what let a capture file
-       * into another dealer's inventory, an orbit overwrite another dealer's
-       * car, and a website enquiry land in a pipeline its sender never chose.
-       *
-       * Stamping legacy rows here preserves exactly who they belong to today,
-       * and lets those comparisons drop the fallback: once every row carries a
-       * value, an absent one means the row belongs to nobody, and the honest
-       * result is that it is invisible rather than quietly reassigned. That is
-       * the failure a dealer can spot; the other one they never see.
-       */
-      /* Which products each dealership may sign in to.
-       *
-       * Backfilled to everything, because that is what they can reach today:
-       * access is currently decided by whether their code was pasted into a
-       * given app's environment variable, not by anything on their record. So
-       * granting all preserves exactly the status quo, and taking a product
-       * away becomes a deliberate act in the admin panel rather than a silent
-       * consequence of this deploy. */
+      backfillVehicles(parsed.vehicles || []);
+
       for (const d of parsed.dealerships || []) {
         if (!Array.isArray(d.products) || !d.products.length) {
           d.products = [...PRODUCTS];
@@ -1002,7 +1108,52 @@ function readState(): DMSState {
   return DEFAULT_MOCK_STATE;
 }
 
-function writeState(state: typeof DEFAULT_MOCK_STATE) {
+function writeState(state: any) {
+  if (isPerDealerMode()) {
+    try {
+      const shared: SharedState = {
+        dealerships: state.dealerships || [],
+        settings: state.settings || {},
+        socialAccounts: state.socialAccounts || [],
+        migrations: state.migrations || {},
+      };
+      writeShared(shared);
+
+      const buckets = new Map<string, DealerData>();
+      for (const key of TENANT_SCOPED_COLLECTIONS) {
+        for (const row of (state[key] || [])) {
+          const did = row.dealershipId || "orphan";
+          if (!buckets.has(did)) {
+            const empty: any = {};
+            for (const k of TENANT_SCOPED_COLLECTIONS) empty[k] = [];
+            buckets.set(did, empty);
+          }
+          buckets.get(did)![key].push(row);
+        }
+      }
+
+      // Write each dealer file that has data in this state.
+      // Also write empty files for dealers that had data before but don't now
+      // (e.g. all vehicles deleted).
+      const existingIds = allDealerIds();
+      buckets.forEach((data, id) => {
+        writeDealerData(id, data);
+        const idx = existingIds.indexOf(id);
+        if (idx !== -1) existingIds.splice(idx, 1);
+      });
+      // Dealers with no rows left still get an empty file so they aren't lost
+      for (const id of existingIds) {
+        const empty: any = {};
+        for (const k of TENANT_SCOPED_COLLECTIONS) empty[k] = [];
+        writeDealerData(id, empty);
+      }
+    } catch (err) {
+      console.error("Error writing per-dealer state:", err);
+    }
+    return;
+  }
+
+  // Legacy monolithic path
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), "utf-8");
   } catch (err) {
@@ -1010,9 +1161,19 @@ function writeState(state: typeof DEFAULT_MOCK_STATE) {
   }
 }
 
-// Initial seed if not present
-if (!fs.existsSync(DATA_FILE)) {
-  writeState(DEFAULT_MOCK_STATE);
+// Boot: migrate to per-dealer files if still on monolithic, then seed if needed
+if (!isPerDealerMode()) {
+  if (fs.existsSync(DATA_FILE)) {
+    migrateToPerDealerFiles();
+  } else if (fs.existsSync(SEED_FILE)) {
+    // First boot: copy seed to data.json, then migrate
+    fs.copyFileSync(SEED_FILE, DATA_FILE);
+    migrateToPerDealerFiles();
+  } else {
+    // No data at all — write defaults and migrate
+    fs.writeFileSync(DATA_FILE, JSON.stringify(DEFAULT_MOCK_STATE, null, 2), "utf-8");
+    migrateToPerDealerFiles();
+  }
 }
 
 /** Every array on a vehicle that holds photos. */
@@ -1199,14 +1360,9 @@ app.get("/api/admin/backup", (req: any, res) => {
     "Content-Disposition",
     `attachment; filename="truflow-backup-${stamp}.json"`
   );
-  /* Streamed from disk rather than re-serialised from readState(), so what
-     lands on the laptop is byte-for-byte what the service is running on —
-     including anything a migration has not yet rewritten. */
   try {
-    if (!fs.existsSync(DATA_FILE)) {
-      return res.status(404).json({ error: "No state file on disk yet." });
-    }
-    fs.createReadStream(DATA_FILE).pipe(res);
+    const state = readState();
+    res.json(state);
   } catch (err: any) {
     console.error("backup failed", err);
     res.status(500).json({ error: "Backup failed", details: err.message });
@@ -1250,12 +1406,14 @@ app.post("/api/admin/restore", (req: any, res) => {
   }
 
   try {
+    // Snapshot current state before overwriting
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
     let snapshot: string | null = null;
-    if (fs.existsSync(DATA_FILE)) {
-      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+    try {
+      const current = readState();
       snapshot = path.join(DATA_DIR, `data.before-restore-${stamp}.json`);
-      fs.copyFileSync(DATA_FILE, snapshot);
-    }
+      fs.writeFileSync(snapshot, JSON.stringify(current, null, 2), "utf-8");
+    } catch { /* no current state to snapshot */ }
 
     writeState(incoming);
 
@@ -1585,15 +1743,15 @@ app.post("/api/leads", (req: any, res) => {
   res.status(201).json({ message: "Lead file logged successfully.", lead: newLead });
 });
 
-app.put("/api/leads/:id", (req, res) => {
+app.put("/api/leads/:id", (req: any, res) => {
   const state = readState();
   const index = state.leads.findIndex(l => l.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: "Lead not found" });
   }
-
-  const oldStatus = state.leads[index].status;
-  const newStatus = req.body.status;
+  if (!mayTouch(state.leads[index], req.auth)) {
+    return res.status(403).json({ error: "Not your lead." });
+  }
 
   state.leads[index] = {
     ...state.leads[index],
@@ -1604,8 +1762,13 @@ app.put("/api/leads/:id", (req, res) => {
   res.json({ message: "Lead updated successfully.", lead: state.leads[index] });
 });
 
-app.delete("/api/leads/:id", (req, res) => {
+app.delete("/api/leads/:id", (req: any, res) => {
   const state = readState();
+  const target = state.leads.find(l => l.id === req.params.id);
+  if (!target) return res.status(404).json({ error: "Lead not found" });
+  if (!mayTouch(target, req.auth)) {
+    return res.status(403).json({ error: "Not your lead." });
+  }
   state.leads = state.leads.filter(l => l.id !== req.params.id);
   writeState(state);
   res.json({ message: "Lead file deleted." });
@@ -1636,11 +1799,14 @@ app.post("/api/tasks", (req: any, res) => {
   res.status(201).json({ message: "Operational task created.", task: newTask });
 });
 
-app.put("/api/tasks/:id", (req, res) => {
+app.put("/api/tasks/:id", (req: any, res) => {
   const state = readState();
   const index = state.tasks.findIndex(t => t.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: "Task not found" });
+  }
+  if (!mayTouch(state.tasks[index], req.auth)) {
+    return res.status(403).json({ error: "Not your task." });
   }
 
   state.tasks[index] = {
@@ -1652,13 +1818,14 @@ app.put("/api/tasks/:id", (req, res) => {
   res.json({ message: "Task updated.", task: state.tasks[index] });
 });
 
-app.delete("/api/tasks/:id", (req, res) => {
+app.delete("/api/tasks/:id", (req: any, res) => {
   const state = readState();
-  const before = state.tasks.length;
-  state.tasks = state.tasks.filter(t => t.id !== req.params.id);
-  if (state.tasks.length === before) {
-    return res.status(404).json({ error: "Task not found" });
+  const target = state.tasks.find(t => t.id === req.params.id);
+  if (!target) return res.status(404).json({ error: "Task not found" });
+  if (!mayTouch(target, req.auth)) {
+    return res.status(403).json({ error: "Not your task." });
   }
+  state.tasks = state.tasks.filter(t => t.id !== req.params.id);
   writeState(state);
   res.json({ message: "Task deleted." });
 });
@@ -1690,11 +1857,14 @@ app.post("/api/invoices", (req: any, res) => {
   res.status(201).json({ message: "Invoice drafted.", invoice: newInvoice });
 });
 
-app.put("/api/invoices/:id/pay", (req, res) => {
+app.put("/api/invoices/:id/pay", (req: any, res) => {
   const state = readState();
   const index = state.invoices.findIndex(inv => inv.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: "Invoice not found" });
+  }
+  if (!mayTouch(state.invoices[index], req.auth)) {
+    return res.status(403).json({ error: "Not your invoice." });
   }
 
   state.invoices[index].status = "Paid";
@@ -1727,11 +1897,14 @@ app.post("/api/agreements", (req: any, res) => {
   res.status(201).json({ message: "Agreement drafted successfully.", agreement: newAgreement });
 });
 
-app.put("/api/agreements/:id", (req, res) => {
+app.put("/api/agreements/:id", (req: any, res) => {
   const state = readState();
   const index = state.agreements.findIndex(a => a.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: "Agreement not found" });
+  }
+  if (!mayTouch(state.agreements[index], req.auth)) {
+    return res.status(403).json({ error: "Not your agreement." });
   }
 
   state.agreements[index] = {
@@ -1778,11 +1951,14 @@ app.post("/api/documents", (req: any, res) => {
   res.status(201).json({ message: "Document uploaded.", document: newDoc });
 });
 
-app.post("/api/documents/:id/sign", (req, res) => {
+app.post("/api/documents/:id/sign", (req: any, res) => {
   const state = readState();
   const index = (state.documents || []).findIndex((d: any) => d.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: "Document not found" });
+  }
+  if (!mayTouch(state.documents[index], req.auth)) {
+    return res.status(403).json({ error: "Not your document." });
   }
   const { signature, signedBy } = req.body || {};
   if (!signature) {
@@ -1799,8 +1975,13 @@ app.post("/api/documents/:id/sign", (req, res) => {
   res.json({ message: "Document signed.", document: state.documents[index] });
 });
 
-app.delete("/api/documents/:id", (req, res) => {
+app.delete("/api/documents/:id", (req: any, res) => {
   const state = readState();
+  const target = (state.documents || []).find((d: any) => d.id === req.params.id);
+  if (!target) return res.status(404).json({ error: "Document not found" });
+  if (!mayTouch(target, req.auth)) {
+    return res.status(403).json({ error: "Not your document." });
+  }
   state.documents = (state.documents || []).filter((d: any) => d.id !== req.params.id);
   writeState(state);
   res.json({ message: "Document deleted." });
@@ -1831,12 +2012,15 @@ app.post("/api/expenses", (req: any, res) => {
   res.status(201).json({ message: "Expense logged successfully.", expense: newExpense });
 });
 
-app.put("/api/expenses/:id/reconcile", (req, res) => {
+app.put("/api/expenses/:id/reconcile", (req: any, res) => {
   const state = readState();
   if (!state.expenses) state.expenses = [];
   const index = state.expenses.findIndex(e => e.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ error: "Expense not found" });
+  }
+  if (!mayTouch(state.expenses[index], req.auth)) {
+    return res.status(403).json({ error: "Not your expense." });
   }
 
   state.expenses[index].reconciled = req.body.reconciled !== undefined ? req.body.reconciled : !state.expenses[index].reconciled;
@@ -3259,12 +3443,13 @@ app.post("/api/portals/sync", async (req, res) => {
   const state = readState();
   const portals = readPortals();
   const activePortals = portals.filter(p => p.active && p.webhookUrl);
-  const vehicles = state.vehicles.filter(v => v.status === "INVENTORY");
+  const vehicles = scopeToDealer(state.vehicles, req.auth).filter(v => v.status === "INVENTORY");
+  const callerDealer = state.dealerships?.find((d: any) => d.id === req.auth?.dealershipId);
 
   const payload = {
     event: "inventory_sync",
     timestamp: new Date().toISOString(),
-    dealer: state.dealerships?.[0]?.name || "TruFlow Dealer",
+    dealer: callerDealer?.name || state.dealerships?.[0]?.name || "TruFlow Dealer",
     count: vehicles.length,
     vehicles: vehicles.map(v => ({
       stockNumber: v.stockNumber,
@@ -3436,7 +3621,7 @@ app.post("/api/integration/webhook-lead", (req, res) => {
 app.post("/api/integration/sync-inventory", (req, res) => {
   try {
     const state = readState();
-    const activeVehicles = state.vehicles.filter(v => v.status === "INVENTORY");
+    const activeVehicles = scopeToDealer(state.vehicles, req.auth).filter(v => v.status === "INVENTORY");
     
     res.json({
       success: true,
