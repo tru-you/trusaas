@@ -68,9 +68,8 @@
   }
 }
 </script>
-<link rel="stylesheet" href="coc-vd.css?v=20260727a">
-<link rel="stylesheet" href="coc-polish.css?v=20260727a">
-<link rel="stylesheet" href="coc-splash.css?v=20260727a">
+<!-- Merged: coc-widgets.css (vd+media+book+tradein) and coc-site.css (polish+splash+skin) load at the end of <head>. -->
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -133,10 +132,6 @@ body{
     radial-gradient(ellipse 50% 30% at 50% 100%,rgba(35,65,154,.04),transparent 50%);
   background-attachment:fixed;
 }
-body.has-cursor{cursor:none;}
-body.has-cursor a,body.has-cursor button,body.has-cursor .chip,body.has-cursor .cat-tile,
-body.has-cursor .card,body.has-cursor select,body.has-cursor input,body.has-cursor .fab-btn,
-body.has-cursor label{cursor:none;}
 ::selection{background:var(--blue);color:#fff;}
 img{display:block;max-width:100%;}
 a{color:inherit;text-decoration:none;transition:color var(--dur-fast) var(--ease-soft);}
@@ -144,49 +139,6 @@ ul{list-style:none;}
 button{font-family:inherit;cursor:pointer;}
 .wrap{max-width:1280px;margin:0 auto;padding:0 24px;}
 h1,h2,h3,h4{font-family:var(--ff);font-weight:800;}
-
-/* ===== CUSTOM CURSOR ===== */
-.cur-dot,.cur-ring{
-  position:fixed;top:0;left:0;pointer-events:none;z-index:9999;
-  border-radius:50%;opacity:0;transition:opacity .25s ease;
-  will-change:transform,width,height;
-}
-.cur-dot{
-  width:8px;height:8px;
-  background:var(--blue);
-  box-shadow:0 0 12px rgba(35,65,154,.45);
-  transition:opacity .25s ease, width .25s var(--ease-out), height .25s var(--ease-out), background .2s;
-}
-.cur-ring{
-  width:40px;height:40px;
-  border:1.5px solid rgba(35,65,154,.55);
-  background:rgba(35,65,154,.06);
-  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  transition:width .3s var(--ease-out),height .3s var(--ease-out),
-    background .3s var(--ease-out),border-color .3s var(--ease-out),opacity .25s ease;
-}
-body.cur-ready .cur-dot,body.cur-ready .cur-ring{opacity:1;}
-body.cur-hover .cur-ring{
-  width:64px;height:64px;
-  background:rgba(35,65,154,.1);border-color:rgba(35,65,154,.35);
-}
-body.cur-click .cur-ring{
-  width:28px;height:28px;
-  background:rgba(35,65,154,.2);
-}
-body.cur-hover .cur-dot{width:5px;height:5px;background:var(--blue-light);}
-@media (hover:none),(pointer:coarse){
-  .cur-dot,.cur-ring{display:none !important;}
-  body.has-cursor,body.has-cursor *{cursor:auto !important;}
-}
-
-/* scroll progress */
-.scroll-progress{
-  position:fixed;top:0;left:0;height:2px;width:0;z-index:200;
-  background:linear-gradient(90deg,var(--blue-light),var(--blue),#6B8FE8);
-  box-shadow:0 0 12px rgba(35,65,154,.45);
-  transition:width .1s linear;pointer-events:none;
-}
 
 /* glass utilities */
 .glass{
@@ -349,11 +301,11 @@ header.scrolled{
 }
 .m-menu.open{display:block;max-height:420px;opacity:1;}
 .m-menu a{
-  display:block;padding:14px 24px;font-weight:600;color:var(--ink-2);
+  display:block;padding:14px 24px;font-weight:600;color:var(--ink-2)!important;
   border-bottom:1px solid rgba(17,19,24,.06);
   transition:background var(--dur-fast) var(--ease-soft), padding-left var(--dur) var(--ease-out), color var(--dur-fast);
 }
-.m-menu a:hover{background:rgba(35,65,154,.08);color:var(--blue);padding-left:30px;}
+.m-menu a:hover{background:rgba(35,65,154,.08);color:var(--blue)!important;padding-left:30px;}
 
 /* ===== HERO (authentic yard feel) ===== */
 .hero{position:relative;background:var(--ink);color:#fff;overflow:hidden;}
@@ -882,8 +834,19 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 @media(max-width:860px){.f-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:560px){.f-grid{grid-template-columns:1fr;}}
 .f-grid h4{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#fff;margin-bottom:16px;}
-.f-grid a{display:block;font-size:13px;padding:4px 0;transition:color var(--dur-fast) var(--ease-soft), padding-left var(--dur) var(--ease-out);}
+/* !important because coc-polish.css's touch-target rule (`footer a{display:
+   inline-flex;min-height:44px}`, @media max-width:760px / pointer:coarse)
+   has LOWER specificity (0,0,2 vs 0,1,1 here) but still won on every phone —
+   below 760px every footer link rendered as an inline-flex chip on one row
+   instead of stacking, which is what "spreads horizontally, no spacing"
+   actually was. Forcing it here rather than re-litigating why the cascade
+   didn't behave as expected on paper. */
+.f-grid a{display:block!important;min-height:0!important;font-size:13px;padding:10px 0;transition:color var(--dur-fast) var(--ease-soft), padding-left var(--dur) var(--ease-out);}
 .f-grid a:hover{color:#fff;padding-left:6px;}
+/* the Contact column's Call button is a <button>, not an <a> — it never
+   picked up the block+padding rhythm above, so it sat flush against the
+   next link with no gap between "Call us" and the email address. */
+.f-grid .coc-call-text{display:block!important;padding:10px 0!important;font-size:13px;}
 .f-about .logo{margin-bottom:14px;}
 .f-about .logo .logo-text .l1{color:#fff;}
 .f-about .logo .logo-text .l2{color:rgba(255,255,255,.45);}
@@ -893,8 +856,8 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 
 /* ===== FLOATING FAB RAIL (glass · Caledon) ===== */
 .fab-rail{
-  position:fixed;top:50%;transform:translateY(-50%);
-  right:max(14px,var(--safe-r));z-index:95;
+  position:fixed;
+  right:max(14px,var(--safe-r));bottom:108px;z-index:95;
   display:flex;flex-direction:column;gap:14px;
 }
 .fab-btn{
@@ -970,7 +933,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 }
 .fab-btn:hover .fab-label{opacity:1;transform:translateY(-50%) translateX(0);}
 @keyframes fabRise{from{opacity:0;transform:translateX(24px) scale(.8)}to{opacity:1;transform:translateX(0) scale(1)}}
-@media(max-width:900px){
+@media(max-width:960px){
   .fab-rail{top:auto;transform:none;bottom:max(16px,calc(14px + var(--safe-b)));right:max(12px,var(--safe-r));gap:11px;}
   .fab-btn{width:50px;height:50px;}
   .fab-btn svg{width:21px;height:21px;}
@@ -1065,21 +1028,15 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 .stock-source.live .dot{background:var(--wa);box-shadow:0 0 0 0 rgba(37,211,102,.5);animation:livePulse 1.8s ease-out infinite;}
 @keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(37,211,102,.55)}70%{box-shadow:0 0 0 8px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
 </style>
-<link rel="stylesheet" href="coc-book.css?v=20260727a">
-<link rel="stylesheet" href="coc-media.css?v=20260727a">
-<link rel="stylesheet" href="coc-tradein.css?v=20260727a">
-<link rel="stylesheet" href="coc-skin.css?v=20260727a">
+<link rel="stylesheet" href="coc-widgets.css?v=20260805a">
+<link rel="stylesheet" href="coc-site.css?v=20260805a">
+<link rel="stylesheet" href="coc-fixes.css?v=20260806t">
 </head>
 <body>
 <a class="coc-skip" href="#showroom">Skip to showroom</a>
 
 <!-- Splash intro (first visit per session) -->
-<script src="coc-splash.js?v=20260727a"></script>
-
-<!-- Custom cursor + scroll progress (desktop) -->
-<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
-<div class="cur-dot" id="curDot" aria-hidden="true"></div>
-<div class="cur-ring" id="curRing" aria-hidden="true"></div>
+<script src="coc-splash.js?v=20260805a"></script>
 
 <!-- TOPBAR -->
 <div class="topbar">
@@ -1093,21 +1050,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     <div class="tb-tick" aria-hidden="true"><div class="tb-track">
       <span>📍 <b>257 Caledon Street, Kariega</b></span><i></i>
       <span>Mon–Fri 08:00–17:30 · Sat 08:00–13:00</span><i></i>
-      <span><b>Live video viewings</b> — buy from your couch</span><i></i>
+      <span><b>TruInspect trade-in</b> — market-related offer, at the workshop</span><i></i>
       <span>Bank finance · Trade-ins · Park &amp; Sell R0</span><i></i>
       <span>📍 <b>257 Caledon Street, Kariega</b></span><i></i>
       <span>Mon–Fri 08:00–17:30 · Sat 08:00–13:00</span><i></i>
-      <span><b>Live video viewings</b> — buy from your couch</span><i></i>
+      <span><b>TruInspect trade-in</b> — market-related offer, at the workshop</span><i></i>
       <span>Bank finance · Trade-ins · Park &amp; Sell R0</span><i></i>
     </div></div>
-    <div class="tl">
-      <button type="button" class="coc-call" data-tel="+27618759389" aria-label="Call Cars on Caledon">
-        <span class="cc-ring" aria-hidden="true"></span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.27a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
-        <span class="cc-num"><b>Call us</b></span>
-        <span class="cc-arm">+27 61 875 9389</span>
-      </button>
-    </div>
   </div>
 </div>
 
@@ -1161,7 +1110,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     <div class="hero-meta">
       <span>Mon–Fri 08:00–17:30</span>
       <span>Sat 08:00–13:00</span>
-      <span><button type="button" class="coc-call coc-call-text" data-tel="+27618759389" style="color:#fff"><span class="cc-num">Call us</span><span class="cc-arm">+27 61 875 9389 &middot; tap to call</span></button></span>
     </div>
     <div class="hero-ctas">
       <a class="btn btn-blue" href="#showroom">Browse showroom →</a>
@@ -1246,14 +1194,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
       </div>
       <div class="banks"><span>WesBank</span><span>MFC / Nedbank</span><span>Absa</span><span>Standard Bank</span><span>Capitec</span></div>
     </div>
-    <div class="calc rv d2">
-      <div class="c-head">Repayment Estimator <i></i></div>
-      <div class="c-row"><div class="c-lab"><span>Vehicle price</span><output id="o-price">R385 000</output></div><input type="range" id="r-price" min="80000" max="1200000" step="5000" value="385000"></div>
-      <div class="c-row"><div class="c-lab"><span>Deposit</span><output id="o-dep">10%</output></div><input type="range" id="r-dep" min="0" max="40" step="5" value="10"></div>
-      <div class="c-row"><div class="c-lab"><span>Term</span><output id="o-term">72 months</output></div><input type="range" id="r-term" min="12" max="96" step="12" value="72"></div>
-      <div class="c-result"><div><div class="cr-label">Estimated monthly</div><div class="cr-val" id="o-monthly">R7 480<small> /pm</small></div></div><a class="btn btn-blue" id="calcApply" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20to%20apply%20for%20vehicle%20finance" target="_blank" rel="noopener">Apply Now</a></div>
-      <p class="fine">Estimate at 11.75% linked rate over selected term, excluding fees & insurance. Final rate subject to bank approval. Cars on Caledon is not a registered credit provider; applications are facilitated through registered FSPs.</p>
-    </div>
+    <div class="calc rv d2" id="finance-calc"></div>
   </div>
 </section>
 
@@ -1276,20 +1217,20 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
         <div class="ss rv d2"><div class="sn">3</div><div><b>Choose your route</b><p>Instant offer, trade-in, or Park & Sell — we market it, you bank the best price.</p></div></div>
       </div>
       <div class="btn-row">
-        <a class="btn btn-blue rv d3" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20a%20free%20valuation%20on%20my%20car.%20I%27ll%20send%20the%20details%20and%20a%20few%20photos%20now." target="_blank" rel="noopener">Get a Free Valuation</a>
+        <a class="btn btn-blue rv d3" id="sellValuation" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20a%20free%20valuation%20on%20my%20car." target="_blank" rel="noopener">Get a Free Valuation</a>
         <a class="btn btn-wa rv d3" href="https://wa.me/27618759389" target="_blank" rel="noopener">WhatsApp Your Car's Details</a>
       </div>
     </div>
   </div>
 
-  <!-- TruTrade · Live Offer — books a real TruLive video inspection; the firm
-       offer + Offer to Purchase are made ON the call, from what the camera shows -->
+  <!-- TruInspect · Workshop VIR + Trade-in — books a 20-minute in-workshop
+       inspection; graded VIR + firm trade-in offer handed over on the same visit -->
   <div class="wrap">
     <div class="coc-trade rv" id="tradeTool">
       <div class="ct-head">
-        <div class="ct-badge"><i></i>TruTrade &middot; Live Offer</div>
-        <h3>A firm offer on your car — live on video, no driving in.</h3>
-        <p>Book a 15-minute <b>TruLive</b> inspection. You point your phone, we grade the car live — panels, interior, engine bay — and make a <b>firm offer with an Offer to Purchase</b> before the call ends.</p>
+        <div class="ct-badge"><i></i>TruInspect &middot; Book a Valuation</div>
+        <h3>A firm offer on your car &mdash; graded on our workshop floor.</h3>
+        <p>Book a 20-minute <b>workshop inspection</b>. Drive in, we grade the car on-site &mdash; panels, interior, engine bay &mdash; and put a <b>firm trade-in offer</b> in your hand before you leave.</p>
       </div>
       <div class="ct-grid">
         <div class="ct-step">
@@ -1309,7 +1250,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
         <div class="ct-step">
           <div class="ct-sn">2</div>
           <div class="ct-fields">
-            <div class="ct-f"><label>Live inspection slot</label>
+            <div class="ct-f"><label>Workshop slot</label>
               <div class="ct-chips" id="ctDay"></div>
               <div class="ct-chips" id="ctTime"></div>
             </div>
@@ -1318,8 +1259,8 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
         <div class="ct-step ct-cta">
           <div class="ct-sn">3</div>
           <div class="ct-fields">
-            <button class="btn btn-blue ct-book" id="ctBook">Book my live offer &rarr;</button>
-            <p class="ct-note">You'll get a secure TruLive link on WhatsApp. Firm offer &amp; OTP on the same call &mdash; no obligation, offer valid 48 hours.</p>
+            <button class="btn btn-blue ct-book" id="ctBook">Book my workshop slot &rarr;</button>
+            <p class="ct-note">We'll confirm the slot on WhatsApp. Firm trade-in offer handed over at the workshop &mdash; no obligation, offer valid 48 hours.</p>
           </div>
         </div>
       </div>
@@ -1333,9 +1274,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 <section class="ti" id="tradein">
   <div class="wrap">
     <div class="ti-head">
-      <div class="ti-eyebrow"><i></i>TruValue &middot; remote trade-in</div>
+      <div class="ti-eyebrow"><i></i>TruValue &middot; workshop trade-in</div>
       <h2>Know what your car is worth &mdash; <em>from a person, not a formula.</em></h2>
-      <p class="ti-lede">Tell us about the car in three quick steps. Then a Caledon buyer walks it with you on a live video call, asks the questions that matter, and puts a trade price in writing &mdash; subject to viewing. No algorithm decides what your car is worth.</p>
+      <p class="ti-lede">Tell us about the car in three quick steps, then drive it in for a 20-minute TruInspect grading. A Caledon buyer walks it with you, asks the questions that matter, and puts a trade price in writing on the spot. No algorithm decides what your car is worth.</p>
     </div>
     <div class="ti-grid"></div>
   </div>
@@ -1358,14 +1299,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
         <span class="wc-tag">3D Orbit</span>
       </div>
       <div class="wc rv d2">
-        <div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M15 10l5-3v10l-5-3"/><rect x="3" y="6" width="12" height="12" rx="2.5"/></svg></div>
-        <h3>Live Video Viewings</h3>
-        <p>Can't visit Caledon Street? We'll walk the car live on video — cold start, engine bay, underneath — you direct the camera.</p>
-        <span class="wc-tag">Book via WhatsApp</span>
+        <div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
+        <h3>Market-Related Trade-Ins</h3>
+        <p>We run your car through the TruDealer Trade-In tools — live market data, condition grading and comparable stock — so the number we offer at the workshop is the number the market actually supports.</p>
+        <span class="wc-tag">TruDealer &middot; Trade-In</span>
       </div>
     </div>
   </div>
 </section>
+
+
 
 <!-- TESTIMONIALS -->
 <section class="testi">
@@ -1395,7 +1338,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
         </div>
         <div class="btn-row">
           <a class="btn btn-blue" href="https://www.google.com/maps/dir/?api=1&amp;destination=257+Caledon+Street,+Kariega,+6229" target="_blank" rel="noopener">Get Directions</a>
-          <a class="btn btn-outline" href="https://wa.me/27618759389" target="_blank" rel="noopener">Book a Viewing</a>
+          <a class="btn btn-outline" id="visitEnquire" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20to%20book%20a%20viewing." target="_blank" rel="noopener">Book a Viewing</a>
         </div>
       </div>
       <a class="visit-r" href="https://www.google.com/maps/search/?api=1&amp;query=257+Caledon+Street,+Kariega,+6229" target="_blank" rel="noopener" aria-label="Open 257 Caledon Street, Kariega in Google Maps"><div class="pin"><div class="dot"></div><div class="pl">257 Caledon St · Kariega</div><div class="pl-hint">Open in Google Maps ↗</div></div></a>
@@ -1417,7 +1360,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
       <div><h4>Services</h4><a href="#finance">Vehicle Finance</a><a href="#sell">Trade-Ins</a><a href="#sell">Park & Sell</a><a href="#why">Inspection Reports</a></div>
       <div><h4>Contact</h4><button type="button" class="coc-call coc-call-text" data-tel="+27618759389"><span class="cc-num">Call us</span><span class="cc-arm">+27 61 875 9389 &middot; tap to call</span></button><a href="mailto:lance@carsoncaledon.co.za">lance@carsoncaledon.co.za</a><a href="#visit">257 Caledon Street, Kariega</a><a href="https://facebook.com/carsoncaledon" target="_blank" rel="noopener">Facebook ↗</a></div>
     </div>
-    <div class="f-bottom"><span>© 2026 Cars on Caledon · All prices include VAT · E&OE</span><span class="ax">Powered by <a href="https://www.tru-saas.com" target="_blank" rel="noopener" style="color:inherit"><b>TruSaaS</b></a> · <a href="https://true-cars.co.za" target="_blank" rel="noopener" style="color:inherit">true-cars.co.za</a></span></div>
+    <div class="f-bottom"><span>© 2026 Cars on Caledon · All prices include VAT · E&OE</span><span class="ax">Powered by <a href="https://www.trudealer.tru-saas.com" target="_blank" rel="noopener" style="color:inherit"><b>TruDealer</b></a></span></div>
   </div>
 </footer>
 
@@ -1428,9 +1371,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     <span class="fab-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.6A2.5 2.5 0 0 1 7 6.7h10a2.5 2.5 0 0 1 2.4 1.7L21 13v5a1 1 0 0 1-1 1h-1.2a1 1 0 0 1-1-1v-1H6.2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3.5 13h17"/><circle cx="7.2" cy="16" r="1.1"/><circle cx="16.8" cy="16" r="1.1"/></svg></span>
     <span class="fab-label">Book a test drive</span>
   </a>
-  <a class="fab-btn fab-lvs" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20a%20live%20video%20viewing%20of%20a%20vehicle" target="_blank" rel="noopener" aria-label="Book a live video viewing">
-    <span class="fab-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8.5V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-1.5l5 3.5V5z"/></svg></span>
-    <span class="fab-label">Live video viewing</span>
+  <a class="fab-btn fab-lvs" href="https://wa.me/27618759389?text=Hi%20Caledon%20Cars%2C%20I%27d%20like%20a%20TruInspect%20trade-in%20valuation%20on%20my%20car.%20Please%20send%20me%20a%20workshop%20slot." target="_blank" rel="noopener" aria-label="Book a TruInspect trade-in valuation">
+    <span class="fab-inner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.6A2.5 2.5 0 0 1 7 6.7h10a2.5 2.5 0 0 1 2.4 1.7L21 13v5a1 1 0 0 1-1 1h-1.2a1 1 0 0 1-1-1v-1H6.2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3.5 13h17"/><path d="M9 10l2 2 4-4"/></svg></span>
+    <span class="fab-label">Trade-in valuation</span>
   </a>
 </div>
 
@@ -1451,12 +1394,6 @@ const WA = "27618759389";
    timeout each — up to 16 sequential requests and well over a minute of hanging
    before the page gave up. Only "cars-on-caledon" exists in TruFlow; the other
    three never resolved and only ever bought timeouts. */
-/* House standard: a showroom goes live once the yard has this many cars on the
-   feed. Below it the section holds instead of publishing a thin grid — two cars
-   and a filter row reads as a yard going out of business, not a yard opening.
-   Everything else on the page (trade-in, finance, hours, WhatsApp) stays live
-   throughout, because those are useful with no stock at all. */
-const MIN_LIVE_STOCK = 5;
 const DEALER_SLUGS = ["cars-on-caledon"];
 /* flow. and premium. are one Render service behind two custom domains — Flow
    Lite, which used to own the flow. hostname, is retired. Listing both bought a
@@ -1560,8 +1497,7 @@ function observeAll(){io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.is
    never disagree. Below the go-live threshold it deliberately does not publish a
    count — "2 vehicles in stock" is a worse advert than saying stock is landing. */
 function stockLabel(){
-  if(STOCK.length >= MIN_LIVE_STOCK) return STOCK.length+" vehicles in stock";
-  if(STOCK.length > 0)               return "New stock arriving — call 061 875 9389";
+  if(STOCK.length > 0) return STOCK.length+(STOCK.length===1?" vehicle":" vehicles")+" in stock";
   return "Stock loading — call us on 061 875 9389";
 }
 function setStockSource(live, label){
@@ -1569,7 +1505,7 @@ function setStockSource(live, label){
   /* Tell the splash whether the yard is live yet. It reads this to decide
      between "Enter showroom" and holding as the front door. Set here because
      this is the one function every stock path already calls. */
-  window.COC_HOLDING = STOCK.length < MIN_LIVE_STOCK;
+  window.COC_HOLDING = STOCK.length === 0;
   const el = document.getElementById("stockSource");
   const lbl = document.getElementById("stockSourceLbl");
   if(el) el.classList.toggle("live", live);
@@ -1671,18 +1607,21 @@ function renderHolding(){
      near-empty showroom or, worse, invented stock. */
   const chipWrap = document.getElementById("chips");
   if(chipWrap) chipWrap.style.display = "none";
+  const invFoot = document.querySelector(".inv-foot");
+  if(invFoot) invFoot.style.display = "none";
   grid.innerHTML =
     '<div style="grid-column:1/-1;text-align:center;padding:56px 20px;">'
-    + '<p style="font-size:20px;font-weight:700;margin:0 0 8px;">New stock arriving now</p>'
-    + '<p style="font-size:14px;color:var(--grey);margin:0 0 20px;line-height:1.6;">'
-    + 'We are photographing and inspecting the current floor. Tell us what you are '
-    + 'looking for and we will send you matches before they go up.</p>'
+    + '<p style="font-size:20px;font-weight:700;margin:0 0 20px;">New stock arriving — tell us what you need and we\'ll send matches before they go up.</p>'
     + '<a class="btn btn-dark" target="_blank" rel="noopener" href="https://wa.me/27618759389?text='
     + encodeURIComponent("Hi Caledon Cars, what do you have coming in? I am looking for:")
     + '">WhatsApp us what you need &rarr;</a></div>';
 }
 function render(list){
-  if(STOCK.length < MIN_LIVE_STOCK){ renderHolding(); return; }
+  if(STOCK.length === 0){ renderHolding(); return; }
+  const chipWrap = document.getElementById("chips");
+  if(chipWrap) chipWrap.style.display = "";
+  const invFoot = document.querySelector(".inv-foot");
+  if(invFoot) invFoot.style.display = "";
   const show = list.length ? list : STOCK.slice(0,10);
   window.COC_SHOWN = show;
   grid.innerHTML=show.map((c,i)=>{
@@ -1695,7 +1634,7 @@ function render(list){
         ? `<img class="im" src="${img}" alt="${[c.yr,c.make,c.name].filter(Boolean).join(' ')}" loading="lazy" decoding="async" width="800" height="500">`
         : `<div class="im im-none"><span class="imn-txt">Photos on request</span></div>`}
       <span class="badge ${c.category==='performance'?'hot':''}">${c.category==='select'?'Select':c.category==='performance'?'Performance':c.tag||'Featured'}</span>
-      <span class="vir"><i></i>${c.virLabel||'Inspected'}</span>
+      <span class="vir"><i></i>${c.conditionLabel||'Inspected'}</span>
       <button class="fav-btn${favHas(c)?' on':''}" type="button" data-fav="${i}" aria-label="Save to shortlist"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
     </div>
     <div class="card-body">
@@ -1737,8 +1676,37 @@ function normaliseBody(raw){
   if(/coupe|convertible|cabrio/.test(k)) return "Coupe";
   return b;
 }
+/* TruLens sends inspection results as `slotAssessment` — a dict of ~12
+   panel keys (bonnet, front_bumper, wheel_front_right, roof_sunroof …)
+   each shaped `{rating: "ok"|"note"|"damage", comment?: string}`. The
+   site consumes `vir` (0-100 overall, capped at 90 because no used car
+   is genuinely 100/100) and `virReport` (per-panel entries with binary
+   damage state + optional note — numeric per-panel scores were removed
+   2026-08-04 because the underlying data has no real score, only a
+   rating). Lens enforces a photo when a panel is marked damaged, so
+   "damage" here is always backed by an image. */
+function deriveVirFromSlots(sa){
+  if(!sa || typeof sa !== "object") return null;
+  var keys = Object.keys(sa);
+  if(!keys.length) return null;
+  var passed = 0, report = [];
+  keys.forEach(function(k){
+    var slot = sa[k] || {};
+    var raw = String(slot.rating||"").toLowerCase();
+    var rating = raw === "damage" ? "damage" : raw === "note" ? "note" : "ok";
+    if(rating === "ok") passed++;
+    var entry = {
+      section: k.replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}),
+      rating: rating
+    };
+    if(slot.comment) entry.note = slot.comment;
+    report.push(entry);
+  });
+  return { score: Math.min(90, Math.round(passed/keys.length*100)), report: report };
+}
 function mapApiVehicle(v){
   if(isJunkApi(v)) return null;
+  var derivedVir = (typeof v.vir === "number") ? null : deriveVirFromSlots(v.slotAssessment);
   const price = Number(v.price)||0;
   const km = v.mileage != null ? (Number(v.mileage).toLocaleString("en-ZA")+" km") : (v.km||"—");
   /* Normalise the DMS body type to the categories this page is built around.
@@ -1776,9 +1744,15 @@ function mapApiVehicle(v){
     img: img || "",
     images: Array.isArray(v.images) ? v.images.filter(Boolean) : [],
     web3d: v.web3d && Array.isArray(v.web3d.frames) && v.web3d.frames.length ? v.web3d : null,
-    vir: (typeof v.vir === "number") ? v.vir : null,
-    virReport: Array.isArray(v.virReport) ? v.virReport : [],
-    virLabel: (typeof v.vir === "number") ? ("Inspected · " + v.vir + "/100") : "",
+    vir: (typeof v.vir === "number") ? v.vir : (derivedVir ? derivedVir.score : null),
+    virReport: Array.isArray(v.virReport) && v.virReport.length ? v.virReport : (derivedVir ? derivedVir.report : []),
+    virLabel: (function(){
+      var s = (typeof v.vir === "number") ? v.vir : (derivedVir ? derivedVir.score : null);
+      return s === null ? "" : ("Inspected · " + s + "/100");
+    })(),
+    /* Dealer-declared condition line from the feed (TruLens retail model) —
+       e.g. "No damage reported". Passed through like vir/virReport above. */
+    conditionLabel: v.conditionLabel || "",
     damage: Array.isArray(v.damage) ? v.damage : []
   };
 }
@@ -1876,27 +1850,15 @@ document.querySelectorAll("#mmenu a").forEach(a=>a.addEventListener("click",()=>
 
 observeAll();
 
-/* ── Modern UX: custom cursor, scroll progress, header glass state ── */
+/* Header glass state + active nav on scroll (custom cursor + scroll-progress bar retired 2026-08-04). */
 (function(){
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   const header = document.querySelector("header");
-  const prog = document.getElementById("scrollProgress");
-  const dot = document.getElementById("curDot");
-  const ring = document.getElementById("curRing");
-
   function onScroll(){
-    const y = window.scrollY || 0;
-    if(header) header.classList.toggle("scrolled", y > 24);
-    if(prog){
-      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      prog.style.width = Math.min(100, (y / max) * 100) + "%";
-    }
+    if(header) header.classList.toggle("scrolled", (window.scrollY || 0) > 24);
   }
   window.addEventListener("scroll", onScroll, {passive:true});
   onScroll();
 
-  /* smooth active nav on scroll */
   const sections = ["showroom","sell","finance","why","visit"].map(id=>document.getElementById(id)).filter(Boolean);
   const navLinks = document.querySelectorAll(".nav-links a");
   function setActiveNav(){
@@ -1906,84 +1868,94 @@ observeAll();
     navLinks.forEach(a=>{
       const href = (a.getAttribute("href")||"").replace("#","");
       a.classList.toggle("active", href === cur || (!cur && href === "showroom" && mid < 400));
-      if(!cur && href === "showroom" && mid < 400) a.classList.add("active");
-      if(!cur && mid < 400 && href !== "showroom") a.classList.remove("active");
     });
   }
   window.addEventListener("scroll", setActiveNav, {passive:true});
   setActiveNav();
-
-  if(!fine || reduce || !dot || !ring) return;
-
-  document.body.classList.add("has-cursor");
-  let mx = window.innerWidth/2, my = window.innerHeight/2;
-  let rx = mx, ry = my;
-  let visible = false;
-
-  function showCur(){
-    if(visible) return;
-    visible = true;
-    document.body.classList.add("cur-ready");
-  }
-  window.addEventListener("mousemove", e=>{
-    mx = e.clientX; my = e.clientY;
-    showCur();
-    const dw = dot.offsetWidth/2, dh = dot.offsetHeight/2;
-    dot.style.transform = "translate("+(mx-dw)+"px,"+(my-dh)+"px)";
-  }, {passive:true});
-  window.addEventListener("mousedown", ()=>document.body.classList.add("cur-click"));
-  window.addEventListener("mouseup", ()=>document.body.classList.remove("cur-click"));
-  document.addEventListener("mouseleave", ()=>document.body.classList.remove("cur-ready","cur-hover","cur-click"));
-  document.addEventListener("mouseenter", ()=>{ if(visible) document.body.classList.add("cur-ready"); });
-
-  const hoverSel = "a,button,.chip,.cat-tile,.card,.fab-btn,.btn,select,.ss,.wc,.tc,.sp-go";
-  document.addEventListener("mouseover", e=>{
-    if(e.target.closest(hoverSel)) document.body.classList.add("cur-hover");
-  });
-  document.addEventListener("mouseout", e=>{
-    if(e.target.closest(hoverSel) && !e.relatedTarget?.closest?.(hoverSel))
-      document.body.classList.remove("cur-hover");
-  });
-
-  function tick(){
-    rx += (mx - rx) * 0.18;
-    ry += (my - ry) * 0.18;
-    const rw = ring.offsetWidth/2, rh = ring.offsetHeight/2;
-    ring.style.transform = "translate("+(rx-rw)+"px,"+(ry-rh)+"px)";
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
 })();
 </script>
 
-<script src="coc-vd.js?v=20260727a"></script>
-<script src="coc-polish.js?v=20260727a" defer></script>
-<script src="coc-motion.js?v=20260727a" defer></script>
+<script src="coc-vd.js?v=20260806c"></script>
+<script src="coc-polish.js?v=20260805a" defer></script>
+<script src="coc-fixes.js?v=20260806a" defer></script>
 
-<!-- TruChat · AI chat + leads (TruSaaS) -->
-<script src="truchat/shared/qualifier.js"></script>
-<script src="truchat/shared/chat-core.js"></script>
-<script src="truchat/coc/config.js"></script>
-<!-- Caledon's own widget. This used to load true-cars/widget.js and alias
-     COC_TRUCHAT_CONFIG onto window.TRUECARS_TRUCHAT_CONFIG, which meant another
-     dealer's whole tenant folder had to stay deployed on this domain — phone
-     numbers and demo pages included — for the chat to work at all. The widget
-     is now Caledon's, so those folders can go. -->
-<script src="truchat/coc/widget.js?v=6" data-bottom="24px" data-position="right" data-z="999990" defer></script>
+<!-- TruLoader Universal Suite (TruDealer) -->
+<script src="tru-loader.js"
+        data-dealer="Cars on Caledon"
+        data-slug="cars-on-caledon"
+        data-flow="https://premium.tru-saas.com"
+        data-wa="27618759389"
+        data-accent="#23419A"
+        data-widgets="afford,repay,form,chat,book"
+        data-repay-mode="inline"
+        data-repay-target="#finance-calc"
+        data-repay-collapsible="1"
+        data-form-mode="float"></script>
 
-<!-- TruAfford · soft affordability (TruSaaS) — all showrooms -->
-<script
-  src="tru-afford.js?v=20260727a"
-  data-dealer="Cars on Caledon"
-  data-wa="27618759389"
-  data-brand="trusaas"
-  data-position="left"
-  data-bottom="20px"
-  data-z="999990"
-  defer></script>
-<script src="coc-book.js?v=20260727a" defer></script>
-<script src="coc-media.js?v=20260727a" defer></script>
+<!-- TruForm popup glue: hide floating launcher, wire strategic CTAs -->
+<script>
+(function () {
+  var attempts = 0;
+  var maxAttempts = 30;
+  function wire() {
+    var form = window.TruForm;
+    if (!form || !form.instances || !form.instances.length) {
+      if (++attempts < maxAttempts) { setTimeout(wire, 300); }
+      return;
+    }
+    // On the INDEX, hide the floating TruForm launcher — the standard sticky
+    // bar (coc-mbar) owns the bottom here. TruForm's glassmorphic launcher is
+    // for the vehicle page, which loads its own copy. Host is `<id>-host`
+    // (older builds used a bare `tru-form-1`), so match either.
+    try {
+      var host = document.getElementById("tru-form-1-host")
+              || document.getElementById("tru-form-1")
+              || document.querySelector('[id^="tru-form-"][id$="-host"]');
+      if (host && host.shadowRoot) {
+        var launcher = host.shadowRoot.querySelector(".tf-launcher");
+        if (launcher) { launcher.style.setProperty("display", "none", "important"); }
+        // Watch panel open/close to push coc-ticker higher (avoid overlap on the left)
+        var root = host.shadowRoot.getElementById("tf");
+        if (root) {
+          var ticker = document.querySelector(".coc-ticker");
+          var obs = new MutationObserver(function () {
+            if (!ticker) return;
+            if (root.classList.contains("is-open")) {
+              ticker.style.setProperty("bottom", "210px", "important");
+            } else {
+              ticker.style.removeProperty("bottom");
+            }
+          });
+          obs.observe(root, { attributes: true, attributeFilter: ["class"] });
+        }
+      }
+    } catch (e) {}
+
+    // Wire strategic CTAs
+    var sellBtn = document.getElementById("sellValuation");
+    var visitBtn = document.getElementById("visitEnquire");
+    if (sellBtn) {
+      sellBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        form.open({ source: "Sell / Trade-in", interest: "Valuation" });
+      });
+    }
+    if (visitBtn) {
+      visitBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        form.open({ source: "Visit", interest: "Viewing" });
+      });
+    }
+  }
+  if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", function () { setTimeout(wire, 600); }); }
+  else { setTimeout(wire, 600); }
+})();
+</script>
+
+<script src="coc-book.js?v=20260805a" defer></script>
+<script src="coc-media.js?v=20260805f" defer></script>
 <script src="coc-tradein.js?v=20260727a" defer></script>
 <script src="coc-hours.js?v=20260727a" defer></script>
+<script src="coc-dock.js?v=20260804a" defer></script>
 </body>
 </html>

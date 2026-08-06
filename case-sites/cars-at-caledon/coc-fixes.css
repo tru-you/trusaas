@@ -1,0 +1,1112 @@
+/* ============================================================
+   Cars on Caledon — Design Fixes (drop-in)
+   Load AFTER coc-site.css:
+     <link rel="stylesheet" href="coc-fixes.css?v=20260806a">
+   
+   Does NOT touch feeds, widgets, or webhooks.
+   ============================================================ */
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 01 — GREEN-ON-BLACK → BLUE ACCENT
+   Status dots, pulse rings, and "live" indicators were using
+   WhatsApp green on a near-black field. Now uses the site's
+   own blue accent (#6E9BFF). WhatsApp green stays ONLY on
+   the WhatsApp button itself (brand requirement).
+   ──────────────────────────────────────────────────────────── */
+
+/* Hero badge dot */
+.hero-badge i{
+  background:var(--sk-accent,#6E9BFF)!important;
+  box-shadow:none!important;
+  animation:none!important;
+}
+
+/* Stock source pill — live dot */
+.stock-source.live .dot{
+  background:var(--sk-accent,#6E9BFF)!important;
+  animation:cocBluePulse 2s ease-out infinite!important;
+}
+@keyframes cocBluePulse{
+  0%{box-shadow:0 0 0 0 rgba(110,155,255,.5)}
+  70%{box-shadow:0 0 0 7px rgba(110,155,255,0)}
+  100%{box-shadow:0 0 0 0 rgba(110,155,255,0)}
+}
+
+/* Card "Inspected" badge dot */
+.card .ph .vir i{
+  background:var(--sk-accent,#6E9BFF)!important;
+}
+
+/* Hours pill — open state: blue instead of green */
+.coc-status.open{
+  background:rgba(110,155,255,.14)!important;
+  border-color:rgba(110,155,255,.30)!important;
+  color:rgba(160,190,255,.9)!important;
+}
+.coc-status.open i{
+  background:var(--sk-accent,#6E9BFF)!important;
+}
+.coc-status.open i::after{
+  border-color:var(--sk-accent,#6E9BFF)!important;
+}
+
+/* TruInspect badge dot */
+.coc-trade .ct-badge i{
+  background:var(--sk-accent,#6E9BFF)!important;
+  animation:none!important;
+}
+.coc-trade .ct-badge{
+  color:rgba(160,190,255,.9)!important;
+  background:rgba(110,155,255,.12)!important;
+  border-color:rgba(110,155,255,.30)!important;
+}
+
+/* TruValue eyebrow dot */
+.ti-eyebrow i{
+  background:var(--sk-accent,#6E9BFF)!important;
+  animation:none!important;
+}
+
+/* Trust dots in VD modal */
+.vd-trust i[style*="25D366"]{
+  background:var(--sk-accent,#6E9BFF)!important;
+}
+
+/* Ticker icon — blue not green */
+.coc-ticker .tk-ic{
+  background:rgba(110,155,255,.14)!important;
+  color:var(--sk-accent,#6E9BFF)!important;
+}
+
+/* Mobile nav status pill — blue not green */
+.nav-status i{
+  background:var(--sk-accent,#6E9BFF)!important;
+  box-shadow:none!important;
+  animation:cocBluePulse 2s ease-out infinite!important;
+}
+.nav-status{
+  color:rgba(160,190,255,.9)!important;
+  background:rgba(110,155,255,.08)!important;
+  border-color:rgba(110,155,255,.20)!important;
+}
+@media(max-width:860px){
+  .nav-status.closed i{
+    background:var(--sk-muted,rgba(232,234,230,.55))!important;
+    animation:none!important;
+  }
+  .nav-status.closed{
+    color:var(--sk-muted)!important;
+    background:rgba(232,234,230,.06)!important;
+    border-color:var(--sk-line,rgba(232,234,230,.14))!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 02 — SPACING: TIGHTER SECTIONS
+   110px section padding was excessive. 72px desktop, 48px
+   mobile. Internal gaps tightened.
+   ──────────────────────────────────────────────────────────── */
+
+section{
+  padding-top:72px!important;
+  padding-bottom:72px!important;
+}
+@media(max-width:760px){
+  section{
+    padding-top:48px!important;
+    padding-bottom:48px!important;
+  }
+}
+/* Finance and sell grid gaps */
+.fin-grid{gap:40px!important;}
+.sell-grid{gap:36px!important;}
+@media(max-width:960px){
+  .fin-grid{gap:28px!important;}
+  .sell-grid{gap:24px!important;}
+}
+/* Why-us grid */
+.why-grid{margin-top:24px!important;gap:14px!important;}
+/* Testimonial grid */
+.testi-grid{margin-top:24px!important;gap:14px!important;}
+/* Body type section */
+.cat-section{padding:52px 0 40px!important;}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 03 — MOBILE CARD CTA SIMPLIFICATION
+   On mobile (≤640px), hide inline WhatsApp + Book buttons.
+   The card itself is tappable → detail modal has both actions.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .card-body .cta-row{
+    display:none!important;
+  }
+  /* Also tighten card body padding */
+  .card-body{
+    padding:12px 14px 14px!important;
+  }
+  /* Specs row — tighter */
+  .specs{
+    margin:8px 0 10px!important;
+    gap:4px!important;
+  }
+  /* Price row */
+  .price-row{
+    padding-top:10px!important;
+  }
+  /* View detail button is the only CTA on mobile */
+  .card-body .btn-vd{
+    margin-top:10px!important;
+    padding:11px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 04 — REMOVE FAKE DATA VISUALS
+   Ribbons (Just arrived / Price reduced / Reserved) are
+   derived from a price hash — not real status. Hide them.
+   The delivered ticker is hardcoded fake deliveries — hide.
+   Synthetic TruPrice tags — hide when not DMS-sourced.
+   ──────────────────────────────────────────────────────────── */
+
+/* Hide ribbons entirely */
+.coc-ribbon{
+  display:none!important;
+}
+
+/* Hide the delivered ticker */
+.coc-ticker{
+  display:none!important;
+}
+
+/* TruPrice tag: only show "win" (real DMS data),
+   hide the synthetic "fair" fallback */
+.tp-tag.fair{
+  display:none!important;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 05 — CALL BUTTON: DIRECT DIAL
+   The double-tap pattern is non-standard. Make the phone
+   number visible and tappable immediately. The .coc-call JS
+   still runs but we make the armed state instantaneous.
+   ──────────────────────────────────────────────────────────── */
+
+/* Footer + visit section: show number directly */
+.coc-call-text .cc-num{
+  border-bottom:1px dashed currentColor;
+}
+
+/* Topbar / mobile bar: arm immediately on first tap via CSS
+   (the JS still handles the actual dialing) — shorter timeout */
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 06 — SEARCH PANEL: COLLAPSIBLE ON MOBILE
+   The search panel pushes car content below the fold on
+   small screens. Collapse it behind a toggle.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .search-panel .sp-row{
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    margin-top:0;
+    transition:max-height .35s ease, opacity .25s ease, margin-top .35s ease;
+  }
+  .search-panel.sp-open .sp-row{
+    max-height:400px;
+    opacity:1;
+    margin-top:12px;
+  }
+  /* The toggle button is injected by coc-fixes.js */
+  .sp-toggle{
+    display:flex!important;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    padding:0;
+    background:none;
+    border:none;
+    color:#fff;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .sp-toggle svg{
+    transition:transform .3s ease;
+  }
+  .search-panel.sp-open .sp-toggle svg{
+    transform:rotate(180deg);
+  }
+}
+@media(min-width:641px){
+  .sp-toggle{display:none!important;}
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 07 — FAB RAIL: KILL AMBIENT ANIMATIONS
+   Float, sheen, and breathing loops run continuously.
+   Keep entrance only; kill ambient motion.
+   ──────────────────────────────────────────────────────────── */
+
+.fab-btn .fab-inner{
+  animation:none!important;
+}
+.fab-btn::after{
+  animation:none!important;
+  background:none!important;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 08 — BODY TYPE TILES: RESPONSIVE
+   6-column grid wraps awkwardly. Better breakpoints.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .cat-grid{
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:8px!important;
+  }
+  .cat-tile{
+    padding:14px 8px 12px!important;
+  }
+  .cat-tile svg{
+    width:42px!important;
+    height:22px!important;
+    margin-bottom:6px!important;
+  }
+  .cat-tile .ct-name{
+    font-size:12px!important;
+  }
+  .cat-tile .ct-count{
+    font-size:9px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 09 — STATS STRIP: RESPONSIVE
+   4-column → 2×2 on mobile with tighter padding.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .stats-row .si{
+    padding:14px 10px!important;
+  }
+  .stats-row .sn{
+    font-size:22px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 10 — VISIT CARD: RESPONSIVE
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  .visit-l{
+    padding:28px 20px!important;
+  }
+  .visit-l h2{
+    font-size:24px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 11 — FOOTER: TIGHTER ON MOBILE
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:560px){
+  footer .f-grid{
+    gap:20px!important;
+  }
+  .f-about p{
+    font-size:12px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 12 — TruAfford LAUNCHER: OUT OF THE MID-SCREEN (mobile)
+   The widget host was fixed at bottom:160px on the right, so the
+   "What can I afford?" pill floated in the middle of the page.
+   Pin it to the bottom-left, just above the sticky Call/WhatsApp
+   bar, clear of TruChat's bottom-right FAB.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:720px){
+  #tru-afford-host{
+    bottom:80px!important;
+    left:12px!important;
+    right:auto!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 13 — DETAIL MODAL: STOP SIDEWAYS SCROLL
+   The mobile modal is a single grid column (1fr), whose implicit
+   min-width:auto let a wide child blow the column — and the whole
+   modal — to ~2× the viewport, so the page scrolled sideways and
+   every CTA was cut off on the right. minmax(0,1fr) + min-width:0
+   lets the column shrink to the shell. The thumbnails keep their
+   original 3-column grid (just capped to 8 in coc-vd.js) — the
+   single-row experiment caused this blowout and was reverted.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:920px){
+  .vd-grid{grid-template-columns:minmax(0,1fr)!important;}
+  .vd-grid > *{min-width:0!important;max-width:100%!important;}
+}
+
+/* MEASURED ROOT CAUSE (Chrome @375px, against the deployed build):
+   the abandoned "single-row thumbnail strip" experiment was still live as
+
+     @media(max-width:640px){
+       .vd-thumbs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important}
+       .vd-thumbs .vd-thumb{flex:0 0 88px!important;...}
+     }
+
+   `overflow-x:auto` does NOT clip here: the flex row's min-content
+   (8 thumbs x 88px + gaps = 760px) propagates up through .vd-gallery into
+   the `1fr` track, so the left column measured 760px min-content inside a
+   330px shell. That is what pushed the modal to 771px of scroll width —
+   which is the gallery overflow AND why the Reserve/WhatsApp bar appeared
+   cut off at the right edge. Deleting that block (already done above the
+   line in this file) is the actual fix; verified 771px -> 375px.
+
+   The rules below are hardening so the same shape can't come back: they cap
+   the CHAIN that carried the demand, not just the track. */
+.vd-gallery,.vd-hero-img,.vd-thumbs,.vd-thumb,.vd-3d,.vd-stage{
+  min-width:0!important;
+}
+.vd-thumbs{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+.vd-thumb .im,.vd-hero-img .im{max-width:100%!important;}
+
+/* Deliberately NOT adding `overflow-x:hidden` to .vd-overlay. Verified at
+   360/375/768/1280 that the rules above bring scrollWidth back to exactly
+   clientWidth on their own. A blanket overflow-x:hidden would have turned this
+   same bug from a visible sideways scroll into silently CLIPPED CTAs — the
+   sideways scroll is what made it findable. Fix causes, don't hide symptoms. */
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 15 — FLOATING WIDGETS MUST NOT COVER THE DETAIL MODAL
+   TruAfford / TruChat / TruForm launchers sit at z-index ~1M, well
+   above the modal (z300), so the "Check Affordability" pill floated
+   on top of the open vehicle detail. Hide them while it's open —
+   the modal has its own Reserve / WhatsApp / finance actions.
+   ──────────────────────────────────────────────────────────── */
+
+body.vd-lock #tru-afford-host,
+body.vd-lock #tc-fab,
+body.vd-lock [id^="tru-form-"][id$="-host"]{
+  display:none!important;
+}
+/* "+N" badge on the last shown thumb when more photos exist */
+.vd-thumb{position:relative;}
+.vd-thumb-more{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(7,9,14,.62);
+  color:#fff;
+  font-weight:700;
+  font-size:14px;
+  border-radius:inherit;
+  pointer-events:none;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 14 — DETAIL MODAL: CLEAR THE FIXED RESERVE/WHATSAPP BAR
+   .vd-mbar is a position:fixed bottom bar (Reserve / WhatsApp)
+   shown on mobile, and it's the last child of #vdContent, which
+   reserves no space for it — so it overlapped the last actions
+   (Share / Apply for finance). Pad the content so nothing hides
+   behind the bar.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:720px){
+  .vd-overlay.open #vdContent{
+    padding-bottom:88px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 16 — MOBILE BAR STUCK MID-SCREEN (the reported bug)
+
+   .vd-mbar is position:fixed, but it was rendered INSIDE .vd-shell,
+   and .vd-shell carries `transform:translateY(22px) scale(.985)` as
+   its entrance state. A transformed ancestor becomes the containing
+   block for position:fixed descendants — so the bar stopped being
+   viewport-fixed and became absolutely positioned inside a 2456px-tall
+   shell. bottom:0 then resolved to the bottom of the CONTENT, i.e.
+   ~2357px down: the bar parked mid-screen and scrolled with the page.
+
+   coc-vd.js now portals the bar to <body> so no ancestor can ever
+   trap it again (a filter/backdrop-filter/contain added to any wrapper
+   later would re-break it). Two consequences handled here:
+
+   1. The bar no longer matches `.vd-overlay.open .vd-mbar`, so its
+      layout is restated below.
+   2. --vd-* custom properties are declared on .vd-overlay, so a
+      portalled bar would inherit nothing. Colours are literal here.
+
+   Belt-and-braces: kill the shell transform on mobile entirely. The
+   entrance reads fine as a fade at this size, and it removes the whole
+   class of bug rather than just this instance.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:720px){
+  .vd-shell{transform:none!important;}
+
+  body.vd-lock > .vd-mbar{
+    position:fixed!important;left:0;right:0;bottom:0;z-index:320;
+    display:grid!important;grid-template-columns:1.2fr 1fr 1fr;gap:8px;
+    align-items:center;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    background:rgba(8,14,28,.96);
+    border-top:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    font-family:'Mulish',system-ui,sans-serif;
+  }
+  body.vd-lock > .vd-mbar .mb-price b{
+    display:block;font-size:15px;font-weight:800;color:#fff;line-height:1.1;
+  }
+  body.vd-lock > .vd-mbar .mb-price span{
+    font-size:10px;color:rgba(255,255,255,.45);font-weight:600;
+  }
+  body.vd-lock > .vd-mbar a{
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;border-radius:11px;padding:12px 8px;
+    text-decoration:none;
+    /* long labels must shrink, never push the bar wider than the screen */
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  body.vd-lock > .vd-mbar .mb-reserve{background:linear-gradient(135deg,#6E9BFF,#2E54BE);color:#fff;}
+  body.vd-lock > .vd-mbar .mb-wa{background:#25D366;color:#fff;}
+}
+
+/* The bar only exists while the modal is open; never show it otherwise. */
+body:not(.vd-lock) > .vd-mbar{display:none!important;}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 18 — CTA SYSTEM: GLASS TINT, ON THE TruPrice PATTERN
+
+   THE PROBLEM. Saturated fills on a near-black page force a label
+   choice where both options are bad, and the site had picked
+   differently on the page vs the modal — which is the white/black
+   mix that's visible walking from the showroom into a car:
+
+     .btn-blue  (page)   #06080D on #6E9BFF ........ 7.44:1
+     .vd-btn-primary     #ffffff on #6E9BFF ........ 2.70:1  FAIL
+     .btn-wa    (page)   #06210F on green .......... 9.03:1  (legible, reads heavy)
+     .vd-btn-wa/.mb-wa   #ffffff on #25D366 ........ 1.98:1  FAIL (severe)
+     .coc-mbar           rgba(255,255,255,.96) ..... a WHITE bar on a black site
+     .coc-mbar a         .72 white @ weight 400 .... muted AND thin on saturated fill
+
+   WhatsApp green is the trap: it sits at luminance .479, almost
+   exactly halfway, so white (1.98) and black (9.03, but visually
+   heavy/muddy) are both poor. There is no good label for a solid
+   #25D366 slab on this page.
+
+   THE FIX. Stop fighting the fill — invert it, exactly the way the
+   TruPrice tag already does and reads well:
+
+     .tp-tag.win = rgba(34,197,94,.12) fill + #16A34A label = 4.78:1
+
+   Same idea, brighter label so it works at button scale:
+
+     glass green + #4ADE80 ..... 9.05:1
+     glass blue  + #A8C3FF ..... 8.78:1
+
+   Both clear AAA, both keep the brand hue as the SIGNAL rather than
+   as a wall of colour, and the whole CTA family now shares one rule
+   instead of two contradictory ones.
+
+   HIERARCHY. If everything is glass, nothing is primary — and on a
+   dealer site the CTA hierarchy IS the conversion path. So the tint
+   carries the weight instead of the label colour: the single highest
+   intent action per surface gets `.is-lead` (heavier fill, brighter
+   border, soft glow); everything else sits one tier down. Prominence
+   is preserved without going back to a solid slab.
+   ──────────────────────────────────────────────────────────── */
+
+.vd-btn.vd-btn-primary,
+.vd-btn.vd-btn-wa,
+body.vd-lock > .vd-mbar .mb-reserve,
+body.vd-lock > .vd-mbar .mb-wa,
+.coc-mbar .mb-wa,
+.coc-mbar .mb-stock,
+.coc-mbar .mb-call{
+  backdrop-filter:blur(10px) saturate(1.25)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.25)!important;
+  font-weight:800!important;          /* .coc-mbar labels were rendering at 400 */
+  letter-spacing:.01em;
+  transition:background .2s ease,border-color .2s ease,transform .15s ease;
+}
+
+/* ---- BLUE tier: Reserve / Stock / Call ---- */
+.vd-btn.vd-btn-primary,
+body.vd-lock > .vd-mbar .mb-reserve,
+.coc-mbar .mb-stock,
+.coc-mbar .mb-call{
+  background:rgba(110,155,255,.14)!important;
+  background-image:none!important;
+  border:1px solid rgba(110,155,255,.38)!important;
+  color:#A8C3FF!important;            /* 8.78:1 */
+}
+.vd-btn.vd-btn-primary:hover,
+body.vd-lock > .vd-mbar .mb-reserve:hover,
+.coc-mbar .mb-stock:hover,
+.coc-mbar .mb-call:hover{
+  background:rgba(110,155,255,.24)!important;
+  border-color:rgba(110,155,255,.62)!important;
+  color:#C8D9FF!important;
+}
+
+/* ---- GREEN tier: WhatsApp, everywhere ---- */
+.vd-btn.vd-btn-wa,
+body.vd-lock > .vd-mbar .mb-wa,
+.coc-mbar .mb-wa{
+  background:rgba(37,211,102,.14)!important;
+  background-image:none!important;
+  border:1px solid rgba(37,211,102,.38)!important;
+  color:#4ADE80!important;            /* 9.05:1 */
+}
+.vd-btn.vd-btn-wa:hover,
+body.vd-lock > .vd-mbar .mb-wa:hover,
+.coc-mbar .mb-wa:hover{
+  background:rgba(37,211,102,.24)!important;
+  border-color:rgba(37,211,102,.62)!important;
+  color:#86EFAC!important;
+}
+
+/* ---- LEAD tier: the one action that must still shout ----
+   Reserve in the modal, WhatsApp on the site-wide bar. */
+.vd-btn.vd-btn-primary,
+body.vd-lock > .vd-mbar .mb-reserve{
+  background:rgba(110,155,255,.22)!important;
+  border-color:rgba(110,155,255,.58)!important;
+  box-shadow:0 0 0 1px rgba(110,155,255,.10) inset,
+             0 8px 22px -12px rgba(110,155,255,.65)!important;
+}
+.coc-mbar .mb-wa{
+  background:rgba(37,211,102,.22)!important;
+  border-color:rgba(37,211,102,.58)!important;
+  box-shadow:0 0 0 1px rgba(37,211,102,.10) inset,
+             0 8px 22px -12px rgba(37,211,102,.65)!important;
+}
+
+/* SVG glyphs inherit currentColor, so they track the label automatically. */
+
+
+/* ---- Same system on the PAGE buttons ----
+   Without this the showroom keeps its solid-blue/black-label slabs
+   right next to the new glass bar, which is the inconsistency this
+   fix exists to remove. `.btn.btn-x` outranks coc-site.css's
+   `.btn-x{color:#06080D!important}` restatement at line ~889.
+   .btn-blue / .btn-vd / .btn-grad stay the LEAD tier so the primary
+   action in each section still carries the most weight. */
+.btn.btn-blue,.btn.btn-vd,.btn.btn-grad,.btn.btn-primary,.sp-go,
+.btn.btn-white{
+  background:rgba(110,155,255,.22)!important;
+  background-image:none!important;
+  border:1px solid rgba(110,155,255,.58)!important;
+  color:#A8C3FF!important;
+  backdrop-filter:blur(10px) saturate(1.25)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.25)!important;
+  box-shadow:0 0 0 1px rgba(110,155,255,.10) inset,
+             0 8px 22px -12px rgba(110,155,255,.65)!important;
+  text-shadow:none!important;
+}
+.btn.btn-blue:hover,.btn.btn-vd:hover,.btn.btn-grad:hover,
+.btn.btn-primary:hover,.sp-go:hover,.btn.btn-white:hover{
+  background:rgba(110,155,255,.32)!important;
+  border-color:rgba(110,155,255,.78)!important;
+  color:#C8D9FF!important;
+}
+
+.btn.btn-wa{
+  background:rgba(37,211,102,.22)!important;
+  background-image:none!important;
+  border:1px solid rgba(37,211,102,.58)!important;
+  color:#4ADE80!important;
+  backdrop-filter:blur(10px) saturate(1.25)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.25)!important;
+  box-shadow:0 0 0 1px rgba(37,211,102,.10) inset,
+             0 8px 22px -12px rgba(37,211,102,.65)!important;
+  text-shadow:none!important;
+}
+.btn.btn-wa:hover{
+  background:rgba(37,211,102,.32)!important;
+  border-color:rgba(37,211,102,.78)!important;
+  color:#86EFAC!important;
+}
+
+
+/* ---- MODAL CHROME + FAB RAIL: same glass, NEUTRAL tint ----
+   Close, Tags/Watch, the 360 view tabs, secondary modal actions and
+   the floating rail are navigation, not conversion — so they take the
+   neutral tier. Same glass language, one step down in emphasis, so
+   the blue/green CTAs stay the things your eye lands on. */
+.vd-close,
+.vd-btn.vd-btn-dark,
+.vd-btn.vd-btn-ghost,
+.vd-3d-actions button,
+.vd-3d-thumb,
+.fab-btn{
+  background:rgba(232,234,230,.09)!important;
+  background-image:none!important;
+  border:1px solid rgba(232,234,230,.26)!important;
+  color:#E8EAE6!important;
+  backdrop-filter:blur(10px) saturate(1.2)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.2)!important;
+  box-shadow:none!important;
+  transition:background .2s ease,border-color .2s ease,color .2s ease;
+}
+.vd-close:hover,
+.vd-btn.vd-btn-dark:hover,
+.vd-btn.vd-btn-ghost:hover,
+.vd-3d-actions button:hover,
+.vd-3d-thumb:hover,
+.fab-btn:hover{
+  background:rgba(110,155,255,.20)!important;
+  border-color:rgba(110,155,255,.55)!important;
+  color:#C8D9FF!important;
+}
+/* the close button's rotate-on-hover is a nice touch — keep it,
+   just don't let the old solid-blue hover fill come back */
+.vd-close:hover{transform:rotate(90deg) scale(1.06);}
+
+/* Selected states in the modal read as the blue tier, not a solid slab */
+.vd-3d-thumb.on,
+.vd-3d-actions button.on{
+  background:rgba(110,155,255,.22)!important;
+  border-color:rgba(110,155,255,.58)!important;
+  color:#A8C3FF!important;
+}
+
+/* Header WhatsApp dot — last solid-green holdout. It's icon-only, and a
+   white glyph on #2FDC74 is the same 1.98:1 problem as the text buttons,
+   so it gets the green tier too. */
+.nav-wa{
+  background:rgba(37,211,102,.20)!important;
+  background-image:none!important;
+  border:1px solid rgba(37,211,102,.55)!important;
+  color:#4ADE80!important;
+  backdrop-filter:blur(10px) saturate(1.25)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.25)!important;
+  box-shadow:0 0 0 1px rgba(37,211,102,.10) inset,
+             0 8px 20px -12px rgba(37,211,102,.6)!important;
+}
+.nav-wa:hover{
+  background:rgba(37,211,102,.30)!important;
+  border-color:rgba(37,211,102,.75)!important;
+  color:#86EFAC!important;
+}
+/* it had a pulsing green halo tuned for the solid fill */
+.nav-wa::after,.nav-wa::before{background:none!important;animation:none!important;}
+
+
+/* ---- Booking / trade-in wizard: the last solid fills ----
+   Selected day, time and condition chips were #fff on the
+   #6E9BFF->#2E54BE gradient (2.70:1 at the light end), and .ti-nav
+   .next was a solid blue slab. Same blue tier as everything else. */
+.vd-slot.on,
+.ti-cond.on,.ti-opt.on,.ti-chip.on,
+.ti-nav .next{
+  background:rgba(110,155,255,.22)!important;
+  background-image:none!important;
+  border:1px solid rgba(110,155,255,.58)!important;
+  color:#A8C3FF!important;
+  backdrop-filter:blur(10px) saturate(1.25)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.25)!important;
+  box-shadow:0 0 0 1px rgba(110,155,255,.10) inset!important;
+}
+.ti-nav .next{
+  box-shadow:0 0 0 1px rgba(110,155,255,.10) inset,
+             0 8px 22px -12px rgba(110,155,255,.65)!important;
+}
+.vd-slot.on:hover,.ti-cond.on:hover,.ti-opt.on:hover,
+.ti-chip.on:hover,.ti-nav .next:hover{
+  background:rgba(110,155,255,.32)!important;
+  border-color:rgba(110,155,255,.78)!important;
+  color:#C8D9FF!important;
+}
+/* the confirm button in the booking sheet is the lead action there */
+.vd-booking-confirm{
+  background:rgba(110,155,255,.22)!important;
+  background-image:none!important;
+  border:1px solid rgba(110,155,255,.58)!important;
+  color:#A8C3FF!important;
+  backdrop-filter:blur(10px) saturate(1.25)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.25)!important;
+  box-shadow:0 0 0 1px rgba(110,155,255,.10) inset,
+             0 8px 22px -12px rgba(110,155,255,.65)!important;
+}
+.vd-booking-confirm:hover{
+  background:rgba(110,155,255,.32)!important;
+  border-color:rgba(110,155,255,.78)!important;
+  color:#C8D9FF!important;
+}
+
+/* Trade-in card chips (condition / day / time) — these carry a bare
+   `.on` class from coc-tradein.js, so the .ti- and .vd-slot selectors
+   above miss them. Same blue tier.
+   (Do not write a star-slash sequence in here — it terminates this
+   comment early and silently eats the rule below it.) */
+.ct-chips .on,
+.ct-chips button.on{
+  background:rgba(110,155,255,.22)!important;
+  background-image:none!important;
+  border:1px solid rgba(110,155,255,.58)!important;
+  color:#A8C3FF!important;
+}
+.ct-chips .on:hover{
+  background:rgba(110,155,255,.32)!important;
+  border-color:rgba(110,155,255,.78)!important;
+  color:#C8D9FF!important;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 19 — INVISIBLE CLOSE BUTTON ON THE FAVOURITES PANEL
+
+   #favClose inherited color:#111318 — near-black ink left over from
+   the light retail build — sitting on the dark panel. Measured 1.01:1,
+   i.e. the "×" is genuinely invisible; the only way out of the panel
+   was the Esc key or a lucky tap. Found while sweeping contrast, not
+   reported, but it's a dead end on a live site so it goes in now.
+   ──────────────────────────────────────────────────────────── */
+
+#favClose,
+.fav-head button,
+.fav-head .fav-close{
+  color:#E8EAE6!important;
+  background:rgba(232,234,230,.09)!important;
+  border:1px solid rgba(232,234,230,.26)!important;
+  border-radius:10px!important;
+  opacity:1!important;
+}
+#favClose:hover,
+.fav-head button:hover{
+  background:rgba(110,155,255,.20)!important;
+  border-color:rgba(110,155,255,.55)!important;
+  color:#C8D9FF!important;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 20 — ACTIVE NAV LINK
+
+   The current-section nav pill was a #4A66B8 -> #23419A gradient
+   carrying a .72-alpha label: 3.12:1, below AA, and the last thing
+   on the site still using a solid gradient fill. Blue tier, same as
+   every other selected state.
+   ──────────────────────────────────────────────────────────── */
+
+nav a.active,.nav-links a.active,header a.active{
+  background:rgba(110,155,255,.22)!important;
+  background-image:none!important;
+  border:1px solid rgba(110,155,255,.58)!important;
+  color:#A8C3FF!important;
+  backdrop-filter:blur(10px) saturate(1.25)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.25)!important;
+}
+nav a.active:hover,.nav-links a.active:hover,header a.active:hover{
+  background:rgba(110,155,255,.32)!important;
+  border-color:rgba(110,155,255,.78)!important;
+  color:#C8D9FF!important;
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 21 — MOBILE RHYTHM: CHIP ROWS AND BUTTON METRICS
+
+   (a) RAGGED CHIP ROWS. Four groups are flex-wrap rows of five,
+   so each breaks 3 + 2 at uneven widths and leaves a jagged right
+   edge and an orphan row:
+
+     .banks         5 chips, widths 88/122/61/129/80  -> 2 rows
+     .ct-chips      (workshop day)   5 chips          -> 2 rows
+     .ct-chips      (workshop time)  5 chips          -> 2 rows
+     .vd-3d-thumbs  Front/Side/Rear/Interior/Engine   -> 2 rows
+
+   The booking sheet already solves this properly — .vd-slot-grid is
+   a real 3-column grid — so match that rather than invent anything.
+   Equal columns means both rows share the same left/right edges and
+   the orphan sits flush instead of floating.
+
+   (b) BUTTON METRICS. The modal action stack measured 70 / 49 / 49 /
+   49 / 45px tall, with text-align flipping between start and center
+   and line-height between 21.6px and normal. The 70px one is the
+   primary wrapping to two lines. Normalise the metrics so the stack
+   reads as one rhythm, and let the long primary wrap as two BALANCED
+   centred lines rather than a full line plus an orphan word.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:640px){
+  /* (a) even grids, matching .vd-slot-grid's 3-column pattern */
+  .ct-chips,
+  .vd-3d-thumbs{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;
+    align-items:stretch!important;
+  }
+  .ct-chips > *,
+  .vd-3d-thumbs > *{
+    width:auto!important;min-width:0!important;
+    display:inline-flex!important;align-items:center;justify-content:center;
+    text-align:center;
+    padding-left:6px!important;padding-right:6px!important;
+  }
+
+  /* Bank names are long ("STANDARD BANK"), so two columns not three —
+     three would force mid-word truncation. */
+  .banks{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  .banks > *{
+    width:auto!important;min-width:0!important;
+    display:inline-flex!important;align-items:center;justify-content:center;
+    text-align:center;
+  }
+  /* Five chips in two columns leaves a lone chip on row three. Let an odd
+     last chip span the full width so the block closes flush instead of
+     trailing an orphan. */
+  .banks > *:last-child:nth-child(odd){grid-column:1 / -1!important;}
+
+  /* Same treatment for the 3-column rows: a trailing pair centres itself
+     under the row above rather than hugging the left edge. */
+  .ct-chips > *:nth-last-child(2):nth-child(3n+1){grid-column:1 / span 1;}
+}
+
+/* (b) one set of button metrics across the modal stack */
+@media(max-width:920px){
+  .vd-actions .vd-btn,
+  .vd-actions .row2 .vd-btn{
+    min-height:48px!important;
+    text-align:center!important;
+    line-height:1.35!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-wrap:balance;
+  }
+  /* both halves of the Test drive / Book LVS row match height */
+  .vd-actions .row2{align-items:stretch!important;}
+  .vd-actions .row2 .vd-btn{height:100%!important;}
+  /* the icon should not be pushed away from a two-line label */
+  .vd-actions .vd-btn svg{flex:0 0 auto;align-self:center;}
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 22 — DUPLICATE CTAs ON MOBILE
+
+   Below 920px the sticky bar is always on screen carrying Reserve
+   and WhatsApp. The inline .vd-actions stack repeats both, so the
+   page shows each of the two highest-intent actions TWICE within a
+   couple of hundred pixels:
+
+     [ Reserve this car · refundable deposit ]  <- inline
+     [ Test drive ] [ Book LVS ]
+     [ WhatsApp — I'm interested ]              <- inline
+     [ Apply for finance ]
+     [ Share this car ]
+     ───────────────────────────────────────
+     R599 990   [ Reserve ]  [ WhatsApp ]       <- sticky, always visible
+
+   Two buttons for one action isn't reassurance, it's a decision the
+   user has to re-make. Drop the inline pair on mobile and let the
+   sticky bar own them; the stack keeps what the bar does NOT offer
+   (Test drive, Book LVS, finance, share). Desktop is untouched —
+   there is no sticky bar there, so the inline pair is the only path
+   and both stay.
+
+   Side effect worth having: "Reserve this car · refundable deposit"
+   was the button wrapping to two lines and making the stack ragged.
+   It's the one we remove, so the mobile stack is now uniform without
+   needing to shrink or truncate any label.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:920px){
+  .vd-actions > .vd-btn-primary,
+  .vd-actions > .vd-btn-wa{
+    display:none!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 23 — BOOKING SHEET HEADER OFF-CENTRE
+
+   The panel itself is centred correctly (measured: 20px each side of
+   a 375px viewport, offset 0). What reads as "not centre" is the
+   header ROW inside it.
+
+   .vd-booking-head is align-items:flex-start, and "Book a workshop
+   viewing" wraps to two lines at mobile width. Measured against the
+   64px-tall title:
+
+     logo   sits 15px BELOW the title's top edge
+     close  centre sits 19px ABOVE the title's centre — it hangs high
+            in the corner instead of relating to anything
+
+   So the row has three things on three different baselines. Centre
+   them on the row instead.
+
+   Also: the close was a 25x26px tap target. Below the 44px minimum,
+   on the control that dismisses a sheet covering the whole screen.
+   ──────────────────────────────────────────────────────────── */
+
+.vd-booking-head{
+  align-items:center!important;
+  gap:12px!important;
+}
+.vd-booking-head > div:first-child{
+  align-items:center!important;
+  min-width:0;
+}
+.vd-booking-head img{flex:0 0 auto;align-self:center!important;}
+.vd-booking-head h3{
+  text-wrap:balance;
+  margin:0!important;
+  align-self:center!important;
+}
+.vd-booking-close{
+  flex:0 0 auto;align-self:center!important;
+  display:inline-flex!important;align-items:center;justify-content:center;
+  width:40px;height:40px;margin:-8px -8px -8px 0;   /* grow the hit area, keep the optical position */
+  border-radius:10px;
+  line-height:1;
+  color:#E8EAE6!important;
+  transition:background .2s ease,color .2s ease;
+}
+.vd-booking-close:hover{
+  background:rgba(110,155,255,.20)!important;
+  color:#C8D9FF!important;
+}
+@media(max-width:420px){
+  /* one step down so the title takes two balanced lines rather than
+     a long line plus an orphan word */
+  .vd-booking-head h3{font-size:18px!important;line-height:1.3!important;}
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 24 — LABEL NOT CENTRED IN FULL-WIDTH BUTTONS
+
+   "Confirm & WhatsApp" measured 48.4px LEFT of its own button's
+   centre. The button is display:inline-flex with justify-content
+   left at its initial value, and `text-align:center` does nothing
+   to a flex container's items — it only centres inline content
+   inside a block. So the label sat flush-left in a full-width
+   button while the CSS looked correct at a glance.
+
+   This is the trap behind "text-align:center didn't work": any
+   button that got flex (for icon + label alignment) silently stops
+   honouring text-align. Centre them explicitly, and make the
+   full-width ones flex rather than inline-flex so the box actually
+   fills its column.
+   ──────────────────────────────────────────────────────────── */
+
+.vd-booking-confirm,
+.vd-btn,
+.btn,
+.coc-mbar a,.coc-mbar button,
+body.vd-lock > .vd-mbar a,
+.ti-nav button,.ti-nav .back,.ti-nav .next,
+.vd-3d-actions button,
+.ct-cta .ct-book,.sp-go{
+  justify-content:center!important;
+  align-items:center!important;
+}
+.vd-booking-confirm{
+  display:flex!important;
+  width:100%!important;
+  text-align:center!important;
+  line-height:1.35!important;
+  min-height:48px!important;
+}
+
+/* ---- The white bar itself ---- */
+.coc-mbar{
+  background:rgba(10,14,24,.92)!important;
+  border-top:1px solid rgba(232,234,230,.12)!important;
+  backdrop-filter:blur(14px) saturate(1.2)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.2)!important;
+}
+/* .mb-call is a <button> carrying a light-build gradient of its own,
+   plus a ::before overlay — both must go or the glass shows through them. */
+.coc-mbar .mb-call,
+.coc-mbar .coc-call{
+  background-image:none!important;
+}
+.coc-mbar .mb-call::before{background:none!important;}
+.coc-mbar .mb-call .cc-num,
+.coc-mbar .mb-call .cc-arm{color:inherit!important;}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 17 — TABLET DEAD ZONE: NO PERSISTENT CTA BETWEEN 721–920px
+
+   Two breakpoints that should have been one:
+     ≤920px  .vd-grid collapses to a single column AND .vd-buy
+             drops position:sticky  (coc-widgets.css:47,171)
+     ≤720px  .vd-mbar appears       (coc-widgets.css:226)
+
+   So on any 721–920px viewport — iPad portrait, most Android
+   tablets, a half-width desktop window — the price and every CTA
+   (Reserve / WhatsApp / finance) scroll off the top and nothing
+   replaces them. The user reads the whole car with no way to act
+   without scrolling back. Align the bar to the same 920px the
+   layout already collapses at.
+   ──────────────────────────────────────────────────────────── */
+
+@media(min-width:721px) and (max-width:920px){
+  body.vd-lock > .vd-mbar{
+    position:fixed!important;left:0;right:0;bottom:0;z-index:320;
+    display:grid!important;grid-template-columns:1.2fr 1fr 1fr;gap:10px;
+    align-items:center;
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+    background:rgba(8,14,28,.96);
+    border-top:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    font-family:'Mulish',system-ui,sans-serif;
+  }
+  body.vd-lock > .vd-mbar .mb-price b{
+    display:block;font-size:17px;font-weight:800;color:#fff;line-height:1.1;
+  }
+  body.vd-lock > .vd-mbar .mb-price span{
+    font-size:11px;color:rgba(255,255,255,.45);font-weight:600;
+  }
+  body.vd-lock > .vd-mbar a{
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;border-radius:12px;padding:13px 10px;
+    text-decoration:none;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  body.vd-lock > .vd-mbar .mb-reserve{background:linear-gradient(135deg,#6E9BFF,#2E54BE);color:#fff;}
+  body.vd-lock > .vd-mbar .mb-wa{background:#25D366;color:#fff;}
+
+  /* reserve room so Share / Apply for finance aren't hidden behind it */
+  .vd-overlay.open #vdContent{padding-bottom:92px!important;}
+}
