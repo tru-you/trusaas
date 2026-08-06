@@ -489,42 +489,62 @@ if (apiKey) {
 
 // ==================== INVENTORY HELPERS ====================
 
-async function listVehicles(userId: string): Promise<any[]> {
+/* Scope arg: dealerSlug is authoritative when the device is signed in with a
+   dealer code. Before this, listVehicles/getVehicle filtered by ownerId only —
+   but every dealer-code sign-in resolves to the SAME uid ('device', see the
+   auth middleware), so an ownerId filter returned every dealer's captures to
+   every dealer: a cross-dealer read leak (a Cars-on-Caledon vehicle showed up
+   under another dealer's profile). TruInspect is standalone (no DMS push), so
+   this is a pure post-auth read-scoping fix. */
+type InspectScope = { uid: string; dealerSlug?: string | null };
+
+/* Scoping rule for both read paths:
+   - local-demo-user always wins (dev / PC demo mode).
+   - Dealer-code login (token carries a dealerSlug): a record is visible only
+     when its own dealerSlug matches. Untagged legacy records (captured before
+     dealerSlug stamping existed) are hidden from EVERY dealer login — they
+     can't be attributed to a dealer and must never leak across dealers.
+   - No dealerSlug on the token (Firebase / local-PC JWT dev logins): fall back
+     to an ownerId match. */
+function passesScope(record: any, user?: InspectScope): boolean {
+  if (!user) return true;
+  if (user.uid === 'local-demo-user') return true;
+  if (user.dealerSlug) {
+    return record.dealerSlug === user.dealerSlug;
+  }
+  if (user.uid && record.ownerId && record.ownerId !== user.uid) return false;
+  return true;
+}
+
+async function listVehicles(user: InspectScope): Promise<any[]> {
+  const { uid, dealerSlug } = user;
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
-    // PC demo: show all local vehicles (owner may differ between Firebase login vs demo)
-    const isDemo = userId === 'local-demo-user';
     const list = store.vehicles
-      .filter((v) => isDemo || !v.ownerId || v.ownerId === userId)
+      .filter((v) => passesScope(v, user))
       .map(normalizeVehicle)
       .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
     return list;
   }
-  const snapshot = await fdb
-    .collection('vehicles')
-    .where('ownerId', '==', userId)
-    .orderBy('updatedAt', 'desc')
-    .get();
+  /* Firestore: dealerSlug when the token has one, else ownerId. A dealerSlug
+     query also naturally excludes untagged legacy rows (no such field). */
+  const query = dealerSlug
+    ? fdb.collection('vehicles').where('dealerSlug', '==', dealerSlug)
+    : fdb.collection('vehicles').where('ownerId', '==', uid);
+  const snapshot = await query.orderBy('updatedAt', 'desc').get();
   return snapshot.docs.map((doc) => normalizeVehicle(doc.data()));
 }
 
-async function getVehicle(id: string, userId?: string): Promise<any | null> {
+async function getVehicle(id: string, user?: InspectScope): Promise<any | null> {
   if (LOCAL_MODE || !fdb) {
     const found = readLocalStore().vehicles.find((v) => v.id === id);
     if (!found) return null;
-    // Demo / local: allow open even if ownerId differs
-    if (
-      userId &&
-      userId !== 'local-demo-user' &&
-      found.ownerId &&
-      found.ownerId !== userId
-    ) {
-      return null;
-    }
-    return normalizeVehicle(found);
+    return passesScope(found, user) ? normalizeVehicle(found) : null;
   }
   const doc = await fdb.collection('vehicles').doc(id).get();
-  return doc.exists ? normalizeVehicle(doc.data()) : null;
+  if (!doc.exists) return null;
+  const data = doc.data() as any;
+  return passesScope(data, user) ? normalizeVehicle(data) : null;
 }
 
 /** Move an inspection's photos onto disk, leaving references in the record.
@@ -851,7 +871,7 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
     // Stamp vehicle if we can
     if (vehicleId) {
       try {
-        const v = await getVehicle(vehicleId, req.user.uid);
+        const v = await getVehicle(vehicleId, req.user);
         if (v) {
           await saveVehicle({
             ...v,
@@ -898,7 +918,7 @@ app.get('/api/public/web3d/:stockNumber', (req, res) => {
 // 1. Get all vehicles
 app.get('/api/inventory', authenticate, async (req: any, res) => {
   try {
-    const vehicles = await listVehicles(req.user.uid);
+    const vehicles = await listVehicles(req.user);
     res.json(vehicles);
   } catch (error) {
     console.error('GET /api/inventory - Error:', error);
@@ -917,7 +937,14 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
     }
 
     const now = new Date().toISOString();
-    const existing = await getVehicle(vehicleData.id, userId);
+    const existing = await getVehicle(vehicleData.id, req.user);
+
+    /* Stamp dealerSlug on every save so captures are dealer-scoped on read.
+       Without it records saved untagged, and every dealer-code login (all share
+       uid 'device') saw each other's stock. Token slug is authoritative; keep an
+       existing slug for edits, and never overwrite a dealer-typed one. */
+    const dealerSlug =
+      req.user?.dealerSlug || existing?.dealerSlug || vehicleData.dealerSlug || undefined;
 
     if (existing) {
       if (!LOCAL_MODE && existing.ownerId && existing.ownerId !== userId) {
@@ -927,6 +954,7 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
         ...existing,
         ...vehicleData,
         ownerId: existing.ownerId || userId,
+        dealerSlug,
         updatedAt: now,
         photos: vehicleData.photos ?? existing.photos ?? {},
         quality: vehicleData.quality ?? existing.quality ?? {},
@@ -938,6 +966,7 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
     const newVehicle = {
       ...vehicleData,
       ownerId: userId,
+      dealerSlug,
       createdAt: now,
       updatedAt: now,
       photos: vehicleData.photos || {},
@@ -961,7 +990,7 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
       return res.status(400).json({ error: 'vehicleId, slotId, and base64Image are required' });
     }
 
-    const existingData = await getVehicle(vehicleId, userId);
+    const existingData = await getVehicle(vehicleId, req.user);
     if (!existingData) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -1039,7 +1068,7 @@ app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
   try {
     const id = req.params.id;
     const userId = req.user.uid;
-    const data = await getVehicle(id, userId);
+    const data = await getVehicle(id, req.user);
     if (!data) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -1467,7 +1496,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       });
     }
 
-    const vehicle = await getVehicle(vehicleId, userId);
+    const vehicle = await getVehicle(vehicleId, req.user);
     if (!vehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
