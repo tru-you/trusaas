@@ -110,6 +110,7 @@ export interface Vehicle {
     severity: number; note: string; x: number; y: number;
   }[];
   slotAssessment?: Record<string, { rating?: 'ok' | 'note' | 'damage'; works?: 'yes' | 'no' | 'na'; comment?: string }>;
+  optionalExtras?: string[];
 }
 
 export type LeadStatus = 'New' | 'Contacted' | 'Test Drive Scheduled' | 'Negotiating' | 'Closed Won' | 'Closed Lost';

@@ -86,6 +86,10 @@ export interface Vehicle {
   /** Last web 3D / spin package export */
   lastWeb3dExportAt?: string;
   web3dPublicPath?: string;
+  /** Tickbox-selected vehicle features (e.g. "Reverse Camera", "Leather Seats").
+   *  Plain string array — the UI offers a predefined checklist but custom
+   *  entries are fine, so consumers never need to know the master list. */
+  optionalExtras?: string[];
 }
 
 export interface PointResult {

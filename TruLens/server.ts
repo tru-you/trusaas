@@ -1002,6 +1002,7 @@ function toPublicFromLens(v: any, origin: string = '') {
       return undefined;
     })(),
     conditionDeclaration: (v as any).conditionDeclaration || undefined,
+    optionalExtras: (v as any).optionalExtras?.length ? (v as any).optionalExtras : undefined,
     daysInStock: null,
     source: 'trulens',
     updatedAt: v.updatedAt || v.lastDmsExportAt || null,
@@ -1777,6 +1778,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
            statement through to the DMS and on to the dealer's website. */
         conditionDeclaration: (vehicle as any).conditionDeclaration || undefined,
         description: vehicle.aiListingDescription || undefined,
+        optionalExtras: (vehicle as any).optionalExtras?.length ? (vehicle as any).optionalExtras : undefined,
       },
       photos,
     };

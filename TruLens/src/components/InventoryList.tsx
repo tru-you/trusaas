@@ -259,6 +259,8 @@ export default function InventoryList({
   const [transmission, setTransmission] = React.useState<'Automatic' | 'Manual'>('Manual');
   const [fuelType, setFuelType] = React.useState<'Petrol' | 'Diesel' | 'Hybrid' | 'Electric'>('Petrol');
   const [status, setStatus] = React.useState<'In-Progress' | 'Ready'>('In-Progress');
+  const [optionalExtras, setOptionalExtras] = React.useState<string[]>([]);
+  const [extrasOpen, setExtrasOpen] = React.useState(false);
   const [scanningDisc, setScanningDisc] = React.useState(false);
   const [scanNote, setScanNote] = React.useState<string | null>(null);
 
@@ -295,6 +297,8 @@ export default function InventoryList({
     setTransmission(v.transmission || 'Manual');
     setFuelType(v.fuelType || 'Petrol');
     setStatus(v.status === 'Listed' ? 'Ready' : v.status);
+    setOptionalExtras(v.optionalExtras || []);
+    setExtrasOpen(false);
     setShowAddForm(true);
   };
 
@@ -323,6 +327,7 @@ export default function InventoryList({
         transmission,
         fuelType,
         status,
+        optionalExtras,
       });
     } else {
       onAddVehicle({
@@ -338,7 +343,8 @@ export default function InventoryList({
         mileage: Number(mileage),
         transmission,
         fuelType,
-        status
+        status,
+        optionalExtras,
       });
     }
 
@@ -357,6 +363,8 @@ export default function InventoryList({
     setTransmission('Manual');
     setFuelType('Petrol');
     setStatus('In-Progress');
+    setOptionalExtras([]);
+    setExtrasOpen(false);
     setShowAddForm(false);
   };
 
@@ -767,6 +775,71 @@ export default function InventoryList({
                     onChange={(e) => setVin(e.target.value.toUpperCase())}
                     className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                   />
+                </div>
+
+                {/* Optional Extras — full-width multi-select checklist */}
+                <div className="col-span-2 relative">
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Optional Extras</label>
+                  <button
+                    type="button"
+                    onClick={() => setExtrasOpen((v) => !v)}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-left flex items-center justify-between outline-none focus:border-[#4FE3DC] transition-colors cursor-pointer"
+                  >
+                    <span className={optionalExtras.length ? 'text-[#E8EAE6]' : 'text-[rgba(232,234,230,0.32)]'}>
+                      {optionalExtras.length ? `${optionalExtras.length} selected` : 'Select features…'}
+                    </span>
+                    <ChevronDown size={16} className={`text-[rgba(232,234,230,0.45)] transition-transform ${extrasOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {extrasOpen && (
+                    <div className="absolute z-50 left-0 right-0 mt-1 bg-neutral-950 border border-neutral-800 rounded-[12px] shadow-2xl max-h-[320px] overflow-y-auto p-2 space-y-3 animate-in fade-in duration-100">
+                      {([
+                        ['Safety', ['Park Distance Control', 'Reverse Camera', '360° Camera', 'Blind Spot Monitor', 'Lane Assist']],
+                        ['Comfort', ['Leather Seats', 'Heated Seats', 'Electric Seats', 'Sunroof / Panoramic Roof', 'Keyless Entry & Start', 'Dual-Zone Climate Control']],
+                        ['Tech', ['Navigation', 'Apple CarPlay / Android Auto', 'Bluetooth', 'Digital Cockpit']],
+                        ['Drivetrain', ['AWD / 4WD', 'Towbar', 'Adaptive Cruise Control']],
+                        ['Exterior', ['Alloy Wheels', 'LED / Xenon Headlights', 'Roof Rails', 'Tinted Windows']],
+                      ] as [string, string[]][]).map(([group, items]) => (
+                        <div key={group}>
+                          <p className="text-[11px] font-semibold text-[rgba(232,234,230,0.4)] uppercase tracking-wider px-1 mb-1">{group}</p>
+                          {items.map((item) => {
+                            const on = optionalExtras.includes(item);
+                            return (
+                              <button
+                                key={item}
+                                type="button"
+                                onClick={() => setOptionalExtras((prev) => on ? prev.filter((x) => x !== item) : [...prev, item])}
+                                className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-left hover:bg-[rgba(232,234,230,0.06)] transition-colors cursor-pointer"
+                              >
+                                <span className={`w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors ${on ? 'bg-[#4FE3DC] border-[#4FE3DC]' : 'border-[rgba(232,234,230,0.25)] bg-transparent'}`}>
+                                  {on && <Check size={12} className="text-neutral-950" strokeWidth={3} />}
+                                </span>
+                                <span className={`text-[14px] ${on ? 'text-[#E8EAE6]' : 'text-[rgba(232,234,230,0.6)]'}`}>{item}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {optionalExtras.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {optionalExtras.map((item) => (
+                        <span
+                          key={item}
+                          className="inline-flex items-center gap-1 bg-[rgba(79,227,220,0.12)] text-[#4FE3DC] text-[12px] font-medium px-2 py-0.5 rounded-full"
+                        >
+                          {item}
+                          <button
+                            type="button"
+                            onClick={() => setOptionalExtras((prev) => prev.filter((x) => x !== item))}
+                            className="hover:text-white transition-colors cursor-pointer"
+                          ><X size={11} /></button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

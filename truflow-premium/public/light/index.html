@@ -176,6 +176,8 @@ button,input,textarea{font-family:inherit;}
 .meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
 .mchip{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--ink-3);border:1px solid var(--glass-line);padding:6px 10px;border-radius:var(--r-sm);}
 .mchip b{color:var(--paper);font-weight:600;}
+.extras-pills{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 4px;}
+.xpill{font-size:11px;font-weight:500;color:var(--cyan);background:var(--cyan-faint);border:1px solid rgba(79,227,220,.18);padding:4px 10px;border-radius:var(--r-pill);}
 .close{position:absolute;top:13px;left:13px;z-index:3;width:34px;height:34px;border-radius:50%;background:rgba(6,8,13,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--glass-line2);color:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .close svg{width:17px;height:17px;}
 .foot-save{flex:1;height:50px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;}
@@ -555,6 +557,7 @@ button,input,textarea{font-family:inherit;}
     $("#sheetBody").innerHTML = heroHtml +
       '<div class="vhead"><div class="vt">'+esc(name||"Vehicle")+(v.trim?'<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:5px;font-weight:400">'+esc(v.trim)+'</div>':'')+'</div><div class="vp">'+money(vPrice(v))+'</div></div>'+
       '<div class="meta">'+meta.join("")+'</div>'+
+      (Array.isArray(v.optionalExtras)&&v.optionalExtras.length?'<div class="extras-pills">'+v.optionalExtras.map(function(e){return'<span class="xpill">'+esc(e)+'</span>';}).join("")+'</div>':'')+
       '<div class="lbl">Storefront</div>'+
       '<div class="toggle"><div class="tt"><div class="a">Live on website</div><div class="b" id="pubHint">'+(v.status!=="INVENTORY"?"Only in-stock cars can go live.":(pub?"Buyers can see this car on your site.":"Hidden until you publish it."))+'</div></div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch"></div></div>'+
       '<div class="lbl">Status</div>'+
