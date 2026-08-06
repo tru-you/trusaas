@@ -4104,9 +4104,26 @@ app.post("/api/integration/webhook-zernio", (req, res) => {
 
 async function startServer() {
   // TruFlow Light — standalone dealer console served at /light
+  // TruFlow Light is an installable PWA served here. Canonicalise on /light/ so
+  // the service worker's scope (/light/) actually covers the app URL, and give
+  // sw.js/index.html a no-cache header so a new deploy reaches installed apps
+  // instead of leaving dealers stuck on a stale worker. index:false + explicit
+  // routes keep the trailing-slash behaviour deterministic (serve-static's own
+  // redirect/index handling varies).
   const lightDir = path.join(process.cwd(), "public", "light");
-  app.use("/light", express.static(lightDir));
-  app.get("/light", (_req, res) => res.sendFile(path.join(lightDir, "index.html")));
+  app.use("/light", express.static(lightDir, {
+    index: false,
+    redirect: false,
+    setHeaders(res, fp) {
+      if (fp.endsWith("sw.js")) res.setHeader("Cache-Control", "no-cache");
+      if (fp.endsWith(".webmanifest")) res.setHeader("Content-Type", "application/manifest+json");
+    },
+  }));
+  app.get("/light", (_req, res) => res.redirect(302, "/light/"));
+  app.get("/light/", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache");
+    res.sendFile(path.join(lightDir, "index.html"));
+  });
 
   // Embed widget + static public assets (dealer websites load /embed/stock-widget.js)
   app.use("/embed", express.static(path.join(process.cwd(), "public", "embed")));
