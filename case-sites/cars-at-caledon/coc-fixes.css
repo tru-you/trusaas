@@ -341,13 +341,31 @@ section{
    "What can I afford?" pill floated in the middle of the page.
    Pin it to the bottom-left, just above the sticky Call/WhatsApp
    bar, clear of TruChat's bottom-right FAB.
-   ──────────────────────────────────────────────────────────── */
+   ────────────────────────────────────────────────────────────
+
+   UPDATE: the left/right override that used to live here has been removed.
+   TruAfford already supports sides natively — tru-afford.js:40 reads
+   `data-position` ("right" | "left") and switches at line 172 — and
+   tru-loader.js passes it through from its own data-position attribute.
+   index.html now sets data-position="left" on the loader tag, so the
+   widget puts itself on the left at EVERY breakpoint instead of being
+   forced there by !important below 720px only. That was the cause of the
+   left-on-mobile / right-on-desktop split: the override was mobile-scoped,
+   so desktop fell back to the widget's "right" default.
+   Only the bottom offset is still nudged here, to line the pill up with
+   the TruChat FAB on the opposite corner. */
 
 @media(max-width:720px){
   #tru-afford-host{
     bottom:80px!important;
-    left:12px!important;
-    right:auto!important;
+  }
+}
+/* Desktop: tru-loader.js hard-codes data-bottom="92px" for TruAfford while
+   the TruChat FAB sits at 24px, so the pair sat at different heights on
+   opposite corners. Level them. */
+@media(min-width:721px){
+  #tru-afford-host{
+    bottom:24px!important;
   }
 }
 
