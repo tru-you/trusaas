@@ -178,6 +178,47 @@ button,input,textarea{font-family:inherit;}
 .foot-save{flex:1;height:50px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;}
 .foot-save svg{width:18px;height:18px;} .foot-del{flex:0 0 52px;height:50px;display:flex;align-items:center;justify-content:center;} .foot-del svg{width:18px;height:18px;}
 
+/* select styling to match inputs */
+.field select{width:100%;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r);padding:12px 34px 12px 13px;color:var(--paper);font-size:15px;outline:none;-webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236E7681' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;background-size:16px;}
+.field select:focus{border-color:var(--cyan-soft);background-color:var(--ink-4);}
+
+/* lead sheet */
+.ld-head{display:flex;align-items:center;gap:12px;padding:14px 0 2px;}
+.ld-head .lav{width:46px;height:46px;}
+.ld-head .nm{flex:1;min-width:0;} .ld-head .nm .n{font-size:18px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .ld-head .nm .s{margin-top:5px;}
+.ld-x{flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--ink-3);border:1px solid var(--border);color:var(--dim);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.ld-x svg{width:16px;height:16px;}
+.ldact{display:flex;gap:9px;margin:16px 0 2px;}
+.ldact a{flex:1;height:46px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-weight:600;font-size:13.5px;border:1px solid var(--border);background:var(--ink-3);color:var(--paper);}
+.ldact a:active{transform:scale(.97);} .ldact a svg{width:17px;height:17px;}
+.ldact a.wa{color:#25D366;border-color:rgba(37,211,102,.3);}
+.ld-meta{display:flex;flex-direction:column;border:1px solid var(--glass-line);border-radius:var(--r);overflow:hidden;margin-top:14px;}
+.ld-mrow{display:flex;gap:12px;padding:11px 14px;background:var(--ink-3);border-bottom:1px solid var(--glass-line);}
+.ld-mrow:last-child{border-bottom:none;}
+.ld-mk{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);flex:0 0 100px;}
+.ld-mv{font-size:13.5px;color:var(--dim);flex:1;min-width:0;word-break:break-word;}
+.ld-enq{background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:var(--r);padding:12px 14px;font-size:13.5px;color:var(--dim);line-height:1.5;margin-top:14px;}
+.spills{display:flex;flex-wrap:wrap;gap:7px;}
+.spill{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.03em;padding:8px 12px;border-radius:var(--r-pill);background:var(--ink-3);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:.18s var(--ease);}
+.spill:active{transform:scale(.95);} .spill.on{background:var(--cyan);color:var(--ink);border-color:transparent;box-shadow:0 0 8px var(--cyan-soft);}
+.ld-note{width:100%;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;color:var(--paper);font-family:var(--sans);font-size:15px;resize:none;min-height:70px;outline:none;}
+.ld-note:focus{border-color:var(--cyan-soft);}
+.ld-log{width:100%;height:46px;margin-top:10px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.tl{margin-top:4px;padding-bottom:10px;} .tl-item{display:flex;gap:12px;padding-bottom:15px;position:relative;}
+.tl-item:not(:last-child)::before{content:"";position:absolute;left:4px;top:13px;bottom:0;width:1px;background:var(--glass-line);}
+.tl-dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);flex-shrink:0;margin-top:4px;box-shadow:0 0 0 3px var(--cyan-faint);}
+.tl-b{flex:1;min-width:0;} .tl-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+.tl-a{font-weight:600;font-size:13.5px;} .tl-t{font-family:var(--mono);font-size:10.5px;color:var(--faint);flex-shrink:0;}
+.tl-d{font-size:13px;color:var(--dim);margin-top:2px;line-height:1.45;word-break:break-word;}
+.tl-empty{text-align:center;padding:14px;color:var(--muted);font-size:13px;}
+
+/* add-vehicle form */
+.addform{margin-top:18px;}
+.uf-note{background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:var(--r);padding:13px 15px;font-size:13px;color:var(--dim);line-height:1.5;margin-top:6px;}
+.uf-note b{color:var(--paper);font-weight:600;}
+.uf-submit{width:100%;height:52px;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;}
+
 .acct{margin-top:20px;}
 .acct .who{display:flex;align-items:center;gap:14px;padding:18px;}
 .acct .big{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:19px;color:var(--ink);background:var(--cyan);}
@@ -251,6 +292,23 @@ button,input,textarea{font-family:inherit;}
         <div class="rowlink danger" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</div>
       </div>
       <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-top:22px">TruFlow Light · Powered by TruSaaS</p>
+    </section>
+
+    <section class="screen" id="s-add">
+      <div class="h-hi">Add a vehicle</div>
+      <div class="h-sub">Details now — capture photos in TruLens.</div>
+      <form class="addform" id="addForm" novalidate>
+        <div class="frow"><div class="field"><label>Year</label><input inputmode="numeric" id="aYear" placeholder="2024" autocomplete="off"></div><div class="field"><label>Make</label><input type="text" id="aMake" placeholder="Toyota" autocomplete="off"></div></div>
+        <div class="field"><label>Model</label><input type="text" id="aModel" placeholder="Corolla Cross" autocomplete="off"></div>
+        <div class="frow"><div class="field"><label>Variant / trim</label><input type="text" id="aTrim" placeholder="1.8 XR" autocomplete="off"></div><div class="field"><label>Body</label><select id="aBody"><option value="">—</option><option>SUV</option><option>Hatchback</option><option>Sedan</option><option>Bakkie</option><option>Coupe</option></select></div></div>
+        <div class="frow"><div class="field"><label>Fuel</label><select id="aFuel"><option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>Electric</option></select></div><div class="field"><label>Transmission</label><select id="aTrans"><option>Automatic</option><option>Manual</option></select></div></div>
+        <div class="frow"><div class="field"><label>Mileage (km)</label><input inputmode="numeric" id="aKm" placeholder="28500" autocomplete="off"></div><div class="field"><label>Asking price (R)</label><input inputmode="numeric" id="aPrice" placeholder="459900" autocomplete="off"></div></div>
+        <div class="field"><label>TruPrice benchmark (R)</label><input inputmode="numeric" id="aTru" placeholder="479000" autocomplete="off"></div>
+        <div class="field"><label>Description</label><textarea id="aDesc" placeholder="Short blurb for the listing…"></textarea></div>
+        <div class="uf-note">New vehicles start <b>unpublished</b>. Capture photos in TruLens, then open the car and switch on <b>Live on website</b> to publish.</div>
+        <button type="submit" class="btn-primary uf-submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:18px;height:18px"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>Add to inventory</button>
+        <div style="height:14px"></div>
+      </form>
     </section>
   </main>
 
@@ -376,6 +434,7 @@ button,input,textarea{font-family:inherit;}
       '<div class="lb"><div class="lnm">'+esc(nm)+'</div><div class="li">'+esc(l.notes||l.source||"Website enquiry")+'</div>'+
       '<div class="lm"><span class="src">'+esc(l.source||"Website")+'</span>'+(phone?'<span>·</span><span>'+esc(phone)+'</span>':'')+'<span>·</span><span>'+timeAgo(l.createdAt)+'</span></div></div>'+
       (st==="New"&&phone?'<a class="qa wa" href="https://wa.me/'+phone.replace(/\D/g,"")+'" target="_blank" rel="noopener" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg></a>':'<span class="pill '+cls+' dot">'+esc(lbl)+'</span>');
+    r.addEventListener("click",function(e){if(e.target.closest("a"))return;openLead(l.id);});
     return r;
   }
 
@@ -447,7 +506,6 @@ button,input,textarea{font-family:inherit;}
 
   /* ── Navigation ── */
   function go(tab){
-    if(tab==="add"){toast("Add a vehicle — coming in the next update");return;}
     Array.prototype.forEach.call(document.querySelectorAll(".screen"),function(s){s.classList.toggle("on",s.id==="s-"+tab);});
     Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){t.classList.toggle("on",t.getAttribute("data-tab")===tab);});
     $("#scroll").scrollTop=0;
@@ -495,6 +553,7 @@ button,input,textarea{font-family:inherit;}
       '<div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" value="'+(vPrice(v)||"")+'" id="fPrice"></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" value="'+(v.mileage||"")+'" id="fKm"></div></div>'+
       '<div class="field"><label>Variant / trim</label><input type="text" value="'+esc(v.trim||"")+'" id="fTrim"></div>'+
       '<div class="field"><label>Description</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div><div style="height:8px"></div>';
+    $("#sheetFoot").style.display="";
     $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Save changes</button><button class="tru-btn-ghost danger foot-del" id="delBtn" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>';
 
     $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
@@ -545,6 +604,102 @@ button,input,textarea{font-family:inherit;}
       renderHome();renderStock();if(okMsg)toast(okMsg);return res;
     }).catch(function(e){toast("Couldn't save — check connection",true);throw e;});
   }
+
+  /* ── Lead sheet (wired to PUT /api/leads/:id) ── */
+  var curLeadId=null;
+  var LSTATUS=["New","Contacted","Test Drive Scheduled","Negotiating","Closed Won","Closed Lost"];
+  function findLead(id){for(var i=0;i<cachedLeads.length;i++){if(cachedLeads[i].id===id)return cachedLeads[i];}return null;}
+  function vehById(id){for(var i=0;i<cachedStock.length;i++){if(cachedStock[i].id===id)return cachedStock[i];}return null;}
+  function stampNow(){var d=new Date();return d.toLocaleDateString("en-ZA",{day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("en-ZA",{hour:"2-digit",minute:"2-digit"});}
+  function todayISO(){return new Date().toISOString().slice(0,10);}
+  function updateLeadCache(lead){for(var i=0;i<cachedLeads.length;i++){if(cachedLeads[i].id===lead.id){cachedLeads[i]=lead;return;}}}
+  var svgCall='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg>';
+  var svgWa='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>';
+  var svgMail='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>';
+
+  function openLead(id){
+    curLeadId=id; var l=findLead(id); if(!l){closeSheet();return;}
+    var nm=((l.firstName||"")+" "+(l.lastName||"")).trim()||"New enquiry";
+    var st=l.status||"New", cls=LEAD_PILL[st]||"neutral", lbl=LEAD_LBL[st]||st;
+    var phone=(l.phone&&l.phone!=="N/A")?l.phone:"";
+    var email=(l.email&&l.email!=="N/A")?l.email:"";
+    var pd=phone.replace(/\D/g,"");
+    var veh=l.vehicleId?vehById(l.vehicleId):null, vehLabel=veh?vName(veh):"";
+
+    var actions='<div class="ldact">';
+    if(phone)actions+='<a href="tel:'+esc(phone.replace(/\s/g,""))+'">'+svgCall+'Call</a>';
+    if(pd)actions+='<a class="wa" href="https://wa.me/'+pd+'" target="_blank" rel="noopener">'+svgWa+'WhatsApp</a>';
+    if(email)actions+='<a href="mailto:'+esc(email)+'">'+svgMail+'Email</a>';
+    actions+='</div>';
+
+    var meta=[];
+    if(phone)meta.push(["Phone",esc(phone)]);
+    if(email)meta.push(["Email",esc(email)]);
+    if(vehLabel)meta.push(["Vehicle",esc(vehLabel)+((veh&&vPrice(veh))?" · "+money(vPrice(veh)):"")]);
+    meta.push(["Source",esc(l.source||"Website")]);
+    meta.push(["Created",esc(l.createdAt?new Date(l.createdAt).toLocaleDateString("en-ZA",{day:"numeric",month:"short",year:"numeric"}):"—")]);
+    meta.push(["Last contact",esc(l.lastContactedAt||"Not yet")]);
+    var metaHtml='<div class="ld-meta">';
+    meta.forEach(function(m){metaHtml+='<div class="ld-mrow"><span class="ld-mk">'+m[0]+'</span><span class="ld-mv">'+m[1]+'</span></div>';});
+    metaHtml+='</div>';
+
+    var spills='<div class="lbl">Stage</div><div class="spills" id="ldSpills">';
+    LSTATUS.forEach(function(s){spills+='<button type="button" class="spill'+(s===st?" on":"")+'" data-s="'+esc(s)+'">'+esc(LEAD_LBL[s]||s)+'</button>';});
+    spills+='</div>';
+
+    var journey=(l.journey||[]).slice(), tl="";
+    if(journey.length){for(var i=journey.length-1;i>=0;i--){var j=journey[i];
+      tl+='<div class="tl-item"><div class="tl-dot"></div><div class="tl-b"><div class="tl-top"><span class="tl-a">'+esc(j.action||"Note")+'</span><span class="tl-t">'+esc(j.time||"")+'</span></div><div class="tl-d">'+esc(j.detail||"")+'</div></div></div>';
+    }} else tl='<div class="tl-empty">No activity yet. Add the first note below.</div>';
+
+    $("#sheetFoot").style.display="none";
+    $("#sheetBody").innerHTML=
+      '<div class="ld-head"><div class="lav" style="background:'+colr(nm)+'">'+esc(initials(nm))+'</div><div class="nm"><div class="n">'+esc(nm)+'</div><div class="s"><span class="pill '+cls+' dot">'+esc(lbl)+'</span></div></div><button class="ld-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>'+
+      actions+metaHtml+
+      (l.notes?'<div class="lbl">Enquiry</div><div class="ld-enq">'+esc(l.notes)+'</div>':'')+
+      spills+
+      '<div class="lbl">Log a note</div><textarea class="ld-note" id="ldNote" placeholder="What happened? e.g. Left a voicemail, will try Friday"></textarea>'+
+      '<button type="button" class="btn-primary ld-log" id="ldLog">Log note</button>'+
+      '<div class="lbl">Activity</div><div class="tl">'+tl+'</div><div style="height:8px"></div>';
+
+    $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
+    Array.prototype.forEach.call($("#ldSpills").children,function(b){b.addEventListener("click",function(){setLeadStatus(b.getAttribute("data-s"));});});
+    $("#ldLog").addEventListener("click",logNote);
+    var nt=$("#ldNote");if(nt)nt.addEventListener("focus",function(){setTimeout(function(){nt.scrollIntoView({block:"center",behavior:"smooth"});},250);});
+    openSheet();
+  }
+  function setLeadStatus(s){
+    var l=findLead(curLeadId);if(!l||l.status===s)return;
+    var journey=(l.journey||[]).slice();journey.push({time:stampNow(),action:"Stage",detail:"Moved to "+s});
+    api("PUT","/api/leads/"+curLeadId,{status:s,stageChangedAt:todayISO(),lastContactedAt:todayISO(),journey:journey}).then(function(res){
+      if(res&&res.lead)updateLeadCache(res.lead);renderHome();renderLeads();openLead(curLeadId);toast("Stage → "+(LEAD_LBL[s]||s));
+    }).catch(function(){toast("Couldn't update — check connection",true);});
+  }
+  function logNote(){
+    var l=findLead(curLeadId);if(!l)return;
+    var ta=$("#ldNote"),text=((ta&&ta.value)||"").trim();
+    if(!text){toast("Add a note first");if(ta)ta.focus();return;}
+    var journey=(l.journey||[]).slice();journey.push({time:stampNow(),action:"Note",detail:text});
+    if(journey.length>60)journey=journey.slice(journey.length-60);
+    var btn=$("#ldLog");if(btn){btn.disabled=true;btn.textContent="Saving…";}
+    api("PUT","/api/leads/"+curLeadId,{journey:journey,lastContactedAt:todayISO()}).then(function(res){
+      if(res&&res.lead)updateLeadCache(res.lead);renderHome();renderLeads();openLead(curLeadId);toast("Note logged");
+    }).catch(function(){toast("Couldn't save — check connection",true);if(btn){btn.disabled=false;btn.textContent="Log note";}});
+  }
+
+  /* ── Add vehicle (POST /api/inventory) ── */
+  $("#addForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var g=function(id){var elm=$("#"+id);return elm?elm.value.trim():"";};
+    var year=parseInt(g("aYear"),10),make=g("aMake"),model=g("aModel"),price=parseInt(g("aPrice"),10);
+    if(!year||!make||!model||!price){toast("Fill in year, make, model and price",true);return;}
+    var vehicle={year:year,make:make,model:model,trim:g("aTrim"),bodyType:g("aBody"),fuelType:g("aFuel"),transmission:g("aTrans"),
+      mileage:parseInt(g("aKm"),10)||0,retailPrice:price,truPrice:parseInt(g("aTru"),10)||undefined,description:g("aDesc"),status:"INVENTORY",showOnWebsite:false};
+    var btn=e.target.querySelector("button[type=submit]");if(btn)btn.disabled=true;
+    api("POST","/api/inventory",vehicle).then(function(){
+      toast(year+" "+make+" "+model+" added to inventory");e.target.reset();loadInventory();go("stock");if(btn)btn.disabled=false;
+    }).catch(function(){toast("Couldn't add — check connection",true);if(btn)btn.disabled=false;});
+  });
 
   /* ── Keyboard-aware sheet (visualViewport) ── */
   if(window.visualViewport){
