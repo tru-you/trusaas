@@ -612,6 +612,23 @@ body.vd-lock > .vd-mbar .mb-reserve{
              0 8px 22px -12px rgba(37,211,102,.65)!important;
 }
 
+/* Call and Stock were left at the .14 base fill while WhatsApp sat at .22,
+   so against the near-black bar they read as unfilled/black rather than as
+   glass. Match the fill; WhatsApp still leads via its green plus the glow. */
+.coc-mbar .mb-call,
+.coc-mbar .mb-stock{
+  background:rgba(110,155,255,.22)!important;
+  border-color:rgba(110,155,255,.58)!important;
+}
+
+/* Favourites counter was the last red on the site
+   (linear-gradient(145deg,#F0426B,#DC2626)). */
+#navFavN,.fav-count,.nav-fav-n{
+  background:#6E9BFF!important;
+  background-image:none!important;
+  color:#06080D!important;
+}
+
 /* SVG glyphs inherit currentColor, so they track the label automatically. */
 
 
@@ -764,6 +781,73 @@ body.vd-lock > .vd-mbar .mb-reserve{
   border-color:rgba(110,155,255,.78)!important;
   color:#C8D9FF!important;
 }
+
+/* ────────────────────────────────────────────────────────────
+   FIX 30 — TRADE-IN FORM EATS THE MOBILE PAGE
+
+   #tradeTool measured 904px tall on a 812px viewport — 1.11 full
+   screens of form that every visitor scrolls past, whether or not
+   they have a car to trade. On desktop it earns its space (two
+   columns, all visible at once); on mobile it is a wall.
+
+   Collapse it behind its own pitch on mobile: the heading and the
+   value proposition stay visible, the fields appear on tap. Same
+   idea as the search panel (FIX 06), and it keeps every existing
+   field, id and handler intact — no rebuild, so coc-tradein.js and
+   the booking wiring are untouched.
+
+   Desktop is deliberately unaffected: above 760px the form is
+   always open and the toggle is not rendered.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:760px){
+  .coc-trade .ct-grid,
+  .coc-trade .ct-cta,
+  .coc-trade .ct-note{
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    margin-top:0;
+    transition:max-height .4s ease,opacity .3s ease,margin-top .4s ease;
+  }
+  .coc-trade.ct-open .ct-grid,
+  .coc-trade.ct-open .ct-cta,
+  .coc-trade.ct-open .ct-note{
+    max-height:1600px;
+    opacity:1;
+  }
+  .coc-trade.ct-open .ct-grid{margin-top:18px;}
+
+  .ct-toggle{
+    display:flex!important;
+    align-items:center;justify-content:center;gap:8px;
+    width:100%;margin-top:16px;min-height:48px;
+    padding:13px 16px;border-radius:14px;
+    font-family:inherit;font-size:13.5px;font-weight:800;
+    cursor:pointer;
+    background:rgba(110,155,255,.22);
+    border:1px solid rgba(110,155,255,.58);
+    color:#A8C3FF;
+    backdrop-filter:blur(10px) saturate(1.25);
+    -webkit-backdrop-filter:blur(10px) saturate(1.25);
+    box-shadow:0 0 0 1px rgba(110,155,255,.10) inset,
+               0 8px 22px -12px rgba(110,155,255,.65);
+    transition:background .2s ease,border-color .2s ease;
+  }
+  .ct-toggle:hover{
+    background:rgba(110,155,255,.32);
+    border-color:rgba(110,155,255,.78);
+    color:#C8D9FF;
+  }
+  .ct-toggle svg{width:15px;height:15px;transition:transform .3s ease;}
+  .coc-trade.ct-open .ct-toggle svg{transform:rotate(180deg);}
+  .coc-trade.ct-open .ct-toggle .ct-t-open{display:none;}
+  .coc-trade:not(.ct-open) .ct-toggle .ct-t-close{display:none;}
+}
+@media(min-width:761px){
+  .ct-toggle{display:none!important;}
+}
+
 
 /* Trade-in card chips (condition / day / time) — these carry a bare
    `.on` class from coc-tradein.js, so the .ti- and .vd-slot selectors

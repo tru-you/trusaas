@@ -1029,7 +1029,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 </style>
 <link rel="stylesheet" href="coc-widgets.css?v=20260805a">
 <link rel="stylesheet" href="coc-site.css?v=20260805a">
-<link rel="stylesheet" href="coc-fixes.css?v=20260806y">
+<link rel="stylesheet" href="coc-fixes.css?v=20260806z">
 </head>
 <body>
 <a class="coc-skip" href="#showroom">Skip to showroom</a>
@@ -1968,6 +1968,41 @@ observeAll();
     window.location.href = "mai" + "lto:" + addr(a);
   }
   document.addEventListener("click", go);
+
+  /* Trade-in form: collapsed behind its own pitch on mobile.
+     The card is 904px tall on a 812px viewport, so every visitor scrolls
+     a full screen of form whether or not they have a car to trade. The
+     heading and value proposition stay; the fields open on tap. Nothing
+     is moved or rebuilt, so coc-tradein.js and the booking handlers are
+     untouched. Desktop never sees the toggle (CSS hides it >760px) and
+     the card is left open there. */
+  function initTradeToggle(){
+    var card = document.getElementById("tradeTool");
+    if(!card || card.querySelector(".ct-toggle")) return;
+    var head = card.querySelector(".ct-head");
+    if(!head) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ct-toggle";
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", "tradeTool");
+    btn.innerHTML =
+      '<span class="ct-t-open">Value my car &mdash; 20-minute workshop slot</span>'
+      + '<span class="ct-t-close">Hide the form</span>'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+    btn.addEventListener("click", function(){
+      var open = card.classList.toggle("ct-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      if(open){
+        var f = card.querySelector("#ctCar");
+        if(f) setTimeout(function(){ f.focus({preventScroll:true}); }, 380);
+      }
+    });
+    head.insertAdjacentElement("afterend", btn);
+  }
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", initTradeToggle);
+  } else { initTradeToggle(); }
   /* keyboard users get the same behaviour */
   document.addEventListener("keydown", function(e){
     if(e.key !== "Enter") return;
