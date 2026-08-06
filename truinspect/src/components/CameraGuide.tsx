@@ -547,7 +547,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           that used to stack above it (~170px of chrome) are now overlays on the
           feed itself. Tag damage / Checklist moved to a labelled pair above the
           shutter. */}
-      <div className="capture-preview relative flex-1 bg-black flex flex-col justify-center overflow-hidden">
+      <div className="capture-preview relative flex-1 min-h-0 bg-black flex flex-col justify-center overflow-hidden">
         {shutterFlash && (
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
@@ -667,12 +667,10 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         </div>
       </div>
 
-      {/* Below-viewfinder chrome: scrolls when the viewfinder's min-h
-          leaves less than the chrome needs. min-h-0 is required — without it
-          a flex child won't shrink below its content size. */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
-
-      {/* Shot list — one continuous strip, all 27 slots */}
+      {/* Shot list — one continuous strip, all 27 slots. The chip strip and the
+          console below are pinned siblings (no scroll wrapper), so Shoot / Skip /
+          Import stay reachable and the viewfinder above (flex-1 min-h-0) flexes to
+          fill the rest — a bigger preview with controls always in reach. */}
       <div className="bg-neutral-900 border-t border-neutral-850 py-2 shrink-0 z-10">
         <div ref={chipStripRef} className="flex gap-2 overflow-x-auto pb-1 px-3 scrollbar-none">
           {allSlots.map((slot, i) => {
@@ -821,8 +819,6 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         )}
 
       </div>
-
-      </div>{/* end below-viewfinder scroll wrapper */}
 
       {/* Bulk Importer Overlay Modal */}
       {isBulkModalOpen && (
