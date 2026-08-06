@@ -1047,6 +1047,200 @@ body.vd-lock > .vd-mbar a,
   min-height:48px!important;
 }
 
+
+/* ────────────────────────────────────────────────────────────
+   FIX 25 — HERO GUTTERS ON MOBILE
+
+   Every .wrap on the site is padded `0 24px` except one:
+
+     .wrap.hero-inner  ->  padding: 56px 0 0     (no side gutters)
+
+   So the hero headline started at x=0 and ran to the screen edge,
+   which is the "tight, words cut off" reading. Give it the same
+   gutter the rest of the page uses.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:760px){
+  .hero .wrap,.wrap.hero-inner{
+    padding-left:24px!important;
+    padding-right:24px!important;
+  }
+  .hero h1{
+    font-size:clamp(26px,7.6vw,32px)!important;
+    line-height:1.12!important;
+    text-wrap:balance;
+    hyphens:none;
+  }
+  .hero p,.hero .hero-sub{text-wrap:pretty;}
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 26 — TOO MANY WHATSAPP ENTRY POINTS
+
+   WhatsApp appeared in the header, the hero, the sticky bottom bar,
+   every card, the modal and the footer. The header dot is the most
+   redundant of them — the sticky bar carries WhatsApp on every
+   screen and never scrolls away — so it goes.
+   ──────────────────────────────────────────────────────────── */
+
+.nav-wa{display:none!important;}
+
+/* The obfuscated email link inherited #4A66B8 in the visit card — a dark
+   blue on a dark panel, 3.4:1. Same bright blue as the rest of the system. */
+.coc-mail{color:#A8C3FF!important;}
+.coc-mail:hover{color:#C8D9FF!important;}
+footer .coc-mail{color:rgba(232,234,230,.78)!important;}
+footer .coc-mail:hover{color:#C8D9FF!important;}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 27 — .btn-row CTA PAIRS NOT CENTRED
+
+   .btn-row is flex with justify-content at its initial value and
+   buttons of unequal width, so pairs sat left-aligned and ragged:
+
+     Sell:  "Get a Free Valuation" 207px | "WhatsApp ..." 268px
+     Visit: "Get Directions"       161px | "Book a Viewing" 155px
+
+   On mobile they stack full-width — even edges, bigger tap targets,
+   and consistent with the modal's action stack. Above that they
+   centre as a row instead of hugging the left edge.
+   ──────────────────────────────────────────────────────────── */
+
+.btn-row{
+  justify-content:center!important;
+  align-items:stretch!important;
+}
+@media(max-width:640px){
+  .btn-row{
+    flex-direction:column!important;
+    gap:10px!important;
+  }
+  .btn-row > .btn,.btn-row > a,.btn-row > button{
+    width:100%!important;
+    min-height:48px!important;
+  }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 28 — FLOATING WIDGETS NOT ALIGNED
+
+   Measured: TruAfford pill bottom:80px (78px tall), TruChat FAB
+   bottom:96px (52px tall) — so they sat on different baselines on
+   opposite sides of the screen. Bottom-align them so the pair reads
+   as one row above the sticky bar.
+   ──────────────────────────────────────────────────────────── */
+
+@media(max-width:720px){
+  #tc-fab{bottom:80px!important;}
+  #tru-afford-host{bottom:80px!important;}
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   FIX 29 — TruChat IS STILL WEARING ANOTHER DEALER'S RED
+
+   .tc-root declares the widget's whole palette:
+
+     --tc-red: #e30613;  --tc-red-dark: #9b0410;
+
+   That is not a Cars on Caledon colour — it's red brand paint from
+   a different dealer build. Re-point the two variables at the COC
+   blues and the avatar, user bubbles, primary buttons and rings all
+   follow. A few rules hard-code the rgba instead of using the var,
+   so those are restated underneath.
+
+   Also: .tc-panel had no max-width/max-height and sized itself from
+   the viewport (inset 117/10/110), so on a shorter phone it filled
+   the screen. Capped.
+   ──────────────────────────────────────────────────────────── */
+
+.tc-root{
+  --tc-red:#2E54BE!important;
+  --tc-red-dark:#23419A!important;
+}
+/* hard-coded rgba(227,6,19,...) instances */
+.tc-msg.user{
+  background:linear-gradient(145deg,rgba(46,84,190,.38),rgba(46,84,190,.20))!important;
+  border-color:rgba(110,155,255,.42)!important;
+}
+.tc-avatar-wrap::after{border-color:rgba(110,155,255,.45)!important;}
+.tc-car:hover{
+  border-color:rgba(110,155,255,.45)!important;
+  box-shadow:0 12px 28px -14px rgba(46,84,190,.5)!important;
+}
+.tc-shell::before{background:radial-gradient(90% 60% at 50% 0%,rgba(46,84,190,.18),transparent 70%)!important;}
+.tc-root .pill{
+  background:rgba(110,155,255,.12)!important;
+  border-color:rgba(110,155,255,.30)!important;
+  color:#A8C3FF!important;
+}
+.tc-root .pill span,.tc-root .pill *{color:inherit!important;border-color:inherit!important;}
+
+/* The footer badge hard-codes the red on a bare <span>. */
+.tc-foot span{
+  color:rgba(110,155,255,.85)!important;
+  border-color:rgba(110,155,255,.55)!important;
+}
+/* The FAB becomes a close button pinned bottom-right while the panel is
+   open, and it sat on top of the footer strapline. Keep the footer clear
+   of it rather than letting the text run underneath. */
+.tc-foot{
+  padding-right:56px!important;
+  text-align:left!important;
+  overflow:hidden;
+}
+
+/* Red also survives in BOX-SHADOWS, which is what still glowed around the
+   avatar and the Send button after the variables were re-pointed. Worth
+   noting for the next person: a colour audit that only reads background /
+   color / border-color will report "clean" while the widget is visibly
+   still red. Shadows and filters carry colour too. */
+.tc-shell{
+  box-shadow:0 28px 80px -24px rgba(0,0,0,.75),
+             0 0 0 1px rgba(110,155,255,.10),
+             inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+.tc-avatar{box-shadow:0 8px 20px -6px rgba(46,84,190,.65)!important;}
+.tc-pri,.tc-composer button,#tcSend{
+  box-shadow:0 8px 20px -8px rgba(46,84,190,.75)!important;
+}
+.tc-composer button:hover,.tc-pri:hover{
+  box-shadow:0 10px 24px -8px rgba(46,84,190,.85)!important;
+}
+.tc-composer input:focus{
+  border-color:rgba(110,155,255,.55)!important;
+  box-shadow:0 0 0 4px rgba(110,155,255,.14)!important;
+}
+.tc-grid button.sel{
+  border-color:#6E9BFF!important;
+  background:rgba(110,155,255,.22)!important;
+  box-shadow:0 0 0 1px rgba(110,155,255,.20)!important;
+}
+
+/* Panel must never read as full-screen.
+   NOTE selector: the widget and coc-site.css both target #tc-panel (an ID).
+   A `.tc-panel` class rule matches nothing here, and even if it did it would
+   lose to coc-site.css's `#tc-panel{bottom:110px!important}` — two !important
+   declarations are settled by specificity, and an ID outranks a class. So
+   these must be ID selectors too; being later in the cascade then wins. */
+#tc-panel{
+  max-width:400px!important;
+  max-height:min(620px,78vh)!important;
+}
+@media(max-width:480px){
+  #tc-panel{
+    left:10px!important;right:10px!important;width:auto!important;
+    max-width:none!important;
+    top:auto!important;
+    bottom:80px!important;                 /* clears the sticky Call/WhatsApp bar */
+    height:min(64vh,520px)!important;      /* leaves the page visible behind it */
+    max-height:none!important;
+  }
+}
+
 /* ---- The white bar itself ---- */
 .coc-mbar{
   background:rgba(10,14,24,.92)!important;

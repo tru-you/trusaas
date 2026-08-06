@@ -42,7 +42,6 @@
   "logo": "https://www.carsoncaledon.co.za/caledon-logo.png",
   "image": "https://www.carsoncaledon.co.za/og-card.jpg",
   "telephone": "+27618759389",
-  "email": "lance@carsoncaledon.co.za",
   "priceRange": "R100 000 - R700 000",
   "currenciesAccepted": "ZAR",
   "address": {
@@ -1030,7 +1029,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 </style>
 <link rel="stylesheet" href="coc-widgets.css?v=20260805a">
 <link rel="stylesheet" href="coc-site.css?v=20260805a">
-<link rel="stylesheet" href="coc-fixes.css?v=20260806t">
+<link rel="stylesheet" href="coc-fixes.css?v=20260806y">
 </head>
 <body>
 <a class="coc-skip" href="#showroom">Skip to showroom</a>
@@ -1075,7 +1074,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     <nav class="nav-links">
       <a href="#showroom" class="active">Showroom</a>
       <a href="#sell">Sell / Trade-In</a>
-      <a href="#tradein">TruValue</a>
       <a href="#finance">Finance</a>
       <a href="#why">Why Us</a>
       <a href="#visit">Visit Us</a>
@@ -1096,7 +1094,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
     </div>
   </div>
   <div class="m-menu" id="mmenu">
-    <a href="#showroom">Showroom</a><a href="#sell">Sell / Trade-In</a><a href="#tradein">TruValue</a><a href="#finance">Finance</a><a href="#why">Why Us</a><a href="#visit">Visit Us</a>
+    <a href="#showroom">Showroom</a><a href="#sell">Sell / Trade-In</a><a href="#finance">Finance</a><a href="#why">Why Us</a><a href="#visit">Visit Us</a>
   </div>
 </header>
 
@@ -1228,9 +1226,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
   <div class="wrap">
     <div class="coc-trade rv" id="tradeTool">
       <div class="ct-head">
-        <div class="ct-badge"><i></i>TruInspect &middot; Book a Valuation</div>
-        <h3>A firm offer on your car &mdash; graded on our workshop floor.</h3>
-        <p>Book a 20-minute <b>workshop inspection</b>. Drive in, we grade the car on-site &mdash; panels, interior, engine bay &mdash; and put a <b>firm trade-in offer</b> in your hand before you leave.</p>
+        <div class="ct-badge"><i></i>TruValue &middot; workshop trade-in</div>
+        <h3>Know what your car is worth &mdash; <em>from a person, not a formula.</em></h3>
+        <p>Book a 20-minute <b>workshop inspection</b>. A Caledon buyer walks the car with you &mdash; panels, interior, engine bay &mdash; asks the questions that matter, and puts a <b>firm trade-in offer</b> in writing before you leave. No algorithm decides what your car is worth.</p>
       </div>
       <div class="ct-grid">
         <div class="ct-step">
@@ -1271,16 +1269,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
 <!-- WHY -->
 
 <!-- TRUVALUE TRADE-IN PROFILER -->
-<section class="ti" id="tradein">
-  <div class="wrap">
-    <div class="ti-head">
-      <div class="ti-eyebrow"><i></i>TruValue &middot; workshop trade-in</div>
-      <h2>Know what your car is worth &mdash; <em>from a person, not a formula.</em></h2>
-      <p class="ti-lede">Tell us about the car in three quick steps, then drive it in for a 20-minute TruInspect grading. A Caledon buyer walks it with you, asks the questions that matter, and puts a trade price in writing on the spot. No algorithm decides what your car is worth.</p>
-    </div>
-    <div class="ti-grid"></div>
-  </div>
-</section>
+<!-- TruValue was a second trade-in section making the same promise as the
+     TruInspect card in #sell above: a 20-minute workshop grading producing a
+     firm written offer. Two forms asking a seller the same questions is a
+     conversion leak, so it was merged into #sell — its headline and the
+     "not a formula" line now lead that card. Nav links repointed to #sell.
+     coc-tradein.js guards with `if (!host) return;`, so it no-ops safely. -->
 
 <section class="why" id="why">
   <div class="wrap">
@@ -1333,7 +1327,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
         <div class="v-rows">
           <div class="v-row"><span class="vk">Address</span><span class="vv">257 Caledon Street, Kariega, 6229</span></div>
           <div class="v-row"><span class="vk">Phone</span><span class="vv"><button type="button" class="coc-call coc-call-text" data-tel="+27618759389"><span class="cc-num">Call us</span><span class="cc-arm">+27 61 875 9389 &middot; tap to call</span></button></span></div>
-          <div class="v-row"><span class="vk">Email</span><span class="vv"><a href="mailto:lance@carsoncaledon.co.za">lance@carsoncaledon.co.za</a></span></div>
+          <div class="v-row"><span class="vk">Email</span><span class="vv"><a href="#" class="coc-mail" data-u="lance" data-d="carsoncaledon" data-t="co.za" rel="nofollow">Email the showroom</a></span></div>
           <div class="v-row"><span class="vk">Hours</span><span class="vv">Mon–Fri 08:00–17:30 · Sat 08:00–13:00</span></div>
         </div>
         <div class="btn-row">
@@ -1358,7 +1352,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);border-top:1px solid rgb
       </div>
       <div><h4>Showroom</h4><a href="#showroom">All vehicles</a><a href="#showroom">Hatchbacks</a><a href="#showroom">SUVs & Bakkies</a><a href="#showroom">Performance</a></div>
       <div><h4>Services</h4><a href="#finance">Vehicle Finance</a><a href="#sell">Trade-Ins</a><a href="#sell">Park & Sell</a><a href="#why">Inspection Reports</a></div>
-      <div><h4>Contact</h4><button type="button" class="coc-call coc-call-text" data-tel="+27618759389"><span class="cc-num">Call us</span><span class="cc-arm">+27 61 875 9389 &middot; tap to call</span></button><a href="mailto:lance@carsoncaledon.co.za">lance@carsoncaledon.co.za</a><a href="#visit">257 Caledon Street, Kariega</a><a href="https://facebook.com/carsoncaledon" target="_blank" rel="noopener">Facebook ↗</a></div>
+      <div><h4>Contact</h4><button type="button" class="coc-call coc-call-text" data-tel="+27618759389"><span class="cc-num">Call us</span><span class="cc-arm">+27 61 875 9389 &middot; tap to call</span></button><a href="#" class="coc-mail" data-u="lance" data-d="carsoncaledon" data-t="co.za" rel="nofollow">Email the showroom</a><a href="#visit">257 Caledon Street, Kariega</a><a href="https://facebook.com/carsoncaledon" target="_blank" rel="noopener">Facebook ↗</a></div>
     </div>
     <div class="f-bottom"><span>© 2026 Cars on Caledon · All prices include VAT · E&OE</span><span class="ax">Powered by <a href="https://www.trudealer.tru-saas.com" target="_blank" rel="noopener" style="color:inherit"><b>TruDealer</b></a></span></div>
   </div>
@@ -1957,5 +1951,30 @@ observeAll();
 <script src="coc-tradein.js?v=20260727a" defer></script>
 <script src="coc-hours.js?v=20260727a" defer></script>
 <script src="coc-dock.js?v=20260804a" defer></script>
+
+<!-- Email addresses are not present in the served HTML.
+     Harvesters scrape mail-protocol hrefs and address-shaped text out of the
+     raw markup; both are gone. The address is assembled from three
+     data- fragments only when a human actually activates the link, so
+     it never sits in the DOM waiting to be read either. Falls back to
+     doing nothing if JS is off, which is the safe direction. -->
+<script>
+(function(){
+  function addr(a){ return a.dataset.u + String.fromCharCode(64) + a.dataset.d + "." + a.dataset.t; }
+  function go(e){
+    var a = e.target.closest(".coc-mail");
+    if(!a) return;
+    e.preventDefault();
+    window.location.href = "mai" + "lto:" + addr(a);
+  }
+  document.addEventListener("click", go);
+  /* keyboard users get the same behaviour */
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter") return;
+    var a = document.activeElement;
+    if(a && a.classList && a.classList.contains("coc-mail")){ e.preventDefault(); window.location.href = "mai"+"lto:"+addr(a); }
+  });
+})();
+</script>
 </body>
 </html>
