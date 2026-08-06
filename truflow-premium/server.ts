@@ -1550,7 +1550,7 @@ app.post("/api/admin/normalize-vehicles", (req: any, res) => {
 });
 
 // Mobile App Upload / Web Upload API
-app.post("/api/inventory", (req, res) => {
+app.post("/api/inventory", (req: any, res) => {
   const state = readState();
   const newVehicle = {
     id: "v_" + Date.now(),
