@@ -425,6 +425,33 @@ test("deleting a lead takes its dependants and releases its car", () => {
   assert.match(handler, /stillHeld/, "unless another deal still holds it");
 });
 
+test("tax invoice numbers are sequential, per dealer, and never reused", () => {
+  /* SARS requires the number on a tax invoice to be sequential and
+     non-repeating. It was `INV-2026-00${invoices.length + 1}`: derived from a
+     count across ALL dealers, frozen at 2026, and overridable by the caller —
+     so two dealerships drew from one sequence and a client could name its own
+     number twice. */
+  assert.match(body, /function nextDocNumber/);
+  const start = body.indexOf("function nextDocNumber");
+  const fn = body.slice(start, body.indexOf("\napp.", start));
+  assert.match(fn, /dealer\[opts\.seqKey\] = next/, "the counter must persist on the dealership");
+  assert.match(fn, /Math\.max\(highest,/, "it must never fall below what was already issued");
+  assert.match(fn, /getFullYear\(\)/, "the year must not be hardcoded");
+  assert.doesNotMatch(
+    body,
+    /invoiceNumber: req\.body\.invoiceNumber/,
+    "a caller must not be able to choose its own invoice number"
+  );
+  /* Agreements carried the identical defect and are fixed by the same helper.
+     Scoped to actual assignments so the comment explaining the old code does
+     not trip the check. */
+  assert.doesNotMatch(
+    body,
+    /Number: req\.body\.\w+ \|\| `\w+-\d{4}-00\$\{state\./,
+    "no document number may be derived from a row count or chosen by the caller"
+  );
+});
+
 test("finalising the last stage records completion distinguishably", () => {
   /* docStage goes null when handover finalises — exactly what a never-started
      lead carries. Without a separate stamp a finished deal renders as if it had

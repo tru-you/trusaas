@@ -496,7 +496,7 @@ export async function finalizeStageDocument(
  *  contact email, address, registration number, website URL). Admins can
  *  target another dealership by passing dealershipId. */
 export async function updateDealershipSelf(
-  patch: Partial<Pick<Dealership, "name" | "tradingAs" | "vatNumber" | "contactEmail" | "address" | "registrationNumber" | "websiteUrl">>,
+  patch: Partial<Pick<Dealership, "name" | "tradingAs" | "vatNumber" | "contactEmail" | "address" | "registrationNumber" | "websiteUrl" | "docSettings">>,
   dealershipId?: string,
 ): Promise<Dealership> {
   const res = await authFetch("/api/dealership/self", {

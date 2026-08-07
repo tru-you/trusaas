@@ -53,11 +53,47 @@ export interface Dealership {
   zernioProfileId?: string;
   /** Whether TruSocial is active (UI shown, publishes triggered). */
   truSocialEnabled?: boolean;
+  /** High-water marks for this dealer's issued document numbers.
+   *
+   *  SARS requires a tax invoice number to be sequential and non-repeating.
+   *  Both numbers used to come from `collection.length + 1`, counted across
+   *  every dealer — so two dealerships drew from one sequence, and removing a
+   *  row handed the next one a number already issued. These only ever climb,
+   *  and they are per dealer. */
+  invoiceSeq?: number;
+  agreementSeq?: number;
   /** DocHub: per-stage mode. 'attach' = dealer uploads their own signed
    *  document; 'generate' = TruFlow renders one from a template. Missing keys
    *  default to 'attach' (least surprise for dealers already using their own
    *  paperwork). Set once in DocFlowSettings; not per-deal. */
   docFlow?: Partial<Record<DocStage, DocMode>>;
+  /** Dealer-editable content that appears on generated documents.
+   *  Everything here is optional — templates render sensible defaults or
+   *  leave the section out when the dealer hasn't configured it. */
+  docSettings?: DocSettings;
+}
+
+export interface DocSettings {
+  /** Dealer logo — a /media/ reference stored via photoStore.put().
+   *  Rendered top-left on every generated document. */
+  logo?: string;
+  bankingDetails?: {
+    bankName?: string;
+    branchCode?: string;
+    accountNumber?: string;
+    accountType?: string;
+  };
+  /** Free-text sale conditions appended to the Offer to Purchase.
+   *  Each entry renders as a numbered clause. */
+  saleTerms?: string[];
+  /** Override the default ownership-retention clause on invoices.
+   *  If blank, the statutory default is used. */
+  ownershipClause?: string;
+  /** Footer note printed at the bottom of every generated document
+   *  (e.g. "Thank you for your business", a disclaimer, or a promo). */
+  footerNote?: string;
+  /** Warranty description included on the handover document. */
+  warrantyTerms?: string;
 }
 
 /** DocHub stages, in the order a deal progresses through them. */
@@ -157,6 +193,9 @@ export interface Vehicle {
      the one route that creates stock from a capture could not be type-checked
      at all. */
   vin?: string;
+  engineNumber?: string;
+  mmCode?: string;
+  registrationNumber?: string;
   color?: string;
   /** Where the record came from, e.g. "trulens". */
   source?: string;
@@ -206,6 +245,9 @@ export interface Lead {
   lastContactedAt: string | null;
   digitalScore: number;
   notes: string;
+  idOrBrn?: string;
+  address?: string;
+  buyerVatNumber?: string;
   journey?: { time: string; action: string; detail: string }[];
   dealershipId?: string;
   /** What happens next with this customer, and when. This is the whole point

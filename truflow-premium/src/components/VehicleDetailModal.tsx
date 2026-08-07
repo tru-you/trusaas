@@ -581,11 +581,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       { key: "make",    label: "Make",         type: "text"   },
                       { key: "model",   label: "Model",        type: "text"   },
                       { key: "trim",    label: "Trim",         type: "text"   },
-                      { key: "vin",     label: "VIN",          type: "text"   },
-                      { key: "color",   label: "Colour",       type: "text"   },
-                      { key: "mileage", label: "Mileage (km)", type: "number" },
-                      { key: "bodyType",label: "Body style",   type: "text"   },
-                      { key: "engine",  label: "Engine",       type: "text",   colSpan: 2 },
+                      { key: "vin",               label: "VIN",              type: "text"   },
+                      { key: "engineNumber",      label: "Engine no.",       type: "text"   },
+                      { key: "registrationNumber", label: "Reg. plate",      type: "text"   },
+                      { key: "mmCode",            label: "MM code",         type: "text"   },
+                      { key: "color",             label: "Colour",          type: "text"   },
+                      { key: "mileage",           label: "Mileage (km)",    type: "number" },
+                      { key: "bodyType",          label: "Body style",      type: "text"   },
+                      { key: "engine",            label: "Engine",          type: "text"   },
                     ].map((f: any) => (
                       <div key={f.key} className={"flex flex-col" + (f.colSpan === 2 ? " col-span-2" : "")}>
                         <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>

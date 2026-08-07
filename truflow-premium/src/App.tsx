@@ -80,6 +80,7 @@ import Counter from "./components/Counter";
 import ChatWidget from "./components/ChatWidget";
 import DocumentsHub from "./components/DocumentsHub";
 import DealerDetailsSettings from "./components/DealerDetailsSettings";
+import DocSettingsPanel from "./components/DocSettingsPanel";
 import PwaInstallBanner from "./components/PwaInstallBanner";
 import InstallAppButton from "./components/InstallAppButton";
 
@@ -3865,7 +3866,10 @@ export default function App() {
                     </div>
                   )}
                   {list.map((d) => (
-                    <DealerDetailsSettings key={d.id} dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                    <React.Fragment key={d.id}>
+                      <DealerDetailsSettings dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                      <DocSettingsPanel dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                    </React.Fragment>
                   ))}
                 </>
               );

@@ -2533,11 +2533,50 @@ app.get("/api/invoices", (req: any, res) => {
   res.json(scopeToDealer(state.invoices, req.auth));
 });
 
+/** The next number in a dealer's document sequence.
+ *
+ *  SARS requires the number on a tax invoice to be sequential and
+ *  non-repeating. Both invoice and agreement numbers used to be built from
+ *  `collection.length + 1`, which breaks three ways: the count spanned every
+ *  dealer so two dealerships drew from one sequence, removing a row handed the
+ *  next one a number already issued, and the year was frozen at 2026.
+ *
+ *  The counter lives on the dealership and only ever climbs. It is seeded from
+ *  the highest number that dealer has already issued, so an instance with
+ *  existing documents carries on rather than restarting at 1 and colliding
+ *  with its own history. Caller-supplied numbers are ignored outright — a
+ *  client able to name its own number could issue two the same.
+ *
+ *  Mutates the dealership in `state`; the caller's writeState persists it. */
+function nextDocNumber(
+  state: any,
+  dealershipId: string | undefined,
+  opts: { prefix: string; rows: any[]; field: string; seqKey: "invoiceSeq" | "agreementSeq" },
+): string {
+  const year = new Date().getFullYear();
+  const dealer = (state.dealerships || []).find((d: any) => d.id === dealershipId);
+
+  let highest = 0;
+  for (const row of opts.rows || []) {
+    if (dealershipId && row.dealershipId !== dealershipId) continue;
+    const m = /(\d+)\s*$/.exec(String(row[opts.field] || ""));
+    if (m) highest = Math.max(highest, parseInt(m[1], 10) || 0);
+  }
+
+  const next = Math.max(highest, Number(dealer?.[opts.seqKey]) || 0) + 1;
+  if (dealer) dealer[opts.seqKey] = next;
+
+  return `${opts.prefix}-${year}-${String(next).padStart(5, "0")}`;
+}
+
 app.post("/api/invoices", (req: any, res) => {
   const state = readState();
+  const invoiceOwner = ownerDealership(req);
   const newInvoice = {
     id: newId("inv_"),
-    invoiceNumber: req.body.invoiceNumber || `INV-2026-00${state.invoices.length + 1}`,
+    invoiceNumber: nextDocNumber(state, invoiceOwner, {
+      prefix: "INV", rows: state.invoices, field: "invoiceNumber", seqKey: "invoiceSeq",
+    }),
     leadId: req.body.leadId,
     vehicleId: req.body.vehicleId,
     amount: parseFloat(req.body.amount) || 0,
@@ -2546,7 +2585,7 @@ app.post("/api/invoices", (req: any, res) => {
     paymentMethod: req.body.paymentMethod || "Bank Transfer",
     status: req.body.status || "Sent",
     dueDate: req.body.dueDate || new Date().toISOString().slice(0, 10),
-    dealershipId: ownerDealership(req),
+    dealershipId: invoiceOwner,
   };
 
   state.invoices.unshift(newInvoice);
@@ -2577,9 +2616,12 @@ app.get("/api/agreements", (req: any, res) => {
 
 app.post("/api/agreements", (req: any, res) => {
   const state = readState();
+  const agreementOwner = ownerDealership(req);
   const newAgreement = {
     id: newId("agr_"),
-    agreementNumber: req.body.agreementNumber || `AGR-2026-00${state.agreements.length + 1}`,
+    agreementNumber: nextDocNumber(state, agreementOwner, {
+      prefix: "AGR", rows: state.agreements, field: "agreementNumber", seqKey: "agreementSeq",
+    }),
     leadId: req.body.leadId,
     vehicleId: req.body.vehicleId,
     purchasePrice: parseFloat(req.body.purchasePrice) || 0,
@@ -3011,7 +3053,7 @@ app.put("/api/dealership/self", (req: any, res) => {
   const i = (state.dealerships || []).findIndex((d: any) => d.id === targetId);
   if (i === -1) return res.status(404).json({ error: "Dealership not found" });
 
-  const { name, tradingAs, vatNumber, contactEmail, address, registrationNumber, websiteUrl } = req.body || {};
+  const { name, tradingAs, vatNumber, contactEmail, address, registrationNumber, websiteUrl, docSettings } = req.body || {};
   const d = state.dealerships[i] as any;
   if (typeof name === "string" && name.trim()) d.name = name.trim();
   if (typeof tradingAs === "string") d.tradingAs = tradingAs.trim();
@@ -3020,6 +3062,33 @@ app.put("/api/dealership/self", (req: any, res) => {
   if (typeof address === "string") d.address = address.trim();
   if (typeof registrationNumber === "string") d.registrationNumber = registrationNumber.trim();
   if (typeof websiteUrl === "string") d.websiteUrl = websiteUrl.trim();
+  if (docSettings && typeof docSettings === "object") {
+    const prev = d.docSettings || {};
+    const next = { ...prev };
+    if (typeof docSettings.logo === "string") {
+      if (!docSettings.logo) {
+        next.logo = "";
+      } else {
+        const ref = putPhoto(docSettings.logo);
+        if (ref) next.logo = ref;
+      }
+    }
+    if (docSettings.bankingDetails && typeof docSettings.bankingDetails === "object") {
+      const b: any = {};
+      for (const k of ["bankName", "branchCode", "accountNumber", "accountType"]) {
+        const v = docSettings.bankingDetails[k];
+        b[k] = typeof v === "string" ? v.trim() : (prev.bankingDetails?.[k] || "");
+      }
+      next.bankingDetails = b;
+    }
+    if (Array.isArray(docSettings.saleTerms)) {
+      next.saleTerms = docSettings.saleTerms.filter((t: any) => typeof t === "string" && t.trim()).map((t: string) => t.trim());
+    }
+    if (typeof docSettings.ownershipClause === "string") next.ownershipClause = docSettings.ownershipClause.trim();
+    if (typeof docSettings.footerNote === "string") next.footerNote = docSettings.footerNote.trim();
+    if (typeof docSettings.warrantyTerms === "string") next.warrantyTerms = docSettings.warrantyTerms.trim();
+    d.docSettings = next;
+  }
 
   writeState(state);
   res.json({ dealership: state.dealerships[i] });

@@ -519,6 +519,31 @@ export default function LeadDetailModal({
                     <div className="border-t border-white/5 mt-2 pt-2 text-[13px]">
                       <span className="font-semibold text-[color:var(--white)]">Notes:</span> <span className="text-[rgba(232,234,230,0.72)]">{lead.notes || "None logged"}</span>
                     </div>
+                    <div className="border-t border-white/5 mt-3 pt-3">
+                      <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-2">Buyer Details (for documents)</div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {([
+                          { key: "idOrBrn",        label: "ID / BRN" },
+                          { key: "address",        label: "Address" },
+                          { key: "buyerVatNumber", label: "VAT number" },
+                        ] as const).map((f) => (
+                          <div key={f.key} className="flex flex-col">
+                            <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>
+                            <input
+                              type="text"
+                              defaultValue={(lead as any)[f.key] ?? ""}
+                              onBlur={async (e) => {
+                                const next = e.target.value;
+                                if (next === ((lead as any)[f.key] ?? "")) return;
+                                await updateLead(lead.id, { [f.key]: next });
+                                onRefresh();
+                              }}
+                              className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[14px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

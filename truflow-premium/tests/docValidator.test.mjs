@@ -36,7 +36,7 @@ test("deed does NOT require ncaDisclosure for a cash deal", async () => {
   const { canAdvance } = await loadValidator();
   const cashDeal = canAdvance(
     "deed",
-    { voetstootsClause: "as-is", tradeInLine: "none" },
+    { disclosedDefects: [], tradeInLine: "none" },
     { dealChecklist: { financeStatus: "N/A" } },
   );
   assert.equal(cashDeal.ok, true, `expected ok, got missing=${JSON.stringify(cashDeal.missing)}`);
@@ -46,7 +46,7 @@ test("deed DOES require ncaDisclosure when finance is submitted", async () => {
   const { canAdvance } = await loadValidator();
   const financedNoDisclosure = canAdvance(
     "deed",
-    { voetstootsClause: "as-is", tradeInLine: "none" },
+    { disclosedDefects: [], tradeInLine: "none" },
     { dealChecklist: { financeStatus: "Submitted" } },
   );
   assert.equal(financedNoDisclosure.ok, false);
@@ -55,13 +55,43 @@ test("deed DOES require ncaDisclosure when finance is submitted", async () => {
   const financedWithDisclosure = canAdvance(
     "deed",
     {
-      voetstootsClause: "as-is",
+      disclosedDefects: [],
       tradeInLine: "none",
       ncaDisclosure: "acknowledged",
     },
     { dealChecklist: { financeStatus: "Approved" } },
   );
   assert.equal(financedWithDisclosure.ok, true);
+});
+
+test("the offer discloses defects instead of selling voetstoots", async () => {
+  /* A blanket "sold as is" does not survive a dealer sale to a consumer — the
+     CPA gives a right to goods of good quality (s55) and an implied warranty
+     (s56) a seller in the ordinary course of business cannot contract out of.
+     Excluding a SPECIFIC defect the buyer was told about and accepted is
+     allowed (s55(6)), so the offer carries the actual findings instead. */
+  const { canAdvance } = await loadValidator();
+  const noClause = canAdvance("deed", { tradeInLine: "none" });
+  assert.ok(
+    noClause.missing.includes("disclosedDefects"),
+    "the offer must require a defect disclosure"
+  );
+  assert.ok(
+    !noClause.missing.includes("voetstootsClause"),
+    "a voetstoots clause must not be required"
+  );
+});
+
+test("no defects found is not the same as nobody looked", async () => {
+  /* `[]` means the capture record was read and held nothing — a real
+     disclosure. Absent means it was never populated, which must not pass as
+     "this car has no defects". */
+  const { canAdvance } = await loadValidator();
+  const looked = canAdvance("deed", { disclosedDefects: [], tradeInLine: "none" });
+  assert.equal(looked.ok, true, "an empty but present disclosure is valid");
+
+  const neverLooked = canAdvance("deed", { tradeInLine: "none" });
+  assert.equal(neverLooked.ok, false, "an absent disclosure must fail");
 });
 
 test("compliance requires rwcRef, rwcDate, natisMatch", async () => {
