@@ -65,9 +65,10 @@ interface VehicleDetailModalProps {
    *  accounts, so offering it to a dealer with no connections would only ever
    *  fail — the tab is omitted entirely instead. */
   truSocialEnabled?: boolean;
+  hasLens?: boolean;
 }
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled}: VehicleDetailModalProps) {
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled, hasLens = true}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -1269,6 +1270,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             {/* Open in TruLens / Remove — desktop only. On mobile these move to
                 the fixed action bar (Shoot) and are otherwise a desk job. */}
             <div className="hidden md:grid grid-cols-2 gap-2">
+              {hasLens && (
               <button
                 type="button"
                 onClick={() => openTruLens(vehicle.stockNumber)}
@@ -1276,6 +1278,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               >
                 <Camera size={14} /> Open in TruLens
               </button>
+              )}
               {onDeleteVehicle && (
                 <button
                   type="button"
@@ -1300,6 +1303,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           className="md:hidden shrink-0 flex items-center gap-2 px-4 pt-3 border-t border-[color:var(--glass-line)] bg-[rgba(11,15,23,0.95)]"
           style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom,0px))" }}
         >
+          {hasLens && (
           <button
             type="button"
             onClick={() => openTruLens(vehicle.stockNumber)}
@@ -1307,6 +1311,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           >
             <Camera size={16} /> Shoot in TruLens
           </button>
+          )}
           <button
             type="button"
             onClick={() => { void openStockWhatsApp(vehicle as any); }}

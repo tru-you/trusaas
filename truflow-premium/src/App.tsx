@@ -707,6 +707,8 @@ export default function App() {
   // signed-in dealership's slug; fall through to the stored value only for the
   // master admin, who has no dealership of their own.
   const currentDealerSlug = currentDealership?.slug || (isMasterAdmin ? undefined : dealershipId);
+  const dealerProducts: string[] = (currentDealership as any)?.products || [];
+  const hasProduct = (p: string) => isMasterAdmin && !adminDealerScope ? true : dealerProducts.includes(p);
   const todayLabel = new Date().toLocaleDateString("en-ZA", {
     day: "numeric",
     month: "long",
@@ -1283,7 +1285,7 @@ export default function App() {
       category: "",
     });
     loadAllState();
-    if (confirm("Stock created. Open TruLens now to shoot this unit?")) {
+    if (hasProduct("lens") && confirm("Stock created. Open TruLens now to shoot this unit?")) {
       openTruLens(stock);
     }
   };
@@ -1556,7 +1558,7 @@ export default function App() {
                      className="text-[13px] px-3 py-1 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-faint)] transition-colors">
                     Your showroom
                   </a>
-                  {(mine?.products || []).includes("flow-lite") && (
+                  {hasProduct("flow-lite") && (
                     <a href={TRUFLOW_LITE_URL} target="_blank" rel="noopener noreferrer"
                        className="text-[13px] px-3 py-1 rounded-full bg-[rgba(0,136,255,0.08)] text-[#38BDF8] border border-[rgba(0,136,255,0.2)] hover:bg-[rgba(0,136,255,0.12)] transition-colors">
                       TruFlow Light
@@ -2027,14 +2029,16 @@ export default function App() {
                   Mobile only — TruLens captures with the phone camera, so a
                   "shoot" button on a desktop would point at a dead end. Desktop
                   keeps the "Stock media" link in the header instead. */}
-              <button
-                type="button"
-                onClick={() => openTruLens()}
-                className="btn btn-primary mt-4 w-full md:hidden inline-flex items-center justify-center gap-2"
-              >
-                <Camera size={15} />
-                Shoot in TruLens
-              </button>
+              {hasProduct("lens") && (
+                <button
+                  type="button"
+                  onClick={() => openTruLens()}
+                  className="btn btn-primary mt-4 w-full md:hidden inline-flex items-center justify-center gap-2"
+                >
+                  <Camera size={15} />
+                  Shoot in TruLens
+                </button>
+              )}
             </div>
 
             {/* Featured Catalog list */}
@@ -2389,14 +2393,16 @@ export default function App() {
                           className="flex gap-2 pt-1"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <button
-                            type="button"
-                            className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
-                            onClick={() => openTruLens(v.stockNumber)}
-                            title="Guided shoot in TruLens"
-                          >
-                            <Camera size={11} /> Shoot
-                          </button>
+                          {hasProduct("lens") && (
+                            <button
+                              type="button"
+                              className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
+                              onClick={() => openTruLens(v.stockNumber)}
+                              title="Guided shoot in TruLens"
+                            >
+                              <Camera size={11} /> Shoot
+                            </button>
+                          )}
                           <button
                             type="button"
                             className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25"
@@ -2436,19 +2442,21 @@ export default function App() {
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Add vehicle</h1>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                  Create stock metadata here. <b className="text-[color:var(--white)]">Photos only in TruLens</b> (guided shoot → Export to DMS).
+                  Create stock metadata here.{hasProduct("lens") && <> <b className="text-[color:var(--white)]">Photos only in TruLens</b> (guided shoot → Export to DMS).</>}
                 </p>
               </div>
               <div className="flex gap-2">
+                {hasProduct("lens") && (
+                  <button
+                    type="button"
+                    onClick={() => openTruLens()}
+                    className="btn btn-primary flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-semibold"
+                  >
+                    <Camera size={12} /> Open TruLens
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => openTruLens()}
-                  className="btn btn-primary flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-semibold"
-                >
-                  <Camera size={12} /> Open TruLens
-                </button>
-                <button 
-                  type="button" 
                   onClick={loadAllState} 
                   className="btn btn-secondary flex items-center gap-2 border border-white/10 hover:bg-white/5 px-3 py-2 rounded-lg text-[13px]"
                 >
@@ -2605,23 +2613,25 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] rounded-xl p-4 flex flex-col gap-2">
-                    <span className="text-[13px] font-semibold font-mono tracking-wider  text-[color:var(--cyan)] flex items-center gap-2">
-                      <Camera size={12} /> Photos live in TruLens only
-                    </span>
-                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
-                      After you save this unit, open <b className="text-[color:var(--white)]">TruLens</b>, shoot the guided slots for stock{" "}
-                      <span className="font-mono text-[color:var(--cyan)]">{newVehicleForm.stockNumber}</span>, then tap{" "}
-                      <b className="text-[color:var(--white)]">Export to DMS</b>. Gallery appears here automatically.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => openTruLens(newVehicleForm.stockNumber)}
-                      className="self-start mt-1 text-[13px] font-semibold tracking-normal px-3 py-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
-                    >
-                      Open TruLens for this stock #
-                    </button>
-                  </div>
+                  {hasProduct("lens") && (
+                    <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] rounded-xl p-4 flex flex-col gap-2">
+                      <span className="text-[13px] font-semibold font-mono tracking-wider  text-[color:var(--cyan)] flex items-center gap-2">
+                        <Camera size={12} /> Photos live in TruLens only
+                      </span>
+                      <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
+                        After you save this unit, open <b className="text-[color:var(--white)]">TruLens</b>, shoot the guided slots for stock{" "}
+                        <span className="font-mono text-[color:var(--cyan)]">{newVehicleForm.stockNumber}</span>, then tap{" "}
+                        <b className="text-[color:var(--white)]">Export to DMS</b>. Gallery appears here automatically.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openTruLens(newVehicleForm.stockNumber)}
+                        className="self-start mt-1 text-[13px] font-semibold tracking-normal px-3 py-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
+                      >
+                        Open TruLens for this stock #
+                      </button>
+                    </div>
+                  )}
 
                   <div className="flex flex-col gap-1">
                     <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Description</label>
@@ -3829,7 +3839,7 @@ export default function App() {
                 so this gate only avoids rendering a form that would 403. */}
             {getAccount()?.role === "admin" && (
               <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
-                <DealershipAdmin onNotify={addNotification} />
+                <DealershipAdmin onNotify={addNotification} scopedDealershipId={adminDealerScope} />
               </Suspense>
             )}
 
@@ -3838,7 +3848,7 @@ export default function App() {
                 show one panel per dealer that has the "social" product. */}
             {(() => {
               const socialDealers = dealershipId
-                ? (currentDealership as any)?.products?.includes("social") ? [currentDealership] : []
+                ? hasProduct("social") ? [currentDealership] : []
                 : (state?.dealerships || []).filter((d: any) => (d.products || []).includes("social"));
               return socialDealers.map((d: any) => (
                 <Suspense key={d.id} fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
@@ -4308,6 +4318,7 @@ export default function App() {
           onReturnToStock={handleReturnToStock}
           settings={state.settings}
           dealershipId={dealershipId || selectedDetailVehicle?.dealershipId}
+          hasLens={hasProduct("lens")}
           truSocialEnabled={(() => {
             // Publish tab shows only for a dealer that both carries the "social"
             // product and has TruSocial switched on — the publish targets are
@@ -4315,7 +4326,7 @@ export default function App() {
             const d: any = (state?.dealerships || []).find(
               (x: any) => x.id === (dealershipId || selectedDetailVehicle?.dealershipId)
             );
-            return !!d?.truSocialEnabled && (d?.products || []).includes("social");
+            return !!d?.truSocialEnabled && hasProduct("social");
           })()}
           documentsPanel={
             <DocumentsHub

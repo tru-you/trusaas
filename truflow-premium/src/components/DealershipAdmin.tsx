@@ -82,8 +82,10 @@ function CopyButton({ value, label = "Copy" }: { value: string; label?: string }
 
 export default function DealershipAdmin({
   onNotify,
+  scopedDealershipId,
 }: {
   onNotify: (title: string, message: string, type?: "info" | "warning" | "error") => void;
+  scopedDealershipId?: string | null;
 }) {
   const [rows, setRows] = useState<Dealership[]>([]);
   const [loading, setLoading] = useState(true);
@@ -304,7 +306,7 @@ export default function DealershipAdmin({
         )}
 
         {/* ── search ───────────────────────────────────────────────────── */}
-        {rows.length > 3 && (
+        {!scopedDealershipId && rows.length > 3 && (
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(232,234,230,0.4)]" />
             <input
@@ -333,6 +335,7 @@ export default function DealershipAdmin({
           )}
 
           {rows.filter((d) => {
+            if (scopedDealershipId && d.id !== scopedDealershipId) return false;
             if (!searchQuery) return true;
             const q = searchQuery.toLowerCase();
             return d.name.toLowerCase().includes(q) || d.slug.toLowerCase().includes(q) || (d.location || "").toLowerCase().includes(q);
@@ -499,7 +502,7 @@ export default function DealershipAdmin({
         </div>
 
         {/* ── add a dealership ─────────────────────────────────────────── */}
-        <div className="rounded-xl border border-white/10 p-4 flex flex-col gap-3">
+        {!scopedDealershipId && <div className="rounded-xl border border-white/10 p-4 flex flex-col gap-3">
           <div className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
             Add a dealership
           </div>
@@ -664,10 +667,10 @@ export default function DealershipAdmin({
             <Plus size={14} />
             {saving ? "Adding…" : "Add dealership"}
           </button>
-        </div>
+        </div>}
 
         {/* ── the one step that still needs Render ─────────────────────── */}
-        {rows.length > 0 && (
+        {!scopedDealershipId && rows.length > 0 && (
           <div className="rounded-xl border border-white/10 p-4 flex flex-col gap-2">
             <div className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-wider">
               Last step — TruLens codes on Render
