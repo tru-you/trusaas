@@ -49,6 +49,39 @@ export function setDealerSlug(slug: string) {
   localStorage.setItem(DEALER_SLUG_KEY, slug.trim() || DEFAULT_DEALER_SLUG);
 }
 
+/** Support WhatsApp. The Support row in the sidebar / More sheet deep-links
+ *  here with the dealer name, tier and current section pre-filled. Left blank
+ *  by default rather than shipping a placeholder number that would misdial —
+ *  set the real TruSaaS support line in Settings (stored per-device) and the
+ *  button starts opening WhatsApp; until then it copies the message instead. */
+export const SUPPORT_WA_KEY = "truflow_support_wa";
+export const DEFAULT_SUPPORT_WA = "27620502091"; // TruSaaS support: +27 62 050 2091
+
+export function getSupportWaNumber(): string {
+  try {
+    return (localStorage.getItem(SUPPORT_WA_KEY) || DEFAULT_SUPPORT_WA).replace(/\D/g, "");
+  } catch {
+    return DEFAULT_SUPPORT_WA;
+  }
+}
+
+export function setSupportWaNumber(raw: string) {
+  localStorage.setItem(SUPPORT_WA_KEY, raw.trim());
+}
+
+/** Open WhatsApp to TruSaaS support with a pre-filled context blurb. Falls back
+ *  to copying the message when no support number is configured, mirroring the
+ *  stock-share behaviour in salesShare.ts. */
+export function openSupportWhatsApp(msg: string) {
+  const digits = getSupportWaNumber();
+  if (!digits) {
+    void navigator.clipboard?.writeText(msg).catch(() => undefined);
+    alert("Support WhatsApp number not set.\n\nMessage copied to clipboard.\n\nSet it in Settings.");
+    return;
+  }
+  window.open(`https://wa.me/${digits}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
+}
+
 /** Open TruLens capture — passes ?stock= so catalogue highlights that unit */
 export function openTruLens(stockNumber?: string) {
   const base = getTruLensUrl();

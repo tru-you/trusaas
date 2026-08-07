@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Vehicle } from "../types";
 import { openTruLens } from "../lib/productConfig";
+import { openStockWhatsApp } from "../lib/salesShare";
 import {
   X,
   Camera,
@@ -10,6 +11,7 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   QrCode,
   Zap,
   Grid,
@@ -58,9 +60,14 @@ interface VehicleDetailModalProps {
   onReturnToStock?: (vehicle: Vehicle) => void | Promise<void>;
   settings?: any;
   dealershipId?: string;
+  /** True only when this dealership has the `social` product AND TruSocial is
+   *  switched on. Gates the Publish tab: publishing goes to OAuth-connected
+   *  accounts, so offering it to a dealer with no connections would only ever
+   *  fail — the tab is omitted entirely instead. */
+  truSocialEnabled?: boolean;
 }
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId}: VehicleDetailModalProps) {
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -75,7 +82,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [socialResult, setSocialResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   // Elite DMS States
-  const [activeTab, setActiveTab] = useState<"specs" | "inspection" | "recon" | "syndication" | "docs">("specs");
+  const [activeTab, setActiveTab] = useState<"specs" | "inspection" | "recon" | "publish" | "docs">("specs");
   const [newReconName, setNewReconName] = useState("");
   const [newReconCost, setNewReconCost] = useState("");
 
@@ -245,53 +252,118 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const safeIndex = Math.min(activeImageIndex, Math.max(0, imagesList.length - 1));
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-4 overflow-y-auto">
-      <div className="bg-[color:var(--ink)] border border-white/10 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Product cut: capture lives in TruLens — Premium is gallery + publish */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-white/10 bg-[color:var(--ink)] shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <span
-              className="text-[13px] font-semibold px-2 py-1 rounded border"
-              style={{ color: webReadyHint.color, borderColor: webReadyHint.color + "55", background: webReadyHint.color + "18" }}
-            >
-              {webReadyHint.label}
-            </span>
-            <span className="text-[13px] text-[rgba(232,234,230,0.72)] truncate">
-              {photoCount} gallery photo{photoCount === 1 ? "" : "s"} · stock media only (no in-DMS camera)
-            </span>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-0 md:p-4 overflow-y-auto">
+      {/* Full-bleed on mobile (edge-to-edge, full height) so the sheet uses the
+          whole screen instead of a narrow card inside a scrim; a framed card
+          from md up. */}
+      <div className="bg-[color:var(--ink)] border-0 md:border border-white/10 rounded-none md:rounded-2xl w-full max-w-none md:max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[100dvh] md:h-auto max-h-[100dvh] md:max-h-[90vh]">
+        {/* Title bar — desktop only. On mobile the name/back/pill/counter are
+            overlaid on the photo header below (hidden md:flex). */}
+        <div className="hidden md:flex items-center justify-between gap-3 px-5 py-3.5 border-b border-white/10 bg-[color:var(--ink)] shrink-0">
+          <div className="flex items-baseline gap-2 min-w-0">
+            <h3 className="text-[18px] font-semibold text-[color:var(--white)] leading-tight truncate">
+              {vehicle.year} {vehicle.make} {vehicle.model}
+            </h3>
+            <span className="text-[13px] text-[color:var(--white-dim)] truncate">{vehicle.trim || "Standard"}</span>
+            <span className="text-[13px] font-mono text-[color:var(--muted)] shrink-0">{vehicle.stockNumber}</span>
           </div>
-          {/* Publish / open-in-TruLens / remove regrouped into the footer at the
-              bottom of the detail panel — the top bar is now just status. */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span
+              className="text-[12px] font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap"
+              style={{ color: webReadyHint.color, borderColor: webReadyHint.color + "55", background: webReadyHint.color + "09" }}
+            >
+              {webReadyHint.label} · {photoCount} photo{photoCount === 1 ? "" : "s"}
+            </span>
+            {onReturnToStock && vehicle.status === "SOLD" && (
+              <button
+                onClick={() => onReturnToStock(vehicle)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[color:var(--glass-line)] bg-[color:var(--glass)] text-[color:var(--cyan)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
+                title="Cancellation — put this car back in stock and reopen the deal"
+              >
+                <RefreshCw size={14} />
+                Return to stock
+              </button>
+            )}
+            <button aria-label="Close"
+              onClick={onClose}
+              className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] p-1 rounded-lg transition-all cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
         {/* LEFT COLUMN: ACTIVE IMAGE VIEWER & GALLERY */}
-        <div className="md:w-3/5 bg-black flex flex-col justify-between relative p-4 group">
-          {/* Top Info Banner */}
-          <div className="absolute top-4 left-4 z-10 bg-black/60 px-3 py-2 rounded-lg border border-white/10 backdrop-blur-md text-[13px] font-mono">
+        <div className="md:w-3/5 bg-black flex flex-col justify-between relative p-0 md:p-4 group">
+          {/* Mobile photo header — the image fills a 230px band and the chrome
+              (back, pill+counter, title) is overlaid on a gradient. Desktop
+              keeps the contained viewer below. */}
+          <div className="md:hidden absolute inset-x-0 top-0 h-[230px] z-10 pointer-events-none"
+               style={{ background: "linear-gradient(180deg, rgba(6,8,13,0.55) 0%, transparent 35%, rgba(6,8,13,0.85) 100%)" }} />
+          <button
+            onClick={onClose}
+            aria-label="Back"
+            className="md:hidden absolute top-3 left-3 z-20 h-9 w-9 grid place-items-center rounded-full text-[color:var(--white)] cursor-pointer"
+            style={{ background: "rgba(6,8,13,0.6)", border: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <div className="md:hidden absolute top-3 right-3 z-20 flex items-center gap-2">
+            <span
+              className="text-[12px] font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap"
+              style={{ color: webReadyHint.color, borderColor: webReadyHint.color + "55", background: "rgba(6,8,13,0.6)" }}
+            >
+              {webReadyHint.label}
+            </span>
+            {imagesList.length > 0 && (
+              <button
+                onClick={() => handleDeletePhoto(safeIndex)}
+                aria-label="Delete photo"
+                className="h-9 w-9 grid place-items-center rounded-full text-[color:var(--white)] cursor-pointer"
+                style={{ background: "rgba(6,8,13,0.6)", border: "1px solid rgba(255,255,255,0.12)" }}
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+          <div className="md:hidden absolute left-4 bottom-3 z-20 min-w-0 pr-16">
+            <div className="text-[20px] font-semibold tracking-[-0.015em] text-[color:var(--white)] leading-tight truncate">
+              {vehicle.year} {vehicle.make} {vehicle.model}
+            </div>
+            <div className="text-[13px] text-[color:var(--white-dim)] truncate">
+              {vehicle.trim || "Standard"} · <span className="font-mono">{vehicle.stockNumber}</span>
+            </div>
+          </div>
+          <div className="md:hidden absolute right-4 bottom-3 z-20">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full text-[color:var(--white)]" style={{ background: "rgba(6,8,13,0.6)" }}>
+              {imagesList.length ? safeIndex + 1 : 0}/{imagesList.length}
+            </span>
+          </div>
+
+          {/* Desktop-only "N of M Photos" badge (mobile uses the overlay counter). */}
+          <div className="hidden md:block absolute top-4 left-4 z-10 bg-black/60 px-3 py-2 rounded-lg border border-white/10 backdrop-blur-md text-[13px] font-mono">
             {imagesList.length ? safeIndex + 1 : 0} of {imagesList.length} Photos
           </div>
 
-          {/* Delete Action button if custom image */}
+          {/* Desktop delete (mobile delete lives in the overlay above). */}
           {imagesList.length > 0 && (
             <button
               onClick={() => handleDeletePhoto(safeIndex)}
-              className="absolute top-4 right-4 z-10 bg-[color:var(--glass)] hover:bg-[color:var(--ink-2)] text-[color:var(--white)] p-2 rounded-lg transition-all cursor-pointer shadow-md"
+              className="hidden md:block absolute top-4 right-4 z-10 bg-[color:var(--glass)] hover:bg-[color:var(--ink-2)] text-[color:var(--white)] p-2 rounded-lg transition-all cursor-pointer shadow-md"
               title="Delete Photo"
             >
               <Trash2 size={14} />
             </button>
           )}
 
-          {/* Core Display frame. On mobile the modal stacks (gallery over info),
-              so cap the image to ~a third of the viewport and keep it contained —
-              full-bleed is a desktop treatment. The info panel below then gets
-              real room. */}
-          <div className="flex items-center justify-center min-h-[120px] max-h-[24svh] md:flex-1 md:min-h-[300px] md:max-h-[480px]">
+          {/* Core display frame. Mobile: a 230px cover header. Desktop: a
+              contained viewer. */}
+          <div className="h-[230px] md:h-auto flex items-center justify-center md:min-h-[300px] md:max-h-[480px] md:flex-1 overflow-hidden">
             <img
               src={imagesList[safeIndex]}
               alt={`${vehicle.make} ${vehicle.model}`}
-              className="max-h-full max-w-full object-contain rounded-lg md:rounded-none"
+              className="w-full h-full object-cover md:w-auto md:max-h-full md:max-w-full md:object-contain md:rounded-none"
             />
           </div>
 
@@ -300,14 +372,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             <>
               <button
                 onClick={() => setActiveImageIndex(safeIndex > 0 ? safeIndex - 1 : imagesList.length - 1)}
-                className="tru-btn-secondary absolute left-4 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center cursor-pointer"
+                className="tru-btn-secondary absolute left-4 top-1/2 -translate-y-1/2 h-11 w-11 hidden md:flex items-center justify-center cursor-pointer"
                 title="Previous photo"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={() => setActiveImageIndex(safeIndex < imagesList.length - 1 ? safeIndex + 1 : 0)}
-                className="tru-btn-secondary absolute right-4 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center cursor-pointer"
+                className="tru-btn-secondary absolute right-4 top-1/2 -translate-y-1/2 h-11 w-11 hidden md:flex items-center justify-center cursor-pointer"
                 title="Next photo"
               >
                 <ChevronRight size={16} />
@@ -315,7 +387,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             </>
           )}
 
-          {/* Thumbnails list */}
+          {/* Thumbnails list. The add-photos control lives here now, as a
+              dashed slot next to the photos it changes — it left the specs
+              column with the "Media Sync Station" section. */}
           <div className="flex gap-2 overflow-x-auto py-2 border-t border-white/5 mt-2 scrollbar-none">
             {imagesList.map((img, idx) => (
               <button
@@ -328,41 +402,35 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 <img src={img} alt="Thumb" className="w-full h-full object-cover" />
               </button>
             ))}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              title="Add photos"
+              className="w-16 h-12 shrink-0 rounded-[10px] flex flex-col items-center justify-center gap-0.5 text-[color:var(--white-dim)] hover:text-[color:var(--white)] cursor-pointer disabled:opacity-50"
+              style={{ border: "1px dashed rgba(232,234,230,0.25)" }}
+            >
+              {uploading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+              <span className="text-[10px] leading-none">{uploading ? "…" : "Add"}</span>
+            </button>
+            {/* Hidden picker — accepts the phone camera on mobile browsers. */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              capture="environment"
+              onChange={handleLocalFileSelection}
+              className="hidden"
+            />
           </div>
         </div>
 
         {/* RIGHT COLUMN: DETAIL SPECS, INSPECTION & RECON TABS */}
         <div className="md:w-2/5 max-md:flex-1 max-md:min-h-0 p-4 md:p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
           <div>
-            {/* Header */}
-            <div className="flex justify-between items-start border-b border-white/5 pb-3 mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-[color:var(--white)] leading-tight">{vehicle.year} {vehicle.make} {vehicle.model}</h3>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                  {vehicle.trim || "Standard Trim Specs"} · <span className="font-mono text-[rgba(232,234,230,0.55)]">{vehicle.stockNumber}</span>
-                </p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {onReturnToStock && vehicle.status === "SOLD" && (
-                  <button
-                    onClick={() => onReturnToStock(vehicle)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[color:var(--glass-line)] bg-[color:var(--glass)] text-[color:var(--cyan)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
-                    title="Cancellation — put this car back in stock and reopen the deal"
-                  >
-                    <RefreshCw size={14} />
-                    Return to stock
-                  </button>
-                )}
-                {/* Remove moved to the footer — it no longer sits next to the
-                    close X in near-identical styling. */}
-                <button aria-label="Close"
-                  onClick={onClose}
-                  className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] p-1 rounded-lg transition-all cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
+            {/* Header (car name, trim, stock, close, return-to-stock) moved to
+                the modal's top title bar so the detail panel opens straight on
+                the tab row. */}
 
             {/* Underlined tab row. A segmented control whose active segment is a
                 filled cyan key makes the loudest object in the panel a label for
@@ -400,14 +468,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               >
                 <Wrench size={11} /> Recon
               </button>
-              {settings?.syndication && (
+              {truSocialEnabled && (
                 <button
-                  onClick={() => setActiveTab("syndication")}
+                  onClick={() => setActiveTab("publish")}
                   className={`px-3 py-2 flex items-center justify-center gap-1 border-b-2 -mb-px whitespace-nowrap transition-colors cursor-pointer ${
-                    activeTab === "syndication" ? "text-[color:var(--white)] border-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[color:var(--white)]"
+                    activeTab === "publish" ? "text-[color:var(--white)] border-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[color:var(--white)]"
                   }`}
                 >
-                  <Share2 size={11} /> Feed
+                  <Share2 size={11} /> Publish
                 </button>
               )}
             </div>
@@ -415,28 +483,30 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             {/* TAB 1: SHOWROOM SPECIFICATIONS */}
             {activeTab === "specs" && (
               <div className="space-y-4 animate-in fade-in duration-200">
-                {/* Quick Pricing & Market Intelligence Widget */}
-                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
+                {/* Pricing — no card container: retail leads at display size,
+                    TruPrice reads as one line, and the editor is a ghost chip. */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="min-w-0">
                       <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] tracking-wider">Retail</span>
-                      <div className="text-[32px] leading-none font-semibold text-[color:var(--white)] font-mono mt-1">{formatZAR(vehicle.retailPrice)}</div>
+                      <div className="text-[38px] leading-none font-semibold tracking-[-0.022em] text-[color:var(--white)] font-mono mt-1">{formatZAR(vehicle.retailPrice)}</div>
                       {vehicle.truPrice ? (
-                        <div className="text-[13px] font-semibold mt-2" style={{ color: vehicle.truPrice > vehicle.retailPrice ? "var(--cyan)" : "rgba(232,234,230,0.72)" }}>
-                          TruPrice {formatZAR(vehicle.truPrice)}
+                        <div className="text-[13px] mt-2 text-[color:var(--white-dim)]">
+                          TruPrice <span className="font-semibold text-[color:var(--cyan)]">{formatZAR(vehicle.truPrice)}</span>
                           {vehicle.truPrice > vehicle.retailPrice
                             ? ` · ${formatZAR(vehicle.truPrice - vehicle.retailPrice)} below market`
                             : " · at or above market"}
                         </div>
                       ) : (
-                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]/60 mt-1">No TruPrice benchmark set</div>
+                        <div className="text-[13px] text-[color:var(--muted)] mt-1">No TruPrice benchmark set</div>
                       )}
                     </div>
                     <button
                       onClick={() => { setTruPriceInput(String(vehicle.truPrice || vehicle.retailPrice || "")); setEditingTruPrice(true); }}
-                      className="tru-btn-ghost px-3 min-h-[36px] text-[13px] cursor-pointer shrink-0"
+                      className="px-3 min-h-[32px] text-[13px] font-semibold rounded-[8px] text-[color:var(--white-dim)] hover:text-[color:var(--white)] cursor-pointer shrink-0"
+                      style={{ background: "rgba(232,234,230,0.06)" }}
                     >
-                      {vehicle.truPrice ? "Edit TruPrice" : "Set TruPrice"}
+                      {vehicle.truPrice ? "Edit" : "Set"}
                     </button>
                   </div>
 
@@ -445,10 +515,8 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider block">
                         TruPrice benchmark
                       </label>
-                      <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
-                        What this vehicle is genuinely worth on the open market, from your own
-                        trade experience or book value. Shown on the website as the price
-                        customers are compared against — so it only carries weight if it is real.
+                      <p className="text-[12px] text-[color:var(--muted)]">
+                        Open-market value, from your own book
                       </p>
                       <input
                         type="text"
@@ -478,23 +546,22 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   )}
                 </div>
 
-                {/* Showroom Category */}
-                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-2">
-                  <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Showroom Category</span>
+                {/* Showroom category — a field row between hairlines, not a card. */}
+                <div className="flex items-center justify-between gap-3 py-3 border-y border-white/[0.07]">
+                  <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Showroom category</span>
                   <select
                     value={vehicle.category || ""}
                     onChange={(e) => {
                       const val = e.target.value as Vehicle["category"] | "";
                       onUpdateVehicle(vehicle.id, { category: val || undefined } as Partial<Vehicle>);
                     }}
-                    className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
+                    className="min-w-[180px] bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
                   >
                     <option value="">Used (default)</option>
                     <option value="used">Premium Used</option>
                     <option value="select">Premium Select</option>
                     <option value="performance">Premium Performance</option>
                   </select>
-                  <p className="text-[length:var(--t-micro)] text-[rgba(232,234,230,0.45)]">Controls which category page this vehicle appears on the website.</p>
                 </div>
 
                 {/* Vehicle details — collapsed by default so the modal stays
@@ -504,11 +571,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     server stamps a per-field updatedAt and pushes back to
                     TruLens for Lens-sourced vehicles. */}
                 <details className="bg-[color:var(--glass)] border border-white/5 rounded-xl">
-                  <summary className="cursor-pointer px-4 py-3 text-[13px] font-semibold text-[color:var(--white)] tracking-normal select-none">
-                    Vehicle details
-                    <span className="text-[13px] text-[rgba(232,234,230,0.55)] font-normal ml-2">
-                      · tap to edit make, model, VIN, specs
-                    </span>
+                  <summary className="cursor-pointer px-4 py-3 text-[13px] font-semibold text-[color:var(--white)] tracking-normal select-none flex items-center gap-2 [&::-webkit-details-marker]:hidden">
+                    <ChevronDown size={14} className="text-[color:var(--muted)]" />
+                    Make, model, VIN &amp; specs
                   </summary>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-3 px-4 pb-4 pt-1">
                     {[
@@ -576,37 +641,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     </div>
                   </div>
                 </details>
-
-                {/* MEDIA SYNC CONTROLS */}
-                <div className="flex flex-col gap-3 pt-1">
-                  <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal flex items-center gap-2">
-                    <Layers size={14} className="text-[color:var(--cyan)]" />
-                    Media Sync Station
-                  </h4>
-
-                  {/* Direct local file selector */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      className="tru-btn-secondary flex-1 py-2 text-[13px] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                    >
-                      <Upload size={13} /> {uploading ? "Uploading…" : "Add photos"}
-                    </button>
-
-                  </div>
-
-                  {/* Real HTML5 Input (accepts camera images on phone) */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    capture="environment" // trigger phone camera on mobile browsers!
-                    onChange={handleLocalFileSelection}
-                    className="hidden"
-                  />
-                </div>
               </div>
             )}
 
@@ -972,8 +1006,8 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               </div>
             )}
 
-            {/* TAB 5: SOCIAL PUBLISH */}
-            {activeTab === "syndication" && settings?.syndication && (() => {
+            {/* TAB 5: TRUSOCIAL PUBLISH — OAuth-connected channels only. */}
+            {activeTab === "publish" && truSocialEnabled && (() => {
               const ALL_PLATFORMS = [
                 { id: "facebook",         label: "Facebook",        icon: <Facebook size={14} />,       color: "#1877F2" },
                 { id: "instagram",        label: "Instagram",       icon: <Instagram size={14} />,      color: "#E4405F" },
@@ -1229,7 +1263,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 }}
               />
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            {/* Open in TruLens / Remove — desktop only. On mobile these move to
+                the fixed action bar (Shoot) and are otherwise a desk job. */}
+            <div className="hidden md:grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => openTruLens(vehicle.stockNumber)}
@@ -1251,6 +1287,42 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           </div>
         </div>
         </div>{/* end md:flex row */}
+
+        {/* Mobile action bar — pinned to the bottom of the sheet. Shoot in
+            TruLens is the primary floor action; WhatsApp is one-to-one to the
+            customer in front of you (blurb + images via the Web Share API,
+            falling back to wa.me); the sync opens the Publish tab (one-to-many
+            to connected channels) and only appears for TruSocial dealers. */}
+        <div
+          className="md:hidden shrink-0 flex items-center gap-2 px-4 pt-3 border-t border-[color:var(--glass-line)] bg-[rgba(11,15,23,0.95)]"
+          style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom,0px))" }}
+        >
+          <button
+            type="button"
+            onClick={() => openTruLens(vehicle.stockNumber)}
+            className="btn btn-primary flex-1 min-h-[48px] inline-flex items-center justify-center gap-2"
+          >
+            <Camera size={16} /> Shoot in TruLens
+          </button>
+          <button
+            type="button"
+            onClick={() => { void openStockWhatsApp(vehicle as any); }}
+            aria-label="WhatsApp this vehicle to a customer"
+            className="h-[56px] w-[56px] shrink-0 grid place-items-center rounded-xl text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
+          >
+            <MessageCircle size={18} />
+          </button>
+          {truSocialEnabled && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("publish")}
+              aria-label="Publish to connected channels"
+              className="h-[56px] w-[56px] shrink-0 grid place-items-center rounded-xl text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
+            >
+              <Share2 size={18} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

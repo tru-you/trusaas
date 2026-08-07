@@ -68,12 +68,11 @@ export default function DealerDetailsSettings({ dealership, isAdmin, onSaved }: 
           Dealer details
           {isAdmin && <span className="ml-2 text-[12px] text-[rgba(232,234,230,0.55)] font-normal">— {dealership.name}</span>}
         </h3>
+        <span className="ml-auto text-[12px] text-[color:var(--muted)]">
+          Used on invoices, agreements and your listing
+        </span>
       </div>
       <div className="card-body p-5 flex flex-col gap-4">
-        <p className="text-[12px] text-[rgba(232,234,230,0.55)]">
-          These appear on invoices, agreements, and the public stock listing. Registered name and trading name are
-          often different — SARS requires both when they diverge.
-        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {field("Registered name", "name", "Sipho Auto (Pty) Ltd")}
           {field("Trading as", "tradingAs", "Sipho Motors")}
@@ -93,7 +92,7 @@ export default function DealerDetailsSettings({ dealership, isAdmin, onSaved }: 
             type="button"
             onClick={() => void handleSave()}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-4 py-2 min-h-[40px] rounded-md bg-[color:var(--cyan)] text-black text-sm font-semibold hover:opacity-90 disabled:opacity-50"
+            className="btn-primary inline-flex items-center gap-2 px-4 py-2 min-h-[40px] text-sm font-semibold disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
             Save

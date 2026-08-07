@@ -39,6 +39,7 @@ import {
   CalendarClock,
   Download,
   MoreHorizontal,
+  Monitor,
 } from "lucide-react";
 
 import {
@@ -105,8 +106,10 @@ import { useIsDesktop } from "./lib/useIsDesktop";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
   PRODUCT_NAME,
+  PRODUCT_TIER,
   getDealerSlug,
   openTruLens,
+  openSupportWhatsApp,
 } from "./lib/productConfig";
 import {
   openStockWhatsApp,
@@ -394,6 +397,7 @@ export default function App() {
     : account?.role === 'manager' ? 'manager' : 'salesperson';
   const selectedRole = accountRole;
   const [showEODReport, setShowEODReport] = useState(false);
+  const [docFlowSettingsOpen, setDocFlowSettingsOpen] = useState(false);
 
   // Filters & Searches
   const [inventorySearch, setInventorySearch] = useState("");
@@ -1338,14 +1342,19 @@ export default function App() {
         />
       )}
 
-      {/* Mobile More sheet. Same filteredNavigation, same navigateTo — anything
-          already reachable from the bottom tab bar is filtered out so nothing
-          shows up twice, and role filtering carries over unchanged. */}
+      {/* Mobile More sheet. Three fixed buckets instead of the sidebar's five
+          nav categories: what a salesperson can do standing next to a car, what
+          only works on a desktop (shown greyed and inert, not hidden, so the
+          product reads the same on both), and account. Role filtering carries
+          over — a bucket only shows the items the current role can reach. */}
       {(() => {
-        const TAB_IDS = new Set(["dashboard", "leads", "inventory", "tasks"]);
-        const sheetNav = filteredNavigation
-          .map((g) => ({ ...g, items: g.items.filter((i) => !TAB_IDS.has(i.id)) }))
-          .filter((g) => g.items.length > 0);
+        const byId = new Map(
+          filteredNavigation.flatMap((g) => g.items).map((i) => [i.id, i] as const)
+        );
+        const pick = (ids: string[]) => ids.map((id) => byId.get(id)).filter(Boolean) as { id: string; label: string; icon: typeof Home }[];
+        const floorItems = pick(["upload", "media_web", "stock_health", "payment"]);
+        const desktopItems = pick(["deal_readiness", "accounting_recon"]);
+        const accountItems = pick(["manager", "settings"]);
         return (
           <div
             role="dialog"
@@ -1375,13 +1384,14 @@ export default function App() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-4 pb-2 flex flex-col gap-4">
-              {sheetNav.map((group) => (
-                <div key={group.category} className="flex flex-col gap-1.5">
+              {/* On the floor */}
+              {floorItems.length > 0 && (
+                <div className="flex flex-col gap-1.5">
                   <span className="font-mono text-[length:var(--t-micro)] text-[color:var(--muted)] tracking-wide font-semibold px-1">
-                    {group.category}
+                    On the floor
                   </span>
                   <div className="grid grid-cols-2 gap-2">
-                    {group.items.map((n) => {
+                    {floorItems.map((n) => {
                       const Icon = n.icon;
                       const active = activeSection === n.id;
                       return (
@@ -1402,15 +1412,92 @@ export default function App() {
                     })}
                   </div>
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="mt-1 w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-[13px] font-semibold text-[color:var(--white-dim)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
-              >
-                <LogOut size={14} />
-                Log out
-              </button>
+              )}
+
+              {/* Needs a desktop — visible but greyed and inert. Tapping does
+                  nothing on purpose: the one line under the group explains why,
+                  and a toast that only ever says "not here" is noise. */}
+              {desktopItems.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <span className="font-mono text-[length:var(--t-micro)] text-[color:var(--muted)] tracking-wide font-semibold px-1 flex items-center gap-1.5">
+                    Needs a desktop
+                    <Monitor size={13} className="text-[color:var(--faint)]" />
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 opacity-[0.35] select-none pointer-events-none">
+                    {desktopItems.map((n) => {
+                      const Icon = n.icon;
+                      return (
+                        <div
+                          key={n.id}
+                          aria-disabled="true"
+                          className="flex items-center gap-2 px-3 py-3 min-h-11 text-[13px] font-semibold rounded-xl text-left border bg-[color:var(--glass)] text-[color:var(--white-dim)] border-[color:var(--glass-line)]"
+                        >
+                          <Icon size={15} className="text-[color:var(--muted)]" />
+                          <span className="truncate">{n.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <span className="text-[12px] text-[color:var(--faint)] px-1">
+                    Sign in on a computer to work these.
+                  </span>
+                </div>
+              )}
+
+              {/* Account */}
+              {accountItems.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <span className="font-mono text-[length:var(--t-micro)] text-[color:var(--muted)] tracking-wide font-semibold px-1">
+                    Account
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {accountItems.map((n) => {
+                      const Icon = n.icon;
+                      const active = activeSection === n.id;
+                      return (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => navigateTo(n.id)}
+                          className={`flex items-center gap-2 px-3 py-3 min-h-11 text-[13px] font-semibold rounded-xl text-left border cursor-pointer ${
+                            active
+                              ? "bg-[color:var(--cyan-faint)] text-[color:var(--white)] border-[color:var(--cyan-soft)]"
+                              : "bg-[color:var(--glass)] text-[color:var(--white-dim)] border-[color:var(--glass-line)]"
+                          }`}
+                        >
+                          <Icon size={15} className={active ? "text-[color:var(--cyan)]" : "text-[color:var(--blue)]"} />
+                          <span className="truncate">{n.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Support is the wide target; Log out shrinks to an icon square. */}
+              <div className="mt-1 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    openSupportWhatsApp(
+                      `TruFlow ${PRODUCT_TIER} support · ${dealershipLabel}\nSection: ${activeSection}\n\n`
+                    )
+                  }
+                  className="flex-1 min-h-[48px] flex items-center justify-center gap-2 px-3 rounded-xl text-[13px] font-semibold text-[color:var(--white)] bg-[rgba(37,211,102,0.10)] border border-[rgba(37,211,102,0.28)] cursor-pointer"
+                >
+                  <MessageCircle size={16} className="text-[#25D366]" />
+                  Support
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  aria-label="Log out"
+                  title="Log out"
+                  className="h-[56px] w-[56px] shrink-0 grid place-items-center rounded-xl text-[color:var(--white-dim)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -1490,14 +1577,19 @@ export default function App() {
                     )}
                     <Icon size={15} className={active ? "text-[color:var(--cyan)]" : "text-[color:var(--blue)]"} />
                     {n.label}
-                    {navAttention[n.id] > 0 && (
+                    {navAttention[n.id] > 0 ? (
                       <span
                         aria-label={`${navAttention[n.id]} awaiting action`}
                         className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[11px] font-semibold grid place-items-center leading-none tabular-nums"
                       >
                         {navAttention[n.id] > 99 ? "99+" : navAttention[n.id]}
                       </span>
-                    )}
+                    ) : (n.id === "deal_readiness" || n.id === "accounting_recon") ? (
+                      /* Desktop-only surface. A hint, not a disable — it exists so
+                         the sidebar and the phone's More sheet describe the same
+                         product. Dropped when a count badge takes the ml-auto slot. */
+                      <Monitor size={13} className="ml-auto text-[color:var(--faint)]" aria-label="Desktop only" />
+                    ) : null}
                   </button>
                 );
               })}
@@ -1505,8 +1597,25 @@ export default function App() {
           ))}
         </div>
 
-        {/* Always-visible sign out */}
-        <div className="pt-3 mt-2 border-t border-white/10 shrink-0">
+        {/* Support + sign out. WhatsApp green is the only non-brand colour used
+            here — it is the platform's own mark, and already appears on lead
+            cards in LeadDetailModal. The deep-link pre-fills who is asking and
+            where they were, so support opens with context. */}
+        <div className="pt-2.5 mt-1.5 border-t border-white/10 shrink-0 flex flex-col gap-1.5">
+          <button
+            type="button"
+            onClick={() =>
+              openSupportWhatsApp(
+                `TruFlow ${PRODUCT_TIER} support · ${dealershipLabel}\nSection: ${activeSection}\n\n`
+              )
+            }
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-[color:var(--white)] bg-[rgba(37,211,102,0.10)] border border-[rgba(37,211,102,0.28)] hover:bg-[rgba(37,211,102,0.16)] transition-colors cursor-pointer"
+            title="Message TruSaaS support on WhatsApp"
+          >
+            <MessageCircle size={15} className="text-[#25D366] shrink-0" />
+            Support
+            <span className="ml-auto text-[12px] font-normal text-[color:var(--muted)]">WhatsApp</span>
+          </button>
           <button
             type="button"
             onClick={handleLogout}
@@ -1658,23 +1767,21 @@ export default function App() {
             {/* Framed header. The plain heading read like a page title on a
                 form; a dealer opening this at 8am should see whose floor it is,
                 that it is live, and have the assistant one click away. */}
-            <div className="card p-4 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            {/* Framed header — desktop only. On a phone the sticky mobile header
+                already names the dealership and date, so this card is redundant
+                there (hidden md:flex). The date folds into the live pill; the
+                page-title heading and the strapline prose are gone. */}
+            <div className="card py-5 px-6 hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[length:var(--t-micro)] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--cyan)] animate-pulse" />
-                    {dealershipLabel} · live
-                  </span>
-                  <span className="text-[length:var(--t-micro)] text-[rgba(232,234,230,0.55)]">
-                    {todayLabel} · sales &amp; workshop
+                    {dealershipLabel} · live · {new Date().toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
                   </span>
                 </div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">
                   Dealership overview
                 </h1>
-                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)]">
-                  Stock, leads, workshop and money — one live view of the floor.
-                </p>
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
@@ -1684,17 +1791,63 @@ export default function App() {
               </div>
             </div>
 
-            {/* Stats Row. The mobile counter strip used to live in the header
-                (waiting / due / going out); that strip is gone, so those three
-                figures fold into the stats grid as full-detail cards. Only the
-                unanswered-lead card is allowed the cyan border. */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Needs a reply — deliberately first. This is the only number on
-                  the overview that is actionable the moment the dealer opens
-                  the app, so it leads and it is the only one allowed to go red. */}
+            {/* Stats — mobile. Re-cut for a salesperson on the floor: the one
+                number that is actionable the moment the app opens leads
+                full-width with a chevron into leads; the rest fold down into a
+                pair and a strip. The 5-tile desktop grid is below (hidden md). */}
+            <div className="md:hidden flex flex-col gap-3">
               <button
                 onClick={() => navigateTo("leads")}
-                className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
+                className="stat-card p-4 flex items-center justify-between gap-3 text-left cursor-pointer border-[color:var(--cyan-soft)]"
+              >
+                <div className="min-w-0">
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Needs a reply</div>
+                  <div className={`text-[38px] leading-none font-semibold tracking-[-0.022em] mt-1 ${replyIsLate ? "text-[color:var(--white)]" : "text-[color:var(--muted)]"}`}>
+                    <Counter value={awaitingReply.length} />
+                  </div>
+                  <div className={`text-[13px] font-normal mt-1 ${replyIsLate ? "text-[color:var(--white-dim)]" : "text-[color:var(--muted)]"}`}>
+                    {awaitingReply.length === 0
+                      ? `All ${unresolvedLeadsCount} open leads answered`
+                      : `Oldest waiting ${formatWait(oldestWaitMs)} · ${unresolvedLeadsCount} open`}
+                  </div>
+                </div>
+                <ChevronRight size={20} className="text-[color:var(--muted)] shrink-0" />
+              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => navigateTo("tasks")} className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)]">
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Due today</div>
+                  <div className="text-[28px] leading-none font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={dueTodayCount} /></div>
+                  <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
+                    {overdueCount > 0 ? `${overdueCount} already late` : "Nothing overdue"}
+                  </div>
+                </button>
+                <button onClick={() => navigateTo("inventory")} className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)]">
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cars in stock</div>
+                  <div className="text-[28px] leading-none font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
+                  <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
+                    {agedStockCount > 0 ? `${agedStockCount} over ${AGED_DAYS} days` : `None over ${AGED_DAYS} days`}
+                  </div>
+                </button>
+              </div>
+              <div className="stat-card flex items-center justify-between px-4 py-3.5 border-[color:var(--glass-line)]">
+                <div>
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Units sold</div>
+                  <div className="text-[20px] leading-none font-semibold text-[color:var(--white)] mt-1"><Counter value={soldUnitsCount} /></div>
+                </div>
+                <span className="w-px h-8 bg-[color:var(--glass-line)] shrink-0" />
+                <div className="text-right">
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Gross after recon</div>
+                  <div className="text-[20px] leading-none font-semibold text-[color:var(--cyan-bright)] mt-1"><Counter value={grossAfterRecon} prefix="R " /></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats — desktop grid. Only the unanswered-lead card carries the
+                cyan hairline; the other four sit on var(--glass-line). */}
+            <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <button
+                onClick={() => navigateTo("leads")}
+                className="stat-card p-4 text-left cursor-pointer border-[color:var(--cyan-soft)] transition-colors"
               >
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Needs a reply</div>
                 <div
@@ -1716,7 +1869,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo("tasks")}
-                className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
+                className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)] transition-colors"
               >
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Due today</div>
                 <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={dueTodayCount} /></div>
@@ -1728,7 +1881,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo("inventory")}
-                className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
+                className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)] transition-colors"
               >
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cars in stock</div>
                 <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
@@ -1738,7 +1891,7 @@ export default function App() {
                     : `None over ${AGED_DAYS} days`}
                 </div>
               </button>
-              <div className="stat-card p-4">
+              <div className="stat-card p-4 border-[color:var(--glass-line)]">
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Units sold</div>
                 <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={soldUnitsCount} /></div>
                 <div className="text-[13px] text-[rgba(232,234,230,0.55)] font-semibold mt-1">
@@ -1747,7 +1900,7 @@ export default function App() {
                     : "No stock loaded yet"}
                 </div>
               </div>
-              <div className="stat-card p-4">
+              <div className="stat-card p-4 border-[color:var(--glass-line)]">
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Gross after recon</div>
                 <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--cyan-bright)] mt-1"><Counter value={grossAfterRecon} prefix="R " /></div>
                 <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
@@ -1758,26 +1911,23 @@ export default function App() {
               </div>
             </div>
 
-            {/* End of day summary Card */}
+            {/* End of day summary — a manager's desk job, so desktop only
+                (hidden on mobile) and reduced to a single convenience row: not
+                the loudest control on the page, so the cyan fill and cyan
+                primary button are dropped for a neutral surface + secondary. */}
             {(selectedRole === 'manager' || selectedRole === 'owner') && (
-              <div className="card p-5 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg shadow-[color:var(--cyan-faint)]">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan)]">
-                    <TrendingUp size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-sans text-base font-semibold tracking-tight text-[color:var(--white)]">End of day summary</h3>
-                    <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 max-w-xl leading-relaxed">
-                      Generate a detailed operational report including customer leads worked, vehicles sold, reconditioning layout, and gross yield margins for the past 24 hours.
-                    </p>
-                  </div>
+              <div className="card hidden md:flex items-center justify-between gap-4 px-5 py-3.5 bg-[color:var(--ink-2)] border border-[color:var(--glass-line)] rounded-[var(--r-card)]">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <TrendingUp size={16} className="text-[color:var(--cyan)] shrink-0" />
+                  <span className="text-[15px] font-semibold text-[color:var(--white)]">End of day summary</span>
+                  <span className="text-[13px] text-[color:var(--muted)]">last 24 hours</span>
                 </div>
                 <button
                   onClick={() => setShowEODReport(true)}
-                  className="btn-primary px-5 py-3 text-[13px] cursor-pointer transition-all flex items-center gap-2 self-stretch md:self-auto justify-center"
+                  className="tru-btn-secondary inline-flex items-center gap-2 px-3 min-h-[32px] rounded-[8px] text-[13px] font-semibold cursor-pointer shrink-0"
                 >
                   <Sparkles size={14} />
-                  Compile summary
+                  Compile
                 </button>
               </div>
             )}
@@ -1822,16 +1972,23 @@ export default function App() {
                     </span>
                   </div>
 
-                  {/* Two states, not a five-colour ramp: nothing shot at all, and
-                      shot but short of a full gallery. */}
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg p-3">
-                      <div className="text-[13px] text-[rgba(232,234,230,0.72)]">No photos</div>
-                      <div className="text-lg font-semibold text-[color:var(--white)]">{notOnline.noPhotos}</div>
+                  {/* One inline row, not two stacked cards — the counts read
+                      left-to-right with hairline dividers, and the web-ready
+                      figure moves in here (it no longer trails the sentence). */}
+                  <div className="flex items-center gap-5 mb-3 bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-[10px] px-3.5 py-2.5 flex-wrap">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[18px] font-semibold text-[color:var(--white)]">{notOnline.noPhotos}</span>
+                      <span className="text-[13px] text-[color:var(--white-dim)]">no photos</span>
                     </div>
-                    <div className="bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg p-3">
-                      <div className="text-[13px] text-[rgba(232,234,230,0.72)]">Gallery short</div>
-                      <div className="text-lg font-semibold text-[color:var(--white)]">{notOnline.incomplete}</div>
+                    <span className="w-px h-[18px] bg-[color:var(--glass-line)]" />
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[18px] font-semibold text-[color:var(--white)]">{notOnline.incomplete}</span>
+                      <span className="text-[13px] text-[color:var(--white-dim)]">gallery short</span>
+                    </div>
+                    <span className="w-px h-[18px] bg-[color:var(--glass-line)]" />
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[18px] font-semibold text-[color:var(--cyan-bright)]">{notOnline.ready}</span>
+                      <span className="text-[13px] text-[color:var(--white-dim)]">web-ready</span>
                     </div>
                   </div>
 
@@ -1844,11 +2001,24 @@ export default function App() {
                       {typeof notOnline.oldest.v.daysInInventory === "number" && (
                         <> — {notOnline.oldest.v.daysInInventory} days in stock</>
                       )}
-                      {notOnline.ready > 0 && <> · {notOnline.ready} web-ready</>}
                     </p>
                   )}
                 </>
               )}
+
+              {/* Shooting stock is the one desk-adjacent task that belongs on the
+                  floor, so this card keeps its primary action on the phone.
+                  Mobile only — TruLens captures with the phone camera, so a
+                  "shoot" button on a desktop would point at a dead end. Desktop
+                  keeps the "Stock media" link in the header instead. */}
+              <button
+                type="button"
+                onClick={() => openTruLens()}
+                className="btn btn-primary mt-4 w-full md:hidden inline-flex items-center justify-center gap-2"
+              >
+                <Camera size={15} />
+                Shoot in TruLens
+              </button>
             </div>
 
             {/* Featured Catalog list */}
@@ -2850,55 +3020,84 @@ export default function App() {
             setLeadInitialTab("dochub");
             setLeadDetailId(leadId);
           };
+          /* DocHub flow settings target(s). Configured once, not read every
+             visit, so it now lives behind a header button + dialog rather than a
+             full-width card at the top of the page. Desktop-only, same as before;
+             the components behind it stay lazy-loaded. */
+          const docFlowTarget = state?.dealerships
+            ? (dealershipId ? state.dealerships.filter((d) => d.id === dealershipId) : state.dealerships)
+            : [];
+          const docFlowDemo =
+            dealershipId && docFlowTarget.length === 0
+              ? [{ id: dealershipId, name: sessionAccount?.label || "Demo Dealership", location: "" }]
+              : [];
+          const docFlowList = docFlowTarget.length > 0 ? docFlowTarget : docFlowDemo;
           return (
             <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-              <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Deal Readiness</h1>
-                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium max-w-2xl">
-                  What's outstanding to close and hand over each deal. Invoices and contracts stay in your own systems — this only tracks the steps, so no customer paperwork is stored here.
-                </p>
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Deal Readiness</h1>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full text-[12px] text-[color:var(--muted)] bg-[color:var(--glass)] border border-[color:var(--glass-line)]">
+                    <Monitor size={12} /> Desktop
+                  </span>
+                </div>
+                {/* Configure the DocHub flow once — behind a button, not a card
+                    that re-reads itself every visit. Desktop-only, same gate. */}
+                {isDesktop && docFlowList.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setDocFlowSettingsOpen(true)}
+                    className="tru-btn-secondary inline-flex items-center gap-2 px-3 min-h-[36px] rounded-[8px] text-[13px] font-semibold cursor-pointer shrink-0"
+                  >
+                    <SettingsIcon size={14} />
+                    DocHub flow settings
+                  </button>
+                )}
               </div>
 
-              {/* DocHub per-stage mode configuration — sits at the top of
-                  this page so the dealer configures once and then works
-                  every deal below with those settings. Desktop-only. */}
-              {isDesktop && state?.dealerships && (() => {
-                const target = dealershipId
-                  ? state.dealerships.filter((d) => d.id === dealershipId)
-                  : state.dealerships;
-                const synthesizedDemo =
-                  dealershipId && target.length === 0
-                    ? [{
-                        id: dealershipId,
-                        name: sessionAccount?.label || "Demo Dealership",
-                        location: "",
-                      }]
-                    : [];
-                const list = target.length > 0 ? target : synthesizedDemo;
-                if (list.length === 0) return null;
-                return (
-                  <details className="card border-[color:var(--cyan-soft)]">
-                    <summary className="cursor-pointer list-none px-5 py-3 border-b border-white/5 flex items-center gap-2">
+              {/* DocHub flow settings dialog. Same isDesktop gate and Suspense
+                  boundary as the card it replaces — the lazy chunks still never
+                  load on a phone. */}
+              {isDesktop && docFlowSettingsOpen && docFlowList.length > 0 && (
+                <div
+                  className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-[2px] p-4 md:p-8"
+                  onClick={() => setDocFlowSettingsOpen(false)}
+                >
+                  <div
+                    role="dialog"
+                    aria-modal="true"
+                    onClick={(e) => e.stopPropagation()}
+                    className="card w-full max-w-2xl my-auto"
+                    style={{ boxShadow: "var(--shadow-modal)" }}
+                  >
+                    <div className="card-header border-b border-white/5 px-5 py-3 flex items-center gap-2">
                       <FileText size={14} className="text-[color:var(--cyan-bright)]" />
                       <h3 className="font-semibold text-[16px] text-[color:var(--white)]">DocHub flow settings</h3>
-                      <span className="ml-auto text-[12px] text-[rgba(232,234,230,0.55)]">click to expand</span>
-                    </summary>
+                      <button
+                        type="button"
+                        onClick={() => setDocFlowSettingsOpen(false)}
+                        aria-label="Close"
+                        className="ml-auto h-8 w-8 grid place-items-center rounded-lg text-[color:var(--white-dim)] hover:bg-white/5 cursor-pointer"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
                     <div className="p-5 flex flex-col gap-6">
-                      {target.length === 0 && synthesizedDemo.length > 0 && (
+                      {docFlowTarget.length === 0 && docFlowDemo.length > 0 && (
                         <div className="text-[12px] text-amber-300 border border-amber-500/30 bg-amber-500/10 rounded-md px-3 py-2">
                           Preview only — this account has no persisted dealership record, so Save will not work.
                           Sign in with a dealer code to persist changes.
                         </div>
                       )}
-                      {list.map((d) => (
+                      {docFlowList.map((d) => (
                         <Suspense key={d.id} fallback={<div className="text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
                           <DocFlowSettings dealership={d as Dealership} isAdmin={isMasterAdmin} onSaved={loadAllState} />
                         </Suspense>
                       ))}
                     </div>
-                  </details>
-                );
-              })()}
+                  </div>
+                </div>
+              )}
 
               {deals.length === 0 ? (
                 <div className="card p-8 text-center text-[13px] text-[rgba(232,234,230,0.72)]">
@@ -2912,6 +3111,32 @@ export default function App() {
                       CHECK_ITEMS.filter((i) => cl[i.key]).length +
                       (cl.financeStatus && cl.financeStatus !== "N/A" ? 1 : 0);
                     const total = CHECK_ITEMS.length + 1;
+                    /* Where the checklist and DocHub disagree, keyed to the box
+                       it contradicts. DocHub stays authoritative and nothing is
+                       auto-corrected — surfacing the conflict beats silently
+                       picking a winner. Presentation moved from an amber banner
+                       to a muted glyph beside the offending label; derivation
+                       unchanged. Desktop only. */
+                    const conflictByKey: Record<string, string> = {};
+                    if (isDesktop) {
+                      const pastCompliance = lead.docFlowCompletedAt
+                        ? true
+                        : lead.docStage
+                        ? DOC_STAGES.indexOf(lead.docStage) > DOC_STAGES.indexOf("compliance")
+                        : false;
+                      const invoiceFinalised = filteredDocuments.some(
+                        (d) => d.leadId === lead.id && d.stage === "invoice" && d.status === "Signed",
+                      );
+                      const enteredDocHub = !!lead.docStage || !!lead.docFlowCompletedAt;
+                      if (pastCompliance && !cl.natis)
+                        conflictByKey.natis = "Compliance is signed off, but NATIS is un-ticked.";
+                      if (pastCompliance && !cl.roadworthy)
+                        conflictByKey.roadworthy = "Compliance is signed off, but Roadworthy is un-ticked.";
+                      if (enteredDocHub && !!cl.invoiced !== invoiceFinalised)
+                        conflictByKey.invoiced = cl.invoiced
+                          ? "Checklist says invoiced, but the DocHub invoice stage is not finalised."
+                          : "The DocHub invoice is finalised, but the Invoiced box is un-ticked.";
+                    }
                     return (
                       <div key={lead.id} className="card p-4 flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -2949,24 +3174,21 @@ export default function App() {
                             ? DOC_STAGES.indexOf(lead.docStage)
                             : -1;
                           return (
-                            <div className="flex items-center gap-3 pt-1 border-t border-white/5">
-                              <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] shrink-0">DocHub</span>
-                              <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
+                            <div className="flex items-center gap-3.5 pt-3 border-t border-white/5">
+                              {/* Segmented rail: one thin bar per stage over its
+                                  label. Done/current bars are cyan, pending bars
+                                  faint. Order still from DOC_STAGES. */}
+                              <div className="flex items-end gap-1.5 flex-1 min-w-0">
                                 {DOC_STAGES.map((stage, idx) => {
-                                  const done = idx < currentIdx;
+                                  const filled = idx <= currentIdx;
                                   const current = idx === currentIdx;
                                   return (
-                                    <div key={stage} className="flex items-center gap-1 shrink-0">
+                                    <div key={stage} className="flex-1 min-w-0 flex flex-col gap-1">
                                       <span
-                                        className={`w-2 h-2 rounded-full ${
-                                          done
-                                            ? "bg-emerald-400"
-                                            : current
-                                            ? "bg-[color:var(--cyan)]"
-                                            : "bg-[rgba(232,234,230,0.18)]"
-                                        }`}
+                                        className="h-[3px] rounded-full"
+                                        style={{ background: filled ? "var(--cyan)" : "rgba(232,234,230,0.14)" }}
                                       />
-                                      <span className={`text-[11px] ${current ? "text-[color:var(--white)] font-semibold" : "text-[rgba(232,234,230,0.55)]"}`}>
+                                      <span className={`text-[11px] truncate ${current ? "text-[color:var(--white)] font-semibold" : "text-[color:var(--muted)]"}`}>
                                         {DOCHUB_LABELS[stage]}
                                       </span>
                                     </div>
@@ -2976,7 +3198,7 @@ export default function App() {
                               <button
                                 type="button"
                                 onClick={() => openDocHub(lead.id)}
-                                className="shrink-0 px-3 py-1.5 min-h-[32px] rounded-md bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] text-[12px] font-semibold hover:bg-[color:var(--cyan)] hover:text-black transition-colors"
+                                className="shrink-0 px-3 min-h-[32px] rounded-[8px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)] text-[12px] font-semibold hover:bg-[color:var(--cyan)] hover:text-black transition-colors"
                               >
                                 Open DocHub
                               </button>
@@ -2984,89 +3206,58 @@ export default function App() {
                           );
                         })()}
 
-                        {/* Where the checklist and DocHub disagree. DocHub stays
-                            authoritative and nothing is auto-corrected — the two
-                            are separate records of the same events and only the
-                            dealer knows which is right. Surfacing the conflict
-                            beats silently picking a winner. */}
-                        {isDesktop && (() => {
-                          const cl: any = lead.dealChecklist || {};
-                          const pastCompliance = lead.docFlowCompletedAt
-                            ? true
-                            : lead.docStage
-                            ? DOC_STAGES.indexOf(lead.docStage) > DOC_STAGES.indexOf("compliance")
-                            : false;
-                          const invoiceFinalised = filteredDocuments.some(
-                            (d) => d.leadId === lead.id && d.stage === "invoice" && d.status === "Signed",
-                          );
-                          const enteredDocHub = !!lead.docStage || !!lead.docFlowCompletedAt;
-                          const warnings = [
-                            pastCompliance && !cl.natis && "Compliance is signed off, but NATIS is un-ticked.",
-                            pastCompliance && !cl.roadworthy && "Compliance is signed off, but Roadworthy is un-ticked.",
-                            enteredDocHub && !!cl.invoiced !== invoiceFinalised &&
-                              (cl.invoiced
-                                ? "Checklist says invoiced, but the DocHub invoice stage is not finalised."
-                                : "The DocHub invoice is finalised, but the Invoiced box is un-ticked."),
-                          ].filter(Boolean) as string[];
-                          if (warnings.length === 0) return null;
-                          return (
-                            <div className="flex flex-col gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2">
-                              {warnings.map((w) => (
-                                <div key={w} className="flex items-start gap-2 text-[12px] text-amber-200">
-                                  <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-                                  <span>{w}</span>
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })()}
-                        <div className="flex flex-col gap-3">
-                          {/* Real checkboxes: a half-done deal now reads its state
-                              from the box, not from half-lit buttons. */}
-                          <div className="flex flex-wrap gap-x-5 gap-y-2.5">
-                            {CHECK_ITEMS.map((item) => {
-                              const on = !!cl[item.key];
+                        {/* Checklist + finance on one wrapping row. A conflict
+                            with DocHub shows as a muted glyph after the box it
+                            contradicts (message in its title), and finance folds
+                            in after a hairline divider rather than sitting in its
+                            own headed block. */}
+                        <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5">
+                          {CHECK_ITEMS.map((item) => {
+                            const on = !!cl[item.key];
+                            const conflict = conflictByKey[item.key];
+                            return (
+                              <button
+                                key={item.key}
+                                type="button"
+                                onClick={() => patchChecklist(lead, { [item.key]: !on })}
+                                aria-pressed={on}
+                                className="flex items-center gap-2 text-[13px] cursor-pointer"
+                              >
+                                <span
+                                  className="flex items-center justify-center w-[18px] h-[18px] rounded-[5px] transition-all shrink-0"
+                                  style={on
+                                    ? { background: "var(--cyan)", color: "var(--ink)" }
+                                    : { boxShadow: "inset 0 0 0 1px rgba(232,234,230,0.22), inset 0 2px 3px rgba(0,0,0,0.4)" }}
+                                >
+                                  {on && <Check size={12} strokeWidth={3} />}
+                                </span>
+                                <span className={on ? "text-[color:var(--white)]" : "text-[rgba(232,234,230,0.72)]"}>{item.label}</span>
+                                {conflict && (
+                                  <span title={conflict} className="inline-flex shrink-0">
+                                    <AlertTriangle size={13} className="text-[color:var(--muted)]" />
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                          <span className="w-px h-[18px] bg-[color:var(--glass-line)] shrink-0" />
+                          <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Finance</span>
+                          <div className="flex gap-1 flex-wrap">
+                            {FINANCE_OPTS.map((o) => {
+                              const active = (cl.financeStatus || "N/A") === o;
                               return (
                                 <button
-                                  key={item.key}
+                                  key={o}
                                   type="button"
-                                  onClick={() => patchChecklist(lead, { [item.key]: !on })}
-                                  aria-pressed={on}
-                                  className="flex items-center gap-2 text-[13px] cursor-pointer"
+                                  onClick={() => patchChecklist(lead, { financeStatus: o })}
+                                  className={`px-3 min-h-[28px] rounded-[8px] text-[13px] font-medium cursor-pointer transition-colors ${
+                                    active ? "tru-btn-secondary" : "text-[color:var(--faint)] hover:text-[color:var(--white)]"
+                                  }`}
                                 >
-                                  <span
-                                    className="flex items-center justify-center w-[18px] h-[18px] rounded-[5px] transition-all shrink-0"
-                                    style={on
-                                      ? { background: "var(--cyan)", color: "var(--ink)" }
-                                      : { boxShadow: "inset 0 0 0 1px rgba(232,234,230,0.22), inset 0 2px 3px rgba(0,0,0,0.4)" }}
-                                  >
-                                    {on && <Check size={12} strokeWidth={3} />}
-                                  </span>
-                                  <span className={on ? "text-[color:var(--white)]" : "text-[rgba(232,234,230,0.72)]"}>{item.label}</span>
+                                  {o}
                                 </button>
                               );
                             })}
-                          </div>
-                          {/* Finance is one choice, not four toggles — a tab row. */}
-                          <div>
-                            <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] block mb-1.5">Finance</span>
-                            <div className="flex gap-1 flex-wrap">
-                              {FINANCE_OPTS.map((o) => {
-                                const active = (cl.financeStatus || "N/A") === o;
-                                return (
-                                  <button
-                                    key={o}
-                                    type="button"
-                                    onClick={() => patchChecklist(lead, { financeStatus: o })}
-                                    className={`px-3 min-h-[32px] rounded-[8px] text-[13px] font-medium cursor-pointer transition-colors ${
-                                      active ? "tru-btn-secondary" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
-                                    }`}
-                                  >
-                                    {o}
-                                  </button>
-                                );
-                              })}
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -4098,6 +4289,15 @@ export default function App() {
           onReturnToStock={handleReturnToStock}
           settings={state.settings}
           dealershipId={dealershipId || selectedDetailVehicle?.dealershipId}
+          truSocialEnabled={(() => {
+            // Publish tab shows only for a dealer that both carries the "social"
+            // product and has TruSocial switched on — the publish targets are
+            // OAuth connections, so anything less would only ever fail.
+            const d: any = (state?.dealerships || []).find(
+              (x: any) => x.id === (dealershipId || selectedDetailVehicle?.dealershipId)
+            );
+            return !!d?.truSocialEnabled && (d?.products || []).includes("social");
+          })()}
           documentsPanel={
             <DocumentsHub
               embedded
