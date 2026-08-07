@@ -2,15 +2,13 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-import { execFile } from 'child_process';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
 import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+import { fetchValuation } from './src/lib/scraper';
 import {
   initPhotoStore,
   mediaDir,
@@ -1371,88 +1369,18 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
     return res.status(400).json({ error: 'make, model, and year are required' });
   }
 
-  const m = encodeURIComponent(String(make));
-  const mo = encodeURIComponent(String(model));
-  const y = String(year);
-  const headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-ZA,en;q=0.9',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Cache-Control': 'no-cache',
-  };
-
-  const extractPrices = (html: string, selectors: string[]): number[] => {
-    const $ = cheerio.load(html);
-    const prices: number[] = [];
-    for (const sel of selectors) {
-      $(sel).each((_, el) => {
-        const val = parseInt($(el).text().replace(/[^\d]/g, ''), 10);
-        if (val >= 10000 && val <= 50_000_000) prices.push(val);
-      });
-    }
-    return prices;
-  };
-
-  const autoTraderUrl = `https://www.autotrader.co.za/cars-for-sale?make=${m}&model=${mo}&year=${y}`;
-  const carsUrl = `https://www.cars.co.za/usedcars/${m}/${mo}/?Year=${y}`;
-
-  const fetchViaCurl = (url: string): Promise<{ data: string }> =>
-    new Promise((resolve, reject) => {
-      execFile('curl', ['-sL', '--max-time', '5', '-H', `User-Agent: ${headers['User-Agent']}`, '-H', 'Accept: text/html', url],
-        { maxBuffer: 5 * 1024 * 1024 },
-        (err, stdout) => err ? reject(err) : resolve({ data: stdout }));
-    });
-
-  const [atResult, carsResult] = await Promise.allSettled([
-    axios.get(`https://www.autotrader.co.za/cars-for-sale/${m}/${mo}`, {
-      timeout: 5000, headers, params: { year: y },
-    }),
-    fetchViaCurl(carsUrl),
-  ]);
-
-  const allPrices: number[] = [];
-  const sources: { name: string; count: number; avg: number | null }[] = [];
-
-  if (atResult.status === 'fulfilled') {
-    const p = extractPrices(atResult.value.data, ['[class^="e-price__"]']);
-    allPrices.push(...p);
-    sources.push({ name: 'AutoTrader', count: p.length, avg: p.length ? Math.round(p.reduce((s, v) => s + v, 0) / p.length) : null });
-  } else {
-    console.warn('[valuation] AutoTrader failed:', atResult.reason?.message);
-    sources.push({ name: 'AutoTrader', count: 0, avg: null });
-  }
-
-  if (carsResult.status === 'fulfilled') {
-    const p = extractPrices(carsResult.value.data, ['.vehicle-price']);
-    allPrices.push(...p);
-    sources.push({ name: 'Cars.co.za', count: p.length, avg: p.length ? Math.round(p.reduce((s, v) => s + v, 0) / p.length) : null });
-  } else {
-    console.warn('[valuation] Cars.co.za failed:', carsResult.reason?.message);
-    sources.push({ name: 'Cars.co.za', count: 0, avg: null });
-  }
-
-  if (allPrices.length === 0) {
-    return res.json({
+  try {
+    const data = await fetchValuation(String(make), String(model), String(year));
+    return res.json(data);
+  } catch (err: any) {
+    console.error('[valuation] unexpected error:', err.message);
+    return res.status(500).json({
       averageRetailPrice: null,
       listingsFound: 0,
       fallbackRequired: true,
-      searchUrl: autoTraderUrl,
-      carsUrl,
-      sources,
+      sources: [],
     });
   }
-
-  const averageRetailPrice = Math.round(
-    allPrices.reduce((sum, p) => sum + p, 0) / allPrices.length
-  );
-
-  return res.json({
-    averageRetailPrice,
-    listingsFound: allPrices.length,
-    fallbackRequired: false,
-    sources,
-  });
 });
 
 // ==================== DMS EXPORT ====================
