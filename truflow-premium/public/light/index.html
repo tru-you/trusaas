@@ -358,7 +358,15 @@ button,input,textarea{font-family:inherit;}
     if(body)opts.body=JSON.stringify(body);
     return fetch(API+path,opts).then(function(r){
       if(r.status===401){doLogout();throw new Error("Session expired");}
-      return r.json();
+      /* Only 401 used to throw, so every other failure resolved as success —
+         a refused delete told the dealer the car was gone, removed it from the
+         list, and it came back on the next refresh. Carry the server's own
+         message through: it explains WHY (a recorded sale must be archived,
+         not deleted) far better than a generic connection error. */
+      return r.json().then(function(d){
+        if(!r.ok){var e=new Error((d&&d.error)||("Request failed ("+r.status+")"));e.status=r.status;e.body=d;throw e;}
+        return d;
+      });
     });
   }
 
@@ -494,6 +502,11 @@ button,input,textarea{font-family:inherit;}
   function renderStock(){
     var q=($("#stockSearch").value||"").toLowerCase().trim(), box=$("#stockList");box.innerHTML="";
     var arr=cachedStock.filter(function(v){
+      /* Archived units are retired from the floor — kept only so the sale still
+         counts. They belong in no other view, but must stay reachable or
+         archiving becomes a one-way door with no way back. */
+      if(stockFilter==="Archived"){ if(!v.archivedAt)return false; }
+      else if(v.archivedAt){ return false; }
       if(stockFilter==="In stock"&&v.status!=="INVENTORY")return false;
       if(stockFilter==="Live"&&!isPub(v))return false;
       if(stockFilter==="Sold"&&v.status!=="SOLD")return false;
@@ -559,6 +572,14 @@ button,input,textarea{font-family:inherit;}
       '<div class="toggle"><div class="tt"><div class="a">Live on website</div><div class="b" id="pubHint">'+(v.status!=="INVENTORY"?"Only in-stock cars can go live.":(pub?"Buyers can see this car on your site.":"Hidden until you publish it."))+'</div></div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch"></div></div>'+
       '<div class="lbl">Status</div>'+
       '<div class="seg" id="statusSeg"><button data-v="INVENTORY" class="'+(v.status==="INVENTORY"?"on":"")+'">In stock</button><button data-v="SOLD" class="'+(v.status==="SOLD"?"on":"")+'">Sold</button></div>'+
+      /* Archive is how a sold car leaves the floor. Deleting one whose sale is
+         recorded — a closed deal, invoice or signed document — is refused by
+         the server, and without this Light had no way to act on that refusal. */
+      (v.archivedAt
+        ? '<div class="lbl">Archived</div><div class="toggle"><div class="tt"><div class="a">Off the floor</div><div class="b">Still counted in your sold figures.</div></div><button type="button" class="tru-btn-ghost" id="restoreBtn" style="font-size:13px;white-space:nowrap">Restore</button></div>'
+        : (v.status==="SOLD"
+          ? '<div class="lbl">Archive</div><div class="toggle"><div class="tt"><div class="a">Retire from the floor</div><div class="b">Keeps the sale in your figures. Use this instead of deleting.</div></div><button type="button" class="tru-btn-ghost" id="archiveBtn" style="font-size:13px;white-space:nowrap">Archive</button></div>'
+          : ''))+
       '<div class="lbl">Details</div>'+
       '<div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" value="'+(vPrice(v)||"")+'" id="fPrice"></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" value="'+(v.mileage||"")+'" id="fKm"></div></div>'+
       '<div class="field"><label>Variant / trim</label><input type="text" value="'+esc(v.trim||"")+'" id="fTrim"></div>'+
@@ -608,7 +629,28 @@ button,input,textarea{font-family:inherit;}
       if(!confirm("Delete "+name+"? This removes it from your inventory"+(cv.source==="trulens"?" and its TruLens photos":"")+". This can't be undone."))return;
       api("DELETE","/api/inventory/"+cv.id).then(function(){
         cachedStock=cachedStock.filter(function(x){return x.id!==cv.id;});toast(name+" deleted");renderHome();renderStock();closeSheet();
-      }).catch(function(){toast("Couldn't delete — check connection",true);});
+      }).catch(function(e){
+        /* A refused delete is not a connection problem. The server says a
+           recorded sale must be archived instead — and Light has no archive
+           control, so send the dealer to the full console rather than leaving
+           them tapping a button that will never work. */
+        if(e&&e.status===409){toast("This sale is on file — archive it in TruFlow instead of deleting.",true);return;}
+        toast((e&&e.message)||"Couldn't delete — check connection",true);
+      });
+    });
+    var arcBtn=$("#archiveBtn");
+    if(arcBtn)arcBtn.addEventListener("click",function(){
+      if(!confirm("Archive "+name+"?\n\nIt leaves your stock list but stays in your sold figures. You can restore it from the Archived filter."))return;
+      /* The server pairs archivedAt with SOLD and pulls it off the website, so
+         this one field is the whole action — Light does not have to remember
+         to set the other two. */
+      patch({archivedAt:new Date().toISOString()},name+" archived").then(function(){renderStock();closeSheet();});
+    });
+    var resBtn=$("#restoreBtn");
+    if(resBtn)resBtn.addEventListener("click",function(){
+      /* null, not undefined — undefined is dropped by JSON.stringify and the
+         car would silently stay archived. */
+      patch({archivedAt:null},name+" restored to the floor").then(function(){renderStock();closeSheet();});
     });
     $("#editDetailsBtn").addEventListener("click",function(){openVehDetails();});
     openSheet();
@@ -667,7 +709,11 @@ button,input,textarea{font-family:inherit;}
     return api("PUT","/api/inventory/"+cv.id,updates).then(function(res){
       if(res&&res.vehicle){for(var i=0;i<cachedStock.length;i++){if(cachedStock[i].id===res.vehicle.id){cachedStock[i]=res.vehicle;break;}}}
       renderHome();renderStock();if(okMsg)toast(okMsg);return res;
-    }).catch(function(e){toast("Couldn't save — check connection",true);throw e;});
+    }).catch(function(e){
+      /* Say what the server said. "Check connection" is a lie when the request
+         arrived and was refused on its merits. */
+      toast((e&&e.message)||"Couldn't save — check connection",true);throw e;
+    });
   }
 
   /* ── Lead sheet (wired to PUT /api/leads/:id) ── */
@@ -782,7 +828,7 @@ button,input,textarea{font-family:inherit;}
   $("#leadSearch").addEventListener("input",renderLeads);
   $("#stockSearch").addEventListener("input",renderStock);
   chips($("#leadChips"),["All","New","Contacted","Negotiating","Closed Won"],function(v){leadFilter=v;renderLeads();});
-  chips($("#stockChips"),["All","In stock","Live","Sold"],function(v){stockFilter=v;renderStock();});
+  chips($("#stockChips"),["All","In stock","Live","Sold","Archived"],function(v){stockFilter=v;renderStock();});
 
   (function restore(){
     try{
