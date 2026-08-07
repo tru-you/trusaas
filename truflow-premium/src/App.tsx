@@ -332,8 +332,11 @@ export default function App() {
   const currentUser = state ? (state.users.find(u => u.id === currentUserId) || state.users[0]) : null;
   const sessionAccount = getAccount();
   const isMasterAdmin = sessionAccount?.role === 'admin';
-  const dealershipId = sessionAccount?.dealershipId;
+  const rawDealershipId = sessionAccount?.dealershipId;
   const isDesktop = useIsDesktop();
+
+  const [adminDealerScope, setAdminDealerScope] = useState<string | null>(null);
+  const dealershipId = (isMasterAdmin && adminDealerScope) ? adminDealerScope : rawDealershipId;
 
   /* Tenant scoping ----------------------------------------------------------
      The server already scopes /api/state to the signed-in tenant, so this is a
@@ -347,7 +350,7 @@ export default function App() {
      own list straight off state.leads. Records with no dealershipId are kept
      too — TruLens imports arrive without one. */
   const mine = (d?: string) => !d || d === dealershipId;
-  const showAll = isMasterAdmin || !dealershipId;
+  const showAll = (isMasterAdmin && !adminDealerScope) || !dealershipId;
 
   const filteredVehicles = !state ? [] : showAll ? state.vehicles : state.vehicles.filter(v => mine(v.dealershipId));
   /** Stock the dealer can still act on: tenant-scoped, minus archived units.
@@ -1519,9 +1522,21 @@ export default function App() {
           <div className="w-full flex items-center justify-center px-1">
             <img src={logo} alt="TruFlow Premium" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
-          {/* The dealership is named in the overview banner; repeating it under
-              the logo said "Demo Dealership" next to a banner reading "MKR Auto
-              Sales", which just looked broken. */}
+          {/* Admin dealer context switcher — pick a dealer to see their world. */}
+          {isMasterAdmin && state?.dealerships && state.dealerships.length > 0 && (
+            <div className="mt-2 w-full px-1">
+              <select
+                value={adminDealerScope || ""}
+                onChange={(e) => setAdminDealerScope(e.target.value || null)}
+                className="w-full bg-[color:var(--ink-2)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] cursor-pointer"
+              >
+                <option value="">All dealerships</option>
+                {state.dealerships.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
           {/* The dealer's OWN showroom. This was hardcoded to true-cars.co.za,
               so every dealership's sidebar linked to our consumer site instead
               of to their website. */}
