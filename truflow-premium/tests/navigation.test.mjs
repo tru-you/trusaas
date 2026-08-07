@@ -30,16 +30,6 @@ const source = readFileSync(APP, "utf8");
  *  here is a decision to show a dealer what it displays, so read the reason
  *  first. */
 const WITHHELD = {
-  analytics:
-    "Reports 12,847 monthly page views and 8,432 filter views as hard-coded " +
-    "literals, and computes conversion as leads.length / 8432 — a real " +
-    "numerator over an invented denominator, presented to a dealer as a " +
-    "measurement of their own website. Needs a genuine page-view source.",
-  scoring:
-    "Ranks leads by digitalScore, which is assigned Math.random() * 41 + 50 at " +
-    "creation. 'Hot targets - high purchase velocity' is a random number with a " +
-    "label on it, and a salesperson working that order would call the wrong " +
-    "customer first. Needs a real formula over data already held.",
   customer_form:
     "Duplicates the Lead CRM capture already in the menu and reports success " +
     "with a raw alert().",

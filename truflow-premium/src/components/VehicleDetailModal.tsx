@@ -81,7 +81,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
   // Recon Category, Photo and Market check States
   const [reconCategory, setReconCategory] = useState<string>("Bodywork / Painting");
-  const [reconPhoto, setReconPhoto] = useState<string>("");
   const [suggestingCost, setSuggestingCost] = useState(false);
   const [editingTruPrice, setEditingTruPrice] = useState(false);
   const [truPriceInput, setTruPriceInput] = useState("");
@@ -747,7 +746,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       category: reconCategory,
                       cost: parseFloat(newReconCost) || 0,
                       status: "Pending" as const,
-                      photo: reconPhoto || undefined,
                       dateAdded: new Date().toISOString().slice(0, 10)
                     };
 
@@ -755,7 +753,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     await onUpdateVehicle(vehicle.id, { reconTasks: updatedTasks });
                     setNewReconName("");
                     setNewReconCost("");
-                    setReconPhoto("");
                   };
 
                   const handleToggleTaskStatus = async (taskId: string) => {
@@ -801,17 +798,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
                       setNewReconName(recommendedName);
                       setNewReconCost(recommendedCost.toString());
-                  };
-
-                  /** Attach a real photo of the work. This used to pick a stock
-                   *  workshop image by category and report "TrueAI Prep Camera
-                   *  Synced" — filing a photograph of someone else's garage as
-                   *  evidence of work done on this car. */
-                  const attachReconPhoto = (file?: File) => {
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = () => setReconPhoto(reader.result as string);
-                    reader.readAsDataURL(file);
                   };
 
                   return (
@@ -963,35 +949,15 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           />
                         </div>
 
-                        {/* Photo capture mock/real sync row */}
-                        <div className="bg-black/20 p-2 rounded-lg border border-white/3 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {reconPhoto ? (
-                              <img src={reconPhoto} alt="Selected attachment" className="w-8 h-8 rounded object-cover border border-[color:var(--cyan-soft)]" />
-                            ) : (
-                              <div className="w-8 h-8 rounded bg-[color:var(--glass)] flex items-center justify-center text-[rgba(232,234,230,0.72)]">
-                                <Camera size={12} />
-                              </div>
-                            )}
-                            <div>
-                              <span className="text-[13px] font-semibold text-[color:var(--white)] block">Task Damage Photo</span>
-                              <span className="text-[13px] text-[rgba(232,234,230,0.72)] block">{reconPhoto ? "Photo Attached" : "None attached"}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <label className="px-2 py-1 bg-[color:var(--glass)] hover:bg-white/10 border border-white/5 text-[color:var(--white)] rounded text-[13px] font-semibold  transition-all cursor-pointer">
-                              Attach photo
-                              <input
-                                type="file"
-                                accept="image/*"
-                                capture="environment"
-                                className="hidden"
-                                onChange={(e) => attachReconPhoto(e.target.files?.[0])}
-                              />
-                            </label>
-                          </div>
-                        </div>
+                        {/* The recon "Attach photo" control was removed.
+                            `reconTasks[].photo` is not in VEHICLE_PHOTO_FIELDS,
+                            so unlike every other upload in the app it never went
+                            through putPhotos — the image stayed as base64 inside
+                            the vehicle row, adding roughly 4 MB per photo to the
+                            dealer's state file, which is exactly what moving
+                            photos into the media store was meant to stop.
+                            Damage photos belong in the gallery above (or in
+                            TruLens), where they are stored as files. */}
 
                         <button
                           type="submit"

@@ -65,15 +65,11 @@ export function publicStockPath(
   return `${origin}/api/public/stock?dealer=${encodeURIComponent(slug || getDealerSlug())}`;
 }
 
-export function stockWidgetSnippet(apiOrigin: string, slug?: string): string {
-  const api = `${apiOrigin.replace(/\/$/, "")}/api/public/stock`;
-  const dealer = slug || getDealerSlug();
-  return `<!-- TruSaaS live stock -->
-<div id="trusass-stock"></div>
-<script
-  src="${apiOrigin.replace(/\/$/, "")}/embed/stock-widget.js"
-  data-api="${api}"
-  data-dealer="${dealer}"
-  data-theme="light"
-></script>`;
-}
+/* stockWidgetSnippet() lived here and generated the embed code shown on the
+   Settings page. That card was replaced by the Dealer Details editor, leaving
+   this with no caller, so it has been removed.
+
+   `public/embed/stock-widget.js` is deliberately NOT removed with it. Dealers
+   who already copied the snippet have that script tag on their live websites;
+   deleting the file would break their stock listings. It is a published asset,
+   not internal code, and its lifetime is not tied to this generator. */

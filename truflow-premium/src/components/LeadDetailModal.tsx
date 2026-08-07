@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Lead, Vehicle, User, Communication, Task, Agreement } from "../types";
 import { getAccount } from "../lib/session";
-import { fetchState, updateLead, updateVehicle, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
+import { fetchState, updateLead, updateLeadStatus, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
 import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature } from "lucide-react";
 import AgreementPreview from "./AgreementPreview";
 
@@ -15,6 +15,13 @@ interface LeadDetailModalProps {
   onRefresh: () => void;
   /** Documents filed against this lead — the buyer's side of the paperwork. */
   documentsPanel?: React.ReactNode;
+  /** DocHub stage-progression panel. Desktop-only — App.tsx passes
+   *  `undefined` on mobile so the chunk never downloads. When undefined the
+   *  Documents tab is not rendered. */
+  docHubPanel?: React.ReactNode;
+  /** Tab to open on first mount. Lets Deal Readiness deep-link straight into
+   *  DocHub instead of forcing a second click through Overview. */
+  initialTab?: "overview" | "journey" | "comm" | "history" | "tasks" | "finance" | "dochub";
 }
 
 export default function LeadDetailModal({
@@ -26,6 +33,8 @@ export default function LeadDetailModal({
   onClose,
   onRefresh,
   documentsPanel,
+  docHubPanel,
+  initialTab,
 }: LeadDetailModalProps) {
   const [lead, setLead] = useState<Lead | null>(null);
   // Who is logged in — communications used to be stamped "Marc van der Merwe"
@@ -56,7 +65,7 @@ export default function LeadDetailModal({
       `Hi ${lead.firstName} 👋 The ${vehicle ? `${vehicle.make} ${vehicle.model}` : "vehicle"} ` +
       `you enquired about is still available. Happy to send more photos or book you a viewing — what works for you?`,
   };
-  const [activeTab, setActiveTab] = useState<"overview" | "journey" | "comm" | "history" | "tasks" | "finance">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "journey" | "comm" | "history" | "tasks" | "finance" | "dochub">(initialTab || "overview");
   const tasks = allTasks.filter((t) => t.leadId === leadId);
 
   // Communication Form State
@@ -321,18 +330,18 @@ export default function LeadDetailModal({
 
   const handleSaveStatus = async () => {
     try {
-      const closingWon = leadStatus === "Closed Won" && lead.status !== "Closed Won";
-      await updateLead(lead.id, { status: leadStatus as any });
-      // Closing the deal moves the car with it — one action, so a Closed-Won
-      // lead can never leave its vehicle still showing "in stock". No document
-      // generation here; dealers invoice from their own systems, and the rest of
-      // the close-out lives in Deal Readiness.
-      if (closingWon && vehicle && vehicle.status !== "SOLD") {
-        await updateVehicle(vehicle.id, { status: "SOLD" as any });
-        alert("Deal closed — lead marked Closed Won and the vehicle marked Sold.");
-      } else {
-        alert("Lead stage updated.");
-      }
+      /* The car moves with the deal, but the server owns that rule — it is the
+         only place every caller passes through, and the Light console and sync
+         endpoints never run this file. Doing it here as well would race two
+         writes on one JSON file and still leave those surfaces uncoupled. */
+      const { coupledVehicle } = await updateLeadStatus(lead.id, leadStatus as any);
+      alert(
+        coupledVehicle?.status === "SOLD"
+          ? "Deal closed — lead marked Closed Won and the vehicle marked Sold."
+          : coupledVehicle?.status === "INVENTORY"
+          ? "Lead reopened — the vehicle has been returned to inventory."
+          : "Lead stage updated.",
+      );
 
       onRefresh();
       onClose();
@@ -441,6 +450,30 @@ export default function LeadDetailModal({
             >
               F&I, Docs & e-Sign Hub
             </button>
+            {docHubPanel && (
+              <button
+                onClick={() => setActiveTab("dochub")}
+                className={`px-3 py-2 min-h-[44px] text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1 ${
+                  activeTab === "dochub"
+                    ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
+                    : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
+                }`}
+              >
+                DocHub
+                {/* Completion is checked first: a finished deal has docStage
+                    null, so testing docStage alone showed no badge at all on
+                    the one deal that had gone furthest. */}
+                {lead?.docFlowCompletedAt ? (
+                  <span className="ml-1 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500 text-black font-mono">
+                    done
+                  </span>
+                ) : lead?.docStage ? (
+                  <span className="ml-1 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[color:var(--cyan)] text-black font-mono">
+                    {lead.docStage}
+                  </span>
+                ) : null}
+              </button>
+            )}
           </div>
 
           {/* Tab Contents */}
@@ -516,17 +549,23 @@ export default function LeadDetailModal({
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Stock No: {vehicle.stockNumber} / Price: R {vehicle.retailPrice.toLocaleString()}</div>
                     </div>
                     <span className="px-2 py-1 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] font-semibold tracking-normal rounded">
-                      {vehicle.status === "INVENTORY" ? "Active Showroom" : vehicle.status === "PENDING" ? "Finance Pending" : "Delivered"}
+                      {vehicle.status === "INVENTORY" ? "Active Showroom" : "Delivered"}
                     </span>
                   </div>
                 </div>
               )}
 
-              {/* TrueAI Smart Lead Qualification Hub */}
+              {/* Dealer Assist qualification — surfaces only on brand-new
+                  leads with no open tasks. Once anyone has started working
+                  the lead (task assigned or status past New), the "next
+                  task" summary below replaces this so the same slot is
+                  either a "what should I do first?" prompt or a "what's
+                  next?" reminder, never both. */}
+              {lead.status === "New" && tasks.filter(t => t.status !== "Completed").length === 0 && (
               <div className="card !bg-[color:var(--cyan-faint)] border-[color:var(--cyan-faint)]">
                 <div className="card-body p-5 flex flex-col gap-4 relative overflow-hidden">
                   <div className="absolute -right-10 -top-10 w-32 h-32 bg-[color:var(--cyan-faint)] rounded-full blur-2xl"></div>
-                  
+
                   <div className="flex items-center justify-between border-b border-white/5 pb-3">
                     <div className="flex items-center gap-2">
                       <Sparkles size={16} className="text-[color:var(--cyan)]" />
@@ -617,6 +656,46 @@ export default function LeadDetailModal({
                   </div>
                 </div>
               </div>
+              )}
+
+              {/* Next task summary — replaces the qualification card once the
+                  lead is being worked. Shows the next open task with a jump
+                  to the Tasks tab. Kept intentionally small so it does not
+                  compete with the Overview's other blocks. */}
+              {(() => {
+                const openTasks = tasks.filter(t => t.status !== "Completed");
+                if (openTasks.length === 0) return null;
+                if (lead.status === "New" && openTasks.length === 0) return null;
+                const next = [...openTasks].sort((a, b) => {
+                  const ad = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+                  const bd = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+                  return ad - bd;
+                })[0];
+                const overdue = next.dueDate ? new Date(next.dueDate).getTime() < Date.now() : false;
+                return (
+                  <div className="card !bg-[color:var(--glass)] border-[color:var(--glass-line)]">
+                    <div className="card-body p-4 flex items-center gap-3">
+                      <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${overdue ? "bg-red-500/20" : "bg-[color:var(--cyan-faint)]"}`}>
+                        <Clock size={16} className={overdue ? "text-red-300" : "text-[color:var(--cyan)]"} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-semibold text-[color:var(--white)] truncate">{next.title}</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                          {next.dueDate ? (overdue ? `Overdue since ${next.dueDate}` : `Due ${next.dueDate}`) : "No due date"}
+                          {openTasks.length > 1 && ` · +${openTasks.length - 1} more`}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("tasks")}
+                        className="shrink-0 px-3 py-1.5 min-h-[32px] rounded-md bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] text-[12px] font-semibold hover:bg-[color:var(--cyan)] hover:text-black transition-colors"
+                      >
+                        Open tasks
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Alerts */}
               {!lead.lastContactedAt && (
@@ -1174,6 +1253,14 @@ export default function LeadDetailModal({
               </div>
             );
           })()}
+
+          {activeTab === "dochub" && docHubPanel && (
+            <div className="flex flex-col gap-4 animate-in fade-in duration-150">
+              <Suspense fallback={<div className="text-sm text-[rgba(232,234,230,0.55)]">Loading DocHub…</div>}>
+                {docHubPanel}
+              </Suspense>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

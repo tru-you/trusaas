@@ -120,12 +120,25 @@ test("a vehicle is created carrying its dealership", () => {
 });
 
 test("an edit cannot move a vehicle into another dealership", () => {
+  /* The guard moved into applyVehiclePatch when vehicle writes were centralised,
+     so that lead→vehicle coupling could not set a status and bypass the side
+     effects the inventory PUT owns. Assert it where it now lives — and that the
+     PUT actually routes through it. Either half alone would pass while a vehicle
+     stayed movable between dealerships. */
+  const helper = body.slice(body.indexOf("function applyVehiclePatch"));
+  const helperBody = helper.slice(0, helper.indexOf("\nfunction "));
+  assert.match(
+    helperBody,
+    /dealershipId:\s*current\.dealershipId/,
+    "the owner must come from the stored row, never from the request body"
+  );
+
   const put = body.slice(body.indexOf('app.put("/api/inventory/:id"'));
-  const handler = put.slice(0, put.indexOf("writeState"));
+  const handler = put.slice(0, put.indexOf("res.json"));
   assert.match(
     handler,
-    /dealershipId:\s*state\.vehicles\[index\]\.dealershipId/,
-    "the owner must come from the stored row, never from the request body"
+    /applyVehiclePatch\(/,
+    "the inventory PUT must route through applyVehiclePatch, or the guard is never reached"
   );
 });
 

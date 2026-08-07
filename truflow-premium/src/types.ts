@@ -1,4 +1,24 @@
-export type VehicleStatus = 'INVENTORY' | 'PENDING' | 'SOLD';
+/** A unit is either on the floor or gone.
+ *
+ *  'PENDING' was removed once the stock kanban that wrote it was deleted:
+ *  nothing created it any more, yet the Overview counted it while Stock Health
+ *  excluded it from both its live and sold buckets, so its capital vanished
+ *  from "Capital in stock". Legacy rows are mapped to SOLD at boot by
+ *  retirePendingStatus() in server.ts. */
+export type VehicleStatus = 'INVENTORY' | 'SOLD';
+
+/** Set when a sold unit is retired from the floor without being deleted.
+ *
+ *  A car whose sale is recorded here — a deal, invoice, agreement or DocHub
+ *  document — cannot simply be removed, because that would destroy the record
+ *  of the transaction. Archiving takes it out of every stock list while leaving
+ *  it in the sold figures, which is the whole distinction from deleting: a
+ *  deleted car leaves the numbers because the dealer chose to remove it, an
+ *  archived one leaves only the lists.
+ *
+ *  Declared here rather than on Vehicle's own line so the reasoning sits with
+ *  the status type it qualifies. */
+export type VehicleArchive = string;
 
 export interface Dealership {
   id: string;
@@ -22,10 +42,56 @@ export interface Dealership {
   registrationNumber?: string;
   /** SARS VAT reference number. */
   vatNumber?: string;
+  /** Trading-as name. SA dealers commonly trade under a name that differs
+   *  from the CIPC-registered entity, and invoices / agreements must show
+   *  it alongside the registered name. */
+  tradingAs?: string;
+  /** Public contact email — the address printed on documents and used for
+   *  buyer-facing notifications, distinct from any staff user's login email. */
+  contactEmail?: string;
   /** Zernio profile ID — provisioned when TruSocial is enabled for this dealer. */
   zernioProfileId?: string;
   /** Whether TruSocial is active (UI shown, publishes triggered). */
   truSocialEnabled?: boolean;
+  /** DocHub: per-stage mode. 'attach' = dealer uploads their own signed
+   *  document; 'generate' = TruFlow renders one from a template. Missing keys
+   *  default to 'attach' (least surprise for dealers already using their own
+   *  paperwork). Set once in DocFlowSettings; not per-deal. */
+  docFlow?: Partial<Record<DocStage, DocMode>>;
+}
+
+/** DocHub stages, in the order a deal progresses through them. */
+export type DocStage = 'proforma' | 'deed' | 'compliance' | 'invoice' | 'handover';
+
+/** How a dealer fulfils a given stage's document.
+ *
+ *  - 'generate' — TruFlow renders a PDF from a template (deferred; button
+ *    disabled in v1).
+ *  - 'attach'   — dealer uploads their own signed document.
+ *  - 'confirm'  — no document; the stage is satisfied by ticking flags on
+ *    the lead. Used for compliance, where NATIS and roadworthy are
+ *    government-issued and cannot be produced by the dealer. */
+export type DocMode = 'generate' | 'attach' | 'confirm';
+
+/** Stages whose mode is fixed by the product, not the dealer. Compliance is
+ *  always 'confirm' because NATIS/RWC come from government — there is nothing
+ *  for a dealer to generate or attach. */
+export const FIXED_STAGE_MODES: Partial<Record<DocStage, DocMode>> = {
+  compliance: 'confirm',
+};
+
+/** Ordered list of stages — single source of truth for "advance to next". */
+export const DOC_STAGES: readonly DocStage[] = ['proforma', 'deed', 'compliance', 'invoice', 'handover'] as const;
+
+/** Audit-trail row for DocHub document actions (create, sign, finalize, void). */
+export interface DocEvent {
+  id: string;
+  docId: string;
+  leadId?: string;
+  action: 'created' | 'signed' | 'finalized' | 'voided';
+  userId?: string;
+  timestamp: string;
+  dealershipId?: string;
 }
 
 /** A social account connected via Zernio, mapped to exactly one dealer. */
@@ -44,6 +110,17 @@ export interface Vehicle {
   model: string;
   trim: string;
   status: VehicleStatus;
+  /** When this unit was archived off the floor. See VehicleArchive.
+   *  Explicitly nullable: clearing it is how a unit is restored, and
+   *  `undefined` would be dropped by JSON.stringify on the way to the server. */
+  archivedAt?: VehicleArchive | null;
+  /** Which deal's closure marked this car sold, when a deal did.
+   *
+   *  Only that deal may un-sell it. Without this, reopening ANY lead attached
+   *  to the car returned it to stock — including a car sold outside the system
+   *  or sold from the Light console, which no deal owns. A car sold with no
+   *  deal behind it leaves this unset, so no lead can put it back. */
+  soldByLeadId?: string | null;
   retailPrice: number;
   costPrice: number;
   mileage: number;
@@ -151,6 +228,32 @@ export interface Lead {
     financeStatus?: 'N/A' | 'Submitted' | 'Approved' | 'Declined';
     delivered?: boolean;
   };
+  /** Where the deal stood immediately before it closed Won.
+   *
+   *  Recorded so that reopening restores the stage it actually came from. The
+   *  reopen paths used to hardcode "Negotiating", which silently rewrote the
+   *  history of any deal that closed straight from New or Test Drive
+   *  Scheduled. Cleared once consumed. */
+  statusBeforeClose?: LeadStatus;
+  /** DocHub: which contractual stage this deal is currently on — the stage
+   *  that is next *due*, not the last one finalised. Advances as each stage's
+   *  document is finalised. The checklist runs in parallel for physical/admin
+   *  milestones the paperwork does not cover.
+   *
+   *  `null` is ambiguous on its own: it is both "never started" and "finished
+   *  the last stage, nothing left due". Read it with `docFlowCompletedAt` to
+   *  tell those apart — never on its own. */
+  docStage?: DocStage | null;
+  /** DocHub: when the final stage was finalised. Set once, never cleared by
+   *  advancing.
+   *
+   *  Exists because `docStage` alone cannot express completion — finalising
+   *  handover leaves it `null`, which is exactly what a brand-new lead carries,
+   *  so a finished deal rendered as though it had never started. Kept as a
+   *  separate field rather than a `'complete'` member of DocStage because
+   *  DocStage also types `Document.stage` and `Dealership.docFlow`, where a
+   *  "complete" document or a per-stage mode for it would both be nonsense. */
+  docFlowCompletedAt?: string;
 }
 
 export interface Task {
@@ -195,13 +298,20 @@ export interface Agreement {
   date?: string;
 }
 
-/** A dealer's own uploaded document (any file/template — we don't prescribe what it is) with an e-sign flow. */
+/** A dealer's own uploaded document (any file/template — we don't prescribe what it is) with an e-sign flow.
+ *
+ *  Also the persistence shape for DocHub documents: when `stage` is set,
+ *  the doc belongs to DocHub's 5-stage lifecycle. `mode` records whether
+ *  the file came from a dealer upload ('attach') or was rendered from a
+ *  TruFlow template ('generate'); `fieldSnapshot` captures the merge inputs
+ *  for audit reproducibility. Existing hub uploads leave all four undefined
+ *  and behave exactly as before. */
 export interface DealerDocument {
   id: string;
   fileName: string;
   mimeType: string;
   fileData: string; // data URL — original uploaded file
-  status: 'Unsigned' | 'Signed';
+  status: 'Unsigned' | 'Signed' | 'Draft' | 'Void';
   uploadedAt: string;
   signature?: string; // data URL of drawn signature, or "TYPED:Name"
   signedBy?: string;
@@ -209,6 +319,14 @@ export interface DealerDocument {
   leadId?: string;
   vehicleId?: string;
   dealershipId?: string;
+  /** DocHub stage this doc satisfies, if any. */
+  stage?: DocStage;
+  /** How this doc was produced. Required whenever `stage` is set. */
+  mode?: DocMode;
+  /** Field values captured at generate/finalize time — only populated when
+   *  mode === 'generate'. Preserves the exact data the PDF was built from
+   *  even if the underlying deal record later changes. */
+  fieldSnapshot?: Record<string, unknown>;
 }
 
 export interface User {
@@ -266,6 +384,10 @@ export interface DMSState {
   invoices: Invoice[];
   agreements: Agreement[];
   documents: DealerDocument[];
+  /** DocHub audit trail — one row per document action. Per-dealer, so
+   *  scoped alongside documents in TENANT_SCOPED_COLLECTIONS. Optional so
+   *  older dealer files without the array parse cleanly. */
+  docEvents?: DocEvent[];
   users: User[];
   communications: Communication[];
   expenses: Expense[];

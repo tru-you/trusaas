@@ -31,7 +31,9 @@ import { tidyStr, cleanModelName, normaliseExtras } from "./saNormalize";
  * `import type` is erased at compile time, so this adds no runtime dependency
  * on the client bundle.
  */
-import type { DMSState, Vehicle, Lead, User, DealerDocument, Dealership } from "./src/types";
+import type { DMSState, Vehicle, Lead, User, DealerDocument, Dealership, DocEvent, DocStage, DocMode } from "./src/types";
+import { DOC_STAGES, FIXED_STAGE_MODES } from "./src/types";
+import { canAdvance } from "./src/lib/docValidator";
 
 dotenv.config();
 
@@ -164,6 +166,7 @@ const TENANT_SCOPED_COLLECTIONS = [
   "invoices",
   "agreements",
   "documents",
+  "docEvents",
   "expenses",
   "communications",
   "users",
@@ -229,6 +232,30 @@ function allDealerIds(): string[] {
     if (m) ids.push(m[1]);
   }
   return ids;
+}
+
+/** A unique id with a readable prefix.
+ *
+ *  Ids were `prefix + Date.now()`, which collides whenever two records are
+ *  created inside the same millisecond. That is not exotic: a DocHub document
+ *  and its audit row are written in one request, and a bulk lead import creates
+ *  many in a tight loop.
+ *
+ *  A collision is not cosmetic. `findIndex` resolves only the first match, so
+ *  the second record becomes permanently unaddressable by id — and the coupling
+ *  guards that ask "is any OTHER lead still holding this car" compare
+ *  `l.id !== lead.id`, so a twin silently reads as the same row and the guard
+ *  passes when it should not.
+ *
+ *  Timestamp stays first so ids remain chronologically sortable and greppable;
+ *  the counter makes same-millisecond calls distinct and the random tail keeps
+ *  ids from two processes on one disk apart. */
+let idSequence = 0;
+function newId(prefix: string): string {
+  idSequence = (idSequence + 1) % 1_000_000;
+  const seq = idSequence.toString(36);
+  const rand = Math.random().toString(36).slice(2, 6);
+  return `${prefix}${Date.now()}_${seq}${rand}`;
 }
 
 function isPerDealerMode(): boolean {
@@ -782,7 +809,7 @@ app.post("/api/auth/users", (req: any, res) => {
   // Annotated so the role ternary keeps its literal types instead of widening
   // to string — this is the value that decides what a new seat can see.
   const user: User = {
-    id: "u_" + Date.now(),
+    id: newId("u_"),
     name: String(name).trim(),
     email: email || "",
     role: wanted === "manager" ? "manager" : "salesperson",
@@ -1032,6 +1059,20 @@ function backfillVehicles(vehicles: any[]): void {
   }
 }
 
+/** A private copy of the seed.
+ *
+ *  `readState()` falls back to the seed when a data file cannot be read, and it
+ *  used to hand back DEFAULT_MOCK_STATE itself. Every write handler then
+ *  mutated that module-level object in place and `writeState` persisted it — so
+ *  one unreadable dealer file turned the seed into the live data, and each
+ *  later request in the same process compounded the damage against it.
+ *
+ *  Returning a clone keeps the fallback read-only in practice: a request may do
+ *  whatever it likes to its own copy without the next one inheriting it. */
+function freshDefaultState(): DMSState {
+  return structuredClone(DEFAULT_MOCK_STATE);
+}
+
 function readState(): DMSState {
   if (isPerDealerMode()) {
     try {
@@ -1052,7 +1093,7 @@ function readState(): DMSState {
       return merged;
     } catch (err) {
       console.error("Error reading per-dealer state:", err);
-      return DEFAULT_MOCK_STATE;
+      return freshDefaultState();
     }
   }
 
@@ -1109,7 +1150,7 @@ function readState(): DMSState {
   } catch (err) {
     console.error("Error reading data file:", err);
   }
-  return DEFAULT_MOCK_STATE;
+  return freshDefaultState();
 }
 
 function writeState(state: any) {
@@ -1273,6 +1314,132 @@ try {
   console.error("[photos] migration failed, continuing with base64:", err);
 }
 
+/** Backfill `docFlowCompletedAt` for deals that finished before the field existed.
+ *
+ *  Completion is derived, not guessed: a lead whose handover document is Signed
+ *  has by definition finalised the last stage. Those rows carry `docStage: null`
+ *  — exactly what a never-started lead carries — so without this they keep
+ *  rendering as though the deal had never begun.
+ *
+ *  Idempotent: only fills rows with no timestamp, so re-running is a no-op. */
+function backfillDocFlowCompletion(): void {
+  const state = readState();
+
+  const completedAtByLead = new Map<string, string>();
+  for (const d of (state.documents || []) as any[]) {
+    if (d.stage !== "handover" || d.status !== "Signed" || !d.leadId) continue;
+    // Earliest signature wins — the moment the deal actually completed, not
+    // whenever a later duplicate happened to be filed.
+    const at = d.signedAt || d.uploadedAt;
+    if (!at) continue;
+    const existing = completedAtByLead.get(d.leadId);
+    if (!existing || at < existing) completedAtByLead.set(d.leadId, at);
+  }
+  if (completedAtByLead.size === 0) return;
+
+  let filled = 0;
+  for (const lead of (state.leads || []) as any[]) {
+    if (lead.docFlowCompletedAt) continue;
+    const at = completedAtByLead.get(lead.id);
+    if (!at) continue;
+    lead.docFlowCompletedAt = at;
+    filled++;
+  }
+
+  if (filled > 0) {
+    writeState(state);
+    console.log(`[dochub] backfilled docFlowCompletedAt on ${filled} completed deal(s).`);
+  }
+}
+
+/** Move recon-task photos out of the state file.
+ *
+ *  `reconTasks[].photo` was never in VEHICLE_PHOTO_FIELDS, so unlike every
+ *  other upload it skipped putPhotos and the image stayed as base64 inside the
+ *  vehicle row — roughly 4 MB per phone photo, in the file every request reads
+ *  and rewrites. The control that created them has been removed; this deals
+ *  with the ones already stored.
+ *
+ *  Moved into the media store rather than deleted: a photo of work done on a
+ *  car is evidence a dealer may want, and it costs a 70-byte reference to keep.
+ *  Idempotent — an already-stored reference is left alone, and a value that is
+ *  neither storable nor a reference is dropped, since it could never render. */
+function migrateReconPhotos(): void {
+  const state = readState();
+  let moved = 0;
+  let dropped = 0;
+
+  for (const v of (state.vehicles || []) as any[]) {
+    const tasks = v.reconTasks;
+    if (!Array.isArray(tasks) || !tasks.length) continue;
+    for (const t of tasks) {
+      if (!t || !t.photo || isStoredRef(t.photo)) continue;
+      const ref = putPhoto(t.photo);
+      if (ref) {
+        t.photo = ref;
+        moved++;
+      } else {
+        delete t.photo;
+        dropped++;
+      }
+    }
+  }
+
+  if (moved === 0 && dropped === 0) return;
+  writeState(state);
+  console.log(
+    `[photos] moved ${moved} recon photo(s) into the media store` +
+      (dropped ? `, dropped ${dropped} unreadable` : "") + ".",
+  );
+}
+
+try {
+  migrateReconPhotos();
+} catch (err) {
+  /* Leaving the base64 in place is the pre-existing state, so a failure here
+     costs disk, not correctness. */
+  console.error("[photos] recon photo migration failed, continuing:", err);
+}
+
+/** Retire the PENDING vehicle status.
+ *
+ *  Nothing has written PENDING since the stock kanban that owned it was
+ *  removed, but it still distorted two screens: the Overview counted it while
+ *  Stock Health excluded it from BOTH its live and sold buckets, so a PENDING
+ *  car's capital simply vanished from "Capital in stock".
+ *
+ *  Mapped to SOLD, not INVENTORY. PENDING meant "sold, awaiting hand-over" —
+ *  and the public feed publishes only INVENTORY, so moving these to INVENTORY
+ *  would put already-sold cars back on the dealer's website. */
+function retirePendingStatus(): void {
+  const state = readState();
+  const pending = (state.vehicles || []).filter((v: any) => v.status === "PENDING");
+  if (pending.length === 0) return;
+  for (const v of pending as any[]) v.status = "SOLD";
+  writeState(state);
+  console.log(
+    `[stock] retired PENDING on ${pending.length} vehicle(s) — mapped to SOLD ` +
+      `(${pending.map((v: any) => v.stockNumber || v.id).join(", ")}).`,
+  );
+}
+
+try {
+  retirePendingStatus();
+} catch (err) {
+  /* Leaving a PENDING row in place is the pre-existing state, so a failure here
+     is not worth stopping the boot for. */
+  console.error("[stock] PENDING retirement failed, continuing:", err);
+}
+
+try {
+  backfillDocFlowCompletion();
+} catch (err) {
+  /* Reads treat a missing timestamp as "not complete", which is the behaviour
+     that existed before the field — so a failed backfill degrades to the status
+     quo rather than stopping the boot. */
+  console.error("[dochub] completion backfill failed, continuing:", err);
+}
+
 /**
  * Master-admin recovery.
  *
@@ -1336,6 +1503,7 @@ app.get("/api/state", (req: any, res) => {
     invoices: scopeToDealer(s.invoices, req.auth),
     agreements: scopeToDealer(s.agreements, req.auth),
     documents: scopeToDealer(s.documents || [], req.auth),
+    docEvents: scopeToDealer(s.docEvents || [], req.auth),
     expenses: scopeToDealer(s.expenses || [], req.auth),
     communications: scopeToDealer(s.communications, req.auth),
     users: scopeToDealer(s.users, req.auth),
@@ -1463,8 +1631,13 @@ app.post("/api/state/reset", (req: any, res) => {
       message: 'Send { "confirm": "RESET EVERYTHING" } to proceed.',
     });
   }
-  writeState(DEFAULT_MOCK_STATE);
-  res.json({ message: "All dealership data reset to the seed.", state: DEFAULT_MOCK_STATE });
+  /* A copy, not the seed itself. writeState re-buckets rows by dealershipId and
+     stamps them, so handing it the module-level object would edit the seed this
+     process resets to — the second reset would then restore whatever the first
+     one left behind. */
+  const seeded = freshDefaultState();
+  writeState(seeded);
+  res.json({ message: "All dealership data reset to the seed.", state: seeded });
 });
 
 // Signed-in inventory list (the Light console's stock tab reads this).
@@ -1557,7 +1730,7 @@ app.post("/api/admin/normalize-vehicles", (req: any, res) => {
 app.post("/api/inventory", (req: any, res) => {
   const state = readState();
   const newVehicle = {
-    id: "v_" + Date.now(),
+    id: newId("v_"),
     year: parseInt(req.body.year) || 2026,
     make: tidyStr(req.body.make) || "Generic",
     model: cleanModelName(req.body.model) || "Asset",
@@ -1672,6 +1845,128 @@ function toLensMeta(flowMeta: Record<string, number>): Record<string, number> {
   return out;
 }
 
+/** Apply a patch to a vehicle, owning every side effect a status change drags
+ *  with it — so no caller can set a status and quietly miss one.
+ *
+ *  Selling pulls the car off the website in the same write, and every synced
+ *  field the patch actually changes gets a fresh `fieldMeta` stamp, without
+ *  which a stale Lens re-export silently overwrites the edit.
+ *
+ *  Returns the synced fields that really changed, for the Lens push. Extracted
+ *  so cross-collection coupling (a lead closing Won moves its car) goes through
+ *  exactly the same rules as a direct inventory PUT, rather than reimplementing
+ *  two of the three and losing the rest. */
+function applyVehiclePatch(
+  state: any,
+  index: number,
+  patch: Record<string, any>,
+  now: number,
+): Record<string, any> {
+  const current = state.vehicles[index] as any;
+
+  /* Selling a car pulls it off the website in the same write, so a dealer
+     doesn't have to remember two steps. Owned server-side so Light, Premium
+     and the Lens sync all inherit it without repeating the rule. */
+  if (patch.status === "SOLD" && current.status !== "SOLD") {
+    patch.showOnWebsite = false;
+  }
+
+  /* Archiving retires a unit whose sale is already recorded, so it implies
+     SOLD and off the website. Enforced here rather than trusting the caller:
+     archiving from the UI once set only `archivedAt`, which left the car
+     counting as live stock and still publishing to the dealer's site. */
+  if (patch.archivedAt) {
+    patch.status = "SOLD";
+    patch.showOnWebsite = false;
+  }
+
+  /* Stamp a per-field updatedAt on every synced field this write actually
+     changes, so a stale Lens re-export cannot silently overwrite the edit. */
+  const nextMeta: Record<string, number> = { ...(current.fieldMeta || {}) };
+  const changedForSync: Record<string, any> = {};
+  for (const f of FLOW_SYNCED_FIELDS) {
+    if (patch[f] === undefined) continue;
+    if (patch[f] !== current[f]) {
+      nextMeta[f] = now;
+      changedForSync[f] = patch[f];
+    }
+  }
+
+  state.vehicles[index] = {
+    ...current,
+    ...patch,
+    fieldMeta: nextMeta,
+    // The owner is never taken from the request body — otherwise an edit could
+    // move a car into another dealership's stock.
+    dealershipId: current.dealershipId,
+  };
+
+  return changedForSync;
+}
+
+/** Push a vehicle edit back to TruLens for vehicles that originated there, so
+ *  the capture app's copy stays in step with the DMS. Fire-and-forget — the
+ *  dealer's save must never block on Lens. Photos/VIR/damage are excluded by
+ *  the allow-list; Lens applies mergeWithMeta at its end, so a stale push
+ *  loses the timestamp comparison instead of clobbering.
+ *
+ *  Call after writeState, so Lens is never told about an edit that failed to
+ *  persist. */
+function pushVehicleToLens(
+  state: any,
+  vehicle: any,
+  changedForSync: Record<string, any>,
+  now: number,
+): void {
+  if (!vehicle || vehicle.source !== "trulens" || !vehicle.stockNumber) return;
+  if (Object.keys(changedForSync).length === 0) return;
+
+  /* Name the dealership — stock numbers are dealer-chosen and collide across
+     yards, so an unqualified push reaches the wrong capture. */
+  const ownerSlug = (state.dealerships || []).find(
+    (d: any) => d.id === vehicle.dealershipId,
+  )?.slug;
+  const pushBody = {
+    stockNumber: vehicle.stockNumber,
+    dealerSlug: ownerSlug,
+    patch: toLensPatch(changedForSync),
+    fieldMeta: toLensMeta(
+      Object.fromEntries(Object.keys(changedForSync).map((k) => [k, now])),
+    ),
+  };
+  fetch(`${TRULENS_URL}/api/sync/vehicle`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(SYNC_SERVICE_KEY ? { "x-tru-sync-key": SYNC_SERVICE_KEY } : {}),
+    },
+    body: JSON.stringify(pushBody),
+  }).catch((err) =>
+    console.warn("[sync] TruLens edit push failed:", err?.message),
+  );
+}
+
+/** Set a vehicle's status by id, with every side effect applyVehiclePatch owns.
+ *  The entry point for lead→vehicle coupling. No-ops when the vehicle is absent
+ *  or already at that status, so callers can fire it unconditionally.
+ *
+ *  Does not push to Lens itself — the caller does that after writeState, using
+ *  the returned changedForSync. */
+function applyVehicleStatus(
+  state: any,
+  vehicleId: string,
+  next: string,
+  now: number,
+): { changed: boolean; changedForSync: Record<string, any>; index: number } {
+  const index = state.vehicles.findIndex((v: any) => v.id === vehicleId);
+  if (index === -1) return { changed: false, changedForSync: {}, index: -1 };
+  if ((state.vehicles[index] as any).status === next) {
+    return { changed: false, changedForSync: {}, index };
+  }
+  const changedForSync = applyVehiclePatch(state, index, { status: next }, now);
+  return { changed: true, changedForSync, index };
+}
+
 app.put("/api/inventory/:id", (req: any, res) => {
   const state = readState();
   const index = state.vehicles.findIndex(v => v.id === req.params.id);
@@ -1689,6 +1984,14 @@ app.put("/api/inventory/:id", (req: any, res) => {
      would quietly put image bytes back into the state this change exists to
      keep them out of. */
   const body = { ...req.body };
+
+  /* Not a vehicle field — it names which deal closed on this car. Pulled out
+     before the merge, which is a blind {...current, ...body}: left in, a
+     caller-supplied id would persist onto the vehicle row permanently and be
+     echoed back to every client that reads stock. */
+  const closeLeadId: string | undefined = body.closeLeadId;
+  delete body.closeLeadId;
+
   for (const field of VEHICLE_PHOTO_FIELDS) {
     if (Array.isArray(body[field])) body[field] = putPhotos(body[field]);
   }
@@ -1699,76 +2002,97 @@ app.put("/api/inventory/:id", (req: any, res) => {
   if ("model" in body) body.model = cleanModelName(body.model);
   if ("trim" in body) body.trim = tidyStr(body.trim);
 
-  /* Selling a car pulls it off the website in the same write, so a dealer
-     doesn't have to remember two steps. Owned server-side so Light, Premium
-     and the Lens sync all inherit it without repeating the rule. */
-  const current = state.vehicles[index] as any;
-  const willBeSold =
-    body.status === "SOLD" && current.status !== "SOLD";
-  if (willBeSold) {
-    body.showOnWebsite = false;
-  }
-
-  /* Stamp a per-field updatedAt on every synced field this write actually
-     changes, so a stale Lens re-export cannot silently overwrite the edit. */
   const now = Date.now();
-  const prevMeta: Record<string, number> = { ...(current.fieldMeta || {}) };
-  const nextMeta: Record<string, number> = { ...prevMeta };
-  const changedForSync: Record<string, any> = {};
-  for (const f of FLOW_SYNCED_FIELDS) {
-    if (body[f] === undefined) continue;
-    if (body[f] !== current[f]) {
-      nextMeta[f] = now;
-      changedForSync[f] = body[f];
+  const prevStatus = (state.vehicles[index] as any).status;
+  const changedForSync = applyVehiclePatch(state, index, body, now);
+
+  /* The deal moves with the car. Owned here rather than in the React handler
+     because this endpoint is what the Light console, TruLens sync and every
+     raw API call actually hit — selling a car from Light never moved its lead
+     for as long as Light has existed, because the rule lived in App.tsx.
+
+     Transition-based, like the lead side: only fires when the status actually
+     changes, so re-saving a sold car does nothing. */
+  const vehicle = state.vehicles[index] as any;
+  const nextStatus = vehicle.status;
+  const nowSold = nextStatus === "SOLD" && prevStatus !== "SOLD";
+  const backInStock = prevStatus === "SOLD" && nextStatus !== "SOLD";
+  const coupledLeads: { id: string; status: string }[] = [];
+
+  if (nowSold) {
+    /* Which deal closed on this car? The UI resolves ambiguity by naming one.
+       Light and raw API callers cannot, so fall back only when there is exactly
+       one candidate — guessing between two would close the wrong customer's
+       deal, and a car genuinely sold outside the system has none at all. */
+    const openLeads = state.leads.filter(
+      (l: any) =>
+        l.vehicleId === vehicle.id && l.status !== "Closed Won" && l.status !== "Closed Lost",
+    );
+
+    let target: any = null;
+    if (closeLeadId) {
+      /* Validate rather than trust — the id came from the request. The status
+         test mirrors the openLeads predicate exactly: a named id must be an
+         OPEN deal. Checking only for "Closed Won" let a caller resurrect a
+         Closed Lost deal into a sale. */
+      const named = state.leads.find((l: any) => l.id === closeLeadId);
+      const namedIsOpen =
+        named && named.status !== "Closed Won" && named.status !== "Closed Lost";
+      if (namedIsOpen && named.vehicleId === vehicle.id && mayCouple(named, vehicle)) {
+        target = named;
+      } else {
+        console.log(
+          `[coupling] closeLeadId ${closeLeadId} rejected for ${vehicle.id} ` +
+            `(missing, wrong car, already closed, or another dealership) — leads left alone.`,
+        );
+      }
+    } else if (openLeads.length === 1 && mayCouple(openLeads[0], vehicle)) {
+      target = openLeads[0];
+    } else if (openLeads.length > 1) {
+      console.log(
+        `[coupling] ${vehicle.id} sold with ${openLeads.length} open deals and no closeLeadId — leads left alone.`,
+      );
+    }
+
+    if (target) {
+      target.statusBeforeClose = target.status;
+      target.status = "Closed Won";
+      // The deal now owns this sale, so only it may reverse it.
+      vehicle.soldByLeadId = target.id;
+      coupledLeads.push({ id: target.id, status: "Closed Won" });
+    }
+  } else if (backInStock) {
+    /* Car came back, so every deal that closed on it reopens — restoring the
+       stage each came from rather than inventing one.
+
+       This is the dealer acting on the CAR, so it is unconditional: unlike the
+       lead-side `free()`, it does not require the sale to have an owner. That
+       is the escape hatch for a car sold outside the system or from Light. */
+    vehicle.soldByLeadId = null;
+    /* Selling forced it off the website; coming back to the floor puts it back,
+       which is what the UI promises when it says the car is re-listed. */
+    vehicle.showOnWebsite = true;
+    for (const l of state.leads as any[]) {
+      if (l.vehicleId !== vehicle.id || l.status !== "Closed Won") continue;
+      if (!mayCouple(l, vehicle)) continue;
+      /* Deals closed before we started recording where they came from have no
+         memory to restore. Negotiating is the least-wrong guess for those, and
+         only those. */
+      l.status = l.statusBeforeClose || "Negotiating";
+      delete l.statusBeforeClose;
+      coupledLeads.push({ id: l.id, status: l.status });
     }
   }
 
-  state.vehicles[index] = {
-    ...current,
-    ...body,
-    fieldMeta: nextMeta,
-    // The owner is never taken from the request body — otherwise an edit could
-    // move a car into another dealership's stock.
-    dealershipId: current.dealershipId,
-  };
-
   writeState(state);
 
-  /* Push the edit back to TruLens for vehicles that originated there, so the
-     capture app's copy stays in step with the DMS. Fire-and-forget — the
-     dealer's save must never block on Lens. Photos/VIR/damage are excluded by
-     the allow-list; Lens applies mergeWithMeta at its end, so a stale push
-     loses the timestamp comparison instead of clobbering. */
-  const updated = state.vehicles[index] as any;
-  if (
-    updated.source === "trulens" &&
-    updated.stockNumber &&
-    Object.keys(changedForSync).length > 0
-  ) {
-    const ownerSlug = (state.dealerships || []).find(
-      (d: any) => d.id === updated.dealershipId,
-    )?.slug;
-    const pushBody = {
-      stockNumber: updated.stockNumber,
-      dealerSlug: ownerSlug,
-      patch: toLensPatch(changedForSync),
-      fieldMeta: toLensMeta(
-        Object.fromEntries(Object.keys(changedForSync).map((k) => [k, now])),
-      ),
-    };
-    fetch(`${TRULENS_URL}/api/sync/vehicle`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(SYNC_SERVICE_KEY ? { "x-tru-sync-key": SYNC_SERVICE_KEY } : {}),
-      },
-      body: JSON.stringify(pushBody),
-    }).catch((err) =>
-      console.warn("[sync] TruLens edit push failed:", err?.message),
-    );
-  }
+  pushVehicleToLens(state, state.vehicles[index], changedForSync, now);
 
-  res.json({ message: "Vehicle updated successfully.", vehicle: state.vehicles[index] });
+  res.json({
+    message: "Vehicle updated successfully.",
+    vehicle: state.vehicles[index],
+    coupledLeads,
+  });
 });
 
 // Delete vehicle
@@ -1782,7 +2106,80 @@ app.delete("/api/inventory/:id", (req: any, res) => {
     return res.status(404).json({ error: "Vehicle not found" });
   }
 
+  /* Refuse to destroy a recorded transaction — but only a recorded one.
+     A car sold outside the DMS (cash off the floor, invoiced in the dealer's
+     own accounting package) has no deal, invoice or paperwork here, so deleting
+     it destroys nothing and must stay possible. The old rule refused every SOLD
+     unit and told the dealer to "archive it instead", which was a dead end:
+     no archive existed, so those cars could never leave the floor.
+
+     Enforced server-side because Light and raw API calls never run the
+     browser's check. An open or lost enquiry does not count as a record —
+     those are unlinked below. */
+  const sealed = {
+    closedDeals: (state.leads || []).filter(
+      (l: any) => l.vehicleId === target.id && l.status === "Closed Won",
+    ).length,
+    invoices: (state.invoices || []).filter((i: any) => i.vehicleId === target.id).length,
+    agreements: (state.agreements || []).filter((a: any) => a.vehicleId === target.id).length,
+    signedDocuments: (state.documents || []).filter(
+      (d: any) => d.vehicleId === target.id && d.status === "Signed",
+    ).length,
+  };
+  const sealedTotal = Object.values(sealed).reduce((n, c) => n + c, 0);
+  if (sealedTotal > 0) {
+    /* No archived-unit exemption. Archiving does not retract the sale, it only
+       retires the car from the floor — so an archived unit with an invoice
+       against it is exactly what this guard exists to protect. Exempting them
+       let a dealer archive a documented sale and then delete it, which is the
+       one outcome archiving was introduced to prevent. */
+    return res.status(409).json({
+      error: "This sale is recorded here — archive the vehicle instead of deleting it.",
+      recorded: sealed,
+    });
+  }
+
   state.vehicles = state.vehicles.filter((v: any) => v.id !== req.params.id);
+
+  /* Take the vehicle's dependants with it. Deleting the row alone left leads,
+     tasks and DocHub documents pointing at an id that no longer resolves — the
+     lead's car renders blank and the orphaned docEvents keep being served.
+
+     Leads and tasks are unlinked rather than deleted: the customer and the work
+     are real and worth keeping once the car is gone. Documents belong to the
+     vehicle, so they go with it.
+
+     Invoices and agreements are not handled here because they cannot be here:
+     the guard above refuses to delete any vehicle carrying one. */
+  const gone = req.params.id;
+  for (const l of (state.leads || []) as any[]) {
+    if (l.vehicleId === gone) delete l.vehicleId;
+  }
+  for (const t of (state.tasks || []) as any[]) {
+    if (t.vehicleId === gone) delete t.vehicleId;
+  }
+  const affectedLeadIds = new Set(
+    ((state.documents || []) as any[])
+      .filter((d) => d.vehicleId === gone && d.leadId)
+      .map((d) => d.leadId),
+  );
+  const droppedDocIds = new Set(
+    ((state.documents || []) as any[]).filter((d) => d.vehicleId === gone).map((d) => d.id),
+  );
+  if (droppedDocIds.size > 0) {
+    state.documents = ((state.documents || []) as any[]).filter((d) => !droppedDocIds.has(d.id));
+    state.docEvents = ((state.docEvents || []) as any[]).filter(
+      (e) => !droppedDocIds.has(e.docId),
+    );
+    /* Those documents were a lead's evidence for the stages it had passed.
+       Removing them without re-deriving leaves the lead claiming a stage — or
+       claiming completion — with nothing behind it, which is precisely the
+       drift recomputeDocStage exists to prevent. */
+    for (const leadId of affectedLeadIds) {
+      recomputeDocStage(state, (state.leads || []).find((l: any) => l.id === leadId));
+    }
+  }
+
   writeState(state);
 
   // If this vehicle was imported from TruLens, tell TruLens to remove it too
@@ -1826,7 +2223,7 @@ app.post("/api/leads", (req: any, res) => {
   // "New" widened to string and the whole literal was pushed into Lead[]
   // unchecked, and this takes shape straight off the request.
   const newLead: Lead = {
-    id: "l_" + Date.now(),
+    id: newId("l_"),
     // Tag the lead to a dealer, or it defaults to the pilot dealership and one
     // yard ends up working another yard's customers. A signed-in dealer can
     // only ever create leads for themselves.
@@ -1861,6 +2258,19 @@ app.post("/api/leads", (req: any, res) => {
   res.status(201).json({ message: "Lead file logged successfully.", lead: newLead });
 });
 
+/** May a lead and a vehicle be coupled?
+ *
+ *  Its own check rather than trusting the caller's, because coupling writes to
+ *  two collections at once. `mayTouch` lets `undefined === undefined` pass, the
+ *  vehicle lookup is by id across all tenants, and an admin bypasses both — so
+ *  without this a cross-dealership pairing is representable. Both rows must
+ *  carry the same, non-empty dealership; legacy untagged rows simply do not
+ *  auto-couple, which is the conservative answer. */
+function mayCouple(lead: any, vehicle: any): boolean {
+  if (!lead || !vehicle) return false;
+  return !!lead.dealershipId && lead.dealershipId === vehicle.dealershipId;
+}
+
 app.put("/api/leads/:id", (req: any, res) => {
   const state = readState();
   const index = state.leads.findIndex(l => l.id === req.params.id);
@@ -1871,27 +2281,192 @@ app.put("/api/leads/:id", (req: any, res) => {
     return res.status(403).json({ error: "Not your lead." });
   }
 
+  const prevStatus = (state.leads[index] as any).status;
+  const prevVehicleId = (state.leads[index] as any).vehicleId;
+
   const { dealershipId: _drop, ...updates } = req.body;
   state.leads[index] = {
     ...state.leads[index],
     ...updates,
     dealershipId: state.leads[index].dealershipId,
   };
+  const lead = state.leads[index] as any;
+
+  /* A deal closing or reopening moves its car with it, so the two can never
+     disagree about whether the vehicle is still for sale. Owned here rather
+     than in the React handler because Light and the sync endpoints never run
+     that code — and doing it in both would race two writes on one JSON file.
+
+     Transition-based: fires only when the status actually changes on this
+     request, so editing a price on a long-closed deal never reaches out and
+     moves stock, and pre-existing drift is left for the dealer to judge. */
+  const now = Date.now();
+  const syncs: { changedForSync: Record<string, any>; index: number }[] = [];
+  const coupledVehicles: { id: string; status: string }[] = [];
+
+  /** Mark a car sold for this deal, if the two may be coupled at all.
+   *
+   *  Records the deal as the sale's owner, so only it can reverse this. */
+  const sell = (vehicleId?: string) => {
+    if (!vehicleId) return;
+    const vehicle = state.vehicles.find((v: any) => v.id === vehicleId);
+    if (!mayCouple(lead, vehicle)) return;
+    const r = applyVehicleStatus(state, vehicleId, "SOLD", now);
+    if (r.changed) {
+      (state.vehicles[r.index] as any).soldByLeadId = lead.id;
+      syncs.push(r);
+      coupledVehicles.push({ id: vehicleId, status: "SOLD" });
+    }
+  };
+
+  /** Return a car to stock — but only when THIS deal is what sold it.
+   *
+   *  Two guards, and both are needed. `soldByLeadId` proves this deal owns the
+   *  sale: without it, reopening any lead attached to the car put it back on
+   *  the floor, including a car sold from the Light console or outside the
+   *  system entirely, which no deal owns. `stillHeld` then covers a car several
+   *  deals closed on, so freeing one does not un-sell what another bought. */
+  const free = (vehicleId?: string) => {
+    if (!vehicleId) return;
+    const vehicle = state.vehicles.find((v: any) => v.id === vehicleId);
+    if (!mayCouple(lead, vehicle)) return;
+    if (vehicle.soldByLeadId !== lead.id) return;
+    const stillHeld = state.leads.some(
+      (l: any) => l.id !== lead.id && l.vehicleId === vehicleId && l.status === "Closed Won",
+    );
+    if (stillHeld) return;
+    const r = applyVehicleStatus(state, vehicleId, "INVENTORY", now);
+    if (r.changed) {
+      const freed = state.vehicles[r.index] as any;
+      freed.soldByLeadId = null;
+      /* Selling forced the car off the website; returning it to stock puts it
+         back, which is what "re-lists it on your website" promises the dealer.
+         Without this the car came back to the floor invisible online. */
+      freed.showOnWebsite = true;
+      syncs.push(r);
+      coupledVehicles.push({ id: vehicleId, status: "INVENTORY" });
+    }
+  };
+
+  /* Which car this deal held before, and which it holds now. Comparing the two
+     covers closing, reopening, AND reassigning a closed deal to a different car
+     — that last one otherwise leaves the original sold with nothing holding it
+     while the replacement sits in stock, one edit making two contradictions.
+
+     Still transition-based: when the held car is unchanged (a price or phone
+     edit on a closed deal) both sides are equal and nothing fires. That matters
+     — re-deriving state on every write would un-sell a car sold outside the
+     system the moment any lead near it was touched. */
+  const heldBefore = prevStatus === "Closed Won" ? prevVehicleId : undefined;
+  const heldNow = lead.status === "Closed Won" ? lead.vehicleId : undefined;
+
+  if (heldBefore !== heldNow) {
+    free(heldBefore);
+    sell(heldNow);
+    // Remember where the deal came from, so reopening restores that rather
+    // than guessing; clear it once the deal is open again.
+    if (heldNow && prevStatus && prevStatus !== "Closed Won") {
+      lead.statusBeforeClose = prevStatus;
+    }
+    if (!heldNow) delete lead.statusBeforeClose;
+  }
 
   writeState(state);
-  res.json({ message: "Lead updated successfully.", lead: state.leads[index] });
+
+  for (const s of syncs) {
+    pushVehicleToLens(state, state.vehicles[s.index], s.changedForSync, now);
+  }
+
+  res.json({
+    message: "Lead updated successfully.",
+    lead: state.leads[index],
+    // Kept singular for the common case; the array covers a reassignment,
+    // which moves two cars at once.
+    coupledVehicle: coupledVehicles[0] ?? null,
+    coupledVehicles,
+  });
 });
 
 app.delete("/api/leads/:id", (req: any, res) => {
   const state = readState();
-  const target = state.leads.find(l => l.id === req.params.id);
+  const target = state.leads.find(l => l.id === req.params.id) as any;
   if (!target) return res.status(404).json({ error: "Lead not found" });
   if (!mayTouch(target, req.auth)) {
     return res.status(403).json({ error: "Not your lead." });
   }
-  state.leads = state.leads.filter(l => l.id !== req.params.id);
+
+  /* Refuse to erase a closed sale, for the same reason a sold vehicle cannot be
+     deleted: a Closed Won deal with signed paperwork is the record of a
+     transaction. Deleting it also silently unblocked vehicle deletion — the
+     `sealed.closedDeals` count would drop to zero and the car, along with its
+     signed documents, became freely deletable. Two endpoints, opposite rules on
+     the same evidence. */
+  const signedDocs = ((state.documents || []) as any[]).filter(
+    (d) => d.leadId === target.id && d.status === "Signed",
+  ).length;
+  if (target.status === "Closed Won" || signedDocs > 0) {
+    return res.status(409).json({
+      error:
+        "This deal closed and its paperwork is on file — it cannot be deleted. " +
+        "Reopen it first if the sale fell through.",
+      recorded: { closedWon: target.status === "Closed Won", signedDocuments: signedDocs },
+    });
+  }
+
+  const gone = target.id;
+  state.leads = state.leads.filter(l => l.id !== gone);
+
+  /* Everything that pointed at this lead. Deleting the row alone left DocHub
+     documents and their audit rows still being served, tasks rendering a blank
+     customer, and — if the deal had held a car — the vehicle sold with nothing
+     accounting for it.
+
+     Tasks are unlinked rather than deleted: the work is real even once the
+     enquiry is gone. Documents belong to the deal, so they go with it. */
+  for (const t of (state.tasks || []) as any[]) {
+    if (t.leadId === gone) delete t.leadId;
+  }
+  const droppedDocIds = new Set(
+    ((state.documents || []) as any[]).filter((d) => d.leadId === gone).map((d) => d.id),
+  );
+  if (droppedDocIds.size > 0) {
+    state.documents = ((state.documents || []) as any[]).filter((d) => !droppedDocIds.has(d.id));
+    state.docEvents = ((state.docEvents || []) as any[]).filter(
+      (e) => !droppedDocIds.has(e.docId),
+    );
+  }
+
+  /* If this deal was what marked a car sold, release it — otherwise the car is
+     stranded SOLD with no deal behind it and no way to tell why. Guarded the
+     same way the coupling is: only a car this deal actually sold, and only when
+     no other deal still holds it. */
+  const now = Date.now();
+  let freedSync: { changedForSync: Record<string, any>; index: number } | null = null;
+  const heldVehicle = state.vehicles.find((v: any) => v.soldByLeadId === gone) as any;
+  if (heldVehicle && mayCouple(target, heldVehicle)) {
+    const stillHeld = state.leads.some(
+      (l: any) => l.vehicleId === heldVehicle.id && l.status === "Closed Won",
+    );
+    if (!stillHeld) {
+      const r = applyVehicleStatus(state, heldVehicle.id, "INVENTORY", now);
+      if (r.changed) {
+        const freed = state.vehicles[r.index] as any;
+        freed.soldByLeadId = null;
+        freed.showOnWebsite = true;
+        freedSync = r;
+      }
+    }
+  }
+
   writeState(state);
-  res.json({ message: "Lead file deleted." });
+  if (freedSync) {
+    pushVehicleToLens(state, state.vehicles[freedSync.index], freedSync.changedForSync, now);
+  }
+
+  res.json({
+    message: "Lead file deleted.",
+    releasedVehicle: freedSync ? heldVehicle.id : null,
+  });
 });
 
 // Tasks Directives API
@@ -1903,7 +2478,7 @@ app.get("/api/tasks", (req: any, res) => {
 app.post("/api/tasks", (req: any, res) => {
   const state = readState();
   const newTask = {
-    id: "t_" + Date.now(),
+    id: newId("t_"),
     title: req.body.title || "Generic Follow-Up Task",
     leadId: req.body.leadId || "",
     vehicleId: req.body.vehicleId || "",
@@ -1961,7 +2536,7 @@ app.get("/api/invoices", (req: any, res) => {
 app.post("/api/invoices", (req: any, res) => {
   const state = readState();
   const newInvoice = {
-    id: "inv_" + Date.now(),
+    id: newId("inv_"),
     invoiceNumber: req.body.invoiceNumber || `INV-2026-00${state.invoices.length + 1}`,
     leadId: req.body.leadId,
     vehicleId: req.body.vehicleId,
@@ -2003,7 +2578,7 @@ app.get("/api/agreements", (req: any, res) => {
 app.post("/api/agreements", (req: any, res) => {
   const state = readState();
   const newAgreement = {
-    id: "agr_" + Date.now(),
+    id: newId("agr_"),
     agreementNumber: req.body.agreementNumber || `AGR-2026-00${state.agreements.length + 1}`,
     leadId: req.body.leadId,
     vehicleId: req.body.vehicleId,
@@ -2049,17 +2624,122 @@ app.get("/api/documents", (req: any, res) => {
 
 app.post("/api/documents", (req: any, res) => {
   const state = readState();
-  const { fileName, mimeType, fileData, leadId, vehicleId } = req.body || {};
+  const {
+    fileName,
+    mimeType,
+    fileData,
+    leadId,
+    vehicleId,
+    stage,
+    mode,
+    fieldSnapshot,
+  } = req.body || {};
   // Take the dealership from the session, not the request. Untagged documents
   // fall to the default dealership, so a dealer's own uploads disappeared from
   // their list the moment scoping was switched on.
   const dealershipId =
     req.auth?.role === "admin" ? req.body?.dealershipId : req.auth?.dealershipId;
+
+  // DocHub path: a stage was named. Validate it, honour the dealer's
+  // configured mode for that stage, and allow the doc to exist as a Draft
+  // even before a file has been attached. Non-DocHub uploads keep the
+  // original strict "need a file up front" contract.
+  const isDocHub = typeof stage === "string" && DOC_STAGES.includes(stage as DocStage);
+
+  if (isDocHub) {
+    const stageTyped = stage as DocStage;
+    if (mode !== "generate" && mode !== "attach" && mode !== "confirm") {
+      return res.status(400).json({ error: "mode must be 'generate', 'attach', or 'confirm' when stage is set" });
+    }
+    if (!leadId) {
+      return res.status(400).json({ error: "leadId is required for DocHub documents" });
+    }
+
+    /* The lead must be the caller's own. `mayTouch` guards the DOCUMENT, which
+       is created under the caller's dealership and therefore always passes —
+       it says nothing about the lead the document names. Finalising and voiding
+       both write `docStage`, `docFlowCompletedAt` and `dealChecklist` onto that
+       lead, so an unchecked id here let one dealer advance another dealer's
+       deal. 404 rather than 403: the caller should not learn whether an id
+       exists elsewhere.
+
+       Admins may act for any dealership, and often send no dealershipId, so the
+       document takes the lead's — a document and the deal it belongs to must
+       never end up under different tenants. */
+    const ownerLead = state.leads.find((l: any) => l.id === leadId);
+    if (!ownerLead) return res.status(404).json({ error: "Lead not found" });
+    if (req.auth?.role !== "admin" && ownerLead.dealershipId !== dealershipId) {
+      return res.status(404).json({ error: "Lead not found" });
+    }
+    const docDealershipId = ownerLead.dealershipId ?? dealershipId;
+    // Fixed-mode stages (compliance = confirm) cannot be overridden by any
+    // caller. Non-fixed stages must match the dealer's configured mode; admins
+    // can cross the line for support work.
+    const fixedMode = FIXED_STAGE_MODES[stageTyped];
+    if (fixedMode && mode !== fixedMode) {
+      return res.status(400).json({
+        error: `Stage '${stageTyped}' is fixed at '${fixedMode}' mode.`,
+      });
+    }
+    if (!fixedMode && req.auth?.role !== "admin") {
+      const dealer = (state.dealerships || []).find((d: any) => d.id === docDealershipId);
+      const configured = dealer?.docFlow?.[stageTyped] || "attach";
+      if (configured !== (mode as DocMode)) {
+        return res.status(400).json({
+          error: `Dealer's ${stageTyped} stage is set to '${configured}', not '${mode}'. Change it in Doc Flow Settings first.`,
+        });
+      }
+    }
+    // Attach mode: a file is what the whole point is. Reject without one.
+    // Generate mode: v1 defers PDF rendering, so no file is required yet.
+    // Confirm mode: no file at all — this stage is verified by checklist flags.
+    if (mode === "attach" && !fileData) {
+      return res.status(400).json({ error: "fileData is required for attach mode" });
+    }
+
+    // Auto-populate vehicleId from the lead if the caller didn't pass one, so
+    // the doc surfaces on the vehicle record without every client having to
+    // remember the linkage.
+    const lead = (state.leads || []).find((l: any) => l.id === leadId);
+    const resolvedVehicleId = vehicleId || lead?.vehicleId || undefined;
+
+    const newDoc: DealerDocument = {
+      id: newId("doc_"),
+      fileName: fileName || `${stageTyped}-${new Date().toISOString().slice(0, 10)}`,
+      mimeType: mimeType || "application/pdf",
+      fileData: fileData || "",
+      status: "Draft",
+      uploadedAt: new Date().toISOString(),
+      leadId,
+      vehicleId: resolvedVehicleId,
+      dealershipId: docDealershipId,
+      stage: stageTyped,
+      mode: mode as DocMode,
+      fieldSnapshot: mode === "generate" ? (fieldSnapshot || {}) : undefined,
+    };
+    if (!state.documents) state.documents = [];
+    state.documents.unshift(newDoc);
+    if (!state.docEvents) state.docEvents = [];
+    state.docEvents.unshift({
+      id: newId("de_"),
+      docId: newDoc.id,
+      leadId,
+      action: "created",
+      userId: req.auth?.userId,
+      timestamp: new Date().toISOString(),
+      // Follows the document, so the audit row is scoped with what it describes.
+      dealershipId: docDealershipId,
+    });
+    writeState(state);
+    return res.status(201).json({ message: "Document created.", document: newDoc });
+  }
+
+  // Legacy hub upload path — unchanged.
   if (!fileName || !fileData) {
     return res.status(400).json({ error: "fileName and fileData are required" });
   }
   const newDoc: DealerDocument = {
-    id: "doc_" + Date.now(),
+    id: newId("doc_"),
     fileName,
     mimeType: mimeType || "application/octet-stream",
     fileData,
@@ -2099,6 +2779,29 @@ app.post("/api/documents/:id/sign", (req: any, res) => {
   res.json({ message: "Document signed.", document: state.documents[index] });
 });
 
+/** Re-derive a lead's stage pointer from the documents that actually exist.
+ *
+ *  `docStage` is otherwise only ever advanced, so voiding a document part-way
+ *  through a finished flow would leave the lead claiming a stage it no longer
+ *  has evidence for. Deriving the next-due stage from signed documents makes
+ *  the pointer self-correcting instead of something that can silently drift. */
+function recomputeDocStage(state: any, lead: any): void {
+  if (!lead) return;
+  const signed = new Set(
+    ((state.documents || []) as any[])
+      .filter((d) => d.leadId === lead.id && d.status === "Signed" && d.stage)
+      .map((d) => d.stage),
+  );
+  const nextDue = DOC_STAGES.find((s) => !signed.has(s)) ?? null;
+  lead.docStage = nextDue;
+  if (nextDue === null) {
+    if (!lead.docFlowCompletedAt) lead.docFlowCompletedAt = new Date().toISOString();
+  } else {
+    // No longer complete — the flow has a gap in it again.
+    delete lead.docFlowCompletedAt;
+  }
+}
+
 app.delete("/api/documents/:id", (req: any, res) => {
   const state = readState();
   const target = (state.documents || []).find((d: any) => d.id === req.params.id);
@@ -2106,9 +2809,370 @@ app.delete("/api/documents/:id", (req: any, res) => {
   if (!mayTouch(target, req.auth)) {
     return res.status(403).json({ error: "Not your document." });
   }
+
+  /* A signed stage document is the evidence a stage was completed. Deleting it
+     would leave the lead advanced past a stage with nothing behind it, and
+     destroy the audit trail for a contract the customer signed. Void it
+     instead: the record survives, marked invalid, and the stage reopens. */
+  if (target.stage && target.status === "Signed") {
+    return res.status(409).json({
+      error: "This document is signed evidence for a completed stage — void it instead of deleting it.",
+      stage: target.stage,
+    });
+  }
+
   state.documents = (state.documents || []).filter((d: any) => d.id !== req.params.id);
+  // Its audit rows go with it — otherwise they are served forever pointing at
+  // a document id that no longer resolves.
+  state.docEvents = ((state.docEvents || []) as any[]).filter((e) => e.docId !== target.id);
   writeState(state);
   res.json({ message: "Document deleted." });
+});
+
+/** Void a signed stage document: keep the record, mark it invalid, and reopen
+ *  the stage. The counterpart to refusing deletion above. */
+app.post("/api/documents/:id/void", (req: any, res) => {
+  const state = readState();
+  const index = (state.documents || []).findIndex((d: any) => d.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: "Document not found" });
+  const doc = state.documents[index] as any;
+  if (!mayTouch(doc, req.auth)) return res.status(403).json({ error: "Not your document." });
+  if (!doc.stage) {
+    return res.status(400).json({ error: "Only a DocHub stage document can be voided." });
+  }
+
+  state.documents[index] = { ...doc, status: "Void" };
+
+  if (!state.docEvents) state.docEvents = [];
+  state.docEvents.unshift({
+    id: newId("de_"),
+    docId: doc.id,
+    leadId: doc.leadId,
+    action: "voided",
+    userId: req.auth?.userId,
+    timestamp: new Date().toISOString(),
+    dealershipId: doc.dealershipId,
+  });
+
+  const lead = (state.leads || []).find((l: any) => l.id === doc.leadId);
+  /* Finalising the invoice stage ticks `dealChecklist.invoiced`; voiding it has
+     to untick, or the checklist keeps asserting an invoice that no longer
+     exists. The drift report was reporting exactly this pair and nothing was
+     repairing it. */
+  if (doc.stage === "invoice" && lead?.dealChecklist?.invoiced) {
+    lead.dealChecklist = { ...lead.dealChecklist, invoiced: false };
+  }
+  recomputeDocStage(state, lead);
+
+  writeState(state);
+  res.json({
+    message: "Document voided.",
+    document: state.documents[index],
+    lead: lead ? { id: lead.id, docStage: lead.docStage, docFlowCompletedAt: lead.docFlowCompletedAt } : null,
+  });
+});
+
+/** Read-only consistency report — records that contradict each other.
+ *
+ *  Status coupling is deliberately transition-based: it fires when a status
+ *  actually changes, and so never repairs drift that already exists. A car sold
+ *  before any coupling existed keeps its deal open forever and nothing surfaces
+ *  it. This lists those pairs and changes nothing — what to do about a
+ *  months-old mismatch is the dealer's judgement, not something a GET should
+ *  decide for them.
+ *
+ *  Some rows here are legitimate rather than wrong: a car genuinely sold
+ *  outside the DMS has no deal to close. Each group carries a note saying so,
+ *  because a report that cries wolf gets ignored. */
+app.get("/api/drift", (req: any, res) => {
+  const state = readState();
+  const vehicles = scopeToDealer(state.vehicles || [], req.auth) as any[];
+  const leads = scopeToDealer(state.leads || [], req.auth) as any[];
+  const documents = scopeToDealer(state.documents || [], req.auth) as any[];
+
+  const vehicleById = new Map(vehicles.map((v) => [v.id, v]));
+  const leadsByVehicle = new Map<string, any[]>();
+  for (const l of leads) {
+    if (!l.vehicleId) continue;
+    const arr = leadsByVehicle.get(l.vehicleId) || [];
+    arr.push(l);
+    leadsByVehicle.set(l.vehicleId, arr);
+  }
+
+  const vLabel = (v: any) =>
+    !v ? "(missing vehicle)" : [v.year, v.make, v.model].filter(Boolean).join(" ") || v.stockNumber || v.id;
+  const lName = (l: any) => `${l.firstName || ""} ${l.lastName || ""}`.trim() || l.id;
+
+  /* Sold with no deal closed against it. Often legitimate — a cash sale off the
+     floor never had a lead — but also what a sale through a non-coupling path
+     looks like. */
+  const soldWithNoClosedDeal = vehicles
+    .filter((v) => v.status === "SOLD")
+    .filter((v) => !(leadsByVehicle.get(v.id) || []).some((l) => l.status === "Closed Won"))
+    .map((v) => ({ vehicleId: v.id, stockNumber: v.stockNumber, label: vLabel(v) }));
+
+  /* Deal closed Won while its car is still on the floor — the public feed
+     publishes INVENTORY, so this car is still advertised as available. */
+  const closedDealStillInStock = leads
+    .filter((l) => l.status === "Closed Won" && l.vehicleId)
+    .filter((l) => {
+      const v = vehicleById.get(l.vehicleId);
+      return v && v.status !== "SOLD";
+    })
+    .map((l) => ({
+      leadId: l.id,
+      name: lName(l),
+      vehicleId: l.vehicleId,
+      label: vLabel(vehicleById.get(l.vehicleId)),
+    }));
+
+  /* Compliance is verified only at the moment it is finalised. All three tick
+     surfaces can clear NATIS or roadworthy afterwards, leaving a deal that
+     claims compliance is done with the evidence flags false. */
+  const complianceIdx = DOC_STAGES.indexOf("compliance");
+  const compliancePastButUnticked = leads
+    .filter((l) => {
+      const past = l.docFlowCompletedAt
+        ? true
+        : l.docStage
+        ? DOC_STAGES.indexOf(l.docStage) > complianceIdx
+        : false;
+      if (!past) return false;
+      const cl = l.dealChecklist || {};
+      return !cl.natis || !cl.roadworthy;
+    })
+    .map((l) => {
+      const cl = l.dealChecklist || {};
+      return {
+        leadId: l.id,
+        name: lName(l),
+        missing: [!cl.natis && "natis", !cl.roadworthy && "roadworthy"].filter(Boolean),
+      };
+    });
+
+  /* The checklist's "Invoiced" tick and DocHub's invoice stage are two records
+     of one event, and the tick is freely editable from two other screens.
+     Only compared for deals that actually entered DocHub — a dealer who has not
+     adopted it would otherwise see every lead listed here. */
+  const leadsWithSignedInvoice = new Set(
+    documents.filter((d) => d.stage === "invoice" && d.status === "Signed").map((d) => d.leadId),
+  );
+  const invoicedFlagDisagrees = leads
+    .filter((l) => l.docStage || l.docFlowCompletedAt)
+    .filter((l) => !!l.dealChecklist?.invoiced !== leadsWithSignedInvoice.has(l.id))
+    .map((l) => ({
+      leadId: l.id,
+      name: lName(l),
+      checklistSaysInvoiced: !!l.dealChecklist?.invoiced,
+      docHubInvoiceFinalised: leadsWithSignedInvoice.has(l.id),
+    }));
+
+  const groups = {
+    soldWithNoClosedDeal: {
+      note: "Sold with no Closed Won deal. Legitimate for a sale made outside the DMS.",
+      rows: soldWithNoClosedDeal,
+    },
+    closedDealStillInStock: {
+      note: "Deal closed but the car is still in stock — it is still advertised as available.",
+      rows: closedDealStillInStock,
+    },
+    compliancePastButUnticked: {
+      note: "Past the compliance stage with NATIS or roadworthy un-ticked since.",
+      rows: compliancePastButUnticked,
+    },
+    invoicedFlagDisagrees: {
+      note: "Checklist 'Invoiced' and the DocHub invoice stage disagree.",
+      rows: invoicedFlagDisagrees,
+    },
+  };
+
+  res.json({
+    total: Object.values(groups).reduce((n, g) => n + g.rows.length, 0),
+    groups,
+  });
+});
+
+// --- DocHub ---------------------------------------------------------
+// A five-stage document lifecycle bolted on top of the existing documents
+// collection. Docs opt into it by setting `stage` and `mode`; everything
+// else keeps its old behaviour.
+
+/** Dealer self-service editing of identity fields the dealer's own docs
+ *  and public listings quote — name, trading-as, VAT number, contact email,
+ *  address, registration number. Admins may target any dealership by passing
+ *  `dealershipId` in the body; dealers implicitly target their own. Guarded
+ *  whitelist: nothing outside this set (products, slug, id) can be changed
+ *  through here — those remain admin-only via /api/dealerships/:id. */
+app.put("/api/dealership/self", (req: any, res) => {
+  const state = readState();
+  const targetId =
+    req.auth?.role === "admin" ? (req.body?.dealershipId || req.auth?.dealershipId) : req.auth?.dealershipId;
+  if (!targetId) return res.status(400).json({ error: "dealershipId required" });
+  const i = (state.dealerships || []).findIndex((d: any) => d.id === targetId);
+  if (i === -1) return res.status(404).json({ error: "Dealership not found" });
+
+  const { name, tradingAs, vatNumber, contactEmail, address, registrationNumber, websiteUrl } = req.body || {};
+  const d = state.dealerships[i] as any;
+  if (typeof name === "string" && name.trim()) d.name = name.trim();
+  if (typeof tradingAs === "string") d.tradingAs = tradingAs.trim();
+  if (typeof vatNumber === "string") d.vatNumber = vatNumber.trim();
+  if (typeof contactEmail === "string") d.contactEmail = contactEmail.trim();
+  if (typeof address === "string") d.address = address.trim();
+  if (typeof registrationNumber === "string") d.registrationNumber = registrationNumber.trim();
+  if (typeof websiteUrl === "string") d.websiteUrl = websiteUrl.trim();
+
+  writeState(state);
+  res.json({ dealership: state.dealerships[i] });
+});
+
+/** Per-stage mode configuration. Dealers self-serve for their own dealership;
+ *  admins may target any dealership by passing `dealershipId` in the body. */
+app.put("/api/docflow", (req: any, res) => {
+  const state = readState();
+  const targetId =
+    req.auth?.role === "admin" ? (req.body?.dealershipId || req.auth?.dealershipId) : req.auth?.dealershipId;
+  if (!targetId) return res.status(400).json({ error: "dealershipId required" });
+  const i = (state.dealerships || []).findIndex((d: any) => d.id === targetId);
+  if (i === -1) return res.status(404).json({ error: "Dealership not found" });
+
+  const { docFlow } = req.body || {};
+  if (!docFlow || typeof docFlow !== "object") {
+    return res.status(400).json({ error: "docFlow object required" });
+  }
+  const clean: Partial<Record<DocStage, DocMode>> = {};
+  for (const stage of DOC_STAGES) {
+    const mode = docFlow[stage];
+    if (mode === "generate" || mode === "attach") clean[stage] = mode;
+  }
+  state.dealerships[i].docFlow = { ...(state.dealerships[i].docFlow || {}), ...clean };
+  writeState(state);
+  res.json({ dealership: state.dealerships[i] });
+});
+
+/** Docs for a specific deal (lead). Scoped to the caller's dealership. */
+app.get("/api/deals/:leadId/documents", (req: any, res) => {
+  const state = readState();
+  const all = (state.documents || []).filter((d: any) => d.leadId === req.params.leadId);
+  res.json(scopeToDealer(all, req.auth));
+});
+
+/** Finalise a DocHub document — runs the validator (generate mode only),
+ *  marks the doc signed, appends an audit event, and advances the parent
+ *  lead's docStage to the next stage in DOC_STAGES. Also flips the existing
+ *  dealChecklist.invoiced flag when the invoice stage completes so the older
+ *  readiness view stays in step with DocHub. */
+app.post("/api/documents/:id/finalize", (req: any, res) => {
+  const state = readState();
+  const index = (state.documents || []).findIndex((d: any) => d.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: "Document not found" });
+  const doc = state.documents[index];
+  if (!mayTouch(doc, req.auth)) return res.status(403).json({ error: "Not your document." });
+  if (!doc.stage || !doc.mode) {
+    return res.status(400).json({ error: "This document is not a DocHub stage document." });
+  }
+
+  const lead = (state.leads || []).find((l: any) => l.id === doc.leadId) as Lead | undefined;
+
+  /* Stages run in order, and finalising one asserts the ones before it are
+     done. Without this, a lone handover document could be finalised on an
+     untouched deal: `currentIdx` is -1, `thisIdx >= currentIdx` passes, the
+     next stage resolves to null and the deal is stamped complete having
+     produced no proforma, deed, compliance or invoice at all — then vanishes
+     off Deal Readiness. */
+  const signedStages = new Set(
+    ((state.documents || []) as any[])
+      .filter((d) => d.leadId === doc.leadId && d.status === "Signed" && d.stage)
+      .map((d) => d.stage),
+  );
+  const missingEarlier = DOC_STAGES.slice(0, DOC_STAGES.indexOf(doc.stage)).filter(
+    (s) => !signedStages.has(s),
+  );
+  if (missingEarlier.length > 0) {
+    return res.status(422).json({
+      error: "Earlier stages are not finalised yet.",
+      missing: missingEarlier,
+    });
+  }
+
+  if (doc.mode === "generate") {
+    const check = canAdvance(doc.stage, doc.fieldSnapshot || {}, lead);
+    if (!check.ok) {
+      return res.status(422).json({
+        error: "Required fields are missing.",
+        missing: check.missing,
+      });
+    }
+  } else if (doc.mode === "confirm") {
+    // Compliance uses this path: verify the checklist flags rather than a
+    // file. Reject with the same shape as canAdvance so the client renders
+    // the missing list without a special case.
+    const missing: string[] = [];
+    if (doc.stage === "compliance") {
+      if (!lead?.dealChecklist?.natis) missing.push("natis");
+      if (!lead?.dealChecklist?.roadworthy) missing.push("roadworthy");
+    }
+    if (missing.length > 0) {
+      return res.status(422).json({ error: "Compliance not confirmed.", missing });
+    }
+  } else {
+    // Attach mode: dealer's own doc must be present and signed before we
+    // treat the stage as complete. /api/documents/:id/sign is the existing
+    // canvas-signature endpoint they'll have hit already.
+    if (!doc.fileData) return res.status(422).json({ error: "No file attached." });
+    if (doc.status !== "Signed") {
+      return res.status(422).json({ error: "Attached document must be signed before finalising." });
+    }
+  }
+
+  state.documents[index] = {
+    ...doc,
+    status: "Signed",
+    signedAt: doc.signedAt || new Date().toISOString(),
+  };
+
+  if (!state.docEvents) state.docEvents = [];
+  state.docEvents.unshift({
+    id: newId("de_"),
+    docId: doc.id,
+    leadId: doc.leadId,
+    action: "finalized",
+    userId: req.auth?.userId,
+    timestamp: new Date().toISOString(),
+    dealershipId: doc.dealershipId,
+  });
+
+  // Advance the lead's stage. If already past this stage (e.g. dealer went
+  // back and re-finalised an earlier stage), leave the current position
+  // alone rather than yanking them backwards.
+  if (lead) {
+    const currentIdx = lead.docStage ? DOC_STAGES.indexOf(lead.docStage) : -1;
+    const thisIdx = DOC_STAGES.indexOf(doc.stage);
+    if (thisIdx >= currentIdx) {
+      const nextStage = DOC_STAGES[thisIdx + 1] ?? null;
+      lead.docStage = nextStage;
+      /* Finalising the last stage leaves docStage null — indistinguishable
+         from a lead that never started. Stamp completion separately so the
+         two can be told apart; without this a finished deal renders as if it
+         were sitting at Proforma. */
+      if (nextStage === null) {
+        lead.docFlowCompletedAt = new Date().toISOString();
+      }
+    }
+    // Keep the older readiness checklist consistent when the invoice stage
+    // finalises — the two views must never disagree about "is this invoiced".
+    if (doc.stage === "invoice") {
+      lead.dealChecklist = { ...(lead.dealChecklist || {}), invoiced: true };
+    }
+  }
+
+  writeState(state);
+  res.json({
+    message: "Document finalised.",
+    document: state.documents[index],
+    lead: lead
+      ? { id: lead.id, docStage: lead.docStage, docFlowCompletedAt: lead.docFlowCompletedAt }
+      : null,
+  });
 });
 
 // Accounting Expenses API
@@ -2120,7 +3184,7 @@ app.get("/api/expenses", (req: any, res) => {
 app.post("/api/expenses", (req: any, res) => {
   const state = readState();
   const newExpense = {
-    id: "exp_" + Date.now(),
+    id: newId("exp_"),
     description: req.body.description || "General Expense",
     amount: parseFloat(req.body.amount) || 0,
     date: req.body.date || new Date().toISOString().slice(0, 10),
@@ -2177,7 +3241,7 @@ app.get("/api/communications", (req: any, res) => {
 app.post("/api/communications", (req: any, res) => {
   const state = readState();
   const newComm = {
-    id: "c_" + Date.now(),
+    id: newId("c_"),
     leadId: req.body.leadId,
     type: req.body.type || "email",
     subject: req.body.subject || "Follow-up discussion",
@@ -2336,8 +3400,13 @@ app.post("/api/chat", async (req: any, res) => {
     };
 
     const activeVehicles = state.vehicles.filter(v => v.status === "INVENTORY");
-    const pendingVehicles = state.vehicles.filter(v => v.status === "PENDING");
     const soldVehicles = state.vehicles.filter(v => v.status === "SOLD");
+    /* Was a count of PENDING vehicles — a status nothing wrote any more, so the
+       assistant was told there were zero deals in progress no matter what. Read
+       from the deals instead: closed, but not yet handed over. */
+    const awaitingHandover = state.leads.filter(
+      (l: any) => l.status === "Closed Won" && !l.docFlowCompletedAt,
+    );
     const activeLeads = state.leads.filter(l => l.status !== "Closed Won" && l.status !== "Closed Lost");
     const pendingTasks = state.tasks.filter(t => t.status !== "Completed");
 
@@ -2376,7 +3445,7 @@ You are the TruFlow Light Co-Pilot, an elite, highly intelligent AI strategist f
 
 ### DATA CONTEXT (LIVE FROM SYSTEM):
 DELIVERED UNITS (SOLD): ${soldVehicles.length}
-PENDING FINANCE DEALS: ${pendingVehicles.length}
+DEALS CLOSED, AWAITING HAND-OVER: ${awaitingHandover.length}
 CLEARED REVENUE: R ${totalRevenue.toLocaleString()}
 
 ACTIVE SHOWROOM FLOOR INVENTORY:
@@ -2804,7 +3873,7 @@ app.post("/api/sync/push-photos", (req, res) => {
 
       const now = new Date().toISOString().slice(0, 10);
       const newVehicle: Vehicle = {
-        id: "v_lens_" + Date.now(),
+        id: newId("v_lens_"),
         year: parseInt(vehicleMeta.year, 10) || new Date().getFullYear(),
         make: tidyStr(vehicleMeta.make) || "Unknown",
         model: cleanModelName(vehicleMeta.model) || "Vehicle",
@@ -3238,7 +4307,12 @@ function toPublicVehicle(v: any, source: string = "premium", origin: string = ""
      pointed at either source has to make the same call about the same car.
      readState backfills legacy rows to true, so nothing currently live drops
      off; anything unset from here on was never published on purpose. */
-  const published = v.showOnWebsite === true && v.status === "INVENTORY";
+  /* An archived unit is retired from the floor and must never reach a dealer's
+     website, whatever its status says. Checked independently of `status`
+     rather than relying on archiving to have set SOLD: this feed is consumed by
+     live client sites, so it gets its own guard rather than trusting an
+     invariant maintained somewhere else. */
+  const published = v.showOnWebsite === true && v.status === "INVENTORY" && !v.archivedAt;
   if (!published) return null;
 
   return {
@@ -3579,7 +4653,7 @@ app.get("/api/portals", (req, res) => {
 app.post("/api/portals", (req, res) => {
   const portals = readPortals();
   const portal: Portal = {
-    id: "portal_" + Date.now(),
+    id: newId("portal_"),
     name: req.body.name || "New Portal",
     url: req.body.url || "",
     apiKey: req.body.apiKey || "tsk_" + Math.random().toString(36).slice(2, 14),
@@ -3745,7 +4819,7 @@ app.post("/api/integration/webhook-lead", (req, res) => {
   try {
     const state = readState();
     const newLead: Lead = {
-      id: "lead_" + Date.now(),
+      id: newId("lead_"),
       // Which dealer's website sent this — validated above, never unset.
       dealershipId: leadDealershipId,
       firstName,

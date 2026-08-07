@@ -4,7 +4,6 @@ import {
   Home,
   TrendingUp,
   Car,
-  GitBranch,
   Upload,
   Users,
   Star,
@@ -30,7 +29,6 @@ import {
   ShoppingCart,
   LogOut,
   Zap,
-  Code,
   Camera,
   Crosshair,
   Image,
@@ -50,6 +48,7 @@ import {
   updateSettings,
   createVehicle,
   updateVehicle,
+  setVehicleStatus,
   deleteVehicle,
   createLead,
   updateLead,
@@ -73,11 +72,13 @@ import {
   deleteDocument
 } from "./api";
 
-import { Vehicle, Lead, Task, Invoice, Agreement, User, Communication, Expense, DMSState } from "./types";
+import { Vehicle, Lead, Task, Invoice, Agreement, User, Communication, Expense, DMSState, Dealership, DocStage } from "./types";
+import { DOC_STAGES } from "./types";
 
 import Counter from "./components/Counter";
 import ChatWidget from "./components/ChatWidget";
 import DocumentsHub from "./components/DocumentsHub";
+import DealerDetailsSettings from "./components/DealerDetailsSettings";
 import PwaInstallBanner from "./components/PwaInstallBanner";
 import InstallAppButton from "./components/InstallAppButton";
 
@@ -90,17 +91,22 @@ const AccountingRecon = lazy(() => import("./components/AccountingRecon"));
 const VehicleDetailModal = lazy(() => import("./components/VehicleDetailModal"));
 const DealershipAdmin = lazy(() => import("./components/DealershipAdmin"));
 const TruSocialSettings = lazy(() => import("./components/TruSocialSettings"));
+/* DocHub — desktop-only, so the chunk (plus any future pdf-lib dep it
+   pulls in) never reaches a phone. Gated on useIsDesktop() at the render site
+   below, which is what actually keeps mobile from paying for it. */
+const DocHubPanel = lazy(() => import("./components/dochub/DocHubPanel"));
+const DocFlowSettings = lazy(() => import("./components/dochub/DocFlowSettings"));
 import AmortizationCalc from "./components/AmortizationCalc";
 import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
 import LoginSplash from "./components/LoginSplash";
 import { hasValidSession, clearSession, getAccount, authFetch, SESSION_EXPIRED_EVENT } from "./lib/session";
+import { useIsDesktop } from "./lib/useIsDesktop";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
   PRODUCT_NAME,
   getDealerSlug,
   openTruLens,
-  stockWidgetSnippet,
 } from "./lib/productConfig";
 import {
   openStockWhatsApp,
@@ -323,6 +329,7 @@ export default function App() {
   const sessionAccount = getAccount();
   const isMasterAdmin = sessionAccount?.role === 'admin';
   const dealershipId = sessionAccount?.dealershipId;
+  const isDesktop = useIsDesktop();
 
   /* Tenant scoping ----------------------------------------------------------
      The server already scopes /api/state to the signed-in tenant, so this is a
@@ -339,6 +346,15 @@ export default function App() {
   const showAll = isMasterAdmin || !dealershipId;
 
   const filteredVehicles = !state ? [] : showAll ? state.vehicles : state.vehicles.filter(v => mine(v.dealershipId));
+  /** Stock the dealer can still act on: tenant-scoped, minus archived units.
+   *
+   *  Anything that lists, counts or offers a car to work with should read this
+   *  rather than `filteredVehicles`. Archived units were originally excluded in
+   *  one list only, so they went on leaking into the photo-readiness tiles, the
+   *  new-enquiry dropdown and the aged-stock counts. `filteredVehicles` is still
+   *  the right source where sold history matters — Stock Health's realised
+   *  margin has to keep counting them. */
+  const activeStock = filteredVehicles.filter((v) => !v.archivedAt);
   const filteredLeads = !state ? [] : showAll ? state.leads : state.leads.filter(l => mine(l.dealershipId));
   const filteredTasks = !state ? [] : showAll ? state.tasks : state.tasks.filter(t => mine(t.dealershipId));
   const filteredInvoices = !state ? [] : showAll ? state.invoices : state.invoices.filter(i => mine(i.dealershipId));
@@ -349,6 +365,7 @@ export default function App() {
   const [selectedDetailVehicle, setSelectedDetailVehicle] = useState<Vehicle | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leadDetailId, setLeadDetailId] = useState<string | null>(null);
+  const [leadInitialTab, setLeadInitialTab] = useState<"overview" | "dochub" | undefined>(undefined);
 
   // The mobile drawer had no way out except picking a nav item: no scrim, no
   // Escape, and the page kept scrolling underneath it (2 800px of dashboard
@@ -396,9 +413,7 @@ export default function App() {
   const [notifications, setNotifications] = useState<{ id: string; title: string; message: string; type: 'info' | 'warning' | 'error' }[]>([]);
   const notifiedTaskIds = React.useRef<Set<string>>(new Set());
 
-  const [embedCopied, setEmbedCopied] = useState(false);
-
-  const addNotification = (title: string, message: string, type: 'info' | 'warning' | 'error' = 'info') => {
+  const addNotification =(title: string, message: string, type: 'info' | 'warning' | 'error' = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
     setNotifications(prev => [...prev, { id, title, message, type }]);
     setTimeout(() => {
@@ -612,7 +627,7 @@ export default function App() {
     return "R " + Math.round(num).toLocaleString("en-ZA");
   };
 
-  const activeVehiclesCount = state.vehicles.filter((v) => v.status !== "SOLD").length;
+  const activeVehiclesCount = state.vehicles.filter((v) => v.status !== "SOLD" && !v.archivedAt).length;
   const unresolvedLeadsCount = state.leads.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost").length;
   /**
    * Stock that cannot sell yet, because it isn't online.
@@ -626,7 +641,7 @@ export default function App() {
    * Stock media page scores each vehicle with.
    */
   const notOnline = (() => {
-    const inStock = filteredVehicles.filter((v) => v.status !== "SOLD");
+    const inStock = activeStock.filter((v) => v.status !== "SOLD");
     const graded = inStock.map((v) => ({ v, r: computeDmsGalleryReadiness(v as any) }));
     const noPhotos = graded.filter((g) => g.r.level === "capture");
     const incomplete = graded.filter((g) => g.r.level === "partial");
@@ -694,13 +709,35 @@ export default function App() {
      "Cleared this cycle" are decoration. Aged stock and unpaid invoices are
      the two numbers a dealer principal actually chases. */
   const AGED_DAYS = 60;
+  /* Uses stockAge(), the same helper Stock Health measures with. This counted
+     `daysInInventory` directly — a value written once on create and never
+     updated — while Stock Health preferred `dateAcquired`, so the Overview tile
+     and the Stock Health tile reported different aged-stock counts for the same
+     floor, at the same threshold. */
   const agedStockCount = state.vehicles.filter(
-    (v) => v.status !== "SOLD" && (v.daysInInventory ?? 0) > AGED_DAYS
+    (v) => v.status !== "SOLD" && !v.archivedAt && stockAge(v) > AGED_DAYS
   ).length;
   /* The headline money figure is deal value less what was spent making the car
      ready — sale price minus recon, summed over sold units. It replaces the old
      invoice-derived "Banked" number, which assumed the DMS raised the invoice;
      dealers invoice from their own systems, so that number was never real. */
+  /* End-of-day totals, computed once. The CSV export and the on-screen report
+     each derived these four lines independently and identically, so changing
+     one would have silently disagreed with the other. */
+  const eodTotals = (() => {
+    const sold = state.vehicles.filter((v) => v.status === "SOLD");
+    const totalRevenue = sold.reduce((s, v) => s + (v.retailPrice || 0), 0);
+    const totalProfit = sold.reduce(
+      (s, v) => s + ((v.retailPrice || 0) - (v.costPrice || 0)),
+      0,
+    );
+    const reconTotal = state.vehicles
+      .flatMap((v: any) => v.reconTasks || [])
+      .reduce((s: number, t: any) => s + (t.cost || 0), 0);
+    const marginPct = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : "0.0";
+    return { sold, totalRevenue, totalProfit, reconTotal, marginPct };
+  })();
+
   const soldVehicles = state.vehicles.filter((v) => v.status === "SOLD");
   const grossAfterRecon = soldVehicles.reduce(
     (sum, v) => sum + ((v.retailPrice || 0) - reconSpend(v)),
@@ -735,8 +772,12 @@ export default function App() {
     openLeads.filter(
       (l) => l.nextActionAt && new Date(l.nextActionAt) < startOfToday
     ).length;
-  // Sold but not yet handed over — these have a customer expecting a date.
-  const inPrepCount = state.vehicles.filter((v) => v.status === "PENDING").length;
+  /* The "Going out" tile and its top-bar chip are gone. It counted vehicles in
+     PENDING — a status nothing had written since the stock kanban was removed —
+     so it read zero forever. Rebuilding it on `Closed Won && !docFlowCompletedAt`
+     was worse: no historical deal carries that stamp, so it counted every deal
+     ever closed. Neither number was true, and Deal Readiness already answers
+     "what is still outstanding" properly. */
 
   /* Nav "needs attention" signals — one shared rule per destination, so the
      bottom bar and the sidebar read from the same source. Each value is a
@@ -757,13 +798,6 @@ export default function App() {
       items: [
         { id: "dashboard", label: "Overview", icon: Home },
         { id: "inventory", label: "All Vehicles", icon: Car },
-        /* The pipeline board — and the ONLY place a vehicle can be moved
-           between INVENTORY, PENDING and SOLD, via the Prev/Next buttons on its
-           cards. The section was built and rendered, but no nav entry ever
-           pointed at it and nothing else calls navigateTo("workflow"), so it was
-           unreachable: a dealer could not mark a car as sold anywhere in the
-           app. */
-        { id: "workflow", label: "Sales pipeline", icon: GitBranch },
         { id: "upload", label: "Add vehicle", icon: Upload },
       ]
     },
@@ -780,17 +814,7 @@ export default function App() {
       /* Built, backed by real server routes, and previously unreachable — no nav
          entry pointed at any of them. Invoices and agreements each have full
          GET/POST/PUT routes behind them (including pay and sign); the repayment
-         calculator is self-contained arithmetic seeded from real stock.
-
-         Two neighbours are deliberately still not here. "analytics" reports
-         12,847 monthly page views and 8,432 filter views as hard-coded literals,
-         and derives its conversion rate by dividing the real lead count by that
-         invented 8,432 — a made-up denominator presented as a measurement.
-         "scoring" ranks leads by digitalScore, which is assigned
-         Math.random() * 41 + 50 at creation, so "hot targets · high purchase
-         velocity" is a random number wearing a label. Publishing either to a
-         dealer would be inventing facts about their business. They need real
-         inputs before they are worth a menu entry. */
+         calculator is self-contained arithmetic seeded from real stock. */
       category: "Deals & Finance",
       items: [
         { id: "deal_readiness", label: "Deal Readiness", icon: ClipboardCheck },
@@ -815,17 +839,14 @@ export default function App() {
   // Filter navigation items based on current active simulated user role
   const filteredNavigation = groupedNavigation.map(group => {
     let items = group.items;
-    /* "workflow" is on both lists deliberately: moving a car from floor stock to
-       pending to sold is the job, not an admin privilege, and it is the only
-       place in the app where that can be done at all. */
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web',
+        ['dashboard', 'inventory', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web',
          'deal_readiness', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'workflow', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings',
+        ['dashboard', 'inventory', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings',
          'deal_readiness', 'payment'].includes(item.id)
       );
     }
@@ -859,19 +880,23 @@ export default function App() {
 
   /** Cancellation: a closed sale fell through. Put the car back in stock — which
    *  re-lists it on the website, since the public feed only publishes INVENTORY
-   *  — and reopen the deal that closed on it, so the two statuses don't drift the
-   *  other way. The mirror of the Closed-Won → Sold close-out. */
+   *  — and reopen the deals that closed on it, so the two never drift apart.
+   *
+   *  The reopen is the server's job now: this used to look up one Closed Won
+   *  lead here and force it to Negotiating, which both missed any second deal
+   *  on the car and invented a stage the deal may never have been at. */
   const handleReturnToStock = async (v: Vehicle) => {
     const label = `${v.year} ${v.make} ${v.model}`;
     if (!confirm(`Return ${label} to stock?\n\nThis re-lists it on your website and reopens the linked deal.`)) return;
     try {
-      await updateVehicle(v.id, { status: "INVENTORY" as any });
-      const wonLead = state.leads.find((l) => l.vehicleId === v.id && l.status === "Closed Won");
-      if (wonLead) await updateLead(wonLead.id, { status: "Negotiating" as any });
+      const { coupledLeads } = await setVehicleStatus(v.id, "INVENTORY");
       loadAllState();
       addNotification(
         "Returned to stock",
-        `${label} is back in inventory and live on your website again${wonLead ? ", and its deal was reopened" : ""}.`,
+        `${label} is back in inventory and live on your website again` +
+          (coupledLeads.length
+            ? `, and ${coupledLeads.length === 1 ? "its deal was" : `${coupledLeads.length} deals were`} reopened.`
+            : "."),
         "info",
       );
     } catch (err: any) {
@@ -879,38 +904,134 @@ export default function App() {
     }
   };
 
+  /** Mark a car sold, resolving which deal closed on it when that is ambiguous.
+   *
+   *  A car can carry several open deals, and only the dealer knows which
+   *  customer actually bought it — so ask, rather than guess. A car with no
+   *  open deals is sold outside the system entirely (cash off the floor,
+   *  invoiced elsewhere), which must stay a single click: no prompt at all. */
+  const handleMarkSold = async (v: Vehicle) => {
+    const label = `${v.year} ${v.make} ${v.model}`;
+    const openLeads = state.leads.filter(
+      (l) => l.vehicleId === v.id && l.status !== "Closed Won" && l.status !== "Closed Lost",
+    );
+
+    let closeLeadId: string | undefined;
+    if (openLeads.length === 1) {
+      closeLeadId = openLeads[0].id;
+    } else if (openLeads.length > 1) {
+      const choice = prompt(
+        `Who bought the ${label}?\n\n` +
+          openLeads.map((l, i) => `${i + 1}. ${l.firstName} ${l.lastName}`).join("\n") +
+          `\n0. Sold outside the system — no deal here\n\nEnter a number:`,
+      );
+      if (choice === null) return; // cancelled — do not touch the car
+      const n = parseInt(choice, 10);
+      if (n >= 1 && n <= openLeads.length) {
+        closeLeadId = openLeads[n - 1].id;
+      } else if (n !== 0) {
+        /* Anything that is neither a listed deal nor the explicit "0 — sold
+           outside the system" is a typo, not an instruction. Selling the car
+           anyway would leave the buyer's deal sitting open with the dealer
+           told only "Marked sold." */
+        addNotification(
+          "Not sold",
+          `"${choice}" is not one of the options, so ${label} was left alone. Try again.`,
+          "warning",
+        );
+        return;
+      }
+    }
+
+    try {
+      const { coupledLeads } = await setVehicleStatus(v.id, "SOLD", closeLeadId);
+      loadAllState();
+      addNotification(
+        "Marked sold",
+        `${label} is sold and off the website` +
+          (coupledLeads.length ? ", and its deal was closed." : "."),
+        "info",
+      );
+    } catch (err: any) {
+      addNotification("Could not mark sold", err?.message || "Something went wrong.", "warning");
+    }
+  };
+
   /** Remove a unit from stock.
    *  Deleting a car that a deal, invoice or lead points at leaves those records
    *  referencing something that no longer exists — the lead's vehicle shows as
    *  blank and the invoice loses what it was for. So say what is attached
-   *  before asking, and refuse outright once money is involved: a sold unit is
-   *  a record of a transaction, not stock to tidy away. */
+   *  before asking, and archive rather than delete once the sale is recorded
+   *  here: that is a record of a transaction, not stock to tidy away.
+   *
+   *  A car sold outside the DMS has no record here to protect, so it deletes
+   *  cleanly. Refusing those outright — as this used to, pointing at an
+   *  "archive" that did not exist — left them stuck on the floor forever. */
   const handleDeleteVehicle = async (id: string) => {
     const v = state.vehicles.find((x) => x.id === id);
     if (!v) return;
     const label = `${v.year} ${v.make} ${v.model} (${v.stockNumber})`;
 
-    if (v.status === "SOLD") {
+    /* Already archived: the sale here is what stopped it being deleted in the
+       first place, so running this again would only re-archive it. Say where
+       the way back is instead of silently doing nothing useful. */
+    if (v.archivedAt) {
       addNotification(
-        "Cannot remove a sold unit",
-        `${label} is sold. Removing it would delete the record of the sale — archive it instead if it should leave the floor.`,
-        "warning"
+        "Already archived",
+        `${label} is archived and still counted in your sold figures. Filter stock by "Archived" to restore it.`,
+        "info",
       );
       return;
     }
 
-    const linkedLeads = state.leads.filter((l) => l.vehicleId === id);
+    /* Is the sale actually recorded here? A closed deal, an invoice, an
+       agreement or a signed document all mean deleting would destroy the record
+       of a transaction — those get archived instead. A car sold outside the DMS
+       has none of them, so deleting it destroys nothing and simply removes it.
+
+       An open or lost enquiry is not a record of a sale: those are unlinked by
+       the server rather than blocking removal. The same rule is enforced
+       server-side, since Light never runs this code. */
+    const closedDeals = state.leads.filter((l) => l.vehicleId === id && l.status === "Closed Won");
     const linkedInvoices = state.invoices.filter((i) => i.vehicleId === id);
     const linkedAgreements = state.agreements.filter((a) => a.vehicleId === id);
-    const attached = [
-      linkedLeads.length && `${linkedLeads.length} lead${linkedLeads.length > 1 ? "s" : ""}`,
+    const signedDocs = state.documents.filter((d) => d.vehicleId === id && d.status === "Signed");
+    const recorded = [
+      closedDeals.length && `${closedDeals.length} closed deal${closedDeals.length > 1 ? "s" : ""}`,
       linkedInvoices.length && `${linkedInvoices.length} invoice${linkedInvoices.length > 1 ? "s" : ""}`,
       linkedAgreements.length && `${linkedAgreements.length} agreement${linkedAgreements.length > 1 ? "s" : ""}`,
+      signedDocs.length && `${signedDocs.length} signed document${signedDocs.length > 1 ? "s" : ""}`,
     ].filter(Boolean).join(", ");
 
-    const totalLinked = linkedLeads.length + linkedInvoices.length + linkedAgreements.length;
-    const warning = attached
-      ? `\n\n${attached} still ${totalLinked === 1 ? "points" : "point"} at this vehicle and will be left without one.`
+    if (recorded) {
+      if (
+        !confirm(
+          `${label} has ${recorded} against it, so it cannot be deleted without ` +
+            `destroying the record of the sale.\n\nArchive it instead? It leaves the ` +
+            `stock list but stays in your sold figures.`,
+        )
+      )
+        return;
+      try {
+        /* Status goes with it: archiving retires a unit whose sale is recorded,
+           so leaving it INVENTORY kept it counting as live stock and publishing
+           to the dealer's website. The server enforces the same pairing, so a
+           Light or raw-API archive cannot get this wrong either. */
+        await updateVehicle(id, { archivedAt: new Date().toISOString(), status: "SOLD" });
+        setSelectedDetailVehicle(null);
+        loadAllState();
+        addNotification("Archived", `${label} is off the floor and still counted in sold figures.`, "info");
+      } catch (err: any) {
+        addNotification("Could not archive vehicle", err?.message || "Something went wrong.", "warning");
+      }
+      return;
+    }
+
+    const openEnquiries = state.leads.filter(
+      (l) => l.vehicleId === id && l.status !== "Closed Won",
+    ).length;
+    const warning = openEnquiries
+      ? `\n\n${openEnquiries} enquir${openEnquiries === 1 ? "y" : "ies"} will be kept but unlinked from this car.`
       : "";
     if (!confirm(`Remove ${label} from stock?${warning}\n\nThis cannot be undone.`)) return;
 
@@ -1023,20 +1144,6 @@ export default function App() {
   /** LoginSplash has already exchanged the code for a token by this point. */
   const handleLogin = () => {
     setIsLoggedIn(true);
-  };
-
-  // Stage move helper
-  const moveVehicle = async (id: string, currentStatus: string, dir: "NEXT" | "PREV") => {
-    const stages: string[] = ["INVENTORY", "PENDING", "SOLD"];
-    const idx = stages.indexOf(currentStatus);
-    let targetIdx = idx;
-    if (dir === "NEXT" && idx < stages.length - 1) targetIdx++;
-    if (dir === "PREV" && idx > 0) targetIdx--;
-
-    if (idx !== targetIdx) {
-      await updateVehicle(id, { status: stages[targetIdx] as any });
-      loadAllState();
-    }
   };
 
   // Submit functions
@@ -1174,10 +1281,7 @@ export default function App() {
   };
 
   const handleExportCSV = () => {
-    const sold = state.vehicles.filter(v => v.status === "SOLD");
-    const totalRevenue = sold.reduce((s, v) => s + (v.retailPrice || 0), 0);
-    const totalProfit = sold.reduce((s, v) => s + ((v.retailPrice || 0) - (v.costPrice || 0)), 0);
-    const reconTotal = state.vehicles.flatMap((v: any) => v.reconTasks || []).reduce((s: number, t: any) => s + (t.cost || 0), 0);
+    const { sold, totalRevenue, totalProfit, reconTotal } = eodTotals;
     const rows: (string | number)[][] = [
       ["TruFlow - End of Day Operations Summary"],
       ["Date", new Date().toISOString().split('T')[0]],
@@ -1465,16 +1569,6 @@ export default function App() {
                )}
              </button>
 
-             <button
-               type="button"
-               onClick={() => navigateTo("inventory")}
-               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] transition-colors cursor-pointer text-[13px]"
-               title="Sold, not yet handed over"
-             >
-               <Car size={14} />
-               <span className="font-semibold">{inPrepCount}</span>
-               <span>going out</span>
-             </button>
            </div>
 
            <div className="flex items-center gap-2 shrink-0">
@@ -1520,7 +1614,7 @@ export default function App() {
             },
             inventory: {
               title: "Stock",
-              sub: `${state.vehicles.length} vehicles · ${inPrepCount} going out`,
+              sub: `${state.vehicles.length} vehicles`,
             },
             tasks: {
               title: "Tasks",
@@ -1642,16 +1736,6 @@ export default function App() {
                   {agedStockCount > 0
                     ? `${agedStockCount} over ${AGED_DAYS} days`
                     : `None over ${AGED_DAYS} days`}
-                </div>
-              </button>
-              <button
-                onClick={() => navigateTo("workflow")}
-                className="stat-card p-4 text-left cursor-pointer hover:border-[color:var(--cyan-soft)] transition-colors"
-              >
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Going out</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={inPrepCount} /></div>
-                <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                  {inPrepCount > 0 ? "Sold, awaiting hand-over" : "Nothing pending delivery"}
                 </div>
               </button>
               <div className="stat-card p-4">
@@ -1910,8 +1994,8 @@ export default function App() {
                   options={[
                     { value: "ALL", label: "All" },
                     { value: "INVENTORY", label: "In stock" },
-                    { value: "PENDING", label: "Pending" },
                     { value: "SOLD", label: "Sold" },
+                    { value: "ARCHIVED", label: "Archived" },
                   ]}
                 />
                 <Segmented
@@ -1941,11 +2025,23 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {state.vehicles
                 .filter((v) => {
+                  /* Archived units are off the floor: retired sold stock kept
+                     only so the sale still counts in the money figures. Hidden
+                     from every other view, but reachable through their own
+                     filter — archiving must not be a one-way door. */
+                  if (inventoryStatusFilter === "ARCHIVED") {
+                    if (!v.archivedAt) return false;
+                  } else if (v.archivedAt) {
+                    return false;
+                  }
                   const mSearch =
                     (v.make || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
                     (v.model || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
                     (v.stockNumber || "").toLowerCase().includes(inventorySearch.toLowerCase());
-                  const mStatus = inventoryStatusFilter === "ALL" || v.status === inventoryStatusFilter;
+                  const mStatus =
+                    inventoryStatusFilter === "ALL" ||
+                    inventoryStatusFilter === "ARCHIVED" ||
+                    v.status === inventoryStatusFilter;
                   const r = computeDmsGalleryReadiness(v as any);
                   const mPhoto =
                     inventoryPhotoFilter === "ALL" ||
@@ -1977,9 +2073,9 @@ export default function App() {
                           </div>
                         )}
                         <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[13px] font-semibold font-mono tracking-wider  ${
-                          v.status === "INVENTORY" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : v.status === "PENDING" ? "bg-[color:var(--glass)] text-[color:var(--warning)]" : "bg-[color:var(--glass)] text-[color:var(--muted)]"
+                          v.archivedAt ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : v.status === "INVENTORY" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--glass)] text-[color:var(--muted)]"
                         }`}>
-                          {v.status === "INVENTORY" ? "Showroom Floor" : v.status === "PENDING" ? "Sale Pending" : "Delivered"}
+                          {v.archivedAt ? "Archived" : v.status === "INVENTORY" ? "Showroom Floor" : "Delivered"}
                         </span>
                         <span
                           className="absolute top-3 left-3 px-2 py-0.5 rounded text-[13px] font-semibold border max-w-[70%] truncate"
@@ -2059,11 +2155,33 @@ export default function App() {
                             />
                             <span>Web</span>
                           </label>
-                          {v.status !== "SOLD" ? (
+                          {/* Both go through the coupling helpers, not a bare
+                              status write. "Unsell" used to flip the car and
+                              leave its deal sitting at Closed Won — the same
+                              action as "Return to stock" in the detail modal,
+                              but only that one reopened the deal. */}
+                          {v.archivedAt ? (
                             <button
                               type="button"
-                              onClick={() => handleUpdateVehicle(v.id, { status: "SOLD" as any })}
-                              title="Mark this car sold — auto-unpublishes from the website"
+                              onClick={async () => {
+                                try {
+                                  await updateVehicle(v.id, { archivedAt: null });
+                                  loadAllState();
+                                  addNotification("Restored", `${v.year} ${v.make} ${v.model} is back on the floor.`, "info");
+                                } catch (err: any) {
+                                  addNotification("Could not restore vehicle", err?.message || "Something went wrong.", "warning");
+                                }
+                              }}
+                              title="Bring this unit back onto the floor"
+                              className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
+                            >
+                              Restore
+                            </button>
+                          ) : v.status !== "SOLD" ? (
+                            <button
+                              type="button"
+                              onClick={() => handleMarkSold(v)}
+                              title="Mark this car sold — closes its deal and unpublishes from the website"
                               className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
                             >
                               Mark sold
@@ -2071,8 +2189,8 @@ export default function App() {
                           ) : (
                             <button
                               type="button"
-                              onClick={() => handleUpdateVehicle(v.id, { status: "INVENTORY" as any })}
-                              title="Return this car to inventory"
+                              onClick={() => handleReturnToStock(v)}
+                              title="Return this car to inventory and reopen its deal"
                               className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
                             >
                               Unsell
@@ -2121,67 +2239,6 @@ export default function App() {
                     </div>
                   );
                 })}
-            </div>
-          </div>
-        )}
-
-        {/* WORKFLOW PIPELINE SECTION */}
-        {activeSection === "workflow" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200 w-full">
-            <div>
-              <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Recon</h1>
-            </div>
-
-            {/* Stages Grid columns */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {["INVENTORY", "PENDING", "SOLD"].map((stage) => {
-                const filtered = state.vehicles.filter((v) => v.status === stage);
-                return (
-                  <div key={stage} className="flex flex-col h-full min-h-[500px]">
-                    <div className="border-b border-white/10 px-1 py-2.5 flex justify-between items-baseline">
-                      <span className="font-semibold text-[13px] text-[color:var(--white)]">
-                        {stage === "INVENTORY" ? "On the floor" : stage === "PENDING" ? "Processing" : "Delivered"}
-                      </span>
-                      <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{filtered.length}</span>
-                    </div>
-
-                    <div className="pt-3 flex-1 flex flex-col gap-3 min-h-[300px]">
-                      {filtered.map((v) => (
-                        <div key={v.id} className="pipeline-card p-3 flex flex-col justify-between gap-3">
-                          <div>
-                            <div className="font-semibold text-[13px] text-[color:var(--white)] truncate">{v.year} {v.make} {v.model}</div>
-                            <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Ref: {v.stockNumber} / {v.mileage.toLocaleString()} km</p>
-                            <p className="text-[15px] font-mono font-semibold text-[color:var(--white)] mt-2">{formatZAR(v.retailPrice)}</p>
-                          </div>
-
-                          <div className="flex justify-between items-center border-t border-white/3 pt-3">
-                            <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Age: {v.daysInInventory}d</span>
-                            
-                            <div className="flex gap-1">
-                              {stage !== "INVENTORY" && (
-                                <button
-                                  onClick={() => moveVehicle(v.id, v.status, "PREV")}
-                                  className="tru-btn-ghost px-2.5 min-h-[32px] text-[13px] cursor-pointer"
-                                >
-                                  {stage === "PENDING" ? "Back to floor" : "Back to sale"}
-                                </button>
-                              )}
-                              {stage !== "SOLD" && (
-                                <button
-                                  onClick={() => moveVehicle(v.id, v.status, "NEXT")}
-                                  className="tru-btn-ghost px-2.5 min-h-[32px] text-[13px] cursor-pointer"
-                                >
-                                  {stage === "INVENTORY" ? "Move to sale" : "Deliver"}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
         )}
@@ -2412,7 +2469,16 @@ export default function App() {
         {/* STOCK HEALTH — ageing and margin, the two numbers that decide whether
             a yard makes money. Everything shown was already in the data. */}
         {activeSection === "stock_health" && (() => {
-          const live = filteredVehicles.filter((v) => v.status === "INVENTORY");
+          /* `live` excludes archived units explicitly. Archiving now forces
+             SOLD, so the status test would catch them anyway — but this once
+             relied on that invariant while nothing maintained it, and an
+             archived car sat in Capital in stock. Say it outright.
+
+             `sold` deliberately keeps them: archiving retires a car from the
+             floor without retracting the sale, so realised margin must still
+             count it. Filtering them here would shrink the money figures every
+             time a dealer tidied up. */
+          const live = filteredVehicles.filter((v) => v.status === "INVENTORY" && !v.archivedAt);
           const sold = filteredVehicles.filter((v) => v.status === "SOLD");
 
           const capitalTiedUp = live.reduce((sum, v) => sum + costBasis(v), 0);
@@ -2753,12 +2819,36 @@ export default function App() {
             { key: "delivered", label: "Delivered" },
           ] as const;
           const FINANCE_OPTS = ["N/A", "Submitted", "Approved", "Declined"] as const;
+          /* Labels only — the ORDER comes from DOC_STAGES so this cannot drift
+             from the server's idea of the sequence. It previously repeated the
+             order by hand, under a comment warning not to. */
+          const DOCHUB_LABELS: Record<DocStage, string> = {
+            proforma: "Proforma",
+            deed: "Offer to Purchase",
+            compliance: "Compliance",
+            invoice: "Invoice",
+            handover: "Handover",
+          };
+          /* Completed deals drop off: this page is what is still outstanding.
+             They stay reachable through Lead CRM, and the vehicle keeps its
+             own record of the sale.
+
+             Desktop only. The DocHub stage strip that explains WHY a deal
+             disappeared is itself desktop-gated, so applying this on a phone
+             removed deals with nothing on screen accounting for it — and a
+             mobile user cannot reach DocHub to put it back either. */
           const deals = filteredLeads.filter(
-            (l) => l.status === "Negotiating" || l.status === "Closed Won"
+            (l) =>
+              (l.status === "Negotiating" || l.status === "Closed Won") &&
+              !(isDesktop && l.docFlowCompletedAt)
           );
           const patchChecklist = async (lead: any, patch: any) => {
             await updateLead(lead.id, { dealChecklist: { ...(lead.dealChecklist || {}), ...patch } });
             loadAllState();
+          };
+          const openDocHub = (leadId: string) => {
+            setLeadInitialTab("dochub");
+            setLeadDetailId(leadId);
           };
           return (
             <div className="flex flex-col gap-6 animate-in fade-in duration-200">
@@ -2768,6 +2858,47 @@ export default function App() {
                   What's outstanding to close and hand over each deal. Invoices and contracts stay in your own systems — this only tracks the steps, so no customer paperwork is stored here.
                 </p>
               </div>
+
+              {/* DocHub per-stage mode configuration — sits at the top of
+                  this page so the dealer configures once and then works
+                  every deal below with those settings. Desktop-only. */}
+              {isDesktop && state?.dealerships && (() => {
+                const target = dealershipId
+                  ? state.dealerships.filter((d) => d.id === dealershipId)
+                  : state.dealerships;
+                const synthesizedDemo =
+                  dealershipId && target.length === 0
+                    ? [{
+                        id: dealershipId,
+                        name: sessionAccount?.label || "Demo Dealership",
+                        location: "",
+                      }]
+                    : [];
+                const list = target.length > 0 ? target : synthesizedDemo;
+                if (list.length === 0) return null;
+                return (
+                  <details className="card border-[color:var(--cyan-soft)]">
+                    <summary className="cursor-pointer list-none px-5 py-3 border-b border-white/5 flex items-center gap-2">
+                      <FileText size={14} className="text-[color:var(--cyan-bright)]" />
+                      <h3 className="font-semibold text-[16px] text-[color:var(--white)]">DocHub flow settings</h3>
+                      <span className="ml-auto text-[12px] text-[rgba(232,234,230,0.55)]">click to expand</span>
+                    </summary>
+                    <div className="p-5 flex flex-col gap-6">
+                      {target.length === 0 && synthesizedDemo.length > 0 && (
+                        <div className="text-[12px] text-amber-300 border border-amber-500/30 bg-amber-500/10 rounded-md px-3 py-2">
+                          Preview only — this account has no persisted dealership record, so Save will not work.
+                          Sign in with a dealer code to persist changes.
+                        </div>
+                      )}
+                      {list.map((d) => (
+                        <Suspense key={d.id} fallback={<div className="text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+                          <DocFlowSettings dealership={d as Dealership} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                        </Suspense>
+                      ))}
+                    </div>
+                  </details>
+                );
+              })()}
 
               {deals.length === 0 ? (
                 <div className="card p-8 text-center text-[13px] text-[rgba(232,234,230,0.72)]">
@@ -2802,6 +2933,93 @@ export default function App() {
                             </div>
                           </div>
                         </div>
+                        {/* DocHub stage strip — a compact five-dot indicator of
+                            where this deal is in the paperwork lifecycle, with a
+                            button that jumps straight into the DocHub tab on the
+                            lead modal (no double-click via Overview). Desktop only:
+                            the modal DocHub tab itself is gated the same way. */}
+                        {isDesktop && (() => {
+                          /* A completed deal has every stage behind it. Reading
+                             docStage alone cannot see that — it is null on both
+                             completion and on a lead that never started — so a
+                             finished deal showed five grey dots. */
+                          const currentIdx = lead.docFlowCompletedAt
+                            ? DOC_STAGES.length
+                            : lead.docStage
+                            ? DOC_STAGES.indexOf(lead.docStage)
+                            : -1;
+                          return (
+                            <div className="flex items-center gap-3 pt-1 border-t border-white/5">
+                              <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] shrink-0">DocHub</span>
+                              <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
+                                {DOC_STAGES.map((stage, idx) => {
+                                  const done = idx < currentIdx;
+                                  const current = idx === currentIdx;
+                                  return (
+                                    <div key={stage} className="flex items-center gap-1 shrink-0">
+                                      <span
+                                        className={`w-2 h-2 rounded-full ${
+                                          done
+                                            ? "bg-emerald-400"
+                                            : current
+                                            ? "bg-[color:var(--cyan)]"
+                                            : "bg-[rgba(232,234,230,0.18)]"
+                                        }`}
+                                      />
+                                      <span className={`text-[11px] ${current ? "text-[color:var(--white)] font-semibold" : "text-[rgba(232,234,230,0.55)]"}`}>
+                                        {DOCHUB_LABELS[stage]}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => openDocHub(lead.id)}
+                                className="shrink-0 px-3 py-1.5 min-h-[32px] rounded-md bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] text-[12px] font-semibold hover:bg-[color:var(--cyan)] hover:text-black transition-colors"
+                              >
+                                Open DocHub
+                              </button>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Where the checklist and DocHub disagree. DocHub stays
+                            authoritative and nothing is auto-corrected — the two
+                            are separate records of the same events and only the
+                            dealer knows which is right. Surfacing the conflict
+                            beats silently picking a winner. */}
+                        {isDesktop && (() => {
+                          const cl: any = lead.dealChecklist || {};
+                          const pastCompliance = lead.docFlowCompletedAt
+                            ? true
+                            : lead.docStage
+                            ? DOC_STAGES.indexOf(lead.docStage) > DOC_STAGES.indexOf("compliance")
+                            : false;
+                          const invoiceFinalised = filteredDocuments.some(
+                            (d) => d.leadId === lead.id && d.stage === "invoice" && d.status === "Signed",
+                          );
+                          const enteredDocHub = !!lead.docStage || !!lead.docFlowCompletedAt;
+                          const warnings = [
+                            pastCompliance && !cl.natis && "Compliance is signed off, but NATIS is un-ticked.",
+                            pastCompliance && !cl.roadworthy && "Compliance is signed off, but Roadworthy is un-ticked.",
+                            enteredDocHub && !!cl.invoiced !== invoiceFinalised &&
+                              (cl.invoiced
+                                ? "Checklist says invoiced, but the DocHub invoice stage is not finalised."
+                                : "The DocHub invoice is finalised, but the Invoiced box is un-ticked."),
+                          ].filter(Boolean) as string[];
+                          if (warnings.length === 0) return null;
+                          return (
+                            <div className="flex flex-col gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2">
+                              {warnings.map((w) => (
+                                <div key={w} className="flex items-start gap-2 text-[12px] text-amber-200">
+                                  <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+                                  <span>{w}</span>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                         <div className="flex flex-col gap-3">
                           {/* Real checkboxes: a half-done deal now reads its state
                               from the box, not from half-lit buttons. */}
@@ -2882,7 +3100,7 @@ export default function App() {
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Use this form for remote customer registration.</p>
             </div>
             <div className="max-w-lg">
-              <CustomerLeadForm dealershipId={dealershipId || "d1"} vehicles={filteredVehicles} onSuccess={() => alert("Lead Captured!")} />
+              <CustomerLeadForm dealershipId={dealershipId || "d1"} vehicles={activeStock} onSuccess={() => alert("Lead Captured!")} />
             </div>
           </div>
         )}
@@ -3163,19 +3381,19 @@ export default function App() {
               <div className="card p-4">
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">With photos</div>
                 <div className="text-2xl font-semibold text-[color:var(--cyan)] mt-1">
-                  {filteredVehicles.filter(v => (v.images?.length || 0) > 0).length}
+                  {activeStock.filter(v => (v.images?.length || 0) > 0).length}
                 </div>
               </div>
               <div className="card p-4">
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Need shoot</div>
                 <div className="text-2xl font-semibold text-[color:var(--warning)] mt-1">
-                  {filteredVehicles.filter(v => computeDmsGalleryReadiness(v).level === "capture").length}
+                  {activeStock.filter(v => computeDmsGalleryReadiness(v).level === "capture").length}
                 </div>
               </div>
               <div className="card p-4">
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Web-ready gallery</div>
                 <div className="text-2xl font-semibold text-[color:var(--cyan-bright)] mt-1">
-                  {filteredVehicles.filter(v => computeDmsGalleryReadiness(v).webReady).length}
+                  {activeStock.filter(v => computeDmsGalleryReadiness(v).webReady).length}
                 </div>
               </div>
               <div className="card p-4">
@@ -3192,7 +3410,7 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredVehicles.map(v => {
+              {activeStock.map(v => {
                 const r = computeDmsGalleryReadiness(v as any);
                 return (
                   <div key={v.id} className="card overflow-hidden flex flex-col">
@@ -3427,35 +3645,40 @@ export default function App() {
               ));
             })()}
 
-            {/* Website stock widget embed — the one thing a dealer's web person needs */}
-            <div className="card border-[color:var(--cyan-soft)]">
-              <div className="card-header border-b border-white/5 px-5 py-3">
-                <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
-                  <Code size={14} className="text-[color:var(--cyan-bright)]" /> Website stock widget
-                </h3>
-              </div>
-              <div className="card-body p-5 flex flex-col gap-3">
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
-                  Drop this snippet into the dealer's website to show their live inventory. The widget pulls from the public stock feed automatically.
-                </p>
-                <pre className="text-[13px] bg-black/50 border border-white/10 rounded-xl p-3 overflow-x-auto text-[rgba(232,234,230,0.72)] font-mono whitespace-pre-wrap">
-                  {stockWidgetSnippet(window.location.origin, currentDealerSlug)}
-                </pre>
-                <button
-                  type="button"
-                  className="self-start text-[13px] font-semibold text-[color:var(--cyan-bright)] hover:underline"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(stockWidgetSnippet(window.location.origin, currentDealerSlug));
-                      setEmbedCopied(true);
-                      setTimeout(() => setEmbedCopied(false), 1600);
-                    } catch { /* ignore */ }
-                  }}
-                >
-                  {embedCopied ? "Copied!" : "Copy embed snippet"}
-                </button>
-              </div>
-            </div>
+            {/* Dealer details — self-service editor for the identity fields
+                quoted on invoices, agreements and public listings. Admins
+                targeting another dealership pass isAdmin so the server
+                accepts the dealershipId. Loops for admins per the standing
+                per-dealer settings rule. Demo (no real dealer row in shared
+                state) still gets a stub so the form is testable — Save 404s
+                and the amber banner explains why. */}
+            {state?.dealerships && (() => {
+              const target = dealershipId
+                ? state.dealerships.filter((d) => d.id === dealershipId)
+                : state.dealerships;
+              const synthesizedDemo =
+                dealershipId && target.length === 0
+                  ? [{
+                      id: dealershipId,
+                      name: sessionAccount?.label || "Demo Dealership",
+                      location: "",
+                    } as Dealership]
+                  : [];
+              const list = target.length > 0 ? target : synthesizedDemo;
+              return (
+                <>
+                  {target.length === 0 && synthesizedDemo.length > 0 && (
+                    <div className="text-[12px] text-amber-300 border border-amber-500/30 bg-amber-500/10 rounded-md px-3 py-2">
+                      Preview only — this account has no persisted dealership record, so Save will not work.
+                      Sign in with a dealer code to persist changes.
+                    </div>
+                  )}
+                  {list.map((d) => (
+                    <DealerDetailsSettings key={d.id} dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                  ))}
+                </>
+              );
+            })()}
 
             {/* Install as an app. The banner is dismissible and only appears
                 when the browser volunteers the prompt, so without this there
@@ -3830,8 +4053,9 @@ export default function App() {
           users={state.users}
           allCommunications={state.communications}
           allTasks={state.tasks}
-          onClose={() => setLeadDetailId(null)}
+          onClose={() => { setLeadDetailId(null); setLeadInitialTab(undefined); }}
           onRefresh={loadAllState}
+          initialTab={leadInitialTab}
           documentsPanel={
             <DocumentsHub
               embedded
@@ -3844,6 +4068,21 @@ export default function App() {
               onDelete={handleDeleteDocument}
             />
           }
+          docHubPanel={(() => {
+            if (!isDesktop) return undefined;
+            const leadForPanel = state.leads.find((l) => l.id === leadDetailId);
+            if (!leadForPanel) return undefined;
+            const dealerForPanel = state.dealerships.find(
+              (d) => d.id === (leadForPanel.dealershipId || dealershipId),
+            );
+            return (
+              <DocHubPanel
+                lead={leadForPanel}
+                dealership={dealerForPanel}
+                onLeadRefresh={loadAllState}
+              />
+            );
+          })()}
         />
         </Suspense>
       )}
@@ -3900,11 +4139,7 @@ export default function App() {
 
             {/* Daily Summary Metrics Block */}
             {(() => {
-              const sold = state.vehicles.filter(v => v.status === "SOLD");
-              const totalRevenue = sold.reduce((s, v) => s + (v.retailPrice || 0), 0);
-              const totalProfit = sold.reduce((s, v) => s + ((v.retailPrice || 0) - (v.costPrice || 0)), 0);
-              const reconTotal = state.vehicles.flatMap((v: any) => v.reconTasks || []).reduce((s: number, t: any) => s + (t.cost || 0), 0);
-              const marginPct = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : "0.0";
+              const { sold, totalRevenue, totalProfit, reconTotal, marginPct } = eodTotals;
               return (<>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">

@@ -1,5 +1,5 @@
 import { authFetch } from "./lib/session";
-import { Vehicle, Lead, Task, Invoice, Agreement, DealerDocument, User, Communication, Expense, DMSState } from "./types";
+import { Vehicle, Lead, Task, Invoice, Agreement, DealerDocument, User, Communication, Expense, DMSState, DocStage, DocMode, Dealership } from "./types";
 
 /**
  * An EMPTY state, not a populated one.
@@ -181,6 +181,32 @@ export async function updateVehicle(id: string, updates: Partial<Vehicle>): Prom
   return updatedV;
 }
 
+/** Change a vehicle's status.
+ *
+ *  Separate from `updateVehicle` because a status change is the one edit that
+ *  moves another record: the server couples the linked deal (SOLD closes it,
+ *  back-in-stock reopens it) and reports what it did.
+ *
+ *  `closeLeadId` names which deal closed, for a car carrying several open ones.
+ *  Omit it and the server closes a deal only when there is exactly one
+ *  candidate — a car sold outside the system has none, and stays untouched.
+ *  No local fallback: a coupled write that only half-applied offline is worse
+ *  than a failure the caller can retry. */
+export async function setVehicleStatus(
+  id: string,
+  status: Vehicle["status"],
+  closeLeadId?: string,
+): Promise<{ vehicle: Vehicle; coupledLeads: { id: string; status: string }[] }> {
+  const res = await authFetch(`/api/inventory/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(closeLeadId ? { status, closeLeadId } : { status }),
+  });
+  if (!res.ok) throw new Error(`Vehicle status update failed (${res.status})`);
+  const body = await res.json();
+  return { vehicle: body.vehicle as Vehicle, coupledLeads: body.coupledLeads ?? [] };
+}
+
 export async function addReconTask(vehicleId: string, task: Omit<Vehicle['reconTasks'][0], 'id'>) {
   // No dedicated /api/inventory/:id/recon route on the server, but the general
   // PUT /api/inventory/:id accepts the whole vehicle payload, so we push the
@@ -270,6 +296,28 @@ export async function updateLead(id: string, updates: Partial<Lead>): Promise<Le
   });
   if (!updated) throw new Error("Not found");
   return updated;
+}
+
+/** Change a lead's stage.
+ *
+ *  Separate from `updateLead` because a status change is the one edit that
+ *  moves another record: the server couples the linked vehicle (Closed Won →
+ *  SOLD, reopened → back in stock) and reports what it did, so the UI can say
+ *  so without duplicating the rule. Every other lead edit should use
+ *  `updateLead`. No local fallback — a coupled write that only half-applied
+ *  offline is worse than a failure the caller can retry. */
+export async function updateLeadStatus(
+  id: string,
+  status: Lead["status"],
+): Promise<{ lead: Lead; coupledVehicle: { id: string; status: string } | null }> {
+  const res = await authFetch(`/api/leads/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error(`Lead status update failed (${res.status})`);
+  const body = await res.json();
+  return { lead: body.lead as Lead, coupledVehicle: body.coupledVehicle ?? null };
 }
 
 export async function createTask(task: Omit<Task, "id">): Promise<Task> {
@@ -391,6 +439,89 @@ export async function signDocument(id: string, signature: string, signedBy: stri
 export async function deleteDocument(id: string): Promise<void> {
   const res = await authFetch(`/api/documents/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`Document delete failed (${res.status})`);
+}
+
+// --- DocHub -------------------------------------------------------------
+
+/** Create a DocHub stage document. Modes:
+ *   - 'attach'   — fileData required (dealer's own signed doc)
+ *   - 'generate' — fieldSnapshot captured (PDF rendering deferred)
+ *   - 'confirm'  — no file, no snapshot; server verifies checklist flags on
+ *                  finalize (used for compliance: NATIS + roadworthy) */
+export async function createStageDocument(input: {
+  leadId: string;
+  vehicleId?: string;
+  stage: DocStage;
+  mode: DocMode;
+  fileName?: string;
+  mimeType?: string;
+  fileData?: string;
+  fieldSnapshot?: Record<string, unknown>;
+}): Promise<DealerDocument> {
+  const res = await authFetch("/api/documents", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Stage document create failed (${res.status})`);
+  }
+  const body = await res.json();
+  return body.document as DealerDocument;
+}
+
+/** Finalise a stage document. Server runs the validator (generate mode) or
+ *  checks the attached doc is signed (attach mode), then advances the lead's
+ *  docStage. Throws a rich error whose `.missing` array (if present) tells
+ *  the UI exactly which fields need filling. */
+export async function finalizeStageDocument(
+  id: string,
+): Promise<{ document: DealerDocument; lead: { id: string; docStage: DocStage | null } | null }> {
+  const res = await authFetch(`/api/documents/${id}/finalize`, { method: "POST" });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(body.error || `Stage finalise failed (${res.status})`) as Error & {
+      missing?: string[];
+      status?: number;
+    };
+    if (Array.isArray(body.missing)) err.missing = body.missing;
+    err.status = res.status;
+    throw err;
+  }
+  return body;
+}
+
+/** Dealer self-service update of identity fields (name, trading-as, VAT,
+ *  contact email, address, registration number, website URL). Admins can
+ *  target another dealership by passing dealershipId. */
+export async function updateDealershipSelf(
+  patch: Partial<Pick<Dealership, "name" | "tradingAs" | "vatNumber" | "contactEmail" | "address" | "registrationNumber" | "websiteUrl">>,
+  dealershipId?: string,
+): Promise<Dealership> {
+  const res = await authFetch("/api/dealership/self", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...patch, dealershipId }),
+  });
+  if (!res.ok) throw new Error(`Dealership update failed (${res.status})`);
+  const body = await res.json();
+  return body.dealership as Dealership;
+}
+
+/** Save the current dealer's per-stage mode configuration. */
+export async function updateDocFlow(
+  docFlow: Partial<Record<DocStage, DocMode>>,
+  dealershipId?: string,
+): Promise<Dealership> {
+  const res = await authFetch("/api/docflow", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ docFlow, dealershipId }),
+  });
+  if (!res.ok) throw new Error(`DocFlow update failed (${res.status})`);
+  const body = await res.json();
+  return body.dealership as Dealership;
 }
 
 export type Seat = {
