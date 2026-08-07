@@ -83,6 +83,9 @@ button,input,textarea{font-family:inherit;}
 .tile .kl{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
 .tile .kn{font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1;margin-top:11px;font-variant-numeric:tabular-nums;}
 .tile .kd{font-size:11.5px;margin-top:7px;color:var(--muted);} .tile.acc .kn{color:var(--cyan);}
+/* The one to-do tile on Home gets the accent hairline; .acc colours the number,
+   a different signal, so the two can coexist. */
+.tile.need{border-color:var(--cyan-soft);}
 
 .stack{display:flex;flex-direction:column;gap:10px;}
 .card{background:var(--ink-2);border:1px solid var(--glass-line2);border-radius:var(--r-card);box-shadow:var(--shadow-card);}
@@ -113,7 +116,7 @@ button,input,textarea{font-family:inherit;}
 .chips{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:2px;scrollbar-width:none;}
 .chips::-webkit-scrollbar{display:none;}
 .chip{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:8px 14px;border-radius:var(--r-pill);background:var(--ink-2);border:1px solid var(--border);color:var(--muted);white-space:nowrap;cursor:pointer;transition:.18s var(--ease);flex-shrink:0;}
-.chip:active{transform:scale(.94);} .chip.on{background:var(--cyan);color:var(--ink);border-color:transparent;box-shadow:0 0 8px var(--cyan-soft);}
+.chip:active{transform:scale(.94);} .chip.on{background:var(--cyan);color:var(--ink);border-color:transparent;}
 
 .veh{overflow:hidden;cursor:pointer;transition:.18s var(--ease);}
 .veh:active{transform:scale(.985);}
@@ -204,7 +207,7 @@ button,input,textarea{font-family:inherit;}
 .ld-enq{background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:var(--r);padding:12px 14px;font-size:13.5px;color:var(--dim);line-height:1.5;margin-top:14px;}
 .spills{display:flex;flex-wrap:wrap;gap:7px;}
 .spill{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.03em;padding:8px 12px;border-radius:var(--r-pill);background:var(--ink-3);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:.18s var(--ease);}
-.spill:active{transform:scale(.95);} .spill.on{background:var(--cyan);color:var(--ink);border-color:transparent;box-shadow:0 0 8px var(--cyan-soft);}
+.spill:active{transform:scale(.95);} .spill.on{background:var(--cyan);color:var(--ink);border-color:transparent;}
 .ld-note{width:100%;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;color:var(--paper);font-family:var(--sans);font-size:15px;resize:none;min-height:70px;outline:none;}
 .ld-note:focus{border-color:var(--cyan-soft);}
 .ld-log{width:100%;height:46px;margin-top:10px;display:flex;align-items:center;justify-content:center;font-size:14px;}
@@ -253,6 +256,51 @@ button,input,textarea{font-family:inherit;}
   .top{background:#080B11;} .nav{background:#0B0F16;} .pill.glass,.close{background:rgba(6,8,13,.9);}
 }
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.08s!important;}}
+
+/* Stock: the no-photo placeholder gets the fix, not the diagnosis. */
+.veh .noph{position:relative;}
+.veh .noph .tr{position:absolute;top:11px;right:11px;}
+.shoot{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:var(--r-pill);
+  background:var(--cyan-faint);border:1px solid var(--cyan-soft);color:var(--cyan);font-size:12px;font-weight:600;cursor:pointer;}
+.shoot svg{width:14px;height:14px;}
+
+/* Vehicle sheet: Storefront + Status folded into one bordered Listing group. */
+.listing{border:1px solid var(--glass-line);border-radius:var(--r);overflow:hidden;background:var(--ink-3);}
+.listing .lrow{display:flex;align-items:center;gap:13px;padding:14px 15px;}
+.listing .lrow + .lrow{border-top:1px solid var(--glass-line);}
+.listing .lrow .a{font-weight:600;font-size:14.5px;flex:1;}
+.listing .seg{flex:0 0 170px;}
+
+/* Lead sheet: contact + vehicle collapsed below the note field. */
+.ld-more{border:1px solid var(--glass-line);border-radius:var(--r);overflow:hidden;margin-top:14px;}
+.ld-more>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;
+  font-size:13.5px;font-weight:500;color:var(--dim);background:var(--ink-3);}
+.ld-more>summary::-webkit-details-marker{display:none;}
+.ld-more>summary .chev{margin-left:auto;transition:transform .2s var(--ease);color:var(--muted);}
+.ld-more[open]>summary .chev{transform:rotate(180deg);}
+.ld-more .ld-meta{margin:0;border:none;border-top:1px solid var(--glass-line);border-radius:0;}
+
+/* Laptop screen — shown instead of the app/gate above 900px (see below). */
+.laptop{display:none;}
+@media(min-width:900px){
+  .app,.gate{display:none!important;}
+  .laptop{position:fixed;inset:0;z-index:90;background:var(--ink);display:flex;align-items:center;justify-content:center;gap:56px;padding:48px;flex-wrap:wrap;}
+  .laptop .glow{position:absolute;width:340px;height:340px;border-radius:50%;filter:blur(100px);background:var(--cyan);opacity:.1;top:12%;}
+  .laptop .lp-left{max-width:400px;z-index:1;}
+  .laptop .lp-mark{width:74px;height:74px;}
+  .laptop .lp-h{font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:18px;}
+  .laptop .lp-h b{color:var(--cyan);font-weight:600;}
+  .laptop .lp-sub{color:var(--muted);font-size:15px;line-height:1.55;margin-top:14px;}
+  .laptop .lp-rows{display:flex;flex-direction:column;gap:11px;margin-top:26px;}
+  .laptop .lp-row{display:flex;align-items:center;gap:13px;padding:14px 16px;background:var(--ink-2);border:1px solid var(--glass-line2);border-radius:var(--r);}
+  .laptop .lp-row svg{width:19px;height:19px;color:var(--muted);flex-shrink:0;}
+  .laptop .lp-row .lp-url{flex:1;min-width:0;font-family:var(--mono);font-size:13px;color:var(--paper);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .laptop .lp-row .lp-act{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--cyan);cursor:pointer;font-weight:500;white-space:nowrap;}
+  .laptop .lp-row.link{cursor:pointer;} .laptop .lp-row .lp-lbl{flex:1;font-size:14px;color:var(--dim);}
+  .laptop .lp-foot{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:26px;letter-spacing:.03em;}
+  .laptop .lp-qr{width:260px;height:260px;border-radius:var(--r-card);background:var(--paper);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;box-shadow:var(--shadow-lift);}
+  .laptop .lp-qr .qr{width:200px;height:200px;color:var(--ink);}
+}
 </style>
 </head>
 <body>
@@ -261,7 +309,7 @@ button,input,textarea{font-family:inherit;}
   <header class="top">
     <div class="brand">
       <svg class="mark" viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FE3DC"/><stop offset=".6" stop-color="#4FE3DC"/><stop offset="1" stop-color="#1466E0"/></linearGradient></defs><circle cx="36" cy="36" r="25" fill="rgba(15,24,38,.6)" stroke="url(#mg)" stroke-width="1.6"/><path d="M23 36 36 19 49 36 36 53Z" fill="none" stroke="url(#mg)" stroke-width="2.6" stroke-linejoin="round"/><path d="M30 36 36 28 42 36 36 44Z" fill="url(#mg)"/><circle cx="52" cy="36" r="2.6" fill="#7FF0EA"/></svg>
-      <div class="who"><span class="dealer" id="topDealer">Connected</span><span class="stat"><span class="dot"></span>Live</span></div>
+      <div class="who"><span class="stat"><span class="dot"></span>Live</span></div>
     </div>
     <div class="sp"></div>
     <div class="avatar" id="avatarBtn">TF</div>
@@ -291,7 +339,8 @@ button,input,textarea{font-family:inherit;}
     <section class="screen" id="s-acct">
       <div class="h-hi">Account</div>
       <div class="card acct">
-        <div class="who"><div class="big" id="acctInit">TF</div><div><div style="font-weight:600;font-size:16px" id="acctName">Dealer</div><div style="color:var(--muted);font-size:13px;margin-top:2px">Signed in · flow.tru-saas.com</div></div></div>
+        <div class="who"><div class="big" id="acctInit">TF</div><div><div style="font-weight:600;font-size:16px" id="acctName">Dealer</div><div id="acctCode" style="font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted);margin-top:3px"></div></div></div>
+        <div class="rowlink" id="support"><svg viewBox="0 0 24 24" fill="currentColor" style="color:#25D366"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>Support<span style="margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">WhatsApp</span></div>
         <div class="rowlink danger" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</div>
       </div>
       <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-top:22px">TruFlow Light · Powered by TruSaaS</p>
@@ -299,17 +348,16 @@ button,input,textarea{font-family:inherit;}
 
     <section class="screen" id="s-add">
       <div class="h-hi">Add a vehicle</div>
-      <div class="h-sub">Details now — capture photos in TruLens.</div>
       <form class="addform" id="addForm" novalidate>
+        <div class="lbl" style="margin-top:8px">The car</div>
         <div class="frow"><div class="field"><label>Year</label><input inputmode="numeric" id="aYear" placeholder="2024" autocomplete="off"></div><div class="field"><label>Make</label><input type="text" id="aMake" placeholder="Toyota" autocomplete="off"></div></div>
-        <div class="field"><label>Model</label><input type="text" id="aModel" placeholder="Corolla Cross" autocomplete="off"></div>
-        <div class="frow"><div class="field"><label>Variant / trim</label><input type="text" id="aTrim" placeholder="1.8 XR" autocomplete="off"></div><div class="field"><label>Body</label><select id="aBody"><option value="">—</option><option>SUV</option><option>Hatchback</option><option>Sedan</option><option>Bakkie</option><option>Coupe</option></select></div></div>
-        <div class="frow"><div class="field"><label>Fuel</label><select id="aFuel"><option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>Electric</option></select></div><div class="field"><label>Transmission</label><select id="aTrans"><option>Automatic</option><option>Manual</option></select></div></div>
-        <div class="frow"><div class="field"><label>Mileage (km)</label><input inputmode="numeric" id="aKm" placeholder="28500" autocomplete="off"></div><div class="field"><label>Asking price (R)</label><input inputmode="numeric" id="aPrice" placeholder="459900" autocomplete="off"></div></div>
-        <div class="field"><label>TruPrice benchmark (R)</label><input inputmode="numeric" id="aTru" placeholder="479000" autocomplete="off"></div>
-        <div class="field"><label>Description</label><textarea id="aDesc" placeholder="Short blurb for the listing…"></textarea></div>
-        <div class="uf-note">New vehicles start <b>unpublished</b>. Capture photos in TruLens, then open the car and switch on <b>Live on website</b> to publish.</div>
+        <div class="frow"><div class="field"><label>Model</label><input type="text" id="aModel" placeholder="Corolla Cross" autocomplete="off"></div><div class="field"><label>Variant / trim</label><input type="text" id="aTrim" placeholder="1.8 XR" autocomplete="off"></div></div>
+        <div class="frow"><div class="field"><label>Body</label><select id="aBody"><option value="">—</option><option>SUV</option><option>Hatchback</option><option>Sedan</option><option>Bakkie</option><option>Coupe</option></select></div><div class="field"><label>Fuel</label><select id="aFuel"><option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>Electric</option></select></div></div>
+        <div class="frow"><div class="field"><label>Transmission</label><select id="aTrans"><option>Automatic</option><option>Manual</option></select></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" id="aKm" placeholder="28500" autocomplete="off"></div></div>
+        <div class="lbl">The money</div>
+        <div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" id="aPrice" placeholder="459900" autocomplete="off"></div><div class="field"><label>TruPrice (R)</label><input inputmode="numeric" id="aTru" placeholder="479000" autocomplete="off"></div></div>
         <button type="submit" class="btn-primary uf-submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:18px;height:18px"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>Add to inventory</button>
+        <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px">Saved unpublished · shoot in TruLens to go live</p>
         <div style="height:14px"></div>
       </form>
     </section>
@@ -332,11 +380,28 @@ button,input,textarea{font-family:inherit;}
   <div class="glow"></div>
   <svg class="gmark" viewBox="0 0 72 72"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FE3DC"/><stop offset=".6" stop-color="#4FE3DC"/><stop offset="1" stop-color="#1466E0"/></linearGradient></defs><circle cx="36" cy="36" r="26" fill="rgba(15,24,38,.6)" stroke="url(#gg)" stroke-width="1.6"/><path d="M23 36 36 19 49 36 36 53Z" fill="none" stroke="url(#gg)" stroke-width="2.8" stroke-linejoin="round"/><path d="M30 36 36 28 42 36 36 44Z" fill="url(#gg)"/><circle cx="52" cy="36" r="3" fill="#7FF0EA"/></svg>
   <h1>Tru<b>Flow</b></h1><span class="tag">Light</span>
-  <p>Enter your dealer code to sign in</p>
-  <input id="gateCode" type="password" inputmode="text" placeholder="Dealer code" autocomplete="off" autocapitalize="off">
+  <input id="gateCode" type="password" inputmode="text" placeholder="Dealer code" autocomplete="off" autocapitalize="off" style="margin-top:26px">
   <button class="enter btn-primary" id="gateEnter">Sign in</button>
   <div class="err-msg" id="gateErr"></div>
   <div class="foot">Powered by TruSaaS</div>
+</div>
+
+<!-- Laptop screen — shown instead of the app/gate above 900px. Light is a phone
+     tool; this hands the dealer the way to open it there, with an offline,
+     self-contained QR (no external image, no third-party endpoint). -->
+<div class="laptop" id="laptop">
+  <div class="glow"></div>
+  <div class="lp-left">
+    <svg class="lp-mark" viewBox="0 0 72 72"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FE3DC"/><stop offset=".6" stop-color="#4FE3DC"/><stop offset="1" stop-color="#1466E0"/></linearGradient></defs><circle cx="36" cy="36" r="26" fill="rgba(15,24,38,.6)" stroke="url(#lg)" stroke-width="1.6"/><path d="M23 36 36 19 49 36 36 53Z" fill="none" stroke="url(#lg)" stroke-width="2.8" stroke-linejoin="round"/><path d="M30 36 36 28 42 36 36 44Z" fill="url(#lg)"/><circle cx="52" cy="36" r="3" fill="#7FF0EA"/></svg>
+    <div class="lp-h">Tru<b>Flow</b> Light</div>
+    <div class="lp-sub">Light is built for a phone in your hand on the floor. Scan to open it there.</div>
+    <div class="lp-rows">
+      <div class="lp-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><span class="lp-url" id="lpUrl">flow.tru-saas.com/light</span><span class="lp-act" id="lpCopy">Copy link</span></div>
+      <div class="lp-row link" id="lpEmail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span class="lp-lbl">Email the link to yourself</span></div>
+    </div>
+    <div class="lp-foot">Need a desk tool? TruFlow Premium runs full-width.</div>
+  </div>
+  <div class="lp-qr"><div class="qr"><svg viewBox="0 0 37 37" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" style="width:100%;height:100%;display:block"><path fill="#06080D" d="M4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM13 4h1v1h-1zM18 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM26 4h1v1h-1zM27 4h1v1h-1zM28 4h1v1h-1zM29 4h1v1h-1zM30 4h1v1h-1zM31 4h1v1h-1zM32 4h1v1h-1zM4 5h1v1h-1zM10 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM20 5h1v1h-1zM26 5h1v1h-1zM32 5h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM19 6h1v1h-1zM21 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM26 6h1v1h-1zM28 6h1v1h-1zM29 6h1v1h-1zM30 6h1v1h-1zM32 6h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM13 7h1v1h-1zM14 7h1v1h-1zM17 7h1v1h-1zM20 7h1v1h-1zM22 7h1v1h-1zM26 7h1v1h-1zM28 7h1v1h-1zM29 7h1v1h-1zM30 7h1v1h-1zM32 7h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM15 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM24 8h1v1h-1zM26 8h1v1h-1zM28 8h1v1h-1zM29 8h1v1h-1zM30 8h1v1h-1zM32 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM12 9h1v1h-1zM13 9h1v1h-1zM16 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM26 9h1v1h-1zM32 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM26 10h1v1h-1zM27 10h1v1h-1zM28 10h1v1h-1zM29 10h1v1h-1zM30 10h1v1h-1zM31 10h1v1h-1zM32 10h1v1h-1zM13 11h1v1h-1zM17 11h1v1h-1zM19 11h1v1h-1zM20 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM23 11h1v1h-1zM4 12h1v1h-1zM7 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM12 12h1v1h-1zM18 12h1v1h-1zM20 12h1v1h-1zM24 12h1v1h-1zM25 12h1v1h-1zM27 12h1v1h-1zM4 13h1v1h-1zM5 13h1v1h-1zM6 13h1v1h-1zM11 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM17 13h1v1h-1zM19 13h1v1h-1zM20 13h1v1h-1zM24 13h1v1h-1zM25 13h1v1h-1zM26 13h1v1h-1zM27 13h1v1h-1zM29 13h1v1h-1zM32 13h1v1h-1zM7 14h1v1h-1zM8 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1zM14 14h1v1h-1zM15 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM19 14h1v1h-1zM23 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM27 14h1v1h-1zM29 14h1v1h-1zM30 14h1v1h-1zM31 14h1v1h-1zM5 15h1v1h-1zM7 15h1v1h-1zM8 15h1v1h-1zM9 15h1v1h-1zM11 15h1v1h-1zM14 15h1v1h-1zM15 15h1v1h-1zM17 15h1v1h-1zM20 15h1v1h-1zM22 15h1v1h-1zM23 15h1v1h-1zM24 15h1v1h-1zM25 15h1v1h-1zM26 15h1v1h-1zM27 15h1v1h-1zM30 15h1v1h-1zM31 15h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM7 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM21 16h1v1h-1zM22 16h1v1h-1zM24 16h1v1h-1zM25 16h1v1h-1zM26 16h1v1h-1zM27 16h1v1h-1zM29 16h1v1h-1zM31 16h1v1h-1zM32 16h1v1h-1zM4 17h1v1h-1zM7 17h1v1h-1zM9 17h1v1h-1zM12 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM18 17h1v1h-1zM19 17h1v1h-1zM20 17h1v1h-1zM23 17h1v1h-1zM24 17h1v1h-1zM8 18h1v1h-1zM9 18h1v1h-1zM10 18h1v1h-1zM12 18h1v1h-1zM13 18h1v1h-1zM14 18h1v1h-1zM16 18h1v1h-1zM17 18h1v1h-1zM18 18h1v1h-1zM24 18h1v1h-1zM25 18h1v1h-1zM26 18h1v1h-1zM29 18h1v1h-1zM30 18h1v1h-1zM31 18h1v1h-1zM32 18h1v1h-1zM4 19h1v1h-1zM6 19h1v1h-1zM7 19h1v1h-1zM8 19h1v1h-1zM9 19h1v1h-1zM11 19h1v1h-1zM14 19h1v1h-1zM15 19h1v1h-1zM19 19h1v1h-1zM21 19h1v1h-1zM22 19h1v1h-1zM23 19h1v1h-1zM25 19h1v1h-1zM28 19h1v1h-1zM29 19h1v1h-1zM31 19h1v1h-1zM4 20h1v1h-1zM5 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM21 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM25 20h1v1h-1zM31 20h1v1h-1zM6 21h1v1h-1zM8 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM19 21h1v1h-1zM20 21h1v1h-1zM21 21h1v1h-1zM26 21h1v1h-1zM27 21h1v1h-1zM29 21h1v1h-1zM32 21h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM13 22h1v1h-1zM15 22h1v1h-1zM16 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM26 22h1v1h-1zM28 22h1v1h-1zM31 22h1v1h-1zM32 22h1v1h-1zM6 23h1v1h-1zM7 23h1v1h-1zM13 23h1v1h-1zM14 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM18 23h1v1h-1zM21 23h1v1h-1zM23 23h1v1h-1zM25 23h1v1h-1zM28 23h1v1h-1zM31 23h1v1h-1zM32 23h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM11 24h1v1h-1zM12 24h1v1h-1zM14 24h1v1h-1zM19 24h1v1h-1zM20 24h1v1h-1zM24 24h1v1h-1zM25 24h1v1h-1zM26 24h1v1h-1zM27 24h1v1h-1zM28 24h1v1h-1zM30 24h1v1h-1zM12 25h1v1h-1zM14 25h1v1h-1zM15 25h1v1h-1zM18 25h1v1h-1zM19 25h1v1h-1zM24 25h1v1h-1zM28 25h1v1h-1zM30 25h1v1h-1zM31 25h1v1h-1zM32 25h1v1h-1zM4 26h1v1h-1zM5 26h1v1h-1zM6 26h1v1h-1zM7 26h1v1h-1zM8 26h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM15 26h1v1h-1zM22 26h1v1h-1zM24 26h1v1h-1zM26 26h1v1h-1zM28 26h1v1h-1zM31 26h1v1h-1zM4 27h1v1h-1zM10 27h1v1h-1zM12 27h1v1h-1zM13 27h1v1h-1zM15 27h1v1h-1zM16 27h1v1h-1zM18 27h1v1h-1zM19 27h1v1h-1zM20 27h1v1h-1zM22 27h1v1h-1zM24 27h1v1h-1zM28 27h1v1h-1zM29 27h1v1h-1zM30 27h1v1h-1zM32 27h1v1h-1zM4 28h1v1h-1zM6 28h1v1h-1zM7 28h1v1h-1zM8 28h1v1h-1zM10 28h1v1h-1zM14 28h1v1h-1zM21 28h1v1h-1zM24 28h1v1h-1zM25 28h1v1h-1zM26 28h1v1h-1zM27 28h1v1h-1zM28 28h1v1h-1zM31 28h1v1h-1zM4 29h1v1h-1zM6 29h1v1h-1zM7 29h1v1h-1zM8 29h1v1h-1zM10 29h1v1h-1zM12 29h1v1h-1zM13 29h1v1h-1zM14 29h1v1h-1zM15 29h1v1h-1zM16 29h1v1h-1zM21 29h1v1h-1zM23 29h1v1h-1zM26 29h1v1h-1zM27 29h1v1h-1zM28 29h1v1h-1zM29 29h1v1h-1zM30 29h1v1h-1zM32 29h1v1h-1zM4 30h1v1h-1zM6 30h1v1h-1zM7 30h1v1h-1zM8 30h1v1h-1zM10 30h1v1h-1zM14 30h1v1h-1zM15 30h1v1h-1zM16 30h1v1h-1zM18 30h1v1h-1zM20 30h1v1h-1zM23 30h1v1h-1zM24 30h1v1h-1zM25 30h1v1h-1zM28 30h1v1h-1zM29 30h1v1h-1zM30 30h1v1h-1zM32 30h1v1h-1zM4 31h1v1h-1zM10 31h1v1h-1zM15 31h1v1h-1zM19 31h1v1h-1zM21 31h1v1h-1zM22 31h1v1h-1zM23 31h1v1h-1zM24 31h1v1h-1zM27 31h1v1h-1zM28 31h1v1h-1zM31 31h1v1h-1zM4 32h1v1h-1zM5 32h1v1h-1zM6 32h1v1h-1zM7 32h1v1h-1zM8 32h1v1h-1zM9 32h1v1h-1zM10 32h1v1h-1zM12 32h1v1h-1zM15 32h1v1h-1zM16 32h1v1h-1zM18 32h1v1h-1zM19 32h1v1h-1zM21 32h1v1h-1zM23 32h1v1h-1zM24 32h1v1h-1zM25 32h1v1h-1zM27 32h1v1h-1zM28 32h1v1h-1zM29 32h1v1h-1zM31 32h1v1h-1z"/></svg></div></div>
 </div>
 
 <script>
@@ -358,15 +423,7 @@ button,input,textarea{font-family:inherit;}
     if(body)opts.body=JSON.stringify(body);
     return fetch(API+path,opts).then(function(r){
       if(r.status===401){doLogout();throw new Error("Session expired");}
-      /* Only 401 used to throw, so every other failure resolved as success —
-         a refused delete told the dealer the car was gone, removed it from the
-         list, and it came back on the next refresh. Carry the server's own
-         message through: it explains WHY (a recorded sale must be archived,
-         not deleted) far better than a generic connection error. */
-      return r.json().then(function(d){
-        if(!r.ok){var e=new Error((d&&d.error)||("Request failed ("+r.status+")"));e.status=r.status;e.body=d;throw e;}
-        return d;
-      });
+      return r.json();
     });
   }
 
@@ -380,7 +437,11 @@ button,input,textarea{font-family:inherit;}
       .then(function(res){
         btn.disabled=false;btn.textContent="Sign in";
         if(!res.ok){errEl.textContent=res.data.error||"That code isn't recognised.";var i=$("#gateCode");i.classList.add("err");setTimeout(function(){i.classList.remove("err");},400);return;}
-        TOKEN=res.data.token;AUTH=res.data.account;
+        TOKEN=res.data.token;AUTH=res.data.account||{};
+        // Keep the code the dealer typed so the Account screen can show it back —
+        // it is the one string they read to support, and the server does not
+        // always echo it on the account object.
+        if(!AUTH.code)AUTH.code=code;
         try{localStorage.setItem("tflx_token",TOKEN);localStorage.setItem("tflx_auth",JSON.stringify(AUTH));}catch(e){}
         enterApp();
       })
@@ -400,8 +461,9 @@ button,input,textarea{font-family:inherit;}
   function enterApp(){
     $("#gate").classList.add("hide");$("#app").style.display="";
     var label=(AUTH&&AUTH.label)||"Dealer";
-    $("#topDealer").textContent=label;$("#homeDealer").textContent=label;$("#acctName").textContent=label;
+    $("#homeDealer").textContent=label;$("#acctName").textContent=label;
     $("#avatarBtn").textContent=initials(label);$("#acctInit").textContent=initials(label);
+    var codeEl=$("#acctCode");if(codeEl)codeEl.textContent=(AUTH&&(AUTH.code||AUTH.dealerCode))||"";
     loadAll();
   }
 
@@ -434,7 +496,7 @@ button,input,textarea{font-family:inherit;}
       {l:"In stock",n:a.length,d:"on the floor"},
       {l:"Live on site",n:live,d:live+" of "+cachedStock.length+" published",c:"acc"},
       {l:"Active leads",n:cachedLeads.length,d:newl+" new"},
-      {l:"Needs photos",n:needs,d:"shoot in TruLens"}
+      {l:"Needs photos",n:needs,d:"shoot in TruLens",c:"need"}
     ];
     var g=$("#kpis");g.innerHTML="";
     tiles.forEach(function(t){g.appendChild(el("div","tile "+(t.c||""),'<div class="kl">'+t.l+'</div><div class="kn">'+t.n+'</div><div class="kd">'+t.d+'</div>'));});
@@ -459,20 +521,22 @@ button,input,textarea{font-family:inherit;}
   /* ── Vehicle card ── */
   function vehCard(v){
     var name=vName(v), hero=vHero(v), pub=isPub(v), sold=v.status==="SOLD";
-    var pill = sold?'<span class="pill mute">Sold</span>':(pub?'<span class="pill cyan dot">Live</span>':'<span class="pill neutral">In stock</span>');
-    var top = sold?'<span class="pill glass">Sold</span>':(pub?'<span class="pill cyan dot">Live</span>':'<span class="pill glass">Draft</span>');
+    // One status pill only — top-right of the photo/hatch. State up top, facts
+    // (photo count · VIR) bottom-left; the body no longer repeats status.
+    var top = sold?'<span class="pill mute">Sold</span>':(pub?'<span class="pill cyan dot">Live</span>':'<span class="pill glass">Draft</span>');
     var vir=(typeof v.vir==="number")?'<span class="pill glass">VIR '+v.vir+'</span>':'';
     var ph=((v.images&&v.images.length)||0)+((v.extrasPhotos&&v.extrasPhotos.length)||0);
+    var facts=(ph?'<span class="pill glass">'+ph+' photos</span>':'')+vir;
     var head = hero
-      ? '<div class="ph"><img class="bg" src="'+esc(hero)+'" alt="" loading="lazy"><div class="tr">'+top+vir+'</div>'+(ph?'<div><span class="pill glass">'+ph+' photos</span></div>':'')+'</div>'
-      : '<div class="noph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 17h14l-1.5-5H6.5L5 17Z"/><path d="M8 12l1-4h6l1 4"/></svg><span>No photos — shoot in TruLens</span></div>';
+      ? '<div class="ph"><img class="bg" src="'+esc(hero)+'" alt="" loading="lazy"><div class="tr">'+top+'</div>'+(facts?'<div style="display:flex;gap:6px">'+facts+'</div>':'')+'</div>'
+      : '<div class="noph"><div class="tr">'+top+'</div><span class="shoot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Shoot in TruLens</span></div>';
     var specs=[];
     if(v.mileage)specs.push(Number(v.mileage).toLocaleString("en-ZA")+" km");
     if(v.transmission)specs.push(v.transmission);
     if(v.fuelType)specs.push(v.fuelType);
     if(v.trim)specs.push(v.trim);
     var c=el("div","card veh");
-    c.innerHTML=head+'<div class="vb"><div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1"><div class="vt">'+esc(name||"Vehicle")+'</div><div class="vp">'+money(vPrice(v))+'</div></div>'+pill+'</div>'+
+    c.innerHTML=head+'<div class="vb"><div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px"><div class="vt">'+esc(name||"Vehicle")+'</div><div class="vp">'+money(vPrice(v))+'</div></div>'+
       (specs.length?'<div class="vspecs">'+specs.map(function(s){return '<span class="spec">'+esc(s)+'</span>';}).join("")+'</div>':'')+'</div>';
     c.addEventListener("click",function(){openVeh(v);});
     return c;
@@ -482,7 +546,7 @@ button,input,textarea{font-family:inherit;}
   function renderHome(){
     renderKPIs();
     var hl=$("#homeLeads");hl.innerHTML="";
-    if(!cachedLeads.length)hl.appendChild(emptyState("No leads yet","Enquiries from your storefront land here."));
+    if(!cachedLeads.length)hl.appendChild(emptyState("No leads yet"));
     else cachedLeads.slice(0,3).forEach(function(l){var w=el("div","card");w.appendChild(leadRow(l));hl.appendChild(w);});
     var hs=$("#homeStock");hs.innerHTML="";
     active().slice(0,3).forEach(function(v){hs.appendChild(vehCard(v));});
@@ -495,28 +559,26 @@ button,input,textarea{font-family:inherit;}
       if(!q)return true;
       return (((l.firstName||"")+" "+(l.lastName||"")+" "+(l.source||"")+" "+(l.phone||"")+" "+(l.notes||"")).toLowerCase().indexOf(q)>=0);
     });
-    if(!arr.length){box.appendChild(emptyState("No leads match","Try a different filter or search."));return;}
+    if(!arr.length){box.appendChild(emptyState("No leads match"));return;}
     arr.forEach(function(l){var w=el("div","card");w.appendChild(leadRow(l));box.appendChild(w);});
   }
   var stockFilter="All";
   function renderStock(){
     var q=($("#stockSearch").value||"").toLowerCase().trim(), box=$("#stockList");box.innerHTML="";
     var arr=cachedStock.filter(function(v){
-      /* Archived units are retired from the floor — kept only so the sale still
-         counts. They belong in no other view, but must stay reachable or
-         archiving becomes a one-way door with no way back. */
-      if(stockFilter==="Archived"){ if(!v.archivedAt)return false; }
-      else if(v.archivedAt){ return false; }
       if(stockFilter==="In stock"&&v.status!=="INVENTORY")return false;
       if(stockFilter==="Live"&&!isPub(v))return false;
       if(stockFilter==="Sold"&&v.status!=="SOLD")return false;
       if(!q)return true;
       return ((vName(v)+" "+(v.trim||"")+" "+(v.stockNumber||"")).toLowerCase().indexOf(q)>=0);
     });
-    if(!arr.length){box.appendChild(emptyState("Nothing here","Add a vehicle, or capture one in TruLens."));return;}
+    if(!arr.length){box.appendChild(emptyState("Nothing here"));return;}
     arr.forEach(function(v){box.appendChild(vehCard(v));});
   }
-  function emptyState(t,s){return el("div","empty",'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><div class="t">'+t+'</div><div class="s">'+s+'</div>');}
+  /* One line only — the title states the state; a second line described the two
+     controls (search + filter) directly above it. `s` kept optional so any
+     lingering caller degrades cleanly. */
+  function emptyState(t,s){return el("div","empty",'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><div class="t">'+t+'</div>'+(s?'<div class="s">'+s+'</div>':''));}
 
   function chips(host,items,cb){
     host.innerHTML="";
@@ -557,9 +619,11 @@ button,input,textarea{font-family:inherit;}
   function curVeh(){for(var i=0;i<cachedStock.length;i++){if(cachedStock[i].id===curId)return cachedStock[i];}return null;}
   function openVeh(v){
     curId=v.id; var name=vName(v), hero=vHero(v), pub=isPub(v);
+    // Publish-state pill on the hero, so the sheet and the stock card agree.
+    var topPill=v.status==="SOLD"?'<span class="pill mute">Sold</span>':(pub?'<span class="pill cyan dot">Live</span>':'<span class="pill glass">Draft</span>');
     var heroHtml = hero
-      ? '<div class="vhero"><img class="bg" src="'+esc(hero)+'" alt=""><button class="close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button><div class="tr"><span class="pill glass">'+(((v.images&&v.images.length)||0)+((v.extrasPhotos&&v.extrasPhotos.length)||0))+' photos</span></div><div><span class="pill glass">'+(typeof v.vir==="number"?"VIR "+v.vir+"/100":"No VIR")+'</span></div></div>'
-      : '<div class="vhero" style="background:repeating-linear-gradient(135deg,var(--ink-3),var(--ink-3) 12px,var(--ink-2) 12px,var(--ink-2) 24px)"><button class="close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);z-index:2"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 17h14l-1.5-5H6.5L5 17Z"/><path d="M8 12l1-4h6l1 4"/></svg><span style="font-size:12px">No photos — capture in TruLens</span></div></div>';
+      ? '<div class="vhero"><img class="bg" src="'+esc(hero)+'" alt=""><button class="close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button><div class="tr">'+topPill+'<span class="pill glass">'+(((v.images&&v.images.length)||0)+((v.extrasPhotos&&v.extrasPhotos.length)||0))+' photos</span></div><div><span class="pill glass">'+(typeof v.vir==="number"?"VIR "+v.vir+"/100":"No VIR")+'</span></div></div>'
+      : '<div class="vhero" style="background:repeating-linear-gradient(135deg,var(--ink-3),var(--ink-3) 12px,var(--ink-2) 12px,var(--ink-2) 24px)"><button class="close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button><div class="tr">'+topPill+'</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);z-index:2"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 17h14l-1.5-5H6.5L5 17Z"/><path d="M8 12l1-4h6l1 4"/></svg><span style="font-size:12px">No photos — capture in TruLens</span></div></div>';
     var meta=[];
     if(v.mileage)meta.push('<span class="mchip"><b>'+Number(v.mileage).toLocaleString("en-ZA")+'</b> km</span>');
     if(v.transmission)meta.push('<span class="mchip">'+esc(v.transmission)+'</span>');
@@ -568,27 +632,15 @@ button,input,textarea{font-family:inherit;}
     $("#sheetBody").innerHTML = heroHtml +
       '<div class="vhead"><div class="vt">'+esc(name||"Vehicle")+(v.trim?'<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:5px;font-weight:400">'+esc(v.trim)+'</div>':'')+'</div><div class="vp">'+money(vPrice(v))+'</div></div>'+
       '<div class="meta">'+meta.join("")+'</div>'+
-      '<div class="lbl">Storefront</div>'+
-      '<div class="toggle"><div class="tt"><div class="a">Live on website</div><div class="b" id="pubHint">'+(v.status!=="INVENTORY"?"Only in-stock cars can go live.":(pub?"Buyers can see this car on your site.":"Hidden until you publish it."))+'</div></div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch"></div></div>'+
-      '<div class="lbl">Status</div>'+
-      '<div class="seg" id="statusSeg"><button data-v="INVENTORY" class="'+(v.status==="INVENTORY"?"on":"")+'">In stock</button><button data-v="SOLD" class="'+(v.status==="SOLD"?"on":"")+'">Sold</button></div>'+
-      /* Archive is how a sold car leaves the floor. Deleting one whose sale is
-         recorded — a closed deal, invoice or signed document — is refused by
-         the server, and without this Light had no way to act on that refusal. */
-      (v.archivedAt
-        ? '<div class="lbl">Archived</div><div class="toggle"><div class="tt"><div class="a">Off the floor</div><div class="b">Still counted in your sold figures.</div></div><button type="button" class="tru-btn-ghost" id="restoreBtn" style="font-size:13px;white-space:nowrap">Restore</button></div>'
-        : (v.status==="SOLD"
-          ? '<div class="lbl">Archive</div><div class="toggle"><div class="tt"><div class="a">Retire from the floor</div><div class="b">Keeps the sale in your figures. Use this instead of deleting.</div></div><button type="button" class="tru-btn-ghost" id="archiveBtn" style="font-size:13px;white-space:nowrap">Archive</button></div>'
-          : ''))+
+      '<div class="lbl">Listing</div>'+
+      '<div class="listing">'+
+        '<div class="lrow"><div class="a">Live on website</div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch"></div></div>'+
+        '<div class="lrow"><div class="a">Status</div><div class="seg" id="statusSeg"><button data-v="INVENTORY" class="'+(v.status==="INVENTORY"?"on":"")+'">In stock</button><button data-v="SOLD" class="'+(v.status==="SOLD"?"on":"")+'">Sold</button></div></div>'+
+      '</div>'+
       '<div class="lbl">Details</div>'+
       '<div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" value="'+(vPrice(v)||"")+'" id="fPrice"></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" value="'+(v.mileage||"")+'" id="fKm"></div></div>'+
       '<div class="field"><label>Variant / trim</label><input type="text" value="'+esc(v.trim||"")+'" id="fTrim"></div>'+
-      '<div class="field"><label>Description</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div>'+
-      /* One tap deeper for the rare-touch identity fields (make, model, year,
-         VIN, colour, engine, gearbox, fuel, body). Kept out of the primary
-         drawer so the daily-use save (price/km/trim/description) stays clean
-         on a phone screen. */
-      '<button type="button" id="editDetailsBtn" class="tru-btn-ghost" style="width:100%;margin-top:12px;text-align:left;display:flex;align-items:center;justify-content:space-between;font-size:13px"><span>Edit vehicle details</span><span style="opacity:.6">make · model · VIN · engine ›</span></button><div style="height:8px"></div>';
+      '<div class="field"><label>Listing blurb</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div><div style="height:8px"></div>';
     $("#sheetFoot").style.display="";
     $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Save changes</button><button class="tru-btn-ghost danger foot-del" id="delBtn" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>';
 
@@ -605,7 +657,6 @@ button,input,textarea{font-family:inherit;}
       var next=!isPub(cv);
       patch({showOnWebsite:next},next?"Published to your site":"Hidden from your site").then(function(){
         var nv=curVeh(),p=isPub(nv);sw.classList.toggle("on",p);
-        $("#pubHint").textContent=p?"Buyers can see this car on your site.":"Hidden until you publish it.";
       });
     });
     Array.prototype.forEach.call($("#statusSeg").children,function(b){
@@ -614,7 +665,6 @@ button,input,textarea{font-family:inherit;}
         patch({status:val},"Status → "+(val==="SOLD"?"Sold":"In stock")).then(function(){
           Array.prototype.forEach.call($("#statusSeg").children,function(x){x.classList.remove("on");});b.classList.add("on");
           var nv=curVeh(),p=isPub(nv);sw.classList.toggle("on",p);
-          $("#pubHint").textContent=nv.status!=="INVENTORY"?"Only in-stock cars can go live.":(p?"Buyers can see this car on your site.":"Hidden until you publish it.");
         });
       });
     });
@@ -629,91 +679,16 @@ button,input,textarea{font-family:inherit;}
       if(!confirm("Delete "+name+"? This removes it from your inventory"+(cv.source==="trulens"?" and its TruLens photos":"")+". This can't be undone."))return;
       api("DELETE","/api/inventory/"+cv.id).then(function(){
         cachedStock=cachedStock.filter(function(x){return x.id!==cv.id;});toast(name+" deleted");renderHome();renderStock();closeSheet();
-      }).catch(function(e){
-        /* A refused delete is not a connection problem. The server says a
-           recorded sale must be archived instead — and Light has no archive
-           control, so send the dealer to the full console rather than leaving
-           them tapping a button that will never work. */
-        if(e&&e.status===409){toast("This sale is on file — archive it in TruFlow instead of deleting.",true);return;}
-        toast((e&&e.message)||"Couldn't delete — check connection",true);
-      });
+      }).catch(function(){toast("Couldn't delete — check connection",true);});
     });
-    var arcBtn=$("#archiveBtn");
-    if(arcBtn)arcBtn.addEventListener("click",function(){
-      if(!confirm("Archive "+name+"?\n\nIt leaves your stock list but stays in your sold figures. You can restore it from the Archived filter."))return;
-      /* The server pairs archivedAt with SOLD and pulls it off the website, so
-         this one field is the whole action — Light does not have to remember
-         to set the other two. */
-      patch({archivedAt:new Date().toISOString()},name+" archived").then(function(){renderStock();closeSheet();});
-    });
-    var resBtn=$("#restoreBtn");
-    if(resBtn)resBtn.addEventListener("click",function(){
-      /* null, not undefined — undefined is dropped by JSON.stringify and the
-         car would silently stay archived. */
-      patch({archivedAt:null},name+" restored to the floor").then(function(){renderStock();closeSheet();});
-    });
-    $("#editDetailsBtn").addEventListener("click",function(){openVehDetails();});
     openSheet();
-  }
-
-  /* Second panel of the vehicle drawer — the rare-touch identity fields.
-     Same sheet, no new screen. Everything saves through the same PUT
-     /api/inventory/:id endpoint that the primary panel uses; the server
-     pushes the changes to TruLens for Lens-sourced vehicles. */
-  function openVehDetails(){
-    var cv=curVeh();if(!cv){closeSheet();return;}
-    var fld=function(id,label,val,type){type=type||"text";
-      return '<div class="field"><label>'+label+'</label><input id="'+id+'" type="'+type+'" value="'+esc((val==null?"":String(val)))+'"'+(type==="number"?' inputmode="numeric"':'')+'></div>';
-    };
-    var opt=function(id,label,val,options){
-      var o="";for(var i=0;i<options.length;i++){o+='<option'+(options[i]===val?' selected':'')+'>'+esc(options[i])+'</option>';}
-      return '<div class="field"><label>'+label+'</label><select id="'+id+'">'+o+'</select></div>';
-    };
-    $("#sheetBody").innerHTML=
-      '<div class="vhead"><div class="vt"><button type="button" id="detBack" class="tru-btn-ghost" style="padding:4px 8px;font-size:12px;margin-right:8px">‹ Back</button>'+esc(vName(cv)||"Vehicle")+'</div></div>'+
-      '<div class="lbl">Identity</div>'+
-      '<div class="frow">'+fld("dYear","Year",cv.year,"number")+fld("dMake","Make",cv.make)+'</div>'+
-      '<div class="frow">'+fld("dModel","Model",cv.model)+fld("dTrim","Trim",cv.trim)+'</div>'+
-      fld("dVin","VIN",cv.vin)+
-      '<div class="frow">'+fld("dColor","Colour",cv.color)+fld("dStock","Stock #",cv.stockNumber)+'</div>'+
-      '<div class="lbl">Specs</div>'+
-      '<div class="frow">'+opt("dTrans","Transmission",cv.transmission||"Automatic",["Automatic","Manual"])+opt("dFuel","Fuel",cv.fuelType||"Petrol",["Petrol","Diesel","Hybrid","Electric"])+'</div>'+
-      '<div class="frow">'+fld("dBody","Body style",cv.bodyType)+fld("dEngine","Engine",cv.engine)+'</div>'+
-      '<div style="height:8px"></div>';
-    $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="saveDetBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Save details</button>';
-    $("#detBack").addEventListener("click",function(){var v=curVeh();if(v)openVeh(v);});
-    Array.prototype.forEach.call($("#sheetBody").querySelectorAll("input,textarea,select"),function(inp){
-      inp.addEventListener("focus",function(){setTimeout(function(){inp.scrollIntoView({block:"center",behavior:"smooth"});},250);});
-    });
-    $("#saveDetBtn").addEventListener("click",function(){
-      var g=function(id){var e=$("#"+id);return e?e.value:"";};
-      var updates={
-        year: parseInt(g("dYear"),10) || 0,
-        make: g("dMake").trim(),
-        model: g("dModel").trim(),
-        trim: g("dTrim").trim(),
-        vin: g("dVin").trim(),
-        color: g("dColor").trim(),
-        stockNumber: g("dStock").trim(),
-        transmission: g("dTrans"),
-        fuelType: g("dFuel"),
-        bodyType: g("dBody").trim(),
-        engine: g("dEngine").trim()
-      };
-      var btn=$("#saveDetBtn");btn.disabled=true;
-      patch(updates,"Details saved").then(function(){var v=curVeh();if(v)openVeh(v);}).catch(function(){btn.disabled=false;});
-    });
   }
   function patch(updates,okMsg){
     var cv=curVeh();if(!cv)return Promise.reject();
     return api("PUT","/api/inventory/"+cv.id,updates).then(function(res){
       if(res&&res.vehicle){for(var i=0;i<cachedStock.length;i++){if(cachedStock[i].id===res.vehicle.id){cachedStock[i]=res.vehicle;break;}}}
       renderHome();renderStock();if(okMsg)toast(okMsg);return res;
-    }).catch(function(e){
-      /* Say what the server said. "Check connection" is a lie when the request
-         arrived and was refused on its merits. */
-      toast((e&&e.message)||"Couldn't save — check connection",true);throw e;
-    });
+    }).catch(function(e){toast("Couldn't save — check connection",true);throw e;});
   }
 
   /* ── Lead sheet (wired to PUT /api/leads/:id) ── */
@@ -743,16 +718,14 @@ button,input,textarea{font-family:inherit;}
     if(email)actions+='<a href="mailto:'+esc(email)+'">'+svgMail+'Email</a>';
     actions+='</div>';
 
-    var meta=[];
-    if(phone)meta.push(["Phone",esc(phone)]);
-    if(email)meta.push(["Email",esc(email)]);
-    if(vehLabel)meta.push(["Vehicle",esc(vehLabel)+((veh&&vPrice(veh))?" · "+money(vPrice(veh)):"")]);
-    meta.push(["Source",esc(l.source||"Website")]);
-    meta.push(["Created",esc(l.createdAt?new Date(l.createdAt).toLocaleDateString("en-ZA",{day:"numeric",month:"short",year:"numeric"}):"—")]);
-    meta.push(["Last contact",esc(l.lastContactedAt||"Not yet")]);
-    var metaHtml='<div class="ld-meta">';
-    meta.forEach(function(m){metaHtml+='<div class="ld-mrow"><span class="ld-mk">'+m[0]+'</span><span class="ld-mv">'+m[1]+'</span></div>';});
-    metaHtml+='</div>';
+    // Phone + email are spent by the Call/WhatsApp/Email buttons; source + age
+    // fold into the pill by the name. What's left — vehicle, last contact —
+    // goes into one collapsed row below the note field.
+    var moreRows=[];
+    if(vehLabel)moreRows.push(["Vehicle",esc(vehLabel)+((veh&&vPrice(veh))?" · "+money(vPrice(veh)):"")]);
+    moreRows.push(["Last contact",esc(l.lastContactedAt||"Not yet")]);
+    var moreHtml='<details class="ld-more"><summary>Contact &amp; vehicle<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary><div class="ld-meta">'+
+      moreRows.map(function(m){return '<div class="ld-mrow"><span class="ld-mk">'+m[0]+'</span><span class="ld-mv">'+m[1]+'</span></div>';}).join("")+'</div></details>';
 
     var spills='<div class="lbl">Stage</div><div class="spills" id="ldSpills">';
     LSTATUS.forEach(function(s){spills+='<button type="button" class="spill'+(s===st?" on":"")+'" data-s="'+esc(s)+'">'+esc(LEAD_LBL[s]||s)+'</button>';});
@@ -761,16 +734,17 @@ button,input,textarea{font-family:inherit;}
     var journey=(l.journey||[]).slice(), tl="";
     if(journey.length){for(var i=journey.length-1;i>=0;i--){var j=journey[i];
       tl+='<div class="tl-item"><div class="tl-dot"></div><div class="tl-b"><div class="tl-top"><span class="tl-a">'+esc(j.action||"Note")+'</span><span class="tl-t">'+esc(j.time||"")+'</span></div><div class="tl-d">'+esc(j.detail||"")+'</div></div></div>';
-    }} else tl='<div class="tl-empty">No activity yet. Add the first note below.</div>';
+    }} else tl='<div class="tl-empty">No activity yet</div>';
 
     $("#sheetFoot").style.display="none";
     $("#sheetBody").innerHTML=
-      '<div class="ld-head"><div class="lav" style="background:'+colr(nm)+'">'+esc(initials(nm))+'</div><div class="nm"><div class="n">'+esc(nm)+'</div><div class="s"><span class="pill '+cls+' dot">'+esc(lbl)+'</span></div></div><button class="ld-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>'+
-      actions+metaHtml+
+      '<div class="ld-head"><div class="lav" style="background:'+colr(nm)+'">'+esc(initials(nm))+'</div><div class="nm"><div class="n">'+esc(nm)+'</div><div class="s"><span class="pill '+cls+' dot">'+esc(lbl)+'</span> <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">· '+esc(l.source||"Website")+' · '+timeAgo(l.createdAt)+'</span></div></div><button class="ld-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>'+
+      actions+
       (l.notes?'<div class="lbl">Enquiry</div><div class="ld-enq">'+esc(l.notes)+'</div>':'')+
       spills+
       '<div class="lbl">Log a note</div><textarea class="ld-note" id="ldNote" placeholder="What happened? e.g. Left a voicemail, will try Friday"></textarea>'+
       '<button type="button" class="btn-primary ld-log" id="ldLog">Log note</button>'+
+      moreHtml+
       '<div class="lbl">Activity</div><div class="tl">'+tl+'</div><div style="height:8px"></div>';
 
     $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
@@ -805,7 +779,7 @@ button,input,textarea{font-family:inherit;}
     var year=parseInt(g("aYear"),10),make=g("aMake"),model=g("aModel"),price=parseInt(g("aPrice"),10);
     if(!year||!make||!model||!price){toast("Fill in year, make, model and price",true);return;}
     var vehicle={year:year,make:make,model:model,trim:g("aTrim"),bodyType:g("aBody"),fuelType:g("aFuel"),transmission:g("aTrans"),
-      mileage:parseInt(g("aKm"),10)||0,retailPrice:price,truPrice:parseInt(g("aTru"),10)||undefined,description:g("aDesc"),status:"INVENTORY",showOnWebsite:false};
+      mileage:parseInt(g("aKm"),10)||0,retailPrice:price,truPrice:parseInt(g("aTru"),10)||undefined,status:"INVENTORY",showOnWebsite:false};
     var btn=e.target.querySelector("button[type=submit]");if(btn)btn.disabled=true;
     api("POST","/api/inventory",vehicle).then(function(){
       toast(year+" "+make+" "+model+" added to inventory");e.target.reset();loadInventory();go("stock");if(btn)btn.disabled=false;
@@ -825,10 +799,28 @@ button,input,textarea{font-family:inherit;}
   $("#gateEnter").addEventListener("click",doLogin);
   $("#gateCode").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
   $("#signout").addEventListener("click",doLogout);
+  // Support → TruSaaS WhatsApp, pre-filled with who is asking + their code.
+  var SUPPORT_WA="27620502091";
+  $("#support").addEventListener("click",function(){
+    var label=(AUTH&&AUTH.label)||"Dealer", code=(AUTH&&(AUTH.code||AUTH.dealerCode))||"";
+    var msg="TruFlow Light support · "+label+(code?"\nDealer code: "+code:"")+"\n\n";
+    window.open("https://wa.me/"+SUPPORT_WA+"?text="+encodeURIComponent(msg),"_blank","noopener");
+  });
+  // Laptop screen actions
+  var lightUrl=location.origin+"/light";
+  var lpUrl=document.getElementById("lpUrl");if(lpUrl)lpUrl.textContent=lightUrl;
+  var lpCopy=document.getElementById("lpCopy");
+  if(lpCopy)lpCopy.addEventListener("click",function(){
+    if(navigator.clipboard)navigator.clipboard.writeText(lightUrl).then(function(){lpCopy.textContent="Copied!";setTimeout(function(){lpCopy.textContent="Copy link";},1500);});
+  });
+  var lpEmail=document.getElementById("lpEmail");
+  if(lpEmail)lpEmail.addEventListener("click",function(){
+    window.location.href="mailto:?subject="+encodeURIComponent("TruFlow Light")+"&body="+encodeURIComponent("Open TruFlow Light on your phone:\n"+lightUrl);
+  });
   $("#leadSearch").addEventListener("input",renderLeads);
   $("#stockSearch").addEventListener("input",renderStock);
   chips($("#leadChips"),["All","New","Contacted","Negotiating","Closed Won"],function(v){leadFilter=v;renderLeads();});
-  chips($("#stockChips"),["All","In stock","Live","Sold","Archived"],function(v){stockFilter=v;renderStock();});
+  chips($("#stockChips"),["All","In stock","Live","Sold"],function(v){stockFilter=v;renderStock();});
 
   (function restore(){
     try{
