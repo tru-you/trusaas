@@ -1619,6 +1619,59 @@ function mayTouchVehicle(v: any, auth: any): boolean {
   return !!v?.dealershipId && v.dealershipId === auth.dealershipId;
 }
 
+/** Non-media, dealer-editable vehicle fields that participate in the
+ *  Flow<->Lens sync. Photos, damage findings, VIR, slot assessment and the
+ *  condition declaration stay Lens-owned (they belong to the capture flow). */
+const FLOW_SYNCED_FIELDS = [
+  "make", "model", "year", "trim", "vin", "color",
+  "mileage", "transmission", "fuelType", "bodyType", "engine",
+  "retailPrice", "showOnWebsite", "description", "status", "stockNumber",
+] as const;
+
+/** Per-field updatedAt merge — matches Lens's mergeWithMeta so pushes from
+ *  either side never blindly overwrite a fresher edit on the other side.
+ *  Absent map = 0, so first inbound write on a legacy row always wins. */
+function mergeWithMeta(
+  current: any,
+  incoming: Record<string, any>,
+  incomingMeta: Record<string, number> | undefined,
+  allowed: readonly string[],
+  now: number,
+): { patch: Record<string, any>; fieldMeta: Record<string, number> } {
+  const outMeta: Record<string, number> = { ...(current?.fieldMeta || {}) };
+  const patch: Record<string, any> = {};
+  for (const f of allowed) {
+    if (incoming[f] === undefined) continue;
+    const inTs = (incomingMeta && Number(incomingMeta[f])) || now;
+    if (inTs >= (outMeta[f] || 0)) {
+      patch[f] = incoming[f];
+      outMeta[f] = inTs;
+    }
+  }
+  return { patch, fieldMeta: outMeta };
+}
+
+/** Translate Flow field names to Lens field names on the way out.
+ *  Lens uses `price` and `vehicleType`; Flow uses `retailPrice` and `bodyType`. */
+function toLensPatch(flowPatch: Record<string, any>): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(flowPatch)) {
+    if (k === "retailPrice") out.price = v;
+    else if (k === "bodyType") out.vehicleType = v;
+    else out[k] = v;
+  }
+  return out;
+}
+function toLensMeta(flowMeta: Record<string, number>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(flowMeta)) {
+    if (k === "retailPrice") out.price = v;
+    else if (k === "bodyType") out.vehicleType = v;
+    else out[k] = v;
+  }
+  return out;
+}
+
 app.put("/api/inventory/:id", (req: any, res) => {
   const state = readState();
   const index = state.vehicles.findIndex(v => v.id === req.params.id);
@@ -1646,15 +1699,75 @@ app.put("/api/inventory/:id", (req: any, res) => {
   if ("model" in body) body.model = cleanModelName(body.model);
   if ("trim" in body) body.trim = tidyStr(body.trim);
 
+  /* Selling a car pulls it off the website in the same write, so a dealer
+     doesn't have to remember two steps. Owned server-side so Light, Premium
+     and the Lens sync all inherit it without repeating the rule. */
+  const current = state.vehicles[index] as any;
+  const willBeSold =
+    body.status === "SOLD" && current.status !== "SOLD";
+  if (willBeSold) {
+    body.showOnWebsite = false;
+  }
+
+  /* Stamp a per-field updatedAt on every synced field this write actually
+     changes, so a stale Lens re-export cannot silently overwrite the edit. */
+  const now = Date.now();
+  const prevMeta: Record<string, number> = { ...(current.fieldMeta || {}) };
+  const nextMeta: Record<string, number> = { ...prevMeta };
+  const changedForSync: Record<string, any> = {};
+  for (const f of FLOW_SYNCED_FIELDS) {
+    if (body[f] === undefined) continue;
+    if (body[f] !== current[f]) {
+      nextMeta[f] = now;
+      changedForSync[f] = body[f];
+    }
+  }
+
   state.vehicles[index] = {
-    ...state.vehicles[index],
+    ...current,
     ...body,
+    fieldMeta: nextMeta,
     // The owner is never taken from the request body — otherwise an edit could
     // move a car into another dealership's stock.
-    dealershipId: state.vehicles[index].dealershipId,
+    dealershipId: current.dealershipId,
   };
 
   writeState(state);
+
+  /* Push the edit back to TruLens for vehicles that originated there, so the
+     capture app's copy stays in step with the DMS. Fire-and-forget — the
+     dealer's save must never block on Lens. Photos/VIR/damage are excluded by
+     the allow-list; Lens applies mergeWithMeta at its end, so a stale push
+     loses the timestamp comparison instead of clobbering. */
+  const updated = state.vehicles[index] as any;
+  if (
+    updated.source === "trulens" &&
+    updated.stockNumber &&
+    Object.keys(changedForSync).length > 0
+  ) {
+    const ownerSlug = (state.dealerships || []).find(
+      (d: any) => d.id === updated.dealershipId,
+    )?.slug;
+    const pushBody = {
+      stockNumber: updated.stockNumber,
+      dealerSlug: ownerSlug,
+      patch: toLensPatch(changedForSync),
+      fieldMeta: toLensMeta(
+        Object.fromEntries(Object.keys(changedForSync).map((k) => [k, now])),
+      ),
+    };
+    fetch(`${TRULENS_URL}/api/sync/vehicle`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(SYNC_SERVICE_KEY ? { "x-tru-sync-key": SYNC_SERVICE_KEY } : {}),
+      },
+      body: JSON.stringify(pushBody),
+    }).catch((err) =>
+      console.warn("[sync] TruLens edit push failed:", err?.message),
+    );
+  }
+
   res.json({ message: "Vehicle updated successfully.", vehicle: state.vehicles[index] });
 });
 
@@ -2782,24 +2895,59 @@ app.post("/api/sync/push-photos", (req, res) => {
     state.vehicles[idx].serviceBookPhotos = mapped.serviceBookPhotos;
     state.vehicles[idx].extrasPhotos = mapped.extrasPhotos;
     (state.vehicles[idx] as any).lastPhotoSync = new Date().toISOString();
-    if (vehicleMeta.vin) (state.vehicles[idx] as any).vin = vehicleMeta.vin;
-    if (vehicleMeta.color) (state.vehicles[idx] as any).color = vehicleMeta.color;
-    /* make/model/year/trim were only set on initial create, so a Lens edit
-       correcting a typo (Ford → Audi, wrong year) never reached the DMS on
-       re-export. Now conditional: sent = updated, omitted = left alone, so
-       older Lens builds that don't send them don't clobber good values. */
-    if (vehicleMeta.make) state.vehicles[idx].make = tidyStr(vehicleMeta.make);
-    if (vehicleMeta.model) state.vehicles[idx].model = cleanModelName(vehicleMeta.model);
-    if (vehicleMeta.trim != null) (state.vehicles[idx] as any).trim = tidyStr(vehicleMeta.trim);
+    /* Route the non-media Lens fields through mergeWithMeta so an older push
+       cannot overwrite a fresher DMS edit. Everything under FLOW_SYNCED_FIELDS
+       is dealer-editable and stamps a per-field updatedAt on both sides; a
+       Lens push without a fieldMeta map still wins the first time (absent = 0)
+       but a later Flow edit will out-timestamp it. */
+    const pushNow = Date.now();
+    const incoming: Record<string, any> = {};
+    if (vehicleMeta.vin) incoming.vin = vehicleMeta.vin;
+    if (vehicleMeta.color) incoming.color = vehicleMeta.color;
+    if (vehicleMeta.make) incoming.make = tidyStr(vehicleMeta.make);
+    if (vehicleMeta.model) incoming.model = cleanModelName(vehicleMeta.model);
+    if (vehicleMeta.trim != null) incoming.trim = tidyStr(vehicleMeta.trim);
     if (vehicleMeta.year) {
-      state.vehicles[idx].year = parseInt(vehicleMeta.year, 10) || state.vehicles[idx].year;
+      incoming.year = parseInt(vehicleMeta.year, 10) || undefined;
     }
     if (vehicleMeta.mileage != null) {
-      state.vehicles[idx].mileage = parseInt(vehicleMeta.mileage, 10) || state.vehicles[idx].mileage;
+      incoming.mileage = parseInt(vehicleMeta.mileage, 10);
+      if (!Number.isFinite(incoming.mileage)) delete incoming.mileage;
     }
-    if (vehicleMeta.transmission) state.vehicles[idx].transmission = vehicleMeta.transmission;
-    if (vehicleMeta.fuelType) state.vehicles[idx].fuelType = vehicleMeta.fuelType;
-    if (vehicleMeta.description) (state.vehicles[idx] as any).description = vehicleMeta.description;
+    if (vehicleMeta.transmission) incoming.transmission = vehicleMeta.transmission;
+    if (vehicleMeta.fuelType) incoming.fuelType = vehicleMeta.fuelType;
+    if (vehicleMeta.description) incoming.description = vehicleMeta.description;
+    if (vehicleMeta.vehicleType || vehicleMeta.bodyType) {
+      incoming.bodyType = vehicleMeta.vehicleType || vehicleMeta.bodyType;
+    }
+    if (vehicleMeta.engine) incoming.engine = vehicleMeta.engine;
+    if (typeof showOnWebsite === "boolean") incoming.showOnWebsite = showOnWebsite;
+    if (vehicleMeta.price != null || vehicleMeta.retailPrice != null) {
+      const px = parseFloat(vehicleMeta.price ?? vehicleMeta.retailPrice);
+      if (Number.isFinite(px) && px > 0) incoming.retailPrice = px;
+    }
+
+    /* Translate the incoming fieldMeta from Lens field names to Flow's. Lens
+       sends price/vehicleType; our local rows carry retailPrice/bodyType. */
+    const incomingMeta: Record<string, number> = {};
+    const rawMeta = (vehicleMeta.fieldMeta || {}) as Record<string, number>;
+    for (const [k, v] of Object.entries(rawMeta)) {
+      if (typeof v !== "number") continue;
+      if (k === "price") incomingMeta.retailPrice = v;
+      else if (k === "vehicleType") incomingMeta.bodyType = v;
+      else incomingMeta[k] = v;
+    }
+
+    const { patch: applyPatch, fieldMeta: nextPushMeta } = mergeWithMeta(
+      state.vehicles[idx],
+      incoming,
+      Object.keys(incomingMeta).length ? incomingMeta : undefined,
+      FLOW_SYNCED_FIELDS,
+      pushNow,
+    );
+    Object.assign(state.vehicles[idx], applyPatch);
+    (state.vehicles[idx] as any).fieldMeta = nextPushMeta;
+
     if (Array.isArray(vehicleMeta.damage)) {
       (state.vehicles[idx] as any).damage = vehicleMeta.damage;
       (state.vehicles[idx] as any).vir = capOverallVir(computeVirFromDamage(vehicleMeta.damage));
@@ -2825,17 +2973,9 @@ app.post("/api/sync/push-photos", (req, res) => {
         damage: Array.isArray(existingDamage) ? existingDamage : undefined,
       });
     }
-    /* Re-publishing or un-publishing in TruLens now reaches the website. Only
-       applied when the client actually sends a boolean, so a push that says
-       nothing about it leaves whatever the dealer set here untouched. */
-    if (typeof showOnWebsite === "boolean") {
-      (state.vehicles[idx] as any).showOnWebsite = showOnWebsite;
-    }
-    if (vehicleMeta.price || vehicleMeta.retailPrice) {
-      state.vehicles[idx].retailPrice =
-        parseFloat(vehicleMeta.price ?? vehicleMeta.retailPrice) ||
-        state.vehicles[idx].retailPrice;
-    }
+    /* showOnWebsite and retailPrice were both handled up-front by mergeWithMeta
+       so a stale Lens push can't clobber a fresher DMS edit — no duplicate set
+       needed here. */
     writeState(state);
 
     res.json({

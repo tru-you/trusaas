@@ -498,36 +498,85 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   <p className="text-[length:var(--t-micro)] text-[rgba(232,234,230,0.45)]">Controls which category page this vehicle appears on the website.</p>
                 </div>
 
-                {/* Spec matrix — 12px mono label over a 15px value, so label and
-                    value no longer read at equal weight. */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                  <div className="flex flex-col">
-                    <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Mileage</span>
-                    <span className="text-[15px] font-medium text-[color:var(--white)] mt-0.5">{vehicle.mileage.toLocaleString()} km</span>
+                {/* Vehicle details — collapsed by default so the modal stays
+                    scannable. Dealer identity fields are rare-touch (usually
+                    only once, to correct a typo the disc scanner missed), so
+                    they live one tap deeper. Every input saves on blur; the
+                    server stamps a per-field updatedAt and pushes back to
+                    TruLens for Lens-sourced vehicles. */}
+                <details className="bg-[color:var(--glass)] border border-white/5 rounded-xl">
+                  <summary className="cursor-pointer px-4 py-3 text-[13px] font-semibold text-[color:var(--white)] tracking-normal select-none">
+                    Vehicle details
+                    <span className="text-[13px] text-[rgba(232,234,230,0.55)] font-normal ml-2">
+                      · tap to edit make, model, VIN, specs
+                    </span>
+                  </summary>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-3 px-4 pb-4 pt-1">
+                    {[
+                      { key: "year",    label: "Year",         type: "number" },
+                      { key: "make",    label: "Make",         type: "text"   },
+                      { key: "model",   label: "Model",        type: "text"   },
+                      { key: "trim",    label: "Trim",         type: "text"   },
+                      { key: "vin",     label: "VIN",          type: "text"   },
+                      { key: "color",   label: "Colour",       type: "text"   },
+                      { key: "mileage", label: "Mileage (km)", type: "number" },
+                      { key: "bodyType",label: "Body style",   type: "text"   },
+                      { key: "engine",  label: "Engine",       type: "text",   colSpan: 2 },
+                    ].map((f: any) => (
+                      <div key={f.key} className={"flex flex-col" + (f.colSpan === 2 ? " col-span-2" : "")}>
+                        <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>
+                        <input
+                          type={f.type}
+                          defaultValue={(vehicle as any)[f.key] ?? ""}
+                          onBlur={(e) => {
+                            const raw = e.target.value;
+                            const cur = (vehicle as any)[f.key];
+                            const next = f.type === "number" ? (raw === "" ? 0 : Number(raw)) : raw;
+                            if (next === cur) return;
+                            onUpdateVehicle(vehicle.id, { [f.key]: next } as Partial<Vehicle>);
+                          }}
+                          className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                        />
+                      </div>
+                    ))}
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Transmission</label>
+                      <select
+                        defaultValue={vehicle.transmission || "Automatic"}
+                        onChange={(e) => onUpdateVehicle(vehicle.id, { transmission: e.target.value } as Partial<Vehicle>)}
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      >
+                        <option>Automatic</option>
+                        <option>Manual</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Fuel</label>
+                      <select
+                        defaultValue={vehicle.fuelType || "Petrol"}
+                        onChange={(e) => onUpdateVehicle(vehicle.id, { fuelType: e.target.value } as Partial<Vehicle>)}
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      >
+                        <option>Petrol</option>
+                        <option>Diesel</option>
+                        <option>Hybrid</option>
+                        <option>Electric</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col col-span-2">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Dealer comments</label>
+                      <textarea
+                        defaultValue={vehicle.description || ""}
+                        onBlur={(e) => {
+                          if (e.target.value === (vehicle.description || "")) return;
+                          onUpdateVehicle(vehicle.id, { description: e.target.value } as Partial<Vehicle>);
+                        }}
+                        rows={3}
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5 resize-y"
+                      />
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Transmission</span>
-                    <span className="text-[15px] font-medium text-[color:var(--white)] mt-0.5">{vehicle.transmission}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Fuel</span>
-                    <span className="text-[15px] font-medium text-[color:var(--white)] mt-0.5">{vehicle.fuelType}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Body style</span>
-                    <span className="text-[15px] font-medium text-[color:var(--white)] mt-0.5">{vehicle.bodyType || "Utility"}</span>
-                  </div>
-                  <div className="flex flex-col col-span-2">
-                    <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Engine</span>
-                    <span className="text-[15px] font-medium text-[color:var(--white)] mt-0.5">{vehicle.engine || "N/A"}</span>
-                  </div>
-                </div>
-
-                {/* Description scrollbox */}
-                <div className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed border-t border-b border-white/5 py-3 max-h-24 overflow-y-auto">
-                  <span className="font-semibold text-[color:var(--white)] block mb-0.5">Dealer Comments:</span>
-                  {vehicle.description || "No comments entered."}
-                </div>
+                </details>
 
                 {/* MEDIA SYNC CONTROLS */}
                 <div className="flex flex-col gap-3 pt-1">
@@ -1175,29 +1224,45 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             })()}
           </div>
 
-          {/* Footer — the one action that leaves the modal (Publish) over the two
-              exits. Remove is a destructive ghost here, no longer beside the X. */}
+          {/* Footer — a clean row: publish toggle on the left (Light-style,
+              no big cyan CTA), utility actions on the right. */}
           <div className="shrink-0 pt-3 mt-3 border-t border-white/10 flex flex-col gap-2">
-            <button
-              type="button"
-              disabled={publishing}
-              onClick={async () => {
-                setPublishing(true);
-                try {
-                  await onUpdateVehicle(vehicle.id, { showOnWebsite: !isPublished } as Partial<Vehicle>);
-                } finally {
-                  setPublishing(false);
-                }
-              }}
-              title={isPublished ? "Remove this vehicle from the dealer website feed" : "Show this vehicle on the dealer website"}
-              className={
-                "w-full min-h-[44px] inline-flex items-center justify-center gap-2 text-[14px] cursor-pointer disabled:opacity-50 " +
-                (isPublished ? "tru-btn-secondary" : "btn-primary on-fill")
-              }
+            <label
+              className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-[color:var(--glass)] border border-white/5 cursor-pointer select-none"
+              title={isPublished ? "On website — tap to unpublish" : "Publish this vehicle to the dealer website"}
             >
-              <Globe size={14} />
-              {publishing ? "Saving…" : isPublished ? "On website — tap to unpublish" : "Publish to website"}
-            </button>
+              <span className="flex items-center gap-2 text-[13px] text-[color:var(--white)] font-semibold">
+                <Globe size={14} className={isPublished ? "text-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.55)]"} />
+                {publishing ? "Saving…" : isPublished ? "Live on website" : "Not on website"}
+              </span>
+              <span
+                className={
+                  "relative inline-flex h-[22px] w-[40px] items-center rounded-full transition-colors " +
+                  (isPublished ? "bg-[color:var(--cyan)]" : "bg-white/15")
+                }
+              >
+                <span
+                  className={
+                    "inline-block h-[18px] w-[18px] rounded-full bg-white shadow transition-transform " +
+                    (isPublished ? "translate-x-[20px]" : "translate-x-[2px]")
+                  }
+                />
+              </span>
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={isPublished}
+                disabled={publishing}
+                onChange={async () => {
+                  setPublishing(true);
+                  try {
+                    await onUpdateVehicle(vehicle.id, { showOnWebsite: !isPublished } as Partial<Vehicle>);
+                  } finally {
+                    setPublishing(false);
+                  }
+                }}
+              />
+            </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"

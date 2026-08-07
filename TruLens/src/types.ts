@@ -90,6 +90,12 @@ export interface Vehicle {
    *  Plain string array — the UI offers a predefined checklist but custom
    *  entries are fine, so consumers never need to know the master list. */
   optionalExtras?: string[];
+  /** Per-field updatedAt (ms since epoch) used for last-writer-wins sync
+   *  between TruLens and TruFlow. Absent map or absent key = epoch 0, so the
+   *  first inbound write wins on legacy rows. Every mutation stamps only the
+   *  fields it actually changed; unchanged fields keep their prior timestamp
+   *  so a Lens re-export cannot silently clobber a fresher Flow edit. */
+  fieldMeta?: Record<string, number>;
 }
 
 export interface PointResult {

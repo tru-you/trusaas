@@ -740,6 +740,39 @@ function storeVehiclePhotos(vehicle: any): any {
   return { ...vehicle, photos: next };
 }
 
+/** Last-writer-wins merge, per field. Both sides of the Lens<->Flow sync stamp
+ *  fieldMeta[f] = Date.now() on every field they change, and stale pushes lose:
+ *  a Lens re-export cannot silently clobber a fresher DMS edit, and vice versa.
+ *  Absent map or absent key = 0, so legacy rows accept the first inbound write. */
+function mergeWithMeta(
+  current: any,
+  incoming: Record<string, any>,
+  incomingMeta: Record<string, number> | undefined,
+  allowed: readonly string[],
+  now: number,
+): { patch: Record<string, any>; fieldMeta: Record<string, number> } {
+  const outMeta: Record<string, number> = { ...(current?.fieldMeta || {}) };
+  const patch: Record<string, any> = {};
+  for (const f of allowed) {
+    if (incoming[f] === undefined) continue;
+    const inTs = (incomingMeta && Number(incomingMeta[f])) || now;
+    if (inTs >= (outMeta[f] || 0)) {
+      patch[f] = incoming[f];
+      outMeta[f] = inTs;
+    }
+  }
+  return { patch, fieldMeta: outMeta };
+}
+
+/** Non-media fields TruFlow may edit and push back to Lens. Photos, damage
+ *  findings, VIR/slot assessment and condition declarations stay Lens-owned
+ *  because they belong to the capture workflow. */
+const FLOW_EDITABLE_FIELDS = [
+  'make', 'model', 'year', 'trim', 'vin', 'color',
+  'mileage', 'transmission', 'fuelType', 'vehicleType',
+  'price', 'showOnWebsite', 'description', 'status', 'stockNumber',
+] as const;
+
 async function saveVehicle(vehicle: any): Promise<any> {
   const normalized = storeVehiclePhotos(normalizeVehicle(vehicle));
   if (LOCAL_MODE || !fdb) {
@@ -1476,6 +1509,112 @@ app.delete('/api/sync/vehicle', (req, res) => {
     } catch (err: any) {
       console.error('[sync] delete by stockNumber failed:', err);
       return res.status(500).json({ error: err?.message || 'Delete failed.' });
+    }
+  })();
+});
+
+// 4c. Service-to-service edit — TruFlow calls this when a dealer edits a
+//     Lens-originated vehicle in Premium or Light DMS. Non-media fields only;
+//     photos/damage/VIR stay Lens-owned. Per-field updatedAt decides winners so
+//     a Lens re-export cannot stomp a fresher Flow edit and vice versa.
+app.put('/api/sync/vehicle', (req, res) => {
+  if (!SYNC_KEY) {
+    return res.status(503).json({ error: 'TRUFLOW_SYNC_KEY is not configured on this server.' });
+  }
+  if (req.headers['x-tru-sync-key'] !== SYNC_KEY) {
+    return res.status(401).json({ error: 'Invalid sync key.' });
+  }
+  const { stockNumber, dealerSlug, patch, fieldMeta } = req.body || {};
+  if (!stockNumber) {
+    return res.status(400).json({ error: 'stockNumber is required.' });
+  }
+  if (!patch || typeof patch !== 'object') {
+    return res.status(400).json({ error: 'patch is required.' });
+  }
+  /* Field-name translation: Flow uses retailPrice/bodyType, Lens uses
+     price/vehicleType. Normalise here so callers can send either. */
+  const normalised: Record<string, any> = { ...patch };
+  if (normalised.retailPrice !== undefined && normalised.price === undefined) {
+    normalised.price = normalised.retailPrice;
+  }
+  if (normalised.bodyType !== undefined && normalised.vehicleType === undefined) {
+    normalised.vehicleType = normalised.bodyType;
+  }
+  /* Same guard as DELETE /api/sync/vehicle — never touch a car that belongs to
+     another dealer just because they happen to share a short stock number. */
+  const matchesDealer = (v: any) =>
+    !dealerSlug || (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealerSlug;
+
+  (async () => {
+    try {
+      const now = Date.now();
+      let target: any | null = null;
+
+      if (LOCAL_MODE || !fdb) {
+        const store = readLocalStore();
+        const candidates = store.vehicles.filter(
+          (v: any) => v.stockNumber === stockNumber && matchesDealer(v),
+        );
+        if (candidates.length === 0) {
+          return res.status(404).json({ updated: false, error: 'Vehicle not found.' });
+        }
+        if (!dealerSlug && candidates.length > 1) {
+          return res.status(409).json({
+            updated: false,
+            error:
+              `${candidates.length} vehicles share stock number ${stockNumber}. ` +
+              'Send dealerSlug to say which dealership this edit is for.',
+          });
+        }
+        target = candidates[0];
+      } else {
+        const snapshot = await fdb!.collection('vehicles')
+          .where('stockNumber', '==', stockNumber)
+          .get();
+        const docs = snapshot.docs.filter((d) => matchesDealer(d.data()));
+        if (docs.length === 0) {
+          return res.status(404).json({ updated: false, error: 'Vehicle not found.' });
+        }
+        if (!dealerSlug && docs.length > 1) {
+          return res.status(409).json({
+            updated: false,
+            error:
+              `${docs.length} vehicles share stock number ${stockNumber}. ` +
+              'Send dealerSlug to say which dealership this edit is for.',
+          });
+        }
+        target = { id: docs[0].id, ...docs[0].data() };
+      }
+
+      const { patch: fieldsToApply, fieldMeta: nextMeta } = mergeWithMeta(
+        target,
+        normalised,
+        fieldMeta,
+        FLOW_EDITABLE_FIELDS,
+        now,
+      );
+
+      if (Object.keys(fieldsToApply).length === 0) {
+        /* Every incoming field lost the timestamp comparison — Lens's copy is
+           already newer, so nothing to do. Still a success, not a 409. */
+        return res.json({ updated: false, applied: [], reason: 'stale' });
+      }
+
+      const saved = await saveVehicle({
+        ...target,
+        ...fieldsToApply,
+        fieldMeta: nextMeta,
+        updatedAt: new Date(now).toISOString(),
+      });
+
+      return res.json({
+        updated: true,
+        applied: Object.keys(fieldsToApply),
+        id: saved.id,
+      });
+    } catch (err: any) {
+      console.error('[sync] PUT /api/sync/vehicle failed:', err);
+      return res.status(500).json({ error: err?.message || 'Update failed.' });
     }
   })();
 });

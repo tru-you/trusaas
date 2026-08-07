@@ -2025,6 +2025,61 @@ export default function App() {
                           </div>
                         </div>
 
+                        {/* Web + sold at a glance — Light-style, one tap each.
+                            Kept out of the modal so a dealer can publish or mark
+                            sold from the list without clicking through. */}
+                        <div
+                          className="flex items-center justify-between gap-2 pt-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <label
+                            className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] cursor-pointer select-none"
+                            title={v.showOnWebsite !== false ? "On website — tap to unpublish" : "Publish this vehicle to the dealer website"}
+                          >
+                            <span
+                              className={
+                                "relative inline-flex h-[20px] w-[36px] items-center rounded-full transition-colors " +
+                                (v.showOnWebsite !== false ? "bg-[color:var(--cyan)]" : "bg-white/15")
+                              }
+                            >
+                              <span
+                                className={
+                                  "inline-block h-[16px] w-[16px] rounded-full bg-white transition-transform " +
+                                  (v.showOnWebsite !== false ? "translate-x-[18px]" : "translate-x-[2px]")
+                                }
+                              />
+                            </span>
+                            <input
+                              type="checkbox"
+                              className="sr-only"
+                              checked={v.showOnWebsite !== false}
+                              onChange={() =>
+                                handleUpdateVehicle(v.id, { showOnWebsite: v.showOnWebsite === false } as Partial<Vehicle>)
+                              }
+                            />
+                            <span>Web</span>
+                          </label>
+                          {v.status !== "SOLD" ? (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateVehicle(v.id, { status: "SOLD" as any })}
+                              title="Mark this car sold — auto-unpublishes from the website"
+                              className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
+                            >
+                              Mark sold
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateVehicle(v.id, { status: "INVENTORY" as any })}
+                              title="Return this car to inventory"
+                              className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
+                            >
+                              Unsell
+                            </button>
+                          )}
+                        </div>
+
                         {/* Actions — stopPropagation so card click still opens detail */}
                         <div
                           className="flex gap-2 pt-1"

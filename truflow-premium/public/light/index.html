@@ -562,7 +562,12 @@ button,input,textarea{font-family:inherit;}
       '<div class="lbl">Details</div>'+
       '<div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" value="'+(vPrice(v)||"")+'" id="fPrice"></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" value="'+(v.mileage||"")+'" id="fKm"></div></div>'+
       '<div class="field"><label>Variant / trim</label><input type="text" value="'+esc(v.trim||"")+'" id="fTrim"></div>'+
-      '<div class="field"><label>Description</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div><div style="height:8px"></div>';
+      '<div class="field"><label>Description</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div>'+
+      /* One tap deeper for the rare-touch identity fields (make, model, year,
+         VIN, colour, engine, gearbox, fuel, body). Kept out of the primary
+         drawer so the daily-use save (price/km/trim/description) stays clean
+         on a phone screen. */
+      '<button type="button" id="editDetailsBtn" class="tru-btn-ghost" style="width:100%;margin-top:12px;text-align:left;display:flex;align-items:center;justify-content:space-between;font-size:13px"><span>Edit vehicle details</span><span style="opacity:.6">make · model · VIN · engine ›</span></button><div style="height:8px"></div>';
     $("#sheetFoot").style.display="";
     $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Save changes</button><button class="tru-btn-ghost danger foot-del" id="delBtn" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>';
 
@@ -605,7 +610,57 @@ button,input,textarea{font-family:inherit;}
         cachedStock=cachedStock.filter(function(x){return x.id!==cv.id;});toast(name+" deleted");renderHome();renderStock();closeSheet();
       }).catch(function(){toast("Couldn't delete — check connection",true);});
     });
+    $("#editDetailsBtn").addEventListener("click",function(){openVehDetails();});
     openSheet();
+  }
+
+  /* Second panel of the vehicle drawer — the rare-touch identity fields.
+     Same sheet, no new screen. Everything saves through the same PUT
+     /api/inventory/:id endpoint that the primary panel uses; the server
+     pushes the changes to TruLens for Lens-sourced vehicles. */
+  function openVehDetails(){
+    var cv=curVeh();if(!cv){closeSheet();return;}
+    var fld=function(id,label,val,type){type=type||"text";
+      return '<div class="field"><label>'+label+'</label><input id="'+id+'" type="'+type+'" value="'+esc((val==null?"":String(val)))+'"'+(type==="number"?' inputmode="numeric"':'')+'></div>';
+    };
+    var opt=function(id,label,val,options){
+      var o="";for(var i=0;i<options.length;i++){o+='<option'+(options[i]===val?' selected':'')+'>'+esc(options[i])+'</option>';}
+      return '<div class="field"><label>'+label+'</label><select id="'+id+'">'+o+'</select></div>';
+    };
+    $("#sheetBody").innerHTML=
+      '<div class="vhead"><div class="vt"><button type="button" id="detBack" class="tru-btn-ghost" style="padding:4px 8px;font-size:12px;margin-right:8px">‹ Back</button>'+esc(vName(cv)||"Vehicle")+'</div></div>'+
+      '<div class="lbl">Identity</div>'+
+      '<div class="frow">'+fld("dYear","Year",cv.year,"number")+fld("dMake","Make",cv.make)+'</div>'+
+      '<div class="frow">'+fld("dModel","Model",cv.model)+fld("dTrim","Trim",cv.trim)+'</div>'+
+      fld("dVin","VIN",cv.vin)+
+      '<div class="frow">'+fld("dColor","Colour",cv.color)+fld("dStock","Stock #",cv.stockNumber)+'</div>'+
+      '<div class="lbl">Specs</div>'+
+      '<div class="frow">'+opt("dTrans","Transmission",cv.transmission||"Automatic",["Automatic","Manual"])+opt("dFuel","Fuel",cv.fuelType||"Petrol",["Petrol","Diesel","Hybrid","Electric"])+'</div>'+
+      '<div class="frow">'+fld("dBody","Body style",cv.bodyType)+fld("dEngine","Engine",cv.engine)+'</div>'+
+      '<div style="height:8px"></div>';
+    $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="saveDetBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Save details</button>';
+    $("#detBack").addEventListener("click",function(){var v=curVeh();if(v)openVeh(v);});
+    Array.prototype.forEach.call($("#sheetBody").querySelectorAll("input,textarea,select"),function(inp){
+      inp.addEventListener("focus",function(){setTimeout(function(){inp.scrollIntoView({block:"center",behavior:"smooth"});},250);});
+    });
+    $("#saveDetBtn").addEventListener("click",function(){
+      var g=function(id){var e=$("#"+id);return e?e.value:"";};
+      var updates={
+        year: parseInt(g("dYear"),10) || 0,
+        make: g("dMake").trim(),
+        model: g("dModel").trim(),
+        trim: g("dTrim").trim(),
+        vin: g("dVin").trim(),
+        color: g("dColor").trim(),
+        stockNumber: g("dStock").trim(),
+        transmission: g("dTrans"),
+        fuelType: g("dFuel"),
+        bodyType: g("dBody").trim(),
+        engine: g("dEngine").trim()
+      };
+      var btn=$("#saveDetBtn");btn.disabled=true;
+      patch(updates,"Details saved").then(function(){var v=curVeh();if(v)openVeh(v);}).catch(function(){btn.disabled=false;});
+    });
   }
   function patch(updates,okMsg){
     var cv=curVeh();if(!cv)return Promise.reject();
