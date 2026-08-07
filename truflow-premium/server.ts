@@ -1025,6 +1025,10 @@ function backfillVehicles(vehicles: any[]): void {
     if (!v.images) v.images = [];
     if (!v.reconTasks) v.reconTasks = [];
     if (typeof v.showOnWebsite !== "boolean") v.showOnWebsite = true;
+    if (v.images.length === 0 && v.source === "trulens" && Array.isArray(v.extrasPhotos) && v.extrasPhotos.length > 0) {
+      v.images = v.extrasPhotos.slice();
+      v.extrasPhotos = [];
+    }
   }
 }
 
@@ -2356,6 +2360,15 @@ const SLOT_TO_CATEGORY: Record<string, string> = {
   roof_view: "images", wheels_all: "images", /* legacy, pre-split */
   wheel_front_driver: "images", wheel_rear_driver: "images",
   wheel_rear_passenger: "images", wheel_front_passenger: "images",
+  // TruLens inspection body-panel slots → main images
+  front_bumper: "images", rear_bumper: "images", bonnet: "images",
+  boot_tailgate: "images", roof_sunroof: "images", front_windscreen: "images",
+  fender_front_right: "images", fender_front_left: "images",
+  door_front_right: "images", door_front_left: "images",
+  door_rear_right: "images", door_rear_left: "images",
+  quarter_rear_right: "images", quarter_rear_left: "images",
+  wheel_front_right: "images", wheel_front_left: "images",
+  wheel_rear_right: "images", wheel_rear_left: "images",
   // Phase 2-4: Details/Interior/Engine → extras
   badges_detail: "extrasPhotos", lights_detail: "extrasPhotos",
   mirrors_handles: "extrasPhotos", interior_dash: "extrasPhotos",
@@ -2363,6 +2376,8 @@ const SLOT_TO_CATEGORY: Record<string, string> = {
   seats_rear: "extrasPhotos", boot_bay: "extrasPhotos",
   floor_mats: "extrasPhotos", engine_bay: "extrasPhotos",
   mechanical_details: "extrasPhotos", undercarriage: "extrasPhotos",
+  interior_cabin: "extrasPhotos", steering_wheel: "extrasPhotos",
+  odometer: "extrasPhotos", license_disc: "extrasPhotos",
   // Phase 5: Recon → damage
   recon_damage: "damagePhotos",
   // Phase 6: Documents
