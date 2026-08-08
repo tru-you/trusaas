@@ -106,8 +106,8 @@ export type DocStage = 'proforma' | 'deed' | 'compliance' | 'invoice' | 'handove
  *  - 'confirm'  — no document; the stage is satisfied by ticking flags on
  *    the lead. Used for compliance, where NATIS and roadworthy are
  *    government-issued and cannot be produced by the dealer.
- *  - 'connect'  — invoice stage only; generates an accounting-import CSV
- *    (Xero/QuickBooks/Zoho format). */
+ *  - 'connect'  — generates an accounting-import CSV (Xero/QuickBooks/Zoho
+ *    format). Available on any non-fixed stage. */
 export type DocMode = 'generate' | 'attach' | 'confirm' | 'connect';
 
 /** Default docFlow for new dealers — generate everywhere except compliance

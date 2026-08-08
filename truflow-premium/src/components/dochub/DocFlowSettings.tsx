@@ -75,8 +75,8 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
 
       <p className="text-xs text-[rgba(232,234,230,0.55)] leading-relaxed">
         Choose how each stage's document is produced. <b>Attach</b> lets you upload your own
-        signed document; <b>Generate</b> renders one from a TruFlow template.
-        The invoice stage also supports <b>Connect</b> — exports a CSV for Xero, QuickBooks or Zoho.
+        signed document; <b>Generate</b> renders one from a TruFlow template;
+        <b>Connect</b> exports a CSV for Xero, QuickBooks or Zoho.
       </p>
 
       <div className="flex flex-col gap-2">
@@ -132,21 +132,19 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
                       <FileText className="w-3.5 h-3.5" />
                       Generate
                     </button>
-                    {stage === "invoice" && (
-                      <button
-                        type="button"
-                        onClick={() => handleChange(stage, "connect")}
-                        title="Export a CSV for Xero, QuickBooks or Zoho"
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-                          mode === "connect"
-                            ? "bg-[color:var(--cyan)] text-black"
-                            : "bg-white/5 text-[rgba(232,234,230,0.72)] hover:bg-white/10"
-                        }`}
-                      >
-                        <Link2 className="w-3.5 h-3.5" />
-                        Connect
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleChange(stage, "connect")}
+                      title="Export a CSV for Xero, QuickBooks or Zoho"
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                        mode === "connect"
+                          ? "bg-[color:var(--cyan)] text-black"
+                          : "bg-white/5 text-[rgba(232,234,230,0.72)] hover:bg-white/10"
+                      }`}
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      Connect
+                    </button>
                   </>
                 )}
               </div>

@@ -2718,8 +2718,8 @@ app.post("/api/documents", (req: any, res) => {
     if (mode !== "generate" && mode !== "attach" && mode !== "confirm" && mode !== "connect") {
       return res.status(400).json({ error: "mode must be 'generate', 'attach', 'confirm', or 'connect' when stage is set" });
     }
-    if (mode === "connect" && stageTyped !== "invoice") {
-      return res.status(400).json({ error: "'connect' mode is only available for the invoice stage" });
+    if (mode === "connect" && FIXED_STAGE_MODES[stageTyped]) {
+      return res.status(400).json({ error: `'connect' mode is not available for the '${stageTyped}' stage` });
     }
     if (!leadId) {
       return res.status(400).json({ error: "leadId is required for DocHub documents" });
@@ -2808,7 +2808,7 @@ app.post("/api/documents", (req: any, res) => {
       }
       connectFileData = "data:text/csv;base64," + Buffer.from(csvRows.join("\r\n"), "utf-8").toString("base64");
       connectMimeType = "text/csv";
-      connectFileName = `invoice-${invNo}.csv`;
+      connectFileName = `${stageTyped}-${invNo}.csv`;
     }
 
     const newDoc: DealerDocument = {
@@ -3178,7 +3178,7 @@ app.put("/api/docflow", (req: any, res) => {
   for (const stage of DOC_STAGES) {
     const mode = docFlow[stage];
     if (mode === "generate" || mode === "attach") clean[stage] = mode;
-    if (mode === "connect" && stage === "invoice") clean[stage] = mode;
+    if (mode === "connect" && !FIXED_STAGE_MODES[stage]) clean[stage] = mode;
   }
   state.dealerships[i].docFlow = { ...(state.dealerships[i].docFlow || {}), ...clean };
   writeState(state);

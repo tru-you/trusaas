@@ -448,7 +448,7 @@ export async function deleteDocument(id: string): Promise<void> {
  *   - 'generate' — fieldSnapshot captured, PDF rendered from template
  *   - 'confirm'  — no file, no snapshot; server verifies checklist flags on
  *                  finalize (used for compliance: NATIS + roadworthy)
- *   - 'connect'  — invoice only; server generates an accounting-import CSV */
+ *   - 'connect'  — server generates an accounting-import CSV */
 export async function createStageDocument(input: {
   leadId: string;
   vehicleId?: string;
