@@ -101,13 +101,24 @@ export type DocStage = 'proforma' | 'deed' | 'compliance' | 'invoice' | 'handove
 
 /** How a dealer fulfils a given stage's document.
  *
- *  - 'generate' — TruFlow renders a PDF from a template (deferred; button
- *    disabled in v1).
+ *  - 'generate' — TruFlow renders a PDF from a template.
  *  - 'attach'   — dealer uploads their own signed document.
  *  - 'confirm'  — no document; the stage is satisfied by ticking flags on
  *    the lead. Used for compliance, where NATIS and roadworthy are
- *    government-issued and cannot be produced by the dealer. */
-export type DocMode = 'generate' | 'attach' | 'confirm';
+ *    government-issued and cannot be produced by the dealer.
+ *  - 'connect'  — invoice stage only; generates an accounting-import CSV
+ *    (Xero/QuickBooks/Zoho format). */
+export type DocMode = 'generate' | 'attach' | 'confirm' | 'connect';
+
+/** Default docFlow for new dealers — generate everywhere except compliance
+ *  (fixed to 'confirm'). Dealers can reconfigure in DocFlowSettings. */
+export const DEFAULT_DOC_FLOW: Record<DocStage, DocMode> = {
+  proforma: 'generate',
+  deed: 'generate',
+  compliance: 'confirm',
+  invoice: 'generate',
+  handover: 'generate',
+};
 
 /** Stages whose mode is fixed by the product, not the dealer. Compliance is
  *  always 'confirm' because NATIS/RWC come from government — there is nothing

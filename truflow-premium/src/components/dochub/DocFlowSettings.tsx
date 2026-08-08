@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Check, Loader2, Upload, FileText } from "lucide-react";
+import { Check, Loader2, Upload, FileText, Link2 } from "lucide-react";
 import type { Dealership, DocMode, DocStage } from "../../types";
-import { DOC_STAGES, FIXED_STAGE_MODES } from "../../types";
+import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "../../types";
 import { updateDocFlow } from "../../api";
 
 interface Props {
@@ -36,7 +36,7 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
     const initial: Partial<Record<DocStage, DocMode>> = {};
     for (const s of DOC_STAGES) {
       // Fixed stages ignore stored config — always render as the fixed mode.
-      initial[s] = FIXED_STAGE_MODES[s] || dealership.docFlow?.[s] || "attach";
+      initial[s] = FIXED_STAGE_MODES[s] || dealership.docFlow?.[s] || DEFAULT_DOC_FLOW[s];
     }
     return initial;
   });
@@ -75,13 +75,13 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
 
       <p className="text-xs text-[rgba(232,234,230,0.55)] leading-relaxed">
         Choose how each stage's document is produced. <b>Attach</b> lets you upload your own
-        signed document; <b>Generate</b> renders one from a TruFlow template
-        (coming in the next release).
+        signed document; <b>Generate</b> renders one from a TruFlow template.
+        The invoice stage also supports <b>Connect</b> — exports a CSV for Xero, QuickBooks or Zoho.
       </p>
 
       <div className="flex flex-col gap-2">
         {DOC_STAGES.map((stage) => {
-          const mode = flow[stage] || "attach";
+          const mode = flow[stage] || DEFAULT_DOC_FLOW[stage];
           return (
             <div
               key={stage}
@@ -111,7 +111,7 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
                     <button
                       type="button"
                       onClick={() => handleChange(stage, "attach")}
-                      className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md text-xs font-semibold transition-colors ${
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                         mode === "attach"
                           ? "bg-[color:var(--cyan)] text-black"
                           : "bg-white/5 text-[rgba(232,234,230,0.72)] hover:bg-white/10"
@@ -122,12 +122,31 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
                     </button>
                     <button
                       type="button"
-                      disabled
-                      title="Templates coming soon"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md text-xs font-semibold bg-white/2 text-[rgba(232,234,230,0.35)] cursor-not-allowed"
+                      onClick={() => handleChange(stage, "generate")}
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                        mode === "generate"
+                          ? "bg-[color:var(--cyan)] text-black"
+                          : "bg-white/5 text-[rgba(232,234,230,0.72)] hover:bg-white/10"
+                      }`}
                     >
-                      Generate <span className="text-[10px]">(soon)</span>
+                      <FileText className="w-3.5 h-3.5" />
+                      Generate
                     </button>
+                    {stage === "invoice" && (
+                      <button
+                        type="button"
+                        onClick={() => handleChange(stage, "connect")}
+                        title="Export a CSV for Xero, QuickBooks or Zoho"
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                          mode === "connect"
+                            ? "bg-[color:var(--cyan)] text-black"
+                            : "bg-white/5 text-[rgba(232,234,230,0.72)] hover:bg-white/10"
+                        }`}
+                      >
+                        <Link2 className="w-3.5 h-3.5" />
+                        Connect
+                      </button>
+                    )}
                   </>
                 )}
               </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck } from "lucide-react";
 import type { DealerDocument, Dealership, DocMode, DocStage, Lead } from "../../types";
-import { DOC_STAGES, FIXED_STAGE_MODES } from "../../types";
+import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "../../types";
 import { authFetch } from "../../lib/session";
 import { createStageDocument, finalizeStageDocument, signDocument, updateLead } from "../../api";
 
@@ -66,7 +66,27 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
     docs.find((d) => d.stage === stage);
 
   const modeForStage = (stage: DocStage): DocMode =>
-    FIXED_STAGE_MODES[stage] || docFlow[stage] || "attach";
+    FIXED_STAGE_MODES[stage] || docFlow[stage] || DEFAULT_DOC_FLOW[stage];
+
+  const handleGenerateOrConnect = async (stage: DocStage, mode: DocMode) => {
+    setBusyStage(stage);
+    setFlashError(null);
+    try {
+      await createStageDocument({
+        leadId: lead.id,
+        vehicleId: lead.vehicleId,
+        stage,
+        mode,
+        fileName: `${stage}-${new Date().toISOString().slice(0, 10)}`,
+        mimeType: mode === "connect" ? "text/csv" : "application/pdf",
+      });
+      await reload();
+    } catch (err) {
+      setFlashError(err instanceof Error ? err.message : `${mode} failed`);
+    } finally {
+      setBusyStage(null);
+    }
+  };
 
   const handleAttach = async (stage: DocStage, file: File) => {
     setBusyStage(stage);
@@ -241,8 +261,27 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                   </div>
                 </div>
                 <div className="shrink-0 flex items-center gap-2">
-                  {mode === "generate" && !doc && (
-                    <span className="text-xs text-[rgba(232,234,230,0.55)] italic">Templates coming soon</span>
+                  {mode === "generate" && !doc && !upcoming && (
+                    <button
+                      type="button"
+                      onClick={() => void handleGenerateOrConnect(stage, "generate")}
+                      disabled={busyStage === stage}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-[color:var(--cyan)] text-black text-xs font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                    >
+                      {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                      Generate
+                    </button>
+                  )}
+                  {mode === "connect" && !doc && !upcoming && (
+                    <button
+                      type="button"
+                      onClick={() => void handleGenerateOrConnect(stage, "connect")}
+                      disabled={busyStage === stage}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-[color:var(--cyan)] text-black text-xs font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                    >
+                      {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                      Export CSV
+                    </button>
                   )}
                   {mode === "attach" && !doc && !upcoming && (
                     <label className="cursor-pointer inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-[color:var(--cyan)] text-black text-xs font-semibold hover:opacity-90">

@@ -445,9 +445,10 @@ export async function deleteDocument(id: string): Promise<void> {
 
 /** Create a DocHub stage document. Modes:
  *   - 'attach'   — fileData required (dealer's own signed doc)
- *   - 'generate' — fieldSnapshot captured (PDF rendering deferred)
+ *   - 'generate' — fieldSnapshot captured, PDF rendered from template
  *   - 'confirm'  — no file, no snapshot; server verifies checklist flags on
- *                  finalize (used for compliance: NATIS + roadworthy) */
+ *                  finalize (used for compliance: NATIS + roadworthy)
+ *   - 'connect'  — invoice only; server generates an accounting-import CSV */
 export async function createStageDocument(input: {
   leadId: string;
   vehicleId?: string;

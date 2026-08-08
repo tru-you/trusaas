@@ -32,7 +32,7 @@ import { tidyStr, cleanModelName, normaliseExtras } from "./saNormalize";
  * on the client bundle.
  */
 import type { DMSState, Vehicle, Lead, User, DealerDocument, Dealership, DocEvent, DocStage, DocMode } from "./src/types";
-import { DOC_STAGES, FIXED_STAGE_MODES } from "./src/types";
+import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "./src/types";
 import { canAdvance } from "./src/lib/docValidator";
 
 dotenv.config();
@@ -1352,6 +1352,25 @@ function backfillDocFlowCompletion(): void {
   }
 }
 
+/** Backfill `docFlow` for dealers created before the default was set.
+ *
+ *  Without it they fall through to DEFAULT_DOC_FLOW, but the explicit row
+ *  makes each dealer's configuration visible in the state file. Idempotent:
+ *  only fills dealers with no docFlow at all. */
+function backfillDocFlowDefaults(): void {
+  const state = readState();
+  let filled = 0;
+  for (const d of (state.dealerships || []) as any[]) {
+    if (d.docFlow && Object.keys(d.docFlow).length > 0) continue;
+    d.docFlow = { ...DEFAULT_DOC_FLOW };
+    filled++;
+  }
+  if (filled > 0) {
+    writeState(state);
+    console.log(`[dochub] backfilled docFlow defaults on ${filled} dealership(s).`);
+  }
+}
+
 /** Move recon-task photos out of the state file.
  *
  *  `reconTasks[].photo` was never in VEHICLE_PHOTO_FIELDS, so unlike every
@@ -1438,6 +1457,12 @@ try {
      that existed before the field — so a failed backfill degrades to the status
      quo rather than stopping the boot. */
   console.error("[dochub] completion backfill failed, continuing:", err);
+}
+
+try {
+  backfillDocFlowDefaults();
+} catch (err) {
+  console.error("[dochub] docFlow defaults backfill failed, continuing:", err);
 }
 
 /**
@@ -2690,8 +2715,11 @@ app.post("/api/documents", (req: any, res) => {
 
   if (isDocHub) {
     const stageTyped = stage as DocStage;
-    if (mode !== "generate" && mode !== "attach" && mode !== "confirm") {
-      return res.status(400).json({ error: "mode must be 'generate', 'attach', or 'confirm' when stage is set" });
+    if (mode !== "generate" && mode !== "attach" && mode !== "confirm" && mode !== "connect") {
+      return res.status(400).json({ error: "mode must be 'generate', 'attach', 'confirm', or 'connect' when stage is set" });
+    }
+    if (mode === "connect" && stageTyped !== "invoice") {
+      return res.status(400).json({ error: "'connect' mode is only available for the invoice stage" });
     }
     if (!leadId) {
       return res.status(400).json({ error: "leadId is required for DocHub documents" });
@@ -2725,7 +2753,7 @@ app.post("/api/documents", (req: any, res) => {
     }
     if (!fixedMode && req.auth?.role !== "admin") {
       const dealer = (state.dealerships || []).find((d: any) => d.id === docDealershipId);
-      const configured = dealer?.docFlow?.[stageTyped] || "attach";
+      const configured = dealer?.docFlow?.[stageTyped] || DEFAULT_DOC_FLOW[stageTyped];
       if (configured !== (mode as DocMode)) {
         return res.status(400).json({
           error: `Dealer's ${stageTyped} stage is set to '${configured}', not '${mode}'. Change it in Doc Flow Settings first.`,
@@ -2745,11 +2773,49 @@ app.post("/api/documents", (req: any, res) => {
     const lead = (state.leads || []).find((l: any) => l.id === leadId);
     const resolvedVehicleId = vehicleId || lead?.vehicleId || undefined;
 
+    // Connect mode: generate an accounting-import CSV from the deal data.
+    let connectFileData = fileData || "";
+    let connectMimeType = mimeType || "application/pdf";
+    let connectFileName = fileName || `${stageTyped}-${new Date().toISOString().slice(0, 10)}`;
+    if (mode === "connect") {
+      const dealer = (state.dealerships || []).find((d: any) => d.id === docDealershipId);
+      const vehicle = resolvedVehicleId ? state.vehicles.find((v: any) => v.id === resolvedVehicleId) : null;
+      const snap = fieldSnapshot || {};
+      const lines: Array<{label: string; amountIncl: number}> = Array.isArray(snap.lines) ? snap.lines : [];
+      const totalIncl = typeof snap.totalIncl === "number" ? snap.totalIncl : lines.reduce((s, l) => s + (l.amountIncl || 0), 0);
+      const vatRate = 0.15;
+      const totalExcl = Math.round(totalIncl / (1 + vatRate));
+      const vatAmount = totalIncl - totalExcl;
+      const invNo = snap.invoiceNumber || connectFileName;
+      const issued = new Date().toISOString().slice(0, 10);
+      const csvEsc = (v: any) => {
+        const s = String(v ?? "");
+        return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      const csvRows = [
+        ["ContactName","EmailAddress","InvoiceNumber","InvoiceDate","DueDate","Description","Quantity","UnitAmount","AccountCode","TaxType","Currency"].join(","),
+      ];
+      const contact = lead?.name || "Customer";
+      const email = lead?.email || "";
+      if (lines.length > 0) {
+        for (const line of lines) {
+          const unitExcl = Math.round((line.amountIncl || 0) / (1 + vatRate));
+          csvRows.push([csvEsc(contact), csvEsc(email), csvEsc(invNo), issued, issued, csvEsc(line.label), "1", String(unitExcl), "200", "OUTPUT2", "ZAR"].join(","));
+        }
+      } else {
+        const desc = vehicle ? `${vehicle.year || ""} ${vehicle.make || ""} ${vehicle.model || ""} ${vehicle.variant || ""}`.trim() : "Vehicle sale";
+        csvRows.push([csvEsc(contact), csvEsc(email), csvEsc(invNo), issued, issued, csvEsc(desc), "1", String(totalExcl), "200", "OUTPUT2", "ZAR"].join(","));
+      }
+      connectFileData = "data:text/csv;base64," + Buffer.from(csvRows.join("\r\n"), "utf-8").toString("base64");
+      connectMimeType = "text/csv";
+      connectFileName = `invoice-${invNo}.csv`;
+    }
+
     const newDoc: DealerDocument = {
       id: newId("doc_"),
-      fileName: fileName || `${stageTyped}-${new Date().toISOString().slice(0, 10)}`,
-      mimeType: mimeType || "application/pdf",
-      fileData: fileData || "",
+      fileName: connectFileName,
+      mimeType: connectMimeType,
+      fileData: connectFileData,
       status: "Draft",
       uploadedAt: new Date().toISOString(),
       leadId,
@@ -2757,7 +2823,7 @@ app.post("/api/documents", (req: any, res) => {
       dealershipId: docDealershipId,
       stage: stageTyped,
       mode: mode as DocMode,
-      fieldSnapshot: mode === "generate" ? (fieldSnapshot || {}) : undefined,
+      fieldSnapshot: (mode === "generate" || mode === "connect") ? (fieldSnapshot || {}) : undefined,
     };
     if (!state.documents) state.documents = [];
     state.documents.unshift(newDoc);
@@ -3112,6 +3178,7 @@ app.put("/api/docflow", (req: any, res) => {
   for (const stage of DOC_STAGES) {
     const mode = docFlow[stage];
     if (mode === "generate" || mode === "attach") clean[stage] = mode;
+    if (mode === "connect" && stage === "invoice") clean[stage] = mode;
   }
   state.dealerships[i].docFlow = { ...(state.dealerships[i].docFlow || {}), ...clean };
   writeState(state);
@@ -4650,7 +4717,7 @@ app.post("/api/dealerships", (req: any, res) => {
   const registrationNumber = String(req.body?.registrationNumber || "").trim();
   const vatNumber = String(req.body?.vatNumber || "").trim();
 
-  const dealership: Dealership = { id, name, location, slug, websiteUrl, products };
+  const dealership: Dealership = { id, name, location, slug, websiteUrl, products, docFlow: { ...DEFAULT_DOC_FLOW } };
   if (address) dealership.address = address;
   if (registrationNumber) dealership.registrationNumber = registrationNumber;
   if (vatNumber) dealership.vatNumber = vatNumber;
