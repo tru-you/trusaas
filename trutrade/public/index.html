@@ -115,6 +115,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .rail .seg{flex:1;height:4px;border-radius:var(--r-pill);background:var(--line);transition:.3s}
 .rail .seg.done{background:var(--emerald)}
 .rail .seg.cur{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.rail .seg.skip{background:var(--dim);opacity:.5}
+#btn-skip{margin-left:auto;font-size:11px;font-weight:600;color:var(--dim);display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);line-height:1;flex-shrink:0}
 .controls{display:flex;align-items:center;gap:8px;padding:12px 14px calc(16px + env(safe-area-inset-bottom));background:var(--panel)}
 .ctrl{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto}
 .ctrl svg{width:21px;height:21px;color:var(--text)}
@@ -129,11 +131,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .tab{flex:1;padding:8px;border-radius:8px;font-size:11.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);background:var(--panel-2);display:flex;align-items:center;justify-content:center;gap:6px}
 .tab.on{color:var(--cyan);border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.08)}
 .tab .n{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--line);border-radius:var(--r-pill);padding:1px 6px;color:var(--text)}
-.sheet{position:absolute;left:0;right:0;bottom:0;top:44%;background:var(--panel);border-top:1px solid var(--line);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow-y:auto;z-index:8;display:none;flex-direction:column;gap:12px}
+.sheet{background:var(--panel);border-top:1px solid var(--line-soft);overflow-y:auto;max-height:40vh;display:none;flex-direction:column;gap:10px;padding:12px 14px calc(8px + env(safe-area-inset-bottom));flex-shrink:0}
 .sheet.open{display:flex}
-.sheet-head{display:flex;align-items:center;justify-content:between;gap:8px}
-.sheet-head .t{font-size:15px;font-weight:800;flex:1}
-.sheet-x{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
 .q{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px}
 .q .qt{font-size:12.5px;font-weight:600;margin-bottom:8px}
 .q input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;color:var(--text);font-size:13px;font-family:inherit}
@@ -197,7 +196,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .go-btn:active,.nav-next:active{background:linear-gradient(180deg,#0aa8cc,#22d3ee);transform:translateY(2px);
   box-shadow:inset 0 3px 8px rgba(0,45,66,.6),0 2px 6px -3px rgba(0,0,0,.7);}
-.ctrl,.nav-back,.share-btn,.tab,.sheet-x{
+.ctrl,.nav-back,.share-btn,.tab{
   background:linear-gradient(180deg,#26262e 0%,#191920 55%,#111116 100%);
   border:1px solid rgba(255,255,255,.11);
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.13),inset 0 -3px 6px rgba(0,0,0,.55),0 4px 12px -4px rgba(0,0,0,.75);
@@ -263,7 +262,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
   <!-- LOGIN (dealer) -->
   <section class="screen landing" id="s-login">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
+    <div class="brand"><img class="lockup" src="/logo.svg" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
     <p class="tag">Enter your dealership access code to continue.</p>
     <div class="field"><input id="in-code" type="password" value="" placeholder="Access code" style="font-family:'JetBrains Mono',monospace;font-size:15px;text-align:center;letter-spacing:.2em" /></div>
     <button class="go-btn" onclick="doLogin()" style="width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Sign in</button>
@@ -272,7 +271,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
   <!-- LANDING (dealer) -->
   <section class="screen landing" id="s-landing">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
+    <div class="brand"><img class="lockup" src="/logo.svg" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
     <p class="tag">Live video trade-in appraisals. The customer shows you their car, you ask the questions, and issue a trade price — subject to viewing.</p>
     <div class="pill-row">
       <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Secure link</div>
@@ -298,6 +297,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     <button class="go-btn" id="gen-btn" onclick="createAppraisal()"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg>Generate customer link</button>
     <div class="link-box" id="link-box" style="display:none">
       <span class="label">Secure customer link</span>
+      <div id="link-cust" style="font-size:12px;color:var(--muted);display:none"></div>
       <div class="link-url" id="link-url">…</div>
       <div class="link-meta">
         <div class="m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Single-use</div>
@@ -314,7 +314,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
   <!-- JOIN (customer) -->
   <section class="screen join" id="s-join">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
+    <div class="brand"><img class="lockup" src="/logo.svg" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
     <p class="tag" style="margin-top:-4px">The dealer would like to appraise your vehicle over a short video call:</p>
     <div class="veh-card">
       <div class="vt" id="j-veh">Loading…</div>
@@ -341,22 +341,21 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       <div class="conn" id="conn"><div class="cd"></div><span id="conn-txt">Connecting…</span></div>
       <div class="pip"><video id="pipVideo" autoplay playsinline muted></video><div class="lab" id="pip-lab">YOU</div></div>
       <div class="prompt-ov">
-        <div class="sec-head"><div class="sec-idx" id="sec-idx">01 / 09</div><div class="sec-name" id="sec-name"></div></div>
+        <div class="sec-head"><div class="sec-idx" id="sec-idx">01 / 27</div><div class="sec-name" id="sec-name"></div><button id="btn-skip" style="display:none" onclick="skipSection()">Skip ››</button></div>
         <div class="instr"><span class="who" id="instr-who">SHOW</span><span id="instr-text"></span></div>
         <div class="defect-list" id="defect-list"></div>
       </div>
       <div class="waiting" id="waiting"><div class="spin"></div><p id="wait-txt"></p></div>
-      <!-- dealer private sheet -->
-      <div class="sheet" id="sheet">
-        <div class="sheet-head"><div class="t" id="sheet-title">Questions</div><button class="sheet-x" onclick="closeSheet()"><svg width="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-        <div class="priv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Only you can see this — the customer's screen shows the walkaround guide.</div>
-        <div id="sheet-body" style="display:flex;flex-direction:column;gap:12px"></div>
-      </div>
+    </div>
+    <div class="sheet" id="sheet">
+      <div class="priv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Only you can see this — the customer's screen shows the walkaround guide.</div>
+      <div id="sheet-body" style="display:flex;flex-direction:column;gap:12px"></div>
     </div>
     <div class="rail" id="rail"></div>
     <div class="controls" id="dealer-controls">
       <button class="nav-back" id="btn-back" onclick="prevSection()" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="ctrl" onclick="snap()" title="Capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg></button>
+      <button class="ctrl" id="btn-mute" onclick="toggleMute()" title="Mute mic"><svg id="ic-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg><svg id="ic-muted" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" style="display:none"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3Z"/><line x1="4" y1="4" x2="20" y2="20"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
       <button class="ctrl" onclick="addDefect()" title="Note defect"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></button>
       <button class="nav-next" onclick="nextSection()"><span id="next-label">Next</span><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg></button>
       <button class="ctrl end" onclick="endSession()"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M10.7 5.6A16 16 0 0 1 22 8.8a2 2 0 0 1-.5 2.3l-1.9 1.5a2 2 0 0 1-2.3.1l-2-1.3M6.5 3.8 3 2M2 9a16 16 0 0 0 13 13"/><path d="m2 2 20 20"/></svg></button>
@@ -439,15 +438,36 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <script>
 /* ===== APPRAISAL SCRIPT — defect-focused, not sales-focused ===== */
 const SECTIONS=[
- {name:"Front & Bonnet",who:"SHOW",instr:"Stand at the front. Show the bumper, grille, lights and bonnet."},
- {name:"Driver Side",who:"SHOW",instr:"Walk slowly down the driver's side, keeping the whole side in view."},
- {name:"Rear & Boot",who:"SHOW",instr:"Show the rear, then open the boot so we can see inside."},
- {name:"Passenger Side",who:"SHOW",instr:"Walk back along the passenger side, then show the sills underneath."},
- {name:"Wheels & Tyres",who:"CLOSE",instr:"Hold the camera close to each tyre so we can see the tread and the rim."},
- {name:"Engine Bay & Start",who:"OPEN",instr:"Open the bonnet, show the engine, then start the car so we can hear it."},
- {name:"Interior & Odometer",who:"SHOW",instr:"Show the dash with the car on — then hold the camera on the odometer reading."},
- {name:"Damage Close-ups",who:"CLOSE",instr:"Show us any scratches, dents, chips or wear you know about, up close."},
- {name:"Documents & Keys",who:"SHOW",instr:"Show the service book and all the keys you have for the car."}
+ /* ── Phase 1 · Front & Engine ─────────────────────────────── */
+ {name:"Bonnet (Exterior)",who:"SHOW",instr:"Stand at the front and hold the phone high, looking down the length of the closed bonnet."},
+ {name:"Engine Bay",who:"OPEN",instr:"Pop and prop the bonnet fully open. Frame from front-centre looking down into the engine bay."},
+ {name:"Front Bumper & Grille",who:"SHOW",instr:"Hold the phone level with the front bumper, centred on the grille."},
+ {name:"Front Windscreen",who:"CLOSE",instr:"Frame the full windscreen from the front — watch for chips or cracks."},
+ {name:"Licence Disc",who:"CLOSE",instr:"Get a close-up on the licence disc — sharp enough to read the expiry date."},
+ /* ── Phase 2 · Clockwise Exterior Walk-Around ──────────────── */
+ {name:"Front Right Wing",who:"SHOW",instr:"Walk to the front-right corner of the car, 45° off the nose, and show that corner."},
+ {name:"Front Right Wheel",who:"CLOSE",instr:"Get close to the front-right wheel — show the rim face and tyre wall."},
+ {name:"Driver Door & Mirror",who:"SHOW",instr:"Step back and show the driver door and side mirror — phone level with the door handle."},
+ {name:"Rear Right Door",who:"SHOW",instr:"Move back to the rear right door and show it at door-handle height."},
+ {name:"Rear Right Quarter",who:"SHOW",instr:"Walk to the rear-right corner, 45° off the tail, and show that corner."},
+ {name:"Rear Right Wheel",who:"CLOSE",instr:"Get close to the rear-right wheel — show the rim face and tyre wall."},
+ {name:"Boot / Tailgate",who:"SHOW",instr:"Step to the rear, centred behind the car, and show the boot lid or tailgate."},
+ {name:"Rear Bumper",who:"CLOSE",instr:"Get closer and show the rear bumper — look for scuffs, cracks or tow bar damage."},
+ {name:"Spare Wheel & Boot Floor",who:"OPEN",instr:"Open the boot floor and show the spare wheel and tyre in the well."},
+ {name:"Jack & Tools",who:"CLOSE",instr:"Show the jack, wheel spanner and tool kit in the boot."},
+ {name:"Rear Left Quarter",who:"SHOW",instr:"Walk to the rear-left corner, 45° off the tail, and show that corner."},
+ {name:"Rear Left Wheel",who:"CLOSE",instr:"Get close to the rear-left wheel — show the rim face and tyre wall."},
+ {name:"Rear Left Door",who:"SHOW",instr:"Move up to the rear left door and show it at door-handle height."},
+ {name:"Passenger Door & Mirror",who:"SHOW",instr:"Show the passenger door and side mirror — phone level with the door handle."},
+ {name:"Front Left Wing",who:"SHOW",instr:"Walk to the front-left corner, 45° off the nose, and show that corner."},
+ {name:"Front Left Wheel",who:"CLOSE",instr:"Get close to the front-left wheel — show the rim face and tyre wall."},
+ {name:"Roof",who:"SHOW",instr:"Hold the phone high to capture the full roof. If there's a sunroof, show it open and closed."},
+ /* ── Phase 3 · Interior, History & Verification ─────────────── */
+ {name:"Steering & Controls",who:"SHOW",instr:"Sit in the driver seat and frame the steering wheel, stalks and control buttons."},
+ {name:"Interior Cabin",who:"SHOW",instr:"Move to the rear seat, face forward, and show the full cabin — dash, front seats and footwell."},
+ {name:"Service Book",who:"CLOSE",instr:"Open the service book and show each stamp page, or show the digital history on-screen."},
+ {name:"Odometer",who:"CLOSE",instr:"Ignition on — get a clear close-up of the mileage on the instrument cluster."},
+ {name:"Spare Keys",who:"CLOSE",instr:"Show all keys and remotes for the vehicle on a flat surface."}
 ];
 
 /* Dealer-private questions — verbal, not visual */
@@ -465,6 +485,7 @@ const QUESTIONS=[
 
 let role='dealer',roomId=null,cur=0,timerInt=null,seconds=0,stream=null,facing='environment';
 let snaps=[],defects=[],answers=[],ws=null,pc=null,peerConnected=false,vehName='',vehReg='',custName='';
+let muted=false,skipped=new Set();
 let authToken=localStorage.getItem('trutrade_token')||'';
 let writeupText='',tp=0,validDays=7,conditions='',rpt={dur:'',def:0,q:0};
 
@@ -494,22 +515,32 @@ async function initCustomer(){
     vehName=d.veh;vehReg=d.reg;custName=d.customer;
     document.getElementById('j-veh').textContent=d.veh;
     document.getElementById('j-reg').textContent=d.reg||'';
-  }catch(e){document.getElementById('j-veh').textContent='This link has expired';}
+  }catch(e){
+    document.getElementById('j-veh').textContent='This link has expired';
+    const btn=document.querySelector('.join .go-btn');if(btn)btn.disabled=true;
+  }
 }
 
-function startSetup(){document.getElementById('link-box').style.display='none';document.getElementById('share-grid').style.display='none';document.getElementById('live-btn').style.display='none';document.getElementById('gen-btn').style.display='flex';show('s-setup');}
+function startSetup(){document.getElementById('link-box').style.display='none';document.getElementById('share-grid').style.display='none';document.getElementById('live-btn').style.display='none';const gb=document.getElementById('gen-btn');gb.style.display='flex';gb.disabled=false;gb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg>Generate customer link';show('s-setup');}
 async function createAppraisal(){
-  vehName=document.getElementById('in-veh').value||'Vehicle';
+  const vehInput=document.getElementById('in-veh');
+  if(!vehInput.value.trim()){vehInput.focus();toast('Enter a vehicle first');return;}
+  vehName=vehInput.value.trim();
   vehReg=document.getElementById('in-reg').value||'';
   custName=document.getElementById('in-cust').value||'';
-  const headers={'content-type':'application/json'}; if(authToken)headers.authorization='Bearer '+authToken;
-  const r=await fetch('/api/appraisal',{method:'POST',headers,body:JSON.stringify({veh:vehName,reg:vehReg,customer:custName})});
-  const d=await r.json();roomId=d.id;
-  document.getElementById('link-url').textContent=location.origin+d.url;
-  document.getElementById('gen-btn').style.display='none';
-  document.getElementById('link-box').style.display='flex';
-  document.getElementById('share-grid').style.display='grid';
-  document.getElementById('live-btn').style.display='flex';
+  const btn=document.getElementById('gen-btn');
+  btn.disabled=true;btn.textContent='Generating…';
+  try{
+    const headers={'content-type':'application/json'}; if(authToken)headers.authorization='Bearer '+authToken;
+    const r=await fetch('/api/appraisal',{method:'POST',headers,body:JSON.stringify({veh:vehName,reg:vehReg,customer:custName})});
+    const d=await r.json();roomId=d.id;
+    document.getElementById('link-url').textContent=location.origin+d.url;
+    const lc=document.getElementById('link-cust');if(custName){lc.textContent='For: '+custName;lc.style.display='block';}else lc.style.display='none';
+    document.getElementById('gen-btn').style.display='none';
+    document.getElementById('link-box').style.display='flex';
+    document.getElementById('share-grid').style.display='grid';
+    document.getElementById('live-btn').style.display='flex';
+  }catch(e){toast('Could not generate link');btn.disabled=false;btn.textContent='Generate link';}
 }
 const fullLink=()=>document.getElementById('link-url').textContent;
 function copyLink(){navigator.clipboard?.writeText(fullLink()).catch(()=>{});toast('Link copied');}
@@ -566,11 +597,12 @@ async function onOffer(sdp){if(!pc)newPC();await pc.setRemoteDescription(sdp);co
 
 /* ===== session ===== */
 function beginSession(r){
-  role=r;cur=0;seconds=0;snaps=[];defects=[];answers=QUESTIONS.map(q=>({q,a:''}));
+  role=r;cur=0;seconds=0;snaps=[];defects=[];answers=QUESTIONS.map(q=>({q,a:''}));skipped=new Set();
   document.getElementById('role-chip').textContent=r==='dealer'?'DEALER':'YOUR CAR';
   document.getElementById('pip-lab').textContent=r==='dealer'?'YOU':'DEALER';
   document.getElementById('dealer-controls').style.display=r==='dealer'?'flex':'none';
   document.getElementById('customer-controls').style.display=r==='customer'?'flex':'none';
+  document.getElementById('btn-skip').style.display=r==='dealer'?'flex':'none';
   document.getElementById('dealer-tabs').style.display=r==='dealer'?'flex':'none';
   document.getElementById('live-veh').textContent=vehName;
   document.getElementById('wait-txt').innerHTML=r==='dealer'
@@ -581,7 +613,8 @@ function beginSession(r){
 }
 
 function buildRail(){const r=document.getElementById('rail');r.innerHTML='';SECTIONS.forEach((_,i)=>{const d=document.createElement('div');d.className='seg';d.id='seg'+i;r.appendChild(d);});}
-function updateRail(){SECTIONS.forEach((_,i)=>{const e=document.getElementById('seg'+i);if(e)e.className='seg'+(i<cur?' done':i===cur?' cur':'');});}
+function updateRail(){SECTIONS.forEach((_,i)=>{const e=document.getElementById('seg'+i);if(e)e.className='seg'+(skipped.has(i)?' skip':i<cur?' done':i===cur?' cur':'');});}
+function skipSection(){skipped.add(cur);if(cur<SECTIONS.length-1){cur++;renderSection();broadcastState();}else goPrice();}
 
 function renderSection(){
   const s=SECTIONS[cur];
@@ -601,6 +634,21 @@ function broadcastState(){if(role==='dealer')sig({type:'state',cur});}
 function nextSection(){if(cur<SECTIONS.length-1){cur++;renderSection();broadcastState();toast(SECTIONS[cur].name);}else goPrice();}
 function prevSection(){if(cur>0){cur--;renderSection();broadcastState();}}
 function startTimer(){clearInterval(timerInt);timerInt=setInterval(()=>{seconds++;document.getElementById('timer').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');},1000);}
+
+function toggleMute(){
+  muted=!muted;
+  if(stream)stream.getAudioTracks().forEach(t=>t.enabled=!muted);
+  document.getElementById('ic-mic').style.display=muted?'none':'';
+  document.getElementById('ic-muted').style.display=muted?'':'none';
+  toast(muted?'Mic muted':'Mic on');
+}
+
+function removeDefect(i){
+  defects.splice(i,1);
+  document.getElementById('d-count').textContent=defects.length;
+  renderSection();renderSheet();
+  toast('Defect removed');
+}
 
 async function startCam(){
   try{
@@ -631,17 +679,32 @@ function snap(){
 }
 
 function addDefect(){
-  const note=prompt('Defect on "'+SECTIONS[cur].name+'":');
-  if(!note)return;
-  defects.push({section:SECTIONS[cur].name,note:note.trim()});
-  document.getElementById('d-count').textContent=defects.length;
-  renderSection();toast('⚠ Defect noted');
+  openSheet('defects');
+  const b=document.getElementById('sheet-body');
+  if(b.querySelector('.defect-input')){b.querySelector('.defect-input input').focus();return;}
+  // clear the "no defects yet" placeholder
+  Array.from(b.children).forEach(el=>{if(el.textContent.includes('No defects noted yet'))el.remove();});
+  const row=document.createElement('div');row.className='q defect-input';
+  const lbl=document.createElement('div');lbl.className='qt';lbl.textContent=SECTIONS[cur].name;
+  const inp=document.createElement('input');inp.placeholder='Describe the defect…';inp.autocomplete='off';
+  const btn=document.createElement('button');btn.className='go-btn';
+  btn.style.cssText='width:100%;margin-top:8px;font-size:13px;padding:10px 14px;';
+  btn.textContent='Save defect';
+  btn.onclick=()=>{
+    const note=inp.value.trim();if(!note){inp.focus();return;}
+    defects.push({section:SECTIONS[cur].name,note});
+    document.getElementById('d-count').textContent=defects.length;
+    renderSection();toast('⚠ Defect noted — '+SECTIONS[cur].name);
+    openSheet('defects');
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')btn.click();};
+  row.appendChild(lbl);row.appendChild(inp);row.appendChild(btn);
+  b.prepend(row);setTimeout(()=>inp.focus(),80);
 }
 
 /* dealer sheet */
 let sheetMode='questions';
 function openSheet(mode){sheetMode=mode;document.getElementById('sheet').classList.add('open');
-  document.getElementById('sheet-title').textContent=mode==='questions'?'Questions':'Defects noted';
   document.getElementById('tab-q').classList.toggle('on',mode==='questions');
   document.getElementById('tab-d').classList.toggle('on',mode==='defects');
   document.getElementById('tab-guide').classList.remove('on');
@@ -661,8 +724,8 @@ function renderSheet(){
     });
   }else{
     if(!defects.length){b.innerHTML='<div style="color:var(--dim);font-size:13px">No defects noted yet. Use the ⚠ button during the call.</div>';return;}
-    defects.forEach((d,i)=>{const r=document.createElement('div');r.className='q';
-      r.innerHTML='<div class="qt" style="color:var(--amber)">'+d.section+'</div><div style="font-size:13px">'+d.note+'</div>';
+    defects.forEach((d,i)=>{const r=document.createElement('div');r.className='q';r.style.position='relative';
+      r.innerHTML='<div class="qt" style="color:var(--amber)">'+d.section+'</div><div style="font-size:13px">'+d.note+'</div><button onclick="removeDefect('+i+')" title="Remove" style="position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--bg-overlay);color:var(--muted);font-size:14px;display:grid;place-items:center;line-height:1">×</button>';
       b.appendChild(r);});
   }
 }
@@ -689,7 +752,7 @@ function formatTP(el){
 }
 function issueOffer(){
   const raw=document.getElementById('in-tp').value.replace(/\D/g,'');
-  if(!raw){toast('Enter a trade price first');return;}
+  if(!raw||Number(raw)===0){toast('Enter a trade price first');return;}
   tp=Number(raw);
   validDays=Number(document.getElementById('in-valid').value)||7;
   conditions=document.getElementById('in-cond').value.trim();

@@ -93,11 +93,36 @@
   --focus-ring:     #2DE1F5;
 }
 
+/* ---------- SELF-GUIDED VALUATION ----------
+   TruValue — consumer self-guided trade-in capture + AI instant offer.
+   Same dark shell as LIVE tier; accent is the updated green-cyan #4FE3DC. */
+[data-app="truvalue"] {
+  color-scheme: dark;
+  --bg-base:        #0A0A0A;
+  --bg-raised:      #141414;
+  --bg-overlay:     #1F1F1F;
+  --border-subtle:  #2A2A2A;
+  --text-primary:   #FFFFFF;
+  --text-secondary: #C9D1D9;
+  --text-muted:     var(--tru-ink-300);
+  --accent:         #4FE3DC;
+  --accent-hover:   #1FAFA8;
+  --accent-surface: rgba(79, 227, 220, 0.10);
+  --accent-border:  rgba(79, 227, 220, 0.35);
+  --focus-ring:     #4FE3DC;
+  --accent-rgb:     79, 227, 220;   /* overrides tru-premium.css :root default */
+
+  --state-live:      var(--tru-red-500);
+  --state-success:   var(--tru-green-500);
+  --state-attention: var(--tru-amber-500);
+}
+
 /* ---------- LIVE TIER ----------
    TruLive (buyer walkaround) · TruTrade (seller appraisal).
    Real-time video of a vehicle drives a money decision.
    Dark UI, zero saturation around the stream. */
 [data-app="truview"],
+[data-app="trulive"],
 [data-app="trutrade"] {
   color-scheme: dark;
   --bg-base:        #0A0A0A;

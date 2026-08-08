@@ -8,7 +8,7 @@
 #                                   → flow.tru-saas.com     (canonical)
 #                                   → premium.tru-saas.com  (alias, legacy embeds)
 #   trusaas-live.onrender.com     → TruLive          (trulive)  → live.tru-saas.com
-#   trusaas-trade.onrender.com    → TruTrade         (trutrade) → trade.tru-saas.com
+#   trusaas-trade.onrender.com    → TruTrade + TruValue  (trutrade) → trade.tru-saas.com
 #                                   (renamed from trusaas-value 2026-07-31; old service discontinued, domain repointed)
 #
 # TruFlow Lite (the old separate codebase) retired 2026-07-25. The current
@@ -150,7 +150,8 @@ services:
       - key: TRULIVE_MODEL
         value: claude-sonnet-5
 
-  # ── 2c. TruTrade — live video trade-in appraisal (customer films, dealer prices)
+  # ── 2c. TruTrade / TruValue — live video appraisal + self-guided instant offer
+  #        trade.tru-saas.com · /truvalue.html for the consumer self-serve flow
   - type: web
     name: trusaas-trade
     runtime: node

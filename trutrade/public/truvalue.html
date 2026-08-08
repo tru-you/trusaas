@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en" data-app="truvalue">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<title>TruValue — Instant Trade-In Offer</title>
+<link rel="stylesheet" href="/tru-tokens.css">
+<link rel="stylesheet" href="/device-frame.css">
+<link rel="stylesheet" href="/tru-premium.css">
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#0a0a0a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="TruValue" />
+<link rel="icon" href="/icon.png" type="image/png" />
+<link rel="apple-touch-icon" href="/icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Override tru-premium.css :root --accent-rgb for the TruValue teal accent */
+[data-app="truvalue"] { --accent-rgb: 79, 227, 220; }
+
+/* ── Local aliases ── */
+:root{
+  --bg:var(--bg-base);--panel:var(--bg-raised);--panel-2:var(--bg-overlay);--line:var(--border-subtle);
+  --text:var(--text-primary);--sec:var(--text-secondary);--muted:var(--text-muted);--dim:#5a5a63;
+  --cyan:var(--accent);--cyan-600:var(--accent-hover);
+  --emerald:var(--state-success);--red:var(--state-live);--amber:var(--state-attention);
+  --glow:rgba(79,227,220,.18);
+  --r-xs:6px;--r-sm:12px;--r-lg:16px;--r-pill:999px;
+  /* spacing / radius scale shared with TruLive */
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s6:24px;--s8:32px;
+  --radius:16px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased}
+.label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);font-weight:500}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ── App shell (identical to TruLive) ── */
+.app{max-width:520px;margin:0 auto;height:100dvh;position:relative;display:flex;flex-direction:column;background:var(--bg);box-shadow:0 0 80px rgba(0,0,0,.6)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;animation:fade .35s ease}
+.screen.active{display:flex}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── Brand lockup / fallback toggle (mirrors TruLive pattern) ── */
+.brand .lockup{height:72px;width:auto;max-width:82%;display:block}
+.brand-fallback{display:flex;align-items:center;gap:12px}
+.brand.no-logo .lockup{display:none}
+.brand:not(.no-logo) .brand-fallback{display:none}
+
+/* ── Landing ── */
+.landing{
+  justify-content:center;padding:36px 26px;gap:26px;overflow-y:auto;
+  background:
+    radial-gradient(120% 60% at 50% -10%,rgba(79,227,220,.10),transparent 60%),
+    radial-gradient(100% 50% at 50% 110%,rgba(79,227,220,.05),transparent 60%),
+    var(--bg)
+}
+.brand{display:flex;flex-direction:column;align-items:center;gap:14px}
+.logo-mark{
+  width:56px;height:56px;border-radius:16px;display:grid;place-items:center;
+  background:linear-gradient(160deg,#7CEFEA 0%,#4FE3DC 45%,#1FAFA8 100%);
+  border:1px solid rgba(255,255,255,.3);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.75),
+    inset 0 -3px 7px rgba(0,40,38,.5),
+    0 5px 16px -4px rgba(79,227,220,.5),
+    0 10px 24px -10px rgba(0,0,0,.75)
+}
+.logo-mark svg{width:28px;height:28px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.brand h1{font-size:27px;font-weight:800;letter-spacing:-.02em;color:#c9ced8}
+.brand h1 span{color:var(--cyan)}
+.tag{text-align:center;color:var(--sec);font-size:14.5px;line-height:1.55;max-width:300px;margin:0 auto}
+
+/* Pills — shared with TruLive */
+.pill-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.pill{border:1px solid var(--line);border-radius:var(--r-pill);padding:6px 12px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.pill svg{width:12px;height:12px;color:var(--emerald)}
+
+/* ── CTA card (card-btn.primary pattern from TruLive) ── */
+.card-btn{
+  background:linear-gradient(180deg,#26262e 0%,#1a1a21 55%,#111116 100%);
+  border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);
+  padding:18px;text-align:left;display:flex;align-items:center;gap:16px;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.15),
+    inset 0 -4px 8px rgba(0,0,0,.5),
+    0 8px 22px -8px rgba(0,0,0,.8);
+  transition:transform .09s ease,box-shadow .09s ease,background .09s ease;
+  position:relative;overflow:hidden
+}
+.card-btn:active{
+  background:linear-gradient(180deg,#131318 0%,#1d1d24 100%);
+  transform:translateY(2px);
+  box-shadow:inset 0 4px 9px rgba(0,0,0,.65),0 2px 5px -2px rgba(0,0,0,.6)
+}
+.card-btn.primary{
+  background:linear-gradient(180deg,#1a3335 0%,#142829 55%,#0e1b1b 100%);
+  border:1px solid rgba(79,227,220,.42);
+  box-shadow:
+    inset 0 1.5px 0 rgba(160,255,248,.28),
+    inset 0 -4px 9px rgba(0,20,18,.55),
+    0 0 34px -10px rgba(79,227,220,.35),
+    0 8px 22px -8px rgba(0,0,0,.8)
+}
+.card-btn.primary:active{
+  background:linear-gradient(180deg,#0f2020 0%,#192b2b 100%);
+  transform:translateY(2px);
+  box-shadow:inset 0 4px 9px rgba(0,0,0,.65),0 2px 5px -2px rgba(0,0,0,.6)
+}
+.card-btn .ic{
+  width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto;
+  background:linear-gradient(180deg,#26262e 0%,#191920 55%,#111116 100%);
+  border:1px solid rgba(255,255,255,.11);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.13),
+    inset 0 -3px 6px rgba(0,0,0,.55),
+    0 4px 12px -4px rgba(0,0,0,.75)
+}
+.card-btn.primary .ic{
+  background:linear-gradient(160deg,#7CEFEA 0%,#4FE3DC 45%,#1FAFA8 100%);
+  border:1px solid rgba(255,255,255,.3);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.75),
+    inset 0 -3px 7px rgba(0,40,38,.5),
+    0 5px 16px -4px rgba(79,227,220,.5)
+}
+.card-btn .ic svg{width:22px;height:22px}
+.card-btn.primary .ic svg,.logo-mark svg{filter:drop-shadow(0 1px 1px rgba(255,255,255,.45))}
+.card-btn h3{font-size:15.5px;font-weight:700;margin-bottom:3px}
+.card-btn p{font-size:12.5px;color:var(--muted);line-height:1.4}
+.card-btn .arrow{margin-left:auto;color:var(--dim)}
+.foot{text-align:center}
+
+/* ── Vehicle info (setup pattern from TruLive) ── */
+.setup{padding:24px 22px;gap:16px;overflow-y:auto}
+.setup .h{font-size:19px;font-weight:800}
+.setup .sub{font-size:13px;color:var(--muted);line-height:1.5;margin-top:-8px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.field input{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 14px;color:var(--text);font-size:14px;font-family:inherit}
+.field input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(79,227,220,.12)}
+.field input::placeholder{color:var(--dim)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.spacer{flex:1}
+.info-hdr{display:flex;align-items:center;gap:10px}
+
+/* ── Back buttons ── */
+.nav-back{
+  width:36px;height:36px;border-radius:var(--r-xs);display:grid;place-items:center;flex:0 0 auto;
+  background:linear-gradient(180deg,#26262e 0%,#191920 55%,#111116 100%);
+  border:1px solid rgba(255,255,255,.11);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.13),
+    inset 0 -3px 6px rgba(0,0,0,.55),
+    0 4px 12px -4px rgba(0,0,0,.75);
+  transition:transform .09s ease,box-shadow .09s ease,background .09s ease
+}
+.nav-back svg{width:18px;height:18px;color:var(--sec)}
+.nav-back:active{
+  background:linear-gradient(180deg,#141418 0%,#1c1c23 100%);
+  transform:translateY(2px);
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.7),0 1px 3px -1px rgba(0,0,0,.6)
+}
+.nav-back:disabled{opacity:.35}
+
+/* ── Primary CTA button (go-btn pattern) ── */
+.go-btn{
+  color:#052220;font-weight:800;font-size:15px;border-radius:var(--r-sm);
+  padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(180deg,#7CEFEA 0%,#4FE3DC 40%,#1FAFA8 100%);
+  border:1px solid rgba(255,255,255,.22);
+  text-shadow:0 1px 0 rgba(255,255,255,.4);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.8),
+    inset 0 -3px 6px rgba(0,40,38,.45),
+    inset 0 0 14px rgba(255,255,255,.15),
+    0 6px 16px -5px rgba(79,227,220,.55),
+    0 14px 30px -12px rgba(0,0,0,.8);
+  transition:transform .09s ease,box-shadow .09s ease,background .09s ease
+}
+.go-btn:active{
+  background:linear-gradient(180deg,#1FAFA8 0%,#4FE3DC 100%);
+  transform:translateY(2px);
+  box-shadow:
+    inset 0 3px 8px rgba(0,40,38,.6),
+    inset 0 -1px 0 rgba(255,255,255,.25),
+    0 2px 6px -3px rgba(0,0,0,.7)
+}
+.go-btn:disabled{opacity:.5;cursor:not-allowed}
+.go-btn svg{width:18px;height:18px;filter:drop-shadow(0 1px 1px rgba(255,255,255,.45))}
+
+/* ── Secondary button ── */
+.b-act{
+  flex:1;height:48px;border-radius:var(--r-sm);font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(180deg,#26262e 0%,#191920 55%,#111116 100%);
+  border:1px solid rgba(255,255,255,.11);color:var(--sec);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.13),
+    inset 0 -3px 6px rgba(0,0,0,.55),
+    0 4px 12px -4px rgba(0,0,0,.75);
+  transition:transform .09s ease,box-shadow .09s ease,background .09s ease
+}
+.b-act:active{
+  background:linear-gradient(180deg,#141418 0%,#1c1c23 100%);
+  transform:translateY(2px);
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.7),0 1px 3px -1px rgba(0,0,0,.6)
+}
+.b-act svg{width:18px;height:18px;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.55))}
+
+/* ── Topbar (shared with TruLive — tru-premium.css styles this) ── */
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+  border-bottom:1px solid var(--line);z-index:5
+}
+.topbar .dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.topbar .live{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;font-weight:600}
+.topbar .timer{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* Topbar nav-back smaller variant */
+.topbar .nav-back{width:30px;height:30px;border-radius:var(--r-xs)}
+.topbar .nav-back svg{width:15px;height:15px}
+
+/* ── Stage (shared with TruLive) ── */
+.stage{position:relative;flex:1;background:#000;overflow:hidden;min-height:0;display:flex;align-items:center;justify-content:center}
+.novid{display:flex;flex-direction:column;align-items:center;gap:12px;color:#3a3a3a;text-align:center;padding:30px}
+.novid svg{width:46px;height:46px}
+.novid span{font-size:12px}
+
+/* Capture flash overlay */
+.capture-flash{position:absolute;inset:0;background:rgba(16,185,129,.14);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .1s}
+.capture-flash.show{opacity:1}
+.capture-check{width:64px;height:64px;border-radius:50%;background:var(--emerald);display:grid;place-items:center}
+.capture-check svg{width:30px;height:30px}
+
+/* ── Prompt overlay (prompt-ov — tru-premium.css adds glass surface) ── */
+.prompt-ov{
+  position:absolute;left:12px;right:12px;bottom:12px;
+  border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;
+  box-shadow:0 10px 40px rgba(0,0,0,.5)
+}
+.prompt-ov .sec-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.prompt-ov .sec-idx{
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);
+  border:1px solid rgba(79,227,220,.35);border-radius:var(--r-xs);padding:2px 7px
+}
+.prompt-ov .sec-name{font-size:14px;font-weight:700}
+.prompt-ov .instr{font-size:13px;color:var(--sec);line-height:1.45}
+
+/* ── Progress rail (tru-premium.css adds sheen) ── */
+.rail{display:flex;gap:4px;padding:8px 14px;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.rail .seg{flex:1;height:4px;border-radius:var(--r-pill);transition:.3s}
+
+/* ── Controls bar (tru-premium.css adds chrome depth) ── */
+.controls{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 24px calc(20px + env(safe-area-inset-bottom));background:var(--panel)}
+
+/* Shutter button */
+.shutter{
+  width:66px;height:66px;border-radius:50%;
+  background:linear-gradient(180deg,#ffffff 0%,#e4e4e4 55%,#cccccc 100%);
+  border:4px solid var(--line);
+  border-top-color:rgba(255,255,255,.55);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.9),
+    inset 0 -4px 8px rgba(0,0,0,.25),
+    0 0 0 3px var(--cyan),
+    0 6px 20px -6px rgba(0,0,0,.6),
+    0 0 22px -6px rgba(79,227,220,.6);
+  transition:transform .1s ease,box-shadow .1s ease
+}
+.shutter:active{
+  transform:scale(.91);
+  box-shadow:
+    inset 0 4px 8px rgba(0,0,0,.35),
+    inset 0 -1px 0 rgba(255,255,255,.35),
+    0 0 0 3px var(--cyan),
+    0 2px 6px -2px rgba(0,0,0,.6)
+}
+
+/* Section label and counter */
+.section-counter{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* ── Processing ── */
+.tv-processing{justify-content:center;align-items:center;gap:24px;padding:36px}
+.tv-spinner{
+  width:56px;height:56px;border-radius:50%;
+  border:3px solid var(--panel-2);border-top-color:var(--cyan);
+  animation:tv-spin 1s linear infinite
+}
+@keyframes tv-spin{to{transform:rotate(360deg)}}
+.tv-proc-heading{text-align:center}
+.tv-proc-heading h2{font-size:17px;font-weight:800;color:var(--text);line-height:1.35}
+.tv-proc-heading p{font-size:13px;color:var(--muted);margin-top:10px}
+.tv-checklist{display:flex;flex-direction:column;gap:10px;width:100%}
+.tv-check-row{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg,#1c1c23 0%,#141418 100%);
+  border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:10px 12px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 3px 8px -3px rgba(0,0,0,.6);
+  transition:opacity .3s
+}
+.tv-check-dot{
+  width:20px;height:20px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:linear-gradient(180deg,#26262e,#191920);
+  border:1.5px solid var(--line);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  transition:background .3s,border-color .3s
+}
+.tv-check-dot.done{background:var(--emerald);border-color:var(--emerald);box-shadow:0 0 8px rgba(16,185,129,.4)}
+.tv-check-dot svg{width:11px;height:11px;display:none}
+.tv-check-dot.done svg{display:block}
+.tv-check-label{font-size:12.5px;color:var(--sec)}
+
+/* ── Result (summary pattern from TruLive) ── */
+.summary{padding:26px 22px;gap:16px;overflow-y:auto}
+.sum-hero{text-align:center;padding:6px 0 2px}
+.sum-hero h2{font-size:20px;font-weight:800}
+.sum-hero p{color:var(--muted);font-size:13px;margin-top:4px}
+
+/* Offer card */
+.offer-card{
+  background:
+    linear-gradient(160deg, rgba(79,227,220,.12) 0%, rgba(10,10,14,.5) 60%),
+    var(--panel);
+  border:1px solid rgba(79,227,220,.38);border-radius:var(--radius);padding:22px;text-align:center;
+  box-shadow:
+    inset 0 1.5px 0 rgba(160,255,248,.20),
+    0 0 34px -12px rgba(79,227,220,.3),
+    0 8px 24px -10px rgba(0,0,0,.8)
+}
+.offer-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--cyan);text-transform:uppercase}
+.offer-amt{font-size:38px;font-weight:800;color:var(--text);margin-top:6px;font-family:'JetBrains Mono',monospace;letter-spacing:-.02em}
+.offer-sub{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* Stat grid (stat pattern — tru-premium.css adds hover lift) */
+.sum-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{
+  background:linear-gradient(180deg,#1e1e26 0%,#141418 100%);
+  border:1px solid rgba(255,255,255,.09);border-radius:var(--r-sm);padding:14px 10px;text-align:center;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.11),
+    inset 0 -3px 6px rgba(0,0,0,.45),
+    0 4px 12px -5px rgba(0,0,0,.7);
+  position:relative;overflow:hidden
+}
+.stat .n{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace}
+.stat .n.cy{color:var(--cyan)}.stat .n.em{color:var(--emerald)}.stat .n.am{color:var(--amber)}
+.stat .l{font-size:10px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-top:4px;font-family:'JetBrains Mono',monospace}
+
+/* Handoff note & restart */
+.handoff-note{font-size:11px;color:var(--muted);text-align:center;line-height:1.5;font-style:italic}
+.restart{text-align:center}
+.restart button{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer}
+.restart button:hover{color:var(--cyan)}
+
+/* Dealer link */
+.dealer-link{text-align:center}
+.dealer-link a{font-size:12px;color:var(--muted);text-decoration:none}
+.dealer-link a:hover{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="device">
+<div class="device-status"><span id="dev-clock">9:41</span><span class="sig">5G&nbsp;·&nbsp;<b>TruSaaS</b><span class="bat"></span></span></div>
+<div class="app" id="app">
+
+  <!-- ─── 1. LANDING ─── -->
+  <section class="screen landing active" id="s-landing">
+    <div class="brand">
+      <img class="lockup" src="/logo-value.svg" alt="TruValue" onerror="this.parentElement.classList.add('no-logo')">
+      <div class="brand-fallback">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 13h2l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13h2M5 13h14v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-5Z" stroke="#052220" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle cx="7.5" cy="16.5" r="1.2" fill="#052220"/>
+            <circle cx="16.5" cy="16.5" r="1.2" fill="#052220"/>
+          </svg>
+        </div>
+        <h1>Tru<span>Value</span></h1>
+      </div>
+    </div>
+    <p class="tag">Get your trade-in value in minutes. Walk your car with a few guided prompts — no dealer visit needed.</p>
+    <div class="pill-row">
+      <div class="pill">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        2-minute walkthrough
+      </div>
+      <div class="pill">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        AI-scored condition
+      </div>
+    </div>
+    <button class="card-btn primary" onclick="show('s-info')">
+      <div class="ic">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#052220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="flex:1">
+        <h3>Start My Trade-In</h3>
+        <p>Guided walkthrough + instant offer</p>
+      </div>
+      <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="dealer-link"><a href="#" onclick="return false">I'm a dealer &mdash; view submitted appraisals</a></div>
+  </section>
+
+  <!-- ─── 2. VEHICLE INFO ─── -->
+  <section class="screen setup" id="s-info">
+    <div class="info-hdr">
+      <button class="nav-back" onclick="show('s-landing')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="h">Tell us about your vehicle</div>
+    </div>
+    <p class="sub">We'll use this to pull market comps for your appraisal.</p>
+    <div class="field">
+      <label>License plate or VIN</label>
+      <input id="in-plate" type="text" placeholder="e.g. 7ABC123" oninput="updateVehicle('plate',this.value)">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Year</label>
+        <input id="in-year" type="text" placeholder="2021" oninput="updateVehicle('year',this.value)">
+      </div>
+      <div class="field">
+        <label>Make</label>
+        <input id="in-make" type="text" placeholder="Honda" oninput="updateVehicle('make',this.value);updateGoBtn()">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Model</label>
+        <input id="in-model" type="text" placeholder="Accord" oninput="updateVehicle('model',this.value);updateGoBtn()">
+      </div>
+      <div class="field">
+        <label>Mileage</label>
+        <input id="in-mileage" type="text" placeholder="42,000" oninput="updateVehicle('mileage',this.value)">
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button id="btn-go" class="go-btn" disabled onclick="startCapture()">
+      Begin Guided Walkthrough
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#052220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </section>
+
+  <!-- ─── 3. GUIDED CAPTURE ─── -->
+  <section class="screen" id="s-capture" style="background:var(--bg)">
+    <div class="topbar">
+      <button class="nav-back" onclick="prevSection()">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="dot"></div>
+      <div class="live">GUIDED</div>
+      <div class="section-counter" id="section-counter">SECTION 1/6</div>
+    </div>
+    <div class="stage">
+      <div class="novid">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l1-3h16l1 3M3 9v9a1 1 0 0 0 1 1h1M3 9h18M21 9v9a1 1 0 0 1-1 1h-1M5 19h14M7 13h.01M17 13h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span>Live camera preview</span>
+      </div>
+      <div class="capture-flash" id="capture-flash">
+        <div class="capture-check">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#052220" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div class="prompt-ov">
+        <div class="sec-head">
+          <div class="sec-idx" id="sec-chip">1/6</div>
+          <div class="sec-name" id="sec-name">Front</div>
+        </div>
+        <div class="instr" id="sec-instr">Stand centered, capture the full front bumper and grille.</div>
+      </div>
+    </div>
+    <div class="rail" id="tv-rail"></div>
+    <div class="controls">
+      <button class="shutter" id="btn-shutter" onclick="doCapture()"></button>
+    </div>
+  </section>
+
+  <!-- ─── 4. PROCESSING ─── -->
+  <section class="screen tv-processing" id="s-processing">
+    <div class="tv-spinner"></div>
+    <div class="tv-proc-heading">
+      <h2 id="proc-veh-label">Valuating your vehicle</h2>
+      <p>TruAI is scoring your walkthrough</p>
+    </div>
+    <div class="tv-checklist" id="tv-checklist"></div>
+  </section>
+
+  <!-- ─── 5. RESULT ─── -->
+  <section class="screen summary" id="s-result">
+    <div class="sum-hero">
+      <h2>Your Instant Offer</h2>
+      <p id="result-veh-sub">2021 Honda Accord &middot; 42,000 mi</p>
+    </div>
+    <div class="offer-card">
+      <div class="offer-label">Trade-in value</div>
+      <div class="offer-amt" id="offer-amt">R 318,500</div>
+      <div class="offer-sub">Valid 7 days &middot; market range R 298,000 – R 338,000</div>
+    </div>
+    <div class="sum-stats">
+      <div class="stat"><div class="n cy">A−</div><div class="l">Exterior</div></div>
+      <div class="stat"><div class="n em">B+</div><div class="l">Interior</div></div>
+      <div class="stat"><div class="n em">A</div><div class="l">Mechanical</div></div>
+      <div class="stat"><div class="n cy">+R 7,200</div><div class="l">Mileage adj.</div></div>
+    </div>
+    <button class="go-btn" onclick="alert('Schedule drop-off — connect to CRM/booking flow here.')">
+      Accept &amp; Schedule Drop-off
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#052220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="b-act" onclick="alert('Second opinion flow — connect to alternate valuation source here.')">
+      Get a Second Opinion
+    </button>
+    <p class="handoff-note" id="handoff-note">A copy of this appraisal has been sent to your dealer's TruCRM.</p>
+    <div class="restart"><button onclick="restart()">Start Over</button></div>
+  </section>
+
+</div><!-- /.app -->
+</div><!-- /.device -->
+
+<script>
+// ── Sections & checks ──
+const SECTIONS = [
+  {name:'Front',               instr:'Stand centered, capture the full front bumper and grille.'},
+  {name:'Driver Side',         instr:'Walk the driver side, hold steady for the full profile.'},
+  {name:'Passenger Side',      instr:'Walk the passenger side, capture the full profile.'},
+  {name:'Rear',                instr:'Center on the rear bumper and taillights.'},
+  {name:'Wheels & Tires',      instr:'Get close on each wheel — tread depth matters.'},
+  {name:'Interior & Odometer', instr:'Show the dash, seats, and a clear shot of the odometer.'}
+];
+const CHECKS = [
+  'Decoding VIN',
+  'Analyzing 6 walkthrough captures',
+  'Pulling live market comps',
+  'Scoring condition grade',
+  'Finalizing offer'
+];
+
+// ── State ──
+let vehicle = {plate:'', year:'', make:'', model:'', mileage:''};
+let section = 0;
+let capTimer = null;
+let procTimer = null;
+
+// ── Screen routing ──
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Vehicle info ──
+function updateVehicle(key, val) { vehicle[key] = val; }
+function updateGoBtn() {
+  document.getElementById('btn-go').disabled = !(vehicle.make.trim() && vehicle.model.trim());
+}
+
+// ── Capture ──
+function startCapture() {
+  section = 0;
+  renderSection();
+  show('s-capture');
+}
+
+function renderSection() {
+  const s = SECTIONS[section];
+  document.getElementById('section-counter').textContent = 'SECTION ' + (section+1) + '/6';
+  document.getElementById('sec-chip').textContent = (section+1) + '/6';
+  document.getElementById('sec-name').textContent = s.name;
+  document.getElementById('sec-instr').textContent = s.instr;
+  renderRail();
+}
+
+function renderRail() {
+  const rail = document.getElementById('tv-rail');
+  rail.innerHTML = SECTIONS.map((_,i) => {
+    let bg, glow;
+    if      (i < section)  { bg='#10B981'; glow='none'; }
+    else if (i === section) { bg='#4FE3DC'; glow='0 0 8px rgba(79,227,220,.8)'; }
+    else                    { bg='#2A2A2A'; glow='none'; }
+    return `<div class="seg" style="background:${bg};box-shadow:${glow}"></div>`;
+  }).join('');
+}
+
+function prevSection() {
+  if (section > 0) { section--; renderSection(); }
+  else show('s-info');
+}
+
+function doCapture() {
+  clearTimeout(capTimer);
+  const flash = document.getElementById('capture-flash');
+  flash.classList.add('show');
+  capTimer = setTimeout(() => {
+    flash.classList.remove('show');
+    if (section < SECTIONS.length - 1) {
+      section++;
+      renderSection();
+    } else {
+      startProcessing();
+    }
+  }, 550);
+}
+
+// ── Processing ──
+function startProcessing() {
+  const vLabel = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'your vehicle';
+  document.getElementById('proc-veh-label').textContent = 'Valuating your ' + vLabel;
+
+  const cl = document.getElementById('tv-checklist');
+  cl.innerHTML = CHECKS.map((label, i) =>
+    `<div class="tv-check-row" id="check-${i}" style="opacity:.35">
+       <div class="tv-check-dot" id="dot-${i}">
+         <svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#052220" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+       </div>
+       <div class="tv-check-label">${label}</div>
+     </div>`
+  ).join('');
+
+  show('s-processing');
+
+  let step = -1;
+  clearInterval(procTimer);
+  procTimer = setInterval(() => {
+    step++;
+    CHECKS.forEach((_, i) => {
+      const row = document.getElementById('check-' + i);
+      const dot = document.getElementById('dot-' + i);
+      row.style.opacity = i <= step + 1 ? '1' : '.35';
+      if (i <= step) dot.classList.add('done');
+    });
+    if (step >= CHECKS.length - 1) {
+      clearInterval(procTimer);
+      setTimeout(showResult, 500);
+    }
+  }, 750);
+}
+
+// ── Result ──
+function showResult() {
+  const vLabel = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' ') || 'your vehicle';
+  const mi = vehicle.mileage ? vehicle.mileage + ' km' : '';
+  document.getElementById('result-veh-sub').textContent = vLabel + (mi ? ' · ' + mi : '');
+  show('s-result');
+}
+
+// ── Restart ──
+function restart() {
+  clearTimeout(capTimer);
+  clearInterval(procTimer);
+  vehicle = {plate:'', year:'', make:'', model:'', mileage:''};
+  section = 0;
+  ['plate','year','make','model','mileage'].forEach(k => {
+    const el = document.getElementById('in-' + k);
+    if (el) el.value = '';
+  });
+  document.getElementById('btn-go').disabled = true;
+  show('s-landing');
+}
+
+// ── Cursor-tracking glow (matches tru-premium.css stat handler) ──
+document.addEventListener('mousemove', e => {
+  document.querySelectorAll('.stat').forEach(el => {
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+});
+
+// ── Clock ──
+(function tick() {
+  const n = new Date();
+  const h = n.getHours() % 12 || 12;
+  const m = String(n.getMinutes()).padStart(2,'0');
+  const el = document.getElementById('dev-clock');
+  if (el) el.textContent = h + ':' + m;
+  setTimeout(tick, 10000);
+})();
+</script>
+</body>
+</html>
