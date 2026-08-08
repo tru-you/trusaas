@@ -320,7 +320,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               </button>
             )}
           </div>
-          <div className="md:hidden absolute left-4 bottom-3 z-20 min-w-0 pr-16">
+          <div className="md:hidden absolute left-4 bottom-16 z-20 min-w-0 pr-16">
             <div className="text-[20px] font-semibold tracking-[-0.015em] text-[color:var(--white)] leading-tight truncate">
               {vehicle.year} {vehicle.make} {vehicle.model}
             </div>
@@ -328,7 +328,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               {vehicle.trim || "Standard"} · <span className="font-mono">{vehicle.stockNumber}</span>
             </div>
           </div>
-          <div className="md:hidden absolute right-4 bottom-3 z-20">
+          <div className="md:hidden absolute right-4 bottom-16 z-20">
             <span className="text-[11px] font-mono px-2 py-0.5 rounded-full text-[color:var(--white)]" style={{ background: "rgba(6,8,13,0.6)" }}>
               {imagesList.length ? safeIndex + 1 : 0}/{imagesList.length}
             </span>
@@ -383,7 +383,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           {/* Thumbnails list. The add-photos control lives here now, as a
               dashed slot next to the photos it changes — it left the specs
               column with the "Media Sync Station" section. */}
-          <div className="flex gap-2 overflow-x-auto py-2 border-t border-white/5 mt-10 md:mt-2 scrollbar-none">
+          <div className="flex gap-2 overflow-x-auto py-2 border-t border-white/5 mt-2 scrollbar-none">
             {imagesList.map((img, idx) => (
               <button
                 key={idx}
