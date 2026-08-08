@@ -12,6 +12,9 @@ import {
 import { Vehicle, DmsExportResult } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import DiscScanner from './DiscScanner';
+import KredoSettings from './KredoSettings';
+import CarTrustBadge from './CarTrustBadge';
+import { kredoLookup, type CarTrustResult } from '../lib/kredo';
 import type { DiscScan } from '../lib/saDisc';
 import InstallAppButton from './InstallAppButton';
 import { computeInspectionReadiness } from '../lib/readiness';
@@ -233,6 +236,31 @@ export default function InventoryList({
      inspection, and a wrong VIN is on the report for good. */
   const [scanningDisc, setScanningDisc] = React.useState(false);
   const [scanNote, setScanNote] = React.useState<string | null>(null);
+  const [carTrustCache, setCarTrustCache] = React.useState<Record<string, CarTrustResult>>({});
+  const [carTrustLoading, setCarTrustLoading] = React.useState<string | null>(null);
+  const [formCarTrust, setFormCarTrust] = React.useState<CarTrustResult | null>(null);
+  const [formCarTrustLoading, setFormCarTrustLoading] = React.useState(false);
+
+  const runCarTrustLookup = React.useCallback(async (vinValue: string, vehicleId?: string) => {
+    const v = vinValue.trim().toUpperCase();
+    if (v.length < 11 || !user) return;
+    if (vehicleId) {
+      if (carTrustCache[v]) return;
+      setCarTrustLoading(vehicleId);
+    } else {
+      setFormCarTrustLoading(true);
+    }
+    try {
+      const token = await user.getIdToken();
+      const result = await kredoLookup(token, v);
+      if (result) {
+        setCarTrustCache(prev => ({ ...prev, [v]: result }));
+        if (!vehicleId) setFormCarTrust(result);
+      }
+    } catch { /* non-blocking */ }
+    if (vehicleId) setCarTrustLoading(null);
+    else setFormCarTrustLoading(false);
+  }, [user, carTrustCache]);
 
   const applyDiscScan = (d: DiscScan) => {
     setScanningDisc(false);
@@ -335,6 +363,7 @@ export default function InventoryList({
     setTransmission('Manual');
     setFuelType('Petrol');
     setStatus('In-Progress');
+    setFormCarTrust(null);
     setShowAddForm(false);
   };
 
@@ -722,8 +751,10 @@ export default function InventoryList({
                     placeholder="17 characters"
                     value={vin}
                     onChange={(e) => setVin(e.target.value.toUpperCase())}
+                    onBlur={() => { if (vin.trim().length >= 11) runCarTrustLookup(vin); }}
                     className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                   />
+                  <CarTrustBadge result={formCarTrust} loading={formCarTrustLoading} compact />
                 </div>
               </div>
             )}
@@ -953,6 +984,13 @@ export default function InventoryList({
                           >
                             {readiness.label}
                           </span>
+                          {vehicle.vin && (
+                            <CarTrustBadge
+                              result={carTrustCache[vehicle.vin.toUpperCase()]}
+                              loading={carTrustLoading === vehicle.id}
+                              compact
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1371,6 +1409,9 @@ export default function InventoryList({
                 </p>
               </div>
             </div>
+
+            {/* Kredo CarTrust */}
+            <KredoSettings />
 
             {/* Data Management */}
             <div className="pt-2 space-y-2">

@@ -1560,6 +1560,120 @@ app.get('/api/export/dms/config', authenticate, async (_req: any, res) => {
   });
 });
 
+// ==================== KREDO CARTRUST ====================
+
+const KREDO_CONFIG_PATH = path.join(process.cwd(), 'data', 'kredo-config.json');
+
+function readKredoConfig(): Record<string, { sandboxKey?: string; productionKey?: string; connectedAt?: string }> {
+  try {
+    return JSON.parse(fs.readFileSync(KREDO_CONFIG_PATH, 'utf-8'));
+  } catch { return {}; }
+}
+
+function writeKredoConfig(cfg: Record<string, any>) {
+  const dir = path.dirname(KREDO_CONFIG_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(KREDO_CONFIG_PATH, JSON.stringify(cfg, null, 2));
+}
+
+app.get('/api/kredo/status', authenticate, async (req: any, res) => {
+  const slug = req.user?.dealerSlug || 'default';
+  const cfg = readKredoConfig();
+  const entry = cfg[slug];
+  res.json({
+    connected: !!(entry?.sandboxKey || entry?.productionKey),
+    dealerSlug: slug,
+    hasSandboxKey: !!entry?.sandboxKey,
+    hasProductionKey: !!entry?.productionKey,
+    lastCheckedAt: entry?.connectedAt || null,
+  });
+});
+
+app.post('/api/kredo/connect', authenticate, async (req: any, res) => {
+  const slug = req.user?.dealerSlug || 'default';
+  const { sandboxKey, productionKey } = req.body || {};
+  if (!sandboxKey && !productionKey) {
+    return res.status(400).json({ ok: false, error: 'Provide at least one API key.' });
+  }
+  const cfg = readKredoConfig();
+  cfg[slug] = {
+    ...(sandboxKey ? { sandboxKey } : {}),
+    ...(productionKey ? { productionKey } : {}),
+    connectedAt: new Date().toISOString(),
+  };
+  writeKredoConfig(cfg);
+  console.log(`[kredo] dealer ${slug} connected CarTrust`);
+  res.json({ ok: true });
+});
+
+app.post('/api/kredo/disconnect', authenticate, async (req: any, res) => {
+  const slug = req.user?.dealerSlug || 'default';
+  const cfg = readKredoConfig();
+  delete cfg[slug];
+  writeKredoConfig(cfg);
+  console.log(`[kredo] dealer ${slug} disconnected CarTrust`);
+  res.json({ ok: true });
+});
+
+app.post('/api/kredo/lookup', authenticate, async (req: any, res) => {
+  const slug = req.user?.dealerSlug || 'default';
+  const vin = String(req.body?.vin || '').trim().toUpperCase();
+  if (!vin || vin.length < 11) {
+    return res.status(400).json({ error: 'Invalid VIN' });
+  }
+  const cfg = readKredoConfig();
+  const entry = cfg[slug];
+  if (!entry?.sandboxKey && !entry?.productionKey) {
+    return res.status(503).json({ error: 'Kredo not connected for this dealer.' });
+  }
+
+  try {
+    console.log(`[kredo] CarTrust lookup for VIN=${vin} dealer=${slug} (STUB)`);
+    const stubResult = {
+      vin,
+      stolen: false,
+      writtenOff: false,
+      financeEncumbered: false,
+      checkedAt: new Date().toISOString(),
+      raw: { stub: true, note: 'Replace with real Kredo API response when docs are available' },
+    };
+    res.json(stubResult);
+  } catch (err: any) {
+    console.error(`[kredo] lookup failed for VIN=${vin}:`, err?.message || err);
+    res.status(502).json({ error: 'CarTrust lookup failed. Check your API key.' });
+  }
+});
+
+app.post('/api/kredo/valuation', authenticate, async (req: any, res) => {
+  const slug = req.user?.dealerSlug || 'default';
+  const vin = String(req.body?.vin || '').trim().toUpperCase();
+  if (!vin || vin.length < 11) {
+    return res.status(400).json({ error: 'Invalid VIN' });
+  }
+  const cfg = readKredoConfig();
+  const entry = cfg[slug];
+  if (!entry?.sandboxKey && !entry?.productionKey) {
+    return res.status(503).json({ error: 'Kredo not connected for this dealer.' });
+  }
+
+  // TODO(kredo-docs): Replace with real Kredo CarValue API call.
+  try {
+    console.log(`[kredo] CarValue lookup for VIN=${vin} dealer=${slug} (STUB)`);
+    const stubResult = {
+      vin,
+      tradeValue: null,
+      retailValue: null,
+      marketValue: null,
+      checkedAt: new Date().toISOString(),
+      raw: { stub: true, note: 'Replace with real Kredo CarValue response when docs are available' },
+    };
+    res.json(stubResult);
+  } catch (err: any) {
+    console.error(`[kredo] valuation failed for VIN=${vin}:`, err?.message || err);
+    res.status(502).json({ error: 'CarValue lookup failed. Check your API key.' });
+  }
+});
+
 // ==================== VITE & STATIC FILES ====================
 
 async function startServer() {
