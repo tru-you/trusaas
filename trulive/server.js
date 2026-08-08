@@ -7,9 +7,9 @@ import { randomBytes } from 'node:crypto';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ensureAuthStore, verifyToken, loginWithCode, requireAuth } from '../packages/tru-shared/auth.js';
-import { saveRoom, loadRoom, loadAllRooms, cleanupExpired, listDealerRooms } from '../packages/tru-shared/persist.js';
-import { getIceServers, rateLimit } from '../packages/tru-shared/config.js';
+import { ensureAuthStore, verifyToken, loginWithCode, requireAuth } from './lib/auth.js';
+import { saveRoom, loadRoom, loadAllRooms, cleanupExpired, listDealerRooms } from './lib/persist.js';
+import { getIceServers, rateLimit } from './lib/config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
