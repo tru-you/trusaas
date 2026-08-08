@@ -1,7 +1,7 @@
 {
-  "name": "truview",
+  "name": "trulive",
   "version": "1.0.0",
-  "description": "TruView — live, guided vehicle walkthroughs over a secure link. A TruSaaS module.",
+  "description": "TruLive — live, guided vehicle walkthroughs over a secure link. A TruSaaS module.",
   "type": "module",
   "main": "server.js",
   "scripts": {

@@ -261,8 +261,17 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <div class="device-status"><span id="dev-clock">9:41</span><span class="sig">5G&nbsp;·&nbsp;<b>TruSaaS</b><span class="bat"></span></span></div>
 <div class="app" id="app">
 
+  <!-- LOGIN (dealer) -->
+  <section class="screen landing" id="s-login">
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
+    <p class="tag">Enter your dealership access code to continue.</p>
+    <div class="field"><input id="in-code" type="password" value="" placeholder="Access code" style="font-family:'JetBrains Mono',monospace;font-size:15px;text-align:center;letter-spacing:.2em" /></div>
+    <button class="go-btn" onclick="doLogin()" style="width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Sign in</button>
+    <div class="secured" style="margin-top:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Your code is never stored in the browser</div>
+  </section>
+
   <!-- LANDING (dealer) -->
-  <section class="screen active landing" id="s-landing">
+  <section class="screen landing" id="s-landing">
     <div class="brand"><img class="lockup" src="/logo.png" alt="TruTrade" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><h1>Tru<span>Trade</span></h1></div></div>
     <p class="tag">Live video trade-in appraisals. The customer shows you their car, you ask the questions, and issue a trade price — subject to viewing.</p>
     <div class="pill-row">
@@ -455,7 +464,8 @@ const QUESTIONS=[
 ];
 
 let role='dealer',roomId=null,cur=0,timerInt=null,seconds=0,stream=null,facing='environment';
-let snaps=[],defects=[],answers=[],ws=null,pc=null,vehName='',vehReg='',custName='';
+let snaps=[],defects=[],answers=[],ws=null,pc=null,peerConnected=false,vehName='',vehReg='',custName='';
+let authToken=localStorage.getItem('trutrade_token')||'';
 let writeupText='',tp=0,validDays=7,conditions='',rpt={dur:'',def:0,q:0};
 
 const m=location.pathname.match(/^\/a\/([a-f0-9]+)/);
@@ -463,6 +473,20 @@ if(m){roomId=m[1];role='customer';initCustomer();}
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function toast(msg){const t=document.getElementById('toast');document.getElementById('toast-txt').textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
+
+// Auth
+async function doLogin(){
+  const c=document.getElementById('in-code').value.trim();
+  if(!c)return toast('Enter your access code');
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({code:c})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'Invalid code');return;}
+    authToken=d.token;localStorage.setItem('trutrade_token',authToken);
+    toast('Signed in');show('s-landing');
+  }catch(e){toast('Sign-in failed — check connection');}
+}
+if(role==='dealer'){show(authToken?'s-landing':'s-login');}
 
 async function initCustomer(){
   show('s-join');
@@ -478,7 +502,8 @@ async function createAppraisal(){
   vehName=document.getElementById('in-veh').value||'Vehicle';
   vehReg=document.getElementById('in-reg').value||'';
   custName=document.getElementById('in-cust').value||'';
-  const r=await fetch('/api/appraisal',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({veh:vehName,reg:vehReg,customer:custName})});
+  const headers={'content-type':'application/json'}; if(authToken)headers.authorization='Bearer '+authToken;
+  const r=await fetch('/api/appraisal',{method:'POST',headers,body:JSON.stringify({veh:vehName,reg:vehReg,customer:custName})});
   const d=await r.json();roomId=d.id;
   document.getElementById('link-url').textContent=location.origin+d.url;
   document.getElementById('gen-btn').style.display='none';
@@ -519,8 +544,10 @@ function connect(){
 const sig=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o));};
 function setPeer(on){const c=document.getElementById('conn');c.classList.toggle('on',on);document.getElementById('conn-txt').textContent=on?'Connected':'Connecting…';document.getElementById('waiting').style.display=on?'none':'flex';}
 
-function newPC(){
-  pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});
+async function newPC(){
+  let servers=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+  try{const r=await fetch('/api/ice-servers');const d=await r.json();if(d.iceServers&&d.iceServers.length)servers=d.iceServers;}catch(e){}
+  pc=new RTCPeerConnection({iceServers:servers});
   if(stream)stream.getTracks().forEach(t=>pc.addTrack(t,stream));
   pc.onicecandidate=e=>{if(e.candidate)sig({type:'ice',candidate:e.candidate});};
   pc.ontrack=e=>{
@@ -666,6 +693,12 @@ function issueOffer(){
   tp=Number(raw);
   validDays=Number(document.getElementById('in-valid').value)||7;
   conditions=document.getElementById('in-cond').value.trim();
+
+  // Persist appraisal
+  if(roomId){
+    fetch('/api/appraisal/'+roomId+'/complete',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({tradePrice:tp,validityDays:validDays,defects,answers,snaps,sections:SECTIONS.slice(0,cur+1).map(s=>s.name),duration:rpt.dur})}).catch(()=>{});
+  }
   document.getElementById('sum-veh').textContent=vehName+(vehReg?' · '+vehReg:'');
   document.getElementById('tp-amt').textContent='R '+tp.toLocaleString('en-ZA');
   // defects

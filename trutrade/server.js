@@ -8,56 +8,107 @@ import { randomBytes } from 'node:crypto';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ensureAuthStore, verifyToken, loginWithCode, requireAuth } from '../packages/tru-shared/auth.js';
+import { saveRoom, loadRoom, loadAllRooms, cleanupExpired, listDealerRooms } from '../packages/tru-shared/persist.js';
+import { getIceServers, rateLimit } from '../packages/tru-shared/config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const app = express();
 app.use(express.json({ limit: '2mb' }));
+app.use(rateLimit({ windowMs: 60_000, max: 30 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
-const LINK_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const LINK_TTL_MS = 24 * 60 * 60 * 1000;
+const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY || '';
 
-// apprId -> { veh, customer, created, joined, sockets:{dealer,customer} }
+const apprId = () => randomBytes(6).toString('hex');
+
+// In-memory rooms (live sockets). Persisted to disk for restart survival.
 const rooms = new Map();
-const newId = () => randomBytes(6).toString('hex');
 
-// --- Health (Render + suite monitoring convention) ---
+// Restore persisted rooms on boot
+for (const r of loadAllRooms(DATA_DIR)) {
+  r.sockets = {};
+  r.joined = false;
+  rooms.set(r.id, r);
+}
+console.log(`[trutrade] Restored ${rooms.size} room(s) from disk.`);
+
+// --- Auth middleware ---
+app.use(requireAuth(DATA_DIR));
+
+// --- Health ---
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, product: 'trutrade', uptimeSec: Math.round(process.uptime()), ts: new Date().toISOString() });
+  res.json({
+    ok: true, product: 'trutrade',
+    deepseek: !!DEEPSEEK_KEY,
+    rooms: rooms.size, uptimeSec: Math.round(process.uptime()),
+    ts: new Date().toISOString(),
+  });
 });
 
-// --- Dealer opens an appraisal, gets a single-use customer link ---
+// --- Login ---
+app.post('/api/auth/login', (req, res) => {
+  const result = loginWithCode(req.body?.code, DATA_DIR);
+  if (!result) return res.status(401).json({ error: 'Invalid code.' });
+  res.json(result);
+});
+
+// --- Dealer opens an appraisal ---
 app.post('/api/appraisal', (req, res) => {
-  const { veh = 'Vehicle', customer = '', reg = '' } = req.body || {};
-  const id = newId();
-  rooms.set(id, { veh, customer, reg, created: Date.now(), joined: false, sockets: {} });
+  const { veh = 'Vehicle', customer = '', reg = '', mileage = '' } = req.body || {};
+  const id = apprId();
+  const room = {
+    id, veh, customer, reg, mileage,
+    dealerId: req.auth?.sub || null,
+    dealerName: req.auth?.label || null,
+    created: Date.now(), joined: false, sockets: {},
+    defects: [], answers: [], snaps: [],
+    sectionsCompleted: 0, tradePrice: null, status: 'live',
+  };
+  rooms.set(id, room);
+  saveRoom(DATA_DIR, id, room);
   res.json({ id, url: `/a/${id}` });
+});
+
+// --- Dealer session history ---
+app.get('/api/sessions', (req, res) => {
+  const dealerId = req.auth?.sub;
+  const list = dealerId
+    ? listDealerRooms(DATA_DIR, dealerId)
+    : loadAllRooms(DATA_DIR);
+  res.json(list.map(r => ({
+    id: r.id, veh: r.veh, customer: r.customer, reg: r.reg,
+    created: r.created, status: r.status || 'unknown',
+    tradePrice: r.tradePrice, _savedAt: r._savedAt,
+  })));
 });
 
 // --- Customer link ---
 app.get('/a/:id', (req, res) => {
-  const room = rooms.get(req.params.id);
+  const room = loadRoom(DATA_DIR, req.params.id);
   if (!room || Date.now() - room.created > LINK_TTL_MS) {
-    rooms.delete(req.params.id);
     return res.status(410).sendFile(path.join(__dirname, 'public', 'expired.html'));
   }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/api/appraisal/:id', (req, res) => {
-  const room = rooms.get(req.params.id);
-  if (!room || Date.now() - room.created > LINK_TTL_MS) return res.status(410).json({ error: 'expired' });
+  const room = loadRoom(DATA_DIR, req.params.id);
+  if (!room || Date.now() - room.created > LINK_TTL_MS) {
+    return res.status(410).json({ error: 'expired' });
+  }
   res.json({ veh: room.veh, customer: room.customer, reg: room.reg });
 });
 
-// --- AI appraisal write-up ---
-// Summarises CONDITION and the dealer's answers. It must never suggest a price:
-// the trade price is the dealer's commercial decision and their liability.
+// --- AI write-up (DeepSeek) ---
 app.post('/api/writeup', async (req, res) => {
   const data = req.body || {};
   try {
-    if (process.env.ANTHROPIC_API_KEY) {
-      return res.json({ writeup: await claudeWriteup(data), source: 'ai' });
+    if (DEEPSEEK_KEY) {
+      return res.json({ writeup: await aiWriteup(data), source: 'deepseek' });
     }
   } catch (e) {
     console.error('AI write-up failed, using local:', e.message);
@@ -65,8 +116,7 @@ app.post('/api/writeup', async (req, res) => {
   res.json({ writeup: localWriteup(data), source: 'local' });
 });
 
-async function claudeWriteup(d) {
-  const model = process.env.TRUTRADE_MODEL || 'claude-sonnet-5';
+async function aiWriteup(d) {
   const prompt = `You are the appraisal assistant for TruTrade, a live video trade-in appraisal tool used by South African car dealers.
 A dealer has just appraised a customer's vehicle over a live video call. Write the condition write-up for the offer document.
 
@@ -84,18 +134,18 @@ Write 2 short parts, plain text, no markdown headers, no bulleted list:
 
 CRITICAL: do NOT suggest, estimate or imply any monetary value, trade price or valuation. The dealer sets the price separately. Do not use words like "worth", "value", "estimate" or any figure in Rand. Describe condition only. Note explicitly that the assessment is based on a video call and is subject to physical viewing.`;
 
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
+  const r = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({ model, max_tokens: 700, messages: [{ role: 'user', content: prompt }] })
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEEPSEEK_KEY}` },
+    body: JSON.stringify({
+      model: 'deepseek-v4-flash',
+      messages: [{ role: 'user', content: prompt }],
+      stream: false, max_tokens: 700,
+    }),
   });
-  if (!r.ok) throw new Error('anthropic ' + r.status);
+  if (!r.ok) throw new Error('deepseek ' + r.status);
   const j = await r.json();
-  return j.content?.[0]?.text?.trim() || localWriteup(d);
+  return j.choices?.[0]?.message?.content?.trim() || localWriteup(d);
 }
 
 function localWriteup(d) {
@@ -117,6 +167,26 @@ function localWriteup(d) {
   return `${impression}\n\n${seen}${dl}${al}This assessment is based on a video call only and is subject to physical viewing and verification.`;
 }
 
+// --- Save completed appraisal ---
+app.post('/api/appraisal/:id/complete', (req, res) => {
+  const room = rooms.get(req.params.id);
+  if (!room) return res.status(404).json({ error: 'Not found' });
+
+  const { tradePrice, validityDays, defects, answers, snaps, sections, duration } = req.body || {};
+  room.tradePrice = tradePrice;
+  room.validityDays = validityDays || 7;
+  room.defects = defects || [];
+  room.answers = answers || [];
+  room.snaps = snaps || [];
+  room.sections = sections || [];
+  room.duration = duration;
+  room.status = 'completed';
+  room.completedAt = Date.now();
+  saveRoom(DATA_DIR, room.id, room);
+
+  res.json({ ok: true, status: 'completed' });
+});
+
 // --- WebSocket signalling ---
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
@@ -129,8 +199,13 @@ wss.on('connection', (ws) => {
     let msg; try { msg = JSON.parse(raw); } catch { return; }
 
     if (msg.type === 'join') {
-      const room = rooms.get(msg.roomId);
+      const room = rooms.get(msg.roomId) || loadRoom(DATA_DIR, msg.roomId);
       if (!room) return send(ws, { type: 'error', reason: 'expired' });
+      if (!rooms.has(msg.roomId)) {
+        room.sockets = {};
+        room.joined = false;
+        rooms.set(msg.roomId, room);
+      }
       if (msg.role === 'customer' && room.joined && room.sockets.customer?.readyState === 1) {
         return send(ws, { type: 'error', reason: 'in-use' });
       }
@@ -147,9 +222,11 @@ wss.on('connection', (ws) => {
     if (!room) return;
     const peer = ws.meta.role === 'dealer' ? room.sockets.customer : room.sockets.dealer;
 
-    // Relay signalling + synced prompts. 'defect' and 'answer' are dealer-private
-    // findings and are deliberately NOT relayed to the customer.
+    // Relay signalling + synced prompts. 'defect' and 'answer' are dealer-private.
     if (['offer', 'answer-sdp', 'ice', 'state', 'snapshot', 'end'].includes(msg.type)) send(peer, msg);
+
+    // Persist after key events
+    if (['state', 'snapshot', 'end'].includes(msg.type)) saveRoom(DATA_DIR, room.id, room);
   });
 
   ws.on('close', () => {
@@ -160,9 +237,18 @@ wss.on('connection', (ws) => {
   });
 });
 
+// Periodic cleanup
 setInterval(() => {
+  cleanupExpired(DATA_DIR);
   const now = Date.now();
-  for (const [id, r] of rooms) if (now - r.created > LINK_TTL_MS) rooms.delete(id);
+  for (const [id, r] of rooms) {
+    if (now - r.created > LINK_TTL_MS) rooms.delete(id);
+  }
 }, 60 * 60 * 1000);
+
+// Expose TURN servers to the client
+app.get('/api/ice-servers', (_req, res) => {
+  res.json({ iceServers: getIceServers() });
+});
 
 server.listen(PORT, () => console.log(`TruTrade on :${PORT}`));

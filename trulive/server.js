@@ -1,4 +1,4 @@
-// TruLive — signalling + session server
+// TruLive — live guided vehicle walkthrough: signalling + session server.
 // Serves the app, mints single-use walkthrough links, relays WebRTC signalling
 // and synced guided-walkthrough state between the dealer and the buyer.
 import express from 'express';
@@ -7,69 +7,115 @@ import { randomBytes } from 'node:crypto';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ensureAuthStore, verifyToken, loginWithCode, requireAuth } from '../packages/tru-shared/auth.js';
+import { saveRoom, loadRoom, loadAllRooms, cleanupExpired, listDealerRooms } from '../packages/tru-shared/persist.js';
+import { getIceServers, rateLimit } from '../packages/tru-shared/config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
+app.use(rateLimit({ windowMs: 60_000, max: 30 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
-const LINK_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-
-// roomId -> { veh, price, buyer, created, buyerJoined, sockets:{dealer,buyer} }
-const rooms = new Map();
+const LINK_TTL_MS = 24 * 60 * 60 * 1000;
+const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY || '';
 
 const newId = () => randomBytes(6).toString('hex');
 
-// --- Health check (Render + suite monitoring convention) ---
+// In-memory rooms (live sockets). Persisted to disk for restart survival.
+const rooms = new Map();
+
+for (const r of loadAllRooms(DATA_DIR)) {
+  r.sockets = {};
+  r.buyerJoined = false;
+  rooms.set(r.id, r);
+}
+console.log(`[trulive] Restored ${rooms.size} room(s) from disk.`);
+
+// --- Auth middleware ---
+app.use(requireAuth(DATA_DIR));
+
+// --- Health ---
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, product: 'trulive', uptimeSec: Math.round(process.uptime()), ts: new Date().toISOString() });
+  res.json({
+    ok: true, product: 'trulive',
+    deepseek: !!DEEPSEEK_KEY,
+    rooms: rooms.size, uptimeSec: Math.round(process.uptime()),
+    ts: new Date().toISOString(),
+  });
 });
 
-// --- Dealer creates a session, gets a single-use buyer link ---
+// --- Login ---
+app.post('/api/auth/login', (req, res) => {
+  const result = loginWithCode(req.body?.code, DATA_DIR);
+  if (!result) return res.status(401).json({ error: 'Invalid code.' });
+  res.json(result);
+});
+
+// --- Dealer creates a session ---
 app.post('/api/session', (req, res) => {
   const { veh = 'Vehicle', price = '', buyer = '' } = req.body || {};
   const id = newId();
-  rooms.set(id, { veh, price, buyer, created: Date.now(), buyerJoined: false, sockets: {} });
+  const room = {
+    id, veh, price, buyer,
+    dealerId: req.auth?.sub || null,
+    dealerName: req.auth?.label || null,
+    created: Date.now(), buyerJoined: false, sockets: {},
+    checkState: null, sectionsCovered: 0, snaps: [], flags: [],
+    status: 'live',
+  };
+  rooms.set(id, room);
+  saveRoom(DATA_DIR, id, room);
   res.json({ id, url: `/j/${id}` });
 });
 
-// --- Buyer link: validate then serve the app (role decided client-side by path) ---
+// --- Dealer session history ---
+app.get('/api/sessions', (req, res) => {
+  const dealerId = req.auth?.sub;
+  const list = dealerId
+    ? listDealerRooms(DATA_DIR, dealerId)
+    : loadAllRooms(DATA_DIR);
+  res.json(list.map(r => ({
+    id: r.id, veh: r.veh, price: r.price, buyer: r.buyer,
+    created: r.created, status: r.status || 'unknown', _savedAt: r._savedAt,
+  })));
+});
+
+// --- Buyer link ---
 app.get('/j/:id', (req, res) => {
-  const room = rooms.get(req.params.id);
-  if (!room) return res.status(410).sendFile(path.join(__dirname, 'public', 'expired.html'));
-  if (Date.now() - room.created > LINK_TTL_MS) {
-    rooms.delete(req.params.id);
+  const room = loadRoom(DATA_DIR, req.params.id);
+  if (!room || Date.now() - room.created > LINK_TTL_MS) {
     return res.status(410).sendFile(path.join(__dirname, 'public', 'expired.html'));
   }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- Vehicle info for the buyer join card ---
+// --- Room info for buyer join card ---
 app.get('/api/room/:id', (req, res) => {
-  const room = rooms.get(req.params.id);
-  if (!room || Date.now() - room.created > LINK_TTL_MS) return res.status(410).json({ error: 'expired' });
+  const room = loadRoom(DATA_DIR, req.params.id);
+  if (!room || Date.now() - room.created > LINK_TTL_MS) {
+    return res.status(410).json({ error: 'expired' });
+  }
   res.json({ veh: room.veh, price: room.price, buyer: room.buyer });
 });
 
-// --- AI walkthrough summary ---
-// Uses Claude if ANTHROPIC_API_KEY is set; otherwise returns a structured local summary.
+// --- AI walkthrough summary (DeepSeek) ---
 app.post('/api/summary', async (req, res) => {
   const data = req.body || {};
   try {
-    if (process.env.ANTHROPIC_API_KEY) {
-      const summary = await claudeSummary(data);
-      return res.json({ summary, source: 'ai' });
+    if (DEEPSEEK_KEY) {
+      return res.json({ summary: await aiSummary(data), source: 'deepseek' });
     }
   } catch (e) {
-    console.error('AI summary failed, falling back:', e.message);
+    console.error('AI summary failed, using local:', e.message);
   }
   res.json({ summary: localSummary(data), source: 'local' });
 });
 
-async function claudeSummary(d) {
-  const model = process.env.TRUVIEW_MODEL || 'claude-sonnet-5';
-  const prompt = `You are the inspection assistant for TruView, a live guided vehicle walkthrough tool used by car dealers.
+async function aiSummary(d) {
+  const prompt = `You are the inspection assistant for TruLive, a live guided vehicle walkthrough tool used by car dealers.
 Write a concise, professional inspection summary for the buyer's record based on this completed live walkthrough.
 
 Vehicle: ${d.veh || 'Unknown'}
@@ -83,18 +129,18 @@ Write exactly 2 short parts: (1) a one-line overall impression, then (2) a short
 Do NOT output a "Points to follow up" list or any bulleted list — the report already renders the flagged concerns as its own separate section, so a list here would duplicate it.
 Keep it factual and neutral. No markdown headers, plain text.`;
 
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
+  const r = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({ model, max_tokens: 600, messages: [{ role: 'user', content: prompt }] })
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEEPSEEK_KEY}` },
+    body: JSON.stringify({
+      model: 'deepseek-v4-flash',
+      messages: [{ role: 'user', content: prompt }],
+      stream: false, max_tokens: 600,
+    }),
   });
-  if (!r.ok) throw new Error('anthropic ' + r.status);
+  if (!r.ok) throw new Error('deepseek ' + r.status);
   const j = await r.json();
-  return j.content?.[0]?.text?.trim() || localSummary(d);
+  return j.choices?.[0]?.message?.content?.trim() || localSummary(d);
 }
 
 function localSummary(d) {
@@ -103,8 +149,6 @@ function localSummary(d) {
     : pct >= 60 ? 'Vehicle covered in a full walkthrough with a few items to review.'
     : 'Partial walkthrough completed — several areas still to confirm.';
   const flags = (d.flags || []);
-  // Concerns are rendered as their own report section — mention them as prose only,
-  // never as a list here, or the report duplicates them.
   const concerns = flags.length
     ? ` The buyer raised ${flags.length} point${flags.length > 1 ? 's' : ''} for follow-up (${flags.map(f => f.section).join(', ')}).`
     : ' No concerns were raised during the walkthrough.';
@@ -115,35 +159,56 @@ function localSummary(d) {
     + concerns;
 }
 
+// --- Save completed walkthrough ---
+app.post('/api/session/:id/complete', (req, res) => {
+  const room = rooms.get(req.params.id);
+  if (!room) return res.status(404).json({ error: 'Not found' });
+
+  const { checkState, sections, snaps, flags, duration, checksDone, checksTotal } = req.body || {};
+  room.checkState = checkState;
+  room.sections = sections;
+  room.snaps = snaps || [];
+  room.flags = flags || [];
+  room.duration = duration;
+  room.checksDone = checksDone;
+  room.checksTotal = checksTotal;
+  room.status = 'completed';
+  room.completedAt = Date.now();
+  saveRoom(DATA_DIR, room.id, room);
+
+  res.json({ ok: true, status: 'completed' });
+});
+
 // --- WebSocket signalling ---
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
-
-function send(ws, obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+const send = (ws, o) => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); };
 
 wss.on('connection', (ws) => {
   ws.meta = { roomId: null, role: null };
 
   ws.on('message', (raw) => {
     let msg; try { msg = JSON.parse(raw); } catch { return; }
-    const { type } = msg;
 
-    if (type === 'join') {
-      const room = rooms.get(msg.roomId);
+    if (msg.type === 'join') {
+      const rId = msg.roomId;
+      const room = rooms.get(rId) || loadRoom(DATA_DIR, rId);
       if (!room) return send(ws, { type: 'error', reason: 'expired' });
-      if (msg.role === 'buyer' && room.buyerJoined && room.sockets.buyer && room.sockets.buyer.readyState === 1) {
+      if (!rooms.has(rId)) {
+        room.sockets = {};
+        room.buyerJoined = false;
+        rooms.set(rId, room);
+      }
+      if (msg.role === 'buyer' && room.buyerJoined && room.sockets.buyer?.readyState === 1) {
         return send(ws, { type: 'error', reason: 'in-use' });
       }
-      ws.meta = { roomId: msg.roomId, role: msg.role };
+      ws.meta = { roomId: rId, role: msg.role };
       room.sockets[msg.role] = ws;
       if (msg.role === 'buyer') room.buyerJoined = true;
       send(ws, { type: 'joined', role: msg.role, veh: room.veh, price: room.price });
-      // notify the other party
       const other = msg.role === 'dealer' ? room.sockets.buyer : room.sockets.dealer;
       send(other, { type: 'peer-joined', role: msg.role });
-      if (room.sockets.dealer && room.sockets.buyer) {
-        send(room.sockets.dealer, { type: 'ready' }); // dealer initiates the offer
-      }
+      if (room.sockets.dealer && room.sockets.buyer) send(room.sockets.dealer, { type: 'ready' });
       return;
     }
 
@@ -151,9 +216,11 @@ wss.on('connection', (ws) => {
     if (!room) return;
     const peer = ws.meta.role === 'dealer' ? room.sockets.buyer : room.sockets.dealer;
 
-    // relay signalling + synced state to the other party
-    if (['offer', 'answer', 'ice', 'state', 'snapshot', 'flag', 'end'].includes(type)) {
+    if (['offer', 'answer', 'ice', 'state', 'snapshot', 'flag', 'end'].includes(msg.type)) {
       send(peer, msg);
+      if (['state', 'snapshot', 'flag', 'end'].includes(msg.type)) {
+        saveRoom(DATA_DIR, room.id, room);
+      }
     }
   });
 
@@ -166,10 +233,16 @@ wss.on('connection', (ws) => {
   });
 });
 
-// periodic cleanup of expired rooms
 setInterval(() => {
+  cleanupExpired(DATA_DIR);
   const now = Date.now();
-  for (const [id, r] of rooms) if (now - r.created > LINK_TTL_MS) rooms.delete(id);
+  for (const [id, r] of rooms) {
+    if (now - r.created > LINK_TTL_MS) rooms.delete(id);
+  }
 }, 60 * 60 * 1000);
+
+app.get('/api/ice-servers', (_req, res) => {
+  res.json({ iceServers: getIceServers() });
+});
 
 server.listen(PORT, () => console.log(`TruLive on :${PORT}`));

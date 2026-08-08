@@ -356,9 +356,18 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 <div class="device-status"><span id="dev-clock">9:41</span><span class="sig">5G&nbsp;·&nbsp;<b>TruSaaS</b><span class="bat"></span></span></div>
 <div class="app" id="app">
 
+  <!-- LOGIN (dealer) -->
+  <section class="screen landing" id="s-login">
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruLive" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>Live</span></h1></div></div>
+    <p class="tag">Enter your dealership access code to continue.</p>
+    <div class="field"><input id="in-code" type="password" value="" placeholder="Access code" style="font-family:'JetBrains Mono',monospace;font-size:15px;text-align:center;letter-spacing:.2em" /></div>
+    <button class="go-btn" onclick="doLogin()" style="width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Sign in</button>
+    <div class="secured" style="margin-top:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Your code is never stored in the browser</div>
+  </section>
+
   <!-- LANDING (dealer) -->
-  <section class="screen active landing" id="s-landing">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruLive" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>View</span></h1></div></div>
+  <section class="screen landing" id="s-landing">
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruLive" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>Live</span></h1></div></div>
     <p class="tag">Live, guided vehicle walkthroughs. A dealer and buyer inspect the car together over a secure video link — section by section, nothing skipped.</p>
     <div class="pill-row">
       <div class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Encrypted</div>
@@ -402,7 +411,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
   <!-- BUYER JOIN -->
   <section class="screen join" id="s-join">
-    <div class="brand"><img class="lockup" src="/logo.png" alt="TruLive" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>View</span></h1></div></div>
+    <div class="brand"><img class="lockup" src="/logo.png" alt="TruLive" onerror="this.parentElement.classList.add('no-logo')"><div class="brand-fallback"><div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2.2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><h1>Tru<span>Live</span></h1></div></div>
     <p class="tag" style="margin-top:-6px">You've been invited to a live walkthrough of:</p>
     <div class="veh-card">
       <div class="vt" id="j-veh">Loading…</div>
@@ -522,6 +531,7 @@ const SECTIONS=[
 
 let role='dealer',roomId=null,cur=0,timerInt=null,seconds=0,stream=null,facing='environment',camOn=false;
 let snaps=[],flags=[],checkState=[],ws=null,pc=null,peerConnected=false,vehName='',vehPrice='';
+let authToken=localStorage.getItem('trulive_token')||'';
 
 // --- PWA: register service worker (installable web app) ---
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}
@@ -532,6 +542,20 @@ if(m){roomId=m[1];role='buyer';initBuyer();}
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function toast(msg){const t=document.getElementById('toast');document.getElementById('toast-txt').textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
+
+// Auth
+async function doLogin(){
+  const c=document.getElementById('in-code').value.trim();
+  if(!c)return toast('Enter your access code');
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({code:c})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'Invalid code');return;}
+    authToken=d.token;localStorage.setItem('trulive_token',authToken);
+    toast('Signed in');show('s-landing');
+  }catch(e){toast('Sign-in failed — check connection');}
+}
+if(role==='dealer'){show(authToken?'s-landing':'s-login');}
 
 async function initBuyer(){
   show('s-join');
@@ -547,7 +571,8 @@ function startDealerSetup(){document.getElementById('link-box').style.display='n
 async function createSession(){
   vehName=document.getElementById('in-veh').value;vehPrice=document.getElementById('in-price').value;
   const buyer=document.getElementById('in-buyer').value;
-  const r=await fetch('/api/session',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({veh:vehName,price:vehPrice,buyer})});
+  const headers={'content-type':'application/json'}; if(authToken)headers.authorization='Bearer '+authToken;
+  const r=await fetch('/api/session',{method:'POST',headers,body:JSON.stringify({veh:vehName,price:vehPrice,buyer})});
   const d=await r.json();roomId=d.id;
   document.getElementById('link-url').textContent=location.origin+d.url;
   document.getElementById('gen-btn').style.display='none';
@@ -586,8 +611,10 @@ function connect(){
 function sig(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o));}
 function setPeer(on){peerConnected=on;const c=document.getElementById('conn');c.classList.toggle('on',on);document.getElementById('conn-txt').textContent=on?'Connected':'Connecting…';document.getElementById('waiting').style.display=on?'none':'flex';}
 
-function newPC(){
-  pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]});
+async function newPC(){
+  let servers=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+  try{const r=await fetch('/api/ice-servers');const d=await r.json();if(d.iceServers&&d.iceServers.length)servers=d.iceServers;}catch(e){}
+  pc=new RTCPeerConnection({iceServers:servers});
   if(stream)stream.getTracks().forEach(t=>pc.addTrack(t,stream));
   pc.onicecandidate=e=>{if(e.candidate)sig({type:'ice',candidate:e.candidate});};
   pc.ontrack=e=>{
@@ -711,6 +738,13 @@ function finishUp(){
   document.getElementById('st-checks').textContent=done+'/'+total;
   document.getElementById('st-flags').textContent=flags.length;
   document.getElementById('sum-veh').textContent=vehName;
+
+  // Persist walkthrough
+  if(roomId){
+    const sections=SECTIONS.map(s=>s.name);
+    fetch('/api/session/'+roomId+'/complete',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({checkState,sections,snaps,flags,duration:dur,checksDone:done,checksTotal:total})}).catch(()=>{});
+  }
   const sw=document.getElementById('sum-snaps');
   if(snaps.length){sw.innerHTML='';snaps.forEach(s=>{if(s.img){const im=document.createElement('img');im.className='snap-thumb';im.src=s.img;sw.appendChild(im);}else{const d=document.createElement('div');d.className='snap-thumb';d.style.display='grid';d.style.placeItems='center';d.innerHTML='<span style="font-size:9px;color:var(--dim);text-align:center;padding:4px">'+s.section+'</span>';sw.appendChild(d);}});}
   const fw=document.getElementById('flags-wrap'),fl=document.getElementById('sum-flags');
