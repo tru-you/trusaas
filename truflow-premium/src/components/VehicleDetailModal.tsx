@@ -18,7 +18,6 @@ import {
   Shield,
   Wrench,
   AlertCircle,
-  Sparkles,
   FileText,
   RefreshCw,
   Layers,
@@ -28,7 +27,6 @@ import {
   Facebook,
   Globe,
   Send,
-  Search,
   Loader2,
   MessageCircle,
   Linkedin,
@@ -83,21 +81,15 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [socialResult, setSocialResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   // Elite DMS States
-  const [activeTab, setActiveTab] = useState<"specs" | "inspection" | "recon" | "publish" | "docs">("specs");
+  const [activeTab, setActiveTab] = useState<"specs" | "recon" | "publish" | "docs">("specs");
   const [newReconName, setNewReconName] = useState("");
   const [newReconCost, setNewReconCost] = useState("");
 
-  // Recon Category, Photo and Market check States
+  // Recon Category and Market check States
   const [reconCategory, setReconCategory] = useState<string>("Bodywork / Painting");
-  const [suggestingCost, setSuggestingCost] = useState(false);
   const [editingTruPrice, setEditingTruPrice] = useState(false);
   const [truPriceInput, setTruPriceInput] = useState("");
   const [savingTruPrice, setSavingTruPrice] = useState(false);
-
-  // TrueAI States
-  const [tchekScanning, setTchekScanning] = useState(false);
-  const [remarketingCopy, setRemarketingCopy] = useState<string>("");
-  const [generatingCopy, setGeneratingCopy] = useState(false);
 
   // TrueAI Image Studio States
   const [selectedEnhanceImg, setSelectedEnhanceImg] = useState<string>("");
@@ -391,7 +383,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           {/* Thumbnails list. The add-photos control lives here now, as a
               dashed slot next to the photos it changes — it left the specs
               column with the "Media Sync Station" section. */}
-          <div className="flex gap-2 overflow-x-auto py-2 border-t border-white/5 mt-2 scrollbar-none">
+          <div className="flex gap-2 overflow-x-auto py-2 border-t border-white/5 mt-10 md:mt-2 scrollbar-none">
             {imagesList.map((img, idx) => (
               <button
                 key={idx}
@@ -427,7 +419,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
         </div>
 
         {/* RIGHT COLUMN: DETAIL SPECS, INSPECTION & RECON TABS */}
-        <div className="md:w-2/5 max-md:flex-1 max-md:min-h-0 p-4 md:p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
+        <div className="md:w-2/5 max-md:flex-1 max-md:min-h-0 p-5 md:p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
           <div>
             {/* Header (car name, trim, stock, close, return-to-stock) moved to
                 the modal's top title bar so the detail panel opens straight on
@@ -436,7 +428,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             {/* Underlined tab row. A segmented control whose active segment is a
                 filled cyan key makes the loudest object in the panel a label for
                 where you already are; underlining it frees the cyan for Publish. */}
-            <div className="flex gap-2 border-b border-white/10 mb-3 text-[13px] font-semibold overflow-x-auto scrollbar-thin">
+            <div className="flex gap-2 border-b border-white/10 mb-5 text-[13px] font-semibold overflow-x-auto scrollbar-thin">
               <button
                 onClick={() => setActiveTab("specs")}
                 className={`px-3 py-2 flex items-center justify-center gap-1 border-b-2 -mb-px whitespace-nowrap transition-colors cursor-pointer ${
@@ -452,14 +444,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 }`}
               >
                 <FileText size={11} /> Docs
-              </button>
-              <button
-                onClick={() => setActiveTab("inspection")}
-                className={`px-3 py-2 flex items-center justify-center gap-1 border-b-2 -mb-px whitespace-nowrap transition-colors cursor-pointer ${
-                  activeTab === "inspection" ? "text-[color:var(--white)] border-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[color:var(--white)]"
-                }`}
-              >
-                <Sparkles size={11} /> Assist
               </button>
               <button
                 onClick={() => setActiveTab("recon")}
@@ -483,7 +467,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
             {/* TAB 1: SHOWROOM SPECIFICATIONS */}
             {activeTab === "specs" && (
-              <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="space-y-5 animate-in fade-in duration-200">
                 {/* Pricing — no card container: retail leads at display size,
                     TruPrice reads as one line, and the editor is a ghost chip. */}
                 <div className="space-y-3">
@@ -654,113 +638,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               </div>
             )}
 
-            {/* TAB 3: TRUEAI COMPUTER VISION INSPECTION & REMARKETING */}
-            {activeTab === "inspection" && (
-              <div className="space-y-4 animate-in fade-in duration-200">
-                {/* Removed from here: a "TrueAI Vision Platform" that reported the
-                    same invented damage on every vehicle ("Rear Left Fender Wheel
-                    Arch Scratch, Severity MEDIUM, Est. Repair R 2,200") and could
-                    push it into the recon ledger as a real cost; and a "Studio
-                    Backdrop Enhancer" that narrated silhouette masking and then
-                    swapped in a stock photo of a different car of the same make.
-                    Damage assessment belongs to TruLens/TruInspect, working on
-                    real photos. What is left is text generation — which is all
-                    this ever genuinely did. */}
-                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                  <div className="border-b border-white/5 pb-2">
-                    <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Listing text</h4>
-                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                      Starting points for adverts and page copy — read them over before publishing.
-                    </p>
-                  </div>
-                        {/* TrueAI Copywriter Generator */}
-                        <div className="bg-black/20 border border-white/5 rounded-xl p-3 flex flex-col gap-2">
-                          <div className="flex items-center gap-2 text-[13px] text-[color:var(--white)] font-semibold">
-                            <Sparkles size={12} className="text-[color:var(--cyan)]" />
-                            Advert copy
-                          </div>
-                          
-                          {generatingCopy ? (
-                            <div className="py-3 flex justify-center items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] font-mono">
-                              <RefreshCw size={12} className="animate-spin text-[color:var(--cyan)]" /> Creating listing copy...
-                            </div>
-                          ) : remarketingCopy ? (
-                            <div className="space-y-2">
-                              <textarea
-                                value={remarketingCopy}
-                                readOnly
-                                className="w-full h-24 bg-black/40 border border-white/5 rounded-lg p-2 text-[13px] text-[rgba(232,234,230,0.72)] font-mono outline-none resize-none leading-relaxed"
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(remarketingCopy);
-                                    alert("Copied to clipboard!");
-                                  }}
-                                  className="flex-1 py-2 bg-[color:var(--glass)] border border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] font-semibold text-[13px] rounded-lg cursor-pointer transition-all "
-                                >
-                                  Copy Copywriting Text
-                                </button>
-                                <button
-                                  onClick={() => setRemarketingCopy("")}
-                                  className="px-3 py-2 bg-[color:var(--glass)] border border-white/5 text-[color:var(--muted)] hover:bg-[color:var(--glass)] font-semibold text-[13px] rounded-lg cursor-pointer transition-all "
-                                >
-                                  Clear
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                // Built from the vehicle record, instantly. The
-                                // spinner here only ever simulated thinking.
-                                setRemarketingCopy(
-                                    `🔥 JUST ARRIVED IN SHOWROOM! 🔥\n\n` +
-                                    `🌟 ${vehicle.year} ${vehicle.make.toUpperCase()} ${vehicle.model.toUpperCase()} (${vehicle.transmission})\n` +
-                                    `📍 Mileage: ${vehicle.mileage.toLocaleString()} km\n` +
-                                    `⛽ Fuel Type: ${vehicle.fuelType}\n` +
-                                    `💰 Price: ${formatZAR(vehicle.retailPrice)}\n\n` +
-                                    // Claims the dealer can stand behind. This previously asserted
-                                    // "NATIS Fully Checked & Cleared" and a "TrueAI quality
-                                    // certificate" in copy meant for public adverts — neither had
-                                    // happened, and the dealer would have been the one publishing it.
-                                    `✨ Well looked after and ready to drive away.\n\n` +
-                                    `📞 Contact us now to secure or book a test-drive. Finance options available!`
-                                );
-                              }}
-                              className="w-full py-2 bg-[color:var(--cyan)] hover:bg-opacity-90 text-[13px] on-fill font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
-                            >
-                              <FileText size={13} /> Build advert text
-                            </button>
-                          )}
-                        </div>
-
-                        {settings?.seoAeo && (
-                          <div className="bg-black/20 border border-white/5 rounded-xl p-3 flex flex-col gap-2 mt-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 text-[13px] text-[color:var(--white)] font-semibold">
-                                <Globe size={12} className="text-[color:var(--cyan)]" />
-                                Page title & description
-                              </div>
-                              <span className="bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] font-semibold px-2 py-0.5 rounded">AUTO-RANK</span>
-                            </div>
-                            <button
-                              onClick={() => {
-                                alert("Generated Meta Title:\n" + `${vehicle.year} ${vehicle.make} ${vehicle.model} for Sale | Approved Dealer\n\n` + 
-                                      "Generated SEO Description:\n" + `Looking for a pristine ${vehicle.year} ${vehicle.make} ${vehicle.model}? This ${vehicle.bodyType || 'vehicle'} offers incredible value at ${formatZAR(vehicle.retailPrice)}. Fully inspected and approved.`);
-                              }}
-                              className="w-full py-2 bg-[color:var(--glass)] hover:bg-white/10 border border-white/10 text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
-                            >
-                              <Search size={13} /> Generate SEO Tags & Description
-                            </button>
-                          </div>
-                        )}
-                </div>
-              </div>
-            )}
-
-
-            {/* TAB 4: RECONDITIONING COST WORKFLOW AND LOGGING */}
+            {/* TAB 3: RECONDITIONING COST WORKFLOW AND LOGGING */}
             {activeTab === "recon" && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 {(() => {
@@ -805,37 +683,6 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   const handleDeleteTask = async (taskId: string) => {
                     const updated = tasks.filter(t => t.id !== taskId);
                     await onUpdateVehicle(vehicle.id, { reconTasks: updated });
-                  };
-
-                  /** Typical recon costs by category — a table, not a model.
-                   *  It was fronted by an "Assessing..." spinner and called an
-                   *  AI recommendation. The numbers are the useful part. */
-                  const handleAICostRecommendation = () => {
-                      let recommendedCost = 1500;
-                      let recommendedName = "Valet & Detailing";
-                      
-                      if (reconCategory === "Bodywork / Painting") {
-                        recommendedCost = vehicle.year < 2020 ? 3200 : 2500;
-                        recommendedName = "Bumper Spray & Paint Correction";
-                      } else if (reconCategory === "Tyres & Alignment") {
-                        recommendedCost = 4800;
-                        recommendedName = "Replace Front Tyres & Wheel Alignment";
-                      } else if (reconCategory === "Mechanical / Brakes") {
-                        recommendedCost = vehicle.mileage > 100000 ? 5500 : 3800;
-                        recommendedName = "Front Brake Pads & Disc Machining";
-                      } else if (reconCategory === "Electrical / Diagnostics") {
-                        recommendedCost = 1800;
-                        recommendedName = "ECU Diagnostic Scan & Battery Reset";
-                      } else if (reconCategory === "Interior Valet") {
-                        recommendedCost = 1200;
-                        recommendedName = "Deep Extraction Seat Valet & Leather Prep";
-                      } else {
-                        recommendedCost = 1000;
-                        recommendedName = "General Workshop Safety Check";
-                      }
-
-                      setNewReconName(recommendedName);
-                      setNewReconCost(recommendedCost.toString());
                   };
 
                   return (
@@ -936,38 +783,22 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
                       {/* Form to log new recon tasks */}
                       <form onSubmit={handleAddTask} className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-3 space-y-3">
-                        <div className="flex justify-between items-center">
-                          <div className="text-[13px] text-[color:var(--white)] font-semibold tracking-normal">Log Work Directive & Prep Tasks</div>
-                          <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">1-CLICK AI ASSISTANT</span>
-                        </div>
+                        <div className="text-[13px] text-[color:var(--white)] font-semibold tracking-normal">Log Prep Tasks</div>
 
-                        {/* Category and AI cost recommend row */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="space-y-1">
-                            <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Task Category</label>
-                            <select
-                              value={reconCategory}
-                              onChange={(e) => setReconCategory(e.target.value)}
-                              className="w-full bg-black/40 border border-white/5 rounded px-2 py-1 text-[13px] text-[color:var(--white)] outline-none"
-                            >
-                              <option value="Bodywork / Painting">Bodywork / Painting</option>
-                              <option value="Interior Valet">Interior Valet / Deep Clean</option>
-                              <option value="Tyres & Alignment">Tyres & Alignment</option>
-                              <option value="Mechanical / Brakes">Mechanical / Brakes</option>
-                              <option value="Electrical / Diagnostics">Electrical / Diagnostics</option>
-                              <option value="Other">Other Repairs</option>
-                            </select>
-                          </div>
-                          <div className="flex items-end">
-                            <button
-                              type="button"
-                              onClick={handleAICostRecommendation}
-                              disabled={suggestingCost}
-                              className="w-full py-1 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[13px] font-semibold tracking-normal rounded transition-all cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50 h-[24px]"
-                            >
-                              <Sparkles size={9} /> Typical cost
-                            </button>
-                          </div>
+                        <div className="space-y-1">
+                          <label className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold">Task Category</label>
+                          <select
+                            value={reconCategory}
+                            onChange={(e) => setReconCategory(e.target.value)}
+                            className="w-full bg-black/40 border border-white/5 rounded px-2 py-1 text-[13px] text-[color:var(--white)] outline-none"
+                          >
+                            <option value="Bodywork / Painting">Bodywork / Painting</option>
+                            <option value="Interior Valet">Interior Valet / Deep Clean</option>
+                            <option value="Tyres & Alignment">Tyres & Alignment</option>
+                            <option value="Mechanical / Brakes">Mechanical / Brakes</option>
+                            <option value="Electrical / Diagnostics">Electrical / Diagnostics</option>
+                            <option value="Other">Other Repairs</option>
+                          </select>
                         </div>
 
                         <div className="grid grid-cols-5 gap-2">
