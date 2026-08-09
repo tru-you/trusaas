@@ -4,14 +4,17 @@ import fs from "fs";
 import crypto from "crypto";
 import http from "http";
 import { Server } from "socket.io";
-import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// import.meta.url is undefined in the esbuild CJS bundle; __dirname is already
+// a global in CJS so we use it directly when available.
+const __dirname =
+  typeof __dirname !== "undefined"
+    ? __dirname
+    : path.dirname(new URL(import.meta.url).pathname);
 
 // ==================== AUTH ====================
 
