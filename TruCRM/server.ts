@@ -11,7 +11,7 @@ dotenv.config();
 
 // import.meta.url is undefined in the esbuild CJS bundle; __dirname is already
 // a global in CJS so we use it directly when available.
-const __dirname =
+const serverDir =
   typeof __dirname !== "undefined"
     ? __dirname
     : path.dirname(new URL(import.meta.url).pathname);
@@ -420,57 +420,370 @@ Format the output in clear Markdown.`,
 
   // ── Scraper ───────────────────────────────────────────────────────────────
 
-  async function scrapeWebsite(rawUrl: string) {
+  const SCRAPE_TIMEOUT_MS = 15000;
+  const MAX_CRAWL_PAGES = 5;
+  const HEADLESS_ENABLED = process.env.ENABLE_HEADLESS === "true";
+
+  const USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",
+  ];
+
+  const INVENTORY_PATH_RE =
+    /\/(used|pre-owned|preowned|second-hand|new|stock|inventory|vehicles?|cars?|for-sale|forsale|showroom|gallery)\/?(\?.*)?$/i;
+
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  function pickUserAgent(): string {
+    return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+  }
+
+  async function fetchHtmlWithRetries(url: string, retries = 3): Promise<string> {
+    let lastError: Error | null = null;
+    for (let attempt = 0; attempt < retries; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), SCRAPE_TIMEOUT_MS);
+      try {
+        const response = await fetch(url, {
+          signal: controller.signal,
+          redirect: "follow",
+          headers: {
+            "User-Agent": pickUserAgent(),
+            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9,af;q=0.8,en-ZA;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+            "Upgrade-Insecure-Requests": "1",
+            Referer: new URL(url).origin + "/",
+          },
+        });
+        if (!response.ok) {
+          // Don't retry hard client errors (404, 403); retry 5xx and 429.
+          if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+            throw new Error(`Site returned HTTP ${response.status}`);
+          }
+          if (attempt < retries - 1) {
+            lastError = new Error(`Site returned HTTP ${response.status}`);
+            await sleep(600 * (attempt + 1));
+            continue;
+          }
+          throw new Error(`Site returned HTTP ${response.status}`);
+        }
+        const html = await response.text();
+        if (html.length < 200) {
+          throw new Error("Empty or too-small response body");
+        }
+        return html;
+      } catch (e: any) {
+        lastError = e;
+        if (e?.name === "AbortError") lastError = new Error("Request timed out");
+        if (attempt < retries - 1) {
+          await sleep(600 * (attempt + 1));
+        }
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+    throw lastError || new Error("Failed to fetch page");
+  }
+
+  // Lazy singleton headless browser (puppeteer). Only used when ENABLE_HEADLESS=true.
+  let browserPromise: Promise<any> | null = null;
+
+  async function getHeadlessBrowser(): Promise<any> {
+    if (!browserPromise) {
+      browserPromise = (async () => {
+        const { default: puppeteer } = await import("puppeteer");
+        return puppeteer.launch({
+          headless: true,
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-extensions",
+          ],
+        });
+      })().catch((e) => {
+        console.error("[scraper] headless browser failed to launch:", e?.message);
+        browserPromise = null;
+        throw e;
+      });
+    }
+    return browserPromise;
+  }
+
+  async function renderWithHeadless(url: string): Promise<string | null> {
+    let page: any;
+    try {
+      const browser = await getHeadlessBrowser();
+      page = await browser.newPage();
+      await page.setUserAgent(pickUserAgent());
+      await page.setViewport({ width: 1366, height: 900 });
+      // domcontentloaded + fixed settle time instead of networkidle2, which
+      // hangs forever on sites with long-polling / websockets.
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+      await page.waitForNetworkIdle({ idleTime: 800, timeout: 15000 }).catch(() => {});
+      await new Promise((r) => setTimeout(r, 2000));
+      const html = await page.content();
+      if (html.length < 200) return null;
+      return html;
+    } catch (e: any) {
+      console.warn(`[scraper] headless render failed for ${url}:`, e?.message);
+      return null;
+    } finally {
+      if (page) await page.close().catch(() => {});
+    }
+  }
+
+  const cleanHtmlText = (html: string) =>
+    html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+      .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const deobfuscate = (s: string) =>
+    s
+      .replace(/\s*\[?\(?at\)?\]?\s*/gi, "@")
+      .replace(/\s*\[?\(?dot\)?\]?\s*/gi, ".")
+      .replace(/\s*\[?\(?com\)?\]?\s*/gi, ".com")
+      .replace(/\s*@\s*/g, "@")
+      .replace(/\s*\.\s*/g, ".");
+
+  function extractEmails(text: string): string[] {
+    const found = new Set<string>();
+    const plain: string[] = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+    plain.forEach((e) => found.add(e.toLowerCase()));
+    const obfuscated = deobfuscate(text);
+    const obfuscatedMatches: string[] = obfuscated.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+    obfuscatedMatches.forEach((e) => found.add(e.toLowerCase()));
+    return Array.from(found)
+      .map((e) => e.replace(/\.{2,}/g, "."))
+      .filter((e) => {
+        const [local, domain] = e.split("@");
+        if (!local || !domain) return false;
+        if (!/[a-zA-Z]/.test(local)) return false;
+        if (local.length < 2 || local.length > 40) return false;
+        if (domain.length > 40 || !/^[a-z0-9.-]+$/.test(domain)) return false;
+        if (!isPlausibleDomain(domain)) return false;
+        return !e.includes("example") && !e.includes(".png") && !e.includes(".jpg") && !e.includes(".webp");
+      })
+      .slice(0, 5);
+  }
+
+  // Reject junk like "ions.if" while accepting co.za / org.za / web.za domains.
+  function isPlausibleDomain(domain: string): boolean {
+    const parts = domain.split(".");
+    const tld = parts[parts.length - 1];
+    if (tld === "za") {
+      const sld = parts[parts.length - 2];
+      return ["co", "org", "web", "gov", "ac", "net"].includes(sld);
+    }
+    const COMMON_TLDS = ["com", "net", "org", "info", "biz", "me", "io", "co", "za", "cc", "tv", "website", "site"];
+    return COMMON_TLDS.includes(tld);
+  }
+
+  function extractPhones(text: string): string[] {
+    const found = new Map<string, string>();
+    const patterns = [
+      /(?:\+27|0)(?:\s?\d{2}){4}\d{1,2}/g,
+      /\+27\s?\(?\d{2}\)?\s?\d{3}\s?\d{4}/g,
+      /0\s?\d{2}\s?\d{3}\s?\d{4}/g,
+    ];
+    patterns.forEach((re) => {
+      const matches: string[] = text.match(re) || [];
+      matches.forEach((p) => {
+        const cleaned = p.replace(/\s+/g, " ").trim();
+        const digits = cleaned.replace(/[^0-9]/g, "");
+        // SA numbers only: 0xx xxx xxxx (10 digits) or +27xx xxx xxxx (9 after code).
+        const isSa = /^0[1-8]\d{8}$/.test(digits) || /^27[1-8]\d{8}$/.test(digits);
+        if (isSa) {
+          // Dedupe by last 9 digits: "074 409 3780" and "74 409 3780" are the same.
+          const key = digits.slice(-9);
+          if (!found.has(key)) found.set(key, cleaned);
+        }
+      });
+    });
+    return Array.from(found.values()).slice(0, 5);
+  }
+
+  function extractJsonLd(html: string): Record<string, unknown>[] {
+    const blocks = (html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || []);
+    const results: Record<string, unknown>[] = [];
+    for (const block of blocks) {
+      const raw = (block.replace(/<script[^>]*>/, "").replace(/<\/script>/i, "")).trim();
+      try {
+        const parsed = JSON.parse(raw);
+        const graph = parsed["@graph"] || [];
+        const items = Array.isArray(graph) ? graph : Array.isArray(parsed) ? parsed : [parsed];
+        items.forEach((item: any) => {
+          if (item && typeof item === "object" && item["@type"]) results.push(item);
+        });
+      } catch {
+        // ignore malformed JSON-LD blocks
+      }
+    }
+    return results;
+  }
+
+  function structuredFromJsonLd(html: string): { name?: string; location?: string; phones?: string[]; emails?: string[] } | null {
+    const items = extractJsonLd(html);
+    if (items.length === 0) return null;
+    const dealer = items.find(
+      (i: any) => i["@type"] === "AutoDealer" || i["@type"] === "AutomotiveBusiness"
+    );
+    const source = (dealer as any) || items[0] as any;
+    const addr = source.address || {};
+    const contactPoint = Array.isArray(source.contactPoint) ? source.contactPoint[0] : source.contactPoint;
+    const phones: string[] = [];
+    const emails: string[] = [];
+    if (typeof source.telephone === "string") phones.push(source.telephone);
+    if (typeof contactPoint?.telephone === "string") phones.push(contactPoint.telephone);
+    if (typeof contactPoint?.email === "string") emails.push(contactPoint.email);
+    if (typeof source.email === "string") emails.push(source.email);
+    const location = [addr.addressLocality, addr.addressRegion, addr.addressCountry].filter(Boolean).join(", ") || undefined;
+    return {
+      name: typeof source.name === "string" ? source.name : undefined,
+      location,
+      phones,
+      emails,
+    };
+  }
+
+  const absoluteUrl = (base: string, href: string): string => {
+    try {
+      return new URL(href, base).toString();
+    } catch {
+      return "";
+    }
+  };
+
+  async function scrapeWebsite(rawUrl: string, options?: { crawl?: boolean; onPage?: (page: string) => void; headless?: boolean }) {
     const url = String(rawUrl || "").trim();
     if (!/^https?:\/\//i.test(url)) {
       return { url, ok: false, error: "Invalid URL (must start with http:// or https://)" };
     }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const crawl = options?.crawl !== false;
+    const useHeadless = options?.headless !== false && HEADLESS_ENABLED;
 
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
-          Accept: "text/html,application/xhtml+xml",
-        },
-        redirect: "follow",
-      });
-    } finally {
-      clearTimeout(timeout);
+    const pagesToFetch: string[] = [url];
+    if (crawl) {
+      const origin = new URL(url).origin;
+      pagesToFetch.push(`${origin}/contact`, `${origin}/contact-us`, `${origin}/contactus`);
     }
 
-    if (!response.ok) {
-      return { url, ok: false, error: `Site returned HTTP ${response.status}` };
+    const fetched: { pageUrl: string; html: string; ok: boolean; error?: string }[] = [];
+    let lastError: string | null = null;
+
+    for (let i = 0; i < pagesToFetch.length && fetched.length < MAX_CRAWL_PAGES; i++) {
+      const pageUrl = pagesToFetch[i];
+      try {
+        const html = await fetchHtmlWithRetries(pageUrl);
+        fetched.push({ pageUrl, html, ok: true });
+        options?.onPage?.(pageUrl);
+      } catch (e: any) {
+        lastError = e?.message || "Failed to fetch page";
+        fetched.push({ pageUrl, html: "", ok: false, error: lastError });
+      }
     }
 
-    const html = await response.text();
+    let home = fetched.find((f) => f.ok && new URL(f.pageUrl).pathname === "/") || fetched.find((f) => f.ok) || fetched[0];
+    let usedHeadless = false;
 
-    const title = (html.match(/<title[^>]*>([^<]*)<\/title>/i) || [])[1]?.trim() || "";
-    const metaDesc =
-      (html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i) || [])[1]?.trim() ||
-      "";
-    const emails = Array.from(
-      new Set((html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || []).map((e) => e.toLowerCase()))
-    ).slice(0, 5);
-    const phones = Array.from(
-      new Set((html.match(/(?:\+27|0)(?:\s?\d{2}){4}\d{1,2}/g) || []))
-    ).slice(0, 5);
-    const stockLinks = Array.from(
-      new Set((html.match(/\/used\/(?:vehicles|cars|stock)[^"'\s]*/gi) || []) as string[])
-    ).slice(0, 8);
+    // Fallback 1: everything failed (bot-blocked / JS-gated) — render the main URL.
+    if ((!home || !home.ok) && useHeadless) {
+      const rendered = await renderWithHeadless(url);
+      if (rendered) {
+        home = { pageUrl: url, html: rendered, ok: true };
+        usedHeadless = true;
+      }
+    }
 
-    const cleanText = html
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, 6000);
+    if (!home || !home.ok) {
+      return { url, ok: false, error: lastError || "Site did not respond to scraping" };
+    }
+
+    const origin = new URL(url).origin;
+    const allTexts = fetched.filter((f) => f.ok).map((f) => f.html);
+    if (usedHeadless) allTexts.push(home.html);
+    const combinedHtml = allTexts.join("\n");
+    const emails = new Set<string>();
+    const phones = new Map<string, string>();
+    const stockLinks = new Set<string>();
+
+    const addPhone = (p: string) => {
+      const digits = p.replace(/[^0-9]/g, "");
+      const isSa = /^0[1-8]\d{8}$/.test(digits) || /^27[1-8]\d{8}$/.test(digits);
+      if (isSa) {
+        // Dedupe by last 9 digits: "074 409 3780" and "+27744093780" are the same.
+        const key = digits.slice(-9);
+        if (!phones.has(key)) phones.set(key, p);
+      }
+    };
+
+    const ingestPage = (html: string) => {
+      const text = cleanHtmlText(html);
+      extractEmails(text).forEach((e) => emails.add(e));
+      extractPhones(text).forEach((p) => addPhone(p));
+      const linkRe = /href=["']([^"']+)["']/gi;
+      let m: RegExpExecArray | null;
+      while ((m = linkRe.exec(html)) !== null) {
+        const href = m[1];
+        if (href.startsWith("mailto:")) {
+          const email = decodeURIComponent(href.slice(7)).toLowerCase();
+          if (/@/.test(email)) emails.add(email);
+        } else if (/^tel:/.test(href)) {
+          const phone = href.slice(4).replace(/[^0-9+]/g, "");
+          addPhone(phone);
+        } else if (INVENTORY_PATH_RE.test(href) || /(vehicle|stock|inventory)/i.test(href)) {
+          const abs = absoluteUrl(origin, href);
+          if (abs && new URL(abs).origin === origin) stockLinks.add(abs);
+        }
+      }
+    };
+
+    for (const f of fetched) {
+      if (!f.ok) continue;
+      ingestPage(f.html);
+    }
+
+    const titleMatch = home.html.match(/<title[^>]*>([^<]*)<\/title>/i);
+    let title = (titleMatch && titleMatch[1]?.trim()) || "";
+    const metaDescMatch = home.html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i);
+    let metaDesc = (metaDescMatch && metaDescMatch[1]?.trim()) || "";
+
+    // Fallback 2: page loaded but content is thin (SPA renders via JS) or the
+    // most valuable field (email) is missing — render and re-parse.
+    if (useHeadless && !usedHeadless && (!title || emails.size === 0 || (phones.size === 0 && stockLinks.size === 0))) {      const rendered = await renderWithHeadless(url);
+      if (rendered) {
+        usedHeadless = true;
+        home = { pageUrl: url, html: rendered, ok: true };
+        ingestPage(rendered);
+        const rt = rendered.match(/<title[^>]*>([^<]*)<\/title>/i);
+        if (rt && rt[1]?.trim()) title = rt[1].trim();
+        const rm = rendered.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i);
+        if (rm && rm[1]?.trim()) metaDesc = rm[1].trim();
+      }
+    }
+
+    const firstEmails = Array.from(emails).slice(0, 5);
+    const firstPhones = Array.from(phones.values()).slice(0, 5);
+    const firstStockLinks = Array.from(stockLinks).slice(0, 8);
+
+    // Prefer JSON-LD structured fields; fall back to regex/meta.
+    const ld = structuredFromJsonLd(combinedHtml);
+
+    const cleanText = cleanHtmlText(home.html).slice(0, 6000);
 
     const base: {
       ok: boolean;
@@ -482,6 +795,8 @@ Format the output in clear Markdown.`,
       stockLinks: string[];
       fetchedAt: string;
       structured?: Record<string, unknown> | null;
+      pagesScanned: number;
+      renderedWithHeadless?: boolean;
       message?: string;
       error?: string;
     } = {
@@ -489,16 +804,20 @@ Format the output in clear Markdown.`,
       url,
       title,
       description: metaDesc || cleanText.slice(0, 300),
-      emails,
-      phones,
-      stockLinks,
+      emails: firstEmails,
+      phones: firstPhones,
+      stockLinks: firstStockLinks,
       fetchedAt: new Date().toISOString(),
+      pagesScanned: fetched.filter((f) => f.ok).length,
+      renderedWithHeadless: usedHeadless,
     };
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
-      base.structured = null;
-      base.message = "Add DEEPSEEK_API_KEY for structured extraction.";
+      base.structured = ld
+        ? { name: ld.name, location: ld.location, brands: [], inventoryEstimate: null, keyProducts: [] }
+        : null;
+      base.message = "Add DEEPSEEK_API_KEY for enhanced structured extraction.";
       return base;
     }
 
@@ -550,6 +869,7 @@ ${cleanText}`,
   app.post("/api/cardealer/scrape-batch", async (req, res) => {
     try {
       const rawUrls: string[] = Array.isArray(req.body?.urls) ? req.body.urls : [];
+      const socketId: string | undefined = typeof req.body?.socketId === "string" ? req.body.socketId : undefined;
       const urls = rawUrls
         .map((l) => String(l))
         .map((l) => {
@@ -566,12 +886,20 @@ ${cleanText}`,
       const CONCURRENCY = 4;
       const results: Record<string, unknown>[] = [];
       let cursor = 0;
+      let done = 0;
+      const total = urls.length;
+
+      const emit = (payload: Record<string, unknown>) => {
+        if (socketId) {
+          io.to(socketId).emit("scrape:progress", payload);
+        }
+      };
 
       const worker = async () => {
         while (cursor < urls.length) {
           const url = urls[cursor++];
           try {
-            const r = await scrapeWebsite(url);
+            const r = await scrapeWebsite(url, { crawl: true, onPage: (page) => emit({ event: "page", url, page, done, total }) });
             results.push({ url, ok: r.ok, error: r.ok ? undefined : r.error, ...(r.ok ? r : {}) });
           } catch (e: any) {
             results.push({
@@ -580,10 +908,17 @@ ${cleanText}`,
               error: e?.name === "AbortError" ? "Timed out" : e?.message || "Failed",
             });
           }
+          done++;
+          const last = results[results.length - 1];
+          emit({ event: "done", url, ok: last.ok, error: last.error, done, total });
         }
       };
 
       await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+
+      if (socketId) {
+        io.to(socketId).emit("scrape:complete", { total, succeeded: results.filter((r) => r.ok).length });
+      }
 
       res.json({ total: results.length, succeeded: results.filter((r) => r.ok).length, results });
     } catch (error: any) {

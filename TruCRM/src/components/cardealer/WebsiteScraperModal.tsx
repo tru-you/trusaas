@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Globe, Search, X, Building2, Mail, Phone, Link2, Sparkles, Plus, Check, Loader2, List, Zap } from 'lucide-react';
 import { CarDealership, ClassifiedSource } from '../../types/carDealer';
+import { socket } from '../../lib/socket';
 
 interface ScrapeResult {
   title: string;
@@ -62,6 +63,34 @@ export const WebsiteScraperModal: React.FC<WebsiteScraperModalProps> = ({
   const [batchDone, setBatchDone] = useState(0);
   const [batchTotal, setBatchTotal] = useState(0);
   const [importedUrls, setImportedUrls] = useState<string[]>([]);
+  const batchResultsRef = useRef<BatchItem[]>([]);
+  const doneRef = useRef(0);
+
+  // Live batch progress via Socket.IO
+  useEffect(() => {
+    if (!isOpen) return;
+    const onProgress = (payload: any) => {
+      if (payload?.event !== 'done' || !payload?.url) return;
+      const item: BatchItem = {
+        url: payload.url,
+        ok: payload.ok === true,
+        error: payload.error,
+        result: undefined,
+      };
+      doneRef.current += 1;
+      const existing = batchResultsRef.current.some((r) => r.url === payload.url);
+      const next = existing
+        ? batchResultsRef.current.map((r) => (r.url === payload.url ? item : r))
+        : [...batchResultsRef.current, item];
+      batchResultsRef.current = next;
+      setBatchResults(next);
+      setBatchDone(doneRef.current);
+    };
+    socket.on('scrape:progress', onProgress);
+    return () => {
+      socket.off('scrape:progress', onProgress);
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -75,6 +104,8 @@ export const WebsiteScraperModal: React.FC<WebsiteScraperModalProps> = ({
     setBatchDone(0);
     setBatchTotal(0);
     setImportedUrls([]);
+    batchResultsRef.current = [];
+    doneRef.current = 0;
   };
 
   const handleScrape = async (e: React.FormEvent) => {
@@ -130,7 +161,7 @@ export const WebsiteScraperModal: React.FC<WebsiteScraperModalProps> = ({
       const res = await fetch('/api/cardealer/scrape-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls }),
+        body: JSON.stringify({ urls, socketId: socket.id }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -144,8 +175,11 @@ export const WebsiteScraperModal: React.FC<WebsiteScraperModalProps> = ({
         error: r.error,
         result: r.ok ? r : undefined,
       }));
+      batchResultsRef.current = items;
       setBatchResults(items);
-      setBatchDone(items.filter((i) => i.ok || i.error).length);
+      const doneCount = items.filter((i) => i.ok || i.error).length;
+      doneRef.current = doneCount;
+      setBatchDone(doneCount);
     } catch (err: any) {
       setError(err?.message || 'Could not reach the server.');
     } finally {
