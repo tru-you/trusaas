@@ -123,7 +123,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave, 
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="What you see — e.g. 15cm scratch, lower door"
-              className="w-full px-3 min-h-[46px] bg-[#F0F4F8] border border-[rgba(10,20,32,0.10)] rounded-xl text-[14px] text-[#0A1420] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+              className="w-full px-3 min-h-[46px] bg-[#EFEDE8] border border-[rgba(10,20,32,0.10)] rounded-xl text-[14px] text-[#0A1420] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
             />
           </div>
 
@@ -140,7 +140,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave, 
                     <button
                       type="button"
                       onClick={() => setCloseups((prev) => prev.filter((_, j) => j !== i))}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#F0F4F8] border border-neutral-700 flex items-center justify-center text-[rgba(10,20,32,0.72)]"
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#EFEDE8] border border-neutral-700 flex items-center justify-center text-[rgba(10,20,32,0.72)]"
                       aria-label="Remove close-up"
                     >
                       <X size={11} />

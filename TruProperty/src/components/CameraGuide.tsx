@@ -672,7 +672,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           console below are pinned siblings (no scroll wrapper), so Shoot / Skip /
           Import stay reachable and the viewfinder above (flex-1 min-h-0) flexes to
           fill the rest — a bigger preview with controls always in reach. */}
-      <div className="bg-[#F0F4F8] border-t border-[rgba(10,20,32,0.06)] py-2 shrink-0 z-10">
+      <div className="bg-[#EFEDE8] border-t border-[rgba(10,20,32,0.06)] py-2 shrink-0 z-10">
         <div ref={chipStripRef} className="flex gap-2 overflow-x-auto pb-1 px-3 scrollbar-none">
           {allSlots.map((slot, i) => {
             const isTaken = !!photos[slot.id];
@@ -868,7 +868,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
                   {Math.round((bulkProgress.current / bulkProgress.total) * 100)}%
                 </span>
               </div>
-              <div className="w-full bg-[#F0F4F8] rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-[#EFEDE8] rounded-full h-1.5 overflow-hidden">
                 <div 
                   className={`h-full transition-all duration-300 ${bulkProgress.status === 'done' ? 'bg-emerald-500' : 'bg-indigo-500'}`}
                   style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
@@ -888,7 +888,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
               bulkItems.map((item) => {
                 const isTaken = !!photos[item.slotId];
                 return (
-                  <div key={item.id} className="bg-[#F0F4F8] rounded-xl p-3 border border-[rgba(10,20,32,0.06)] flex gap-3 items-center relative hover:border-[rgba(10,20,32,0.10)] transition-colors">
+                  <div key={item.id} className="bg-[#EFEDE8] rounded-xl p-3 border border-[rgba(10,20,32,0.06)] flex gap-3 items-center relative hover:border-[rgba(10,20,32,0.10)] transition-colors">
                     {/* Thumbnail */}
                     <div className="w-14 h-14 rounded-lg bg-black border border-[rgba(10,20,32,0.10)] overflow-hidden shrink-0 relative">
                       <img 
@@ -950,7 +950,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           </div>
 
           {/* Action Footer */}
-          <div className="p-4 border-t border-[rgba(10,20,32,0.06)] bg-[#F0F4F8]/80 flex items-center gap-3 shrink-0">
+          <div className="p-4 border-t border-[rgba(10,20,32,0.06)] bg-[#EFEDE8]/80 flex items-center gap-3 shrink-0">
             <button
               onClick={() => {
                 setIsBulkModalOpen(false);

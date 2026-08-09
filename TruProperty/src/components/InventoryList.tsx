@@ -323,9 +323,7 @@ export default function InventoryList({
         {/* Subtle gradient accent line at top edge */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#4FE3DC]/40 to-transparent" />
         <div className="flex items-start gap-3 min-w-0">
-          <div className="h-9 w-9 rounded-[10px] bg-gradient-to-br from-white/[0.12] to-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
-            <img src="/icons/tp-appicon.svg" alt="PropInspect" className="h-5 w-5 brightness-0 invert" />
-          </div>
+          <img src="/icons/tp-appicon.svg" alt="PropInspect" className="h-9 w-9 rounded-[10px] shrink-0 mt-0.5" />
           <div className="min-w-0">
             <h1 className="text-[17px] font-bold text-white truncate leading-tight tracking-[-0.01em]">{dealershipName}</h1>
             <p className="text-[13px] text-[rgba(255,255,255,0.45)] leading-tight truncate mt-0.5">
@@ -624,7 +622,7 @@ export default function InventoryList({
                                   ? slot.required
                                     ? 'bg-[#0E9D98]/12 border-[#0E9D98]/25 text-[#0E9D98]'
                                     : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600'
-                                  : 'bg-[#F0F4F8]/50 border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.45)] hover:text-[rgba(10,20,32,0.72)] hover:border-[rgba(10,20,32,0.15)]'
+                                  : 'bg-[#EFEDE8]/50 border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.45)] hover:text-[rgba(10,20,32,0.72)] hover:border-[rgba(10,20,32,0.15)]'
                               }`}
                               title={slot.description}
                             >
@@ -730,7 +728,7 @@ export default function InventoryList({
         {/* Propertys Inventory List */}
         <div className="space-y-3 pb-4">
           {filteredProperties.length === 0 ? (
-            <div className="text-center py-10 bg-gradient-to-b from-white/80 to-[#F0F4F8]/40 rounded-xl border border-dashed border-indigo-500/20 flex flex-col items-center justify-center p-5">
+            <div className="text-center py-10 bg-gradient-to-b from-white/80 to-[#EFEDE8]/40 rounded-xl border border-dashed border-indigo-500/20 flex flex-col items-center justify-center p-5">
               <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-3">
                 <Camera size={22} className="text-indigo-400" />
               </div>

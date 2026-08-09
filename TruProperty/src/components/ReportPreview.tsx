@@ -277,7 +277,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const hero = vehicle.photos?.front_bumper || Object.values(vehicle.photos || {})[0];
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-[#F4F8FC] text-[#0A1420]">
+    <div className="h-full w-full overflow-y-auto bg-[#F5F4F1] text-[#0A1420]">
       {/* Signed off after the inspection, before the report goes anywhere.
           On screen only — the printed VIR shows the values on its own
           signature block. */}
@@ -295,7 +295,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 if (v !== (vehicle.inspectorName || '')) onVehicleUpdated?.({ ...vehicle, inspectorName: v });
               }}
               placeholder="Inspector name"
-              className="w-full px-3 py-3 rounded-lg bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] text-[13px] text-[#0A1420] placeholder-neutral-400"
+              className="w-full px-3 py-3 rounded-lg bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] text-[13px] text-[#0A1420] placeholder-neutral-400"
             />
             <input
               type="text"
@@ -305,7 +305,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 if (v !== (vehicle.inspectorRole || '')) onVehicleUpdated?.({ ...vehicle, inspectorRole: v });
               }}
               placeholder="Designation (e.g. Workshop Manager)"
-              className="w-full px-3 py-3 rounded-lg bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] text-[13px] text-[#0A1420] placeholder-neutral-400"
+              className="w-full px-3 py-3 rounded-lg bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] text-[13px] text-[#0A1420] placeholder-neutral-400"
             />
           </div>
           {(!vehicle.inspectorName || !vehicle.erfNumber) && (

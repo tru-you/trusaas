@@ -5,13 +5,13 @@
    (SA property management) so the palette moves to airy whites, a
    sophisticated deep teal accent, and warm near-black text.
 
-   Cool blue-cream body (#F4F8FC), white panels, deep teal accent (#0E9D98)
+   Cool blue-cream body (#F5F4F1), white panels, deep teal accent (#0E9D98)
    that passes WCAG AA on white. Inter stays.
    ========================================================================== */
 
 :root {
   /* Surfaces --------------------------------------------------------------- */
-  --ink:        #F4F8FC;
+  --ink:        #F5F4F1;
   --ink-2:      #FFFFFF;
   --glass:      rgba(10, 20, 32, 0.04);
   --glass-line: rgba(10, 20, 32, 0.10);

@@ -14,7 +14,7 @@ import propInspectLogo from '../assets/images/propinspect-logo.svg';
  *
  * ── The dead end this screen used to be ────────────────────────────────────
  * The code is checked by POST /api/auth/device, and the first thing that route
- * does is refuse everything with 503 when TRUINSPECT_ACCESS_CODE is unset. On
+ * does is refuse everything with 503 when TRUPROPERTY_ACCESS_CODE is unset. On
  * an instance where nobody has set that variable — which is every fresh checkout
  * and any deploy that missed the env var — this screen showed a code field that
  * could not succeed no matter what was typed into it, and said only "no access
@@ -37,8 +37,8 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [server, setServer] = React.useState<ServerState>('checking');
-  /* Matches TruLens, which shares this screen's shape: the code is typed on a
-     phone, outdoors, next to a car. Entering it blind is how you fail twice. */
+  /* The code is typed on a phone, often on-site. Entering it blind is how
+     you fail twice. */
   const [reveal, setReveal] = React.useState(false);
   const [capsOn, setCapsOn] = React.useState(false);
 
@@ -89,7 +89,7 @@ export default function Login() {
         paddingTop: 'calc(2.5rem + env(safe-area-inset-top, 0px))',
         paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))',
       }}
-      className="h-full w-full overflow-y-auto bg-[#F4F8FC] flex flex-col items-center justify-center px-6 relative"
+      className="h-full w-full overflow-y-auto bg-[#F5F4F1] flex flex-col items-center justify-center px-6 relative"
     >
       <div className="absolute top-[-12%] right-[-18%] w-72 h-72 bg-[#0E9D98]/[0.04] blur-[110px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-12%] left-[-18%] w-72 h-72 bg-[#0E9D98]/[0.04] blur-[110px] rounded-full pointer-events-none" />

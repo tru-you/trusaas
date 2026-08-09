@@ -206,7 +206,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
               className={`relative shrink-0 w-16 rounded-lg overflow-hidden border-2 ${active ? 'border-[#0E9D98]' : 'border-[rgba(10,20,32,0.10)]'}`}
             >
               <img src={vehicle.photos[s.id]} alt={s.name} className="w-16 h-12 object-cover" />
-              <span className="block text-[13px] leading-tight px-1 py-0.5 text-[rgba(10,20,32,0.72)] truncate bg-[#F0F4F8]">{s.name}</span>
+              <span className="block text-[13px] leading-tight px-1 py-0.5 text-[rgba(10,20,32,0.72)] truncate bg-[#EFEDE8]">{s.name}</span>
               {count > 0 && (
                 <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[13px] font-semibold flex items-center justify-center">{count}</span>
               )}
@@ -287,7 +287,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
                     className={`px-3 py-1 rounded-full text-[13px] font-semibold border capitalize ${
                       editing.damageType === t
                         ? 'bg-[#0E9D98]/12 border-[#0E9D98]/40 text-[#0E9D98]'
-                        : 'bg-[#F0F4F8] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
+                        : 'bg-[#EFEDE8] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
                     }`}
                   >
                     {t}
@@ -308,7 +308,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
                       type="button"
                       onClick={() => updateTag(editing.id, { severity: n as DamageFinding['severity'] })}
                       style={active ? { background: `${meta.color}22`, borderColor: meta.color, color: meta.color } : undefined}
-                      className={`flex-1 py-2 rounded-lg text-[13px] font-bold border ${active ? '' : 'bg-[#F0F4F8] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'}`}
+                      className={`flex-1 py-2 rounded-lg text-[13px] font-bold border ${active ? '' : 'bg-[#EFEDE8] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'}`}
                     >
                       {n}<span className="block text-[13px] font-medium">{meta.label}</span>
                     </button>
@@ -324,7 +324,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
                 value={editing.note}
                 onChange={(e) => updateTag(editing.id, { note: e.target.value })}
                 placeholder="e.g. 15cm scratch through clearcoat, lower door"
-                className="w-full px-3 py-2 bg-[#F0F4F8] border border-[rgba(10,20,32,0.10)] rounded-lg text-[13px] text-[#0A1420] placeholder-neutral-400 focus:outline-none focus:border-[#0E9D98]/40"
+                className="w-full px-3 py-2 bg-[#EFEDE8] border border-[rgba(10,20,32,0.10)] rounded-lg text-[13px] text-[#0A1420] placeholder-neutral-400 focus:outline-none focus:border-[#0E9D98]/40"
               />
             </div>
 
@@ -340,7 +340,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
               <button
                 type="button"
                 onClick={() => setEditingId(null)}
-                className="w-full py-2 rounded-lg bg-[#F0F4F8] border border-[rgba(10,20,32,0.10)] text-[13px] font-semibold text-[rgba(10,20,32,0.72)] flex items-center justify-center gap-2"
+                className="w-full py-2 rounded-lg bg-[#EFEDE8] border border-[rgba(10,20,32,0.10)] text-[13px] font-semibold text-[rgba(10,20,32,0.72)] flex items-center justify-center gap-2"
               >
                 <Check size={14} /> Done with this mark
               </button>
@@ -364,7 +364,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
           type="button"
           onClick={scanWithAI}
           disabled={scanning || !photo}
-          className="w-full py-3 rounded-xl bg-[#F0F4F8] border border-[#0E9D98]/20 text-[#0E9D98] text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full py-3 rounded-xl bg-[#EFEDE8] border border-[#0E9D98]/20 text-[#0E9D98] text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {scanning ? <><Loader2 size={14} className="animate-spin" /> Scanning this photo…</> : <><Sparkles size={14} /> Scan this photo with AI</>}
         </button>
@@ -382,7 +382,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
             type="button"
             onClick={async () => { await handleSave(false); onContinueToChecklist(); }}
             disabled={saving}
-            className="w-full py-3 rounded-xl bg-[#F0F4F8] border border-[#0E9D98]/20 text-[#0E9D98] text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full py-3 rounded-xl bg-[#EFEDE8] border border-[#0E9D98]/20 text-[#0E9D98] text-[13px] font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
           >
             <ClipboardCheck size={14} /> Continue to Checklist
           </button>

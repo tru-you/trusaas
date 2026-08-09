@@ -89,8 +89,8 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
                       isFlagged
                         ? 'bg-amber-50 border-amber-500/40'
                         : a?.answer
-                          ? 'bg-[#F0F4F8] border-emerald-500/25'
-                          : 'bg-[#F0F4F8] border-[rgba(10,20,32,0.10)]'
+                          ? 'bg-[#EFEDE8] border-emerald-500/25'
+                          : 'bg-[#EFEDE8] border-[rgba(10,20,32,0.10)]'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">

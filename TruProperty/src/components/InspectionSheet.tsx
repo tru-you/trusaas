@@ -151,7 +151,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                 return (
                   <div
                     key={p.id}
-                    className={`rounded-xl border p-3 ${isFlagged ? 'bg-amber-50 border-amber-500/40' : 'bg-[#F0F4F8] border-[rgba(10,20,32,0.10)]'}`}
+                    className={`rounded-xl border p-3 ${isFlagged ? 'bg-amber-50 border-amber-500/40' : 'bg-[#EFEDE8] border-[rgba(10,20,32,0.10)]'}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -306,7 +306,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                     className={`rounded-xl border p-3 ${
                       c.received
                         ? 'bg-emerald-50 border-emerald-500/30'
-                        : 'bg-[#F0F4F8] border-[rgba(10,20,32,0.10)]'
+                        : 'bg-[#EFEDE8] border-[rgba(10,20,32,0.10)]'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">

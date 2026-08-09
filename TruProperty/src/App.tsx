@@ -390,7 +390,7 @@ export default function App() {
     }
   }, [activeView, activeVehicleId, vehicles]);
 
-  if (loading) return <div className="h-full w-full flex items-center justify-center bg-[#F4F8FC] text-[#0A1420]">Loading Auth...</div>;
+  if (loading) return <div className="h-full w-full flex items-center justify-center bg-[#F5F4F1] text-[#0A1420]">Loading Auth...</div>;
 
   const activeVehicle = activeVehicleId
     ? vehicles.find(v => v.id === activeVehicleId) || null
