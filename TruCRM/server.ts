@@ -553,6 +553,29 @@ Format the output in clear Markdown.`,
   }
 
   async function renderWithHeadless(url: string): Promise<string | null> {
+    // Prefer the dedicated scraper worker (trusaas-crm-scraper): Chromium +
+    // Node together exceed a 512 MB Render instance, so running the browser
+    // in-process crashed the whole CRM service. The worker has its own
+    // instance and only renders pages on request.
+    const workerUrl = (process.env.SCRAPER_SERVICE_URL || "").trim();
+    if (workerUrl) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 60000);
+        const res = await fetch(`${workerUrl}/scrape`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (!res.ok) return null;
+        const data: any = await res.json();
+        return data?.ok && typeof data?.html === "string" ? data.html : null;
+      } catch (e: any) {
+        console.warn("[scraper] remote headless render failed, falling back to local:", e?.message);
+      }
+    }
     let page: any;
     try {
       const browser = await getHeadlessBrowser();

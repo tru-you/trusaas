@@ -284,3 +284,20 @@ services:
       # fallback for scraping JS-rendered dealer sites (off by default).
       - key: ENABLE_HEADLESS
         sync: false
+      # Where to find the headless renderer worker (trusaas-crm-scraper below).
+      # Chromium + Node together exceed a 512 MB instance, so the browser runs
+      # in its own service and the CRM calls POST /scrape on it.
+      - key: SCRAPER_SERVICE_URL
+        value: https://trusaas-crm-scraper.onrender.com
+
+  # ── 5b. TruCRM Scraper — dedicated headless Chromium renderer ──────────────
+  # Own instance so a browser launch/render can never take down the CRM.
+  # The CRM calls POST /scrape { url } → { ok, html, url }.
+  - type: web
+    name: trusaas-crm-scraper
+    runtime: node
+    plan: starter
+    rootDir: TruCRM
+    buildCommand: npm install && npm run build
+    startCommand: node dist/scrape-worker.cjs
+    healthCheckPath: /api/health
