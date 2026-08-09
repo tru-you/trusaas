@@ -539,7 +539,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   const angleCorrect = Math.abs(simPitch - activeSlot.idealAngle.pitch) < 4 && Math.abs(simRoll) < 3;
 
   return (
-    <div id="camera-guide-container" className="flex flex-col h-full bg-white text-[#0A1420] overflow-hidden relative">
+    <div id="camera-guide-container" className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden relative">
       
       {/* Hidden processing canvas */}
       <canvas ref={canvasRef} className="hidden" />
@@ -825,12 +825,12 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
       {isBulkModalOpen && (
         <div className="absolute inset-0 bg-white/98 z-50 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-4 border-b border-[rgba(10,20,32,0.06)] bg-[#F0F4F8] flex items-center justify-between shrink-0">
+          <div className="px-4 py-4 bg-[#0A1420]/80 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <Images className="text-indigo-400" size={18} />
+              <Images className="text-[#4FE3DC]" size={18} />
               <div>
-                <h3 className="text-[13px] font-medium text-[#0A1420]">Bulk Camera Roll Importer</h3>
-                <p className="text-[13px] text-[rgba(10,20,32,0.55)]">Batch-import photos from your camera roll</p>
+                <h3 className="text-[13px] font-medium text-white">Bulk Camera Roll Importer</h3>
+                <p className="text-[13px] text-white/50">Batch-import photos from your camera roll</p>
               </div>
             </div>
             {bulkProgress.status === 'idle' && (
@@ -914,7 +914,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
                           const val = e.target.value;
                           setBulkItems(prev => prev.map(p => p.id === item.id ? { ...p, slotId: val } : p));
                         }}
-                        className="w-full bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded-lg text-[13px] py-1 px-2 text-[rgba(10,20,32,0.85)] focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-lg text-[13px] py-1 px-2 text-[rgba(10,20,32,0.85)] focus:border-indigo-500 focus:outline-none"
                       >
                         {slots.map(slot => (
                           <option key={slot.id} value={slot.id}>
@@ -957,7 +957,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
                 setBulkItems([]);
               }}
               disabled={bulkProgress.status === 'syncing'}
-              className="flex-1 py-2 bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded-xl text-[13px] font-bold text-[rgba(10,20,32,0.45)] hover:bg-[#E8ECF0] cursor-pointer disabled:opacity-50"
+              className="flex-1 py-2 bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-xl text-[13px] font-bold text-[rgba(10,20,32,0.45)] hover:bg-[#E8ECF0] cursor-pointer disabled:opacity-50"
             >
               Cancel
             </button>

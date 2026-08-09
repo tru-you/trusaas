@@ -316,17 +316,19 @@ export default function InventoryList({
 
 
   return (
-    <div id="inventory-list-container" className="flex flex-col h-full bg-white text-[#0A1420] overflow-hidden">
+    <div id="inventory-list-container" className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden">
       
-      {/* App header — the .tl-appbar is retired (62px of chrome that said what
-          one line of type says better). A plain page title, a count, and one
-          quiet ghost action. */}
-      <div className="px-4 pt-4 pb-1 flex items-start justify-between gap-3 shrink-0">
-        <div className="flex items-start gap-2.5 min-w-0">
-          <img src="/icons/tp-appicon.svg" alt="PropInspect" className="h-7 w-7 rounded-[7px] shrink-0 mt-0.5" />
+      {/* App header — premium dark glassmorphic band */}
+      <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-3 shrink-0 bg-[#0A1420]/90 backdrop-blur-xl border-b border-white/[0.06] relative overflow-hidden">
+        {/* Subtle gradient accent line at top edge */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#4FE3DC]/40 to-transparent" />
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="h-9 w-9 rounded-[10px] bg-gradient-to-br from-white/[0.12] to-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
+            <img src="/icons/tp-appicon.svg" alt="PropInspect" className="h-5 w-5 brightness-0 invert" />
+          </div>
           <div className="min-w-0">
-            <h1 className="text-[17px] font-semibold text-[#0A1420] truncate leading-tight">{dealershipName}</h1>
-            <p className="text-[13px] text-[rgba(10,20,32,0.55)] leading-tight truncate mt-0.5">
+            <h1 className="text-[17px] font-bold text-white truncate leading-tight tracking-[-0.01em]">{dealershipName}</h1>
+            <p className="text-[13px] text-[rgba(255,255,255,0.45)] leading-tight truncate mt-0.5">
               {fleet.total === 0
                 ? 'No properties yet'
                 : fleet.needPhotos.length > 0
@@ -341,7 +343,7 @@ export default function InventoryList({
           type="button"
           onClick={handleLogout}
           disabled={loggingOut}
-          className="flex items-center justify-center h-10 w-10 rounded-[10px] shrink-0 text-[rgba(10,20,32,0.50)] hover:text-[#0A1420] hover:bg-[rgba(10,20,32,0.05)] transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center justify-center h-10 w-10 rounded-[10px] shrink-0 text-[rgba(255,255,255,0.40)] hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors cursor-pointer disabled:opacity-50"
           aria-label={user?.email ? `Sign out (${user.email})` : 'Sign out'}
           title={user?.email ? `Sign out (${user.email})` : 'Sign out'}
         >
@@ -452,7 +454,7 @@ export default function InventoryList({
                       className={`flex-1 min-h-[44px] rounded-xl text-[13px] font-semibold border transition-colors cursor-pointer ${
                         inspectionPurpose === val
                           ? 'bg-[#0E9D98]/12 border-[#0E9D98]/25 text-[#0E9D98]'
-                          : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.45)] hover:text-[rgba(10,20,32,0.72)]'
+                          : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.45)] hover:text-[rgba(10,20,32,0.72)]'
                       }`}
                     >
                       {label}
@@ -782,30 +784,42 @@ export default function InventoryList({
                 !!highlightStock &&
                 (vehicle.listingRef || '').toLowerCase() === highlightStock.toLowerCase();
 
+              const typeColor = (() => {
+                const t = (vehicle.propertyType || '').toLowerCase();
+                if (t.includes('house') || t.includes('home')) return '#0E9D98';
+                if (t.includes('flat') || t.includes('apartment') || t.includes('unit')) return '#6366f1';
+                if (t.includes('townhouse') || t.includes('duplex')) return '#8b5cf6';
+                if (t.includes('commercial') || t.includes('office') || t.includes('shop')) return '#f59e0b';
+                if (t.includes('farm') || t.includes('land') || t.includes('plot')) return '#22c55e';
+                return '#5A7A94';
+              })();
+
               return (
                 <div
                   key={vehicle.id}
                   ref={(el) => { cardRefs.current[vehicle.id] = el; }}
                   data-stock={vehicle.listingRef}
-                  className={`bg-white rounded-2xl border border-[rgba(10,20,32,0.10)] p-3 hover:border-[rgba(10,20,32,0.15)] hover:bg-[#F4F8FC]/90 flex flex-col gap-2 relative ${
+                  className={`bg-white rounded-2xl border border-[rgba(10,20,32,0.06)] shadow-[0_1px_3px_rgba(10,20,32,0.05),0_4px_14px_rgba(10,20,32,0.04)] hover:shadow-[0_2px_8px_rgba(10,20,32,0.08),0_8px_24px_rgba(10,20,32,0.06)] hover:border-[rgba(10,20,32,0.10)] transition-all duration-200 flex overflow-hidden relative ${
                     isHighlighted ? 'tl-stock-highlight' : ''
                   }`}
                 >
+                  <div className="w-1 shrink-0" style={{ backgroundColor: typeColor }} />
+                  <div className="flex-1 p-3 flex flex-col gap-2">
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
                       {/* Photo Preview Miniature Thumbnail or Property icon */}
-                      <div className="w-12 h-12 bg-[#F0F4F8] rounded-lg border border-[rgba(10,20,32,0.10)] flex items-center justify-center overflow-hidden shrink-0 relative">
+                      <div className="w-14 h-14 rounded-xl border border-[rgba(10,20,32,0.06)] flex items-center justify-center overflow-hidden shrink-0 relative shadow-[0_1px_2px_rgba(10,20,32,0.06)]" style={{ backgroundColor: thumb ? '#F0F0ED' : `${typeColor}08` }}>
                         {thumb ? (
                           <img
                             src={thumb}
-                            alt="Front bumper"
+                            alt="Property photo"
                             className="w-full h-full object-cover"
                             referrerPolicy="no-referrer"
                           />
                         ) : (
-                          <Building2 size={20} className="text-[rgba(10,20,32,0.35)]" />
+                          <Building2 size={22} style={{ color: typeColor, opacity: 0.5 }} />
                         )}
-                        <span className="absolute bottom-0 right-0 bg-white/80 px-1 text-[13px] font-mono font-bold text-[rgba(10,20,32,0.72)]">
+                        <span className="absolute bottom-0 right-0 bg-white/90 backdrop-blur-sm px-1.5 py-px text-[11px] font-mono font-bold text-[rgba(10,20,32,0.65)] rounded-tl-md">
                           {takenCount}/{totalCount}
                         </span>
                       </div>
@@ -946,6 +960,7 @@ export default function InventoryList({
                       )}
                     </div>
                   </div>
+                  </div>{/* close flex-1 content wrapper */}
                 </div>
               );
 
@@ -959,8 +974,8 @@ export default function InventoryList({
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <BarChart3 size={15} className="text-indigo-400" />
-                  <span className="text-[13px] font-bold text-[rgba(10,20,32,0.85)] tracking-normal">Dashboard</span>
+                  <BarChart3 size={15} className="text-[#0E9D98]" />
+                  <span className="text-[15px] font-bold text-[#0A1420] tracking-[-0.01em]">Dashboard</span>
                 </div>
                 <p className="text-[13px] text-[rgba(10,20,32,0.45)] mt-0.5">Photography & inspections</p>
               </div>
@@ -976,36 +991,51 @@ export default function InventoryList({
 
             {/* Performance KPIs */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-white p-2 rounded-xl border border-[rgba(10,20,32,0.06)] flex flex-col justify-between h-16">
-                <span className="text-[13px] text-[rgba(10,20,32,0.45)]  font-bold">Catalogue</span>
-                <span className="text-[16px] font-semibold text-[#0A1420]">{vehicles.length}</span>
+              <div className="bg-white pl-0 rounded-xl border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] flex h-16 overflow-hidden">
+                <div className="w-1 bg-[#0E9D98] rounded-l-xl shrink-0" />
+                <div className="p-2 flex flex-col justify-between flex-1">
+                  <span className="text-[13px] text-[rgba(10,20,32,0.45)] font-bold">Catalogue</span>
+                  <span className="text-[16px] font-semibold text-[#0A1420]">{vehicles.length}</span>
+                </div>
               </div>
-              <div className="bg-white p-2 rounded-xl border border-[rgba(10,20,32,0.06)] flex flex-col justify-between h-16">
-                <span className="text-[13px] text-emerald-500  font-bold">Ready</span>
-                <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready' || v.status === 'Listed').length}</span>
+              <div className="bg-white pl-0 rounded-xl border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] flex h-16 overflow-hidden">
+                <div className="w-1 bg-emerald-500 rounded-l-xl shrink-0" />
+                <div className="p-2 flex flex-col justify-between flex-1">
+                  <span className="text-[13px] text-emerald-500 font-bold">Ready</span>
+                  <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.status === 'Ready' || v.status === 'Listed').length}</span>
+                </div>
               </div>
-              <div className="bg-white p-2 rounded-xl border border-[rgba(10,20,32,0.06)] flex flex-col justify-between h-16">
-                <span className="text-[13px] text-amber-500  font-bold">Pending</span>
-                <span className="text-[16px] font-semibold text-amber-400">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
+              <div className="bg-white pl-0 rounded-xl border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] flex h-16 overflow-hidden">
+                <div className="w-1 bg-amber-500 rounded-l-xl shrink-0" />
+                <div className="p-2 flex flex-col justify-between flex-1">
+                  <span className="text-[13px] text-amber-500 font-bold">Pending</span>
+                  <span className="text-[16px] font-semibold text-amber-400">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-white p-2 rounded-xl border border-[rgba(10,20,32,0.06)] flex flex-col justify-between h-16">
-                <span className="text-[13px] text-indigo-500  font-bold">Capture rate</span>
-                <span className="text-[16px] font-semibold text-indigo-400">
-                  {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.reduce((acc, v) => acc + resolveSlots(v).length, 0) || 1)) * 100)}%
-                </span>
+              <div className="bg-white pl-0 rounded-xl border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] flex h-16 overflow-hidden">
+                <div className="w-1 bg-indigo-500 rounded-l-xl shrink-0" />
+                <div className="p-2 flex flex-col justify-between flex-1">
+                  <span className="text-[13px] text-indigo-500 font-bold">Capture rate</span>
+                  <span className="text-[16px] font-semibold text-indigo-400">
+                    {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.reduce((acc, v) => acc + resolveSlots(v).length, 0) || 1)) * 100)}%
+                  </span>
+                </div>
               </div>
-              <div className="bg-white p-2 rounded-xl border border-emerald-800/40 flex flex-col justify-between h-16">
-                <span className="text-[13px] text-emerald-500  font-bold">Reports</span>
-                <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.inspectorName).length}</span>
+              <div className="bg-white pl-0 rounded-xl border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] flex h-16 overflow-hidden">
+                <div className="w-1 bg-emerald-500 rounded-l-xl shrink-0" />
+                <div className="p-2 flex flex-col justify-between flex-1">
+                  <span className="text-[13px] text-emerald-500 font-bold">Reports</span>
+                  <span className="text-[16px] font-semibold text-emerald-400">{vehicles.filter(v => v.inspectorName).length}</span>
+                </div>
               </div>
             </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-2 gap-2">
               {/* Readiness */}
-              <div className="bg-white border border-[rgba(10,20,32,0.06)] rounded-xl p-3 h-48 flex flex-col">
+              <div className="bg-white border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] rounded-xl p-3 h-48 flex flex-col">
                 <span className="text-[13px] font-bold text-[rgba(10,20,32,0.55)]  mb-2">Readiness</span>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1039,7 +1069,7 @@ export default function InventoryList({
               </div>
 
               {/* Weekly Capture Volume */}
-              <div className="bg-white border border-[rgba(10,20,32,0.06)] rounded-xl p-3 h-48 flex flex-col">
+              <div className="bg-white border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] rounded-xl p-3 h-48 flex flex-col">
                 <span className="text-[13px] font-bold text-[rgba(10,20,32,0.55)]  mb-2">Weekly activity</span>
                 <div className="flex-1 min-h-0">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1072,7 +1102,7 @@ export default function InventoryList({
             </div>
 
             {/* Critical Action Items */}
-            <div className="bg-white border border-[rgba(10,20,32,0.06)] rounded-xl p-3">
+            <div className="bg-white border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] rounded-xl p-3">
               {/* "Attention Required" and "Action Needed" side by side said the
                   same thing twice and neither said what to do. The heading now
                   names the work; the count is the urgency. */}
@@ -1091,7 +1121,7 @@ export default function InventoryList({
                   vehicles.filter(v => v.status === 'In-Progress').slice(0, 3).map(v => {
                     const missingCount = resolveSlots(v).filter(s => s.required && !(v.photos || {})[s.id]).length;
                     return (
-                      <div key={v.id} className="flex items-center justify-between p-2 bg-[#F4F8FC]/40 rounded-lg border border-[rgba(10,20,32,0.06)]">
+                      <div key={v.id} className="flex items-center justify-between p-2 bg-[#F5F4F1]/40 rounded-lg border border-[rgba(10,20,32,0.06)]">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded bg-amber-500/10 flex items-center justify-center">
                             <Building2 size={12} className="text-amber-500" />
@@ -1115,7 +1145,7 @@ export default function InventoryList({
             </div>
 
             {/* Next action — computed from the fleet, not asserted. */}
-            <div className="bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded-xl p-4 flex items-start gap-3">
+            <div className="bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-xl p-4 flex items-start gap-3">
               <div className="p-2 rounded-lg bg-[#0E9D98]/12 text-[#0E9D98] shrink-0">
                 <Lightbulb size={14} />
               </div>
@@ -1152,8 +1182,8 @@ export default function InventoryList({
             </div>
 
             {/* Profile Section */}
-            <div className="bg-white border border-[rgba(10,20,32,0.06)] rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-[rgba(10,20,32,0.06)] bg-[#F4F8FC]">
+            <div className="bg-white border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] rounded-xl overflow-hidden">
+              <div className="p-3 border-b border-[rgba(10,20,32,0.06)] bg-[#F5F4F1]">
                 <span className="text-[13px] font-bold text-[rgba(10,20,32,0.55)] ">Organisation profile</span>
               </div>
               <div className="p-4 space-y-4">
@@ -1163,7 +1193,7 @@ export default function InventoryList({
                     type="text" 
                     value={dealershipName}
                     onChange={(e) => setDealershipName(e.target.value)}
-                    className="w-full bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded-lg px-3 py-2 text-[13px] text-[#0A1420] focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-lg px-3 py-2 text-[13px] text-[#0A1420] focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div className="space-y-2">
@@ -1172,15 +1202,15 @@ export default function InventoryList({
                     type="text" 
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
-                    className="w-full bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded-lg px-3 py-2 text-[13px] text-[#0A1420] focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-lg px-3 py-2 text-[13px] text-[#0A1420] focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
             </div>
 
             {/* Regional & Localization */}
-            <div className="bg-white border border-[rgba(10,20,32,0.06)] rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-[rgba(10,20,32,0.06)] bg-[#F4F8FC]">
+            <div className="bg-white border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] rounded-xl overflow-hidden">
+              <div className="p-3 border-b border-[rgba(10,20,32,0.06)] bg-[#F5F4F1]">
                 <span className="text-[13px] font-bold text-[rgba(10,20,32,0.55)] ">Regional & Localization</span>
               </div>
               <div className="p-4 space-y-4">
@@ -1192,7 +1222,7 @@ export default function InventoryList({
                   <select 
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded px-2 py-1 text-[13px] text-[#0A1420]"
+                    className="bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded px-2 py-1 text-[13px] text-[#0A1420]"
                   >
                     <option value="ZAR">South African Rand (R)</option>
                     <option value="USD">US Dollar ($)</option>
@@ -1203,8 +1233,8 @@ export default function InventoryList({
             </div>
 
             {/* AI Core Tuning */}
-            <div className="bg-white border border-[rgba(10,20,32,0.06)] rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-[rgba(10,20,32,0.06)] bg-[#F4F8FC] flex items-center justify-between">
+            <div className="bg-white border border-[rgba(10,20,32,0.05)] shadow-[0_1px_3px_rgba(10,20,32,0.04),0_4px_12px_rgba(10,20,32,0.03)] rounded-xl overflow-hidden">
+              <div className="p-3 border-b border-[rgba(10,20,32,0.06)] bg-[#F5F4F1] flex items-center justify-between">
                 <span className="text-[13px] font-bold text-[rgba(10,20,32,0.55)] ">Capture quality</span>
                 <Camera size={11} className="text-[#0E9D98]" />
               </div>
@@ -1313,9 +1343,10 @@ export default function InventoryList({
               onClick={() => setCurrentTab(id)}
               title={title}
               aria-current={on ? 'page' : undefined}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1.5 rounded-xl text-[12px] font-semibold tracking-normal transition-colors cursor-pointer ${
-                on ? 'text-[#0E9D98] bg-[#0E9D98]/10' : 'text-[rgba(10,20,32,0.45)] hover:text-[rgba(10,20,32,0.65)]'
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-1.5 text-[12px] font-semibold tracking-normal transition-all cursor-pointer relative ${
+                on ? 'text-[#0E9D98]' : 'text-[rgba(10,20,32,0.40)] hover:text-[rgba(10,20,32,0.65)]'
               }`}
+              style={on ? { boxShadow: 'inset 0 2px 0 #0E9D98' } : undefined}
             >
               <Icon size={18} strokeWidth={on ? 2.4 : 2} />
               {label}

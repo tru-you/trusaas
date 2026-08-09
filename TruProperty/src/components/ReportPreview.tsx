@@ -764,7 +764,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   r?.works === 'no' ? { t: 'Not Present', c: '#B03226' } :
                   { t: '—', c: '#6E6656' }
                 ) : kind === 'compliance' ? (
-                  r?.works === 'yes' ? { t: 'FSH', c: '#1A7A3A' } :
+                  r?.works === 'yes' ? { t: 'Yes', c: '#1A7A3A' } :
                   r?.works === 'na' ? { t: 'Partial', c: '#B07A26' } :
                   r?.works === 'no' ? { t: 'None', c: '#B03226' } :
                   { t: '—', c: '#6E6656' }

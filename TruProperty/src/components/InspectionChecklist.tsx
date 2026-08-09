@@ -47,24 +47,24 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
   };
 
   return (
-    <div className="flex flex-col h-full bg-white text-[#0A1420] overflow-hidden">
+    <div className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden">
       {/* Header */}
-      <div className="tl-glass p-4 border-b border-[rgba(10,20,32,0.10)] flex items-center justify-between shrink-0">
+      <div className="bg-[#0A1420]/80 backdrop-blur-xl border-b border-white/[0.06] p-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
+          <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08]" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2 font-display">
-              <ClipboardList size={15} className="text-[#0E9D98]" /> Inspection checklist
+            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2 font-display text-white">
+              <ClipboardList size={15} className="text-[#4FE3DC]" /> Inspection checklist
             </h1>
-            <p className="text-[13px] text-[rgba(10,20,32,0.55)]">
+            <p className="text-[13px] text-white/50">
               {vehicle.propertyType} — {vehicle.suburb} · {vehicle.listingRef}
             </p>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[13px] font-bold text-[rgba(10,20,32,0.72)]">{answered}/{totalItems} answered</div>
+          <div className="text-[13px] font-bold text-white/70">{answered}/{totalItems} answered</div>
           <div className={`text-[13px] font-bold ${flagged ? 'text-amber-400' : 'text-emerald-400'}`}>
             {flagged ? `${flagged} flagged for report` : 'Nothing flagged'}
           </div>
@@ -114,7 +114,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
                               ? opt.value === item.flagWhen
                                 ? 'bg-amber-500/20 border-amber-500/40 text-amber-600'
                                 : 'bg-cyan-500/15 border-[#0E9D98]/25 text-[#0E9D98]'
-                              : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)] hover:border-neutral-700'
+                              : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)] hover:border-neutral-700'
                           }`}
                         >
                           {opt.label}
@@ -127,7 +127,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
                         value={a?.note || ''}
                         onChange={e => setNote(item.id, e.target.value)}
                         placeholder="Add detail for the report (what / where / size)…"
-                        className="mt-2 w-full px-3 py-2 bg-[#F4F8FC] border border-amber-500/25 rounded-lg text-[13px] text-[#0A1420] placeholder-[rgba(10,20,32,0.35)] focus:outline-none focus:border-amber-400/50"
+                        className="mt-2 w-full px-3 py-2 bg-[#F5F4F1] border border-amber-500/25 rounded-lg text-[13px] text-[#0A1420] placeholder-[rgba(10,20,32,0.35)] focus:outline-none focus:border-amber-400/50"
                       />
                     )}
                   </div>
@@ -139,7 +139,7 @@ export default function InspectionChecklist({ vehicle, onBack, onSave }: Inspect
       </div>
 
       {/* Save bar */}
-      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-white/95">
+      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-[#F5F4F1]/95">
         <button
           type="button"
           onClick={() => handleSave(false)}

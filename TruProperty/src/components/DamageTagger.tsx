@@ -155,12 +155,12 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
 
   if (!shotSlots.length) {
     return (
-      <div className="flex flex-col h-full bg-white text-[#0A1420]">
-        <div className="tl-glass p-4 border-b border-[#0E9D98]/15 flex items-center gap-3 shrink-0">
-          <button onClick={onBack} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
+      <div className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420]">
+        <div className="bg-[#0A1420]/80 backdrop-blur-xl border-b border-white/[0.06] p-4 flex items-center gap-3 shrink-0">
+          <button onClick={onBack} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08]" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
-          <h1 className="text-[16px] font-bold">Tag damage</h1>
+          <h1 className="text-[16px] font-bold text-white">Tag damage</h1>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-2 px-8 text-center text-[rgba(10,20,32,0.55)]">
           <AlertTriangle size={22} className="text-amber-400" />
@@ -171,25 +171,25 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
   }
 
   return (
-    <div className="flex flex-col h-full bg-white text-[#0A1420] overflow-hidden">
+    <div className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden">
       {/* Header */}
-      <div className="tl-glass p-4 border-b border-[#0E9D98]/15 flex items-center justify-between shrink-0">
+      <div className="bg-[#0A1420]/80 backdrop-blur-xl border-b border-white/[0.06] p-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
+          <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08]" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
           <div className="min-w-0">
-            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2">
-              <AlertTriangle size={15} className="text-[#0E9D98]" /> Tag damage
+            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2 text-white">
+              <AlertTriangle size={15} className="text-[#4FE3DC]" /> Tag damage
             </h1>
-            <p className="text-[13px] text-[rgba(10,20,32,0.55)] truncate">
+            <p className="text-[13px] text-white/50 truncate">
               {vehicle.propertyType} — {vehicle.suburb} · {vehicle.listingRef}
             </p>
           </div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-[13px] font-bold text-[rgba(10,20,32,0.72)]">{totalTags} tag{totalTags === 1 ? '' : 's'}</div>
-          <div className="text-[13px] text-[rgba(10,20,32,0.45)]">across {shotSlots.length} photos</div>
+          <div className="text-[13px] font-bold text-white/70">{totalTags} tag{totalTags === 1 ? '' : 's'}</div>
+          <div className="text-[13px] text-white/45">across {shotSlots.length} photos</div>
         </div>
       </div>
 
@@ -356,7 +356,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
       </div>
 
       {/* Save bar */}
-      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-white/95 space-y-2">
+      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-[#F5F4F1]/95 space-y-2">
         {scanMsg && (
           <p className="text-[13px] text-[#0E9D98]/90 text-center leading-snug">{scanMsg}</p>
         )}

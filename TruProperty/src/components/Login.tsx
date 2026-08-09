@@ -91,16 +91,11 @@ export default function Login() {
       }}
       className="h-full w-full overflow-y-auto bg-[#F4F8FC] flex flex-col items-center justify-center px-6 relative"
     >
-      {/* Two soft pools of light rather than a flat black field. Kept well under
-          the type so nothing sits on a gradient edge. */}
       <div className="absolute top-[-12%] right-[-18%] w-72 h-72 bg-[#0E9D98]/[0.04] blur-[110px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-12%] left-[-18%] w-72 h-72 bg-[#0E9D98]/[0.04] blur-[110px] rounded-full pointer-events-none" />
 
       <div className="w-full max-w-sm z-10 flex flex-col items-center">
 
-        {/* Wordmark. The one place the brand is allowed to be loud — 38px is
-            --t-h1 from brand.css. The tagline under it used to be 13px with
-            0.3em of tracking, which is a lot of work to read at that size. */}
         <div className="text-center mb-10">
           <img src={propInspectLogo} alt="PropInspect" className="h-20 w-full max-w-xs mx-auto object-contain" />
           <p className="mt-3 text-[12px] text-[rgba(10,20,32,0.50)] tracking-[0.08em]">
@@ -231,8 +226,6 @@ export default function Login() {
           </p>
         )}
 
-        {/* Footer. Was four separate 13px items plus a version line at 10%
-            opacity — 1.2:1, i.e. not visible at all. One quiet line instead. */}
         <p className="mt-10 text-center text-[12px] text-[rgba(10,20,32,0.50)] leading-relaxed">
           <span className="text-[rgba(10,20,32,0.65)]">Prop Inspect</span>
           {' — by TruProperty · V 1.0'}

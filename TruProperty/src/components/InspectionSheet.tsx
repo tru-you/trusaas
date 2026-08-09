@@ -5,8 +5,8 @@ import { DEFAULT_TEMPLATE } from '../templates';
 import { COMPLIANCE_CERTS } from '../template';
 
 /**
- * The inspection sheet — every part of the car gets a place to rate condition,
- * check that it works, and comment. Damage on a part is tagged on its real
+ * The inspection sheet — every area of the property gets a place to rate
+ * condition, check compliance, and comment. Damage is tagged on the real
  * photo in the damage tagger (reachable from the top button and per point).
  *
  * The report is graded only from what's entered here plus tagged damage — no
@@ -93,24 +93,24 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
   };
 
   return (
-    <div className="flex flex-col h-full bg-white text-[#0A1420] overflow-hidden">
+    <div className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden">
       {/* Header */}
-      <div className="tl-glass p-4 border-b border-[rgba(10,20,32,0.10)] flex items-center justify-between shrink-0">
+      <div className="bg-[#0A1420]/80 backdrop-blur-xl border-b border-white/[0.06] p-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg hover:bg-white/5" aria-label="Back">
+          <button onClick={() => handleSave(true)} className="flex items-center justify-center min-h-[44px] min-w-[44px] -ml-2 shrink-0 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08]" aria-label="Back">
             <ArrowLeft size={18} />
           </button>
           <div className="min-w-0">
-            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2">
-              <ClipboardCheck size={15} className="text-[#0E9D98]" /> Inspection
+            <h1 className="text-[16px] font-bold tracking-tight flex items-center gap-2 text-white">
+              <ClipboardCheck size={15} className="text-[#4FE3DC]" /> Inspection
             </h1>
-            <p className="text-[13px] text-[rgba(10,20,32,0.55)] truncate">
+            <p className="text-[13px] text-white/50 truncate">
               {vehicle.propertyType} — {vehicle.suburb} · {vehicle.listingRef}
             </p>
           </div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-[13px] font-bold text-[rgba(10,20,32,0.72)]">{answered}/{checklistPoints.length} done</div>
+          <div className="text-[13px] font-bold text-white/70">{answered}/{checklistPoints.length} done</div>
           <div className={`text-[13px] font-bold ${flagged ? 'text-amber-400' : 'text-emerald-400'}`}>
             {flagged ? `${flagged} to disclose` : 'Nothing flagged'}
           </div>
@@ -180,7 +180,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                                     : tone === 'amber'
                                       ? 'bg-amber-500/15 border-amber-500/40 text-amber-600'
                                       : 'bg-rose-500/15 border-rose-500/40 text-rose-600'
-                                  : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
+                                  : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
                               }`}
                             >
                               {label}
@@ -202,7 +202,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                                   ? val === 'yes'
                                     ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600'
                                     : 'bg-rose-500/15 border-rose-500/40 text-rose-600'
-                                  : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
+                                  : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
                               }`}
                             >
                               <Icon size={14} /> {label}
@@ -212,7 +212,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                       </div>
                     ) : p.kind === 'compliance' ? (
                       <div className="flex gap-2 mt-3">
-                        {([['yes', 'FSH'], ['na', 'Partial'], ['no', 'None']] as const).map(([val, label]) => {
+                        {([['yes', 'Yes'], ['na', 'Partial'], ['no', 'No']] as const).map(([val, label]) => {
                           const active = r.works === val;
                           return (
                             <button
@@ -226,7 +226,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                                     : val === 'na'
                                       ? 'bg-amber-500/15 border-amber-500/40 text-amber-600'
                                       : 'bg-rose-500/15 border-rose-500/40 text-rose-600'
-                                  : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
+                                  : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
                               }`}
                             >
                               {label}
@@ -251,7 +251,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                                     : val === 'yes'
                                       ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600'
                                       : 'bg-neutral-700/40 border-neutral-600 text-[rgba(10,20,32,0.72)]'
-                                  : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
+                                  : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
                               }`}
                             >
                               <Icon size={14} /> {label}
@@ -267,7 +267,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                       value={r.comment || ''}
                       onChange={(e) => set(p.id, { comment: e.target.value })}
                       placeholder="Comment (what / where / detail)…"
-                      className="mt-2 w-full px-3 py-2 bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded-lg text-[13px] text-[#0A1420] placeholder-[rgba(10,20,32,0.35)] focus:outline-none focus:border-[#0E9D98]/40"
+                      className="mt-2 w-full px-3 py-2 bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-lg text-[13px] text-[#0A1420] placeholder-[rgba(10,20,32,0.35)] focus:outline-none focus:border-[#0E9D98]/40"
                     />
 
                     {/* Damage tag indicator for points with a photo */}
@@ -326,7 +326,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                           className={`min-h-[40px] min-w-[56px] rounded-lg text-[12px] font-semibold border transition-colors ${
                             c.received
                               ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600'
-                              : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
+                              : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
                           }`}
                         >
                           Yes
@@ -340,7 +340,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                           className={`min-h-[40px] min-w-[56px] rounded-lg text-[12px] font-semibold border transition-colors ${
                             !c.received && certs[cert.id]
                               ? 'bg-amber-500/15 border-amber-500/40 text-amber-600'
-                              : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
+                              : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
                           }`}
                         >
                           No
@@ -354,7 +354,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                           className={`min-h-[40px] min-w-[48px] rounded-lg text-[12px] font-semibold border transition-colors ${
                             c.note === 'N/A'
                               ? 'bg-neutral-700/40 border-neutral-600 text-[rgba(10,20,32,0.72)]'
-                              : 'bg-[#F4F8FC] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
+                              : 'bg-[#F5F4F1] border-[rgba(10,20,32,0.10)] text-[rgba(10,20,32,0.55)]'
                           }`}
                         >
                           N/A
@@ -371,7 +371,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                             [cert.id]: { ...prev[cert.id], issuer: e.target.value },
                           }))}
                           placeholder="Issuer name"
-                          className="px-3 py-2 bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded-lg text-[12px] text-[#0A1420] placeholder-[rgba(10,20,32,0.35)] focus:outline-none focus:border-[#0E9D98]/40"
+                          className="px-3 py-2 bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-lg text-[12px] text-[#0A1420] placeholder-[rgba(10,20,32,0.35)] focus:outline-none focus:border-[#0E9D98]/40"
                         />
                         <input
                           type="date"
@@ -380,7 +380,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
                             ...prev,
                             [cert.id]: { ...prev[cert.id], date: e.target.value },
                           }))}
-                          className="px-3 py-2 bg-[#F4F8FC] border border-[rgba(10,20,32,0.10)] rounded-lg text-[12px] text-[#0A1420] focus:outline-none focus:border-[#0E9D98]/40"
+                          className="px-3 py-2 bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-lg text-[12px] text-[#0A1420] focus:outline-none focus:border-[#0E9D98]/40"
                         />
                       </div>
                     )}
@@ -393,7 +393,7 @@ export default function InspectionSheet({ vehicle, onBack, onSave, onTagDamage, 
       </div>
 
       {/* Save bar */}
-      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-white/95 flex gap-2">
+      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-[#F5F4F1]/95 flex gap-2">
         <button
           type="button"
           onClick={() => handleSave(false)}

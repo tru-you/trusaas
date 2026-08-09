@@ -54,15 +54,15 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave, 
   };
 
   return (
-    <div className="flex flex-col h-full bg-white text-[#0A1420] overflow-hidden">
+    <div className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden">
       {/* Header */}
-      <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-[rgba(10,20,32,0.06)] shrink-0">
-        <button onClick={onBack} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/5 text-[rgba(10,20,32,0.72)]" aria-label="Back">
+      <div className="bg-[#0A1420]/80 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 flex items-center justify-between shrink-0">
+        <button onClick={onBack} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08]" aria-label="Back">
           <ChevronLeft size={20} />
         </button>
         <div className="text-center min-w-0">
-          <p className="text-[14px] font-semibold text-[#0E9D98] truncate">{slot?.name || 'Review shot'}</p>
-          <p className="text-[12px] text-[rgba(10,20,32,0.50)]">Shot {slotIndex + 1} of {slots.length}</p>
+          <p className="text-[14px] font-semibold text-[#4FE3DC] truncate">{slot?.name || 'Review shot'}</p>
+          <p className="text-[12px] text-white/50">Shot {slotIndex + 1} of {slots.length}</p>
         </div>
         <div className="w-11" />
       </div>
@@ -197,7 +197,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave, 
       </div>
 
       {/* Actions */}
-      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-white/95 flex gap-2">
+      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-[#F5F4F1]/95 flex gap-2">
         <button
           type="button"
           onClick={onBack}

@@ -25,19 +25,19 @@ export default function CompletionReview({ vehicle, onBack, onSubmit, onRetakeSl
   const allRequiredDone = requiredCaptured === requiredSlots.length;
 
   return (
-    <div className="flex flex-col h-full bg-white text-[#0A1420] overflow-hidden">
+    <div className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden">
       {/* Header */}
-      <div className="tl-glass px-4 py-3 border-b border-[#0E9D98]/15 shrink-0">
+      <div className="bg-[#0A1420]/80 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-lg hover:bg-white/5"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-lg text-white/60 hover:text-white hover:bg-white/[0.08]"
           >
             <RotateCcw size={18} />
           </button>
           <div>
-            <h1 className="text-[16px] font-semibold tracking-tight">Review & submit</h1>
-            <p className="text-[12px] text-[rgba(10,20,32,0.50)]">
+            <h1 className="text-[16px] font-semibold tracking-tight text-white">Review & submit</h1>
+            <p className="text-[12px] text-white/50">
               {vehicle.propertyType} — {vehicle.suburb}
             </p>
           </div>
@@ -126,7 +126,7 @@ export default function CompletionReview({ vehicle, onBack, onSubmit, onRetakeSl
       </div>
 
       {/* Sticky submit */}
-      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-white/95">
+      <div className="shrink-0 p-3 border-t border-[rgba(10,20,32,0.06)] bg-[#F5F4F1]/95">
         <button
           type="button"
           disabled={!allRequiredDone}
