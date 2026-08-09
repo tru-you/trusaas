@@ -773,6 +773,7 @@ Format the output in clear Markdown.`,
       if (!f.ok) continue;
       ingestPage(f.html);
     }
+    if (usedHeadless) ingestPage(home.html);
 
     const titleMatch = home.html.match(/<title[^>]*>([^<]*)<\/title>/i);
     let title = (titleMatch && titleMatch[1]?.trim()) || "";
