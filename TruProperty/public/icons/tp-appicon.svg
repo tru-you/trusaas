@@ -1,45 +1,44 @@
-<svg id="icon-tp" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200">
   <defs>
-    <linearGradient id="metalTop1" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#94A3B8"/>
-      <stop offset="30%" stop-color="#64748B"/>
-      <stop offset="60%" stop-color="#475569"/>
-      <stop offset="100%" stop-color="#334155"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FAF9F7"/>
+      <stop offset="40%" stop-color="#F5F4F1"/>
+      <stop offset="100%" stop-color="#E8E5DF"/>
     </linearGradient>
-    <linearGradient id="cyanTop1" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#4FE3DC"/>
-      <stop offset="35%" stop-color="#14B8A6"/>
-      <stop offset="75%" stop-color="#0E9D98"/>
-      <stop offset="100%" stop-color="#0A7570"/>
+    <linearGradient id="teal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1AC9B5"/>
+      <stop offset="45%" stop-color="#0E9D98"/>
+      <stop offset="100%" stop-color="#08706C"/>
     </linearGradient>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0F172A"/>
-      <stop offset="100%" stop-color="#0A1420"/>
-    </linearGradient>
-    <linearGradient id="strokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1E293B"/>
-      <stop offset="100%" stop-color="#0E9D98" stop-opacity="0.3"/>
-    </linearGradient>
-    <filter id="dropShadow1" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#0A1420" flood-opacity="0.4"/>
+    <filter id="ds" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#064E4B" flood-opacity="0.25"/>
     </filter>
-    <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
+    <filter id="inset" x="-5%" y="-5%" width="110%" height="110%">
+      <feFlood flood-color="#FFFFFF" flood-opacity="0.45" result="w"/>
+      <feComposite in="w" in2="SourceGraphic" operator="in" result="wIn"/>
+      <feOffset dx="0" dy="1.5" in="wIn" result="hilight"/>
+      <feFlood flood-color="#0A1420" flood-opacity="0.06" result="s"/>
+      <feComposite in="s" in2="SourceGraphic" operator="in" result="sIn"/>
+      <feOffset dx="0" dy="-1" in="sIn" result="lolight"/>
       <feMerge>
-        <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="hilight"/>
+        <feMergeNode in="lolight"/>
       </feMerge>
     </filter>
+    <filter id="cardShadow" x="-8%" y="-5%" width="116%" height="118%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0A1420" flood-opacity="0.10"/>
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0A1420" flood-opacity="0.06"/>
+    </filter>
   </defs>
-  <!-- Background -->
-  <rect x="10" y="10" width="180" height="180" rx="42" fill="url(#bgGrad)" stroke="url(#strokeGrad)" stroke-width="3"/>
-  <!-- Subtle teal glow behind letters -->
-  <ellipse cx="105" cy="105" rx="50" ry="40" fill="#0E9D98" opacity="0.06" filter="url(#glowFilter)"/>
-  <!-- 3D text stack: shadow layers then gradient top -->
-  <g filter="url(#dropShadow1)" transform="translate(18, 125)">
-    <text x="3" y="3" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#0F172A">T</tspan><tspan fill="#042F2E">P</tspan></text>
-    <text x="2" y="2" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#334155">T</tspan><tspan fill="#0E7490">P</tspan></text>
-    <text x="1" y="1" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#64748B">T</tspan><tspan fill="#22D3EE">P</tspan></text>
-    <text x="0" y="0" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="url(#metalTop1)">T</tspan><tspan fill="url(#cyanTop1)">P</tspan></text>
+  <g filter="url(#cardShadow)">
+    <rect width="200" height="200" rx="44" fill="url(#bg)"/>
+  </g>
+  <rect x="1" y="1" width="198" height="198" rx="43" fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="1.5"/>
+  <rect x="1" y="1" width="198" height="198" rx="43" fill="none" stroke="#0E9D98" stroke-opacity="0.12" stroke-width="1"/>
+  <g filter="url(#ds)">
+    <g filter="url(#inset)">
+      <text x="100" y="130" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="102" text-anchor="middle" fill="url(#teal)" letter-spacing="-2">PI</text>
+    </g>
   </g>
 </svg>
