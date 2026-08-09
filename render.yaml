@@ -261,7 +261,7 @@ services:
     runtime: node
     plan: starter
     rootDir: TruCRM
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npx puppeteer browsers install chrome && npm run build
     startCommand: node dist/server.cjs
     # Chromium system libs so the headless scraper fallback can launch when
     # ENABLE_HEADLESS=true (puppeteer downloads Chrome itself during build).
