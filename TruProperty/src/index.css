@@ -1,0 +1,571 @@
+@import "../../packages/tokens/tru-tokens.css";
+@import "tailwindcss";
+@import "./brand.css";
+
+@theme {
+  /* Accent ramps — deep teal for the property vertical. */
+  --color-emerald-50: #E6F7F6;
+  --color-emerald-100: #CCF0EE;
+  --color-emerald-200: #99E0DC;
+  --color-emerald-300: #66D1CB;
+  --color-emerald-400: #0E9D98;
+  --color-emerald-500: #0E9D98;
+  --color-emerald-600: #0C8985;
+  --color-emerald-700: #0A7370;
+  --color-emerald-800: #085B58;
+  --color-emerald-900: #064341;
+  --color-emerald-950: #032220;
+  --color-green-50: #E6F7F6;
+  --color-green-100: #CCF0EE;
+  --color-green-200: #99E0DC;
+  --color-green-300: #66D1CB;
+  --color-green-400: #0E9D98;
+  --color-green-500: #0E9D98;
+  --color-green-600: #0C8985;
+  --color-green-700: #0A7370;
+  --color-green-800: #085B58;
+  --color-green-900: #064341;
+  --color-green-950: #032220;
+  --color-lime-50: #E6F7F6;
+  --color-lime-100: #CCF0EE;
+  --color-lime-200: #99E0DC;
+  --color-lime-300: #66D1CB;
+  --color-lime-400: #0E9D98;
+  --color-lime-500: #0E9D98;
+  --color-lime-600: #0C8985;
+  --color-lime-700: #0A7370;
+  --color-lime-800: #085B58;
+  --color-lime-900: #064341;
+  --color-lime-950: #032220;
+  --color-teal-50: #E6F7F6;
+  --color-teal-100: #CCF0EE;
+  --color-teal-200: #99E0DC;
+  --color-teal-300: #66D1CB;
+  --color-teal-400: #0E9D98;
+  --color-teal-500: #0E9D98;
+  --color-teal-600: #0C8985;
+  --color-teal-700: #0A7370;
+  --color-teal-800: #085B58;
+  --color-teal-900: #064341;
+  --color-teal-950: #032220;
+  --color-cyan-50: #E6F7F6;
+  --color-cyan-100: #CCF0EE;
+  --color-cyan-200: #99E0DC;
+  --color-cyan-300: #66D1CB;
+  --color-cyan-400: #0E9D98;
+  --color-cyan-500: #0E9D98;
+  --color-cyan-600: #0C8985;
+  --color-cyan-700: #0A7370;
+  --color-cyan-800: #085B58;
+  --color-cyan-900: #064341;
+  --color-cyan-950: #032220;
+  --color-fuchsia-50: #E6F7F6;
+  --color-fuchsia-100: #CCF0EE;
+  --color-fuchsia-200: #99E0DC;
+  --color-fuchsia-300: #66D1CB;
+  --color-fuchsia-400: #0E9D98;
+  --color-fuchsia-500: #0E9D98;
+  --color-fuchsia-600: #0C8985;
+  --color-fuchsia-700: #0A7370;
+  --color-fuchsia-800: #085B58;
+  --color-fuchsia-900: #064341;
+  --color-fuchsia-950: #032220;
+  --color-pink-50: #E6F7F6;
+  --color-pink-100: #CCF0EE;
+  --color-pink-200: #99E0DC;
+  --color-pink-300: #66D1CB;
+  --color-pink-400: #0E9D98;
+  --color-pink-500: #0E9D98;
+  --color-pink-600: #0C8985;
+  --color-pink-700: #0A7370;
+  --color-pink-800: #085B58;
+  --color-pink-900: #064341;
+  --color-pink-950: #032220;
+
+  /* Amber/warning — proper amber on light backgrounds */
+  --color-amber-50: #FFFBEB;
+  --color-amber-100: #FEF3C7;
+  --color-amber-200: #FDE68A;
+  --color-amber-300: #FCD34D;
+  --color-amber-400: #FBBF24;
+  --color-amber-500: #F59E0B;
+  --color-amber-600: #D97706;
+  --color-amber-700: #B45309;
+  --color-amber-800: #92400E;
+  --color-amber-900: #78350F;
+  --color-amber-950: #451A03;
+  --color-yellow-50: #FFFBEB;
+  --color-yellow-100: #FEF3C7;
+  --color-yellow-200: #FDE68A;
+  --color-yellow-300: #FCD34D;
+  --color-yellow-400: #FBBF24;
+  --color-yellow-500: #F59E0B;
+  --color-yellow-600: #D97706;
+  --color-yellow-700: #B45309;
+  --color-yellow-800: #92400E;
+  --color-yellow-900: #78350F;
+  --color-yellow-950: #451A03;
+  --color-orange-50: #FFF7ED;
+  --color-orange-100: #FFEDD5;
+  --color-orange-200: #FED7AA;
+  --color-orange-300: #FDBA74;
+  --color-orange-400: #FB923C;
+  --color-orange-500: #F97316;
+  --color-orange-600: #EA580C;
+  --color-orange-700: #C2410C;
+  --color-orange-800: #9A3412;
+  --color-orange-900: #7C2D12;
+  --color-orange-950: #431407;
+
+  /* Red/danger — standard red for light backgrounds */
+  --color-red-50: #FEF2F2;
+  --color-red-100: #FEE2E2;
+  --color-red-200: #FECACA;
+  --color-red-300: #FCA5A5;
+  --color-red-400: #F87171;
+  --color-red-500: #EF4444;
+  --color-red-600: #DC2626;
+  --color-red-700: #B91C1C;
+  --color-red-800: #991B1B;
+  --color-red-900: #7F1D1D;
+  --color-red-950: #450A0A;
+  --color-rose-50: #FFF1F2;
+  --color-rose-100: #FFE4E6;
+  --color-rose-200: #FECDD3;
+  --color-rose-300: #FDA4AF;
+  --color-rose-400: #FB7185;
+  --color-rose-500: #F43F5E;
+  --color-rose-600: #E11D48;
+  --color-rose-700: #BE123C;
+  --color-rose-800: #9F1239;
+  --color-rose-900: #881337;
+  --color-rose-950: #4C0519;
+
+  /* Blue — muted slate-blue for quiet emphasis on light */
+  --color-blue-50: #F0F4F8;
+  --color-blue-100: #DCE4ED;
+  --color-blue-200: #BCC8D6;
+  --color-blue-300: #94A8BD;
+  --color-blue-400: #5A7A94;
+  --color-blue-500: #47687F;
+  --color-blue-600: #3D5A72;
+  --color-blue-700: #324A5E;
+  --color-blue-800: #283B4B;
+  --color-blue-900: #1E2D3A;
+  --color-blue-950: #141E28;
+  --color-sky-50: #F0F4F8;
+  --color-sky-100: #DCE4ED;
+  --color-sky-200: #BCC8D6;
+  --color-sky-300: #94A8BD;
+  --color-sky-400: #5A7A94;
+  --color-sky-500: #47687F;
+  --color-sky-600: #3D5A72;
+  --color-sky-700: #324A5E;
+  --color-sky-800: #283B4B;
+  --color-sky-900: #1E2D3A;
+  --color-sky-950: #141E28;
+
+  /* Neutral ramp — LIGHT: 950 is the lightest body, 50 is darkest text */
+  --color-neutral-50: #0A1420;
+  --color-neutral-100: #1A2838;
+  --color-neutral-200: #2E3E4E;
+  --color-neutral-300: #4A5A6A;
+  --color-neutral-400: rgba(10,20,32,0.65);
+  --color-neutral-500: rgba(10,20,32,0.50);
+  --color-neutral-600: rgba(10,20,32,0.38);
+  --color-neutral-700: rgba(10,20,32,0.25);
+  --color-neutral-800: rgba(10,20,32,0.10);
+  --color-neutral-850: rgba(10,20,32,0.06);
+  --color-neutral-900: #F0F4F8;
+  --color-neutral-950: #F4F8FC;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-tru-cyan: #0E9D98;
+  --color-trulens-blue: #0E9D98;
+
+  /* Remap indigo/purple/violet to teal accent */
+  --color-indigo-50: #E6F7F6;
+  --color-indigo-100: #CCF0EE;
+  --color-indigo-200: #99E0DC;
+  --color-indigo-300: #66D1CB;
+  --color-indigo-400: #0E9D98;
+  --color-indigo-500: #0E9D98;
+  --color-indigo-600: #0C8985;
+  --color-indigo-700: #0A7370;
+  --color-indigo-800: #085B58;
+  --color-indigo-900: #064341;
+  --color-indigo-950: #032220;
+  --color-purple-50: #E6F7F6;
+  --color-purple-100: #CCF0EE;
+  --color-purple-200: #99E0DC;
+  --color-purple-300: #66D1CB;
+  --color-purple-400: #0E9D98;
+  --color-purple-500: #0E9D98;
+  --color-purple-600: #0C8985;
+  --color-purple-700: #0A7370;
+  --color-purple-800: #085B58;
+  --color-purple-900: #064341;
+  --color-purple-950: #032220;
+  --color-violet-50: #E6F7F6;
+  --color-violet-100: #CCF0EE;
+  --color-violet-200: #99E0DC;
+  --color-violet-300: #66D1CB;
+  --color-violet-400: #0E9D98;
+  --color-violet-500: #0E9D98;
+  --color-violet-600: #0C8985;
+  --color-violet-700: #0A7370;
+  --color-violet-800: #085B58;
+  --color-violet-900: #064341;
+  --color-violet-950: #032220;
+}
+
+/* Custom Scrollbar Utilities */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Capture shutter flash */
+@keyframes tl-shutter-flash {
+  0% { opacity: 0.92; }
+  100% { opacity: 0; }
+}
+.tl-shutter-flash {
+  animation: tl-shutter-flash 220ms ease-out forwards;
+  pointer-events: none;
+}
+
+/* Deep-link highlight when opened from Flow ?stock= */
+@keyframes tl-stock-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(14,157,152,0.45), 0 4px 12px -4px rgba(10,20,32,0.08); }
+  50% { box-shadow: 0 0 0 6px rgba(14,157,152,0.15), 0 8px 20px -8px rgba(14,157,152,0.2); }
+}
+.tl-stock-highlight {
+  border-color: rgba(14,157,152,0.6) !important;
+  animation: tl-stock-pulse 1.1s ease-in-out 4;
+  background: linear-gradient(160deg, rgba(14,157,152,0.08), #FFFFFF) !important;
+}
+
+/* Primary button — deep teal with subtle depth on white */
+.tl-btn-3d,
+.btn-primary,
+.bg-tru-cyan {
+  background: #0E9D98;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-weight: var(--w-semibold);
+  text-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 4px 0 #085B58,
+    0 6px 16px -6px rgba(10,20,32,0.20);
+  transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
+}
+.tl-btn-3d:hover,
+.btn-primary:hover { background: #0BB5AF; }
+.tl-btn-3d:active,
+.btn-primary:active {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 1px 0 #085B58,
+    0 2px 4px -2px rgba(10,20,32,0.15);
+}
+.tl-btn-3d:disabled,
+.btn-primary:disabled {
+  background: rgba(10,20,32,0.08);
+  color: var(--faint);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+
+/* Secondary — raised neutral on white */
+.tru-btn-secondary {
+  background: #E8ECF0;
+  border: none;
+  color: #0A1420;
+  border-radius: 12px;
+  font-weight: var(--w-medium);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.7),
+    0 3px 0 #C8CDD2,
+    0 4px 12px -6px rgba(10,20,32,0.12);
+  transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
+}
+.tru-btn-secondary:hover { background: #DCE0E5; }
+.tru-btn-secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #C8CDD2, 0 2px 4px -2px rgba(10,20,32,0.10);
+}
+
+/* Ghost — flat, no fill */
+.tru-btn-ghost {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--white-dim);
+  border-radius: 12px;
+  font-weight: var(--w-medium);
+  transition: background 120ms ease, color 120ms ease;
+}
+.tru-btn-ghost:hover { background: rgba(10,20,32,0.05); color: var(--white); }
+
+/* Glass panels */
+.tl-glass {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid rgba(10,20,32,0.08);
+  box-shadow: var(--shadow-card);
+}
+
+@keyframes tl-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.tl-float {
+  animation: tl-float 900ms cubic-bezier(.22,1,.36,1) 1;
+}
+
+/* Progress sheen */
+@keyframes tl-sheen {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+.tl-progress-sheen.is-working::after { animation: tl-sheen 1.6s ease-in-out infinite; }
+.tl-progress-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  animation: none;
+}
+
+
+/* Keyboard focus */
+:focus-visible { outline: 2px solid #0E9D98; outline-offset: 2px; border-radius: 4px; }
+.tl-btn-3d:focus-visible, .btn-primary:focus-visible, .on-fill:focus-visible { outline-color: #FFFFFF; }
+
+/* Text on accent fill — white on teal */
+.on-fill, .btn-primary { color: #FFFFFF !important; text-shadow: none; }
+.on-fill svg, .btn-primary svg { color: #FFFFFF; filter: none; }
+
+body { background: #F4F8FC; color: #0A1420; font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+
+/* ── TruInspect · Field-Assessment sterile zones ──────────────────────────── */
+[data-app="truinspect"] .capture-preview,
+[data-app="truinspect"] .photo-review {
+  background: #F0F4F8;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+[data-app="truinspect"] .photo-review :where(*) { --accent: transparent; }
+
+/* Capture-state indicators */
+[data-app="truinspect"] .slot-state {
+  background: transparent;
+  border: 1px solid rgba(10,20,32,0.10);
+  color: rgba(10,20,32,0.55);
+}
+[data-app="truinspect"] .slot-state--idle:hover { border-color: rgba(10,20,32,0.20); }
+
+/* Active = primary key — teal */
+[data-app="truinspect"] .slot-state--active {
+  background: #0E9D98;
+  border: none;
+  color: #FFFFFF;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 3px 0 #085B58,
+    0 6px 12px -6px rgba(10,20,32,0.15);
+}
+
+/* Captured = subtle filled state */
+[data-app="truinspect"] .slot-state--captured {
+  background: #E8ECF0;
+  border: none;
+  color: #0A1420;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.6),
+    0 2px 0 #C8CDD2,
+    0 4px 8px -4px rgba(10,20,32,0.08);
+}
+
+/* Amber for "next" */
+[data-app="truinspect"] .slot-state--next,
+[data-app="truinspect"] .slot-state--retake {
+  border-color: #D97706;
+  color: #B45309;
+}
+[data-app="truinspect"] .slot-state--retake { border-width: 2px; }
+
+/* Red for errors */
+[data-app="truinspect"] .slot-state--error {
+  border-color: #DC2626;
+  border-width: 2px;
+  color: #DC2626;
+}
+
+@keyframes ti-ring-pulse {
+  0%, 100% { outline-offset: 0; }
+  50%       { outline-offset: 3px; }
+}
+
+
+/* ── Text on accent fill ────────────────────────────────────────────────── */
+.bg-tru-cyan,
+.bg-cyan-400, .bg-cyan-500, .bg-cyan-600,
+.bg-teal-400, .bg-teal-500, .bg-teal-600,
+.bg-emerald-400, .bg-emerald-500, .bg-emerald-600,
+.bg-green-400, .bg-green-500, .bg-green-600,
+.bg-indigo-400, .bg-indigo-500, .bg-indigo-600,
+.bg-purple-400, .bg-purple-500, .bg-purple-600,
+.bg-violet-400, .bg-violet-500, .bg-violet-600,
+.bg-\[\#0E9D98\], .bg-\[\#0BB5AF\], .bg-\[\#0C8985\] {
+  color: #FFFFFF;
+}
+
+[class*="from-[#0E9D98]"], [class*="from-[#0BB5AF]"],
+[class*="to-[#0E9D98]"], [class*="to-[#0BB5AF]"] {
+  color: #FFFFFF;
+}
+
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ══ Mobile field hardening ═════════════════════════════════════════════════ */
+* { -webkit-tap-highlight-color: transparent; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html, body { overscroll-behavior: none; }
+
+.overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ── Touch targets ──────────────────────────────────────────────────────── */
+button,
+[role="button"],
+a[href],
+select,
+textarea,
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]),
+label:has(> input[type="file"]) {
+  min-height: 44px;
+}
+
+button:has(svg),
+[role="button"]:has(svg) {
+  min-width: 44px;
+}
+
+button.absolute,
+[role="button"].absolute {
+  min-height: 0;
+  min-width: 0;
+}
+.tap-pin { position: relative; }
+button.absolute::after,
+[role="button"].absolute::after,
+.tap-pin::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: inherit;
+}
+
+p button, p a[href], .inline-action {
+  min-height: 0;
+  min-width: 0;
+}
+
+/* ── Bottom nav ─────────────────────────────────────────────────────────── */
+.tl-bottomnav {
+  position: relative;
+  background: #FFFFFF;
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  border-top: 1px solid rgba(10,20,32,0.08);
+  box-shadow:
+    0 -4px 16px -8px rgba(10,20,32,0.06);
+  z-index: 20;
+}
+
+/* ── Range sliders ──────────────────────────────────────────────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(10,20,32,0.12);
+}
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(10,20,32,0.12);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: #0E9D98;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(10,20,32,0.15);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #0E9D98;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(10,20,32,0.15);
+}
+
+/* Press feedback */
+button.absolute:active { transform: translateY(2px); }
+@media (prefers-reduced-motion: reduce) {
+  button:active, [role="button"]:active,
+  .tl-btn-3d:active, .btn-primary:active,
+  .tru-btn-secondary:active { transform: none; }
+}
+
+/* ── Type floor ─────────────────────────────────────────────────────────── */
+.text-\[11px\] { font-size: 12px; }

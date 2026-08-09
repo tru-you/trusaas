@@ -1,0 +1,46 @@
+{
+  "id": "/",
+  "name": "TrueState — Property Inspection",
+  "short_name": "TrueState",
+  "description": "Guided property capture, condition reports, and inspection documentation.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#06080D",
+  "theme_color": "#06080D",
+  "lang": "en-ZA",
+  "dir": "ltr",
+  "categories": ["business", "photo", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open catalogue",
+      "short_name": "Catalogue",
+      "description": "Property inventory and capture queue",
+      "url": "/?view=inventory",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

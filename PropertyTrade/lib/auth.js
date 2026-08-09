@@ -119,14 +119,12 @@ export function signToken(agent, dataDir, remember = false) {
 export function loginWithCode(code, dataDir) {
   const store = ensureAuthStore(dataDir);
   const trimmed = String(code).trim();
-  console.log(`Login attempt: code length=${trimmed.length}, agents=${store.agents.length}`);
   const match = store.agents.find(a => {
     if (a.active === false) return false;
     const computed = crypto.scryptSync(trimmed, a.salt, 32).toString('hex');
-    console.log(`  Agent ${a.label}: hash match=${computed === a.hash}`);
     return computed === a.hash;
   });
-  if (!match) { console.log('Login failed — no matching agent.'); return null; }
+  if (!match) return null;
   return {
     token: signToken(match, dataDir),
     account: {

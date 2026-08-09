@@ -1,0 +1,6 @@
+{
+  "name": "TruProperty",
+  "description": "Property inspection and condition reporting tool. Guided photo capture with real-time angle overlays, damage tagging, compliance checklists, and AI-driven defect analysis.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_DEEPSEEK_API"]
+}

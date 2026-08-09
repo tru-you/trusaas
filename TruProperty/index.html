@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-ZA" data-app="truestate">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>TrueState — Property Inspection Reports</title>
+    <meta
+      name="description"
+      content="Guided property capture, condition reports, and inspection documentation."
+    />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- This is the bar above the app on Android and in an installed PWA. It was
+         #4f46e5 — the indigo from before the cyan rebrand — so the phone drew a
+         block of the old brand colour directly above a near-black app. Matching
+         the app's own base makes the system bar disappear into the page. -->
+    <meta name="theme-color" content="#06080D" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#06080D" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="TrueState" />
+
+    <!-- iOS home screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TrueState" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+    <link rel="icon" href="/icons/icon-192.png" />
+
+    <!-- Open Graph (share link to install) -->
+    <meta property="og:title" content="TrueState" />
+    <meta property="og:description" content="Property inspection capture and condition reports." />
+    <meta property="og:type" content="website" />
+
+    <style>
+      /* Instant dark shell while JS loads */
+      html, body, #root {
+        margin: 0;
+        min-height: 100%;
+        min-height: 100dvh;
+        background: #06080D;
+        color: #f5f5f5;
+      }
+      /* Safe areas for notched phones when installed */
+      body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+    </style>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

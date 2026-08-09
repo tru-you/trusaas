@@ -1,0 +1,71 @@
+/* ============================================================================
+   TrueState / Prop Inspect — LIGHT PALETTE
+   ----------------------------------------------------------------------------
+   Property vertical: light, clean, professional. The audience skews female
+   (SA property management) so the palette moves to airy whites, a
+   sophisticated deep teal accent, and warm near-black text.
+
+   Cool blue-cream body (#F4F8FC), white panels, deep teal accent (#0E9D98)
+   that passes WCAG AA on white. Inter stays.
+   ========================================================================== */
+
+:root {
+  /* Surfaces --------------------------------------------------------------- */
+  --ink:        #F4F8FC;
+  --ink-2:      #FFFFFF;
+  --glass:      rgba(10, 20, 32, 0.04);
+  --glass-line: rgba(10, 20, 32, 0.10);
+
+  /* Text — one colour at four opacities on a white ground. */
+  --white:      #0A1420;
+  --white-dim:  rgba(10, 20, 32, 0.72);
+  --muted:      rgba(10, 20, 32, 0.55);
+  --faint:      rgba(10, 20, 32, 0.32);
+
+  /* Accent — deep teal, readable on white (4.5:1+). */
+  --cyan:       #0E9D98;
+  --cyan-bright:#0BB5AF;
+  --cyan-soft:  rgba(14, 157, 152, 0.30);
+  --cyan-faint: rgba(14, 157, 152, 0.08);
+
+  /* Secondary accent — muted slate for quiet emphasis. */
+  --blue:       #5A7A94;
+  --blue-deep:  #3D5A72;
+  --blue-faint: rgba(90, 122, 148, 0.10);
+
+  /* Status */
+  --success:    #0E9D98;
+  --warning:    rgba(10, 20, 32, 0.55);
+  --danger:     #C44040;
+
+  /* Type */
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --t-micro: 12px;
+  --t-small: 13px;
+  --t-body:  15px;
+  --t-lead:  17px;
+  --t-h3:    20px;
+  --t-h2:    28px;
+  --t-h1:    38px;
+
+  --w-regular:  400;
+  --w-medium:   500;
+  --w-semibold: 600;
+
+  --track-h1: -0.022em;
+  --track-h2: -0.015em;
+  --track-h3: -0.01em;
+
+  /* Depth — lighter shadows for a white ground. */
+  --shadow-card:  0 1px 3px rgba(10,20,32,0.06), 0 1px 2px rgba(10,20,32,0.04);
+  --shadow-lift:  0 4px 12px rgba(10,20,32,0.08), 0 1px 3px rgba(10,20,32,0.06);
+  --shadow-modal: 0 20px 50px -20px rgba(10,20,32,0.18);
+  --glow-cyan:    0 0 8px rgba(14,157,152,0.35);
+
+  /* Radius */
+  --r-sm:   8px;
+  --r-card: 18px;
+  --r-pill: 100px;
+}
