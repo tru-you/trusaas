@@ -510,21 +510,20 @@ Format the output in clear Markdown.`,
           // @sparticuz/chromium ships a statically-linked Chromium inside the
           // npm package, so it runs on Render without apt-installed system
           // libs (apt-get is unavailable in Render build/pre-deploy phases).
+          // Launch it with puppeteer's own defaults + minimal flags: the
+          // Lambda-oriented sparticuz args (--single-process, --headless='shell',
+          // SwiftShader graphics) are memory-heavy and crash a 512 MB instance.
           const chromiumModule: any = await import("@sparticuz/chromium");
           const chromium = chromiumModule.default ?? chromiumModule;
-          // The WebGL/SwiftShader stack is not needed for scraping and costs a
-          // lot of memory on a 512 MB instance — disable it.
-          if (typeof chromium.setGraphicsMode === "function") {
-            chromium.setGraphicsMode(false);
-          }
           return await puppeteer.launch({
             headless: true,
             executablePath: await chromium.executablePath(),
             args: [
-              ...chromium.args,
+              "--no-sandbox",
+              "--disable-setuid-sandbox",
               "--disable-dev-shm-usage",
               "--disable-gpu",
-              "--js-flags=--max-old-space-size=256",
+              "--disable-extensions",
             ],
           });
         } catch (e: any) {
@@ -732,6 +731,9 @@ Format the output in clear Markdown.`,
       } catch (e: any) {
         lastError = e?.message || "Failed to fetch page";
         fetched.push({ pageUrl, html: "", ok: false, error: lastError });
+        // Homepage unreachable (bot-blocked / DNS-blocked): contact pages will
+        // fail the same way — bail to the headless fallback immediately.
+        if (i === 0 && useHeadless) break;
       }
     }
 
