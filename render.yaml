@@ -284,4 +284,3 @@ services:
       # fallback for scraping JS-rendered dealer sites (off by default).
       - key: ENABLE_HEADLESS
         sync: false
-        value: ""
