@@ -885,6 +885,7 @@ async function terminateLease(id) {
     await api(`/api/leases/${id}/terminate`, { method: 'POST', body: { reason } });
     loadPropertyLeases(currentPropertyId);
   } catch (err) { alert(err.message); }
+}
 
 async function loadPropertyDocs(propId) {
   try {
