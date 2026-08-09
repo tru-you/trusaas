@@ -102,7 +102,7 @@ export default function Login() {
             --t-h1 from brand.css. The tagline under it used to be 13px with
             0.3em of tracking, which is a lot of work to read at that size. */}
         <div className="text-center mb-10">
-          <img src={propInspectLogo} alt="PropInspect" className="h-20 mx-auto" />
+          <img src={propInspectLogo} alt="PropInspect" className="h-20 w-full max-w-xs mx-auto object-contain" />
           <p className="mt-3 text-[12px] text-[rgba(10,20,32,0.50)] tracking-[0.08em]">
             Property inspection reports
           </p>
@@ -134,7 +134,7 @@ export default function Login() {
                     holds local data only.
                   </p>
                   <p className="mt-2 text-[12px] font-mono text-[rgba(10,20,32,0.50)] break-all">
-                    TRUESTATE_ACCESS_CODE
+                    TRUPROPERTY_ACCESS_CODE
                   </p>
                 </div>
               </div>

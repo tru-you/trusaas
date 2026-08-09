@@ -9,6 +9,7 @@ import CompletionReview from './components/CompletionReview';
 import InspectionSheet from './components/InspectionSheet';
 import DamageTagger from './components/DamageTagger';
 import { Vehicle, QualityReport, PointResult } from './types';
+import PwaInstallBanner from './components/PwaInstallBanner';
 import { useAuth } from './contexts/AuthContext';
 
 
@@ -397,6 +398,7 @@ export default function App() {
 
   return (
     <MobileDevice>
+      <PwaInstallBanner />
       {!user ? (
         <Login />
       ) : (
