@@ -263,6 +263,9 @@ services:
     rootDir: TruCRM
     buildCommand: npm install && npm run build
     startCommand: node dist/server.cjs
+    # Chromium system libs so the headless scraper fallback can launch when
+    # ENABLE_HEADLESS=true (puppeteer downloads Chrome itself during build).
+    preDeployCommand: apt-get update && apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 libpangocairo-1.0-0 libcairo2 libxshmfence1
     healthCheckPath: /api/health
     disk:
       name: trucrm-data
@@ -277,3 +280,8 @@ services:
         sync: false
       - key: DEEPSEEK_API_KEY
         sync: false
+      # Set to "true" in the Render dashboard to enable the headless browser
+      # fallback for scraping JS-rendered dealer sites (off by default).
+      - key: ENABLE_HEADLESS
+        sync: false
+        value: ""
