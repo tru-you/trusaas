@@ -492,11 +492,19 @@ Format the output in clear Markdown.`,
   }
 
   // Lazy singleton headless browser (puppeteer). Only used when ENABLE_HEADLESS=true.
-  let browserPromise: Promise<any> | null = null;
+  let headlessBrowser: any = null;
+  let lastHeadlessUsedAt = 0;
+  const HEADLESS_IDLE_MS = 90000;
 
   async function getHeadlessBrowser(): Promise<any> {
-    if (!browserPromise) {
-      browserPromise = (async () => {
+    // Close an idle browser so the container doesn't sit at peak memory
+    // between scrapes (Render starter = 512 MB).
+    if (headlessBrowser && Date.now() - lastHeadlessUsedAt > HEADLESS_IDLE_MS) {
+      headlessBrowser.close().catch(() => {});
+      headlessBrowser = null;
+    }
+    if (!headlessBrowser) {
+      headlessBrowser = await (async () => {
         const { default: puppeteer } = await import("puppeteer");
         try {
           // @sparticuz/chromium ships a statically-linked Chromium inside the
@@ -504,10 +512,20 @@ Format the output in clear Markdown.`,
           // libs (apt-get is unavailable in Render build/pre-deploy phases).
           const chromiumModule: any = await import("@sparticuz/chromium");
           const chromium = chromiumModule.default ?? chromiumModule;
+          // The WebGL/SwiftShader stack is not needed for scraping and costs a
+          // lot of memory on a 512 MB instance — disable it.
+          if (typeof chromium.setGraphicsMode === "function") {
+            chromium.setGraphicsMode(false);
+          }
           return await puppeteer.launch({
-            headless: chromium.headless ?? true,
+            headless: true,
             executablePath: await chromium.executablePath(),
-            args: chromium.args,
+            args: [
+              ...chromium.args,
+              "--disable-dev-shm-usage",
+              "--disable-gpu",
+              "--js-flags=--max-old-space-size=256",
+            ],
           });
         } catch (e: any) {
           console.warn(
@@ -527,11 +545,12 @@ Format the output in clear Markdown.`,
         });
       })().catch((e) => {
         console.error("[scraper] headless browser failed to launch:", e?.message);
-        browserPromise = null;
+        headlessBrowser = null;
         throw e;
       });
     }
-    return browserPromise;
+    lastHeadlessUsedAt = Date.now();
+    return headlessBrowser;
   }
 
   async function renderWithHeadless(url: string): Promise<string | null> {
@@ -551,6 +570,8 @@ Format the output in clear Markdown.`,
       return html;
     } catch (e: any) {
       console.warn(`[scraper] headless render failed for ${url}:`, e?.message);
+      // Browser process may have crashed (OOM etc.) — force a relaunch next time.
+      headlessBrowser = null;
       return null;
     } finally {
       if (page) await page.close().catch(() => {});
