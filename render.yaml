@@ -254,3 +254,26 @@ services:
         value: https://premium.tru-saas.com/api/public/stock?dealer=true-cars
       - key: SALES_WHATSAPP
         value: "27620502091"
+
+  # ── 5. TruCRM — personal CRM & business ops ───────────────────────────────
+  - type: web
+    name: trusaas-crm
+    runtime: node
+    plan: starter
+    rootDir: TruCRM
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.cjs
+    healthCheckPath: /api/health
+    disk:
+      name: trucrm-data
+      mountPath: /opt/render/project/data
+      sizeGB: 5
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /opt/render/project/data
+      - key: TRUCRM_ACCESS_CODE
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
