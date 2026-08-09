@@ -60,7 +60,7 @@ index.old-hub.backup.html
 
 # Client commercial documents — proposals carry pricing and contact details
 # for named dealers. Kept out of the repo; they live locally only.
-Proposals/
+/Proposals/
 
 
 # Runtime auth store — hashed access codes, generated per instance. Never commit.
