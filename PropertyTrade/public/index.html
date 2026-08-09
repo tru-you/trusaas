@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Flow Prop — Property Management</title>
 <link rel="manifest" href="/manifest.webmanifest" />
-<meta name="theme-color" content="#F4F8FC" />
+<meta name="theme-color" content="#0A1420" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -17,15 +17,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #F4F8FC; --panel: #FFFFFF; --panel-2: #EAF1F9;
-  --border: rgba(10,20,32,0.08); --border-focus: rgba(21,199,192,0.5);
-  --text: #0A1420; --muted: rgba(10,20,32,0.55); --dim: rgba(10,20,32,0.35);
-  --cyan: #0E9D98; --cyan-dark: #0A7D79;
-  --green: #0F8A50; --amber: #D97706; --red: #DC2626;
-  --radius: 12px; --radius-sm: 8px;
+  --bg: #F5F4F1; --panel: #FFFFFF; --panel-2: #EFEDE8;
+  --border: rgba(10,20,32,0.06); --border-focus: #0E9D98;
+  --text: #1B1F23; --muted: #5E6C84; --dim: #8993A4;
+  --accent: #0E9D98; --accent-dark: #0B7D79; --accent-light: rgba(14,157,152,0.08);
+  --green: #107C10; --amber: #CA5010; --red: #D13438;
+  --shadow-sm: 0 1px 3px rgba(10,20,32,0.05), 0 4px 14px rgba(10,20,32,0.04);
+  --shadow-md: 0 2px 8px rgba(10,20,32,0.08), 0 8px 24px rgba(10,20,32,0.06);
+  --shadow-lg: 0 8px 32px rgba(10,20,32,0.12), 0 2px 8px rgba(10,20,32,0.06);
+  --radius: 8px; --radius-sm: 6px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+html, body { height: 100%; font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 body { display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom, 0px); }
 
 /* ---- Utilities ---- */
@@ -33,148 +36,220 @@ body { display: flex; flex-direction: column; padding-bottom: env(safe-area-inse
 .screen { display: none; flex-direction: column; flex: 1; overflow-y: auto; }
 .screen.active { display: flex; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-input, select, textarea { font-family: inherit; font-size: 16px; color: var(--text); background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; outline: none; width: 100%; }
-input:focus, select:focus, textarea:focus { border-color: var(--border-focus); background: var(--panel); box-shadow: 0 0 0 3px rgba(14,157,152,0.1); }
-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+input, select, textarea { font-family: inherit; font-size: 14px; color: var(--text); background: var(--panel); border: 1px solid rgba(0,0,0,0.12); border-radius: var(--radius-sm); padding: 10px 12px; outline: none; width: 100%; transition: border-color 0.15s, box-shadow 0.15s; }
+input:focus, select:focus, textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 1px var(--border-focus); }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235E6C84' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ---- Top Bar ---- */
-.topbar { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
-.topbar-title { font-size: 16px; font-weight: 700; flex: 1; }
-.topbar-sub { font-size: 12px; color: var(--muted); }
-.topbar-back { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; color: var(--muted); }
-.topbar-back:hover { background: rgba(10,20,32,0.05); color: var(--text); }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 0 20px; height: 48px; background: rgba(10,20,32,0.90); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 50; }
+.topbar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(to right, transparent, rgba(79,227,220,0.4), transparent); }
+.topbar-title { font-size: 14px; font-weight: 600; flex: 1; color: #FFFFFF; }
+.topbar-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
+.topbar-back { width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--radius-sm); color: rgba(255,255,255,0.6); }
+.topbar-back:hover { background: rgba(255,255,255,0.08); color: #FFFFFF; }
+.topbar-back svg { stroke: currentColor; }
 
 /* ---- Bottom Nav ---- */
-.bottomnav { display: flex; background: var(--panel); border-top: 1px solid var(--border); padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px)); position: sticky; bottom: 0; z-index: 50; }
-.bottomnav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; font-size: 10px; font-weight: 600; color: var(--dim); transition: color 0.15s; }
-.bottomnav button.active { color: var(--cyan); }
-.bottomnav svg { width: 22px; height: 22px; }
+.bottomnav { display: flex; background: var(--panel); border-top: 1px solid var(--border); padding: 4px 0 calc(4px + env(safe-area-inset-bottom, 0px)); position: sticky; bottom: 0; z-index: 50; box-shadow: 0 -1px 4px rgba(0,0,0,0.04); }
+.bottomnav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; font-size: 10px; font-weight: 500; color: var(--dim); transition: color 0.15s; position: relative; }
+.bottomnav button.active { color: #0E9D98; font-weight: 600; }
+.bottomnav button.active::after { content: ''; position: absolute; top: 0; left: 25%; right: 25%; height: 2px; background: #0E9D98; border-radius: 0 0 2px 2px; }
+.bottomnav svg { width: 20px; height: 20px; }
 
 /* ---- Cards ---- */
-.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: border-color 0.15s; }
-.card:hover { border-color: rgba(14,157,152,0.3); }
-.card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-.card-sub { font-size: 13px; color: var(--muted); }
+.card { background: var(--panel); border: 1px solid rgba(10,20,32,0.06); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; box-shadow: var(--shadow-sm); transition: box-shadow 0.2s, border-color 0.15s; }
+.card:hover { box-shadow: var(--shadow-md); border-color: rgba(10,20,32,0.10); }
+.card-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.card-sub { font-size: 12px; color: var(--muted); line-height: 1.4; }
 .card-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 
 /* ---- Stat Cards ---- */
-.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; }
-.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-.stat-value { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
-.stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
-.stat-value.green { color: #0F8A50; }
-.stat-value.amber { color: #B45309; }
-.stat-value.red { color: #DC2626; }
-.stat-value.cyan { color: #0E9D98; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 16px 20px; }
+.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-sm); }
+.stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+.stat-value.green { color: var(--green); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.red { color: var(--red); }
+.stat-value.cyan { color: var(--accent); }
 
 /* ---- Badges ---- */
-.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
-.badge-green { background: rgba(15,138,80,0.1); color: #0F8A50; }
-.badge-amber { background: rgba(217,119,6,0.1); color: #B45309; }
-.badge-red { background: rgba(220,38,38,0.1); color: #DC2626; }
-.badge-cyan { background: rgba(14,157,152,0.1); color: var(--cyan); }
-.badge-gray { background: rgba(10,20,32,0.05); color: var(--muted); }
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-green { background: rgba(16,124,16,0.08); color: var(--green); }
+.badge-amber { background: rgba(202,80,16,0.08); color: var(--amber); }
+.badge-red { background: rgba(209,52,56,0.08); color: var(--red); }
+.badge-cyan { background: var(--accent-light); color: var(--accent); }
+.badge-gray { background: rgba(0,0,0,0.04); color: var(--muted); }
 
 /* ---- Lists ---- */
-.list { display: flex; flex-direction: column; gap: 8px; padding: 16px; }
-.list-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-top: 16px; }
-.list-header h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.list { display: flex; flex-direction: column; gap: 6px; padding: 12px 20px; }
+.list-header { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; margin-top: 20px; }
+.list-header h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 
 /* ---- Buttons ---- */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 600; transition: all 0.15s; }
-.btn-primary { background: var(--cyan); color: #FFFFFF; }
-.btn-primary:hover { background: var(--cyan-dark); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; transition: all 0.1s; }
+.btn-primary { background: var(--accent); color: #FFFFFF; box-shadow: 0 1px 2px rgba(14,157,152,0.2); }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-primary:active { background: #096C69; transform: translateY(0.5px); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-secondary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:hover { border-color: rgba(14,157,152,0.3); }
+.btn-secondary { background: var(--panel); color: var(--text); border: 1px solid rgba(0,0,0,0.12); }
+.btn-secondary:hover { background: var(--panel-2); border-color: rgba(0,0,0,0.18); }
 .btn-full { width: 100%; }
 
 /* ---- FAB ---- */
-.fab { position: fixed; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); right: 16px; width: 56px; height: 56px; border-radius: 50%; background: var(--cyan); color: #FFFFFF; display: grid; place-items: center; box-shadow: 0 4px 20px rgba(14,157,152,0.25); z-index: 40; }
-.fab svg { width: 24px; height: 24px; }
+.fab { position: fixed; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); right: 20px; width: 48px; height: 48px; border-radius: var(--radius); background: var(--accent); color: #FFFFFF; display: grid; place-items: center; box-shadow: var(--shadow-lg); z-index: 40; }
+.fab svg { width: 20px; height: 20px; }
 
 /* ---- Tabs ---- */
-.tabs { display: flex; gap: 4px; padding: 4px; margin: 16px; background: var(--panel-2); border-radius: var(--radius); }
-.tab { flex: 1; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; text-align: center; color: var(--muted); transition: all 0.15s; }
-.tab.active { background: var(--cyan); color: #FFFFFF; }
+.tabs { display: flex; gap: 2px; padding: 3px; margin: 16px 20px; background: var(--panel-2); border-radius: var(--radius); }
+.tab { flex: 1; padding: 7px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; color: var(--muted); transition: all 0.15s; }
+.tab.active { background: var(--panel); color: var(--text); box-shadow: var(--shadow-sm); }
 
 /* ---- Search ---- */
-.search-bar { margin: 0 16px 8px; position: relative; }
-.search-bar input { padding-left: 40px; }
-.search-bar svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--dim); }
+.search-bar { margin: 8px 20px; position: relative; }
+.search-bar input { padding-left: 36px; font-size: 13px; background: var(--panel-2); border-color: transparent; }
+.search-bar input:focus { background: var(--panel); border-color: var(--border-focus); }
+.search-bar svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--dim); }
 
 /* ---- Modal ---- */
-.modal-overlay { position: fixed; inset: 0; background: rgba(10,20,32,0.4); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.32); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
 .modal-overlay.active { display: flex; }
-.modal { background: var(--panel); border-radius: 16px 16px 0 0; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px)); }
-.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-.modal .form-group { margin-bottom: 14px; }
-.modal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal { background: var(--panel); border-radius: 12px 12px 0 0; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); box-shadow: var(--shadow-lg); }
+.modal::before { content: ''; display: block; width: 32px; height: 4px; background: rgba(0,0,0,0.12); border-radius: 2px; margin: 0 auto 16px; }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.modal .form-group { margin-bottom: 12px; }
+.modal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 /* ---- Kanban ---- */
-.kanban { display: flex; gap: 12px; padding: 16px; overflow-x: auto; min-height: 300px; }
+.kanban { display: flex; gap: 10px; padding: 16px 20px; overflow-x: auto; min-height: 300px; }
 .kanban-col { min-width: 260px; flex: 1; }
-.kanban-col-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 8px 0; display: flex; align-items: center; gap: 8px; }
-.kanban-col-title .count { background: rgba(10,20,32,0.06); padding: 2px 8px; border-radius: 99px; font-size: 11px; }
-.kanban-cards { display: flex; flex-direction: column; gap: 8px; }
+.kanban-col-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 8px 0; display: flex; align-items: center; gap: 6px; }
+.kanban-col-title .count { background: rgba(0,0,0,0.05); padding: 1px 7px; border-radius: 4px; font-size: 10px; }
+.kanban-cards { display: flex; flex-direction: column; gap: 6px; }
 
 /* ---- Login ---- */
-.login-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; position: relative; overflow: hidden; }
-.login-wrap .glow-1 { position: absolute; top: -12%; right: -18%; width: 288px; height: 288px; background: rgba(14,157,152,0.08); filter: blur(110px); border-radius: 50%; pointer-events: none; }
-.login-wrap .glow-2 { position: absolute; bottom: -12%; left: -18%; width: 288px; height: 288px; background: rgba(14,157,152,0.06); filter: blur(110px); border-radius: 50%; pointer-events: none; }
-.login-card { width: 100%; max-width: 380px; z-index: 1; }
-.login-logo { font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 8px; }
-.login-logo span { color: var(--cyan); }
-.login-tagline { font-size: 12px; color: var(--muted); text-align: center; letter-spacing: 0.08em; margin-bottom: 40px; }
-.login-footer { text-align: center; margin-top: 40px; font-size: 12px; color: var(--muted); }
-.login-footer a { color: var(--cyan); text-decoration: none; }
+.login-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: #0A1420; position: relative; overflow: hidden; }
+.login-wrap .glow-1 { position: absolute; top: -20%; right: -15%; width: 400px; height: 400px; background: rgba(14,157,152,0.12); filter: blur(120px); border-radius: 50%; pointer-events: none; }
+.login-wrap .glow-2 { position: absolute; bottom: -20%; left: -15%; width: 400px; height: 400px; background: rgba(79,227,220,0.06); filter: blur(120px); border-radius: 50%; pointer-events: none; }
+.login-card { width: 100%; max-width: 360px; z-index: 1; background: var(--panel); border-radius: 12px; padding: 40px 32px 32px; box-shadow: var(--shadow-lg); }
+.login-logo { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; color: var(--text); letter-spacing: -0.02em; }
+.login-logo span { color: var(--accent); }
+.login-tagline { font-size: 11px; color: var(--muted); text-align: center; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 32px; }
+.login-footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--muted); }
+.login-footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
 
 /* ---- Empty state ---- */
 .empty { text-align: center; padding: 48px 24px; }
-.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
-.empty-text { font-size: 14px; color: var(--muted); }
+.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.25; }
+.empty-text { font-size: 13px; color: var(--muted); }
 
 /* ---- Detail ---- */
-.detail-header { padding: 16px; }
-.detail-header h1 { font-size: 20px; font-weight: 700; }
-.detail-tabs { display: flex; gap: 4px; padding: 0 16px; overflow-x: auto; }
-.detail-tab { padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 2px solid transparent; }
-.detail-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
-.detail-section { padding: 16px; }
-.detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(10,20,32,0.06); }
-.detail-label { font-size: 13px; color: var(--muted); }
-.detail-value { font-size: 13px; font-weight: 500; text-align: right; }
+.detail-header { padding: 16px 20px; }
+.detail-header h1 { font-size: 18px; font-weight: 700; }
+.detail-tabs { display: flex; gap: 0; padding: 0 20px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+.detail-tab { padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 2px solid transparent; transition: color 0.15s; }
+.detail-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.detail-tab:hover { color: var(--text); }
+.detail-section { padding: 16px 20px; }
+.detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+.detail-label { font-size: 12px; color: var(--muted); }
+.detail-value { font-size: 12px; font-weight: 500; text-align: right; color: var(--text); }
 
 /* ---- Timeline ---- */
 .timeline { display: flex; flex-direction: column; gap: 0; }
 .timeline-item { display: flex; gap: 12px; padding: 10px 0; }
-.timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--cyan); margin-top: 5px; flex-shrink: 0; }
+.timeline-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 5px; flex-shrink: 0; }
 .timeline-content { flex: 1; min-width: 0; }
-.timeline-author { font-size: 13px; font-weight: 600; }
-.timeline-date { font-size: 11px; color: var(--muted); }
-.timeline-text { font-size: 13px; color: var(--text); margin-top: 2px; }
+.timeline-author { font-size: 12px; font-weight: 600; }
+.timeline-date { font-size: 10px; color: var(--dim); }
+.timeline-text { font-size: 12px; color: var(--text); margin-top: 2px; }
 
 /* ---- Report Table ---- */
-.rpt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.rpt-table th { text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid var(--border); }
-.rpt-table td { padding: 10px 12px; border-bottom: 1px solid rgba(10,20,32,0.04); }
-.rpt-table tr:hover td { background: rgba(14,157,152,0.03); }
-.rpt-table .num { text-align: right; font-variant-numeric: tabular-nums; }
-.rpt-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.rpt-summary-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
-.rpt-summary-value { font-size: 22px; font-weight: 800; color: var(--cyan); }
-.rpt-summary-label { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
-.table-wrap { overflow-x: auto; }
+.rpt-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rpt-table th { text-align: left; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.08); background: var(--panel-2); }
+.rpt-table td { padding: 9px 12px; border-bottom: 1px solid rgba(0,0,0,0.04); font-variant-numeric: tabular-nums; }
+.rpt-table tr:hover td { background: var(--accent-light); }
+.rpt-table .num { text-align: right; }
+.rpt-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.rpt-summary-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-sm); }
+.rpt-summary-value { font-size: 20px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.rpt-summary-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 3px; letter-spacing: 0.04em; font-weight: 500; }
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+.table-wrap .rpt-table th:first-child { border-radius: var(--radius) 0 0 0; }
+.table-wrap .rpt-table th:last-child { border-radius: 0 var(--radius) 0 0; }
+
+/* ---- Transitions ---- */
+.modal-overlay { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; transition: opacity 0.2s ease; }
+.modal-overlay.active { opacity: 1; }
+.modal { transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1); }
+.modal-overlay.active .modal { transform: translateY(0); }
+
+.screen { opacity: 0; transition: opacity 0.12s ease; }
+.screen.active { opacity: 1; }
+
+.card { transition: box-shadow 0.2s, border-color 0.15s, transform 0.1s; }
+.card:active { transform: scale(0.985); }
+
+.btn-primary { transition: background 0.1s, transform 0.08s, box-shadow 0.1s; }
+.btn-primary:active { transform: translateY(0.5px); }
+
+/* ---- Scroll hint for tables ---- */
+.table-wrap { position: relative; }
+.table-wrap::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 24px; background: linear-gradient(to right, transparent, var(--bg)); pointer-events: none; opacity: 1; transition: opacity 0.2s; }
+.table-wrap:not(.scrollable)::after { opacity: 0; }
+
+/* ---- Stat card accent stripe ---- */
+.stat-card { position: relative; overflow: hidden; }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; bottom: 0; background: var(--border); }
+.stat-card:nth-child(1)::before { background: var(--accent); }
+.stat-card:nth-child(2)::before { background: var(--green); }
+.stat-card:nth-child(3)::before { background: var(--red); }
+.stat-card:nth-child(4)::before { background: var(--amber); }
+.stat-card:nth-child(5)::before { background: #8764B8; }
+.stat-card:nth-child(6)::before { background: var(--accent); }
+.stat-card:nth-child(7)::before { background: var(--green); }
+.stat-card:nth-child(8)::before { background: var(--amber); }
+
+/* ---- FAB ---- */
+.fab { transition: transform 0.15s, box-shadow 0.15s; }
+.fab:active { transform: scale(0.92); }
+
+/* ---- Detail tabs scroll ---- */
+.detail-tabs { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.detail-tabs::-webkit-scrollbar { display: none; }
+
+/* ---- Kanban mobile ---- */
+.kanban { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.kanban::-webkit-scrollbar { display: none; }
+
+/* ---- Touch targets ---- */
+.card { min-height: 48px; }
+.detail-tab { min-height: 40px; display: flex; align-items: center; }
+
+/* ---- More menu cards ---- */
+#s-more .card { display: flex; flex-direction: column; justify-content: center; min-height: 52px; }
 
 /* ---- Responsive ---- */
+@media (max-width: 480px) {
+  .kanban-col { min-width: 240px; }
+}
+@media (max-width: 374px) {
+  .modal .form-row { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+  .stat-value { font-size: 20px; }
+  .rpt-summary { grid-template-columns: 1fr 1fr; }
+  .kanban-col { min-width: 220px; }
+}
 @media (min-width: 768px) {
-  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
   .kanban { flex-wrap: nowrap; overflow-x: auto; }
+  .list { padding: 12px 24px; }
+  .detail-section { padding: 16px 24px; }
 }
 @media (min-width: 1024px) {
-  .stats-grid { grid-template-columns: repeat(6, 1fr); }
-  body { max-width: 1200px; margin: 0 auto; }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  body { max-width: 1200px; margin: 0 auto; box-shadow: -1px 0 0 var(--border), 1px 0 0 var(--border); }
 }
 </style>
 </head>
@@ -186,22 +261,24 @@ label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); 
   <div class="glow-2"></div>
   <div class="login-card">
     <div class="login-logo">Flow<span>Prop</span></div>
-    <p class="login-tagline">Property management</p>
+    <p class="login-tagline">Property Management System</p>
 
-    <h2 style="font-size:18px;font-weight:600;text-align:center;margin-bottom:6px;">Sign in this device</h2>
-    <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;">Signs in for 30 days</p>
+    <div style="margin-bottom:24px;">
+      <p style="font-size:14px;font-weight:600;text-align:center;margin-bottom:4px;color:var(--text);">Sign in to your agency</p>
+      <p style="font-size:12px;color:var(--dim);text-align:center;">Session persists for 30 days</p>
+    </div>
 
     <form id="login-form">
-      <label for="login-code">Agency access code</label>
-      <div style="position:relative;margin-bottom:12px;">
-        <input id="login-code" type="password" placeholder="Access code" autocomplete="current-password" />
+      <label for="login-code">Access code</label>
+      <div style="position:relative;margin-bottom:14px;">
+        <input id="login-code" type="password" placeholder="Enter your agency access code" autocomplete="current-password" style="font-size:14px;" />
       </div>
-      <div id="login-error" class="hidden" style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);padding:10px 12px;border-radius:8px;font-size:13px;color:#DC2626;margin-bottom:12px;"></div>
-      <button type="submit" class="btn btn-primary btn-full" id="login-btn" style="min-height:48px;">Use this device</button>
+      <div id="login-error" class="hidden" style="background:rgba(209,52,56,0.06);border:1px solid rgba(209,52,56,0.15);padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;color:var(--red);margin-bottom:12px;"></div>
+      <button type="submit" class="btn btn-primary btn-full" id="login-btn" style="min-height:44px;font-size:14px;">Sign in</button>
     </form>
 
-    <p style="margin-top:20px;font-size:13px;color:var(--muted);text-align:center;">Access is issued per agency. Ask your property manager for the code.</p>
-    <p class="login-footer"><a href="https://tru-property.co.za">Flow Prop</a> — by TruProperty · V 1.0</p>
+    <p style="margin-top:20px;font-size:11px;color:var(--dim);text-align:center;line-height:1.5;">Access codes are issued per agency.<br>Contact your property manager if you need one.</p>
+    <p class="login-footer"><a href="https://tru-saas.com">TruSaaS</a> · V 1.1</p>
   </div>
 </div>
 
@@ -336,6 +413,8 @@ label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); 
         <div class="card" onclick="renderReport('arrears')"><div class="card-title">Arrears</div><div class="card-sub">Outstanding balances</div></div>
         <div class="card" onclick="renderReport('sales-pipeline')"><div class="card-title">Sales Pipeline</div><div class="card-sub">Listings, offers, sales status</div></div>
         <div class="card" onclick="renderReport('commission')"><div class="card-title">Commission</div><div class="card-sub">Rental and sales commission</div></div>
+        <div class="card" onclick="renderReport('lead-conversion')"><div class="card-title">Lead Conversion</div><div class="card-sub">Funnel from leads to sales</div></div>
+        <div class="card" onclick="renderReport('agent-performance')"><div class="card-title">Agent Performance</div><div class="card-sub">Leads, viewings, deals per agent</div></div>
       </div>
     </div>
 
@@ -393,6 +472,9 @@ label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); 
       </div>
       <div id="propd-tab-offers" class="propd-panel" style="display:none;">
         <div class="list" id="propd-offers"></div>
+        <div style="padding:0 16px 16px;">
+          <button class="btn btn-secondary btn-full" onclick="showModal('offer')">Submit Offer</button>
+        </div>
       </div>
       <div id="propd-tab-mandates" class="propd-panel" style="display:none;">
         <div class="detail-section" id="propd-mandate"></div>
@@ -533,6 +615,7 @@ function showApp() {
   shell.classList.remove('hidden');
   shell.style.display = 'flex';
   document.getElementById('topbar-sub').textContent = account?.agencyName || '';
+  loadBuyerCache();
   nav('dashboard');
 }
 
@@ -570,6 +653,8 @@ function nav(screen, pushStack = true) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById('s-' + screen);
   if (el) el.classList.add('active');
+
+  document.getElementById('screens').scrollTop = 0;
 
   // Update bottom nav
   document.querySelectorAll('.bottomnav button').forEach(b => {
@@ -613,6 +698,19 @@ function dateSA(iso) {
   const d = new Date(iso);
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
+
+// ---- Buyer Name Cache ----
+let _buyerCache = {};
+let _buyerCacheReady = false;
+async function loadBuyerCache() {
+  try {
+    const buyers = await api('/api/buyers');
+    _buyerCache = {};
+    for (const b of buyers) _buyerCache[b.id] = `${b.firstName} ${b.lastName}`;
+    _buyerCacheReady = true;
+  } catch { /* ignore */ }
+}
+function buyerName(id) { return _buyerCache[id] || id; }
 
 // ---- Dashboard ----
 async function loadDashboard() {
@@ -743,6 +841,7 @@ function propDetailTab(tab, el) {
 
 async function loadPropertyInterests(propId) {
   try {
+    if (!_buyerCacheReady) await loadBuyerCache();
     const items = await api(`/api/interests?propertyId=${propId}`);
     const el = document.getElementById('propd-interests');
     const active = items.filter(i => !i.deleted);
@@ -750,7 +849,7 @@ async function loadPropertyInterests(propId) {
     const statusClass = { new: 'badge-cyan', contacted: 'badge-amber', viewing_scheduled: 'badge-amber', viewing_done: 'badge-green', offer_made: 'badge-green', won: 'badge-green', lost: 'badge-red' };
     el.innerHTML = active.map(i => `
       <div class="card" onclick="navInterestDetail('${i.id}')">
-        <div class="card-title">${i.buyerId}</div>
+        <div class="card-title">${buyerName(i.buyerId)}</div>
         <div class="card-sub">Source: ${i.source} · ${dateSA(i.createdAt)}</div>
         <div class="card-row"><span class="badge ${statusClass[i.status] || 'badge-gray'}">${i.status.replace(/_/g, ' ')}</span></div>
       </div>
@@ -768,7 +867,7 @@ async function loadPropertyViewings(propId) {
     el.innerHTML = items.map(v => `
       <div class="card">
         <div class="card-title">${dateSA(v.scheduledDate)} ${v.scheduledTime || ''}</div>
-        <div class="card-sub">Buyer: ${v.buyerId}</div>
+        <div class="card-sub">Buyer: ${buyerName(v.buyerId)}</div>
         <div class="card-row">
           <span class="badge ${statusClass[v.status] || 'badge-gray'}">${v.status}</span>
           ${v.rating ? `<span class="badge ${ratingClass[v.rating] || 'badge-gray'}" style="margin-left:4px;">${v.rating}</span>` : ''}
@@ -779,12 +878,29 @@ async function loadPropertyViewings(propId) {
   } catch (err) { console.error(err); }
 }
 
-async function completeViewing(id) {
-  const feedback = prompt('Feedback after viewing:');
-  if (feedback === null) return;
-  const rating = prompt('Rating (hot / warm / cold / not_interested):') || 'warm';
+let _completeViewingId = null;
+function completeViewing(id) {
+  _completeViewingId = id;
+  const m = document.getElementById('modal');
+  m.innerHTML = `<div class="modal-title">Complete Viewing</div>
+    <div class="form-group"><label>Feedback</label><textarea id="m-cvfeedback" rows="3" placeholder="How did the viewing go?"></textarea></div>
+    <div class="form-group"><label>Buyer Rating</label><select id="m-cvrating">
+      <option value="hot">Hot — very interested</option>
+      <option value="warm" selected>Warm — interested</option>
+      <option value="cold">Cold — not keen</option>
+      <option value="not_interested">Not interested</option>
+    </select></div>
+    <button class="btn btn-primary btn-full" onclick="submitCompleteViewing()">Complete</button>`;
+  document.getElementById('modal-overlay').classList.add('active');
+}
+async function submitCompleteViewing() {
+  if (!_completeViewingId) return;
   try {
-    await api(`/api/viewings/${id}/complete`, { method: 'PUT', body: { feedback, rating } });
+    await api(`/api/viewings/${_completeViewingId}/complete`, { method: 'PUT', body: {
+      feedback: document.getElementById('m-cvfeedback').value,
+      rating: document.getElementById('m-cvrating').value,
+    }});
+    closeModal();
     loadPropertyViewings(currentPropertyId);
   } catch (err) { alert(err.message); }
 }
@@ -800,7 +916,7 @@ async function loadPropertyOffers(propId) {
       <div class="card" ${idx === 0 && o.status === 'submitted' ? 'style="border-color:var(--cyan);"' : ''}>
         ${idx === 0 && o.status === 'submitted' ? '<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--cyan);margin-bottom:4px;">Best Offer</div>' : ''}
         <div class="card-title">${zar(o.offerAmountZAR)}</div>
-        <div class="card-sub">Buyer ${o.buyerId} · ${dateSA(o.offerDate)} · Valid until ${dateSA(o.validUntil)}</div>
+        <div class="card-sub">${buyerName(o.buyerId)} · ${dateSA(o.offerDate)} · Valid until ${dateSA(o.validUntil)}</div>
         ${o.conditions?.length ? `<div class="card-sub" style="margin-top:2px;">Conditions: ${o.conditions.join(', ')}</div>` : ''}
         <div class="card-row">
           <span class="badge ${statusClass[o.status] || 'badge-gray'}">${o.status}</span>
@@ -818,18 +934,33 @@ async function loadPropertyOffers(propId) {
 }
 
 async function acceptOffer(id) {
-  if (!confirm('Accept this offer? Other active offers will be rejected.')) return;
+  if (!confirm('Accept this offer?\n\nThis will:\n• Reject all other active offers\n• Create a sale record\n• Calculate commission from the mandate\n• Resolve all leads on this property')) return;
   try {
-    await api(`/api/offers/${id}/accept`, { method: 'POST' });
+    const result = await api(`/api/offers/${id}/accept`, { method: 'POST' });
+    if (result.cascaded) {
+      alert('Offer accepted. Sale and commission records created automatically.');
+    }
     loadPropertyOffers(currentPropertyId);
   } catch (err) { alert(err.message); }
 }
 
-async function counterOffer(id) {
-  const amount = prompt('Counter amount (cents):');
-  if (!amount) return;
+let _counterOfferId = null;
+function counterOffer(id) {
+  _counterOfferId = id;
+  const m = document.getElementById('modal');
+  m.innerHTML = `<div class="modal-title">Counter Offer</div>
+    <div class="form-group"><label>Counter Amount (ZAR)</label><input id="m-counteramt" type="number" step="0.01" placeholder="1 950 000" /></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Enter the full rand amount — cents are calculated automatically.</p>
+    <button class="btn btn-primary btn-full" onclick="submitCounterOffer()">Send Counter</button>`;
+  document.getElementById('modal-overlay').classList.add('active');
+}
+async function submitCounterOffer() {
+  if (!_counterOfferId) return;
+  const rands = parseFloat(document.getElementById('m-counteramt').value);
+  if (!rands || rands <= 0) { alert('Enter a valid amount.'); return; }
   try {
-    await api(`/api/offers/${id}/counter`, { method: 'POST', body: { counterAmountZAR: +amount } });
+    await api(`/api/offers/${_counterOfferId}/counter`, { method: 'POST', body: { counterAmountZAR: Math.round(rands * 100) } });
+    closeModal();
     loadPropertyOffers(currentPropertyId);
   } catch (err) { alert(err.message); }
 }
@@ -1046,7 +1177,7 @@ function showModal(type) {
         <div class="form-group"><label>Purpose</label><select id="m-purpose"><option value="rental">Rental</option><option value="sale">Sale</option><option value="both">Both</option></select></div>
       </div>
       <div class="form-row"><div class="form-group"><label>Bedrooms</label><input id="m-beds" type="number" value="3" /></div><div class="form-group"><label>Bathrooms</label><input id="m-baths" type="number" value="2" /></div></div>
-      <div class="form-row"><div class="form-group"><label>Monthly Rent (cents)</label><input id="m-rent" type="number" placeholder="850000" /></div><div class="form-group"><label>Asking Price (cents)</label><input id="m-price" type="number" placeholder="195000000" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Monthly Rent (ZAR)</label><input id="m-rent" type="number" step="0.01" placeholder="8 500" /></div><div class="form-group"><label>Asking Price (ZAR)</label><input id="m-price" type="number" step="0.01" placeholder="1 950 000" /></div></div>
       <div class="form-group"><label>Notes</label><textarea id="m-notes" rows="2"></textarea></div>
       <button class="btn btn-primary btn-full" onclick="submitProperty()">Create Property</button>`;
   } else if (type === 'tenant') {
@@ -1055,20 +1186,20 @@ function showModal(type) {
       <div class="form-row"><div class="form-group"><label>Phone</label><input id="m-phone" type="tel" /></div><div class="form-group"><label>Email</label><input id="m-email" type="email" /></div></div>
       <div class="form-group"><label>SA ID Number</label><input id="m-id" /></div>
       <div class="form-group"><label>Employer</label><input id="m-employer" /></div>
-      <div class="form-group"><label>Monthly Income (cents)</label><input id="m-income" type="number" /></div>
+      <div class="form-group"><label>Monthly Income (ZAR)</label><input id="m-income" type="number" step="0.01" /></div>
       <button class="btn btn-primary btn-full" onclick="submitTenant()">Create Tenant</button>`;
   } else if (type === 'buyer') {
     m.innerHTML = `<div class="modal-title">Add Buyer</div>
       <div class="form-row"><div class="form-group"><label>First Name</label><input id="m-fn" /></div><div class="form-group"><label>Last Name</label><input id="m-ln" /></div></div>
       <div class="form-row"><div class="form-group"><label>Phone</label><input id="m-phone" type="tel" /></div><div class="form-group"><label>Email</label><input id="m-email" type="email" /></div></div>
-      <div class="form-row"><div class="form-group"><label>Budget Min (cents)</label><input id="m-budmin" type="number" /></div><div class="form-group"><label>Budget Max (cents)</label><input id="m-budmax" type="number" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Budget Min (ZAR)</label><input id="m-budmin" type="number" step="0.01" /></div><div class="form-group"><label>Budget Max (ZAR)</label><input id="m-budmax" type="number" step="0.01" /></div></div>
       <div class="form-group"><label>Requirements</label><textarea id="m-reqs" rows="2" placeholder="3 bed, garden, close to schools"></textarea></div>
       <div class="form-group"><label>Source</label><select id="m-source"><option>walk-in</option><option>referral</option><option>web</option><option>portal</option></select></div>
       <button class="btn btn-primary btn-full" onclick="submitBuyer()">Create Buyer</button>`;
   } else if (type === 'payment') {
     m.innerHTML = `<div class="modal-title">Record Payment</div>
       <div class="form-group"><label>Lease ID</label><input id="m-leaseid" placeholder="lease_..." /></div>
-      <div class="form-group"><label>Amount (cents)</label><input id="m-amount" type="number" /></div>
+      <div class="form-group"><label>Amount (ZAR)</label><input id="m-amount" type="number" step="0.01" /></div>
       <div class="form-row"><div class="form-group"><label>Date</label><input id="m-date" type="date" /></div><div class="form-group"><label>Method</label><select id="m-method"><option>eft</option><option>cash</option><option>debit_order</option><option>card</option><option>other</option></select></div></div>
       <div class="form-group"><label>Reference</label><input id="m-ref" /></div>
       <button class="btn btn-primary btn-full" onclick="submitPayment()">Record Payment</button>`;
@@ -1095,12 +1226,18 @@ function showModal(type) {
       <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="submitAgent()">Create Agent</button>`;
   } else if (type === 'interest') {
     m.innerHTML = `<div class="modal-title">Add Lead</div>
-      <div class="form-group"><label>Buyer ID</label><input id="m-buyerid" placeholder="buy_..." /></div>
+      <div class="form-group"><label>Buyer</label><select id="m-buyerid">
+        <option value="">Select buyer...</option>
+        ${Object.entries(_buyerCache).map(([id, name]) => `<option value="${id}">${name}</option>`).join('')}
+      </select></div>
       <div class="form-group"><label>Source</label><select id="m-intsource"><option value="walk_in">Walk-in</option><option value="referral">Referral</option><option value="web">Web</option><option value="portal">Portal</option><option value="showroom">Showroom</option><option value="whatsapp">WhatsApp</option></select></div>
       <button class="btn btn-primary btn-full" onclick="submitInterest()">Add Lead</button>`;
   } else if (type === 'viewing') {
     m.innerHTML = `<div class="modal-title">Schedule Viewing</div>
-      <div class="form-group"><label>Buyer ID</label><input id="m-vbuyerid" placeholder="buy_..." /></div>
+      <div class="form-group"><label>Buyer</label><select id="m-vbuyerid">
+        <option value="">Select buyer...</option>
+        ${Object.entries(_buyerCache).map(([id, name]) => `<option value="${id}">${name}</option>`).join('')}
+      </select></div>
       <div class="form-row"><div class="form-group"><label>Date</label><input id="m-vdate" type="date" /></div><div class="form-group"><label>Time</label><input id="m-vtime" type="time" /></div></div>
       <div class="form-group"><label>Source</label><select id="m-vsource"><option value="web">Web</option><option value="walk_in">Walk-in</option><option value="referral">Referral</option><option value="portal">Portal</option><option value="showroom">Showroom</option><option value="whatsapp">WhatsApp</option></select></div>
       <button class="btn btn-primary btn-full" onclick="submitViewing()">Schedule</button>`;
@@ -1108,7 +1245,7 @@ function showModal(type) {
     m.innerHTML = `<div class="modal-title">Create Lease</div>
       <div class="form-group"><label>Tenant ID</label><input id="m-ltenant" placeholder="ten_..." /></div>
       <div class="form-row"><div class="form-group"><label>Start Date</label><input id="m-lstart" type="date" /></div><div class="form-group"><label>End Date</label><input id="m-lend" type="date" /></div></div>
-      <div class="form-row"><div class="form-group"><label>Monthly Rent (cents)</label><input id="m-lrent" type="number" placeholder="850000" /></div><div class="form-group"><label>Deposit (cents)</label><input id="m-ldeposit" type="number" placeholder="850000" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Monthly Rent (ZAR)</label><input id="m-lrent" type="number" step="0.01" placeholder="8 500" /></div><div class="form-group"><label>Deposit (ZAR)</label><input id="m-ldeposit" type="number" step="0.01" placeholder="8 500" /></div></div>
       <div class="form-group"><label>Escalation %</label><input id="m-lescalation" type="number" value="8" /></div>
       <button class="btn btn-primary btn-full" onclick="submitLease()">Create Lease</button>`;
   } else if (type === 'mandate') {
@@ -1118,6 +1255,17 @@ function showModal(type) {
       <div class="form-row"><div class="form-group"><label>Start Date</label><input id="m-mstart" type="date" /></div><div class="form-group"><label>End Date</label><input id="m-mend" type="date" /></div></div>
       <div class="form-row"><div class="form-group"><label>Commission %</label><input id="m-mcomm" type="number" value="7.5" step="0.5" /></div><div class="form-group"><label>VAT Registered</label><select id="m-mvat"><option value="false">No</option><option value="true">Yes</option></select></div></div>
       <button class="btn btn-primary btn-full" onclick="submitMandate()">Create Mandate</button>`;
+  } else if (type === 'offer') {
+    m.innerHTML = `<div class="modal-title">Submit Offer</div>
+      <div class="form-group"><label>Buyer</label><select id="m-obuyerid">
+        <option value="">Select buyer...</option>
+        ${Object.entries(_buyerCache).map(([id, name]) => `<option value="${id}">${name}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label>Offer Amount (ZAR)</label><input id="m-oamount" type="number" step="0.01" placeholder="1 950 000" /></div>
+      <div class="form-row"><div class="form-group"><label>Valid Until</label><input id="m-ovalid" type="date" /></div><div class="form-group"><label>Bond Required</label><select id="m-obond"><option value="false">No</option><option value="true">Yes</option></select></div></div>
+      <div class="form-group"><label>Conditions</label><input id="m-oconditions" placeholder="Subject to bond approval, inspection" /></div>
+      <div class="form-group"><label>Notes</label><textarea id="m-onotes" rows="2"></textarea></div>
+      <button class="btn btn-primary btn-full" onclick="submitOffer()">Submit Offer</button>`;
   } else if (type === 'document') {
     if (arguments[1]) docModalCtx = arguments[1];
     m.innerHTML = `<div class="modal-title">Upload Document</div>
@@ -1145,8 +1293,8 @@ async function submitProperty() {
       purpose: document.getElementById('m-purpose').value,
       bedrooms: +document.getElementById('m-beds').value,
       bathrooms: +document.getElementById('m-baths').value,
-      monthlyRentZAR: +document.getElementById('m-rent').value || 0,
-      askingPriceZAR: +document.getElementById('m-price').value || 0,
+      monthlyRentZAR: Math.round((+document.getElementById('m-rent').value || 0) * 100),
+      askingPriceZAR: Math.round((+document.getElementById('m-price').value || 0) * 100),
       notes: document.getElementById('m-notes').value,
     }});
     closeModal(); renderProperties();
@@ -1162,7 +1310,7 @@ async function submitTenant() {
       email: document.getElementById('m-email').value,
       idNumber: document.getElementById('m-id').value,
       employer: document.getElementById('m-employer').value,
-      monthlyIncome: +document.getElementById('m-income').value || 0,
+      monthlyIncome: Math.round((+document.getElementById('m-income').value || 0) * 100),
     }});
     closeModal(); renderTenants();
   } catch (err) { alert(err.message); }
@@ -1175,8 +1323,8 @@ async function submitBuyer() {
       lastName: document.getElementById('m-ln').value,
       phone: document.getElementById('m-phone').value,
       email: document.getElementById('m-email').value,
-      budgetMin: +document.getElementById('m-budmin').value || 0,
-      budgetMax: +document.getElementById('m-budmax').value || 0,
+      budgetMin: Math.round((+document.getElementById('m-budmin').value || 0) * 100),
+      budgetMax: Math.round((+document.getElementById('m-budmax').value || 0) * 100),
       requirements: document.getElementById('m-reqs').value,
       source: document.getElementById('m-source').value,
     }});
@@ -1188,7 +1336,7 @@ async function submitPayment() {
   try {
     await api('/api/payments', { method: 'POST', body: {
       leaseId: document.getElementById('m-leaseid').value,
-      amountZAR: +document.getElementById('m-amount').value || 0,
+      amountZAR: Math.round((+document.getElementById('m-amount').value || 0) * 100),
       date: document.getElementById('m-date').value,
       method: document.getElementById('m-method').value,
       reference: document.getElementById('m-ref').value,
@@ -1270,8 +1418,8 @@ async function submitLease() {
       tenantId: document.getElementById('m-ltenant').value,
       startDate: document.getElementById('m-lstart').value,
       endDate: document.getElementById('m-lend').value,
-      monthlyRentZAR: +document.getElementById('m-lrent').value || 0,
-      depositZAR: +document.getElementById('m-ldeposit').value || 0,
+      monthlyRentZAR: Math.round((+document.getElementById('m-lrent').value || 0) * 100),
+      depositZAR: Math.round((+document.getElementById('m-ldeposit').value || 0) * 100),
       annualEscalation: +document.getElementById('m-lescalation').value || 8,
     }});
     closeModal(); loadPropertyLeases(currentPropertyId);
@@ -1290,6 +1438,28 @@ async function submitMandate() {
       vatRegistered: document.getElementById('m-mvat').value === 'true',
     }});
     closeModal(); loadPropertyMandate(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+async function submitOffer() {
+  const buyerId = document.getElementById('m-obuyerid').value;
+  const rands = parseFloat(document.getElementById('m-oamount').value);
+  if (!buyerId) { alert('Select a buyer.'); return; }
+  if (!rands || rands <= 0) { alert('Enter a valid amount.'); return; }
+  const condStr = document.getElementById('m-oconditions').value.trim();
+  const conditions = condStr ? condStr.split(',').map(c => c.trim()).filter(Boolean) : [];
+  try {
+    await api('/api/offers', { method: 'POST', body: {
+      propertyId: currentPropertyId,
+      buyerId,
+      offerAmountZAR: Math.round(rands * 100),
+      validUntil: document.getElementById('m-ovalid').value || null,
+      bondRequired: document.getElementById('m-obond').value === 'true',
+      conditions,
+      notes: document.getElementById('m-onotes').value,
+    }});
+    closeModal();
+    loadPropertyOffers(currentPropertyId);
   } catch (err) { alert(err.message); }
 }
 
@@ -1461,6 +1631,88 @@ async function renderReport(type) {
         </table></div>` : ''}
       `;
     } catch (err) { body.innerHTML = '<p style="color:var(--muted);">No data.</p>'; }
+
+  } else if (type === 'lead-conversion') {
+    header.innerHTML = '<h1>Lead Conversion</h1>';
+    try {
+      const d = await api('/api/reports/lead-conversion');
+      const maxCount = Math.max(...d.funnel.map(f => f.count), 1);
+      body.innerHTML = `
+        <div class="rpt-summary">
+          <div class="rpt-summary-card"><div class="rpt-summary-value">${d.funnel[0]?.count || 0}</div><div class="rpt-summary-label">Total Leads</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value" style="color:var(--cyan);">${d.funnel[5]?.count || 0}</div><div class="rpt-summary-label">Sales Closed</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value">${d.avgDaysToSale}</div><div class="rpt-summary-label">Avg Days to Sale</div></div>
+        </div>
+        <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Conversion Funnel</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+          ${d.funnel.map(f => `
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:11px;font-weight:600;color:var(--text);width:90px;flex-shrink:0;">${f.stage}</span>
+              <div style="flex:1;background:var(--panel-2);border-radius:6px;height:28px;overflow:hidden;">
+                <div style="width:${Math.max(f.count / maxCount * 100, 2)}%;height:100%;background:var(--cyan);border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;min-width:32px;">
+                  <span style="font-size:11px;font-weight:700;color:#fff;">${f.count}</span>
+                </div>
+              </div>
+              <span style="font-size:12px;color:var(--muted);width:36px;text-align:right;">${f.rate}%</span>
+            </div>
+          `).join('')}
+        </div>
+        ${Object.keys(d.sourceBreakdown).length ? `
+          <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Leads by Source</h3>
+          <div class="table-wrap"><table class="rpt-table">
+            <tr><th>Source</th><th class="num">Leads</th><th class="num">Won</th><th class="num">Conv %</th></tr>
+            ${Object.entries(d.sourceBreakdown).sort((a, b) => b[1].leads - a[1].leads).map(([src, v]) =>
+              `<tr><td>${src.replace(/_/g, ' ')}</td><td class="num">${v.leads}</td><td class="num">${v.won}</td><td class="num" style="font-weight:600;">${v.leads ? Math.round(v.won / v.leads * 100) : 0}%</td></tr>`
+            ).join('')}
+          </table></div>
+        ` : ''}
+        ${Object.keys(d.lostReasons).length ? `
+          <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;">Lost Reasons</h3>
+          <div class="table-wrap"><table class="rpt-table">
+            <tr><th>Reason</th><th class="num">Count</th></tr>
+            ${Object.entries(d.lostReasons).sort((a, b) => b[1] - a[1]).map(([reason, cnt]) =>
+              `<tr><td>${reason}</td><td class="num">${cnt}</td></tr>`
+            ).join('')}
+          </table></div>
+        ` : ''}
+      `;
+    } catch (err) { body.innerHTML = '<p style="color:var(--muted);">No data.</p>'; }
+
+  } else if (type === 'agent-performance') {
+    header.innerHTML = '<h1>Agent Performance</h1>';
+    try {
+      const d = await api('/api/reports/agent-performance');
+      if (!d.agents.length) { body.innerHTML = '<div class="empty"><div class="empty-text">No agents</div></div>'; } else {
+        body.innerHTML = d.agents.map(a => `
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-title">${a.name} <span style="font-size:12px;color:var(--muted);font-weight:400;">${a.role}</span></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:10px;">
+              <div style="text-align:center;padding:8px;background:var(--panel-2);border-radius:8px;">
+                <div style="font-size:18px;font-weight:700;color:var(--cyan);">${a.activeLeads}</div>
+                <div style="font-size:11px;color:var(--muted);">Active Leads</div>
+              </div>
+              <div style="text-align:center;padding:8px;background:var(--panel-2);border-radius:8px;">
+                <div style="font-size:18px;font-weight:700;color:var(--green);">${a.leadsWon}</div>
+                <div style="font-size:11px;color:var(--muted);">Won</div>
+              </div>
+              <div style="text-align:center;padding:8px;background:var(--panel-2);border-radius:8px;">
+                <div style="font-size:18px;font-weight:700;">${a.viewingsDone}</div>
+                <div style="font-size:11px;color:var(--muted);">Viewings</div>
+              </div>
+              <div style="text-align:center;padding:8px;background:var(--panel-2);border-radius:8px;">
+                <div style="font-size:18px;font-weight:700;color:var(--amber);">${a.offersAccepted}</div>
+                <div style="font-size:11px;color:var(--muted);">Deals</div>
+              </div>
+              <div style="text-align:center;padding:8px;background:var(--panel-2);border-radius:8px;">
+                <div style="font-size:18px;font-weight:700;color:var(--cyan);">${zar(a.commissionEarnedZAR)}</div>
+                <div style="font-size:11px;color:var(--muted);">Commission</div>
+              </div>
+            </div>
+            ${a.totalLeads ? `<div style="margin-top:8px;font-size:12px;color:var(--muted);">Conversion: ${a.totalLeads ? Math.round(a.leadsWon / a.totalLeads * 100) : 0}% of ${a.totalLeads} leads · ${a.viewingsScheduled} viewings scheduled</div>` : ''}
+          </div>
+        `).join('');
+      }
+    } catch (err) { body.innerHTML = '<p style="color:var(--muted);">No data.</p>'; }
   }
 
   nav('report-detail');
@@ -1591,7 +1843,7 @@ async function navInterestDetail(id) {
       </div>
     `;
     const rows = [
-      ['Property', i.propertyId], ['Buyer', i.buyerId], ['Agent', i.agentId],
+      ['Property', i.propertyId], ['Buyer', buyerName(i.buyerId)], ['Agent', i.agentId],
       ['Created', dateSA(i.createdAt)], ['Updated', dateSA(i.updatedAt)],
     ];
     if (i.lostReason) rows.push(['Lost Reason', i.lostReason]);
@@ -1632,11 +1884,32 @@ async function updateInterestStatus(status) {
   } catch (err) { alert(err.message); }
 }
 
-async function loseInterest() {
-  const reason = prompt('Reason for losing this lead:');
-  if (reason === null) return;
+function loseInterest() {
+  const m = document.getElementById('modal');
+  m.innerHTML = `<div class="modal-title">Mark Lead as Lost</div>
+    <div class="form-group"><label>Reason</label><select id="m-lostreason-sel">
+      <option value="">Select a reason...</option>
+      <option value="Budget too low">Budget too low</option>
+      <option value="Found another property">Found another property</option>
+      <option value="Finance declined">Finance declined</option>
+      <option value="Changed requirements">Changed requirements</option>
+      <option value="No response">No response</option>
+      <option value="other">Other</option>
+    </select></div>
+    <div class="form-group" id="m-lostreason-other-wrap" style="display:none;"><label>Specify</label><input id="m-lostreason-other" placeholder="What happened?" /></div>
+    <button class="btn btn-primary btn-full" style="background:#DC2626;" onclick="submitLoseInterest()">Mark as Lost</button>`;
+  document.getElementById('m-lostreason-sel').onchange = function() {
+    document.getElementById('m-lostreason-other-wrap').style.display = this.value === 'other' ? '' : 'none';
+  };
+  document.getElementById('modal-overlay').classList.add('active');
+}
+async function submitLoseInterest() {
+  const sel = document.getElementById('m-lostreason-sel').value;
+  const reason = sel === 'other' ? document.getElementById('m-lostreason-other').value : sel;
+  if (!reason) { alert('Select a reason.'); return; }
   try {
     await api(`/api/interests/${currentInterestId}`, { method: 'PUT', body: { status: 'lost', lostReason: reason } });
+    closeModal();
     navInterestDetail(currentInterestId);
   } catch (err) { alert(err.message); }
 }
@@ -1673,6 +1946,20 @@ async function renderCommissions() {
     `).join('');
   } catch (err) { console.error(err); }
 }
+
+// ---- Table scroll hints ----
+function checkTableScrollHints() {
+  document.querySelectorAll('.table-wrap').forEach(el => {
+    el.classList.toggle('scrollable', el.scrollWidth > el.clientWidth + 4);
+  });
+}
+new MutationObserver(checkTableScrollHints).observe(document.body, { childList: true, subtree: true });
+window.addEventListener('resize', checkTableScrollHints);
+
+// ---- Modal overlay click to close ----
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
 
 // ---- Init ----
 if (token) { showApp(); } else { showLogin(); }
