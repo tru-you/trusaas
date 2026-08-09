@@ -53,6 +53,7 @@ import { initialCarDealerships } from '../../data/carDealerData';
 import { useApp } from '../../context/AppContext';
 import { CarDealerIntelModal } from './CarDealerIntelModal';
 import { ProspectFinderModal } from './ProspectFinderModal';
+import { WebsiteScraperModal } from './WebsiteScraperModal';
 import { CarDealerHeatmap } from './CarDealerHeatmap';
 import { CommunicationBar } from '../common/CommunicationBar';
 import { CommunicationModal, CommunicationTarget } from '../common/CommunicationModal';
@@ -201,6 +202,7 @@ export const CarDealerSuite: React.FC = () => {
 
   // Prospect Finder Modal State
   const [showProspectFinder, setShowProspectFinder] = useState<boolean>(false);
+  const [showScraper, setShowScraper] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<'name' | 'date'>('date');
 
   // Communication Modal State (Call, Email, WhatsApp)
@@ -402,6 +404,13 @@ export const CarDealerSuite: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowScraper(true)}
+            className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold rounded-xl text-xs border border-zinc-700 flex items-center gap-2 shadow-md transition-all"
+          >
+            <Globe className="w-4 h-4 text-cyan-400" />
+            <span>Scrape a website</span>
+          </button>
           <button
             onClick={() => setShowProspectFinder(true)}
             className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold rounded-xl text-xs border border-zinc-700 flex items-center gap-2 shadow-md transition-all"
@@ -862,6 +871,14 @@ export const CarDealerSuite: React.FC = () => {
       <ProspectFinderModal
         isOpen={showProspectFinder}
         onClose={() => setShowProspectFinder(false)}
+        onImportDealer={(newDealer) => setDealerships([newDealer, ...dealerships])}
+        existingDealerNames={dealerships.map((d) => d.name)}
+      />
+
+      {/* Website Scraper Modal */}
+      <WebsiteScraperModal
+        isOpen={showScraper}
+        onClose={() => setShowScraper(false)}
         onImportDealer={(newDealer) => setDealerships([newDealer, ...dealerships])}
         existingDealerNames={dealerships.map((d) => d.name)}
       />

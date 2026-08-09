@@ -1,11 +1,8 @@
 import React from 'react';
+import { useRemoveBg } from '../../hooks/useRemoveBg';
 import {
-  LayoutDashboard,
-  Users,
-  FolderKanban,
   Calculator,
   Workflow,
-  Sparkles,
   Settings,
   ShieldCheck,
   TrendingUp,
@@ -13,36 +10,34 @@ import {
   FileSignature,
   Car,
   Radar,
+  Puzzle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTruCrm } from '../../context/TruCrmContext';
-import defaultLogo from '../../assets/images/truesaas_logo_1784747570605.jpg';
+import tsMark from '../../assets/brand/ts-mark.png';
+import wordmark from '../../assets/brand/trusaas-wordmark.png';
 
 export const Sidebar: React.FC = () => {
-  const { activeView, setActiveView, deals, projects, invoices, workflowRules, proposals, getFinancialSummary, profile } = useApp();
+  const { activeView, setActiveView, deals, invoices, workflowRules, proposals, getFinancialSummary, profile } = useApp();
 
   const { metrics: truCrmMetrics, overdue: truCrmOverdue, unworked: truCrmUnworked } = useTruCrm();
   // Anything needing action today is what the badge should shout about.
   const truCrmActionCount = truCrmOverdue.length + truCrmUnworked.length;
 
   const activeDealsCount = deals.filter((d) => d.stage !== 'won' && d.stage !== 'lost').length;
-  const activeProjectsCount = projects.filter((p) => p.status === 'In Progress').length;
   const pendingInvoicesCount = invoices.filter((i) => i.status === 'Pending' || i.status === 'Overdue').length;
   const activeWorkflowsCount = workflowRules.filter((r) => r.enabled).length;
   const activeProposalsCount = proposals.filter((p) => p.status !== 'Accepted').length;
 
   const summary = getFinancialSummary();
   const scheme = profile.colorScheme || 'cyan';
-
-  const logoSrc = profile.logoUrl || defaultLogo;
+  const tsMarkSrc = useRemoveBg(tsMark, 'light', 15);
 
   // Active is a cyan hairline against a faint wash — not a white slab, and not
   // a glow. The sidebar sits *under* the content, so it stays darker than ink.
   const activeNavClass =
     'bg-[color:var(--cyan-faint)] text-[color:var(--white)] border-l-2 border-[color:var(--cyan)]';
   const logoRingClass = 'ring-[color:var(--glass-line)] shadow-none';
-  const badgeProClass =
-    'bg-[color:var(--glass)] text-[color:var(--white-dim)] border-[color:var(--glass-line)]';
   const badgeQuiet =
     'bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)]';
   // The only badge allowed to draw the eye: leads that are actually unworked.
@@ -62,22 +57,11 @@ export const Sidebar: React.FC = () => {
 
   const navGroups: { heading: string; items: NavItem[] }[] = [
     {
-      heading: 'Overview',
-      items: [
-        {
-          id: 'dashboard',
-          label: 'Executive Overview',
-          icon: LayoutDashboard,
-          badge: null,
-        },
-      ],
-    },
-    {
-      heading: 'Sales floor — our customers',
+      heading: 'Personal workspace',
       items: [
         {
           id: 'trucrm',
-          label: 'TruCRM — Leads & Deals',
+          label: 'TruCRM — Personal CRM',
           icon: Car,
           badge:
             truCrmActionCount > 0
@@ -85,14 +69,9 @@ export const Sidebar: React.FC = () => {
               : `${truCrmMetrics.openLeads} open`,
           badgeColor: truCrmActionCount > 0 ? badgeAlert : badgeQuiet,
         },
-      ],
-    },
-    {
-      heading: 'Market intel — competitors',
-      items: [
         {
           id: 'cardealer',
-          label: 'Competitor Classifieds',
+          label: 'Market Intel',
           icon: Radar,
           badge: 'Market scan',
           badgeColor: badgeQuiet,
@@ -102,26 +81,16 @@ export const Sidebar: React.FC = () => {
   ];
 
   const businessItems = [
-    // The generic "CRM & Sales Suite" is retired from the nav — TruCRM (Sales
-    // floor) is the automotive CRM and does the job properly. The component and
-    // its `crm` view still exist, so restoring is one line if ever needed.
     {
       id: 'proposals',
-      label: 'Proposals & SLAs',
+      label: 'Quotes & SLAs',
       icon: FileSignature,
       badge: activeProposalsCount > 0 ? `${activeProposalsCount} active` : null,
       badgeColor: badgeQuiet,
     },
     {
-      id: 'projects',
-      label: 'Project Manager',
-      icon: FolderKanban,
-      badge: activeProjectsCount > 0 ? `${activeProjectsCount} active` : null,
-      badgeColor: badgeQuiet,
-    },
-    {
       id: 'accounting',
-      label: 'Automated Accounting',
+      label: 'Invoices & Accounting',
       icon: Calculator,
       badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} pending` : null,
       badgeColor: badgeQuiet,
@@ -134,11 +103,10 @@ export const Sidebar: React.FC = () => {
       badgeColor: badgeQuiet,
     },
     {
-      id: 'copilot',
-      label: 'Dealer Assist',
-      icon: Sparkles,
-      badge: 'AI Active',
-      badgeColor: badgeQuiet,
+      id: 'modules',
+      label: 'Modules',
+      icon: Puzzle,
+      badge: null,
     },
     {
       id: 'settings',
@@ -157,20 +125,22 @@ export const Sidebar: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl overflow-hidden shadow-lg ring-1 bg-zinc-900 flex items-center justify-center shrink-0 ${logoRingClass}`}>
             <img
-              src={logoSrc}
+              src={tsMarkSrc}
               alt="TruSaaS Badge"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="font-bold text-white tracking-tight text-base flex items-center gap-1.5 truncate">
-              TruCRM Auto
-              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md border shrink-0 ${badgeProClass}`}>
-                PRO
-              </span>
-            </h1>
-            <p className="text-[11px] text-zinc-400 truncate">Dealership operating system</p>
+            <div className="overflow-hidden" style={{ height: '1.25rem' }}>
+              <img
+                src={wordmark}
+                alt="TruSaaS"
+                style={{ height: '2rem', width: 'auto' }}
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <p className="text-[11px] text-zinc-400 truncate mt-0.5">Personal CRM & operations</p>
           </div>
         </div>
       </div>

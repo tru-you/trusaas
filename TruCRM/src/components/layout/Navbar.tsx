@@ -1,31 +1,22 @@
 import React, { useState } from 'react';
 import {
-  Sparkles,
   Bell,
   Search,
   Plus,
-  Building2,
   Briefcase,
-  FolderPlus,
   FilePlus,
   Receipt,
-  Check,
   Trash2,
   ChevronDown,
-  User,
-  LogOut,
   Settings,
-  BarChart3,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useNotifications } from '../../context/NotificationContext';
-import defaultLogo from '../../assets/images/truesaas_logo_1784747570605.jpg';
+import truMark from '../../assets/brand/tru-mark.png';
 
 export const Navbar: React.FC = () => {
   const {
     profile,
-    setIsCopilotOpen,
-    isCopilotOpen,
     setActiveView,
   } = useApp();
   const { notifications, markAsRead, clearNotifications, unreadCount } = useNotifications();
@@ -42,7 +33,7 @@ export const Navbar: React.FC = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400" />
           <input
             type="text"
-            placeholder="Search deals, projects, invoices, or contacts..."
+            placeholder="Search deals, invoices, or contacts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-200 placeholder-zinc-500 focus:outline-hidden focus:ring-2 focus:ring-zinc-700 focus:border-zinc-500 transition-all"
@@ -52,20 +43,6 @@ export const Navbar: React.FC = () => {
 
       {/* Right Controls */}
       <div className="flex items-center gap-3">
-        {/* Dealer Assist Button */}
-        <button
-          id="btn-copilot-trigger"
-          onClick={() => setIsCopilotOpen(!isCopilotOpen)}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold transition-all ${
-            isCopilotOpen
-              ? 'bg-white text-black shadow-md ring-1 ring-zinc-400'
-              : 'bg-zinc-900 text-zinc-100 hover:bg-zinc-800 border border-zinc-700'
-          }`}
-        >
-          <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
-          <span className="hidden sm:inline">Dealer Assist</span>
-        </button>
-
         {/* Quick Create Dropdown */}
         <div className="relative">
           <button
@@ -86,22 +63,12 @@ export const Navbar: React.FC = () => {
               <button
                 onClick={() => {
                   setShowQuickCreate(false);
-                  setActiveView('crm');
+                  setActiveView('trucrm');
                 }}
                 className="w-full text-left px-3.5 py-2 text-sm text-zinc-300 hover:bg-zinc-900 hover:text-white flex items-center gap-2.5 transition-colors"
               >
                 <Briefcase className="w-4 h-4 text-cyan-400" />
-                <span>New CRM Deal</span>
-              </button>
-              <button
-                onClick={() => {
-                  setShowQuickCreate(false);
-                  setActiveView('projects');
-                }}
-                className="w-full text-left px-3.5 py-2 text-sm text-zinc-300 hover:bg-zinc-900 hover:text-white flex items-center gap-2.5 transition-colors"
-              >
-                <FolderPlus className="w-4 h-4 text-cyan-400" />
-                <span>New Project</span>
+                <span>New Lead</span>
               </button>
               <button
                 onClick={() => {
@@ -200,15 +167,11 @@ export const Navbar: React.FC = () => {
         >
           <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700 overflow-hidden shrink-0 shadow-md">
             <img
-              src={profile.logoUrl || defaultLogo}
-              alt="Logo Badge"
+              src={truMark}
+              alt="TruSaaS"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
-          </div>
-          <div className="hidden lg:block text-left">
-            <p className="text-xs font-semibold text-zinc-200 leading-tight">{profile.companyName}</p>
-            <p className="text-[10px] text-zinc-400 capitalize">Monochrome • Admin</p>
           </div>
         </div>
       </div>

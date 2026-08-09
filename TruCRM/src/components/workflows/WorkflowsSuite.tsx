@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Clock,
   Briefcase,
-  FolderKanban,
   Calculator,
   Bell,
   Check,
@@ -21,8 +20,8 @@ export const WorkflowsSuite: React.FC = () => {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [ruleName, setRuleName] = useState('');
-  const [triggerEvent, setTriggerEvent] = useState<'deal_won' | 'invoice_overdue' | 'task_completed' | 'receipt_scanned'>('deal_won');
-  const [actionType, setActionType] = useState<'create_project' | 'send_email' | 'flag_accounting' | 'create_invoice'>('create_project');
+  const [triggerEvent, setTriggerEvent] = useState<'deal_won' | 'invoice_overdue' | 'receipt_scanned'>('deal_won');
+  const [actionType, setActionType] = useState<'send_email' | 'flag_accounting' | 'create_invoice'>('create_invoice');
 
   const handleCreateRule = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +55,7 @@ export const WorkflowsSuite: React.FC = () => {
             Automated Cross-Suite Workflows
           </h1>
           <p className="text-sm text-zinc-400">
-            Connect CRM sales milestones, project delivery triggers, and accounting reconciliation with zero manual entry.
+            Connect CRM sales milestones, invoice reconciliation, and receipt scanning with zero manual entry.
           </p>
         </div>
 
@@ -89,21 +88,21 @@ export const WorkflowsSuite: React.FC = () => {
 
           <div className="p-4 bg-black rounded-xl border border-zinc-800 space-y-2 relative">
             <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs uppercase tracking-wider">
-              <FolderKanban className="w-4 h-4 text-cyan-400" />
-              2. Project Manager
+              <Calculator className="w-4 h-4 text-cyan-400" />
+              2. Automated Accounting
             </div>
             <p className="text-xs text-zinc-300">
-              Provisions client delivery workspace & creates onboarding tasks.
+              Issues 50% deposit invoice & posts receivable entry to ledger.
             </p>
           </div>
 
           <div className="p-4 bg-black rounded-xl border border-zinc-800 space-y-2">
             <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs uppercase tracking-wider">
-              <Calculator className="w-4 h-4 text-cyan-400" />
-              3. Automated Accounting
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
+              3. CRM Follow-up
             </div>
             <p className="text-xs text-zinc-300">
-              Issues 50% deposit invoice & posts receivable entry to ledger.
+              Flags the deal for follow-up and notifies the salesperson.
             </p>
           </div>
         </div>
@@ -193,7 +192,6 @@ export const WorkflowsSuite: React.FC = () => {
                 >
                   <option value="deal_won">CRM Deal Stage becomes "Won"</option>
                   <option value="invoice_overdue">Invoice passes Due Date without payment</option>
-                  <option value="task_completed">Project Task completed</option>
                   <option value="receipt_scanned">AI Receipt Document Scanned</option>
                 </select>
               </div>
@@ -205,7 +203,6 @@ export const WorkflowsSuite: React.FC = () => {
                   onChange={(e) => setActionType(e.target.value as any)}
                   className="w-full px-3 py-2 rounded-lg border border-slate-800 bg-slate-950 text-slate-200 text-sm"
                 >
-                  <option value="create_project">Provision new Project in Project Suite</option>
                   <option value="create_invoice">Generate draft Deposit Invoice in Accounting</option>
                   <option value="send_email">Send AI-generated email notification</option>
                   <option value="flag_accounting">Flag General Ledger entry & notify lead</option>

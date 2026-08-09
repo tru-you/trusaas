@@ -5,3 +5,7 @@ dist/
 *.log
 .DS_Store
 server.js
+
+# Dev server output redirected to these files while running locally
+stdout.txt
+stderr.txt

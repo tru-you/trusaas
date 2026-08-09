@@ -18,7 +18,7 @@ import {
   initialDealershipSettings,
 } from '../data/trucrmData';
 
-const KEY = 'trucrm_v1';
+const KEY = 'trusaas_crm_v2';
 
 function load<T>(suffix: string, fallback: T): T {
   try {

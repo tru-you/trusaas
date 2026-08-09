@@ -14,7 +14,10 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useRemoveBg } from '../../hooks/useRemoveBg';
 import defaultLogo from '../../assets/images/truesaas_logo_1784747570605.jpg';
+import tsMark from '../../assets/brand/ts-mark.png';
+import wordmark from '../../assets/brand/trusaas-wordmark.png';
 
 export const SettingsView: React.FC = () => {
   const { profile, updateProfile, resetToSampleData, deleteAllData, addNotification } = useApp();
@@ -24,6 +27,15 @@ export const SettingsView: React.FC = () => {
   const [currency, setCurrency] = useState(profile.currency);
   const [taxRate, setTaxRate] = useState(profile.taxRate.toString());
   const [customLogoUrl, setCustomLogoUrl] = useState(profile.logoUrl || '');
+  const [email, setEmail] = useState(profile.email);
+  const [phone, setPhone] = useState(profile.phone || '');
+  const [address, setAddress] = useState(profile.address || '');
+  const [regNumber, setRegNumber] = useState(profile.regNumber || '');
+  const [bankName, setBankName] = useState(profile.bank?.bankName || '');
+  const [accountName, setAccountName] = useState(profile.bank?.accountName || '');
+  const [accountNumber, setAccountNumber] = useState(profile.bank?.accountNumber || '');
+  const [branchCode, setBranchCode] = useState(profile.bank?.branchCode || '');
+  const [swift, setSwift] = useState(profile.bank?.swift || '');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -34,6 +46,17 @@ export const SettingsView: React.FC = () => {
       tagline,
       currency,
       taxRate: Number(taxRate) || 8.5,
+      email,
+      phone,
+      address,
+      regNumber,
+      bank: {
+        bankName,
+        accountName,
+        accountNumber,
+        branchCode,
+        swift,
+      },
       logoUrl: customLogoUrl.trim() || undefined,
     });
     setSavedSuccess(true);
@@ -53,6 +76,7 @@ export const SettingsView: React.FC = () => {
   };
 
   const activeLogo = customLogoUrl.trim() || defaultLogo;
+  const tsMarkSrc = useRemoveBg(tsMark, 'light', 15);
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-5xl mx-auto bg-black text-white">
@@ -174,6 +198,114 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
 
+          {/* Business Information */}
+          <div className="pt-6 border-t border-zinc-800">
+            <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-cyan-400" />
+              Business Information
+            </h4>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-400 block mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-zinc-400 block mb-1">Phone</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+27 00 000 0000"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-400 block mb-1">Address</label>
+                <textarea
+                  rows={2}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Street address&#10;City, Province, Postal code"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-400 block mb-1">Reg / VAT number</label>
+                <input
+                  type="text"
+                  value={regNumber}
+                  onChange={(e) => setRegNumber(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Banking Details */}
+          <div className="pt-6 border-t border-zinc-800">
+            <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-cyan-400" />
+              Banking Details
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-zinc-400 block mb-1">Bank Name</label>
+                <input
+                  type="text"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  placeholder="e.g. Absa, FNB, Standard Bank"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-400 block mb-1">Account Name</label>
+                <input
+                  type="text"
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-400 block mb-1">Account Number</label>
+                <input
+                  type="text"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-400 block mb-1">Branch Code</label>
+                <input
+                  type="text"
+                  value={branchCode}
+                  onChange={(e) => setBranchCode(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-400 block mb-1">SWIFT / BIC</label>
+                <input
+                  type="text"
+                  value={swift}
+                  onChange={(e) => setSwift(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
             {savedSuccess && (
               <span className="text-xs text-zinc-300 font-bold flex items-center gap-1">
@@ -191,6 +323,38 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
       </form>
+
+      {/* TruSaaS Platform Assets */}
+      <div className="bg-black p-6 rounded-2xl border border-zinc-800 shadow-xl">
+        <div className="flex items-center gap-2 mb-5">
+          <Zap className="w-4 h-4 text-cyan-400" />
+          <h3 className="font-bold text-white text-sm">TruSaaS Platform</h3>
+          <span className="ml-auto text-[11px] text-zinc-500 bg-zinc-950 px-2.5 py-1 rounded-lg border border-zinc-800">
+            Read-only
+          </span>
+        </div>
+        <div className="flex items-center gap-5">
+          <div className="w-14 h-14 rounded-2xl bg-zinc-950 ring-1 ring-zinc-800 overflow-hidden flex items-center justify-center shrink-0">
+            <img
+              src={tsMarkSrc}
+              alt="TruSaaS mark"
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+          <div>
+            <div className="overflow-hidden" style={{ height: '1.5rem' }}>
+              <img
+                src={wordmark}
+                alt="TruSaaS"
+                style={{ height: '2.4rem', width: 'auto' }}
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <p className="text-[11px] text-zinc-500 mt-1.5">Future Automotive · v2.5 Pro</p>
+          </div>
+        </div>
+      </div>
 
       {/* Backup & Reset */}
       <div className="bg-black p-6 rounded-2xl border border-zinc-800 shadow-xl space-y-4">

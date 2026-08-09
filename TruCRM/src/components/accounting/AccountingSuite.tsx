@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import {
@@ -24,13 +24,14 @@ import {
   ShieldCheck,
   Trash2,
   CreditCard,
-  Building2,
   Download,
   Copy,
   Clock,
   Mail,
-  MapPin,
   FileCode2,
+  Pencil,
+  Save,
+  X,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Transaction, Invoice, InvoiceItem } from '../../types';
@@ -42,6 +43,7 @@ export const AccountingSuite: React.FC = () => {
     invoices,
     addTransaction,
     addInvoice,
+    updateInvoice,
     updateInvoiceStatus,
     getFinancialSummary,
     profile,
@@ -85,6 +87,77 @@ export const AccountingSuite: React.FC = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
 
+  // Editable invoice draft (working copy of the previewed invoice)
+  const [draft, setDraft] = useState<Invoice | null>(null);
+
+  // Keep the draft in sync when a different invoice is opened.
+  const beginEdit = (inv: Invoice) => {
+    setDraft(JSON.parse(JSON.stringify(inv)) as Invoice);
+  };
+
+  const patchDraft = (patch: Partial<Invoice>) => {
+    setDraft((d) => (d ? { ...d, ...patch } : d));
+  };
+
+  const patchDraftItem = (idx: number, patch: Partial<InvoiceItem>) => {
+    setDraft((d) => {
+      if (!d) return d;
+      const items = (d.items || []).map((it, i) => (i === idx ? { ...it, ...patch } : it));
+      return { ...d, items };
+    });
+  };
+
+  const addDraftItem = () => {
+    setDraft((d) => {
+      if (!d) return d;
+      const items = [
+        ...(d.items || []),
+        { id: `item-${Date.now()}`, description: '', quantity: 1, unitPrice: 0, amount: 0 },
+      ];
+      return { ...d, items };
+    });
+  };
+
+  const removeDraftItem = (idx: number) => {
+    setDraft((d) => {
+      if (!d) return d;
+      const items = (d.items || []).filter((_, i) => i !== idx);
+      return { ...d, items };
+    });
+  };
+
+  // Recompute line amounts + totals from the editable draft.
+  const draftTotals = useMemo(() => {
+    const items = (draft?.items || []).map((it) => ({
+      ...it,
+      quantity: Number(it.quantity) || 0,
+      unitPrice: Number(it.unitPrice) || 0,
+      amount: (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0),
+    }));
+    const subtotal = items.reduce((s, it) => s + it.amount, 0);
+    const vatRate = draft?.taxRate ?? profile.taxRate ?? 0;
+    const vat = (subtotal * vatRate) / 100;
+    return { items, subtotal, vat, vatRate, total: subtotal + vat };
+  }, [draft, profile.taxRate]);
+
+  const saveDraft = () => {
+    if (!draft) return;
+    const saved: Invoice = {
+      ...draft,
+      items: draftTotals.items,
+      amount: Math.round(draftTotals.total * 100) / 100,
+      taxRate: draftTotals.vatRate,
+    };
+    updateInvoice(saved);
+    setPreviewInvoice(saved);
+    setDraft(null);
+    addNotification('Invoice Updated', `${saved.invoiceNumber} saved with your edits.`, 'success');
+  };
+
+  const cancelEdit = () => {
+    setDraft(null);
+  };
+
   // Clean PDF Export Utility Function
   const handleExportPdf = async (inv: Invoice) => {
     try {
@@ -97,7 +170,7 @@ export const AccountingSuite: React.FC = () => {
         const canvas = await html2canvas(printableElement, {
           scale: 2,
           useCORS: true,
-          backgroundColor: '#020617', // slate-950
+          backgroundColor: '#F5F1E8',
         });
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
@@ -847,7 +920,10 @@ export const AccountingSuite: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
                         <button
-                          onClick={() => setPreviewInvoice(inv)}
+                          onClick={() => {
+                            setPreviewInvoice(inv);
+                            beginEdit(inv);
+                          }}
                           className="px-3 py-1.5 bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 inline-flex"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -1129,22 +1205,40 @@ export const AccountingSuite: React.FC = () => {
 
       {/* Thorough Executive Printable Invoice Preview Modal */}
       {previewInvoice && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-3xl p-6 sm:p-10 space-y-6 text-slate-200 my-8">
-            {/* Modal Top Control Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800 no-print">
+        <div className="fixed inset-0 bg-[rgba(6,8,13,0.85)] backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-[#0D1117] rounded-2xl shadow-[0_40px_90px_-40px_rgba(0,0,0,0.95)] border border-[rgba(138,162,184,0.14)] w-full max-w-3xl max-h-[92vh] flex flex-col text-[#B1BAC4] overflow-hidden">
+            {/* Modal Top Control Toolbar — sticky so Close is always reachable */}
+            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 border-b border-[rgba(138,162,184,0.12)] no-print shrink-0">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 bg-cyan-950 text-cyan-300 border border-cyan-800/60 rounded-lg text-xs font-bold">
+                <span className="px-2.5 py-1 bg-[rgba(62,207,200,0.12)] text-[#4FE3DC] border border-[rgba(62,207,200,0.35)] rounded-lg text-xs font-semibold">
                   Thorough Invoice View
                 </span>
-                <span className="text-xs text-slate-400 font-mono">{previewInvoice.invoiceNumber}</span>
+                <span className="text-xs text-[#6E7681] font-mono">{previewInvoice.invoiceNumber}</span>
+                <button
+                  onClick={() => (draft ? cancelEdit() : beginEdit(previewInvoice))}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                    draft
+                      ? 'bg-[rgba(62,207,200,0.15)] text-[#4FE3DC] border border-[rgba(62,207,200,0.35)]'
+                      : 'bg-[#161B22] text-[#E8EAE6] border border-[rgba(138,162,184,0.14)] hover:bg-[#21262D]'
+                  }`}
+                >
+                  {draft ? (
+                    <>
+                      <X className="w-3 h-3" /> Stop editing
+                    </>
+                  ) : (
+                    <>
+                      <Pencil className="w-3 h-3" /> Edit
+                    </>
+                  )}
+                </button>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleExportPdf(previewInvoice)}
                   disabled={isExportingPdf}
-                  className="px-3.5 py-1.5 bg-white text-black hover:bg-white/90 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-md shadow-white/5 transition-all disabled:opacity-50"
+                  className="px-3.5 py-1.5 bg-[#3ECFC8] text-[#06080D] text-xs font-semibold rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_5px_0_#22807C,0_10px_22px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#4FE3DC] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_1px_0_#22807C] disabled:opacity-40 disabled:translate-y-0 disabled:shadow-none"
                   title="Export Clean Styled PDF Summary File"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -1153,10 +1247,10 @@ export const AccountingSuite: React.FC = () => {
 
                 <button
                   onClick={() => window.print()}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-1.5 bg-[#161B22] text-[#E8EAE6] text-xs font-medium rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(232,234,230,0.10),0_4px_0_#06080D,0_8px_18px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#21262D] active:translate-y-[2px] active:shadow-[0_1px_0_#06080D]"
                   title="Print or Browser Print-to-PDF"
                 >
-                  <Printer className="w-3.5 h-3.5 text-slate-400" />
+                  <Printer className="w-3.5 h-3.5 text-[#8AA2B8]" />
                   <span>Print</span>
                 </button>
 
@@ -1164,9 +1258,9 @@ export const AccountingSuite: React.FC = () => {
                   onClick={() => {
                     addNotification('Invoice Sent', `Emailed ${previewInvoice.invoiceNumber} directly to ${previewInvoice.clientEmail}.`, 'info');
                   }}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-1.5 bg-[#161B22] text-[#E8EAE6] text-xs font-medium rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(232,234,230,0.10),0_4px_0_#06080D,0_8px_18px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#21262D] active:translate-y-[2px] active:shadow-[0_1px_0_#06080D]"
                 >
-                  <Mail className="w-3.5 h-3.5 text-amber-400" />
+                  <Mail className="w-3.5 h-3.5 text-[#F59E0B]" />
                   <span>Send Email</span>
                 </button>
 
@@ -1182,173 +1276,304 @@ export const AccountingSuite: React.FC = () => {
                       }, 1200);
                     }}
                     disabled={isProcessingPayment}
-                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all"
+                    className="px-3.5 py-1.5 bg-[#10B981] text-[#06080D] text-xs font-semibold rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_5px_0_#0B7A5C,0_10px_22px_-8px_rgba(0,0,0,0.95)] transition-all hover:brightness-110 active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_1px_0_#0B7A5C]"
                   >
                     <CreditCard className="w-3.5 h-3.5" />
                     <span>{isProcessingPayment ? 'Processing ACH...' : 'Simulate Card Pay'}</span>
                   </button>
                 )}
 
+                {draft && (
+                  <button
+                    onClick={saveDraft}
+                    className="px-3.5 py-1.5 bg-[#3ECFC8] text-[#06080D] text-xs font-semibold rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_5px_0_#22807C,0_10px_22px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#4FE3DC] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_1px_0_#22807C]"
+                    title="Save edits to this invoice"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Save changes</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => setPreviewInvoice(null)}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg"
+                  className="px-3 py-1.5 bg-transparent text-[#B1BAC4] text-xs font-medium rounded-[10px] hover:bg-[rgba(232,234,230,0.06)] hover:text-[#E8EAE6] transition-colors"
                 >
                   Close
                 </button>
               </div>
             </div>
 
-            {/* Printable Document Sheet (Executive Corporate Branding) */}
-            <div id="printable-invoice" className="bg-slate-950 p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6 text-slate-200">
-              {/* Header: Company Info + Invoice Title */}
-              <div className="flex flex-col sm:flex-row items-start justify-between gap-4 pb-6 border-b border-slate-800/80">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2.5">
-                    <img
-                      src={profile.logoUrl || defaultLogo}
-                      alt={profile.companyName}
-                      className="w-9 h-9 rounded-xl object-cover border border-slate-700 shadow-md"
-                    />
-                    <h2 className="text-xl font-extrabold text-white tracking-tight">{profile.companyName}</h2>
+            {/* Printable Document Sheet — scrollable area */}
+            <div className="overflow-y-auto p-4 sm:p-6 bg-[#F5F1E8]">
+              {(() => {
+                const inv = draft || previewInvoice;
+                const items = draft ? draftTotals.items : inv.items || [];
+                const subtotal = draft
+                  ? draftTotals.subtotal
+                  : (inv.amount * 100) / (100 + (inv.taxRate || profile.taxRate || 0));
+                const vat = draft ? draftTotals.vat : inv.amount - subtotal;
+                const total = draft ? draftTotals.total : inv.amount;
+                const vatRate = inv.taxRate ?? profile.taxRate ?? 0;
+                const inputCls =
+                  'w-full bg-transparent border border-dashed border-[rgba(18,32,43,0.18)] rounded-md px-1.5 py-0.5 text-inherit font-inherit focus:outline-none focus:bg-[rgba(7,136,155,0.06)] focus:border-[#07889B]';
+                return (
+                  <>
+              <div
+                id="printable-invoice"
+                className="bg-white rounded-[18px] border border-[rgba(18,32,43,0.14)] shadow-[0_18px_50px_-20px_rgba(18,32,43,0.12)] p-8 sm:p-12 text-[#12202B]">
+                {/* Header: business + document title */}
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
+                  <div>
+                    <div className="text-2xl font-semibold tracking-[-0.02em] leading-none">
+                      <span className="text-[#12202B]">{profile.companyName.split(' ')[0] || 'Tru'}</span>
+                      <span className="text-[#07889B]">{profile.companyName.split(' ').slice(1).join(' ') || 'SaaS'}</span>
+                    </div>
+                    <div className="mt-1.5 text-[11px] font-mono uppercase tracking-[0.06em] text-[#8A8172]">
+                      {profile.tagline || 'Personal workspace'}
+                    </div>
+                    <div className="mt-4 text-[13px] text-[#3A4553] space-y-0.5">
+                      <p className="text-[16px] font-semibold text-[#12202B]">{profile.companyName}</p>
+                      <p className="font-mono text-[13px] text-[#3A4553]">{profile.regNumber || 'Reg / VAT no.'}</p>
+                      <p className="whitespace-pre-line">{profile.address || profile.email}</p>
+                      {profile.phone && <p className="font-mono text-[13px] text-[#3A4553]">{profile.phone}</p>}
+                    </div>
                   </div>
-                  <p className="text-xs text-cyan-400 font-medium">{profile.tagline || 'Enterprise Software & Financial Solutions'}</p>
-                  <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-slate-500" />
-                    100 Enterprise Way, Suite 500, San Francisco, CA 94105
-                  </p>
-                  <p className="text-[11px] text-slate-400 font-mono">Tax ID / EIN: 84-9182391 | Support: {profile.email}</p>
-                </div>
 
-                <div className="text-left sm:text-right space-y-1">
-                  <span className="text-xs font-bold tracking-widest text-cyan-400 uppercase">OFFICIAL INVOICE</span>
-                  <p className="text-2xl font-black text-white font-mono">{previewInvoice.invoiceNumber}</p>
-                  <div className="pt-1">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5 ${
-                        previewInvoice.status === 'Paid'
-                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                          : previewInvoice.status === 'Overdue'
-                          ? 'bg-rose-950 text-rose-400 border border-rose-800'
-                          : 'bg-amber-950 text-amber-400 border border-amber-800'
-                      }`}
-                    >
-                      {previewInvoice.status === 'Paid' && <CheckCircle2 className="w-3.5 h-3.5" />}
-                      {previewInvoice.status}
-                    </span>
+                  <div className="text-left sm:text-right">
+                    <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-[#07889B] leading-none">Invoice</h2>
+                    <div className="mt-3 space-y-1 text-[13px] text-[#8A8172]">
+                      <div className="flex justify-end items-baseline gap-2">
+                        <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] min-w-[96px] text-right">Invoice no.</span>
+                        {draft ? (
+                          <input
+                            className={`${inputCls} font-mono w-40 text-right text-[#12202B]`}
+                            value={inv.invoiceNumber}
+                            onChange={(e) => patchDraft({ invoiceNumber: e.target.value })}
+                          />
+                        ) : (
+                          <span className="font-mono text-[#12202B]">{previewInvoice.invoiceNumber}</span>
+                        )}
+                      </div>
+                      <div className="flex justify-end items-baseline gap-2">
+                        <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] min-w-[96px] text-right">Date</span>
+                        {draft ? (
+                          <input
+                            type="date"
+                            className={`${inputCls} font-mono w-40 text-right text-[#12202B]`}
+                            value={inv.issueDate}
+                            onChange={(e) => patchDraft({ issueDate: e.target.value })}
+                          />
+                        ) : (
+                          <span className="font-mono text-[#12202B]">{previewInvoice.issueDate}</span>
+                        )}
+                      </div>
+                      <div className="flex justify-end items-baseline gap-2">
+                        <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] min-w-[96px] text-right">Due</span>
+                        {draft ? (
+                          <input
+                            type="date"
+                            className={`${inputCls} font-mono w-40 text-right text-[#12202B]`}
+                            value={inv.dueDate}
+                            onChange={(e) => patchDraft({ dueDate: e.target.value })}
+                          />
+                        ) : (
+                          <span className="font-mono text-[#12202B]">{previewInvoice.dueDate}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 flex justify-end">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[12px] font-semibold inline-flex items-center gap-1.5 border ${
+                          inv.status === 'Paid'
+                            ? 'bg-[rgba(7,136,155,0.06)] text-[#07889B] border-[rgba(7,136,155,0.12)]'
+                            : inv.status === 'Overdue'
+                            ? 'bg-[rgba(184,106,106,0.08)] text-[#B86A6A] border-[rgba(184,106,106,0.35)]'
+                            : 'bg-[rgba(176,122,38,0.08)] text-[#B07A26] border-[rgba(176,122,38,0.3)]'
+                        }`}
+                      >
+                        {inv.status === 'Paid' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                        {inv.status}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Bill To & Invoice Metadata Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Billed To (Client)</span>
-                  <p className="font-bold text-white text-sm">{previewInvoice.clientName}</p>
-                  <p className="text-slate-300 font-mono">{previewInvoice.clientEmail}</p>
-                  <p className="text-slate-400">100 Technology Plaza, Suite 400, San Francisco, CA</p>
+                {/* Parties */}
+                <div className="flex flex-col sm:flex-row gap-8 mt-8 mb-5">
+                  <div className="flex-1">
+                    <h4 className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#07889B] font-mono mb-1.5">
+                      Bill to
+                    </h4>
+                    {draft ? (
+                      <>
+                        <input className={`${inputCls} font-semibold text-[15px]`} value={inv.clientName} onChange={(e) => patchDraft({ clientName: e.target.value })} placeholder="Client name" />
+                        <input className={`${inputCls} font-mono text-[13px] mt-1`} value={inv.clientEmail} onChange={(e) => patchDraft({ clientEmail: e.target.value })} placeholder="billing@client.com" />
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold text-[#12202B] text-[15px]">{previewInvoice.clientName}</p>
+                        <p className="font-mono text-[13px] text-[#3A4553] mt-0.5">{previewInvoice.clientEmail}</p>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#07889B] font-mono mb-1.5">
+                      Reference
+                    </h4>
+                    {draft ? (
+                      <input className={`${inputCls} text-[13px]`} value={inv.notes || ''} onChange={(e) => patchDraft({ notes: e.target.value })} placeholder="PO / job reference" />
+                    ) : (
+                      <p className="text-[13px] text-[#3A4553]">PO / job reference</p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-1 sm:text-right">
-                  <p><strong className="text-slate-400">P.O. / Contract Ref:</strong> <span className="font-mono text-slate-200">PO-88291</span></p>
-                  <p><strong className="text-slate-400">Issue Date:</strong> <span className="font-mono text-slate-200">{previewInvoice.issueDate}</span></p>
-                  <p><strong className="text-slate-400">Due Date:</strong> <span className="font-mono text-amber-300">{previewInvoice.dueDate}</span></p>
-                  <p><strong className="text-slate-400">Payment Terms:</strong> <span className="text-slate-200 font-medium">Net 30 Days</span></p>
-                </div>
-              </div>
-
-              {/* Itemized Deliverables Table */}
-              <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/40">
-                <table className="w-full text-left text-xs text-slate-300">
-                  <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase font-semibold">
-                    <tr>
-                      <th className="p-3">#</th>
-                      <th className="p-3">Item Description</th>
-                      <th className="p-3 text-center">Qty</th>
-                      <th className="p-3 text-right">Unit Price</th>
-                      <th className="p-3 text-right">Amount</th>
+                {/* Itemized table */}
+                <table className="w-full text-[14px] border-collapse">
+                  <thead>
+                    <tr className="border-b border-[rgba(18,32,43,0.14)]">
+                      <th className="text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#8A8172] py-2 pr-3">
+                        Description
+                      </th>
+                      <th className="text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#8A8172] py-2 px-3 whitespace-nowrap">
+                        Qty
+                      </th>
+                      <th className="text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#8A8172] py-2 px-3 whitespace-nowrap">
+                        Unit price
+                      </th>
+                      <th className="text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#8A8172] py-2 pl-3 whitespace-nowrap">
+                        Amount
+                      </th>
+                      {draft && (
+                        <th className="text-right font-mono text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#8A8172] py-2 pl-2 whitespace-nowrap">
+                          <button
+                            onClick={addDraftItem}
+                            className="px-2 py-0.5 rounded-md border border-[rgba(7,136,155,0.3)] text-[#07889B] hover:bg-[rgba(7,136,155,0.08)] flex items-center gap-1"
+                          >
+                            <Plus className="w-3 h-3" /> Line
+                          </button>
+                        </th>
+                      )}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/80">
-                    {previewInvoice.items?.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-900/50">
-                        <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
-                        <td className="p-3 font-semibold text-slate-100">{item.description}</td>
-                        <td className="p-3 text-center font-mono text-slate-300">{item.quantity}</td>
-                        <td className="p-3 text-right font-mono text-slate-300">{profile.currency}{item.unitPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                        <td className="p-3 text-right font-mono font-bold text-white">{profile.currency}{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  <tbody>
+                    {(items.length
+                      ? items
+                      : [
+                          {
+                            id: 'default-item',
+                            description: 'Professional B2B SaaS Architecture & Development Services',
+                            quantity: 1,
+                            unitPrice: inv.amount,
+                            amount: inv.amount,
+                          },
+                        ]
+                    ).map((item, idx) => (
+                      <tr key={item.id || idx} className="border-b border-[rgba(18,32,43,0.08)]">
+                        <td className="py-3 pr-3 text-[14px] text-[#12202B]">
+                          {draft ? (
+                            <input className={`${inputCls} text-[14px]`} value={item.description} onChange={(e) => patchDraftItem(idx, { description: e.target.value })} />
+                          ) : (
+                            item.description
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono text-[14px] text-[#12202B]">
+                          {draft ? (
+                            <input className={`${inputCls} font-mono w-16 text-right text-[14px]`} inputMode="decimal" value={item.quantity} onChange={(e) => patchDraftItem(idx, { quantity: Number(e.target.value) || 0 })} />
+                          ) : (
+                            item.quantity
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono text-[14px] text-[#12202B]">
+                          {draft ? (
+                            <input className={`${inputCls} font-mono w-28 text-right text-[14px]`} inputMode="decimal" value={item.unitPrice} onChange={(e) => patchDraftItem(idx, { unitPrice: Number(e.target.value) || 0 })} />
+                          ) : (
+                            `${profile.currency}${item.unitPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                          )}
+                        </td>
+                        <td className="py-3 pl-3 text-right font-mono text-[14px] font-semibold text-[#12202B]">
+                          {draft ? `${profile.currency}${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : `${profile.currency}${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                        </td>
+                        {draft && (
+                          <td className="py-3 pl-2 text-right">
+                            <button
+                              onClick={() => removeDraftItem(idx)}
+                              disabled={items.length <= 1}
+                              className="p-1 text-[#B86A6A] hover:bg-[rgba(184,106,106,0.08)] rounded-md disabled:opacity-30"
+                              title="Remove line"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
-                    {(!previewInvoice.items || previewInvoice.items.length === 0) && (
-                      <tr>
-                        <td className="p-3 font-mono text-slate-500">1</td>
-                        <td className="p-3 font-semibold text-slate-100">Professional B2B SaaS Architecture & Development Services</td>
-                        <td className="p-3 text-center font-mono text-slate-300">1</td>
-                        <td className="p-3 text-right font-mono text-slate-300">{profile.currency}{previewInvoice.amount.toLocaleString()}</td>
-                        <td className="p-3 text-right font-mono font-bold text-white">{profile.currency}{previewInvoice.amount.toLocaleString()}</td>
-                      </tr>
-                    )}
                   </tbody>
                 </table>
-              </div>
 
-              {/* Remittance Info & Summary Calculation Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                {/* Remittance & Bank Wire Instructions */}
-                <div className="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-xs space-y-2">
-                  <h4 className="font-bold text-slate-200 flex items-center gap-1.5 uppercase text-[11px] tracking-wider">
-                    <Building2 className="w-3.5 h-3.5 text-cyan-400" />
-                    Remittance & Wire Transfer Details
-                  </h4>
-                  <div className="space-y-1 font-mono text-[11px] text-slate-400">
-                    <p><strong className="text-slate-300">Bank:</strong> Silicon Valley Bank Inc.</p>
-                    <p><strong className="text-slate-300">Account Name:</strong> {profile.companyName}</p>
-                    <p><strong className="text-slate-300">Routing (ABA):</strong> 121000358</p>
-                    <p><strong className="text-slate-300">Account #:</strong> 4839201948</p>
-                    <p><strong className="text-slate-300">SWIFT / BIC:</strong> SVBKUS6S</p>
+                {/* Totals */}
+                <div className="flex justify-end mt-5">
+                  <div className="w-full max-w-[290px]">
+                    <div className="flex justify-between items-baseline px-2 py-1.5 text-[14px]">
+                      <span className="text-[#8A8172]">Subtotal</span>
+                      <span className="font-mono text-[#12202B]">
+                        {profile.currency}{subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline px-2 py-1.5 text-[14px]">
+                      <span className="text-[#8A8172]">VAT ({vatRate}%)</span>
+                      <span className="font-mono text-[#12202B]">
+                        {profile.currency}{vat.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline px-2 py-3 mt-1 border-t border-[rgba(18,32,43,0.14)] text-[16px] font-semibold">
+                      <span className="text-[#12202B]">Total due</span>
+                      <span className="font-mono text-[#07889B]">
+                        {profile.currency}{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Calculation Summary Box */}
-                <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-800 text-xs space-y-2">
-                  <div className="flex justify-between text-slate-400">
-                    <span>Subtotal:</span>
-                    <span className="font-mono text-slate-200">
-                      {profile.currency}{((previewInvoice.amount * 100) / (100 + (previewInvoice.taxRate || profile.taxRate))).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </span>
+                {/* Foot columns */}
+                <div className="flex flex-col sm:flex-row gap-8 mt-7 pt-6 border-t border-[rgba(18,32,43,0.14)]">
+                  <div className="flex-1">
+                    <h4 className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#07889B] font-mono mb-1.5">
+                      Banking details
+                    </h4>
+                    <p className="text-[13px] text-[#3A4553] whitespace-pre-line font-mono">
+                      {profile.bank?.bankName || 'Your bank'}{'\n'}Account name · {profile.bank?.accountName || profile.companyName}{'\n'}Account no. · {profile.bank?.accountNumber || '0000000000'}{'\n'}Branch · {profile.bank?.branchCode || '000000'}{'\n'}SWIFT / BIC · {profile.bank?.swift || 'BIC'}
+                    </p>
                   </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Sales Tax ({previewInvoice.taxRate || profile.taxRate}%):</span>
-                    <span className="font-mono text-slate-200">
-                      {profile.currency}{(previewInvoice.amount - (previewInvoice.amount * 100) / (100 + (previewInvoice.taxRate || profile.taxRate))).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm font-bold text-white pt-2 border-t border-slate-800">
-                    <span>Total Invoice Amount:</span>
-                    <span className="font-mono text-white text-base">{profile.currency}{previewInvoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-slate-400">
-                    <span>Amount Settled:</span>
-                    <span className="font-mono text-emerald-400 font-bold">
-                      {previewInvoice.status === 'Paid' ? `${profile.currency}${previewInvoice.amount.toLocaleString()}` : `${profile.currency}0.00`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm font-black text-amber-300 pt-1 border-t border-slate-800">
-                    <span>Balance Due:</span>
-                    <span className="font-mono">
-                      {previewInvoice.status === 'Paid' ? `${profile.currency}0.00` : `${profile.currency}${previewInvoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-                    </span>
+                  <div className="flex-1">
+                    <h4 className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#07889B] font-mono mb-1.5">
+                      Notes / terms
+                    </h4>
+                    {draft ? (
+                      <textarea
+                        rows={3}
+                        className={`${inputCls} text-[13px] resize-none`}
+                        value={inv.notes || ''}
+                        onChange={(e) => patchDraft({ notes: e.target.value })}
+                        placeholder="Payment terms, thank-you note…"
+                      />
+                    ) : (
+                      <p className="text-[13px] text-[#3A4553]">
+                        {previewInvoice.notes ||
+                          'Payment due within 30 days of issue date. Please reference invoice number on remittance. Thank you for your business!'}
+                      </p>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* Terms & Conditions Notes */}
-              <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
-                <p className="font-semibold text-slate-300">Terms & Conditions:</p>
-                <p>
-                  {previewInvoice.notes ||
-                    'Payment due within 30 days of issue date. Please reference invoice number on wire remittance. Thank you for your business!'}
-                </p>
+                {/* Thanks */}
+                <div className="mt-7 text-center font-mono text-[12px] uppercase tracking-[0.1em] text-[#8A8172]">
+                  Thank you. <span className="text-[#A69C8D]">· Generated with TruSaaS</span>
+                </div>
               </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

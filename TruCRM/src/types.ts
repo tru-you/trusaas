@@ -108,24 +108,12 @@ export interface Invoice {
 export interface WorkflowRule {
   id: string;
   name: string;
-  triggerEvent: 'deal_won' | 'invoice_overdue' | 'task_completed' | 'receipt_scanned';
+  triggerEvent: 'deal_won' | 'invoice_overdue' | 'receipt_scanned';
   triggerDescription: string;
-  actionType: 'create_project' | 'send_email' | 'flag_accounting' | 'create_invoice';
+  actionType: 'send_email' | 'flag_accounting' | 'create_invoice';
   actionDescription: string;
   enabled: boolean;
   lastTriggered?: string;
-}
-
-export interface CopilotMessage {
-  id: string;
-  sender: 'user' | 'ai';
-  text: string;
-  timestamp: string;
-  suggestedActions?: {
-    label: string;
-    type: 'crm' | 'project' | 'accounting' | 'workflow';
-    targetId?: string;
-  }[];
 }
 
 export type ColorSchemeId = 'cyan' | 'emerald' | 'amber';
@@ -137,6 +125,16 @@ export interface BusinessProfile {
   taxRate: number; // e.g. 10
   fiscalYearStart: string;
   email: string;
+  phone?: string;
+  address?: string;
+  regNumber?: string;
+  bank?: {
+    bankName?: string;
+    accountName?: string;
+    accountNumber?: string;
+    branchCode?: string;
+    swift?: string;
+  };
   logoUrl?: string;
   colorScheme: ColorSchemeId;
 }
