@@ -64,7 +64,7 @@ const LeadRow: React.FC<{ lead: Lead; onOpen: () => void; currency: string; acce
   lead,
   onOpen,
   currency,
-  accent = 'border-slate-800',
+  accent = 'border-[rgba(10,20,32,0.08)]',
 }) => {
   const since = daysSinceContact(lead);
   return (
@@ -284,7 +284,7 @@ export const TruCrmSuite: React.FC = () => {
 
       {/* View switcher + search */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="bg-zinc-950 p-1 rounded-xl flex items-center gap-1 border border-zinc-800">
+        <div className="bg-[#FAFAF8] p-1 rounded-xl flex items-center gap-1 border border-[rgba(10,20,32,0.08)]">
           {([
             { id: 'queue', label: 'Work Queue', icon: ListChecks },
             { id: 'board', label: 'Pipeline', icon: LayoutGrid },
@@ -295,7 +295,7 @@ export const TruCrmSuite: React.FC = () => {
               key={id}
               onClick={() => setView(id)}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                view === id ? 'bg-white text-black' : 'text-zinc-400 hover:text-zinc-200'
+                view === id ? 'bg-white text-black' : 'text-[#6B7685] hover:text-[#1A2332]'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -305,17 +305,17 @@ export const TruCrmSuite: React.FC = () => {
         </div>
 
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#0E9D98]" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, phone, stock no., or vehicle…"
-            className="w-full pl-9 pr-8 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 placeholder-zinc-500 text-sm focus:outline-none focus:border-cyan-500"
+            className="w-full pl-9 pr-8 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] text-[#1A2332] placeholder-[rgba(10,20,32,0.40)] text-sm focus:outline-none focus:border-[#0E9D98]"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[rgba(10,20,32,0.50)] hover:text-[#1A2332]"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -367,12 +367,12 @@ export const TruCrmSuite: React.FC = () => {
 
           {/* Today's diary */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-white flex items-center gap-2">
-              <CalendarClock className="w-4 h-4 text-indigo-400" />
+            <h3 className="text-sm font-medium text-[#1A2332] flex items-center gap-2">
+              <CalendarClock className="w-4 h-4 text-indigo-600" />
               Today's diary
             </h3>
             {todaysAppointments.length === 0 ? (
-              <div className="p-4 border-2 border-dashed border-slate-800 rounded-xl text-center text-[length:var(--t-micro)] text-slate-600">
+              <div className="p-4 border-2 border-dashed border-[rgba(10,20,32,0.08)] rounded-xl text-center text-[length:var(--t-micro)] text-[rgba(10,20,32,0.40)]">
                 No appointments booked today.
               </div>
             ) : (
@@ -382,29 +382,29 @@ export const TruCrmSuite: React.FC = () => {
                   <button
                     key={a.id}
                     onClick={() => lead && setSelected(lead)}
-                    className="w-full text-left p-3.5 bg-indigo-950/30 border border-indigo-900/60 rounded-xl hover:border-indigo-600 transition-all"
+                    className="w-full text-left p-3.5 bg-indigo-50 border border-indigo-200 rounded-xl hover:border-indigo-600 transition-all"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-white">{a.type}</span>
-                      <span className="text-[length:var(--t-micro)] font-mono text-indigo-300">
+                      <span className="text-xs font-medium text-[#1A2332]">{a.type}</span>
+                      <span className="text-[length:var(--t-micro)] font-mono text-indigo-600">
                         {new Date(a.at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className="text-[length:var(--t-micro)] text-slate-400 mt-0.5">{lead?.customerName || 'Unknown'}</p>
-                    {a.notes && <p className="text-[length:var(--t-micro)] text-slate-500 mt-1">{a.notes}</p>}
+                    <p className="text-[length:var(--t-micro)] text-[#6B7685] mt-0.5">{lead?.customerName || 'Unknown'}</p>
+                    {a.notes && <p className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)] mt-1">{a.notes}</p>}
                   </button>
                 );
               })
             )}
 
             {/* Bank watchlist — deals waiting on a decision are the most perishable */}
-            <h3 className="text-sm font-medium text-white flex items-center gap-2 pt-3">
+            <h3 className="text-sm font-medium text-[#1A2332] flex items-center gap-2 pt-3">
               <Zap className="w-4 h-4 text-orange-400" />
               Waiting on the bank
             </h3>
             {byOwner(leads.filter((l) => l.finance.status === 'Submitted' || l.finance.status === 'Conditional'))
               .length === 0 ? (
-              <div className="p-4 border-2 border-dashed border-slate-800 rounded-xl text-center text-[length:var(--t-micro)] text-slate-600">
+              <div className="p-4 border-2 border-dashed border-[rgba(10,20,32,0.08)] rounded-xl text-center text-[length:var(--t-micro)] text-[rgba(10,20,32,0.40)]">
                 No applications pending.
               </div>
             ) : (
@@ -414,17 +414,17 @@ export const TruCrmSuite: React.FC = () => {
                 <button
                   key={l.id}
                   onClick={() => setSelected(l)}
-                  className="w-full text-left p-3.5 bg-orange-950/20 border border-orange-900/50 rounded-xl hover:border-orange-600 transition-all"
+                  className="w-full text-left p-3.5 bg-orange-50 border border-orange-200 rounded-xl hover:border-orange-600 transition-all"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-medium text-white truncate">{l.customerName}</span>
+                    <span className="text-xs font-medium text-[#1A2332] truncate">{l.customerName}</span>
                     <FinanceChip status={l.finance.status} />
                   </div>
-                  <p className="text-[length:var(--t-micro)] text-slate-400 mt-0.5">
+                  <p className="text-[length:var(--t-micro)] text-[#6B7685] mt-0.5">
                     {l.finance.bank || 'No bank'} · submitted {ago(l.finance.submittedAt)}
                   </p>
                   {l.finance.outstandingDocs && l.finance.outstandingDocs.length > 0 && (
-                    <p className="text-[length:var(--t-micro)] text-amber-400 mt-1">
+                    <p className="text-[length:var(--t-micro)] text-amber-700 mt-1">
                       {l.finance.outstandingDocs.length} doc(s) outstanding
                     </p>
                   )}
@@ -444,41 +444,41 @@ export const TruCrmSuite: React.FC = () => {
             return (
               <div
                 key={stage.id}
-                className="bg-slate-900/80 p-3 rounded-[18px] border border-slate-800 flex flex-col min-h-[420px]"
+                className="bg-white/80 p-3 rounded-[18px] border border-[rgba(10,20,32,0.08)] flex flex-col min-h-[420px]"
               >
-                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-800">
-                  <h3 className="text-[length:var(--t-micro)] font-medium text-slate-300">{stage.short}</h3>
-                  <span className="px-1.5 py-0.5 bg-slate-950 text-slate-300 rounded-full text-[length:var(--t-micro)] font-medium border border-slate-800">
+                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-[rgba(10,20,32,0.08)]">
+                  <h3 className="text-[length:var(--t-micro)] font-medium text-[#334155]">{stage.short}</h3>
+                  <span className="px-1.5 py-0.5 bg-[#FAFAF8] text-[#334155] rounded-full text-[length:var(--t-micro)] font-medium border border-[rgba(10,20,32,0.08)]">
                     {stageLeads.length}
                   </span>
                 </div>
-                <div className="text-[length:var(--t-micro)] text-slate-500 mb-2.5">{money(stageValue, cur)}</div>
+                <div className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)] mb-2.5">{money(stageValue, cur)}</div>
 
                 <div className="flex-1 space-y-2">
                   {stageLeads.map((lead) => (
                     <div
                       key={lead.id}
                       onClick={() => setSelected(lead)}
-                      className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 hover:border-cyan-500/60 cursor-pointer transition-all group"
+                      className="p-2.5 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)] hover:border-cyan-500/60 cursor-pointer transition-all group"
                     >
                       <div className="flex items-center justify-between gap-1.5 mb-1">
-                        <span className="text-[length:var(--t-micro)] font-medium text-slate-100 group-hover:text-cyan-400 truncate">
+                        <span className="text-[length:var(--t-micro)] font-medium text-[#1A2332] group-hover:text-[#0E9D98] truncate">
                           {lead.customerName}
                         </span>
                         <TempChip temp={lead.temperature} />
                       </div>
-                      <p className="text-[length:var(--t-micro)] text-slate-500 truncate">
+                      <p className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)] truncate">
                         {lead.vehicle.make} {lead.vehicle.model}
                       </p>
-                      <p className="text-[length:var(--t-micro)] font-medium text-white mt-1">
+                      <p className="text-[length:var(--t-micro)] font-medium text-[#1A2332] mt-1">
                         {money(lead.vehicle.askingPrice, cur)}
                       </p>
-                      <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-800/80">
-                        <span className="text-[length:var(--t-micro)] text-slate-600">{ago(lead.lastContactedAt)}</span>
+                      <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-[rgba(10,20,32,0.06)]">
+                        <span className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.40)]">{ago(lead.lastContactedAt)}</span>
                         <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                           <a
                             href={`tel:${lead.phone.replace(/[^0-9+]/g, '')}`}
-                            className="p-1 rounded bg-slate-900 text-cyan-400 hover:bg-slate-800"
+                            className="p-1 rounded bg-white text-[#0E9D98] hover:bg-[#F5F4F1]"
                           >
                             <Phone className="w-3 h-3" />
                           </a>
@@ -486,7 +486,7 @@ export const TruCrmSuite: React.FC = () => {
                             href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-1 rounded bg-slate-900 text-emerald-400 hover:bg-slate-800"
+                            className="p-1 rounded bg-white text-emerald-400 hover:bg-[#F5F4F1]"
                           >
                             <MessageCircle className="w-3 h-3" />
                           </a>
@@ -495,7 +495,7 @@ export const TruCrmSuite: React.FC = () => {
                     </div>
                   ))}
                   {stageLeads.length === 0 && (
-                    <div className="h-20 border-2 border-dashed border-slate-800 rounded-xl flex items-center justify-center text-[length:var(--t-micro)] text-slate-600">
+                    <div className="h-20 border-2 border-dashed border-[rgba(10,20,32,0.08)] rounded-xl flex items-center justify-center text-[length:var(--t-micro)] text-[rgba(10,20,32,0.40)]">
                       Empty
                     </div>
                   )}
@@ -508,10 +508,10 @@ export const TruCrmSuite: React.FC = () => {
 
       {/* ---------------- ALL LEADS ---------------- */}
       {view === 'list' && (
-        <div className="bg-slate-900/80 rounded-[18px] border border-slate-800 overflow-hidden">
+        <div className="bg-white/80 rounded-[18px] border border-[rgba(10,20,32,0.08)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-950/80 border-b border-slate-800 text-[length:var(--t-micro)] font-medium text-slate-500 tracking-wider">
+              <thead className="bg-[#FAFAF8]/80 border-b border-[rgba(10,20,32,0.08)] text-[length:var(--t-micro)] font-medium text-[rgba(10,20,32,0.50)] tracking-wider">
                 <tr>
                   <th className="px-5 py-3">Customer</th>
                   <th className="px-5 py-3">Vehicle</th>
@@ -522,10 +522,10 @@ export const TruCrmSuite: React.FC = () => {
                   <th className="px-5 py-3 text-right">Price / Gross</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-[rgba(10,20,32,0.06)]">
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-5 py-12 text-center text-slate-500 text-xs">
+                    <td colSpan={7} className="px-5 py-12 text-center text-[rgba(10,20,32,0.50)] text-xs">
                       No leads match your search.
                     </td>
                   </tr>
@@ -537,17 +537,17 @@ export const TruCrmSuite: React.FC = () => {
                     <tr
                       key={lead.id}
                       onClick={() => setSelected(lead)}
-                      className="hover:bg-slate-800/40 cursor-pointer transition-colors"
+                      className="hover:bg-[#F5F4F1] cursor-pointer transition-colors"
                     >
                       <td className="px-5 py-3.5">
-                        <p className="font-medium text-white">{lead.customerName}</p>
-                        <p className="text-[length:var(--t-micro)] text-slate-500 font-mono">{lead.reference} · {lead.source}</p>
+                        <p className="font-medium text-[#1A2332]">{lead.customerName}</p>
+                        <p className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)] font-mono">{lead.reference} · {lead.source}</p>
                       </td>
                       <td className="px-5 py-3.5">
-                        <p className="text-slate-200 text-xs">
+                        <p className="text-[#1A2332] text-xs">
                           {lead.vehicle.year} {lead.vehicle.make} {lead.vehicle.model}
                         </p>
-                        <p className="text-[length:var(--t-micro)] text-slate-500">{lead.vehicle.stockNumber || '—'}</p>
+                        <p className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)]">{lead.vehicle.stockNumber || '—'}</p>
                       </td>
                       <td className="px-5 py-3.5">
                         <StageChip stage={lead.stage} />
@@ -555,7 +555,7 @@ export const TruCrmSuite: React.FC = () => {
                       <td className="px-5 py-3.5">
                         <FinanceChip status={lead.finance.status} />
                       </td>
-                      <td className="px-5 py-3.5 text-xs text-slate-300">
+                      <td className="px-5 py-3.5 text-xs text-[#334155]">
                         {salespersonName(lead.salespersonId)}
                       </td>
                       <td className="px-5 py-3.5">
@@ -572,7 +572,7 @@ export const TruCrmSuite: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-5 py-3.5 text-right">
-                        <p className="font-medium text-white">{money(lead.vehicle.askingPrice, cur)}</p>
+                        <p className="font-medium text-[#1A2332]">{money(lead.vehicle.askingPrice, cur)}</p>
                         <p className={`text-[length:var(--t-micro)] font-semibold ${gross >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                           {money(gross, cur)} gross
                         </p>

@@ -441,26 +441,26 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-black border border-white/5 w-full max-w-4xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(10,20,32,0.40)] backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-[rgba(10,20,32,0.08)] w-full max-w-4xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
         <div className="p-8 border-b border-white/5 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
           <div className="space-y-4">
-            <h3 className="text-2xl font-black text-white tracking-tight leading-none">Network Intelligence</h3>
-            <p className="text-sm text-white/40 font-medium max-w-md">
+            <h3 className="text-2xl font-black text-[#1A2332] tracking-tight leading-none">Network Intelligence</h3>
+            <p className="text-sm text-[#6B7685] font-medium max-w-md">
               Synchronize unindexed dealership assets from the global classified network.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative w-full sm:min-w-[300px]">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#1A2332]/20" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && triggerNetworkSearch()}
                 placeholder="Search region or brand..."
-                className="w-full bg-white/5 border border-white/5 rounded-2xl pl-10 pr-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl pl-10 pr-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.40)] focus:outline-none focus:border-white/20 transition-all"
               />
             </div>
             <button
@@ -468,7 +468,7 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
               disabled={isSearching || !searchTerm.trim()}
               className={`px-6 py-3 rounded-2xl text-xs font-bold transition-all border ${
                 isSearching 
-                  ? 'bg-white/5 text-white/20 border-white/5' 
+                  ? 'bg-[rgba(10,20,32,0.03)] text-[#1A2332]/20 border-white/5' 
                   : 'bg-white text-black hover:bg-white/90 border-white'
               }`}
             >
@@ -476,7 +476,7 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              className="p-3 text-white/20 hover:text-white bg-white/5 hover:bg-white/10 rounded-2xl transition-all"
+              className="p-3 text-[#1A2332]/20 hover:text-[#1A2332] bg-[rgba(10,20,32,0.03)] hover:bg-white/10 rounded-2xl transition-all"
             >
               <X className="w-5 h-5" />
             </button>
@@ -484,17 +484,17 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
         </div>
 
         {/* Search & Filter Toolbar */}
-        <div className="p-4 bg-slate-950 border-b border-slate-800 flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="p-4 bg-[#FAFAF8] border-b border-[rgba(10,20,32,0.08)] flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[rgba(10,20,32,0.50)]" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && triggerNetworkSearch()}
                 placeholder="Search city, dealer name, brand..."
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                className="w-full bg-white border border-[rgba(10,20,32,0.08)] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.40)] focus:outline-none focus:border-cyan-500"
               />
             </div>
             <button
@@ -502,8 +502,8 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
               disabled={isSearching || !searchTerm.trim()}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap shadow-lg ${
                 isSearching 
-                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
-                  : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/20'
+                  ? 'bg-[#EFEDE8] text-[rgba(10,20,32,0.50)] cursor-not-allowed' 
+                  : 'bg-[#0E9D98] hover:bg-[#14B8A6] text-white shadow-cyan-600/20'
               }`}
             >
               {isSearching ? (
@@ -518,13 +518,13 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
                 </>
               )}
             </button>
-            <div className="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 shrink-0">
+            <div className="flex items-center bg-white border border-[rgba(10,20,32,0.08)] rounded-xl p-1 shrink-0">
               <button
                 onClick={() => setSortBy('date')}
                 className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
                   sortBy === 'date'
-                    ? 'bg-cyan-600 text-white shadow'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#0E9D98] text-white shadow'
+                    : 'text-[#6B7685] hover:text-[#1A2332]'
                 }`}
                 title="Sort by Date Added"
               >
@@ -534,8 +534,8 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
                 onClick={() => setSortBy('name')}
                 className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
                   sortBy === 'name'
-                    ? 'bg-cyan-600 text-white shadow'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#0E9D98] text-white shadow'
+                    : 'text-[#6B7685] hover:text-[#1A2332]'
                 }`}
                 title="Sort Alphabetically (A-Z)"
               >
@@ -551,8 +551,8 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
                 onClick={() => setSourceFilter(src)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all whitespace-nowrap ${
                   sourceFilter === src
-                    ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                    : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                    ? 'bg-[#0E9D98] text-white shadow-md shadow-cyan-600/30'
+                    : 'bg-white text-[#6B7685] hover:text-[#1A2332] border border-[rgba(10,20,32,0.08)]'
                 }`}
               >
                 {src === 'all' ? 'All Platforms' : src}
@@ -570,14 +570,14 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
                 autotrader: 'bg-orange-950/80 text-orange-400 border-orange-800/60',
                 'cars.com': 'bg-blue-950/80 text-blue-400 border-blue-800/60',
                 cargurus: 'bg-emerald-950/80 text-emerald-400 border-emerald-800/60',
-                edmunds: 'bg-cyan-950/80 text-cyan-400 border-cyan-800/60',
+                edmunds: 'bg-cyan-950/80 text-[#0E9D98] border-cyan-800/60',
                 google: 'bg-sky-950/80 text-sky-400 border-sky-800/60',
-              }[prospect.source] || 'bg-slate-800 text-slate-300 border-slate-700';
+              }[prospect.source] || 'bg-[#EFEDE8] text-[#334155] border-[rgba(10,20,32,0.10)]';
 
               return (
                 <div
                   key={prospect.id}
-                  className="bg-slate-950/80 rounded-xl border border-slate-800/80 p-4 flex flex-col justify-between hover:border-slate-700 transition-all shadow-lg"
+                  className="bg-[#F5F4F1] rounded-xl border border-[rgba(10,20,32,0.06)] p-4 flex flex-col justify-between hover:border-slate-700 transition-all shadow-lg"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -586,26 +586,26 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badgeStyle}`}>
                             {prospect.source}
                           </span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-slate-300 border border-slate-800 flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-slate-400" />
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#334155] border border-[rgba(10,20,32,0.08)] flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-[#6B7685]" />
                             <span>{prospect.location}</span>
                           </span>
                         </div>
-                        <h4 className="text-sm font-black text-white">{prospect.name}</h4>
+                        <h4 className="text-sm font-black text-[#1A2332]">{prospect.name}</h4>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="p-2.5 bg-slate-900/90 rounded-lg border border-slate-800">
-                        <span className="text-[10px] font-semibold text-slate-400 uppercase block">Active Inventory</span>
-                        <span className="text-xs font-black text-cyan-400 mt-0.5 flex items-center gap-1">
+                      <div className="p-2.5 bg-white/90 rounded-lg border border-[rgba(10,20,32,0.08)]">
+                        <span className="text-[10px] font-semibold text-[#6B7685] uppercase block">Active Inventory</span>
+                        <span className="text-xs font-black text-[#0E9D98] mt-0.5 flex items-center gap-1">
                           <Car className="w-3 h-3" />
                           <span>{prospect.inventoryCount} Units</span>
                         </span>
                       </div>
 
-                      <div className="p-2.5 bg-slate-900/90 rounded-lg border border-slate-800">
-                        <span className="text-[10px] font-semibold text-slate-400 uppercase block">Est. Ad Spend</span>
+                      <div className="p-2.5 bg-white/90 rounded-lg border border-[rgba(10,20,32,0.08)]">
+                        <span className="text-[10px] font-semibold text-[#6B7685] uppercase block">Est. Ad Spend</span>
                         <span className="text-xs font-black text-emerald-400 mt-0.5">
                           ${prospect.estimatedAdSpend.toLocaleString()}/mo
                         </span>
@@ -616,21 +616,21 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
                       {prospect.franchiseMakes.map((m, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-800 text-[10px] font-semibold"
+                          className="px-2 py-0.5 rounded bg-white text-[#334155] border border-[rgba(10,20,32,0.08)] text-[10px] font-semibold"
                         >
                           {m}
                         </span>
                       ))}
                     </div>
 
-                    <div className="text-xs text-slate-400 pt-1 border-t border-slate-800/80 flex items-center justify-between">
-                      <span>Contact: <strong className="text-slate-200">{prospect.contactPerson}</strong></span>
-                      <span className="text-slate-500">{prospect.phone}</span>
+                    <div className="text-xs text-[#6B7685] pt-1 border-t border-[rgba(10,20,32,0.06)] flex items-center justify-between">
+                      <span>Contact: <strong className="text-[#1A2332]">{prospect.contactPerson}</strong></span>
+                      <span className="text-[rgba(10,20,32,0.50)]">{prospect.phone}</span>
                     </div>
                   </div>
 
-                  <div className="pt-3 mt-3 border-t border-slate-800 flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                  <div className="pt-3 mt-3 border-t border-[rgba(10,20,32,0.08)] flex items-center justify-between">
+                    <span className="text-[11px] text-[rgba(10,20,32,0.50)] flex items-center gap-1">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                       <span>Verified Classifieds Feed</span>
                     </span>
@@ -641,7 +641,7 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${
                         isAlreadyImported
                           ? 'bg-emerald-950 text-emerald-400 border border-emerald-800 cursor-default'
-                          : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/30 hover:scale-105'
+                          : 'bg-[#0E9D98] hover:bg-[#14B8A6] text-white shadow-cyan-600/30 hover:scale-105'
                       }`}
                     >
                       {isAlreadyImported ? (
@@ -662,10 +662,10 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
             })}
 
             {filteredProspects.length === 0 && (
-              <div className="col-span-full py-16 text-center bg-slate-950 rounded-xl border border-slate-800">
+              <div className="col-span-full py-16 text-center bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)]">
                 <Search className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-                <h4 className="text-sm font-bold text-slate-300">No Unindexed Prospects Found</h4>
-                <p className="text-xs text-slate-500 mt-1">
+                <h4 className="text-sm font-bold text-[#334155]">No Unindexed Prospects Found</h4>
+                <p className="text-xs text-[rgba(10,20,32,0.50)] mt-1">
                   All matching classifieds prospects are already indexed in your CRM watchlist!
                 </p>
               </div>
@@ -674,13 +674,13 @@ export const ProspectFinderModal: React.FC<ProspectFinderModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
-          <span className="text-xs text-slate-400">
+        <div className="p-4 bg-[#FAFAF8] border-t border-[rgba(10,20,32,0.08)] flex items-center justify-between">
+          <span className="text-xs text-[#6B7685]">
             Showing unindexed regional dealerships across AutoTrader, Cars.com, CarGurus & Edmunds.
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-colors"
+            className="px-4 py-2 bg-[#EFEDE8] hover:bg-slate-700 text-[#1A2332] rounded-xl text-xs font-bold transition-colors"
           >
             Done
           </button>

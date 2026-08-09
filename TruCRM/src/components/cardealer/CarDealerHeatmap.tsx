@@ -158,7 +158,7 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
         if (d.source === 'edmunds') return '#06b6d4';
         return '#22d3ee';
       })
-      .attr('stroke', '#0f172a')
+      .attr('stroke', '#E5E3DE')
       .attr('stroke-width', 2.5);
 
     // Inner icon or initial text
@@ -176,7 +176,7 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
       .append('text')
       .attr('text-anchor', 'middle')
       .attr('y', 28)
-      .attr('fill', '#ffffff66')
+      .attr('fill', 'rgba(10,20,32,0.40)')
       .attr('font-size', '10px')
       .attr('font-weight', '700')
       .text((d: MappedDealer) => (d.name.length > 18 ? d.name.substring(0, 16) + '...' : d.name));
@@ -184,25 +184,25 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
   }, [dealerships, metricMode]);
 
   return (
-    <div className="bg-black border border-white/5 rounded-[32px] p-8 shadow-xl relative overflow-hidden space-y-8">
+    <div className="bg-white border border-[rgba(10,20,32,0.08)] rounded-[32px] p-8 shadow-xl relative overflow-hidden space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <h3 className="text-xl font-black text-white tracking-tight">Where the competition sits</h3>
-            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Map Map</span>
+            <h3 className="text-xl font-black text-[#1A2332] tracking-tight">Where the competition sits</h3>
+            <span className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em]">Map Map</span>
           </div>
-          <p className="text-sm text-white/40 font-medium max-w-md">
+          <p className="text-sm text-[#6B7685] font-medium max-w-md">
             Rival dealers near you, by concentration — Eastern Cape and Garden Route.
           </p>
         </div>
 
-        <div className="flex items-center bg-white/5 p-1 rounded-2xl border border-white/5">
+        <div className="flex items-center bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] p-1 rounded-2xl">
           <button
             onClick={() => setMetricMode('inventory')}
             className={`px-4 py-2 rounded-xl text-[11px] font-bold transition-all ${
               metricMode === 'inventory'
                 ? 'bg-white text-black'
-                : 'text-white/30 hover:text-white/50'
+                : 'text-[rgba(10,20,32,0.30)] hover:text-white/50'
             }`}
           >
             Inventory
@@ -212,7 +212,7 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
             className={`px-4 py-2 rounded-xl text-[11px] font-bold transition-all ${
               metricMode === 'adSpend'
                 ? 'bg-white text-black'
-                : 'text-white/30 hover:text-white/50'
+                : 'text-[rgba(10,20,32,0.30)] hover:text-white/50'
             }`}
           >
             Ad Spend
@@ -221,28 +221,28 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
       </div>
 
       {/* SVG Container */}
-      <div className="relative w-full bg-[#050505] rounded-3xl border border-white/5 flex items-center justify-center p-8">
+      <div className="relative w-full bg-[#FAFAF8] rounded-3xl border border-[rgba(10,20,32,0.08)] flex items-center justify-center p-8">
         <svg ref={svgRef} viewBox="0 0 850 460" className="w-full h-auto max-h-[460px]" />
 
         {/* Floating Tooltip Card */}
         {tooltip && (
           <div
             style={{ left: tooltip.x, top: tooltip.y }}
-            className="absolute z-30 pointer-events-none bg-black border border-white/10 rounded-2xl p-4 shadow-2xl text-[11px] space-y-3 w-64 backdrop-blur-xl"
+            className="absolute z-30 pointer-events-none bg-white border border-[rgba(10,20,32,0.10)] rounded-2xl p-4 shadow-2xl text-[11px] space-y-3 w-64 backdrop-blur-xl"
           >
             <div className="flex items-center justify-between">
-              <span className="font-black text-white">{tooltip.dealer.name}</span>
-              <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">
+              <span className="font-black text-[#1A2332]">{tooltip.dealer.name}</span>
+              <span className="text-[9px] font-black text-[rgba(10,20,32,0.30)] uppercase tracking-widest">
                 {tooltip.dealer.source}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[rgba(10,20,32,0.08)]">
               <div className="space-y-1">
-                <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Units</span>
-                <div className="text-white">{tooltip.dealer.inventoryCount}</div>
+                <span className="text-[9px] font-bold text-[rgba(10,20,32,0.20)] uppercase tracking-widest">Units</span>
+                <div className="text-[#1A2332]">{tooltip.dealer.inventoryCount}</div>
               </div>
               <div className="space-y-1">
-                <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Spend</span>
+                <span className="text-[9px] font-bold text-[rgba(10,20,32,0.20)] uppercase tracking-widest">Spend</span>
                 <div className="text-cyan-500">${(tooltip.dealer.intelReport?.estimatedMonthlyAdSpend || 25000).toLocaleString()}</div>
               </div>
             </div>
@@ -251,20 +251,20 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center justify-between gap-8 pt-4 border-t border-white/5">
+      <div className="flex flex-wrap items-center justify-between gap-8 pt-4 border-t border-[rgba(10,20,32,0.08)]">
         <div className="flex items-center gap-6">
-          <span className="flex items-center gap-3 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+          <span className="flex items-center gap-3 text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em]">
             <span className="w-2 h-2 rounded-full bg-white" /> Market Lead
           </span>
-          <span className="flex items-center gap-3 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+          <span className="flex items-center gap-3 text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em]">
             <span className="w-2 h-2 rounded-full bg-emerald-500" /> High Velocity
           </span>
-          <span className="flex items-center gap-3 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+          <span className="flex items-center gap-3 text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em]">
             <span className="w-2 h-2 rounded-full bg-cyan-500" /> Active Network
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-[10px] font-medium text-white/20 uppercase tracking-widest">
+        <div className="flex items-center gap-2 text-[10px] font-medium text-[rgba(10,20,32,0.20)] uppercase tracking-widest">
           <Info className="w-3.5 h-3.5" />
           <span>Real-time spatial clustering enabled</span>
         </div>

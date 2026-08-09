@@ -25,9 +25,9 @@ export const ProgressBadge: React.FC<ProgressBadgeProps> = ({ status, customLabe
     case 'Closed':
       return (
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-white text-black border border-white shadow-xs shrink-0 ${paddingClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs shrink-0 ${paddingClass}`}
         >
-          <CheckCircle2 className="w-3 h-3 text-black" />
+          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
           <span>{label}</span>
         </span>
       );
@@ -35,9 +35,9 @@ export const ProgressBadge: React.FC<ProgressBadgeProps> = ({ status, customLabe
     case 'Overdue':
       return (
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-zinc-900 text-zinc-100 border border-zinc-600 shadow-xs shrink-0 ${paddingClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-rose-50 text-rose-700 border border-rose-200 shadow-xs shrink-0 ${paddingClass}`}
         >
-          <AlertCircle className="w-3 h-3 text-zinc-200" />
+          <AlertCircle className="w-3 h-3 text-rose-500" />
           <span>{label}</span>
         </span>
       );
@@ -45,9 +45,9 @@ export const ProgressBadge: React.FC<ProgressBadgeProps> = ({ status, customLabe
     case 'In Progress':
       return (
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-zinc-900 text-zinc-200 border border-zinc-700 shadow-xs shrink-0 ${paddingClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-blue-50 text-blue-700 border border-blue-200 shadow-xs shrink-0 ${paddingClass}`}
         >
-          <Clock className="w-3 h-3 text-zinc-300" />
+          <Clock className="w-3 h-3 text-blue-500" />
           <span>{label}</span>
         </span>
       );
@@ -55,9 +55,9 @@ export const ProgressBadge: React.FC<ProgressBadgeProps> = ({ status, customLabe
     case 'In Review':
       return (
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-zinc-900 text-zinc-200 border border-zinc-700 shadow-xs shrink-0 ${paddingClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-violet-50 text-violet-700 border border-violet-200 shadow-xs shrink-0 ${paddingClass}`}
         >
-          <FileCheck className="w-3 h-3 text-zinc-300" />
+          <FileCheck className="w-3 h-3 text-violet-500" />
           <span>{label}</span>
         </span>
       );
@@ -65,9 +65,9 @@ export const ProgressBadge: React.FC<ProgressBadgeProps> = ({ status, customLabe
     case 'Planning':
       return (
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-zinc-950 text-zinc-300 border border-zinc-800 shadow-xs shrink-0 ${paddingClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-xs shrink-0 ${paddingClass}`}
         >
-          <Compass className="w-3 h-3 text-zinc-400" />
+          <Compass className="w-3 h-3 text-amber-500" />
           <span>{label}</span>
         </span>
       );
@@ -75,9 +75,9 @@ export const ProgressBadge: React.FC<ProgressBadgeProps> = ({ status, customLabe
     case 'On Hold':
       return (
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-zinc-900 text-zinc-300 border border-zinc-700 shadow-xs shrink-0 ${paddingClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-[#EFEDE8] text-[#6B7685] border border-[rgba(10,20,32,0.10)] shadow-xs shrink-0 ${paddingClass}`}
         >
-          <PauseCircle className="w-3 h-3 text-zinc-400" />
+          <PauseCircle className="w-3 h-3 text-[#6B7685]" />
           <span>{label}</span>
         </span>
       );
@@ -86,9 +86,9 @@ export const ProgressBadge: React.FC<ProgressBadgeProps> = ({ status, customLabe
     default:
       return (
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-zinc-950 text-zinc-400 border border-zinc-800 shadow-xs shrink-0 ${paddingClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold bg-[#FAFAF8] text-[rgba(10,20,32,0.50)] border border-[rgba(10,20,32,0.08)] shadow-xs shrink-0 ${paddingClass}`}
         >
-          <Play className="w-3 h-3 text-zinc-500" />
+          <Play className="w-3 h-3 text-[rgba(10,20,32,0.40)]" />
           <span>{label}</span>
         </span>
       );

@@ -51,7 +51,7 @@ const SignaturePad: React.FC<{ onSign: (dataUrl: string, name: string) => void }
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#7FF0EA';
+    ctx.strokeStyle = '#0E9D98';
   }, []);
 
   const pos = (e: React.PointerEvent) => {
@@ -85,7 +85,7 @@ const SignaturePad: React.FC<{ onSign: (dataUrl: string, name: string) => void }
 
   return (
     <div className="space-y-3">
-      <div className="relative rounded-xl border border-slate-800 bg-slate-950 h-28 overflow-hidden">
+      <div className="relative rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] h-28 overflow-hidden">
         <canvas
           ref={canvasRef}
           className="w-full h-28 touch-none cursor-crosshair"
@@ -94,25 +94,25 @@ const SignaturePad: React.FC<{ onSign: (dataUrl: string, name: string) => void }
           onPointerUp={up}
         />
         {!inked && (
-          <span className="absolute inset-0 flex items-center justify-center text-slate-600 pointer-events-none text-lg italic">
+          <span className="absolute inset-0 flex items-center justify-center text-[rgba(10,20,32,0.40)] pointer-events-none text-lg italic">
             sign here
           </span>
         )}
       </div>
       <div className="flex items-end gap-3">
         <div className="flex-1">
-          <label className="text-[10px] font-semibold text-slate-500 block mb-1">Full name</label>
+          <label className="text-[10px] font-semibold text-[rgba(10,20,32,0.50)] block mb-1">Full name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Authorised signatory"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+            className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-lg px-3 py-2 text-xs text-[#1A2332] focus:outline-none focus:border-cyan-500"
           />
         </div>
         <button
           type="button"
           onClick={clear}
-          className="px-3 py-2 text-[11px] text-slate-400 hover:text-slate-200"
+          className="px-3 py-2 text-[11px] text-[#6B7685] hover:text-[#1A2332]"
         >
           Clear
         </button>
@@ -120,7 +120,7 @@ const SignaturePad: React.FC<{ onSign: (dataUrl: string, name: string) => void }
           type="button"
           disabled={!inked || !name.trim()}
           onClick={() => onSign(canvasRef.current!.toDataURL('image/png'), name.trim())}
-          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+          className="px-4 py-2 bg-[#0E9D98] hover:bg-[#14B8A6] disabled:bg-[#EFEDE8] disabled:text-[rgba(10,20,32,0.50)] text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
         >
           <FileSignature className="w-4 h-4" />
           <span>Authorize &amp; Sign</span>
@@ -328,20 +328,20 @@ export const ProposalsSlaSuite: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[rgba(10,20,32,0.08)] pb-6">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-900 border border-zinc-700 text-cyan-400 flex items-center justify-center shadow-lg">
-              <FileSignature className="w-5 h-5 text-cyan-400" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-[rgba(10,20,32,0.10)] text-[#0E9D98] flex items-center justify-center shadow-lg">
+              <FileSignature className="w-5 h-5 text-[#0E9D98]" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+              <h1 className="text-xl font-extrabold text-[#1A2332] tracking-tight flex items-center gap-2">
                 Proposals & SLA Suite
-                <span className="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-zinc-900 text-cyan-300 border border-zinc-700">
+                <span className="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-white text-[#0E9D98] border border-[rgba(10,20,32,0.10)]">
                   Client Agreements
                 </span>
               </h1>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-[#6B7685] mt-0.5">
                 Build vehicle quotations, rent-to-own agreements and fleet service plans, capture the customer signature, and track fleet service contracts.
               </p>
             </div>
@@ -351,33 +351,33 @@ export const ProposalsSlaSuite: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowCreateProposalModal(true)}
-            className="px-4 py-2.5 bg-white text-black hover:bg-zinc-200 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-md"
+            className="px-4 py-2.5 bg-white text-black hover:bg-[#F5F4F1] rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-md"
           >
             <Plus className="w-4 h-4 text-cyan-600" />
             <span>Create Proposal</span>
           </button>
           <button
             onClick={() => setShowCreateSlaModal(true)}
-            className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors"
+            className="px-4 py-2.5 bg-white hover:bg-[#F5F4F1] text-[#1A2332] border border-[rgba(10,20,32,0.10)] rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors"
           >
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
+            <ShieldCheck className="w-4 h-4 text-[#0E9D98]" />
             <span>New SLA Policy</span>
           </button>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center justify-between gap-4 border-b border-zinc-800 pb-3">
+      <div className="flex items-center justify-between gap-4 border-b border-[rgba(10,20,32,0.08)] pb-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('proposals')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'proposals'
                 ? 'bg-white text-black shadow-md'
-                : 'bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800'
+                : 'bg-[#FAFAF8] text-[#6B7685] hover:text-[#1A2332] border border-[rgba(10,20,32,0.08)]'
             }`}
           >
-            <FileText className="w-4 h-4 text-cyan-500" />
+            <FileText className="w-4 h-4 text-[#0E9D98]" />
             <span>Client Proposals ({proposals.length})</span>
           </button>
 
@@ -386,28 +386,28 @@ export const ProposalsSlaSuite: React.FC = () => {
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'slas'
                 ? 'bg-white text-black shadow-md'
-                : 'bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800'
+                : 'bg-[#FAFAF8] text-[#6B7685] hover:text-[#1A2332] border border-[rgba(10,20,32,0.08)]'
             }`}
           >
-            <ShieldCheck className="w-4 h-4 text-cyan-500" />
+            <ShieldCheck className="w-4 h-4 text-[#0E9D98]" />
             <span>SLA Contracts ({slaContracts.length})</span>
           </button>
         </div>
 
         {/* Global Filter Search */}
         <div className="relative w-64 hidden sm:block">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#0E9D98]" />
           <input
             type="text"
             placeholder={activeTab === 'proposals' ? 'Search proposals...' : 'Search SLA contracts...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-7 py-1.5 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-200 placeholder-zinc-500 text-xs focus:outline-hidden focus:ring-2 focus:ring-zinc-700"
+            className="w-full pl-8 pr-7 py-1.5 bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl text-[#1A2332] placeholder-[rgba(10,20,32,0.40)] text-xs focus:outline-hidden focus:ring-2 focus:ring-[rgba(14,157,152,0.20)]"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6B7685] hover:text-[#1A2332]"
             >
               <X className="w-3 h-3" />
             </button>
@@ -420,53 +420,53 @@ export const ProposalsSlaSuite: React.FC = () => {
         <div className="space-y-6">
           {/* Key Metric Header Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-xl backdrop-blur-md relative overflow-hidden">
+            <div className="bg-white/80 rounded-2xl p-5 border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md relative overflow-hidden">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">Proposal Pipeline Value</span>
-                <div className="w-8 h-8 rounded-xl bg-cyan-950 border border-cyan-800/60 text-cyan-400 flex items-center justify-center">
+                <span className="text-xs font-semibold text-[#6B7685]">Proposal Pipeline Value</span>
+                <div className="w-8 h-8 rounded-xl bg-[rgba(14,157,152,0.08)] border border-[rgba(14,157,152,0.20)] text-[#0E9D98] flex items-center justify-center">
                   <DollarSign className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-black text-white mt-3">{profile.currency}{totalProposalValue.toLocaleString()}</p>
-              <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+              <p className="text-2xl font-black text-[#1A2332] mt-3">{profile.currency}{totalProposalValue.toLocaleString()}</p>
+              <p className="text-[11px] text-[#6B7685] mt-1 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3 text-emerald-400" />
                 <span>Across {proposals.length} active documents</span>
               </p>
             </div>
 
-            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-xl backdrop-blur-md relative overflow-hidden">
+            <div className="bg-white/80 rounded-2xl p-5 border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md relative overflow-hidden">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">Acceptance Win Rate</span>
-                <div className="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-800/60 text-emerald-400 flex items-center justify-center">
+                <span className="text-xs font-semibold text-[#6B7685]">Acceptance Win Rate</span>
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-400 flex items-center justify-center">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-black text-white mt-3">{acceptanceRate}%</p>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-2xl font-black text-[#1A2332] mt-3">{acceptanceRate}%</p>
+              <p className="text-[11px] text-[#6B7685] mt-1">
                 {acceptedProposals.length} proposals signed & won
               </p>
             </div>
 
-            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-xl backdrop-blur-md relative overflow-hidden">
+            <div className="bg-white/80 rounded-2xl p-5 border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md relative overflow-hidden">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">Pending Review</span>
-                <div className="w-8 h-8 rounded-xl bg-amber-950 border border-amber-800/60 text-amber-400 flex items-center justify-center">
+                <span className="text-xs font-semibold text-[#6B7685]">Pending Review</span>
+                <div className="w-8 h-8 rounded-xl bg-amber-950 border border-amber-200 text-amber-400 flex items-center justify-center">
                   <Send className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-black text-white mt-3">{pendingSentCount}</p>
-              <p className="text-[11px] text-slate-400 mt-1">Awaiting client signature</p>
+              <p className="text-2xl font-black text-[#1A2332] mt-3">{pendingSentCount}</p>
+              <p className="text-[11px] text-[#6B7685] mt-1">Awaiting client signature</p>
             </div>
 
-            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-xl backdrop-blur-md relative overflow-hidden">
+            <div className="bg-white/80 rounded-2xl p-5 border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md relative overflow-hidden">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">SLA Tier Embedded</span>
-                <div className="w-8 h-8 rounded-xl bg-cyan-950 border border-cyan-800/60 text-cyan-400 flex items-center justify-center">
+                <span className="text-xs font-semibold text-[#6B7685]">SLA Tier Embedded</span>
+                <div className="w-8 h-8 rounded-xl bg-[rgba(14,157,152,0.08)] border border-[rgba(14,157,152,0.20)] text-[#0E9D98] flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
               </div>
-              <p className="text-2xl font-black text-white mt-3">100%</p>
-              <p className="text-[11px] text-slate-400 mt-1">Standardized SLA terms</p>
+              <p className="text-2xl font-black text-[#1A2332] mt-3">100%</p>
+              <p className="text-[11px] text-[#6B7685] mt-1">Standardized SLA terms</p>
             </div>
           </div>
 
@@ -478,8 +478,8 @@ export const ProposalsSlaSuite: React.FC = () => {
                 onClick={() => setProposalStatusFilter(st)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
                   proposalStatusFilter === st
-                    ? 'bg-slate-800 text-white border border-slate-700 shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                    ? 'bg-[#EFEDE8] text-[#1A2332] border border-[rgba(10,20,32,0.10)] shadow-xs'
+                    : 'text-[#6B7685] hover:text-[#1A2332] hover:bg-white'
                 }`}
               >
                 {st}
@@ -488,10 +488,10 @@ export const ProposalsSlaSuite: React.FC = () => {
           </div>
 
           {/* Proposals Table */}
-          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-xl backdrop-blur-md">
+          <div className="bg-white/80 rounded-2xl border border-[rgba(10,20,32,0.08)] overflow-hidden shadow-xl backdrop-blur-md">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase">
+              <table className="w-full text-left text-sm text-[#334155]">
+                <thead className="bg-[#F5F4F1] border-b border-[rgba(10,20,32,0.08)] text-xs font-semibold text-[#6B7685] uppercase">
                   <tr>
                     <th className="px-6 py-3.5">Ref # & Proposal Title</th>
                     <th className="px-6 py-3.5">Client & Company</th>
@@ -502,14 +502,14 @@ export const ProposalsSlaSuite: React.FC = () => {
                     <th className="px-6 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="divide-y divide-[rgba(10,20,32,0.06)]">
                   {filteredProposals.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
+                      <td colSpan={7} className="px-6 py-12 text-center text-[#6B7685]">
                         <div className="flex flex-col items-center justify-center space-y-3">
-                          <FileText className="w-8 h-8 text-slate-500" />
-                          <p className="text-sm font-semibold text-slate-200">No proposals found</p>
-                          <p className="text-xs text-slate-500">
+                          <FileText className="w-8 h-8 text-[rgba(10,20,32,0.50)]" />
+                          <p className="text-sm font-semibold text-[#1A2332]">No proposals found</p>
+                          <p className="text-xs text-[rgba(10,20,32,0.50)]">
                             {searchQuery ? `No proposal matching "${searchQuery}"` : 'Create your first client proposal above.'}
                           </p>
                         </div>
@@ -517,24 +517,24 @@ export const ProposalsSlaSuite: React.FC = () => {
                     </tr>
                   ) : (
                     filteredProposals.map((prop) => (
-                      <tr key={prop.id} className="hover:bg-slate-800/50 transition-colors">
+                      <tr key={prop.id} className="hover:bg-[#EFEDE8]/50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-mono font-bold text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-md border border-cyan-800/60">
+                            <span className="text-[11px] font-mono font-bold text-[#0E9D98] bg-[rgba(14,157,152,0.08)] px-2 py-0.5 rounded-md border border-[rgba(14,157,152,0.20)]">
                               {prop.proposalNumber}
                             </span>
                           </div>
-                          <p className="font-bold text-white text-sm mt-1">{prop.title}</p>
+                          <p className="font-bold text-[#1A2332] text-sm mt-1">{prop.title}</p>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="font-semibold text-slate-200">{prop.company}</p>
-                          <p className="text-xs text-slate-400">{prop.clientName}</p>
+                          <p className="font-semibold text-[#1A2332]">{prop.company}</p>
+                          <p className="text-xs text-[#6B7685]">{prop.clientName}</p>
                         </td>
-                        <td className="px-6 py-4 font-bold text-white text-sm">
+                        <td className="px-6 py-4 font-bold text-[#1A2332] text-sm">
                           {profile.currency}{prop.amount.toLocaleString()}
                         </td>
                         <td className="px-6 py-4">
-                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-950/80 text-cyan-400 border border-cyan-800/60 flex items-center gap-1.5 w-fit">
+                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] flex items-center gap-1.5 w-fit">
                             <ShieldCheck className="w-3 h-3" />
                             {prop.slaTier}
                           </span>
@@ -543,12 +543,12 @@ export const ProposalsSlaSuite: React.FC = () => {
                           <span
                             className={`px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 ${
                               prop.status === 'Accepted'
-                                ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
+                                ? 'bg-emerald-50 text-emerald-400 border border-emerald-200'
                                 : prop.status === 'Sent'
-                                ? 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/60'
+                                ? 'bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)]'
                                 : prop.status === 'Draft'
-                                ? 'bg-slate-800 text-slate-300 border border-slate-700'
-                                : 'bg-rose-950/80 text-rose-400 border border-rose-800/60'
+                                ? 'bg-[#EFEDE8] text-[#334155] border border-[rgba(10,20,32,0.10)]'
+                                : 'bg-rose-50 text-rose-400 border border-rose-200'
                             }`}
                           >
                             {prop.status === 'Accepted' && <CheckCircle2 className="w-3 h-3" />}
@@ -556,14 +556,14 @@ export const ProposalsSlaSuite: React.FC = () => {
                             {prop.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-400">
+                        <td className="px-6 py-4 text-xs text-[#6B7685]">
                           {prop.validUntil}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => setSelectedProposal(prop)}
-                              className="px-3 py-1.5 bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800/60 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                              className="px-3 py-1.5 bg-[rgba(14,157,152,0.08)] hover:bg-[rgba(14,157,152,0.10)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
                               title="View Document & Signature"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
@@ -573,7 +573,7 @@ export const ProposalsSlaSuite: React.FC = () => {
                             {prop.status === 'Draft' && (
                               <button
                                 onClick={() => sendProposal(prop.id)}
-                                className="p-1.5 bg-slate-900 hover:bg-cyan-950 text-cyan-400 border border-slate-800 hover:border-cyan-800/60 rounded-lg transition-colors"
+                                className="p-1.5 bg-white hover:bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(10,20,32,0.08)] hover:border-[rgba(14,157,152,0.20)] rounded-lg transition-colors"
                                 title="Send Proposal to Client"
                               >
                                 <Send className="w-3.5 h-3.5" />
@@ -583,7 +583,7 @@ export const ProposalsSlaSuite: React.FC = () => {
                             {prop.status !== 'Accepted' && (
                               <button
                                 onClick={() => acceptProposal(prop.id)}
-                                className="p-1.5 bg-slate-900 hover:bg-emerald-950 text-emerald-400 border border-slate-800 hover:border-emerald-800/60 rounded-lg transition-colors"
+                                className="p-1.5 bg-white hover:bg-emerald-50 text-emerald-400 border border-[rgba(10,20,32,0.08)] hover:border-emerald-200 rounded-lg transition-colors"
                                 title="Mark Signed & Accepted"
                               >
                                 <FileSignature className="w-3.5 h-3.5" />
@@ -592,7 +592,7 @@ export const ProposalsSlaSuite: React.FC = () => {
 
                             <button
                               onClick={() => setProposalToDelete(prop)}
-                              className="p-1.5 bg-slate-950 hover:bg-rose-950/80 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-800/60 rounded-lg transition-colors"
+                              className="p-1.5 bg-[#FAFAF8] hover:bg-rose-50 text-[#6B7685] hover:text-rose-400 border border-[rgba(10,20,32,0.08)] hover:border-rose-200 rounded-lg transition-colors"
                               title="Delete proposal"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -614,45 +614,45 @@ export const ProposalsSlaSuite: React.FC = () => {
         <div className="space-y-6">
           {/* SLA Performance Summary Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-xl backdrop-blur-md">
+            <div className="bg-white/80 rounded-2xl p-5 border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">Average System Uptime</span>
+                <span className="text-xs font-semibold text-[#6B7685]">Average System Uptime</span>
                 <Activity className="w-4 h-4 text-emerald-400" />
               </div>
-              <p className="text-2xl font-black text-white mt-3">99.77%</p>
+              <p className="text-2xl font-black text-[#1A2332] mt-3">99.77%</p>
               <p className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Exceeding 99.5% minimum SLA</span>
               </p>
             </div>
 
-            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-xl backdrop-blur-md">
+            <div className="bg-white/80 rounded-2xl p-5 border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">Response SLA Compliance</span>
-                <Clock className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs font-semibold text-[#6B7685]">Response SLA Compliance</span>
+                <Clock className="w-4 h-4 text-[#0E9D98]" />
               </div>
-              <p className="text-2xl font-black text-white mt-3">100%</p>
-              <p className="text-[11px] text-slate-400 mt-1">Avg response time: 8.3 mins</p>
+              <p className="text-2xl font-black text-[#1A2332] mt-3">100%</p>
+              <p className="text-[11px] text-[#6B7685] mt-1">Avg response time: 8.3 mins</p>
             </div>
 
-            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-xl backdrop-blur-md">
+            <div className="bg-white/80 rounded-2xl p-5 border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">Active SLA Agreements</span>
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs font-semibold text-[#6B7685]">Active SLA Agreements</span>
+                <ShieldCheck className="w-4 h-4 text-[#0E9D98]" />
               </div>
-              <p className="text-2xl font-black text-white mt-3">{slaContracts.length}</p>
-              <p className="text-[11px] text-slate-400 mt-1">Enterprise & Gold tier contracts</p>
+              <p className="text-2xl font-black text-[#1A2332] mt-3">{slaContracts.length}</p>
+              <p className="text-[11px] text-[#6B7685] mt-1">Enterprise & Gold tier contracts</p>
             </div>
 
-            <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-xl backdrop-blur-md">
+            <div className="bg-white/80 rounded-2xl p-5 border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400">Monthly service-plan income</span>
+                <span className="text-xs font-semibold text-[#6B7685]">Monthly service-plan income</span>
                 <DollarSign className="w-4 h-4 text-amber-400" />
               </div>
-              <p className="text-2xl font-black text-white mt-3">
+              <p className="text-2xl font-black text-[#1A2332] mt-3">
                 {profile.currency}{slaContracts.reduce((acc, s) => acc + s.monthlyFee, 0).toLocaleString()}
               </p>
-              <p className="text-[11px] text-slate-400 mt-1">Recurring service revenue</p>
+              <p className="text-[11px] text-[#6B7685] mt-1">Recurring service revenue</p>
             </div>
           </div>
 
@@ -661,21 +661,21 @@ export const ProposalsSlaSuite: React.FC = () => {
             {filteredSlas.map((sla) => (
               <div
                 key={sla.id}
-                className="bg-slate-900/80 rounded-2xl border border-slate-800 p-5 shadow-xl backdrop-blur-md space-y-4 hover:border-slate-700 transition-all relative overflow-hidden"
+                className="bg-white/80 rounded-2xl border border-[rgba(10,20,32,0.08)] p-5 shadow-xl backdrop-blur-md space-y-4 hover:border-[rgba(10,20,32,0.10)] transition-all relative overflow-hidden"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-950 text-cyan-300 border border-cyan-800/60">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)]">
                       {sla.tier}
                     </span>
-                    <h3 className="font-bold text-white text-base mt-2">{sla.company}</h3>
-                    <p className="text-xs text-slate-400">{sla.clientName}</p>
+                    <h3 className="font-bold text-[#1A2332] text-base mt-2">{sla.company}</h3>
+                    <p className="text-xs text-[#6B7685]">{sla.clientName}</p>
                   </div>
                   <span
                     className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
                       sla.status === 'Compliant'
-                        ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
-                        : 'bg-amber-950/80 text-amber-400 border border-amber-800/60'
+                        ? 'bg-emerald-50 text-emerald-400 border border-emerald-200'
+                        : 'bg-amber-50 text-amber-400 border border-amber-200'
                     }`}
                   >
                     {sla.status}
@@ -683,14 +683,14 @@ export const ProposalsSlaSuite: React.FC = () => {
                 </div>
 
                 {/* Uptime Gauge */}
-                <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
+                <div className="space-y-1.5 pt-2 border-t border-[rgba(10,20,32,0.06)]">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400">Guaranteed Uptime</span>
-                    <span className="font-bold text-white">
+                    <span className="text-[#6B7685]">Guaranteed Uptime</span>
+                    <span className="font-bold text-[#1A2332]">
                       {sla.actualUptime}% / {sla.uptimeTarget}%
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                  <div className="w-full h-2 bg-[#FAFAF8] rounded-full overflow-hidden border border-[rgba(10,20,32,0.08)]">
                     <div
                       className={`h-full rounded-full ${
                         sla.actualUptime >= sla.uptimeTarget ? 'bg-emerald-500' : 'bg-amber-500'
@@ -702,26 +702,26 @@ export const ProposalsSlaSuite: React.FC = () => {
 
                 {/* Response / Support stats */}
                 <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                  <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-[10px] text-slate-500 block">Max Response Time</span>
-                    <span className="font-bold text-slate-200">{sla.maxResponseTimeMins} mins</span>
+                  <div className="p-2.5 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)]">
+                    <span className="text-[10px] text-[rgba(10,20,32,0.50)] block">Max Response Time</span>
+                    <span className="font-bold text-[#1A2332]">{sla.maxResponseTimeMins} mins</span>
                   </div>
-                  <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800">
-                    <span className="text-[10px] text-slate-500 block">Monthly SLA Fee</span>
+                  <div className="p-2.5 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)]">
+                    <span className="text-[10px] text-[rgba(10,20,32,0.50)] block">Monthly SLA Fee</span>
                     <span className="font-bold text-emerald-400">{profile.currency}{sla.monthlyFee.toLocaleString()}/mo</span>
                   </div>
                 </div>
 
-                <div className="p-2.5 bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1">
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase block">Support Coverage</span>
-                  <p className="line-clamp-2 text-slate-300">{sla.supportCoverage}</p>
+                <div className="p-2.5 bg-[#FAFAF8]/60 rounded-xl border border-[rgba(10,20,32,0.08)] text-xs text-[#6B7685] space-y-1">
+                  <span className="text-[10px] font-semibold text-[rgba(10,20,32,0.50)] uppercase block">Support Coverage</span>
+                  <p className="line-clamp-2 text-[#334155]">{sla.supportCoverage}</p>
                 </div>
 
                 {/* Card Action footer */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
+                <div className="flex items-center justify-between pt-3 border-t border-[rgba(10,20,32,0.06)]">
                   <button
                     onClick={() => setSelectedSla(sla)}
-                    className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1"
+                    className="text-xs text-[#0E9D98] hover:text-[#0E9D98] font-semibold flex items-center gap-1"
                   >
                     <span>View Incidents ({sla.incidents.length})</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -729,7 +729,7 @@ export const ProposalsSlaSuite: React.FC = () => {
 
                   <button
                     onClick={() => setSlaToDelete(sla)}
-                    className="p-1.5 bg-slate-950 hover:bg-rose-950/80 text-slate-500 hover:text-rose-400 rounded-lg border border-slate-800 transition-colors"
+                    className="p-1.5 bg-[#FAFAF8] hover:bg-rose-50 text-[rgba(10,20,32,0.50)] hover:text-rose-400 rounded-lg border border-[rgba(10,20,32,0.08)] transition-colors"
                     title="Delete SLA Contract"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -743,19 +743,19 @@ export const ProposalsSlaSuite: React.FC = () => {
 
       {/* PROPOSAL DOCUMENT PREVIEW & SIGNATURE MODAL */}
       {selectedProposal && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-3xl p-6 sm:p-8 space-y-6 text-slate-200 my-8">
+        <div className="fixed inset-0 bg-[rgba(10,20,32,0.40)] backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl border border-[rgba(10,20,32,0.08)] w-full max-w-3xl p-6 sm:p-8 space-y-6 text-[#1A2332] my-8">
             {/* Modal Header Actions */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center justify-between border-b border-[rgba(10,20,32,0.08)] pb-4">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-950 px-2.5 py-1 rounded-lg border border-cyan-800/60">
+                <span className="text-xs font-mono font-bold text-[#0E9D98] bg-[rgba(14,157,152,0.08)] px-2.5 py-1 rounded-lg border border-[rgba(14,157,152,0.20)]">
                   {selectedProposal.proposalNumber}
                 </span>
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                     selectedProposal.status === 'Accepted'
-                      ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60'
-                      : 'bg-cyan-950 text-cyan-300 border border-cyan-800/60'
+                      ? 'bg-emerald-50 text-emerald-400 border border-emerald-200'
+                      : 'bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)]'
                   }`}
                 >
                   {selectedProposal.status}
@@ -765,14 +765,14 @@ export const ProposalsSlaSuite: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  className="px-3 py-1.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#334155] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Print Document</span>
                 </button>
                 <button
                   onClick={() => setSelectedProposal(null)}
-                  className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl"
+                  className="p-1.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#6B7685] hover:text-[#1A2332] rounded-xl"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -780,32 +780,32 @@ export const ProposalsSlaSuite: React.FC = () => {
             </div>
 
             {/* Document Body Branding — this block is what prints (borderless). */}
-            <div className="print-doc bg-slate-950 p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between gap-4 border-b border-slate-800/80 pb-6">
+            <div className="print-doc bg-[#FAFAF8] p-6 sm:p-8 rounded-2xl border border-[rgba(10,20,32,0.08)] space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between gap-4 border-b border-[rgba(10,20,32,0.06)] pb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-white">{profile.companyName}</h2>
-                  <p className="text-xs text-slate-400 mt-1">{profile.tagline}</p>
-                  <p className="text-xs text-slate-400">{profile.email}</p>
+                  <h2 className="text-lg font-bold text-[#1A2332]">{profile.companyName}</h2>
+                  <p className="text-xs text-[#6B7685] mt-1">{profile.tagline}</p>
+                  <p className="text-xs text-[#6B7685]">{profile.email}</p>
                 </div>
-                <div className="text-left sm:text-right text-xs text-slate-400 space-y-1">
-                  <p className="font-bold text-white text-sm">{selectedProposal.title}</p>
+                <div className="text-left sm:text-right text-xs text-[#6B7685] space-y-1">
+                  <p className="font-bold text-[#1A2332] text-sm">{selectedProposal.title}</p>
                   <p>Issue Date: {selectedProposal.createdDate}</p>
                   <p>Valid Until: {selectedProposal.validUntil}</p>
                 </div>
               </div>
 
               {/* Client Details & Scope */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-white/80 rounded-xl border border-[rgba(10,20,32,0.08)]">
                 <div>
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase block">Prepared For</span>
-                  <p className="font-bold text-white text-sm mt-0.5">{selectedProposal.clientName}</p>
-                  <p className="text-xs text-slate-300">{selectedProposal.company}</p>
-                  <p className="text-xs text-cyan-400 mt-1">{selectedProposal.clientEmail}</p>
+                  <span className="text-[10px] font-semibold text-[rgba(10,20,32,0.50)] uppercase block">Prepared For</span>
+                  <p className="font-bold text-[#1A2332] text-sm mt-0.5">{selectedProposal.clientName}</p>
+                  <p className="text-xs text-[#334155]">{selectedProposal.company}</p>
+                  <p className="text-xs text-[#0E9D98] mt-1">{selectedProposal.clientEmail}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase block">Cover / service plan</span>
-                  <p className="font-bold text-cyan-400 text-sm mt-0.5">{selectedProposal.slaTier}</p>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <span className="text-[10px] font-semibold text-[rgba(10,20,32,0.50)] uppercase block">Cover / service plan</span>
+                  <p className="font-bold text-[#0E9D98] text-sm mt-0.5">{selectedProposal.slaTier}</p>
+                  <p className="text-xs text-[#6B7685] mt-1">
                     Cover level attached to this vehicle / fleet.
                   </p>
                 </div>
@@ -813,46 +813,46 @@ export const ProposalsSlaSuite: React.FC = () => {
 
               {/* Scope Summary */}
               <div className="space-y-1.5">
-                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Details & What’s Included</h4>
-                <p className="text-xs text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                <h4 className="text-xs font-bold text-[#334155] uppercase tracking-wider">Details & What’s Included</h4>
+                <p className="text-xs text-[#334155] leading-relaxed bg-white/50 p-3 rounded-xl border border-[rgba(10,20,32,0.08)]">
                   {selectedProposal.scopeSummary}
                 </p>
               </div>
 
               {/* Line Items Pricing Table */}
               <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Pricing</h4>
-                <table className="w-full text-left text-xs text-slate-300 border-collapse">
+                <h4 className="text-xs font-bold text-[#334155] uppercase tracking-wider">Pricing</h4>
+                <table className="w-full text-left text-xs text-[#334155] border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 uppercase">
+                    <tr className="border-b border-[rgba(10,20,32,0.08)] text-[#6B7685] uppercase">
                       <th className="py-2">Item Description</th>
                       <th className="py-2 text-center">Qty</th>
                       <th className="py-2 text-right">Unit Rate</th>
                       <th className="py-2 text-right">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-[rgba(10,20,32,0.06)]">
                     {selectedProposal.items.map((item) => (
                       <tr key={item.id}>
-                        <td className="py-2.5 font-medium text-slate-200">{item.description}</td>
-                        <td className="py-2.5 text-center text-slate-400">{item.quantity}</td>
-                        <td className="py-2.5 text-right text-slate-400">{profile.currency}{item.unitPrice.toLocaleString()}</td>
-                        <td className="py-2.5 text-right font-bold text-white">{profile.currency}{item.amount.toLocaleString()}</td>
+                        <td className="py-2.5 font-medium text-[#1A2332]">{item.description}</td>
+                        <td className="py-2.5 text-center text-[#6B7685]">{item.quantity}</td>
+                        <td className="py-2.5 text-right text-[#6B7685]">{profile.currency}{item.unitPrice.toLocaleString()}</td>
+                        <td className="py-2.5 text-right font-bold text-[#1A2332]">{profile.currency}{item.amount.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <div className="flex justify-end pt-3 border-t border-slate-800">
+                <div className="flex justify-end pt-3 border-t border-[rgba(10,20,32,0.08)]">
                   <div className="text-right">
-                    <span className="text-xs text-slate-400">Total:</span>
-                    <p className="text-xl font-black text-white">{profile.currency}{selectedProposal.amount.toLocaleString()}</p>
+                    <span className="text-xs text-[#6B7685]">Total:</span>
+                    <p className="text-xl font-black text-[#1A2332]">{profile.currency}{selectedProposal.amount.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
 
               {/* Signature Box — draw-to-sign, then it becomes the signed mark. */}
-              <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 space-y-3">
-                <span className="text-[10px] font-semibold text-slate-500 uppercase block">
+              <div className="p-4 bg-white rounded-xl border border-[rgba(10,20,32,0.08)] space-y-3">
+                <span className="text-[10px] font-semibold text-[rgba(10,20,32,0.50)] uppercase block">
                   Electronic Signature
                 </span>
 
@@ -864,9 +864,9 @@ export const ProposalsSlaSuite: React.FC = () => {
                         alt="Signature"
                         className="h-16 w-auto max-w-[240px]"
                       />
-                      <div className="border-t border-slate-700 mt-1 pt-1">
-                        <p className="text-sm font-bold text-white">{selectedProposal.signerName}</p>
-                        <p className="text-[11px] text-slate-400">
+                      <div className="border-t border-[rgba(10,20,32,0.10)] mt-1 pt-1">
+                        <p className="text-sm font-bold text-[#1A2332]">{selectedProposal.signerName}</p>
+                        <p className="text-[11px] text-[#6B7685]">
                           Signed &amp; accepted on {selectedProposal.signedDate}
                         </p>
                       </div>
@@ -906,33 +906,33 @@ export const ProposalsSlaSuite: React.FC = () => {
 
       {/* SLA CONTRACT INCIDENTS MODAL */}
       {selectedSla && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-2xl p-6 space-y-5 text-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 bg-[rgba(10,20,32,0.40)] backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-[rgba(10,20,32,0.08)] w-full max-w-2xl p-6 space-y-5 text-[#1A2332]">
+            <div className="flex items-center justify-between border-b border-[rgba(10,20,32,0.08)] pb-3">
               <div>
-                <h3 className="text-lg font-bold text-white">{selectedSla.company} SLA Incidents Log</h3>
-                <p className="text-xs text-slate-400">Guaranteed Max Response: {selectedSla.maxResponseTimeMins} mins</p>
+                <h3 className="text-lg font-bold text-[#1A2332]">{selectedSla.company} SLA Incidents Log</h3>
+                <p className="text-xs text-[#6B7685]">Guaranteed Max Response: {selectedSla.maxResponseTimeMins} mins</p>
               </div>
               <button
                 onClick={() => setSelectedSla(null)}
-                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl"
+                className="p-1.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#6B7685] hover:text-[#1A2332] rounded-xl"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="flex items-center justify-between bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs">
+            <div className="flex items-center justify-between bg-[#FAFAF8] p-3.5 rounded-xl border border-[rgba(10,20,32,0.08)] text-xs">
               <div>
-                <span className="text-slate-500 block text-[10px]">Contract Tier</span>
-                <span className="font-bold text-cyan-400">{selectedSla.tier}</span>
+                <span className="text-[rgba(10,20,32,0.50)] block text-[10px]">Contract Tier</span>
+                <span className="font-bold text-[#0E9D98]">{selectedSla.tier}</span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[10px]">Actual Uptime</span>
+                <span className="text-[rgba(10,20,32,0.50)] block text-[10px]">Actual Uptime</span>
                 <span className="font-bold text-emerald-400">{selectedSla.actualUptime}%</span>
               </div>
               <button
                 onClick={() => setShowLogIncidentModal(true)}
-                className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold transition-colors"
+                className="px-3 py-1.5 bg-[#0E9D98] hover:bg-[#14B8A6] text-white rounded-lg text-xs font-semibold transition-colors"
               >
                 + Log Incident Event
               </button>
@@ -941,21 +941,21 @@ export const ProposalsSlaSuite: React.FC = () => {
             {/* Incidents List */}
             <div className="space-y-3 max-h-72 overflow-y-auto">
               {selectedSla.incidents.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 text-xs bg-slate-950 rounded-xl border border-slate-800">
+                <div className="p-8 text-center text-[rgba(10,20,32,0.50)] text-xs bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)]">
                   <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
-                  <p className="font-semibold text-slate-300">100% Zero Breaches Logged</p>
+                  <p className="font-semibold text-[#334155]">100% Zero Breaches Logged</p>
                   <p>All service ticket SLAs responded to within required turnaround window.</p>
                 </div>
               ) : (
                 selectedSla.incidents.map((inc) => (
-                  <div key={inc.id} className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 text-xs">
+                  <div key={inc.id} className="p-3.5 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)] space-y-1.5 text-xs">
                     <div className="flex items-center justify-between">
-                      <p className="font-bold text-white">{inc.title}</p>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                      <p className="font-bold text-[#1A2332]">{inc.title}</p>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)]">
                         {inc.severity}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                    <div className="flex items-center justify-between text-[#6B7685] text-[11px]">
                       <span>Reported: {inc.reportedAt}</span>
                       <span className="font-semibold text-emerald-400">
                         Response Time: {inc.responseTimeMinutes}m (Target: &lt;{inc.targetResponseMinutes}m)
@@ -971,16 +971,16 @@ export const ProposalsSlaSuite: React.FC = () => {
 
       {/* CREATE PROPOSAL MODAL */}
       {showCreateProposalModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-[rgba(10,20,32,0.40)] backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
           <form
             onSubmit={handleCreateProposalSubmit}
-            className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-2xl p-6 space-y-4 text-slate-200 my-8"
+            className="bg-white rounded-2xl shadow-2xl border border-[rgba(10,20,32,0.08)] w-full max-w-2xl p-6 space-y-4 text-[#1A2332] my-8"
           >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-[rgba(10,20,32,0.08)] pb-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white">Generate Client Proposal</h3>
+                <h3 className="text-lg font-bold text-[#1A2332]">Generate Client Proposal</h3>
                 {proposalLastSaved && (
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 text-[10px] font-semibold flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50/60 border border-emerald-200 text-emerald-400 text-[10px] font-semibold flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     <span>{proposalLastSaved}</span>
                   </span>
@@ -989,7 +989,7 @@ export const ProposalsSlaSuite: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowCreateProposalModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-[#6B7685] hover:text-[#1A2332]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -997,59 +997,59 @@ export const ProposalsSlaSuite: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Proposal Title</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Proposal Title</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Enterprise Cloud Modernization"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Company Name</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Company Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Sundays River Citrus Co."
                   value={newCompany}
                   onChange={(e) => setNewCompany(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Client Contact Name</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Client Contact Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Riaan van Wyk"
                   value={newClientName}
                   onChange={(e) => setNewClientName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Client Email</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Client Email</label>
                 <input
                   type="email"
                   required
                   placeholder="e.g. m.vance@apex.com"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">SLA Tier Attached</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">SLA Tier Attached</label>
                 <select
                   value={newSlaTier}
                   onChange={(e) => setNewSlaTier(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 >
                   <option value="Platinum 99.9%">Platinum 99.9% Guarantee</option>
                   <option value="Gold 99.5%">Gold 99.5% Guarantee</option>
@@ -1059,35 +1059,35 @@ export const ProposalsSlaSuite: React.FC = () => {
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Valid Until Date</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Valid Until Date</label>
                 <input
                   type="date"
                   value={newValidUntil}
                   onChange={(e) => setNewValidUntil(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="font-semibold text-slate-400 block mb-1 text-xs">Scope Summary</label>
+              <label className="font-semibold text-[#6B7685] block mb-1 text-xs">Scope Summary</label>
               <textarea
                 rows={2}
                 placeholder="Brief summary of work, deliverables, and service milestones..."
                 value={newScope}
                 onChange={(e) => setNewScope(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs"
+                className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332] text-xs"
               />
             </div>
 
             {/* Line items editor */}
-            <div className="space-y-2 pt-2 border-t border-slate-800">
+            <div className="space-y-2 pt-2 border-t border-[rgba(10,20,32,0.08)]">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-300">Line Items & Pricing</span>
+                <span className="text-xs font-bold text-[#334155]">Line Items & Pricing</span>
                 <button
                   type="button"
                   onClick={handleAddItem}
-                  className="text-xs text-cyan-400 hover:underline font-semibold"
+                  className="text-xs text-[#0E9D98] hover:underline font-semibold"
                 >
                   + Add Item
                 </button>
@@ -1104,7 +1104,7 @@ export const ProposalsSlaSuite: React.FC = () => {
                       updated[idx].description = e.target.value;
                       setItemsList(updated);
                     }}
-                    className="flex-1 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200"
+                    className="flex-1 px-3 py-1.5 rounded-lg bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                   />
                   <input
                     type="number"
@@ -1116,7 +1116,7 @@ export const ProposalsSlaSuite: React.FC = () => {
                       updated[idx].quantity = Number(e.target.value);
                       setItemsList(updated);
                     }}
-                    className="w-16 px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-center"
+                    className="w-16 px-2 py-1.5 rounded-lg bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332] text-center"
                   />
                   <input
                     type="number"
@@ -1127,7 +1127,7 @@ export const ProposalsSlaSuite: React.FC = () => {
                       updated[idx].unitPrice = Number(e.target.value);
                       setItemsList(updated);
                     }}
-                    className="w-24 px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-right"
+                    className="w-24 px-2 py-1.5 rounded-lg bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332] text-right"
                   />
                   {itemsList.length > 1 && (
                     <button
@@ -1142,17 +1142,17 @@ export const ProposalsSlaSuite: React.FC = () => {
               ))}
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-3 border-t border-[rgba(10,20,32,0.08)]">
               <button
                 type="button"
                 onClick={() => setShowCreateProposalModal(false)}
-                className="px-4 py-2 text-slate-400 hover:text-slate-200 text-xs font-semibold"
+                className="px-4 py-2 text-[#6B7685] hover:text-[#1A2332] text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-cyan-600/30"
+                className="px-4 py-2 bg-[#0E9D98] hover:bg-[#14B8A6] text-white rounded-xl text-xs font-semibold shadow-md shadow-[rgba(14,157,152,0.15)]"
               >
                 Save Proposal
               </button>
@@ -1163,17 +1163,17 @@ export const ProposalsSlaSuite: React.FC = () => {
 
       {/* CREATE SLA POLICY MODAL */}
       {showCreateSlaModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[rgba(10,20,32,0.40)] backdrop-blur-md z-50 flex items-center justify-center p-4">
           <form
             onSubmit={handleCreateSlaSubmit}
-            className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-md p-6 space-y-4 text-slate-200"
+            className="bg-white rounded-2xl shadow-2xl border border-[rgba(10,20,32,0.08)] w-full max-w-md p-6 space-y-4 text-[#1A2332]"
           >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-bold text-white">Create SLA Agreement</h3>
+            <div className="flex items-center justify-between border-b border-[rgba(10,20,32,0.08)] pb-3">
+              <h3 className="text-lg font-bold text-[#1A2332]">Create SLA Agreement</h3>
               <button
                 type="button"
                 onClick={() => setShowCreateSlaModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-[#6B7685] hover:text-[#1A2332]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1181,36 +1181,36 @@ export const ProposalsSlaSuite: React.FC = () => {
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Client / Company Name</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Client / Company Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Sundays River Citrus Co."
                   value={newSlaCompany}
                   onChange={(e) => setNewSlaCompany(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Key Account Lead</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Key Account Lead</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Riaan van Wyk"
                   value={newSlaClient}
                   onChange={(e) => setNewSlaClient(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-400 block mb-1">SLA Tier</label>
+                  <label className="font-semibold text-[#6B7685] block mb-1">SLA Tier</label>
                   <select
                     value={newSlaTierName}
                     onChange={(e) => setNewSlaTierName(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                   >
                     <option value="Platinum 24/7">Platinum 24/7</option>
                     <option value="Gold 12/5">Gold 12/5</option>
@@ -1219,7 +1219,7 @@ export const ProposalsSlaSuite: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-400 block mb-1">Uptime Target (%)</label>
+                  <label className="font-semibold text-[#6B7685] block mb-1">Uptime Target (%)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -1227,55 +1227,55 @@ export const ProposalsSlaSuite: React.FC = () => {
                     max="100"
                     value={newSlaUptimeTarget}
                     onChange={(e) => setNewSlaUptimeTarget(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-400 block mb-1">Max Response (Mins)</label>
+                  <label className="font-semibold text-[#6B7685] block mb-1">Max Response (Mins)</label>
                   <input
                     type="number"
                     value={newSlaResponseTime}
                     onChange={(e) => setNewSlaResponseTime(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-400 block mb-1">Monthly Fee ({profile.currency})</label>
+                  <label className="font-semibold text-[#6B7685] block mb-1">Monthly Fee ({profile.currency})</label>
                   <input
                     type="number"
                     value={newSlaMonthlyFee}
                     onChange={(e) => setNewSlaMonthlyFee(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Coverage Scope</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Coverage Scope</label>
                 <input
                   type="text"
                   value={newSlaCoverage}
                   onChange={(e) => setNewSlaCoverage(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-3 border-t border-[rgba(10,20,32,0.08)]">
               <button
                 type="button"
                 onClick={() => setShowCreateSlaModal(false)}
-                className="px-4 py-2 text-slate-400 hover:text-slate-200 text-xs font-semibold"
+                className="px-4 py-2 text-[#6B7685] hover:text-[#1A2332] text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-emerald-600/20"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-emerald-600/10"
               >
                 Activate SLA Policy
               </button>
@@ -1286,32 +1286,32 @@ export const ProposalsSlaSuite: React.FC = () => {
 
       {/* LOG INCIDENT MODAL */}
       {showLogIncidentModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[rgba(10,20,32,0.40)] backdrop-blur-md z-50 flex items-center justify-center p-4">
           <form
             onSubmit={handleLogIncidentSubmit}
-            className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-sm p-6 space-y-4 text-slate-200"
+            className="bg-white rounded-2xl shadow-2xl border border-[rgba(10,20,32,0.08)] w-full max-w-sm p-6 space-y-4 text-[#1A2332]"
           >
-            <h3 className="text-base font-bold text-white">Log SLA Incident Event</h3>
+            <h3 className="text-base font-bold text-[#1A2332]">Log SLA Incident Event</h3>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Incident Description</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Incident Description</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. API Response latency check"
                   value={incidentTitle}
                   onChange={(e) => setIncidentTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">Severity Tier</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">Severity Tier</label>
                 <select
                   value={incidentSeverity}
                   onChange={(e) => setIncidentSeverity(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 >
                   <option value="Minor">Minor</option>
                   <option value="Major">Major</option>
@@ -1320,28 +1320,28 @@ export const ProposalsSlaSuite: React.FC = () => {
               </div>
 
               <div>
-                <label className="font-semibold text-slate-400 block mb-1">First Response Time (Minutes)</label>
+                <label className="font-semibold text-[#6B7685] block mb-1">First Response Time (Minutes)</label>
                 <input
                   type="number"
                   required
                   value={incidentResponseMins}
                   onChange={(e) => setIncidentResponseMins(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200"
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-[#1A2332]"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex justify-end gap-2 pt-2 border-t border-[rgba(10,20,32,0.08)]">
               <button
                 type="button"
                 onClick={() => setShowLogIncidentModal(false)}
-                className="px-3 py-1.5 text-slate-400 hover:text-slate-200 text-xs font-semibold"
+                className="px-3 py-1.5 text-[#6B7685] hover:text-[#1A2332] text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-cyan-600/30"
+                className="px-3 py-1.5 bg-[#0E9D98] hover:bg-[#14B8A6] text-white rounded-xl text-xs font-semibold shadow-md shadow-[rgba(14,157,152,0.15)]"
               >
                 Record Incident
               </button>
@@ -1352,27 +1352,27 @@ export const ProposalsSlaSuite: React.FC = () => {
 
       {/* DELETE PROPOSAL CONFIRMATION MODAL */}
       {proposalToDelete && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-md p-6 space-y-4 text-slate-200">
+        <div className="fixed inset-0 bg-[rgba(10,20,32,0.40)] backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-[rgba(10,20,32,0.08)] w-full max-w-md p-6 space-y-4 text-[#1A2332]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-800/60 text-rose-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 text-rose-400 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Delete Client Proposal</h3>
-                <p className="text-xs text-slate-400">{proposalToDelete.proposalNumber}</p>
+                <h3 className="text-base font-bold text-[#1A2332]">Delete Client Proposal</h3>
+                <p className="text-xs text-[#6B7685]">{proposalToDelete.proposalNumber}</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300">
-              Are you sure you want to delete the proposal for <span className="font-bold text-white">{proposalToDelete.company}</span>?
+            <p className="text-xs text-[#334155]">
+              Are you sure you want to delete the proposal for <span className="font-bold text-[#1A2332]">{proposalToDelete.company}</span>?
             </p>
 
-            <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(10,20,32,0.08)]">
               <button
                 type="button"
                 onClick={() => setProposalToDelete(null)}
-                className="px-4 py-2 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl"
+                className="px-4 py-2 bg-[#EFEDE8] text-[#334155] text-xs font-semibold rounded-xl"
               >
                 Cancel
               </button>
@@ -1393,27 +1393,27 @@ export const ProposalsSlaSuite: React.FC = () => {
 
       {/* DELETE SLA CONFIRMATION MODAL */}
       {slaToDelete && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-md p-6 space-y-4 text-slate-200">
+        <div className="fixed inset-0 bg-[rgba(10,20,32,0.40)] backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-[rgba(10,20,32,0.08)] w-full max-w-md p-6 space-y-4 text-[#1A2332]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-800/60 text-rose-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 text-rose-400 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Delete SLA Policy</h3>
-                <p className="text-xs text-slate-400">{slaToDelete.company}</p>
+                <h3 className="text-base font-bold text-[#1A2332]">Delete SLA Policy</h3>
+                <p className="text-xs text-[#6B7685]">{slaToDelete.company}</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300">
-              Are you sure you want to remove the <span className="font-bold text-white">{slaToDelete.tier}</span> SLA contract for <span className="font-bold text-white">{slaToDelete.company}</span>?
+            <p className="text-xs text-[#334155]">
+              Are you sure you want to remove the <span className="font-bold text-[#1A2332]">{slaToDelete.tier}</span> SLA contract for <span className="font-bold text-[#1A2332]">{slaToDelete.company}</span>?
             </p>
 
-            <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(10,20,32,0.08)]">
               <button
                 type="button"
                 onClick={() => setSlaToDelete(null)}
-                className="px-4 py-2 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl"
+                className="px-4 py-2 bg-[#EFEDE8] text-[#334155] text-xs font-semibold rounded-xl"
               >
                 Cancel
               </button>

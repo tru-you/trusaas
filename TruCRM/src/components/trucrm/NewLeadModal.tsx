@@ -89,29 +89,29 @@ export const NewLeadModal: React.FC<{ onClose: () => void; onCreated: (lead: Lea
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(10,20,32,0.40)] backdrop-blur">
       <form
         onSubmit={submit}
-        className="bg-slate-900 border border-slate-800 rounded-[18px] shadow-[0_40px_90px_-40px_rgba(0,0,0,0.95)] w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white border border-[rgba(10,20,32,0.08)] rounded-[18px] shadow-[0_40px_90px_-40px_rgba(0,0,0,0.95)] w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
-        <div className="sticky top-0 bg-slate-900 p-5 border-b border-slate-800 flex items-center justify-between">
+        <div className="sticky top-0 bg-white p-5 border-b border-[rgba(10,20,32,0.08)] flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Zap className="w-5 h-5 text-cyan-400" />
+            <h3 className="text-lg font-semibold text-[#1A2332] flex items-center gap-2">
+              <Zap className="w-5 h-5 text-[#0E9D98]" />
               Log a New Up
             </h3>
-            <p className="text-[length:var(--t-micro)] text-slate-400 mt-0.5">
+            <p className="text-[length:var(--t-micro)] text-[#6B7685] mt-0.5">
               Speed-to-lead target is {settings.speedToLeadTargetMins} minutes — this lead goes straight to today's queue.
             </p>
           </div>
-          <button type="button" onClick={onClose} className="p-1.5 text-slate-400 hover:text-white bg-slate-800/60 rounded-lg">
+          <button type="button" onClick={onClose} className="p-1.5 text-[#6B7685] hover:text-[#1A2332] bg-[#EFEDE8] rounded-lg">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-5 space-y-5">
           <div>
-            <h4 className="text-[length:var(--t-micro)] font-medium text-slate-400 mb-2.5">Customer</h4>
+            <h4 className="text-[length:var(--t-micro)] font-medium text-[#6B7685] mb-2.5">Customer</h4>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Full name *</label>
@@ -133,7 +133,7 @@ export const NewLeadModal: React.FC<{ onClose: () => void; onCreated: (lead: Lea
           </div>
 
           <div>
-            <h4 className="text-[length:var(--t-micro)] font-medium text-slate-400 mb-2.5">Lead detail</h4>
+            <h4 className="text-[length:var(--t-micro)] font-medium text-[#6B7685] mb-2.5">Lead detail</h4>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Source</label>
@@ -161,8 +161,8 @@ export const NewLeadModal: React.FC<{ onClose: () => void; onCreated: (lead: Lea
                       onClick={() => setTemperature(t)}
                       className={`py-2 rounded-xl text-[length:var(--t-micro)] font-medium border transition-all ${
                         temperature === t
-                          ? 'bg-slate-800 border-cyan-500 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                          ? 'bg-[#EFEDE8] border-[#0E9D98] text-[#1A2332]'
+                          : 'bg-[#FAFAF8] border-[rgba(10,20,32,0.08)] text-[#6B7685] hover:text-[#1A2332]'
                       }`}
                     >
                       {t}
@@ -180,8 +180,8 @@ export const NewLeadModal: React.FC<{ onClose: () => void; onCreated: (lead: Lea
                       onClick={() => setIntent(t)}
                       className={`py-2 rounded-xl text-[length:var(--t-micro)] font-medium border transition-all ${
                         intent === t
-                          ? 'bg-slate-800 border-cyan-500 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                          ? 'bg-[#EFEDE8] border-[#0E9D98] text-[#1A2332]'
+                          : 'bg-[#FAFAF8] border-[rgba(10,20,32,0.08)] text-[#6B7685] hover:text-[#1A2332]'
                       }`}
                     >
                       {t}
@@ -193,7 +193,7 @@ export const NewLeadModal: React.FC<{ onClose: () => void; onCreated: (lead: Lea
           </div>
 
           <div>
-            <h4 className="text-[length:var(--t-micro)] font-medium text-slate-400 mb-2.5">Vehicle of interest</h4>
+            <h4 className="text-[length:var(--t-micro)] font-medium text-[#6B7685] mb-2.5">Vehicle of interest</h4>
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className={labelClass}>Stock no.</label>
@@ -233,8 +233,8 @@ export const NewLeadModal: React.FC<{ onClose: () => void; onCreated: (lead: Lea
                   onClick={() => setHasTrade(!hasTrade)}
                   className={`w-full py-2 rounded-xl text-[length:var(--t-micro)] font-medium border transition-all ${
                     hasTrade
-                      ? 'bg-slate-800 border-cyan-500 text-white'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                      ? 'bg-[#EFEDE8] border-[#0E9D98] text-[#1A2332]'
+                      : 'bg-[#FAFAF8] border-[rgba(10,20,32,0.08)] text-[#6B7685] hover:text-[#1A2332]'
                   }`}
                 >
                   {hasTrade ? '✓ Has trade-in' : 'Has trade-in?'}
@@ -244,11 +244,11 @@ export const NewLeadModal: React.FC<{ onClose: () => void; onCreated: (lead: Lea
           </div>
         </div>
 
-        <div className="sticky bottom-0 bg-slate-900 p-5 border-t border-slate-800 flex justify-end gap-3">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-slate-200 text-xs font-semibold">
+        <div className="sticky bottom-0 bg-white p-5 border-t border-[rgba(10,20,32,0.08)] flex justify-end gap-3">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-[#6B7685] hover:text-[#1A2332] text-xs font-semibold">
             Cancel
           </button>
-          <button type="submit" className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-medium">
+          <button type="submit" className="px-5 py-2 bg-[#0E9D98] hover:bg-[#14B8A6] text-white rounded-xl text-xs font-medium">
             Create Lead & Open
           </button>
         </div>

@@ -481,26 +481,26 @@ export const AccountingSuite: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto bg-black text-white">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto bg-[#F5F4F1] text-[#1A2332]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[rgba(10,20,32,0.08)]">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Calculator className="w-6 h-6 text-cyan-400" />
+          <h1 className="text-2xl font-bold text-[#1A2332] tracking-tight flex items-center gap-2">
+            <Calculator className="w-6 h-6 text-[#0E9D98]" />
             Automated Accounting & Finance
           </h1>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-[#6B7685]">
             Real-time income/expense ledger, AI document receipt scanner, and automated invoice engine.
           </p>
         </div>
 
         {/* Navigation Tabs */}
         <div className="flex items-center gap-3">
-          <div className="bg-zinc-950 p-1 rounded-xl flex items-center gap-1 border border-zinc-800">
+          <div className="bg-[#EFEDE8] p-1 rounded-xl flex items-center gap-1 border border-[rgba(10,20,32,0.08)]">
             <button
               onClick={() => setActiveTab('ledger')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'ledger' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+                activeTab === 'ledger' ? 'bg-white text-[#1A2332] shadow-sm' : 'text-[#6B7685] hover:text-[#1A2332]'
               }`}
             >
               General Ledger
@@ -508,16 +508,16 @@ export const AccountingSuite: React.FC = () => {
             <button
               onClick={() => setActiveTab('scanner')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                activeTab === 'scanner' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+                activeTab === 'scanner' ? 'bg-white text-[#1A2332] shadow-sm' : 'text-[#6B7685] hover:text-[#1A2332]'
               }`}
             >
-              <Receipt className="w-3.5 h-3.5 text-cyan-600" />
+              <Receipt className="w-3.5 h-3.5 text-[#0E9D98]" />
               AI Receipt Scanner
             </button>
             <button
               onClick={() => setActiveTab('invoices')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'invoices' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+                activeTab === 'invoices' ? 'bg-white text-[#1A2332] shadow-sm' : 'text-[#6B7685] hover:text-[#1A2332]'
               }`}
             >
               Invoices ({invoices.length})
@@ -525,7 +525,7 @@ export const AccountingSuite: React.FC = () => {
             <button
               onClick={() => setActiveTab('bankfeed')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'bankfeed' ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+                activeTab === 'bankfeed' ? 'bg-white text-[#1A2332] shadow-sm' : 'text-[#6B7685] hover:text-[#1A2332]'
               }`}
             >
               Bank Feed Sync
@@ -536,33 +536,33 @@ export const AccountingSuite: React.FC = () => {
 
       {/* Financial Overview Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 bg-black rounded-xl border border-zinc-800 shadow-xl flex items-center justify-between">
+        <div className="p-4 bg-white rounded-xl border border-[rgba(10,20,32,0.08)] shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-zinc-400 uppercase">Total Revenue</span>
-            <div className="text-xl font-black text-white mt-1">{profile.currency}{summary.totalRevenue.toLocaleString()}</div>
+            <span className="text-xs font-medium text-[#6B7685] uppercase">Total Revenue</span>
+            <div className="text-xl font-black text-[#1A2332] mt-1">{profile.currency}{summary.totalRevenue.toLocaleString()}</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-cyan-400 border border-zinc-700 flex items-center justify-center">
-            <ArrowUpRight className="w-5 h-5 text-cyan-400" />
+          <div className="w-10 h-10 rounded-xl bg-[rgba(14,157,152,0.06)] text-[#0E9D98] border border-[rgba(14,157,152,0.15)] flex items-center justify-center">
+            <ArrowUpRight className="w-5 h-5 text-[#0E9D98]" />
           </div>
         </div>
 
-        <div className="p-4 bg-black rounded-xl border border-zinc-800 shadow-xl flex items-center justify-between">
+        <div className="p-4 bg-white rounded-xl border border-[rgba(10,20,32,0.08)] shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-zinc-400 uppercase">Total Expenses</span>
-            <div className="text-xl font-black text-zinc-300 mt-1">{profile.currency}{summary.totalExpenses.toLocaleString()}</div>
+            <span className="text-xs font-medium text-[#6B7685] uppercase">Total Expenses</span>
+            <div className="text-xl font-black text-[#334155] mt-1">{profile.currency}{summary.totalExpenses.toLocaleString()}</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-cyan-400 border border-zinc-700 flex items-center justify-center">
-            <ArrowDownRight className="w-5 h-5 text-cyan-400" />
+          <div className="w-10 h-10 rounded-xl bg-[rgba(10,20,32,0.04)] text-[#6B7685] border border-[rgba(10,20,32,0.08)] flex items-center justify-center">
+            <ArrowDownRight className="w-5 h-5 text-[#6B7685]" />
           </div>
         </div>
 
-        <div className="p-4 bg-black rounded-xl border border-zinc-800 shadow-xl flex items-center justify-between">
+        <div className="p-4 bg-white rounded-xl border border-[rgba(10,20,32,0.08)] shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-zinc-400 uppercase">Net Profit Margin</span>
-            <div className="text-xl font-black text-white mt-1">{profile.currency}{summary.netProfit.toLocaleString()}</div>
+            <span className="text-xs font-medium text-[#6B7685] uppercase">Net Profit Margin</span>
+            <div className="text-xl font-black text-[#1A2332] mt-1">{profile.currency}{summary.netProfit.toLocaleString()}</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-cyan-400 border border-zinc-700 flex items-center justify-center">
-            <DollarSign className="w-5 h-5 text-cyan-400" />
+          <div className="w-10 h-10 rounded-xl bg-[rgba(14,157,152,0.06)] text-[#0E9D98] border border-[rgba(14,157,152,0.15)] flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-[#0E9D98]" />
           </div>
         </div>
       </div>
@@ -572,13 +572,13 @@ export const AccountingSuite: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="relative w-72">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7685]" />
               <input
                 type="text"
                 placeholder="Search ledger..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-200 placeholder-slate-500 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-500/20"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-white text-[#1A2332] placeholder-[rgba(10,20,32,0.40)] text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-500/20"
               />
             </div>
 
@@ -591,9 +591,9 @@ export const AccountingSuite: React.FC = () => {
             </button>
           </div>
 
-          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-xl backdrop-blur-md">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase">
+          <div className="bg-white/80 rounded-2xl border border-[rgba(10,20,32,0.08)] overflow-hidden shadow-xl backdrop-blur-md">
+            <table className="w-full text-left text-sm text-[#334155]">
+              <thead className="bg-[#F5F4F1] border-b border-[rgba(10,20,32,0.08)] text-xs font-semibold text-[#6B7685] uppercase">
                 <tr>
                   <th className="px-6 py-3.5">Date & Entity</th>
                   <th className="px-6 py-3.5">Type & Category</th>
@@ -602,38 +602,38 @@ export const AccountingSuite: React.FC = () => {
                   <th className="px-6 py-3.5 text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-[rgba(10,20,32,0.06)]">
                 {filteredTransactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-100">
-                      <p className="font-bold text-white">{tx.vendorOrClient}</p>
-                      <p className="text-xs text-slate-400">{tx.date}</p>
+                  <tr key={tx.id} className="hover:bg-[#EFEDE8]/50 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-[#1A2332]">
+                      <p className="font-bold text-[#1A2332]">{tx.vendorOrClient}</p>
+                      <p className="text-xs text-[#6B7685]">{tx.date}</p>
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                           tx.type === 'Income'
-                            ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
-                            : 'bg-slate-800 text-slate-300 border border-slate-700'
+                            ? 'bg-emerald-50 text-emerald-400 border border-emerald-200'
+                            : 'bg-[#EFEDE8] text-[#334155] border border-[rgba(10,20,32,0.10)]'
                         }`}
                       >
                         {tx.type}
                       </span>
-                      <p className="text-xs text-slate-400 mt-1">{tx.category}</p>
+                      <p className="text-xs text-[#6B7685] mt-1">{tx.category}</p>
                     </td>
-                    <td className="px-6 py-4 text-xs font-medium text-slate-300">{tx.paymentMethod}</td>
+                    <td className="px-6 py-4 text-xs font-medium text-[#334155]">{tx.paymentMethod}</td>
                     <td className="px-6 py-4">
                       {tx.taxDeductible ? (
-                        <span className="px-2 py-0.5 bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 rounded-md text-[10px] font-bold">
+                        <span className="px-2 py-0.5 bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] rounded-md text-[10px] font-bold">
                           Tax Deductible
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-500">Standard</span>
+                        <span className="text-xs text-[rgba(10,20,32,0.50)]">Standard</span>
                       )}
                     </td>
                     <td
                       className={`px-6 py-4 text-right font-black text-sm ${
-                        tx.type === 'Income' ? 'text-emerald-400' : 'text-slate-100'
+                        tx.type === 'Income' ? 'text-emerald-400' : 'text-[#1A2332]'
                       }`}
                     >
                       {tx.type === 'Income' ? '+' : '-'}{profile.currency}{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -650,20 +650,20 @@ export const AccountingSuite: React.FC = () => {
       {activeTab === 'scanner' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Document Upload & Text Input */}
-          <div className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
+          <div className="bg-white/80 p-6 rounded-2xl border border-[rgba(10,20,32,0.08)] shadow-xl space-y-4 backdrop-blur-md">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
-              <h3 className="font-bold text-white text-base">TrueAI Document Receipt Extractor</h3>
+              <h3 className="font-bold text-[#1A2332] text-base">TrueAI Document Receipt Extractor</h3>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#6B7685]">
               Upload receipt images or paste vendor invoice text. TrueAI will parse merchant details, sales tax, line items, and match tax deduction codes.
             </p>
 
             {/* Dropzone */}
-            <div className="border-2 border-dashed border-slate-800 hover:border-amber-500/50 rounded-2xl p-6 text-center transition-all bg-slate-950/50">
+            <div className="border-2 border-dashed border-[rgba(10,20,32,0.08)] hover:border-amber-500/50 rounded-2xl p-6 text-center transition-all bg-[#FAFAF8]/50">
               {receiptImage ? (
                 <div className="space-y-3">
-                  <img src={receiptImage} alt="Receipt Preview" className="max-h-48 mx-auto rounded-xl shadow-md border border-slate-800" />
+                  <img src={receiptImage} alt="Receipt Preview" className="max-h-48 mx-auto rounded-xl shadow-md border border-[rgba(10,20,32,0.08)]" />
                   <button
                     onClick={() => setReceiptImage(null)}
                     className="text-xs text-rose-400 hover:underline font-semibold"
@@ -674,17 +674,17 @@ export const AccountingSuite: React.FC = () => {
               ) : (
                 <label className="cursor-pointer space-y-2 block">
                   <Upload className="w-8 h-8 text-amber-400 mx-auto" />
-                  <span className="text-sm font-semibold text-slate-300 block">
+                  <span className="text-sm font-semibold text-[#334155] block">
                     Drag & Drop or Click to Upload Receipt Image
                   </span>
-                  <span className="text-xs text-slate-500 block">PNG, JPG, WEBP up to 10MB</span>
+                  <span className="text-xs text-[rgba(10,20,32,0.50)] block">PNG, JPG, WEBP up to 10MB</span>
                   <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                 </label>
               )}
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-400 block mb-1">
+              <label className="text-xs font-semibold text-[#6B7685] block mb-1">
                 Or Paste Invoice Text / Receipt Content
               </label>
               <textarea
@@ -692,14 +692,14 @@ export const AccountingSuite: React.FC = () => {
                 placeholder="e.g. PE Panel & Paint invoice #98213 - Date: 2026-07-15 - Amount: R1,450.00 - VAT: R189.13"
                 value={receiptText}
                 onChange={(e) => setReceiptText(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 placeholder-slate-500 text-sm focus:ring-2 focus:ring-amber-500/20"
+                className="w-full px-3 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] text-[#1A2332] placeholder-[rgba(10,20,32,0.40)] text-sm focus:ring-2 focus:ring-amber-500/20"
               />
             </div>
 
             <button
               onClick={handleRunAiScan}
               disabled={isScanning}
-              className="w-full py-3 bg-gradient-to-r from-amber-500 to-cyan-600 text-white rounded-xl text-sm font-bold shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-[#0E9D98] text-white rounded-xl text-sm font-bold shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
             >
               {isScanning ? (
                 <>
@@ -716,47 +716,47 @@ export const AccountingSuite: React.FC = () => {
           </div>
 
           {/* AI Scanned Result & Ledger Import Preview */}
-          <div className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between backdrop-blur-md">
+          <div className="bg-white/80 p-6 rounded-2xl border border-[rgba(10,20,32,0.08)] shadow-xl space-y-4 flex flex-col justify-between backdrop-blur-md">
             <div>
-              <h3 className="font-bold text-white text-base mb-1">Parsed Ledger Entry</h3>
-              <p className="text-xs text-slate-400">Extracted metadata ready for general ledger posting.</p>
+              <h3 className="font-bold text-[#1A2332] text-base mb-1">Parsed Ledger Entry</h3>
+              <p className="text-xs text-[#6B7685]">Extracted metadata ready for general ledger posting.</p>
             </div>
 
             {scannedResult ? (
-              <div className="space-y-4 bg-slate-950 p-5 rounded-2xl border border-slate-800">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="space-y-4 bg-[#FAFAF8] p-5 rounded-2xl border border-[rgba(10,20,32,0.08)]">
+                <div className="flex items-center justify-between pb-3 border-b border-[rgba(10,20,32,0.08)]">
                   <div>
-                    <span className="text-xs text-slate-400 uppercase font-semibold">Vendor</span>
-                    <p className="text-lg font-bold text-white">{scannedResult.vendor}</p>
+                    <span className="text-xs text-[#6B7685] uppercase font-semibold">Vendor</span>
+                    <p className="text-lg font-bold text-[#1A2332]">{scannedResult.vendor}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-slate-400 uppercase font-semibold">Parsed Total</span>
-                    <p className="text-xl font-black text-white">{profile.currency}{Number(scannedResult.amount).toFixed(2)}</p>
+                    <span className="text-xs text-[#6B7685] uppercase font-semibold">Parsed Total</span>
+                    <p className="text-xl font-black text-[#1A2332]">{profile.currency}{Number(scannedResult.amount).toFixed(2)}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="text-slate-400 font-medium">Category</span>
-                    <p className="font-bold text-slate-200">{scannedResult.category}</p>
+                    <span className="text-[#6B7685] font-medium">Category</span>
+                    <p className="font-bold text-[#1A2332]">{scannedResult.category}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-medium">Chart of Accounts Code</span>
-                    <p className="font-bold text-cyan-400">{scannedResult.suggestedAccount}</p>
+                    <span className="text-[#6B7685] font-medium">Chart of Accounts Code</span>
+                    <p className="font-bold text-[#0E9D98]">{scannedResult.suggestedAccount}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-medium">Document Date</span>
-                    <p className="font-bold text-slate-200">{scannedResult.date}</p>
+                    <span className="text-[#6B7685] font-medium">Document Date</span>
+                    <p className="font-bold text-[#1A2332]">{scannedResult.date}</p>
                   </div>
                   <div>
-                    <span className="text-slate-400 font-medium">Tax Deduction</span>
+                    <span className="text-[#6B7685] font-medium">Tax Deduction</span>
                     <p className="font-bold text-emerald-400">
                       {scannedResult.isDeductible ? 'Eligible Business Expense' : 'Non-deductible'}
                     </p>
                   </div>
                 </div>
 
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs text-slate-300">
+                <div className="p-3 bg-white rounded-xl border border-[rgba(10,20,32,0.08)] text-xs text-[#334155]">
                   <strong>Description:</strong> {scannedResult.description}
                 </div>
 
@@ -769,7 +769,7 @@ export const AccountingSuite: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="p-12 border-2 border-dashed border-slate-800 rounded-2xl text-center text-slate-500 text-xs my-auto">
+              <div className="p-12 border-2 border-dashed border-[rgba(10,20,32,0.08)] rounded-2xl text-center text-[rgba(10,20,32,0.50)] text-xs my-auto">
                 No receipt scanned yet. Upload an image or paste text on the left to begin AI parsing.
               </div>
             )}
@@ -782,22 +782,22 @@ export const AccountingSuite: React.FC = () => {
         <div className="space-y-6">
           {/* Invoice Financial Summary Bar */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-800 shadow-xl backdrop-blur-md flex items-center justify-between">
+            <div className="p-4 bg-white/80 rounded-xl border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Invoiced</span>
-                <div className="text-xl font-black text-white mt-1">
+                <span className="text-xs font-semibold text-[#6B7685] uppercase tracking-wider">Total Invoiced</span>
+                <div className="text-xl font-black text-[#1A2332] mt-1">
                   {profile.currency}{invoices.reduce((acc, inv) => acc + inv.amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">{invoices.length} Total Issued Invoices</p>
+                <p className="text-[11px] text-[rgba(10,20,32,0.50)] mt-0.5">{invoices.length} Total Issued Invoices</p>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-cyan-950/80 text-cyan-400 border border-cyan-800/60 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] flex items-center justify-center">
                 <FileText className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-800 shadow-xl backdrop-blur-md flex items-center justify-between">
+            <div className="p-4 bg-white/80 rounded-xl border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Accounts Receivable (Pending)</span>
+                <span className="text-xs font-semibold text-[#6B7685] uppercase tracking-wider">Accounts Receivable (Pending)</span>
                 <div className="text-xl font-black text-amber-400 mt-1">
                   {profile.currency}{invoices.filter((i) => i.status === 'Pending' || i.status === 'Overdue').reduce((acc, inv) => acc + inv.amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
@@ -810,9 +810,9 @@ export const AccountingSuite: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-800 shadow-xl backdrop-blur-md flex items-center justify-between">
+            <div className="p-4 bg-white/80 rounded-xl border border-[rgba(10,20,32,0.08)] shadow-xl backdrop-blur-md flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Collected Revenue</span>
+                <span className="text-xs font-semibold text-[#6B7685] uppercase tracking-wider">Collected Revenue</span>
                 <div className="text-xl font-black text-emerald-400 mt-1">
                   {profile.currency}{invoices.filter((i) => i.status === 'Paid').reduce((acc, inv) => acc + inv.amount, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
@@ -820,7 +820,7 @@ export const AccountingSuite: React.FC = () => {
                   {invoices.filter((i) => i.status === 'Paid').length} Fully Settled Invoices
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-400 border border-emerald-200 flex items-center justify-center">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
             </div>
@@ -830,26 +830,26 @@ export const AccountingSuite: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-72">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7685]" />
                 <input
                   type="text"
                   placeholder="Search by client or invoice #..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-800 bg-slate-900 text-slate-200 placeholder-slate-500 text-sm focus:outline-hidden focus:ring-2 focus:ring-cyan-500/30"
+                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-white text-[#1A2332] placeholder-[rgba(10,20,32,0.40)] text-sm focus:outline-hidden focus:ring-2 focus:ring-cyan-500/30"
                 />
               </div>
 
               {/* Status Filter Pills */}
-              <div className="bg-slate-950 p-1 rounded-xl flex items-center gap-1 border border-slate-800 shrink-0">
+              <div className="bg-[#FAFAF8] p-1 rounded-xl flex items-center gap-1 border border-[rgba(10,20,32,0.08)] shrink-0">
                 {(['All', 'Paid', 'Pending', 'Overdue'] as const).map((status) => (
                   <button
                     key={status}
                     onClick={() => setInvoiceStatusFilter(status)}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                       invoiceStatusFilter === status
-                        ? 'bg-cyan-600 text-white shadow-xs'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-[#0E9D98] text-white shadow-xs'
+                        : 'text-[#6B7685] hover:text-[#1A2332]'
                     }`}
                   >
                     {status}
@@ -868,10 +868,10 @@ export const AccountingSuite: React.FC = () => {
           </div>
 
           {/* Invoices Master Table */}
-          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-xl backdrop-blur-md">
+          <div className="bg-white/80 rounded-2xl border border-[rgba(10,20,32,0.08)] overflow-hidden shadow-xl backdrop-blur-md">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase">
+              <table className="w-full text-left text-sm text-[#334155]">
+                <thead className="bg-[#F5F4F1] border-b border-[rgba(10,20,32,0.08)] text-xs font-semibold text-[#6B7685] uppercase">
                   <tr>
                     <th className="px-6 py-3.5">Invoice # & Ref</th>
                     <th className="px-6 py-3.5">Client & Email</th>
@@ -881,29 +881,29 @@ export const AccountingSuite: React.FC = () => {
                     <th className="px-6 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="divide-y divide-[rgba(10,20,32,0.06)]">
                   {filteredInvoices.map((inv) => (
-                    <tr key={inv.id} className="hover:bg-slate-800/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-white">
-                        <p className="text-white hover:text-cyan-400 transition-colors">{inv.invoiceNumber}</p>
-                        <p className="text-[11px] text-slate-500 font-mono">Tax Rate: {inv.taxRate || profile.taxRate}%</p>
+                    <tr key={inv.id} className="hover:bg-[#EFEDE8]/50 transition-colors">
+                      <td className="px-6 py-4 font-bold text-[#1A2332]">
+                        <p className="text-[#1A2332] hover:text-[#0E9D98] transition-colors">{inv.invoiceNumber}</p>
+                        <p className="text-[11px] text-[rgba(10,20,32,0.50)] font-mono">Tax Rate: {inv.taxRate || profile.taxRate}%</p>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-bold text-slate-100">{inv.clientName}</p>
-                        <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                          <Mail className="w-3 h-3 text-slate-500" />
+                        <p className="font-bold text-[#1A2332]">{inv.clientName}</p>
+                        <p className="text-xs text-[#6B7685] flex items-center gap-1 mt-0.5">
+                          <Mail className="w-3 h-3 text-[rgba(10,20,32,0.50)]" />
                           {inv.clientEmail}
                         </p>
                       </td>
-                      <td className="px-6 py-4 text-xs text-slate-400">
-                        <p>Issued: <span className="text-slate-300 font-mono">{inv.issueDate}</span></p>
+                      <td className="px-6 py-4 text-xs text-[#6B7685]">
+                        <p>Issued: <span className="text-[#334155] font-mono">{inv.issueDate}</span></p>
                         <p>Due: <span className="font-semibold text-amber-300 font-mono">{inv.dueDate}</span></p>
                       </td>
                       <td className="px-6 py-4">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 ${
                             inv.status === 'Paid'
-                              ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
+                              ? 'bg-emerald-50 text-emerald-400 border border-emerald-200'
                               : inv.status === 'Overdue'
                               ? 'bg-rose-950/80 text-rose-400 border border-rose-800/60'
                               : 'bg-amber-950/80 text-amber-400 border border-amber-800/60'
@@ -915,7 +915,7 @@ export const AccountingSuite: React.FC = () => {
                           {inv.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-black text-white text-base">
+                      <td className="px-6 py-4 font-black text-[#1A2332] text-base">
                         {profile.currency}{inv.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
@@ -924,7 +924,7 @@ export const AccountingSuite: React.FC = () => {
                             setPreviewInvoice(inv);
                             beginEdit(inv);
                           }}
-                          className="px-3 py-1.5 bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 inline-flex"
+                          className="px-3 py-1.5 bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] hover:bg-[rgba(14,157,152,0.12)] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 inline-flex"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>View</span>
@@ -932,10 +932,10 @@ export const AccountingSuite: React.FC = () => {
                         <button
                           onClick={() => handleExportPdf(inv)}
                           disabled={isExportingPdf}
-                          className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 inline-flex"
+                          className="px-3 py-1.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#1A2332] border border-[rgba(10,20,32,0.10)] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 inline-flex"
                           title="Export Clean PDF Summary"
                         >
-                          <Download className="w-3.5 h-3.5 text-cyan-400" />
+                          <Download className="w-3.5 h-3.5 text-[#0E9D98]" />
                           <span>PDF</span>
                         </button>
                         {inv.status !== 'Paid' && (
@@ -956,7 +956,7 @@ export const AccountingSuite: React.FC = () => {
 
                   {filteredInvoices.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-slate-500 text-sm">
+                      <td colSpan={6} className="px-6 py-12 text-center text-[rgba(10,20,32,0.50)] text-sm">
                         No invoices found matching current filter or search criteria.
                       </td>
                     </tr>
@@ -970,35 +970,35 @@ export const AccountingSuite: React.FC = () => {
 
       {/* Tab Content 4: Bank Feed Sync */}
       {activeTab === 'bankfeed' && (
-        <div className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 backdrop-blur-md">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="bg-white/80 p-6 rounded-2xl border border-[rgba(10,20,32,0.08)] shadow-xl space-y-4 backdrop-blur-md">
+          <div className="flex items-center justify-between pb-4 border-b border-[rgba(10,20,32,0.08)]">
             <div>
-              <h3 className="font-bold text-white text-base">Bank Feed Auto-Matching Simulation</h3>
-              <p className="text-xs text-slate-400">Live API sync with connected bank feeds & clearing houses.</p>
+              <h3 className="font-bold text-[#1A2332] text-base">Bank Feed Auto-Matching Simulation</h3>
+              <p className="text-xs text-[#6B7685]">Live API sync with connected bank feeds & clearing houses.</p>
             </div>
-            <span className="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 rounded-full text-xs font-bold flex items-center gap-1.5">
+            <span className="px-3 py-1 bg-emerald-50 text-emerald-400 border border-emerald-200 rounded-full text-xs font-bold flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               Bank Connection Active
             </span>
           </div>
 
           <div className="space-y-3">
-            <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div className="p-4 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)] flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-slate-500">Plaid / Stripe Wire #8921</span>
-                <p className="font-bold text-white text-sm">{profile.currency}559,900 received from Johan Pretorius</p>
+                <span className="text-xs font-bold text-[rgba(10,20,32,0.50)]">Plaid / Stripe Wire #8921</span>
+                <p className="font-bold text-[#1A2332] text-sm">{profile.currency}559,900 received from Johan Pretorius</p>
               </div>
-              <span className="px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 rounded-lg text-xs font-bold">
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-400 border border-emerald-200 rounded-lg text-xs font-bold">
                 Auto-Matched to INV-2026-001
               </span>
             </div>
 
-            <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div className="p-4 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)] flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-slate-500">Silicon Valley Bank Debit #3301</span>
-                <p className="font-bold text-white text-sm">{profile.currency}1,450.00 Debit paid to Amazon Web Services</p>
+                <span className="text-xs font-bold text-[rgba(10,20,32,0.50)]">Silicon Valley Bank Debit #3301</span>
+                <p className="font-bold text-[#1A2332] text-sm">{profile.currency}1,450.00 Debit paid to Amazon Web Services</p>
               </div>
-              <span className="px-3 py-1 bg-cyan-950/80 text-cyan-400 border border-cyan-800/60 rounded-lg text-xs font-bold">
+              <span className="px-3 py-1 bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] rounded-lg text-xs font-bold">
                 Auto-matched to PE Panel & Paint invoice #9821
               </span>
             </div>
@@ -1008,22 +1008,22 @@ export const AccountingSuite: React.FC = () => {
 
       {/* Thorough Invoice Creator Modal */}
       {showAddInvoiceModal && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <form onSubmit={handleCreateInvoice} className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 w-full max-w-3xl p-6 sm:p-8 space-y-6 text-slate-200 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="fixed inset-0 bg-[rgba(10,20,32,0.40)] backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <form onSubmit={handleCreateInvoice} className="bg-white rounded-2xl shadow-2xl border border-[rgba(10,20,32,0.08)] w-full max-w-3xl p-6 sm:p-8 space-y-6 text-[#1A2332] my-8">
+            <div className="flex items-center justify-between pb-4 border-b border-[rgba(10,20,32,0.08)]">
               <div>
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-cyan-400" />
+                <h3 className="text-xl font-bold text-[#1A2332] flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#0E9D98]" />
                   Issue Thorough Client Invoice
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-[#6B7685] mt-0.5">
                   Specify itemized line deliverables, tax calculations, payment terms, and remittance instructions.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddInvoiceModal(false)}
-                className="text-slate-400 hover:text-white text-sm font-bold p-2"
+                className="text-[#6B7685] hover:text-[#1A2332] text-sm font-bold p-2"
               >
                 ✕
               </button>
@@ -1032,56 +1032,56 @@ export const AccountingSuite: React.FC = () => {
             {/* Client & Metadata Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Client Company Name *</label>
+                <label className="text-xs font-semibold text-[#334155] block mb-1">Client Company Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Sundays River Citrus Co."
                   value={invClientName}
                   onChange={(e) => setInvClientName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 text-sm focus:ring-2 focus:ring-cyan-500/30"
+                  className="w-full px-3 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] text-[#1A2332] text-sm focus:ring-2 focus:ring-cyan-500/30"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Billing Email *</label>
+                <label className="text-xs font-semibold text-[#334155] block mb-1">Billing Email *</label>
                 <input
                   type="email"
                   required
                   placeholder="accounts@client.co.za"
                   value={invClientEmail}
                   onChange={(e) => setInvClientEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 text-sm focus:ring-2 focus:ring-cyan-500/30"
+                  className="w-full px-3 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] text-[#1A2332] text-sm focus:ring-2 focus:ring-cyan-500/30"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Client Billing Address</label>
+                <label className="text-xs font-semibold text-[#334155] block mb-1">Client Billing Address</label>
                 <input
                   type="text"
                   placeholder="Street, City, State, ZIP"
                   value={invClientAddress}
                   onChange={(e) => setInvClientAddress(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 text-sm focus:ring-2 focus:ring-cyan-500/30"
+                  className="w-full px-3 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] text-[#1A2332] text-sm focus:ring-2 focus:ring-cyan-500/30"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">P.O. / Contract Ref #</label>
+                <label className="text-xs font-semibold text-[#334155] block mb-1">P.O. / Contract Ref #</label>
                 <input
                   type="text"
                   value={invPoNumber}
                   onChange={(e) => setInvPoNumber(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 text-sm focus:ring-2 focus:ring-cyan-500/30"
+                  className="w-full px-3 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] text-[#1A2332] text-sm focus:ring-2 focus:ring-cyan-500/30"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Payment Terms</label>
+                <label className="text-xs font-semibold text-[#334155] block mb-1">Payment Terms</label>
                 <select
                   value={invPaymentTerms}
                   onChange={(e) => setInvPaymentTerms(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-200 text-sm focus:ring-2 focus:ring-cyan-500/30"
+                  className="w-full px-3 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] text-[#1A2332] text-sm focus:ring-2 focus:ring-cyan-500/30"
                 >
                   <option value="Due on Receipt">Due on Receipt</option>
                   <option value="Net 15">Net 15 Days</option>
@@ -1094,11 +1094,11 @@ export const AccountingSuite: React.FC = () => {
             {/* Itemized Deliverables Line Editor */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Itemized Deliverables & Charges</label>
+                <label className="text-xs font-bold text-[#334155] uppercase tracking-wider">Itemized Deliverables & Charges</label>
                 <button
                   type="button"
                   onClick={addInvLineItem}
-                  className="px-3 py-1 bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900 text-xs font-semibold rounded-lg flex items-center gap-1 transition-colors"
+                  className="px-3 py-1 bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] hover:bg-[rgba(14,157,152,0.12)] text-xs font-semibold rounded-lg flex items-center gap-1 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Line Item</span>
@@ -1107,36 +1107,36 @@ export const AccountingSuite: React.FC = () => {
 
               <div className="space-y-2">
                 {invItems.map((item, idx) => (
-                  <div key={idx} className="p-3 bg-slate-950 rounded-xl border border-slate-800 grid grid-cols-12 gap-2 items-center text-xs">
+                  <div key={idx} className="p-3 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)] grid grid-cols-12 gap-2 items-center text-xs">
                     <div className="col-span-12 sm:col-span-6">
-                      <label className="text-[10px] text-slate-500 block sm:hidden">Description</label>
+                      <label className="text-[10px] text-[rgba(10,20,32,0.50)] block sm:hidden">Description</label>
                       <input
                         type="text"
                         placeholder="Item description / service line..."
                         value={item.description}
                         onChange={(e) => updateInvLineItem(idx, 'description', e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 focus:outline-hidden focus:border-cyan-500"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[rgba(10,20,32,0.08)] bg-white text-[#1A2332] focus:outline-hidden focus:border-cyan-500"
                       />
                     </div>
                     <div className="col-span-4 sm:col-span-2">
-                      <label className="text-[10px] text-slate-500 block sm:hidden">Qty</label>
+                      <label className="text-[10px] text-[rgba(10,20,32,0.50)] block sm:hidden">Qty</label>
                       <input
                         type="number"
                         min="1"
                         value={item.quantity}
                         onChange={(e) => updateInvLineItem(idx, 'quantity', Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-full px-2 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 text-center focus:outline-hidden focus:border-cyan-500"
+                        className="w-full px-2 py-1.5 rounded-lg border border-[rgba(10,20,32,0.08)] bg-white text-[#1A2332] text-center focus:outline-hidden focus:border-cyan-500"
                       />
                     </div>
                     <div className="col-span-5 sm:col-span-3">
-                      <label className="text-[10px] text-slate-500 block sm:hidden">Unit Price ({profile.currency})</label>
+                      <label className="text-[10px] text-[rgba(10,20,32,0.50)] block sm:hidden">Unit Price ({profile.currency})</label>
                       <input
                         type="number"
                         step="0.01"
                         placeholder="0.00"
                         value={item.unitPrice}
                         onChange={(e) => updateInvLineItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-200 text-right focus:outline-hidden focus:border-cyan-500"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[rgba(10,20,32,0.08)] bg-white text-[#1A2332] text-right focus:outline-hidden focus:border-cyan-500"
                       />
                     </div>
                     <div className="col-span-3 sm:col-span-1 flex justify-end">
@@ -1144,7 +1144,7 @@ export const AccountingSuite: React.FC = () => {
                         type="button"
                         onClick={() => removeInvLineItem(idx)}
                         disabled={invItems.length <= 1}
-                        className="p-1.5 text-slate-500 hover:text-rose-400 disabled:opacity-30 disabled:hover:text-slate-500"
+                        className="p-1.5 text-[rgba(10,20,32,0.50)] hover:text-rose-400 disabled:opacity-30 disabled:hover:text-[rgba(10,20,32,0.50)]"
                         title="Delete Item"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1158,36 +1158,36 @@ export const AccountingSuite: React.FC = () => {
             {/* Notes & Summary Box */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Notes & Terms & Conditions</label>
+                <label className="text-xs font-semibold text-[#334155] block mb-1">Notes & Terms & Conditions</label>
                 <textarea
                   rows={3}
                   value={invNotes}
                   onChange={(e) => setInvNotes(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 text-xs focus:ring-2 focus:ring-cyan-500/30"
+                  className="w-full px-3 py-2 rounded-xl border border-[rgba(10,20,32,0.08)] bg-[#FAFAF8] text-[#334155] text-xs focus:ring-2 focus:ring-cyan-500/30"
                 />
               </div>
 
-              <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2 text-xs">
-                <div className="flex justify-between text-slate-400">
+              <div className="p-4 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)] space-y-2 text-xs">
+                <div className="flex justify-between text-[#6B7685]">
                   <span>Subtotal:</span>
-                  <span className="font-mono text-slate-200">{profile.currency}{invSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span className="font-mono text-[#1A2332]">{profile.currency}{invSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#6B7685]">
                   <span>Sales Tax ({profile.taxRate}%):</span>
-                  <span className="font-mono text-slate-200">{profile.currency}{invTaxAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span className="font-mono text-[#1A2332]">{profile.currency}{invTaxAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-white pt-2 border-t border-slate-800">
+                <div className="flex justify-between text-sm font-bold text-[#1A2332] pt-2 border-t border-[rgba(10,20,32,0.08)]">
                   <span>Total Amount Due:</span>
                   <span className="font-mono text-emerald-400 text-base">{profile.currency}{invGrandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-[rgba(10,20,32,0.08)]">
               <button
                 type="button"
                 onClick={() => setShowAddInvoiceModal(false)}
-                className="px-4 py-2 text-slate-400 hover:text-slate-200 text-xs font-semibold"
+                className="px-4 py-2 text-[#6B7685] hover:text-[#1A2332] text-xs font-semibold"
               >
                 Cancel
               </button>
@@ -1320,27 +1320,25 @@ export const AccountingSuite: React.FC = () => {
                   <>
               <div
                 id="printable-invoice"
-                className="bg-white rounded-[18px] border border-[rgba(18,32,43,0.14)] shadow-[0_18px_50px_-20px_rgba(18,32,43,0.12)] p-8 sm:p-12 text-[#12202B]">
+                className="bg-white rounded-2xl border border-[rgba(18,32,43,0.08)] shadow-[0_8px_30px_-12px_rgba(18,32,43,0.08)] p-8 sm:p-12 text-[#2D3748]">
                 {/* Header: business + document title */}
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
                   <div>
-                    <div className="text-2xl font-semibold tracking-[-0.02em] leading-none">
-                      <span className="text-[#12202B]">{profile.companyName.split(' ')[0] || 'Tru'}</span>
-                      <span className="text-[#07889B]">{profile.companyName.split(' ').slice(1).join(' ') || 'SaaS'}</span>
+                    <div className="text-[22px] font-semibold tracking-[-0.01em] leading-none text-[#1A2332]">
+                      {profile.companyName}
                     </div>
-                    <div className="mt-1.5 text-[11px] font-mono uppercase tracking-[0.06em] text-[#8A8172]">
+                    <div className="mt-1.5 text-[11px] font-mono uppercase tracking-[0.06em] text-[#A0A6AE]">
                       {profile.tagline || 'Personal workspace'}
                     </div>
-                    <div className="mt-4 text-[13px] text-[#3A4553] space-y-0.5">
-                      <p className="text-[16px] font-semibold text-[#12202B]">{profile.companyName}</p>
-                      <p className="font-mono text-[13px] text-[#3A4553]">{profile.regNumber || 'Reg / VAT no.'}</p>
+                    <div className="mt-4 text-[13px] text-[#6B7685] space-y-0.5">
+                      <p className="font-mono text-[13px] text-[#6B7685]">{profile.regNumber || 'Reg / VAT no.'}</p>
                       <p className="whitespace-pre-line">{profile.address || profile.email}</p>
-                      {profile.phone && <p className="font-mono text-[13px] text-[#3A4553]">{profile.phone}</p>}
+                      {profile.phone && <p className="font-mono text-[13px] text-[#6B7685]">{profile.phone}</p>}
                     </div>
                   </div>
 
                   <div className="text-left sm:text-right">
-                    <h2 className="text-[30px] font-semibold tracking-[-0.02em] text-[#07889B] leading-none">Invoice</h2>
+                    <h2 className="text-[28px] font-semibold tracking-[-0.02em] text-[#07889B] leading-none opacity-80">Invoice</h2>
                     <div className="mt-3 space-y-1 text-[13px] text-[#8A8172]">
                       <div className="flex justify-end items-baseline gap-2">
                         <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] min-w-[96px] text-right">Invoice no.</span>
@@ -1568,7 +1566,7 @@ export const AccountingSuite: React.FC = () => {
 
                 {/* Thanks */}
                 <div className="mt-7 text-center font-mono text-[12px] uppercase tracking-[0.1em] text-[#8A8172]">
-                  Thank you. <span className="text-[#A69C8D]">· Generated with TruSaaS</span>
+                  Thank you for your business.
                 </div>
               </div>
                   </>

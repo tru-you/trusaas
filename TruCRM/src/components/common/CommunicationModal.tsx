@@ -153,24 +153,24 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(10,20,32,0.40)] backdrop-blur-md animate-fadeIn">
+      <div className="bg-white border border-[rgba(10,20,32,0.08)] w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="p-5 border-b border-slate-800/80 bg-slate-950/50 flex items-center justify-between">
+        <div className="p-5 border-b border-[rgba(10,20,32,0.06)] bg-[#FAFAF8] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-800/60 flex items-center justify-center text-cyan-400 font-bold text-sm">
+            <div className="w-10 h-10 rounded-xl bg-[rgba(14,157,152,0.08)] border border-[rgba(14,157,152,0.20)] flex items-center justify-center text-[#0E9D98] font-bold text-sm">
               {target.name.charAt(0)}
             </div>
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#1A2332] flex items-center gap-2">
                 <span>{target.name}</span>
                 {target.company && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-[#EFEDE8] text-[#334155] font-medium border border-[rgba(10,20,32,0.10)]">
                     {target.company}
                   </span>
                 )}
               </h3>
-              <p className="text-xs text-slate-400 flex items-center gap-3 mt-0.5">
+              <p className="text-xs text-[#6B7685] flex items-center gap-3 mt-0.5">
                 <span>✉️ {target.email}</span>
                 <span>📞 {target.phone}</span>
               </p>
@@ -178,20 +178,20 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-1.5 text-[#6B7685] hover:text-[#1A2332] bg-[#EFEDE8] hover:bg-[#F5F4F1] rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Channel Navigation Tabs */}
-        <div className="grid grid-cols-3 bg-slate-950 p-1.5 border-b border-slate-800/80 gap-1.5">
+        <div className="grid grid-cols-3 bg-[#FAFAF8] p-1.5 border-b border-[rgba(10,20,32,0.06)] gap-1.5">
           <button
             onClick={() => setActiveChannel('call')}
             className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
               activeChannel === 'call'
-                ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                ? 'bg-cyan-600 text-white shadow-lg shadow-[rgba(14,157,152,0.15)]'
+                : 'text-[#6B7685] hover:text-[#1A2332] hover:bg-[#F5F4F1]'
             }`}
           >
             <Phone className="w-4 h-4" />
@@ -202,8 +202,8 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
             onClick={() => setActiveChannel('email')}
             className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
               activeChannel === 'email'
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/15'
+                : 'text-[#6B7685] hover:text-[#1A2332] hover:bg-[#F5F4F1]'
             }`}
           >
             <Mail className="w-4 h-4" />
@@ -214,8 +214,8 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
             onClick={() => setActiveChannel('whatsapp')}
             className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
               activeChannel === 'whatsapp'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/15'
+                : 'text-[#6B7685] hover:text-[#1A2332] hover:bg-[#F5F4F1]'
             }`}
           >
             <MessageCircle className="w-4 h-4" />
@@ -229,14 +229,14 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
           {activeChannel === 'call' && (
             <div className="space-y-5">
               {/* Call Trigger Banner */}
-              <div className="p-4 bg-cyan-950/40 border border-cyan-800/60 rounded-xl flex items-center justify-between">
+              <div className="p-4 bg-[rgba(14,157,152,0.05)] border border-[rgba(14,157,152,0.20)] rounded-xl flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 block">Direct Dial</span>
-                  <p className="text-lg font-black text-white font-mono mt-0.5">{target.phone}</p>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#0E9D98] block">Direct Dial</span>
+                  <p className="text-lg font-black text-[#1A2332] font-mono mt-0.5">{target.phone}</p>
                 </div>
                 <a
                   href={`tel:${rawPhone}`}
-                  className="px-4 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-600/30 flex items-center gap-2 transition-transform hover:scale-105"
+                  className="px-4 py-2.5 bg-[#0E9D98] hover:bg-[#14B8A6] text-white font-bold rounded-xl text-xs shadow-lg shadow-[rgba(14,157,152,0.15)] flex items-center gap-2 transition-transform hover:scale-105"
                 >
                   <PhoneCall className="w-4 h-4" />
                   <span>Start Dialing</span>
@@ -245,14 +245,14 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
 
               {/* Log Call Result */}
               <div className="space-y-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Log Call Outcome & Notes</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#6B7685]">Log Call Outcome & Notes</h4>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { id: 'connected', label: 'Connected', icon: CheckCircle2, color: 'text-emerald-400 border-emerald-800/60' },
+                    { id: 'connected', label: 'Connected', icon: CheckCircle2, color: 'text-emerald-400 border-emerald-200' },
                     { id: 'voicemail', label: 'Voicemail', icon: Clock, color: 'text-amber-400 border-amber-800/60' },
                     { id: 'busy', label: 'Busy / No Answer', icon: X, color: 'text-rose-400 border-rose-800/60' },
-                    { id: 'scheduled', label: 'Follow-Up Scheduled', icon: Phone, color: 'text-cyan-400 border-cyan-800/60' },
+                    { id: 'scheduled', label: 'Follow-Up Scheduled', icon: Phone, color: 'text-[#0E9D98] border-[rgba(14,157,152,0.20)]' },
                   ].map((item) => {
                     const Icon = item.icon;
                     const isSelected = callOutcome === item.id;
@@ -263,8 +263,8 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
                         onClick={() => setCallOutcome(item.id as any)}
                         className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1.5 transition-all ${
                           isSelected
-                            ? 'bg-slate-800 border-cyan-500 text-white shadow-md'
-                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'bg-[#EFEDE8] border-[#0E9D98] text-[#1A2332] shadow-md'
+                            : 'bg-[#FAFAF8] border-[rgba(10,20,32,0.08)] text-[#6B7685] hover:text-[#1A2332]'
                         }`}
                       >
                         <Icon className={`w-4 h-4 ${item.color}`} />
@@ -276,19 +276,19 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-slate-400 block mb-1">Call Duration (minutes)</label>
+                    <label className="text-xs font-semibold text-[#6B7685] block mb-1">Call Duration (minutes)</label>
                     <input
                       type="number"
                       value={callDuration}
                       onChange={(e) => setCallDuration(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+                      className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl px-3 py-2 text-xs text-[#1A2332] focus:outline-none focus:border-cyan-500"
                       min="1"
                       max="120"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-slate-400 block mb-1">Follow-up Task</label>
-                    <select className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+                    <label className="text-xs font-semibold text-[#6B7685] block mb-1">Follow-up Task</label>
+                    <select className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl px-3 py-2 text-xs text-[#1A2332] focus:outline-none focus:border-cyan-500">
                       <option>Send Proposal Quote</option>
                       <option>Schedule Technical Demo</option>
                       <option>Send Contract Agreement</option>
@@ -298,13 +298,13 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 block mb-1">Call Summary & Client Feedback</label>
+                  <label className="text-xs font-semibold text-[#6B7685] block mb-1">Call Summary & Client Feedback</label>
                   <textarea
                     rows={3}
                     value={callNotes}
                     onChange={(e) => setCallNotes(e.target.value)}
                     placeholder="E.g., Client confirmed review with CTO, interested in custom SLA package..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                    className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl p-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.40)] focus:outline-none focus:border-cyan-500"
                   />
                 </div>
 
@@ -312,7 +312,7 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
                   type="button"
                   onClick={handleLogCall}
                   disabled={callLogged}
-                  className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 disabled:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-[#0E9D98] hover:bg-[#14B8A6] disabled:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
                 >
                   {callLogged ? (
                     <>
@@ -334,11 +334,11 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
           {activeChannel === 'email' && (
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Email Template</label>
+                <label className="text-xs font-semibold text-[#6B7685] block mb-1">Email Template</label>
                 <select
                   value={emailTemplate}
                   onChange={(e) => setEmailTemplate(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl px-3 py-2 text-xs text-[#1A2332] focus:outline-none focus:border-blue-500"
                 >
                   <option value="followup">📌 Proposal / Deal Follow-up</option>
                   <option value="meeting">📅 Discovery & Demo Call Request</option>
@@ -348,32 +348,32 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Recipient Email</label>
+                <label className="text-xs font-semibold text-[#6B7685] block mb-1">Recipient Email</label>
                 <input
                   type="email"
                   value={target.email}
                   readOnly
-                  className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono"
+                  className="w-full bg-[#FAFAF8]/60 border border-[rgba(10,20,32,0.08)] rounded-xl px-3 py-2 text-xs text-[#6B7685] font-mono"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Subject Line</label>
+                <label className="text-xs font-semibold text-[#6B7685] block mb-1">Subject Line</label>
                 <input
                   type="text"
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl px-3 py-2 text-xs text-[#1A2332] focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Message Body</label>
+                <label className="text-xs font-semibold text-[#6B7685] block mb-1">Message Body</label>
                 <textarea
                   rows={6}
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 font-sans focus:outline-none focus:border-blue-500 leading-relaxed"
+                  className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl p-3 text-xs text-[#1A2332] font-sans focus:outline-none focus:border-blue-500 leading-relaxed"
                 />
               </div>
 
@@ -381,7 +381,7 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
                 <button
                   type="button"
                   onClick={handleSendEmail}
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30"
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-[#1A2332] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/15"
                 >
                   <Send className="w-4 h-4" />
                   <span>Send via Mail Client & Log</span>
@@ -394,7 +394,7 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
                     setCopiedEmail(true);
                     setTimeout(() => setCopiedEmail(false), 2000);
                   }}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#1A2332] rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
                 >
                   {copiedEmail ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   <span>{copiedEmail ? 'Copied' : 'Copy'}</span>
@@ -407,29 +407,29 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
           {activeChannel === 'whatsapp' && (
             <div className="space-y-4">
               {/* WhatsApp Header Badge */}
-              <div className="p-3 bg-emerald-950/50 border border-emerald-800/60 rounded-xl flex items-center justify-between">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
                     <MessageCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-white block">WhatsApp Direct Contact</span>
+                    <span className="text-xs font-bold text-[#1A2332] block">WhatsApp Direct Contact</span>
                     <span className="text-[11px] font-mono text-emerald-400">
                       +{cleanWaPhone || '15552348901'}
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-900 text-emerald-200 font-semibold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">
                   Official Web Link
                 </span>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">WhatsApp Preset Template</label>
+                <label className="text-xs font-semibold text-[#6B7685] block mb-1">WhatsApp Preset Template</label>
                 <select
                   value={waTemplate}
                   onChange={(e) => setWaTemplate(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl px-3 py-2 text-xs text-[#1A2332] focus:outline-none focus:border-emerald-500"
                 >
                   <option value="checkin">👋 Quick Deal & Proposal Check-In</option>
                   <option value="demo">🚀 Live Demo / Product Preview</option>
@@ -439,12 +439,12 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">WhatsApp Message</label>
+                <label className="text-xs font-semibold text-[#6B7685] block mb-1">WhatsApp Message</label>
                 <textarea
                   rows={5}
                   value={waMessage}
                   onChange={(e) => setWaMessage(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 leading-relaxed"
+                  className="w-full bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl p-3 text-xs text-[#1A2332] focus:outline-none focus:border-emerald-500 leading-relaxed"
                 />
               </div>
 
@@ -452,7 +452,7 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
                 <button
                   type="button"
                   onClick={handleLaunchWhatsApp}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30"
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-[#1A2332] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/15"
                 >
                   <ExternalLink className="w-4 h-4" />
                   <span>Open Chat in WhatsApp</span>
@@ -465,7 +465,7 @@ export const CommunicationModal: React.FC<CommunicationModalProps> = ({
                     setCopiedWa(true);
                     setTimeout(() => setCopiedWa(false), 2000);
                   }}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#1A2332] rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
                 >
                   {copiedWa ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   <span>{copiedWa ? 'Copied' : 'Copy Text'}</span>

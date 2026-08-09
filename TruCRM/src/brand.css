@@ -11,39 +11,35 @@
 
 :root {
   /* Surfaces ---------------------------------------------------------------
-     Two only. Anything that needs to sit "above" ink-2 uses --glass, not a
-     third background colour. */
-  --ink:        var(--tru-ink-900);
-  --ink-2:      var(--tru-ink-800);
-  --glass:      rgba(232, 234, 230, 0.055);
-  --glass-line: rgba(232, 234, 230, 0.14);
+     Light theme: warm stone body, white cards, subtle borders. */
+  --ink:        #F5F4F1;
+  --ink-2:      #EFEDE8;
+  --glass:      rgba(10, 20, 32, 0.04);
+  --glass-line: rgba(10, 20, 32, 0.10);
 
-  /* Text — one colour at four opacities. Not four different greys. */
-  --white:      var(--tru-paper);
-  --white-dim:  rgba(232, 234, 230, 0.72);
-  --muted:      rgba(232, 234, 230, 0.55);
-  --faint:      rgba(232, 234, 230, 0.32);
+  /* Text — dark ink at four opacities. */
+  --white:      #1A2332;
+  --white-dim:  rgba(10, 20, 32, 0.72);
+  --muted:      rgba(10, 20, 32, 0.50);
+  --faint:      rgba(10, 20, 32, 0.28);
 
-  /* Accent — exactly one. Cyan carries every interactive and "live" state.
-     On a cyan fill the text is --ink, never white: cyan/white fails contrast. */
-  --cyan:       var(--tru-cyan-400);
-  --cyan-bright:var(--tru-cyan-300);
-  --cyan-soft:  rgba(79, 227, 220, 0.35);
-  --cyan-faint: rgba(79, 227, 220, 0.08);
+  /* Accent — exactly one. Cyan carries every interactive and "live" state. */
+  --cyan:       #0E9D98;
+  --cyan-bright:#14B8A6;
+  --cyan-soft:  rgba(14, 157, 152, 0.25);
+  --cyan-faint: rgba(14, 157, 152, 0.06);
 
+  /* On a cyan fill the text is white in light mode. */
+  --text-on-accent: #FFFFFF;
 
-  /* Second accent — the blue from the logo. Cyan carries interactive and live
-     states; blue is for iconography and quiet emphasis, so the two never
-     compete for the same job. */
-  --blue:       #4D9BFF;
+  /* Second accent — blue for iconography and quiet emphasis. */
+  --blue:       #2B82F5;
   --blue-deep:  #1466E0;
-  --blue-faint: rgba(77, 155, 255, 0.10);
+  --blue-faint: rgba(43, 130, 245, 0.08);
 
-  /* Status without a traffic-light palette. Good/live reads cyan, warnings
-     de-emphasise to muted text rather than shouting in yellow, and one dusty
-     red is kept purely for destructive actions and genuine errors. */
-  --success:    var(--tru-cyan-400);
-  --warning:    rgba(232, 234, 230, 0.55);
+  /* Status. */
+  --success:    #0E9D98;
+  --warning:    rgba(10, 20, 32, 0.50);
   --danger:     #B86A6A;
 
   /* Type */
@@ -72,12 +68,11 @@
   --track-h2: -0.015em;
   --track-h3: -0.01em;
 
-  /* Depth — restrained. A lit top hairline and a soft shadow is the whole
-     vocabulary; the cyan glow is reserved for genuinely live elements. */
-  --shadow-card:  0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
-  --shadow-lift:  0 1px 0 rgba(232,234,230,0.09) inset, 0 26px 50px -28px rgba(0,0,0,0.9);
-  --shadow-modal: 0 40px 90px -40px rgba(0,0,0,0.95);
-  --glow-cyan:    0 0 8px var(--cyan);
+  /* Depth — light theme shadows. */
+  --shadow-card:  0 1px 3px rgba(10,20,32,0.05), 0 4px 14px rgba(10,20,32,0.04);
+  --shadow-lift:  0 2px 6px rgba(10,20,32,0.06), 0 8px 24px rgba(10,20,32,0.06);
+  --shadow-modal: 0 16px 48px -12px rgba(10,20,32,0.15);
+  --glow-cyan:    0 0 8px rgba(14,157,152,0.3);
 
   /* Radius */
   --r-sm:   8px;

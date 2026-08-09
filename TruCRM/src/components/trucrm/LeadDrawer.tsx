@@ -140,28 +140,28 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/70" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(10,20,32,0.40)]" onClick={onClose}>
       <div
-        className="w-full max-w-2xl bg-slate-900 border-l border-slate-800 h-full overflow-y-auto shadow-[0_40px_90px_-40px_rgba(0,0,0,0.95)]"
+        className="w-full max-w-2xl bg-white border-l border-[rgba(10,20,32,0.08)] h-full overflow-y-auto shadow-[0_40px_90px_-40px_rgba(0,0,0,0.95)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-slate-900/95 border-b border-slate-800 p-5 space-y-3">
+        <div className="sticky top-0 z-10 bg-white/95 border-b border-[rgba(10,20,32,0.08)] p-5 space-y-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[length:var(--t-micro)] font-mono text-slate-500">{lead.reference}</span>
+                <span className="text-[length:var(--t-micro)] font-mono text-[rgba(10,20,32,0.50)]">{lead.reference}</span>
                 <StageChip stage={lead.stage} />
                 <TempChip temp={lead.temperature} />
               </div>
-              <h2 className="text-xl font-semibold text-white truncate">{lead.customerName}</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <h2 className="text-xl font-semibold text-[#1A2332] truncate">{lead.customerName}</h2>
+              <p className="text-xs text-[#6B7685] mt-0.5">
                 {lead.vehicle.year} {lead.vehicle.make} {lead.vehicle.model}
                 {lead.vehicle.variant ? ` ${lead.vehicle.variant}` : ''} ·{' '}
-                <span className="text-slate-300 font-semibold">{money(lead.vehicle.askingPrice, cur)}</span>
+                <span className="text-[#334155] font-semibold">{money(lead.vehicle.askingPrice, cur)}</span>
               </p>
             </div>
-            <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-white bg-slate-800/60 rounded-lg shrink-0">
+            <button onClick={onClose} className="p-1.5 text-[#6B7685] hover:text-[#1A2332] bg-[#EFEDE8] rounded-lg shrink-0">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -207,8 +207,8 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
 
           {/* Vital signs */}
           <div className="grid grid-cols-4 gap-2 text-center">
-            <div className="bg-slate-950 border border-slate-800 rounded-xl py-2">
-              <span className="block text-[length:var(--t-micro)] text-slate-500">Speed to Lead</span>
+            <div className="bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl py-2">
+              <span className="block text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)]">Speed to Lead</span>
               <span
                 className={`text-sm font-medium ${
                   stl === null
@@ -221,18 +221,18 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                 {stl === null ? 'No reply' : stl < 60 ? `${stl}m` : `${Math.round(stl / 60)}h`}
               </span>
             </div>
-            <div className="bg-slate-950 border border-slate-800 rounded-xl py-2">
-              <span className="block text-[length:var(--t-micro)] text-slate-500">Last Contact</span>
-              <span className="text-sm font-medium text-slate-200">
+            <div className="bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl py-2">
+              <span className="block text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)]">Last Contact</span>
+              <span className="text-sm font-medium text-[#1A2332]">
                 {sinceContact === null ? 'Never' : `${sinceContact}d`}
               </span>
             </div>
-            <div className="bg-slate-950 border border-slate-800 rounded-xl py-2">
-              <span className="block text-[length:var(--t-micro)] text-slate-500">Source</span>
-              <span className="text-sm font-medium text-slate-200">{lead.source}</span>
+            <div className="bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl py-2">
+              <span className="block text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)]">Source</span>
+              <span className="text-sm font-medium text-[#1A2332]">{lead.source}</span>
             </div>
-            <div className="bg-slate-950 border border-slate-800 rounded-xl py-2">
-              <span className="block text-[length:var(--t-micro)] text-slate-500">Est. Gross</span>
+            <div className="bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl py-2">
+              <span className="block text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)]">Est. Gross</span>
               <span className={`text-sm font-medium ${gross >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {money(gross, cur)}
               </span>
@@ -251,7 +251,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                   moveLeadStage(lead.id, next);
                 }
               }}
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-cyan-500"
+              className="flex-1 bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl px-3 py-2 text-xs font-semibold text-[#1A2332] focus:outline-none focus:border-[#0E9D98]"
             >
               {LEAD_STAGES.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -263,7 +263,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
               type="date"
               value={lead.nextFollowUpDate || ''}
               onChange={(e) => setFollowUp(lead.id, e.target.value, lead.nextFollowUpNote)}
-              className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+              className="bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl px-3 py-2 text-xs text-[#1A2332] focus:outline-none focus:border-[#0E9D98]"
               title="Next follow-up date"
             />
           </div>
@@ -280,7 +280,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                       className={`px-2 py-1 rounded-lg text-[length:var(--t-micro)] font-semibold border ${
                         lostReason === r
                           ? 'bg-rose-800 text-white border-rose-600'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                          : 'bg-[#FAFAF8] text-[#6B7685] border-[rgba(10,20,32,0.08)] hover:text-[#1A2332]'
                       }`}
                     >
                       {r}
@@ -291,7 +291,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setShowLostPrompt(false)}
-                  className="px-3 py-1.5 text-[length:var(--t-micro)] text-slate-400 hover:text-slate-200"
+                  className="px-3 py-1.5 text-[length:var(--t-micro)] text-[#6B7685] hover:text-[#1A2332]"
                 >
                   Cancel
                 </button>
@@ -301,7 +301,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                     moveLeadStage(lead.id, 'lost', lostReason);
                     setShowLostPrompt(false);
                   }}
-                  className="px-3 py-1.5 bg-rose-600 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-lg text-[length:var(--t-micro)] font-medium"
+                  className="px-3 py-1.5 bg-rose-600 disabled:bg-[#EFEDE8] disabled:text-[rgba(10,20,32,0.50)] text-white rounded-lg text-[length:var(--t-micro)] font-medium"
                 >
                   Mark Lost
                 </button>
@@ -311,7 +311,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-3 border-b border-slate-800 bg-slate-950/50">
+        <div className="flex gap-1 p-3 border-b border-[rgba(10,20,32,0.08)] bg-[#FAFAF8]">
           {([
             { id: 'timeline', label: 'Timeline', icon: History },
             { id: 'deal', label: 'Deal Sheet', icon: Banknote },
@@ -323,7 +323,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
               key={id}
               onClick={() => setTab(id)}
               className={`flex-1 py-2 rounded-xl text-[length:var(--t-micro)] font-medium flex items-center justify-center gap-1.5 transition-all ${
-                tab === id ? 'bg-white text-black' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                tab === id ? 'bg-white text-black' : 'text-[#6B7685] hover:text-[#1A2332] hover:bg-white'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -337,8 +337,8 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
           {tab === 'timeline' && (
             <>
               {/* Log a touch */}
-              <div className="p-4 bg-slate-950 border border-slate-800 rounded-[18px] space-y-3">
-                <h4 className="text-[length:var(--t-micro)] font-medium text-slate-400">Log a touch</h4>
+              <div className="p-4 bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-[18px] space-y-3">
+                <h4 className="text-[length:var(--t-micro)] font-medium text-[#6B7685]">Log a touch</h4>
                 <div className="grid grid-cols-4 gap-1.5">
                   {([
                     { id: 'call', label: 'Call', icon: Phone },
@@ -351,8 +351,8 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                       onClick={() => setLogChannel(id)}
                       className={`py-2 rounded-xl text-[length:var(--t-micro)] font-medium flex flex-col items-center gap-1 border transition-all ${
                         logChannel === id
-                          ? 'bg-slate-800 border-cyan-500 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+                          ? 'bg-[#EFEDE8] border-[#0E9D98] text-[#1A2332]'
+                          : 'bg-[#FAFAF8] border-[rgba(10,20,32,0.08)] text-[#6B7685] hover:text-[#1A2332]'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -394,7 +394,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                 <button
                   onClick={handleLog}
                   disabled={logChannel === 'note' && !logBody.trim()}
-                  className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl text-[length:var(--t-micro)] font-medium"
+                  className="w-full py-2 bg-[#0E9D98] hover:bg-[#14B8A6] disabled:bg-[#EFEDE8] disabled:text-[rgba(10,20,32,0.50)] text-white rounded-xl text-[length:var(--t-micro)] font-medium"
                 >
                   Save to timeline
                   {logChannel !== 'note' && ' & set next follow-up'}
@@ -404,18 +404,18 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
               {/* Appointments */}
               {appts.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-[length:var(--t-micro)] font-medium text-slate-400">Appointments</h4>
+                  <h4 className="text-[length:var(--t-micro)] font-medium text-[#6B7685]">Appointments</h4>
                   {appts.map((a) => (
                     <div
                       key={a.id}
-                      className="p-3 bg-indigo-950/30 border border-indigo-900/60 rounded-xl flex items-center justify-between"
+                      className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between"
                     >
                       <div>
-                        <p className="text-xs font-medium text-white">{a.type}</p>
-                        <p className="text-[length:var(--t-micro)] text-slate-400">{when(a.at)} · {a.durationMinutes} min</p>
-                        {a.notes && <p className="text-[length:var(--t-micro)] text-slate-500 mt-1">{a.notes}</p>}
+                        <p className="text-xs font-medium text-[#1A2332]">{a.type}</p>
+                        <p className="text-[length:var(--t-micro)] text-[#6B7685]">{when(a.at)} · {a.durationMinutes} min</p>
+                        {a.notes && <p className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)] mt-1">{a.notes}</p>}
                       </div>
-                      <span className="text-[length:var(--t-micro)] font-medium px-2 py-1 rounded-md bg-slate-950 border border-slate-800 text-indigo-300">
+                      <span className="text-[length:var(--t-micro)] font-medium px-2 py-1 rounded-md bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] text-indigo-600">
                         {a.status}
                       </span>
                     </div>
@@ -425,12 +425,12 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
 
               {/* Activity feed */}
               <div className="space-y-2">
-                <h4 className="text-[length:var(--t-micro)] font-medium text-slate-400">
+                <h4 className="text-[length:var(--t-micro)] font-medium text-[#6B7685]">
                   Activity ({timeline.length})
                 </h4>
                 {timeline.length === 0 && (
-                  <div className="p-6 text-center border-2 border-dashed border-slate-800 rounded-xl">
-                    <p className="text-xs text-slate-500">
+                  <div className="p-6 text-center border-2 border-dashed border-[rgba(10,20,32,0.08)] rounded-xl">
+                    <p className="text-xs text-[rgba(10,20,32,0.50)]">
                       Nothing logged yet. This lead has never been worked.
                     </p>
                   </div>
@@ -438,22 +438,22 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                 {timeline.map((a) => (
                   <div key={a.id} className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className="w-2 h-2 rounded-full bg-cyan-500 mt-1.5 shrink-0" />
-                      <div className="flex-1 w-px bg-slate-800" />
+                      <div className="w-2 h-2 rounded-full bg-[#0E9D98] mt-1.5 shrink-0" />
+                      <div className="flex-1 w-px bg-[#EFEDE8]" />
                     </div>
                     <div className="pb-3 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-xs font-medium text-slate-100">{a.summary}</p>
+                        <p className="text-xs font-medium text-[#1A2332]">{a.summary}</p>
                         {a.isFirstResponse && (
-                          <span className="text-[length:var(--t-micro)] font-medium px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-400 border border-emerald-800/60">
+                          <span className="text-[length:var(--t-micro)] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-400 border border-emerald-200">
                             FIRST RESPONSE
                           </span>
                         )}
                         {a.durationMinutes ? (
-                          <span className="text-[length:var(--t-micro)] text-slate-500">{a.durationMinutes} min</span>
+                          <span className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)]">{a.durationMinutes} min</span>
                         ) : null}
                       </div>
-                      {a.body && <p className="text-[length:var(--t-micro)] text-slate-400 mt-0.5 whitespace-pre-line">{a.body}</p>}
+                      {a.body && <p className="text-[length:var(--t-micro)] text-[#6B7685] mt-0.5 whitespace-pre-line">{a.body}</p>}
                       <p className="text-[length:var(--t-micro)] text-slate-600 mt-0.5">
                         {when(a.at)} · {a.by}
                       </p>
@@ -491,27 +491,27 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                 ))}
               </div>
 
-              <div className="p-4 bg-slate-950 border border-slate-800 rounded-[18px] space-y-2.5">
+              <div className="p-4 bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-[18px] space-y-2.5">
                 {[
                   ['Front gross', frontGross(lead.dealSheet, lead.tradeIn.appraisedValue)],
                   ['Back gross (F&I)', backGross(lead.dealSheet)],
                 ].map(([label, val]) => (
                   <div key={label as string} className="flex justify-between text-xs">
-                    <span className="text-slate-400">{label}</span>
-                    <span className={`font-medium ${(val as number) >= 0 ? 'text-slate-100' : 'text-rose-400'}`}>
+                    <span className="text-[#6B7685]">{label}</span>
+                    <span className={`font-medium ${(val as number) >= 0 ? 'text-[#1A2332]' : 'text-rose-400'}`}>
                       {money(val as number, cur)}
                     </span>
                   </div>
                 ))}
-                <div className="flex justify-between text-sm pt-2.5 border-t border-slate-800">
-                  <span className="font-medium text-white">Total gross</span>
+                <div className="flex justify-between text-sm pt-2.5 border-t border-[rgba(10,20,32,0.08)]">
+                  <span className="font-medium text-[#1A2332]">Total gross</span>
                   <span className={`font-semibold ${gross >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {money(gross, cur)}
                   </span>
                 </div>
-                <div className="flex justify-between text-xs pt-2.5 border-t border-slate-800">
-                  <span className="text-slate-400">Balance to finance</span>
-                  <span className="font-medium text-cyan-400">{money(balanceToFinance(lead.dealSheet), cur)}</span>
+                <div className="flex justify-between text-xs pt-2.5 border-t border-[rgba(10,20,32,0.08)]">
+                  <span className="text-[#6B7685]">Balance to finance</span>
+                  <span className="font-medium text-[#0E9D98]">{money(balanceToFinance(lead.dealSheet), cur)}</span>
                 </div>
               </div>
 
@@ -642,18 +642,18 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
 
                   {lead.tradeIn.customerExpectation !== undefined &&
                     lead.tradeIn.appraisedValue !== undefined && (
-                      <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex justify-between text-xs">
-                        <span className="text-slate-400">Expectation gap</span>
+                      <div className="p-3 bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl flex justify-between text-xs">
+                        <span className="text-[#6B7685]">Expectation gap</span>
                         <span className="font-medium text-amber-400">
                           {money(lead.tradeIn.customerExpectation - lead.tradeIn.appraisedValue, cur)} to bridge
                         </span>
                       </div>
                     )}
 
-                  <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
+                  <div className="p-3 bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-xl flex items-center justify-between">
                     <div>
-                      <p className="text-[length:var(--t-micro)] font-medium text-white">TruValue appraisal</p>
-                      <p className="text-[length:var(--t-micro)] text-slate-500">
+                      <p className="text-[length:var(--t-micro)] font-medium text-[#1A2332]">TruValue appraisal</p>
+                      <p className="text-[length:var(--t-micro)] text-[rgba(10,20,32,0.50)]">
                         {lead.tradeIn.truValueRef ? `Linked: ${lead.tradeIn.truValueRef}` : 'No appraisal linked yet'}
                       </p>
                     </div>
@@ -667,7 +667,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                           },
                         })
                       }
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[length:var(--t-micro)] font-medium flex items-center gap-1.5"
+                      className="px-3 py-1.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#1A2332] rounded-lg text-[length:var(--t-micro)] font-medium flex items-center gap-1.5"
                     >
                       <ExternalLink className="w-3 h-3" />
                       {lead.tradeIn.truValueRef ? 'Open' : 'Start appraisal'}
@@ -764,9 +764,9 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                 />
               </div>
 
-              <div className="p-4 bg-slate-950 border border-slate-800 rounded-[18px] space-y-2">
+              <div className="p-4 bg-[#FAFAF8] border border-[rgba(10,20,32,0.08)] rounded-[18px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-[length:var(--t-micro)] font-medium text-slate-400">
+                  <h4 className="text-[length:var(--t-micro)] font-medium text-[#6B7685]">
                     Outstanding FICA / affordability docs
                   </h4>
                   <FinanceChip status={lead.finance.status} />
@@ -788,7 +788,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                         }}
                         className="w-full flex items-center justify-between py-1.5 text-xs group"
                       >
-                        <span className={outstanding ? 'text-amber-300' : 'text-slate-500 line-through'}>{doc}</span>
+                        <span className={outstanding ? 'text-amber-300' : 'text-[rgba(10,20,32,0.50)] line-through'}>{doc}</span>
                         {outstanding ? (
                           <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                         ) : (
@@ -842,8 +842,8 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                 </div>
 
                 {/* What-if: the three levers a salesperson actually pulls. */}
-                <div className="pt-2 border-t border-slate-800 space-y-1.5">
-                  <span className="text-[length:var(--t-micro)] font-medium text-slate-500">
+                <div className="pt-2 border-t border-[rgba(10,20,32,0.08)] space-y-1.5">
+                  <span className="text-[length:var(--t-micro)] font-medium text-[rgba(10,20,32,0.50)]">
                     What if…
                   </span>
                   {[
@@ -869,8 +869,8 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
                     const delta = alt - base;
                     return (
                       <div key={scenario.label} className="flex justify-between text-[length:var(--t-micro)]">
-                        <span className="text-slate-400">{scenario.label}</span>
-                        <span className="font-medium text-slate-200">
+                        <span className="text-[#6B7685]">{scenario.label}</span>
+                        <span className="font-medium text-[#1A2332]">
                           {money(alt, cur)}
                           <span className={delta < 0 ? 'text-emerald-400 ml-1.5' : 'text-amber-400 ml-1.5'}>
                             {delta < 0 ? '' : '+'}
@@ -903,14 +903,14 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
           )}
 
           {/* Footer */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+          <div className="pt-4 border-t border-[rgba(10,20,32,0.08)] flex items-center justify-between">
             <div className="text-[length:var(--t-micro)] text-slate-600">
-              Assigned to <span className="text-slate-400 font-semibold">{salespersonName(lead.salespersonId)}</span> ·
+              Assigned to <span className="text-[#6B7685] font-semibold">{salespersonName(lead.salespersonId)}</span> ·
               created {ago(lead.createdAt)}
             </div>
             {confirmDelete ? (
               <div className="flex items-center gap-2">
-                <button onClick={() => setConfirmDelete(false)} className="text-[length:var(--t-micro)] text-slate-400 px-2">
+                <button onClick={() => setConfirmDelete(false)} className="text-[length:var(--t-micro)] text-[#6B7685] px-2">
                   Cancel
                 </button>
                 <button
@@ -926,7 +926,7 @@ export const LeadDrawer: React.FC<{ lead: Lead; onClose: () => void }> = ({ lead
             ) : (
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="p-2 text-slate-500 hover:text-rose-400 rounded-lg"
+                className="p-2 text-[rgba(10,20,32,0.50)] hover:text-rose-400 rounded-lg"
                 title="Delete lead"
               >
                 <Trash2 className="w-4 h-4" />

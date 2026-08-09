@@ -24,12 +24,12 @@ export const CommunicationBar: React.FC<CommunicationBarProps> = ({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 w-fit"
+      className="flex items-center gap-1 bg-[#EFEDE8] p-1 rounded-xl border border-[rgba(10,20,32,0.08)] w-fit"
     >
       <button
         type="button"
         onClick={onCall}
-        className={`${padding} text-cyan-400 hover:text-white hover:bg-cyan-600/80 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px]`}
+        className={`${padding} text-[#0E9D98] hover:text-white hover:bg-[#0E9D98] rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px]`}
         title="Start Call / Log Phone Call"
       >
         <Phone className={iconSize} />
@@ -39,7 +39,7 @@ export const CommunicationBar: React.FC<CommunicationBarProps> = ({
       <button
         type="button"
         onClick={onEmail}
-        className={`${padding} text-blue-400 hover:text-white hover:bg-blue-600/80 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px]`}
+        className={`${padding} text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px]`}
         title="Send Direct Email"
       >
         <Mail className={iconSize} />
@@ -49,7 +49,7 @@ export const CommunicationBar: React.FC<CommunicationBarProps> = ({
       <button
         type="button"
         onClick={onWhatsApp}
-        className={`${padding} text-emerald-400 hover:text-white hover:bg-emerald-600/80 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px]`}
+        className={`${padding} text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px]`}
         title="Open WhatsApp Chat"
       >
         <MessageCircle className={iconSize} />

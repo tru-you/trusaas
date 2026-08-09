@@ -11,9 +11,11 @@ import {
   Car,
   Radar,
   Puzzle,
+  Download,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTruCrm } from '../../context/TruCrmContext';
+import { usePwaInstall } from '../../hooks/usePwaInstall';
 import tsMark from '../../assets/brand/ts-mark.png';
 import wordmark from '../../assets/brand/trusaas-wordmark.png';
 
@@ -32,6 +34,7 @@ export const Sidebar: React.FC = () => {
   const summary = getFinancialSummary();
   const scheme = profile.colorScheme || 'cyan';
   const tsMarkSrc = useRemoveBg(tsMark, 'light', 15);
+  const { canInstall, install } = usePwaInstall();
 
   // Active is a cyan hairline against a faint wash — not a white slab, and not
   // a glow. The sidebar sits *under* the content, so it stays darker than ink.
@@ -119,11 +122,11 @@ export const Sidebar: React.FC = () => {
   const allGroups = [...navGroups, { heading: 'Business operations', items: businessItems }];
 
   return (
-    <aside className="w-64 bg-[#03050A] text-[color:var(--white-dim)] flex flex-col h-screen sticky top-0 shrink-0 border-r border-zinc-800 select-none">
+    <aside className="w-64 bg-white text-[color:var(--white-dim)] flex flex-col h-screen sticky top-0 shrink-0 border-r border-[rgba(10,20,32,0.08)] select-none">
       {/* App Branding Header with Logo */}
-      <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+      <div className="p-4 border-b border-[rgba(10,20,32,0.08)] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl overflow-hidden shadow-lg ring-1 bg-zinc-900 flex items-center justify-center shrink-0 ${logoRingClass}`}>
+          <div className={`w-10 h-10 rounded-xl overflow-hidden shadow-sm ring-1 bg-[#F5F4F1] flex items-center justify-center shrink-0 ${logoRingClass}`}>
             <img
               src={tsMarkSrc}
               alt="TruSaaS Badge"
@@ -140,7 +143,7 @@ export const Sidebar: React.FC = () => {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <p className="text-[11px] text-zinc-400 truncate mt-0.5">Personal CRM & operations</p>
+            <p className="text-[11px] text-[rgba(10,20,32,0.45)] truncate mt-0.5">Personal CRM & operations</p>
           </div>
         </div>
       </div>
@@ -178,7 +181,7 @@ export const Sidebar: React.FC = () => {
                   {item.badge && (
                     <span
                       className={`px-2 py-0.5 rounded-[100px] text-[length:var(--t-micro)] shrink-0 ${
-                        item.badgeColor || 'bg-zinc-800 text-zinc-300'
+                        item.badgeColor || 'bg-[#EFEDE8] text-[#6B7685]'
                       }`}
                     >
                       {item.badge}
@@ -191,31 +194,43 @@ export const Sidebar: React.FC = () => {
         ))}
       </nav>
 
+      {canInstall && (
+        <div className="px-4 pt-3">
+          <button
+            onClick={install}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-[#0E9D98] bg-[rgba(14,157,152,0.06)] border border-[rgba(14,157,152,0.15)] hover:bg-[rgba(14,157,152,0.10)] transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Download to Desktop
+          </button>
+        </div>
+      )}
+
       {/* Bottom Live Metric Ticker Card */}
-      <div className="p-4 border-t border-zinc-800 bg-black">
-        <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-800 space-y-2">
+      <div className="p-4 border-t border-[rgba(10,20,32,0.08)] bg-[#FAFAF8]">
+        <div className="p-3 bg-white rounded-xl border border-[rgba(10,20,32,0.08)] shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-zinc-400 font-medium flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="text-[rgba(10,20,32,0.50)] font-medium flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5 text-[#0E9D98]" />
               Sales run-rate
             </span>
-            <span className="text-white font-bold">{profile.currency}{summary.arr.toLocaleString()}</span>
+            <span className="text-[#1A2332] font-bold">{profile.currency}{summary.arr.toLocaleString()}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-zinc-400 font-medium">Pipeline value</span>
-            <span className="text-zinc-200 font-semibold">{profile.currency}{summary.pipelineValue.toLocaleString()}</span>
+            <span className="text-[rgba(10,20,32,0.50)] font-medium">Pipeline value</span>
+            <span className="text-[#1A2332] font-semibold">{profile.currency}{summary.pipelineValue.toLocaleString()}</span>
           </div>
-          <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-1">
-            <div className="bg-white h-full w-[72%]" />
+          <div className="w-full bg-[#EFEDE8] h-1.5 rounded-full overflow-hidden mt-1">
+            <div className="bg-[#0E9D98] h-full w-[72%]" />
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between text-[11px] text-zinc-400 px-1">
+        <div className="mt-3 flex items-center justify-between text-[11px] text-[rgba(10,20,32,0.45)] px-1">
           <span className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+            <ShieldCheck className="w-3.5 h-3.5 text-[#0E9D98]" />
             Auto-Sync Active
           </span>
-          <span className="text-zinc-400 hover:text-zinc-200 cursor-pointer" onClick={() => setActiveView('settings')}>
+          <span className="text-[rgba(10,20,32,0.45)] hover:text-[#1A2332] cursor-pointer" onClick={() => setActiveView('settings')}>
             v2.5 Pro
           </span>
         </div>

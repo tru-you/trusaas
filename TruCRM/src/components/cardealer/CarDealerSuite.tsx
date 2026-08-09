@@ -98,7 +98,7 @@ const SortableDealerCard: React.FC<SortableDealerCardProps> = ({
       <div
         ref={setNodeRef}
         style={style}
-        className="h-[140px] bg-slate-950/50 border-2 border-dashed border-slate-800 rounded-xl"
+        className="h-[140px] bg-[#EFEDE8]/50 border-2 border-dashed border-[rgba(10,20,32,0.08)] rounded-xl"
       />
     );
   }
@@ -107,7 +107,7 @@ const SortableDealerCard: React.FC<SortableDealerCardProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg hover:border-slate-700 transition-all cursor-default ${
+      className={`group bg-white border border-[rgba(10,20,32,0.08)] rounded-xl p-4 shadow-lg hover:border-[rgba(10,20,32,0.10)] transition-all cursor-default ${
         isOverlay ? 'shadow-2xl shadow-cyan-600/30 ring-2 ring-cyan-500' : ''
       }`}
     >
@@ -116,22 +116,22 @@ const SortableDealerCard: React.FC<SortableDealerCardProps> = ({
           <button
             {...attributes}
             {...listeners}
-            className="p-1 -ml-1 text-slate-700 hover:text-slate-400 cursor-grab active:cursor-grabbing transition-colors"
+            className="p-1 -ml-1 text-[rgba(10,20,32,0.60)] hover:text-[#6B7685] cursor-grab active:cursor-grabbing transition-colors"
           >
             <GripVertical className="w-3.5 h-3.5" />
           </button>
-          <h4 className="text-xs font-bold text-white line-clamp-1">{dealer.name}</h4>
+          <h4 className="text-xs font-bold text-[#1A2332] line-clamp-1">{dealer.name}</h4>
         </div>
         <button
           onClick={() => onIntelOpen(dealer)}
-          className="p-1 text-slate-500 hover:text-cyan-400 transition-colors"
+          className="p-1 text-[rgba(10,20,32,0.50)] hover:text-[#0E9D98] transition-colors"
         >
           <Sparkles className="w-3.5 h-3.5" />
         </button>
       </div>
       
       <div className="flex items-center gap-2 mb-3 ml-4.5 pl-1">
-        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded border border-slate-700">
+        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#EFEDE8] text-[#6B7685] rounded border border-[rgba(10,20,32,0.10)]">
           {dealer.inventoryCount} Units
         </span>
         <span className="text-[10px] font-bold text-emerald-400">
@@ -139,7 +139,7 @@ const SortableDealerCard: React.FC<SortableDealerCardProps> = ({
         </span>
       </div>
 
-      <div className="flex items-center justify-between pt-3 border-t border-slate-800/50 ml-4.5 pl-1">
+      <div className="flex items-center justify-between pt-3 border-t border-[rgba(10,20,32,0.08)]/50 ml-4.5 pl-1">
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onCommOpen({
@@ -148,7 +148,7 @@ const SortableDealerCard: React.FC<SortableDealerCardProps> = ({
               email: dealer.email,
               phone: dealer.phone
             }, 'call')}
-            className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
+            className="p-1.5 bg-[#EFEDE8] text-[#6B7685] hover:text-[#1A2332] rounded-lg transition-colors"
           >
             <Phone className="w-3.5 h-3.5" />
           </button>
@@ -159,14 +159,14 @@ const SortableDealerCard: React.FC<SortableDealerCardProps> = ({
               email: dealer.email,
               phone: dealer.phone
             }, 'email')}
-            className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
+            className="p-1.5 bg-[#EFEDE8] text-[#6B7685] hover:text-[#1A2332] rounded-lg transition-colors"
           >
             <Mail className="w-3.5 h-3.5" />
           </button>
         </div>
 
         <div className="flex items-center gap-1">
-          <span className="text-[10px] text-slate-500 font-medium italic">
+          <span className="text-[10px] text-[rgba(10,20,32,0.50)] font-medium italic">
             Drag to move
           </span>
         </div>
@@ -385,17 +385,17 @@ export const CarDealerSuite: React.FC = () => {
     >
       <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto animate-fadeIn">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-black p-6 rounded-2xl border border-zinc-800 shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#F5F4F1] p-6 rounded-2xl border border-[rgba(10,20,32,0.08)] shadow-xl">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 bg-zinc-900 text-cyan-400 border border-zinc-700 rounded-xl shadow-lg">
-              <Car className="w-6 h-6 text-cyan-400" />
+            <div className="p-2.5 bg-white text-[#0E9D98] border border-[rgba(10,20,32,0.10)] rounded-xl shadow-lg">
+              <Car className="w-6 h-6 text-[#0E9D98]" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white tracking-tight">
+              <h1 className="text-2xl font-black text-[#1A2332] tracking-tight">
                 Competitor Classifieds — Market Intel
               </h1>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-[#6B7685] mt-0.5">
                 Assess rival dealers in your area: who is advertising what, at what price, on which platform. Market
                 analysis only — your own leads and deals live in TruCRM.
               </p>
@@ -406,21 +406,21 @@ export const CarDealerSuite: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowScraper(true)}
-            className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold rounded-xl text-xs border border-zinc-700 flex items-center gap-2 shadow-md transition-all"
+            className="px-4 py-2.5 bg-white hover:bg-[#F5F4F1] text-[#1A2332] font-bold rounded-xl text-xs border border-[rgba(10,20,32,0.10)] flex items-center gap-2 shadow-md transition-all"
           >
-            <Globe className="w-4 h-4 text-cyan-400" />
+            <Globe className="w-4 h-4 text-[#0E9D98]" />
             <span>Scrape a website</span>
           </button>
           <button
             onClick={() => setShowProspectFinder(true)}
-            className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-bold rounded-xl text-xs border border-zinc-700 flex items-center gap-2 shadow-md transition-all"
+            className="px-4 py-2.5 bg-white hover:bg-[#F5F4F1] text-[#1A2332] font-bold rounded-xl text-xs border border-[rgba(10,20,32,0.10)] flex items-center gap-2 shadow-md transition-all"
           >
-            <Search className="w-4 h-4 text-cyan-400" />
+            <Search className="w-4 h-4 text-[#0E9D98]" />
             <span>Find more competitors</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2.5 bg-white text-black hover:bg-zinc-200 font-bold rounded-xl text-xs shadow-md flex items-center gap-2 transition-all"
+            className="px-4 py-2.5 bg-white text-black hover:bg-[#F5F4F1] font-bold rounded-xl text-xs shadow-md flex items-center gap-2 transition-all"
           >
             <Plus className="w-4 h-4 text-cyan-600" />
             <span>Index New Dealership</span>
@@ -430,39 +430,39 @@ export const CarDealerSuite: React.FC = () => {
 
       {/* Metrics Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="p-4 bg-black rounded-xl border border-zinc-800 shadow-xl flex items-center justify-between">
+        <div className="p-4 bg-[#F5F4F1] rounded-xl border border-[rgba(10,20,32,0.08)] shadow-xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Competitors tracked</span>
-            <div className="text-2xl font-black text-white mt-1">{dealerships.length} Active</div>
+            <span className="text-xs font-semibold text-[#6B7685] uppercase tracking-wider">Competitors tracked</span>
+            <div className="text-2xl font-black text-[#1A2332] mt-1">{dealerships.length} Active</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-cyan-400 border border-zinc-700 flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-cyan-400" />
+          <div className="w-10 h-10 rounded-xl bg-white text-[#0E9D98] border border-[rgba(10,20,32,0.10)] flex items-center justify-center">
+            <Building2 className="w-5 h-5 text-[#0E9D98]" />
           </div>
         </div>
 
-        <div className="p-4 bg-black rounded-xl border border-zinc-800 shadow-xl flex items-center justify-between">
+        <div className="p-4 bg-[#F5F4F1] rounded-xl border border-[rgba(10,20,32,0.08)] shadow-xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Their stock on sale</span>
-            <div className="text-2xl font-black text-white mt-1">{totalInventory.toLocaleString()} Units</div>
+            <span className="text-xs font-semibold text-[#6B7685] uppercase tracking-wider">Their stock on sale</span>
+            <div className="text-2xl font-black text-[#1A2332] mt-1">{totalInventory.toLocaleString()} Units</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-cyan-400 border border-zinc-700 flex items-center justify-center">
-            <Car className="w-5 h-5 text-cyan-400" />
+          <div className="w-10 h-10 rounded-xl bg-white text-[#0E9D98] border border-[rgba(10,20,32,0.10)] flex items-center justify-center">
+            <Car className="w-5 h-5 text-[#0E9D98]" />
           </div>
         </div>
 
-        <div className="p-4 bg-black rounded-xl border border-zinc-800 shadow-xl flex items-center justify-between">
+        <div className="p-4 bg-[#F5F4F1] rounded-xl border border-[rgba(10,20,32,0.08)] shadow-xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Est. their ad spend</span>
-            <div className="text-2xl font-black text-zinc-200 mt-1">R{totalAdSpend.toLocaleString()}</div>
+            <span className="text-xs font-semibold text-[#6B7685] uppercase tracking-wider">Est. their ad spend</span>
+            <div className="text-2xl font-black text-[#1A2332] mt-1">R{totalAdSpend.toLocaleString()}</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-cyan-400 border border-zinc-700 flex items-center justify-center">
-            <DollarSign className="w-5 h-5 text-cyan-400" />
+          <div className="w-10 h-10 rounded-xl bg-white text-[#0E9D98] border border-[rgba(10,20,32,0.10)] flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-[#0E9D98]" />
           </div>
         </div>
 
-        <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-800 shadow-xl flex items-center justify-between">
+        <div className="p-4 bg-white/80 rounded-xl border border-[rgba(10,20,32,0.08)] shadow-xl flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Classified Sources</span>
+            <span className="text-xs font-semibold text-[#6B7685] uppercase tracking-wider">Classified Sources</span>
             <div className="text-2xl font-black text-amber-400 mt-1">4 Platforms</div>
           </div>
           <div className="w-10 h-10 rounded-xl bg-amber-950 text-amber-400 border border-amber-800 flex items-center justify-center">
@@ -493,7 +493,7 @@ export const CarDealerSuite: React.FC = () => {
                 className={`px-4 py-2 rounded-xl text-[11px] font-bold transition-all border ${
                   activeSourceFilter === tab.id
                     ? 'bg-white text-black border-white'
-                    : 'bg-white/5 text-white/40 hover:text-white/60 border-white/5'
+                    : 'bg-[rgba(10,20,32,0.03)] text-[#6B7685] hover:text-[#1A2332]/60 border-[rgba(10,20,32,0.08)]'
                 }`}
               >
                 {tab.label}
@@ -504,13 +504,13 @@ export const CarDealerSuite: React.FC = () => {
           {/* Search Input & Sort Toggle */}
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
             {/* View Toggle */}
-            <div className="flex items-center bg-white/5 border border-white/5 rounded-2xl p-1 w-full sm:w-auto">
+            <div className="flex items-center bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl p-1 w-full sm:w-auto">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-[11px] font-bold transition-all flex items-center gap-2 justify-center ${
                   viewMode === 'grid'
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/30 hover:text-white/50'
+                    ? 'bg-[rgba(10,20,32,0.05)] text-[#1A2332]'
+                    : 'text-[rgba(10,20,32,0.30)] hover:text-[#1A2332]/50'
                 }`}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
@@ -520,8 +520,8 @@ export const CarDealerSuite: React.FC = () => {
                 onClick={() => setViewMode('kanban')}
                 className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-[11px] font-bold transition-all flex items-center gap-2 justify-center ${
                   viewMode === 'kanban'
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/30 hover:text-white/50'
+                    ? 'bg-[rgba(10,20,32,0.05)] text-[#1A2332]'
+                    : 'text-[rgba(10,20,32,0.30)] hover:text-[#1A2332]/50'
                 }`}
               >
                 <Columns className="w-3.5 h-3.5" />
@@ -530,13 +530,13 @@ export const CarDealerSuite: React.FC = () => {
             </div>
 
             <div className="relative w-full sm:min-w-[300px]">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[rgba(10,20,32,0.20)]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search network assets..."
-                className="w-full bg-white/5 border border-white/5 rounded-2xl pl-10 pr-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl pl-10 pr-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
               />
             </div>
           </div>
@@ -556,22 +556,22 @@ export const CarDealerSuite: React.FC = () => {
             {filteredDealers.map((dealer) => (
               <div
                 key={dealer.id}
-                className="bg-[#0a0a0a] rounded-3xl border border-white/5 overflow-hidden flex flex-col transition-all hover:border-white/10"
+                className="bg-[#FAFAF8] rounded-3xl border border-[rgba(10,20,32,0.08)] overflow-hidden flex flex-col transition-all hover:border-[rgba(10,20,32,0.10)]"
               >
                 {/* Card Header */}
                 <div className="p-8 space-y-8">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{dealer.source}</span>
-                        <span className="w-1 h-1 rounded-full bg-white/10" />
-                        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{dealer.location}</span>
+                        <span className="text-[10px] font-black text-[rgba(10,20,32,0.20)] uppercase tracking-[0.2em]">{dealer.source}</span>
+                        <span className="w-1 h-1 rounded-full bg-[rgba(10,20,32,0.05)]" />
+                        <span className="text-[10px] font-black text-[rgba(10,20,32,0.20)] uppercase tracking-[0.2em]">{dealer.location}</span>
                       </div>
-                      <h3 className="text-xl font-black text-white leading-tight tracking-tight">{dealer.name}</h3>
+                      <h3 className="text-xl font-black text-[#1A2332] leading-tight tracking-tight">{dealer.name}</h3>
                     </div>
                     <button
                       onClick={() => handleDeleteDealer(dealer.id)}
-                      className="p-2 text-white/10 hover:text-white/30 transition-colors"
+                      className="p-2 text-[rgba(10,20,32,0.10)] hover:text-[rgba(10,20,32,0.30)] transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -579,26 +579,26 @@ export const CarDealerSuite: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.1em]">Inventory</span>
-                      <div className="text-base font-medium text-white/80">{dealer.inventoryCount} units</div>
+                      <span className="text-[10px] font-black text-[rgba(10,20,32,0.20)] uppercase tracking-[0.1em]">Inventory</span>
+                      <div className="text-base font-medium text-[#1A2332]/80">{dealer.inventoryCount} units</div>
                     </div>
                     <div className="space-y-2">
-                      <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.1em]">Avg Price</span>
+                      <span className="text-[10px] font-black text-[rgba(10,20,32,0.20)] uppercase tracking-[0.1em]">Avg Price</span>
                       <div className="text-base font-medium text-cyan-500/80">${(dealer.avgVehiclePrice / 1000).toFixed(0)}k</div>
                     </div>
                   </div>
 
-                  <div className="pt-8 border-t border-white/5 flex items-center justify-between">
+                  <div className="pt-8 border-t border-[rgba(10,20,32,0.08)] flex items-center justify-between">
                     <div className="flex items-center gap-6">
                       <button 
                         onClick={() => { setIntelDealer(dealer); setIsIntelOpen(true); }}
-                        className="text-[11px] font-black text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+                        className="text-[11px] font-black text-[#6B7685] hover:text-[#1A2332] transition-colors uppercase tracking-widest"
                       >
                         Briefing
                       </button>
                       <button 
                          onClick={() => handleConvertToCrmDeal(dealer)}
-                         className="text-[11px] font-black text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+                         className="text-[11px] font-black text-[#6B7685] hover:text-[#1A2332] transition-colors uppercase tracking-widest"
                       >
                         Capture
                       </button>
@@ -612,7 +612,7 @@ export const CarDealerSuite: React.FC = () => {
                           email: dealer.email,
                           phone: dealer.phone
                         }, 'call')}
-                        className="p-2 bg-white/5 text-white/30 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                        className="p-2 bg-[rgba(10,20,32,0.03)] text-[rgba(10,20,32,0.30)] hover:text-[#1A2332] hover:bg-[rgba(10,20,32,0.05)] rounded-xl transition-all"
                       >
                         <Phone className="w-3.5 h-3.5" />
                       </button>
@@ -623,7 +623,7 @@ export const CarDealerSuite: React.FC = () => {
                           email: dealer.email,
                           phone: dealer.phone
                         }, 'email')}
-                        className="p-2 bg-white/5 text-white/30 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                        className="p-2 bg-[rgba(10,20,32,0.03)] text-[rgba(10,20,32,0.30)] hover:text-[#1A2332] hover:bg-[rgba(10,20,32,0.05)] rounded-xl transition-all"
                       >
                         <Mail className="w-3.5 h-3.5" />
                       </button>
@@ -634,8 +634,8 @@ export const CarDealerSuite: React.FC = () => {
             ))}
 
             {filteredDealers.length === 0 && (
-              <div className="col-span-full py-24 text-center border border-dashed border-white/5 rounded-3xl">
-                <p className="text-sm font-medium text-white/20 uppercase tracking-widest">No matching network assets</p>
+              <div className="col-span-full py-24 text-center border border-dashed border-[rgba(10,20,32,0.08)] rounded-3xl">
+                <p className="text-sm font-medium text-[rgba(10,20,32,0.20)] uppercase tracking-widest">No matching network assets</p>
               </div>
             )}
           </motion.div>
@@ -659,10 +659,10 @@ export const CarDealerSuite: React.FC = () => {
                 <div key={column.id} className="flex-shrink-0 w-80 flex flex-col gap-6">
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                      <h3 className="text-[11px] font-black text-white/40 uppercase tracking-[0.2em]">{column.label}</h3>
+                      <div className="w-1.5 h-1.5 rounded-full bg-[rgba(10,20,32,0.20)]" />
+                      <h3 className="text-[11px] font-black text-[#6B7685] uppercase tracking-[0.2em]">{column.label}</h3>
                     </div>
-                    <span className="text-[11px] font-medium text-white/20">
+                    <span className="text-[11px] font-medium text-[rgba(10,20,32,0.20)]">
                       {dealersInColumn.length}
                     </span>
                   </div>
@@ -673,7 +673,7 @@ export const CarDealerSuite: React.FC = () => {
                     strategy={verticalListSortingStrategy}
                   >
                     <div 
-                      className="flex-1 space-y-4 min-h-[500px] p-2 bg-white/[0.02] rounded-3xl border border-white/5"
+                      className="flex-1 space-y-4 min-h-[500px] p-2 bg-[rgba(10,20,32,0.02)] rounded-3xl border border-[rgba(10,20,32,0.08)]"
                     >
                       {dealersInColumn.map((dealer) => (
                         <SortableDealerCard
@@ -688,8 +688,8 @@ export const CarDealerSuite: React.FC = () => {
                         />
                       ))}
                       {dealersInColumn.length === 0 && (
-                        <div className="h-32 flex items-center justify-center border border-dashed border-white/5 rounded-2xl">
-                          <span className="text-[10px] font-black text-white/10 uppercase tracking-widest italic">Empty</span>
+                        <div className="h-32 flex items-center justify-center border border-dashed border-[rgba(10,20,32,0.08)] rounded-2xl">
+                          <span className="text-[10px] font-black text-[rgba(10,20,32,0.10)] uppercase tracking-widest italic">Empty</span>
                         </div>
                       )}
                     </div>
@@ -724,12 +724,12 @@ export const CarDealerSuite: React.FC = () => {
       {/* Add Dealership Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-black border border-white/5 w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-xl font-black text-white tracking-tight">Index Asset</h3>
+          <div className="bg-white border border-[rgba(10,20,32,0.08)] w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden">
+            <div className="p-8 border-b border-[rgba(10,20,32,0.08)] flex items-center justify-between">
+              <h3 className="text-xl font-black text-[#1A2332] tracking-tight">Index Asset</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-2.5 text-white/20 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
+                className="p-2.5 text-[rgba(10,20,32,0.20)] hover:text-[#1A2332] bg-[rgba(10,20,32,0.03)] hover:bg-[rgba(10,20,32,0.05)] rounded-xl transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -737,24 +737,24 @@ export const CarDealerSuite: React.FC = () => {
 
             <form onSubmit={handleAddDealership} className="p-8 space-y-6">
               <div>
-                <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Dealership Name</label>
+                <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Dealership Name</label>
                 <input
                   type="text"
                   required
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Sunset Premier Motors"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                  className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Source</label>
+                  <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Source</label>
                   <select
                     value={newSource}
                     onChange={(e) => setNewSource(e.target.value as ClassifiedSource)}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-white/20 transition-all capitalize"
+                    className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all capitalize"
                   >
                     <option value="autotrader">AutoTrader</option>
                     <option value="cars.com">Cars.co.za</option>
@@ -764,91 +764,91 @@ export const CarDealerSuite: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Location</label>
+                  <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Location</label>
                   <input
                     type="text"
                     required
                     value={newLocation}
                     onChange={(e) => setNewLocation(e.target.value)}
                     placeholder="Miami, FL"
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                    className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Contact</label>
+                  <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Contact</label>
                   <input
                     type="text"
                     required
                     value={newContactPerson}
                     onChange={(e) => setNewContactPerson(e.target.value)}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                    className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Email</label>
+                  <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Email</label>
                   <input
                     type="email"
                     required
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                    className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-6">
                 <div>
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Phone</label>
+                  <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Phone</label>
                   <input
                     type="text"
                     required
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                    className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Units</label>
+                  <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Units</label>
                   <input
                     type="number"
                     required
                     value={newInventory}
                     onChange={(e) => setNewInventory(e.target.value)}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                    className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Avg $</label>
+                  <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Avg $</label>
                   <input
                     type="number"
                     required
                     value={newPrice}
                     onChange={(e) => setNewPrice(e.target.value)}
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                    className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] block mb-2">Brands</label>
+                <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Brands</label>
                 <input
                   type="text"
                   required
                   value={newMakes}
                   onChange={(e) => setNewMakes(e.target.value)}
                   placeholder="BMW, Mercedes-Benz, Audi"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-all"
+                  className="w-full bg-[rgba(10,20,32,0.03)] border border-[rgba(10,20,32,0.08)] rounded-2xl px-4 py-3 text-xs text-[#1A2332] placeholder-[rgba(10,20,32,0.30)] focus:outline-none focus:border-[rgba(10,20,32,0.30)] transition-all"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-8 border-t border-white/5">
+              <div className="flex items-center justify-end gap-3 pt-8 border-t border-[rgba(10,20,32,0.08)]">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-6 py-3 text-[11px] font-bold text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+                  className="px-6 py-3 text-[11px] font-bold text-[#6B7685] hover:text-[#1A2332] transition-colors uppercase tracking-widest"
                 >
                   Cancel
                 </button>

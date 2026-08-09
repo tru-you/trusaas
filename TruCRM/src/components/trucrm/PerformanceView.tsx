@@ -65,14 +65,14 @@ const Table: React.FC<{
   currency: string;
   targetMins: number;
 }> = ({ title, icon: Icon, firstCol, rows, currency, targetMins }) => (
-  <div className="bg-slate-900/80 border border-slate-800 rounded-[18px] overflow-hidden">
-    <div className="px-5 py-3.5 border-b border-slate-800 flex items-center gap-2">
-      <Icon className="w-4 h-4 text-cyan-400" />
-      <h3 className="text-sm font-medium text-white">{title}</h3>
+  <div className="bg-white/80 border border-[rgba(10,20,32,0.08)] rounded-[18px] overflow-hidden">
+    <div className="px-5 py-3.5 border-b border-[rgba(10,20,32,0.08)] flex items-center gap-2">
+      <Icon className="w-4 h-4 text-[#0E9D98]" />
+      <h3 className="text-sm font-medium text-[#1A2332]">{title}</h3>
     </div>
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
-        <thead className="bg-slate-950/80 text-[length:var(--t-micro)] font-medium text-slate-500 tracking-wider">
+        <thead className="bg-[#F5F4F1] text-[length:var(--t-micro)] font-medium text-[rgba(10,20,32,0.50)] tracking-wider">
           <tr>
             <th className="px-5 py-2.5">{firstCol}</th>
             <th className="px-5 py-2.5 text-right">Leads</th>
@@ -83,22 +83,22 @@ const Table: React.FC<{
             <th className="px-5 py-2.5 text-right">Per Unit</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800/60">
+        <tbody className="divide-y divide-[rgba(10,20,32,0.06)]">
           {rows.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-5 py-8 text-center text-xs text-slate-500">
+              <td colSpan={7} className="px-5 py-8 text-center text-xs text-[rgba(10,20,32,0.50)]">
                 No data yet.
               </td>
             </tr>
           )}
           {rows.map((r) => (
-            <tr key={r.key} className="hover:bg-slate-800/40">
-              <td className="px-5 py-3 font-medium text-white text-xs">{r.key}</td>
-              <td className="px-5 py-3 text-right text-slate-300 text-xs">{r.leads}</td>
-              <td className="px-5 py-3 text-right text-slate-300 text-xs">{r.delivered}</td>
+            <tr key={r.key} className="hover:bg-[#F5F4F1]">
+              <td className="px-5 py-3 font-medium text-[#1A2332] text-xs">{r.key}</td>
+              <td className="px-5 py-3 text-right text-[#334155] text-xs">{r.leads}</td>
+              <td className="px-5 py-3 text-right text-[#334155] text-xs">{r.delivered}</td>
               <td className="px-5 py-3 text-right">
                 {r.closingPct === null ? (
-                  <span className="text-slate-600 text-xs">—</span>
+                  <span className="text-[rgba(10,20,32,0.40)] text-xs">—</span>
                 ) : (
                   <span
                     className={`text-xs font-medium ${
@@ -128,10 +128,10 @@ const Table: React.FC<{
                   </span>
                 )}
               </td>
-              <td className="px-5 py-3 text-right text-xs font-medium text-white">
+              <td className="px-5 py-3 text-right text-xs font-medium text-[#1A2332]">
                 {money(r.gross, currency)}
               </td>
-              <td className="px-5 py-3 text-right text-xs text-slate-400">
+              <td className="px-5 py-3 text-right text-xs text-[#6B7685]">
                 {r.grossPerDelivered === null ? '—' : money(r.grossPerDelivered, currency)}
               </td>
             </tr>
@@ -173,13 +173,13 @@ export const PerformanceView: React.FC = () => {
   return (
     <div className="space-y-6">
       {weakSources.length > 0 && (
-        <div className="p-4 bg-amber-950/30 border border-amber-800/60 rounded-[18px] flex gap-3">
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-[18px] flex gap-3">
           <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-medium text-amber-200">
+            <p className="text-xs font-medium text-amber-700">
               Slow response on {weakSources.length} source{weakSources.length > 1 ? 's' : ''}
             </p>
-            <p className="text-[length:var(--t-micro)] text-amber-300/80 mt-0.5">
+            <p className="text-[length:var(--t-micro)] text-amber-600 mt-0.5">
               {weakSources.map((s) => s.key).join(', ')} — median reply is past the{' '}
               {settings.speedToLeadTargetMins}-minute target. You are paying for these leads and answering them late.
             </p>
@@ -205,24 +205,24 @@ export const PerformanceView: React.FC = () => {
         targetMins={settings.speedToLeadTargetMins}
       />
 
-      <div className="bg-slate-900/80 border border-slate-800 rounded-[18px] overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-slate-800 flex items-center gap-2">
+      <div className="bg-white/80 border border-[rgba(10,20,32,0.08)] rounded-[18px] overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[rgba(10,20,32,0.08)] flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-rose-400" />
-          <h3 className="text-sm font-medium text-white">Why deals are being lost</h3>
+          <h3 className="text-sm font-medium text-[#1A2332]">Why deals are being lost</h3>
         </div>
         <div className="p-5 space-y-2">
           {lostRows.length === 0 ? (
-            <p className="text-xs text-slate-500">No lost deals recorded.</p>
+            <p className="text-xs text-[rgba(10,20,32,0.50)]">No lost deals recorded.</p>
           ) : (
             lostRows.map(([reason, count]) => {
               const max = lostRows[0][1];
               return (
                 <div key={reason} className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-300">{reason}</span>
-                    <span className="text-slate-400 font-medium">{count}</span>
+                    <span className="text-[#334155]">{reason}</span>
+                    <span className="text-[#6B7685] font-medium">{count}</span>
                   </div>
-                  <div className="h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-[#FAFAF8] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-rose-500/70"
                       style={{ width: `${Math.round((count / max) * 100)}%` }}
