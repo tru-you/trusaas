@@ -12,6 +12,7 @@ import {
   Sparkles,
   Upload,
   Trash2,
+  LogOut,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useRemoveBg } from '../../hooks/useRemoveBg';
@@ -383,6 +384,21 @@ export const SettingsView: React.FC = () => {
           >
             <Trash2 className="w-4 h-4 text-[#6B7685]" />
             Delete All Data
+          </button>
+
+          <button
+            onClick={() => {
+              try {
+                localStorage.removeItem('trusaas_demo_session_v1');
+              } catch {
+                // ignore
+              }
+              window.location.reload();
+            }}
+            className="px-4 py-2.5 bg-white text-[#334155] border border-[rgba(10,20,32,0.10)] hover:bg-[#F5F4F1] rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors"
+          >
+            <LogOut className="w-4 h-4 text-[#0E9D98]" />
+            Sign Out
           </button>
         </div>
       </div>

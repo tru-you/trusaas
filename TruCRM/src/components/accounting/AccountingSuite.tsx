@@ -1,6 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import {
   Calculator,
   Receipt,
@@ -36,6 +34,8 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Transaction, Invoice, InvoiceItem } from '../../types';
 import defaultLogo from '../../assets/images/truesaas_logo_1784747570605.jpg';
+import { openTruDocs, invoiceToTruDocs } from '../../lib/truDocs';
+import { openMailTo } from '../../lib/contact';
 
 export const AccountingSuite: React.FC = () => {
   const {
@@ -73,7 +73,7 @@ export const AccountingSuite: React.FC = () => {
   const [showAddInvoiceModal, setShowAddInvoiceModal] = useState(false);
   const [invClientName, setInvClientName] = useState('');
   const [invClientEmail, setInvClientEmail] = useState('');
-  const [invClientAddress, setInvClientAddress] = useState('100 Technology Plaza, Suite 400, San Francisco, CA');
+  const [invClientAddress, setInvClientAddress] = useState('');
   const [invPoNumber, setInvPoNumber] = useState(`PO-${Math.floor(10000 + Math.random() * 90000)}`);
   const [invPaymentTerms, setInvPaymentTerms] = useState('Net 30');
   const [invNotes, setInvNotes] = useState('Payment due within 30 days via Wire Transfer, ACH, or Credit Card. Late payments subject to a 1.5% monthly fee.');
@@ -85,7 +85,6 @@ export const AccountingSuite: React.FC = () => {
   // Invoice Preview Modal
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   // Editable invoice draft (working copy of the previewed invoice)
   const [draft, setDraft] = useState<Invoice | null>(null);
@@ -158,176 +157,15 @@ export const AccountingSuite: React.FC = () => {
     setDraft(null);
   };
 
-  // Clean PDF Export Utility Function
-  const handleExportPdf = async (inv: Invoice) => {
-    try {
-      setIsExportingPdf(true);
-      addNotification('Generating PDF', `Rendering styled PDF summary for ${inv.invoiceNumber}...`, 'info');
-
-      // Check if printable-invoice DOM element exists and matches previewed invoice
-      const printableElement = document.getElementById('printable-invoice');
-      if (printableElement && previewInvoice?.id === inv.id) {
-        const canvas = await html2canvas(printableElement, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#F5F1E8',
-        });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`${inv.invoiceNumber}_Summary.pdf`);
-      } else {
-        // High-precision vector PDF summary document using jsPDF
-        const pdf = new jsPDF('p', 'mm', 'a4');
-
-        // Header Banner Background
-        pdf.setFillColor(15, 23, 42); // slate-900
-        pdf.rect(0, 0, 210, 42, 'F');
-
-        // Company Title & Subtitle
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(18);
-        pdf.text(profile.companyName || 'TruSaaS Financial Systems', 14, 18);
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(148, 163, 184); // slate-400
-        pdf.text(profile.tagline || 'Enterprise Financial & Operations Management', 14, 26);
-        pdf.text(`EIN/Tax ID: 84-9182391 | Support: ${profile.email}`, 14, 32);
-
-        // Invoice Title Badge
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(22);
-        pdf.setTextColor(6, 182, 212); // Cyan
-        pdf.text('INVOICE SUMMARY', 196, 20, { align: 'right' });
-        pdf.setFontSize(12);
-        pdf.setTextColor(255, 255, 255);
-        pdf.text(inv.invoiceNumber, 196, 28, { align: 'right' });
-
-        // Bill To Section
-        pdf.setTextColor(15, 23, 42);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.text('BILLED TO:', 14, 52);
-
-        pdf.setFontSize(12);
-        pdf.text(inv.clientName, 14, 58);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(100, 116, 139);
-        pdf.text(inv.clientEmail, 14, 64);
-        pdf.text('100 Technology Plaza, Suite 400, San Francisco, CA', 14, 70);
-
-        // Metadata Right Column
-        pdf.setTextColor(15, 23, 42);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`Issue Date: `, 140, 52);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(inv.issueDate, 196, 52, { align: 'right' });
-
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`Due Date: `, 140, 58);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(inv.dueDate, 196, 58, { align: 'right' });
-
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`Payment Status: `, 140, 64);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(inv.status, 196, 64, { align: 'right' });
-
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`Terms: `, 140, 70);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(`Net 30 Days`, 196, 70, { align: 'right' });
-
-        // Table Headers
-        let y = 82;
-        pdf.setFillColor(241, 245, 249);
-        pdf.rect(14, y, 182, 8, 'F');
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(51, 65, 85);
-        pdf.setFontSize(9);
-        pdf.text('DESCRIPTION', 18, y + 5.5);
-        pdf.text('QTY', 125, y + 5.5, { align: 'center' });
-        pdf.text('UNIT PRICE', 155, y + 5.5, { align: 'right' });
-        pdf.text('AMOUNT', 192, y + 5.5, { align: 'right' });
-
-        y += 12;
-        pdf.setFont('helvetica', 'normal');
-        pdf.setTextColor(15, 23, 42);
-        pdf.setFontSize(10);
-
-        const items = inv.items && inv.items.length > 0 ? inv.items : [
-          { description: 'Professional SaaS Architecture & Development Services', quantity: 1, unitPrice: inv.amount, amount: inv.amount }
-        ];
-
-        items.forEach((item) => {
-          pdf.text(item.description, 18, y);
-          pdf.text(String(item.quantity || 1), 125, y, { align: 'center' });
-          pdf.text(`${profile.currency}${(item.unitPrice || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 155, y, { align: 'right' });
-          pdf.text(`${profile.currency}${(item.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 192, y, { align: 'right' });
-          y += 8;
-        });
-
-        y += 4;
-        pdf.setDrawColor(226, 232, 240);
-        pdf.line(14, y, 196, y);
-        y += 8;
-
-        // Subtotal & Tax Calculation
-        const taxRate = inv.taxRate || profile.taxRate || 0;
-        const subtotal = (inv.amount * 100) / (100 + taxRate);
-        const taxAmount = inv.amount - subtotal;
-
-        pdf.setFontSize(10);
-        pdf.setTextColor(100, 116, 139);
-        pdf.text('Subtotal:', 140, y);
-        pdf.setTextColor(15, 23, 42);
-        pdf.text(`${profile.currency}${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 192, y, { align: 'right' });
-
-        y += 6;
-        pdf.setTextColor(100, 116, 139);
-        pdf.text(`Sales Tax (${taxRate}%):`, 140, y);
-        pdf.setTextColor(15, 23, 42);
-        pdf.text(`${profile.currency}${taxAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 192, y, { align: 'right' });
-
-        y += 8;
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.text('Total Invoice Amount:', 130, y);
-        pdf.setFontSize(13);
-        pdf.setTextColor(16, 185, 129); // Emerald
-        pdf.text(`${profile.currency}${inv.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 192, y, { align: 'right' });
-
-        // Remittance Box
-        y += 18;
-        pdf.setFillColor(248, 250, 252);
-        pdf.rect(14, y, 182, 32, 'F');
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(15, 23, 42);
-        pdf.setFontSize(10);
-        pdf.text('WIRE & REMITTANCE INSTRUCTIONS', 18, y + 7);
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(9);
-        pdf.setTextColor(100, 116, 139);
-        pdf.text('Bank Name: Silicon Valley Bank Inc. | Routing (ABA): 121000358', 18, y + 14);
-        pdf.text(`Account Name: ${profile.companyName} | Account #: 4839201948`, 18, y + 20);
-        pdf.text(`SWIFT / BIC: SVBKUS6S | Payment Ref: ${inv.invoiceNumber}`, 18, y + 26);
-
-        pdf.save(`${inv.invoiceNumber}_Summary.pdf`);
-      }
-
-      addNotification('PDF Export Complete', `Downloaded styled PDF summary for ${inv.invoiceNumber}`, 'success');
-    } catch (err) {
-      console.error('Failed to export PDF:', err);
-      addNotification('PDF Export Error', 'Could not render PDF document.', 'error');
-    } finally {
-      setIsExportingPdf(false);
-    }
+  // Branded TruDocs document — opens the editable quote/invoice/SLA document
+  // prefilled with this invoice, where the user can sign, tweak and Print / PDF.
+  const handleExportPdf = (inv: Invoice) => {
+    openTruDocs(invoiceToTruDocs(inv, profile), profile.currency);
+    addNotification(
+      'TruDocs Document Opened',
+      `${inv.invoiceNumber} opened as an editable TruDocs document — sign, tweak, then Print / PDF to save.`,
+      'success'
+    );
   };
 
   const filteredTransactions = transactions.filter(
@@ -931,9 +769,8 @@ export const AccountingSuite: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleExportPdf(inv)}
-                          disabled={isExportingPdf}
                           className="px-3 py-1.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#1A2332] border border-[rgba(10,20,32,0.10)] rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 inline-flex"
-                          title="Export Clean PDF Summary"
+                          title="Open as branded TruDocs document — sign, tweak, Print / PDF"
                         >
                           <Download className="w-3.5 h-3.5 text-[#0E9D98]" />
                           <span>PDF</span>
@@ -995,7 +832,7 @@ export const AccountingSuite: React.FC = () => {
 
             <div className="p-4 bg-[#FAFAF8] rounded-xl border border-[rgba(10,20,32,0.08)] flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-[rgba(10,20,32,0.50)]">Silicon Valley Bank Debit #3301</span>
+                <span className="text-xs font-bold text-[rgba(10,20,32,0.50)]">{profile.bank?.bankName || 'Bank'} Debit #3301</span>
                 <p className="font-bold text-[#1A2332] text-sm">{profile.currency}1,450.00 Debit paid to Amazon Web Services</p>
               </div>
               <span className="px-3 py-1 bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] rounded-lg text-xs font-bold">
@@ -1237,26 +1074,30 @@ export const AccountingSuite: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleExportPdf(previewInvoice)}
-                  disabled={isExportingPdf}
-                  className="px-3.5 py-1.5 bg-[#3ECFC8] text-[#06080D] text-xs font-semibold rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_5px_0_#22807C,0_10px_22px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#4FE3DC] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_1px_0_#22807C] disabled:opacity-40 disabled:translate-y-0 disabled:shadow-none"
-                  title="Export Clean Styled PDF Summary File"
+                  className="px-3.5 py-1.5 bg-[#3ECFC8] text-[#06080D] text-xs font-semibold rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_5px_0_#22807C,0_10px_22px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#4FE3DC] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_1px_0_#22807C]"
+                  title="Open as branded TruDocs document — sign, tweak, Print / PDF"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>{isExportingPdf ? 'Rendering PDF...' : 'Export PDF Summary'}</span>
+                  <span>Export PDF</span>
                 </button>
 
                 <button
-                  onClick={() => window.print()}
+                  onClick={() => handleExportPdf(previewInvoice)}
                   className="px-3 py-1.5 bg-[#161B22] text-[#E8EAE6] text-xs font-medium rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(232,234,230,0.10),0_4px_0_#06080D,0_8px_18px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#21262D] active:translate-y-[2px] active:shadow-[0_1px_0_#06080D]"
-                  title="Print or Browser Print-to-PDF"
+                  title="Open the branded document and choose Print / Save as PDF"
                 >
                   <Printer className="w-3.5 h-3.5 text-[#8AA2B8]" />
-                  <span>Print</span>
+                  <span>Print / PDF</span>
                 </button>
 
                 <button
                   onClick={() => {
-                    addNotification('Invoice Sent', `Emailed ${previewInvoice.invoiceNumber} directly to ${previewInvoice.clientEmail}.`, 'info');
+                    openMailTo(
+                      previewInvoice.clientEmail,
+                      `Invoice ${previewInvoice.invoiceNumber} from ${profile.companyName}`,
+                      `Hi ${previewInvoice.clientName},\n\nPlease find attached your invoice ${previewInvoice.invoiceNumber} for ${profile.currency}${previewInvoice.amount.toLocaleString()} (incl. ${previewInvoice.taxRate || profile.taxRate}% VAT), due ${previewInvoice.dueDate}.\n\nTo attach the PDF: open this invoice in the CRM, click Export PDF, then Print → Save as PDF.\n\nBest regards,\n${profile.companyName}`
+                    );
+                    addNotification('Email Dispatched', `Opened your mail client for ${previewInvoice.clientEmail}.`, 'success');
                   }}
                   className="px-3 py-1.5 bg-[#161B22] text-[#E8EAE6] text-xs font-medium rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(232,234,230,0.10),0_4px_0_#06080D,0_8px_18px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#21262D] active:translate-y-[2px] active:shadow-[0_1px_0_#06080D]"
                 >

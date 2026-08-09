@@ -23,10 +23,12 @@ import {
   Check,
   DollarSign,
   Activity,
+  Download,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Proposal, ProposalStatus, SlaContract, SlaIncident } from '../../types';
 import { useFormAutoSave } from '../../hooks/useFormAutoSave';
+import { openTruDocs, proposalToTruDocs, slaToTruDocs } from '../../lib/truDocs';
 
 /**
  * Draw-to-sign signature pad. Works with mouse or finger (pointer events).
@@ -570,6 +572,16 @@ export const ProposalsSlaSuite: React.FC = () => {
                               <span>View Doc</span>
                             </button>
 
+                            <button
+                              onClick={() => {
+                                openTruDocs(proposalToTruDocs(prop, profile), profile.currency);
+                              }}
+                              className="p-1.5 bg-white hover:bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(10,20,32,0.08)] hover:border-[rgba(14,157,152,0.20)] rounded-lg transition-colors"
+                              title="Open as branded TruDocs quote — sign, tweak, Print / PDF"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+
                             {prop.status === 'Draft' && (
                               <button
                                 onClick={() => sendProposal(prop.id)}
@@ -727,13 +739,25 @@ export const ProposalsSlaSuite: React.FC = () => {
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
 
-                  <button
-                    onClick={() => setSlaToDelete(sla)}
-                    className="p-1.5 bg-[#FAFAF8] hover:bg-rose-50 text-[rgba(10,20,32,0.50)] hover:text-rose-400 rounded-lg border border-[rgba(10,20,32,0.08)] transition-colors"
-                    title="Delete SLA Contract"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        openTruDocs(slaToTruDocs(sla, profile), profile.currency);
+                      }}
+                      className="p-1.5 bg-[#FAFAF8] hover:bg-[rgba(14,157,152,0.08)] text-[rgba(10,20,32,0.50)] hover:text-[#0E9D98] rounded-lg border border-[rgba(10,20,32,0.08)] transition-colors"
+                      title="Open as branded TruDocs SLA agreement — sign, tweak, Print / PDF"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      onClick={() => setSlaToDelete(sla)}
+                      className="p-1.5 bg-[#FAFAF8] hover:bg-rose-50 text-[rgba(10,20,32,0.50)] hover:text-rose-400 rounded-lg border border-[rgba(10,20,32,0.08)] transition-colors"
+                      title="Delete SLA Contract"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

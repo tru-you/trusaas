@@ -9,12 +9,13 @@ import {
   Trash2,
   ChevronDown,
   Settings,
+  Menu,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useNotifications } from '../../context/NotificationContext';
 import truMark from '../../assets/brand/tru-mark.png';
 
-export const Navbar: React.FC = () => {
+export const Navbar: React.FC<{ onMenuClick?: () => void }> = ({ onMenuClick }) => {
   const {
     profile,
     setActiveView,
@@ -27,6 +28,15 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="h-16 border-b border-[rgba(10,20,32,0.08)] bg-white sticky top-0 z-30 px-4 md:px-6 flex items-center justify-between shadow-sm">
+      {/* Mobile menu button */}
+      <button
+        onClick={onMenuClick}
+        className="lg:hidden p-2 text-[#6B7685] hover:bg-[#F5F4F1] rounded-lg transition-colors"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
       {/* Search Bar */}
       <div className="flex items-center gap-3 flex-1 max-w-md">
         <div className="relative w-full">

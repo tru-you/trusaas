@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TruDocs · TruDealer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600&display=swap" rel="stylesheet" />
+<style>
+  /* ── TruDealer brand tokens ────────────────────────────────────────────── */
+  :root{
+    --paper:#F5F1E8;
+    --paper-2:#EDE6D8;
+    --paper-card:#FBF8F1;
+    --ink:#12202B;
+    --ink-2:#3A4553;
+    --muted:#8A8172;
+    --faint:#A69C8D;
+    --line:rgba(18,32,43,.14);
+    --line-soft:rgba(18,32,43,.08);
+    --cyan:#07889B;
+    --cyan-bright:#0891A6;
+    --cyan-soft:rgba(7,136,155,.12);
+    --cyan-faint:rgba(7,136,155,.06);
+    --amber:#B07A26;
+    --danger:#B86A6A;
+    --sans:'Inter',system-ui,-apple-system,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
+    --sign:'Caveat',cursive;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    font-size:15px; line-height:1.55; letter-spacing:-0.005em;
+    -webkit-font-smoothing:antialiased; padding:0 0 90px;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .wash{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(60% 40% at 80% -10%,rgba(7,136,155,.06),transparent 65%);}
+
+  /* ── Toolbar ───────────────────────────────────────────────────────────── */
+  .toolbar{
+    position:sticky;top:0;z-index:20;background:rgba(245,241,232,.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 20px;
+  }
+  .brand{display:flex;align-items:center;gap:8px;margin-right:auto;}
+  .brand .mark{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    background:var(--cyan-faint);border:1px solid var(--cyan-soft);color:var(--cyan);font-family:var(--mono);font-size:11px;font-weight:600;}
+  .brand b{font-weight:600;font-size:14px;}
+  .brand span{color:var(--muted);font-size:12px;margin-left:2px;}
+
+  .seg{display:inline-flex;background:var(--paper-card);border:1px solid var(--line-soft);border-radius:10px;padding:3px;gap:2px;}
+  .seg button{font:inherit;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);
+    padding:6px 14px;border-radius:7px;transition:all .15s;font-family:var(--sans);}
+  .seg button.on{background:var(--cyan-faint);color:var(--cyan);}
+  .seg button:hover:not(.on){color:var(--ink-2);}
+
+  .btn{font:inherit;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;padding:8px 14px;
+    display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper-card);color:var(--ink-2);
+    transition:border-color .15s,color .15s,background .15s;font-family:var(--sans);}
+  .btn:hover{color:var(--ink);border-color:var(--cyan);}
+  .btn.primary{background:var(--cyan);color:#fff;border-color:transparent;}
+  .btn.primary:hover{background:var(--cyan-bright);}
+  .btn.ghost-danger:hover{color:var(--danger);border-color:rgba(184,106,106,.4);}
+
+  .hint{max-width:900px;margin:16px auto 0;padding:0 20px;color:var(--muted);font-size:12.5px;}
+  .hint b{color:var(--ink-2);}
+
+  /* ── Document ──────────────────────────────────────────────────────────── */
+  .sheet-wrap{position:relative;z-index:1;max-width:900px;margin:20px auto 0;padding:0 20px;}
+  .doc{
+    background:#fff;
+    border:1px solid var(--line); border-radius:18px; overflow:hidden;
+    box-shadow:0 18px 50px -20px rgba(18,32,43,.12);
+    padding:46px 48px;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .f{font:inherit;color:var(--ink);border:none;background:transparent;padding:2px 4px;margin:-2px -4px;
+    border-radius:5px;width:100%;outline:none;resize:none;font-family:var(--sans);}
+  .f:hover{background:rgba(18,32,43,.04);}
+  .f:focus{background:var(--cyan-faint);box-shadow:0 0 0 1px var(--cyan-soft);}
+  .f::placeholder{color:var(--faint);}
+  textarea.f{overflow:hidden;}
+
+  .logo{font-weight:600;font-size:26px;letter-spacing:-0.02em;line-height:1;font-family:var(--sans);}
+  .logo .tru{color:var(--ink);}
+  .logo .dealer{color:var(--cyan);}
+  .logo-tag{font-size:11px;color:var(--muted);letter-spacing:0.06em;margin-top:3px;font-family:var(--mono);text-transform:uppercase;}
+
+  .head{display:flex;justify-content:space-between;gap:28px;align-items:flex-start;}
+  .biz .f{font-size:13px;color:var(--ink-2);}
+  .biz .bn .f{font-size:16px;font-weight:600;color:var(--ink);}
+  .doc-title{text-align:right;}
+  .doc-title h1{margin:0;font-size:30px;font-weight:600;letter-spacing:-0.02em;color:var(--cyan);font-family:var(--sans);}
+  .doc-meta{margin-top:12px;font-size:13px;color:var(--muted);}
+  .doc-meta .row{display:flex;justify-content:flex-end;gap:8px;align-items:baseline;margin-bottom:3px;}
+  .doc-meta .row label{min-width:96px;text-align:right;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;}
+  .doc-meta .row .f{width:150px;text-align:right;font-family:var(--mono);color:var(--ink);background:transparent;}
+  .doc-meta .row input[type=date].f{color-scheme:light;}
+
+  .parties{display:flex;gap:40px;margin:34px 0 22px;}
+  .party{flex:1;}
+  .party h4{margin:0 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-family:var(--mono);}
+  .party .name .f{font-weight:600;}
+
+  table.items{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px;}
+  table.items thead th{text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+    padding:9px 8px;border-bottom:1px solid var(--line);font-family:var(--mono);}
+  table.items th.num,table.items td.num{text-align:right;white-space:nowrap;}
+  table.items tbody td{padding:9px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  table.items td.num .f{text-align:right;font-family:var(--mono);}
+  .del{opacity:0;border:none;background:transparent;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;
+    padding:4px 6px;border-radius:6px;transition:opacity .15s;}
+  tr:hover .del{opacity:1;}
+  .del:hover{background:rgba(184,106,106,.12);}
+  .add-row{margin-top:10px;}
+  .add-row button{font:inherit;font-size:13px;color:var(--cyan);background:transparent;border:none;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;padding:6px 4px;border-radius:6px;font-family:var(--sans);}
+  .add-row button:hover{background:var(--cyan-faint);}
+
+  .totals{display:flex;justify-content:flex-end;margin-top:18px;}
+  .totals .box{width:290px;}
+  .totals .line{display:flex;justify-content:space-between;align-items:baseline;padding:6px 8px;font-size:14px;}
+  .totals .line .lbl{color:var(--muted);display:flex;align-items:baseline;gap:6px;}
+  .totals .line .val{font-family:var(--mono);color:var(--ink);}
+  .totals .line.grand{border-top:1px solid var(--line);margin-top:4px;padding-top:12px;font-size:16px;font-weight:600;}
+  .totals .line.grand .val{color:var(--cyan);}
+  .vat-in{width:44px;text-align:right;font-family:var(--mono);border:none;background:transparent;color:var(--ink);
+    border-bottom:1px dashed var(--line);padding:0 2px;}
+  .vat-in:focus{outline:none;border-bottom-color:var(--cyan);}
+
+  .scope{margin-top:24px;}
+  .scope h4{margin:0 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-family:var(--mono);}
+  .scope .f{font-size:13.5px;color:var(--ink-2);}
+
+  .foot{margin-top:30px;padding-top:22px;border-top:1px solid var(--line);display:flex;gap:40px;}
+  .foot .col{flex:1;}
+  .foot h4{margin:0 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-family:var(--mono);}
+  .foot .f{font-size:13px;color:var(--ink-2);}
+
+  .signs{display:flex;gap:36px;margin-top:34px;}
+  .sign{flex:1;}
+  .sign h4{margin:0 0 8px;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-family:var(--mono);}
+  .sign .pad-wrap{position:relative;border:1px solid var(--line);border-radius:10px;background:rgba(18,32,43,.03);height:96px;overflow:hidden;}
+  .sign canvas{display:block;width:100%;height:96px;touch-action:none;cursor:crosshair;}
+  .sign .pad-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--faint);
+    font-family:var(--sign);font-size:24px;pointer-events:none;}
+  .sign .pad-wrap.inked .pad-ph{display:none;}
+  .sign .sign-row{display:flex;gap:10px;align-items:flex-end;margin-top:10px;}
+  .sign .sign-row .fld{flex:1;}
+  .sign .sign-row label{display:block;font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-family:var(--mono);margin-bottom:2px;}
+  .sign .clr{font:inherit;font-size:11px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px;border-radius:5px;}
+  .sign .clr:hover{color:var(--danger);}
+  .sign .baseline{border-top:1px solid var(--line);margin-top:10px;}
+
+  .thanks{margin-top:28px;text-align:center;font-size:12px;color:var(--muted);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;}
+  .thanks .credit{color:var(--faint);}
+
+  /* mode visibility */
+  body[data-mode="sla"] .money-col{display:none;}
+  body[data-mode="sla"] #totalsWrap{display:none;}
+  body:not([data-mode="sla"]) #scopeWrap{display:none;}
+  body:not([data-mode="sla"]) .sla-cols{display:none;}
+  body[data-mode="sla"] .std-cols{display:none;}
+  body[data-mode="invoice"] .signs{display:none;}
+
+  /* ── PRINT ── white page, thin cream border, no browser chrome ─────────── */
+  @media print{
+    @page{ margin:0; size:auto; }
+    html,body{ margin:0; padding:0; background:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .wash,.toolbar,.hint,.add-row,.del,.sign .clr{ display:none !important; }
+    .sheet-wrap{ max-width:none; margin:0; padding:10mm; }
+    .doc{
+      box-shadow:none !important;
+      border:1.5pt solid var(--paper-2) !important;
+      border-radius:12px !important;
+      padding:14mm !important;
+      background:#fff !important;
+    }
+    .f,.vat-in{ background:transparent !important; box-shadow:none !important; }
+    .sign .pad-wrap{ background:transparent; }
+    .signs,.foot,.parties{ break-inside:avoid; }
+  }
+</style>
+</head>
+<body data-mode="invoice">
+<div class="wash"></div>
+
+<div class="toolbar">
+  <div class="brand"><span class="mark">Tru</span><b>TruDocs</b><span>· TruDealer</span></div>
+  <div class="seg" id="modeSeg">
+    <button data-mode="quote">Quote</button>
+    <button data-mode="invoice" class="on">Invoice</button>
+    <button data-mode="sla">SLA</button>
+  </div>
+  <button class="btn" id="btnAdd">+ Line</button>
+  <button class="btn" id="btnHtml">Export HTML</button>
+  <button class="btn primary" id="btnPrint">Print / PDF</button>
+  <button class="btn ghost-danger" id="btnReset">Reset</button>
+</div>
+
+<p class="hint">
+  Every field is editable — click and type. <b>Quote / Invoice / SLA</b> switches the document.
+  Sign by drawing in the boxes at the bottom (mouse or finger). <b>Print / PDF</b> prints a clean,
+  borderless document — in the dialog, turn <em>Headers and footers</em> off and <em>Background graphics</em> on
+  to keep the brand. <b>Export HTML</b> saves a standalone copy. Work saves in this browser automatically.
+</p>
+
+<div class="sheet-wrap">
+  <div class="doc" id="doc">
+
+    <div class="head">
+      <div class="biz">
+        <div class="logo"><span class="tru">Tru</span><span class="dealer">Dealer</span></div>
+        <div class="logo-tag">Future Automotive</div>
+        <div class="bn" style="margin-top:14px"><input class="f" data-k="bizName" placeholder="Your business / dealership name" /></div>
+        <div><input class="f" data-k="bizReg" placeholder="Reg / VAT no." /></div>
+        <div><textarea class="f" rows="3" data-k="bizAddr" placeholder="Address&#10;Phone · Email"></textarea></div>
+      </div>
+      <div class="doc-title">
+        <h1 id="docTitle">Invoice</h1>
+        <div class="doc-meta">
+          <div class="row"><label id="noLabel">Invoice no.</label><input class="f" data-k="docNo" placeholder="INV-0001" /></div>
+          <div class="row"><label>Date</label><input class="f" type="date" data-k="docDate" /></div>
+          <div class="row"><label id="dueLabel">Due</label><input class="f" type="date" data-k="dueDate" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="parties">
+      <div class="party">
+        <h4 id="toLabel">Bill to</h4>
+        <div class="name"><input class="f" data-k="clientName" placeholder="Client / company name" /></div>
+        <div><textarea class="f" rows="3" data-k="clientAddr" placeholder="Address&#10;Contact · Email"></textarea></div>
+      </div>
+      <div class="party">
+        <h4>Reference</h4>
+        <div><input class="f" data-k="ref" placeholder="PO / job reference" /></div>
+        <div><input class="f" data-k="vehicle" placeholder="Vehicle / project (optional)" /></div>
+      </div>
+    </div>
+
+    <table class="items">
+      <thead>
+        <tr>
+          <th style="width:50%"><span class="std-cols">Description</span><span class="sla-cols">Service area</span></th>
+          <th class="num money-col std-cols" style="width:12%">Qty</th>
+          <th class="num money-col std-cols" style="width:18%">Unit price</th>
+          <th class="num money-col std-cols" style="width:18%">Amount</th>
+          <th class="sla-cols" style="width:30%">Commitment</th>
+          <th class="num sla-cols" style="width:18%">Target</th>
+          <th style="width:1%"></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="add-row"><button id="addInline">+ Add line</button></div>
+
+    <div id="totalsWrap" class="totals">
+      <div class="box">
+        <div class="line"><span class="lbl">Subtotal</span><span class="val" id="subtotal">R 0.00</span></div>
+        <div class="line"><span class="lbl">VAT <input class="vat-in" id="vatRate" value="15" inputmode="decimal" />%</span><span class="val" id="vatAmt">R 0.00</span></div>
+        <div class="line grand"><span class="lbl" id="grandLabel">Total due</span><span class="val" id="grand">R 0.00</span></div>
+      </div>
+    </div>
+
+    <div id="scopeWrap" class="scope">
+      <h4>Scope &amp; coverage</h4>
+      <textarea class="f" rows="4" data-k="scope" placeholder="What this agreement covers — hours of support, exclusions, escalation path, penalties for missed targets…"></textarea>
+    </div>
+
+    <div class="foot">
+      <div class="col">
+        <h4 id="footLeftLabel">Banking details</h4>
+        <textarea class="f" rows="4" data-k="bank" placeholder="Bank&#10;Account name&#10;Account number&#10;Branch code"></textarea>
+      </div>
+      <div class="col">
+        <h4>Notes / terms</h4>
+        <textarea class="f" rows="4" data-k="notes" placeholder="Payment due within 7 days. Thank you for your business."></textarea>
+      </div>
+    </div>
+
+    <div class="signs">
+      <div class="sign">
+        <h4>Signed — for TruDealer <button class="clr" data-pad="a">clear</button></h4>
+        <div class="pad-wrap" data-pad="a"><span class="pad-ph">sign here</span><canvas></canvas></div>
+        <div class="sign-row">
+          <div class="fld"><label>Name</label><input class="f" data-k="signAName" placeholder="Full name" /></div>
+          <div class="fld"><label>Date</label><input class="f" type="date" data-k="signADate" /></div>
+        </div>
+        <div class="baseline"></div>
+      </div>
+      <div class="sign">
+        <h4>Signed — for the client <button class="clr" data-pad="b">clear</button></h4>
+        <div class="pad-wrap" data-pad="b"><span class="pad-ph">sign here</span><canvas></canvas></div>
+        <div class="sign-row">
+          <div class="fld"><label>Name</label><input class="f" data-k="signBName" placeholder="Full name" /></div>
+          <div class="fld"><label>Date</label><input class="f" type="date" data-k="signBDate" /></div>
+        </div>
+        <div class="baseline"></div>
+      </div>
+    </div>
+
+    <div class="thanks"><span id="thanksLine">Thank you.</span> <span class="credit">· Generated with TruDocs</span></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="trudocs_v1", CUR=new URLSearchParams(location.search).get("cur")||"R";
+  var rowsEl=document.getElementById("rows");
+
+  var MODES={
+    quote:  {title:"Quote",   noLabel:"Quote no.",   docNo:"QUO", due:"Valid until", to:"Prepared for", grand:"Quote total", footL:"Banking details", thanks:"We look forward to working with you."},
+    invoice:{title:"Invoice", noLabel:"Invoice no.", docNo:"INV", due:"Due",         to:"Bill to",      grand:"Total due",   footL:"Banking details", thanks:"Thank you."},
+    sla:    {title:"Service Level Agreement", noLabel:"Agreement no.", docNo:"SLA", due:"Renews", to:"Between TruDealer and", grand:"", footL:"Support contacts", thanks:"Signed in agreement of the terms above."}
+  };
+
+  function num(v){v=parseFloat(String(v).replace(/[^0-9.\-]/g,""));return isFinite(v)?v:0;}
+  function money(n){return CUR+" "+n.toLocaleString("en-ZA",{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function attr(s){return String(s==null?"":s).replace(/"/g,"&quot;");}
+  function pad2(n){return(n<10?"0":"")+n;}
+  function iso(d){return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());}
+
+  function rowHtml(r){
+    r=r||{};
+    return '<tr>'
+      + '<td><input class="f desc" placeholder="Item / service" value="'+attr(r.desc)+'" /></td>'
+      + '<td class="num money-col std-cols"><input class="f qty" inputmode="decimal" value="'+attr(r.qty==null?"1":r.qty)+'" /></td>'
+      + '<td class="num money-col std-cols"><input class="f price" inputmode="decimal" value="'+attr(r.price)+'" /></td>'
+      + '<td class="num money-col std-cols amt">R 0.00</td>'
+      + '<td class="sla-cols"><input class="f commit" placeholder="e.g. 24/7 phone + priority queue" value="'+attr(r.commit)+'" /></td>'
+      + '<td class="num sla-cols"><input class="f target" placeholder="e.g. 99.9% / 15 min" value="'+attr(r.target)+'" /></td>'
+      + '<td><button class="del" title="Remove line" aria-label="Remove line">×</button></td>'
+      + '</tr>';
+  }
+  function addRow(r){
+    var t=document.createElement("tbody"); t.innerHTML=rowHtml(r); var node=t.firstChild;
+    rowsEl.appendChild(node);
+    node.querySelector(".del").addEventListener("click",function(){node.remove();recalc();save();});
+    node.querySelectorAll("input").forEach(function(i){i.addEventListener("input",function(){recalc();save();});});
+    return node;
+  }
+  function recalc(){
+    var sub=0;
+    rowsEl.querySelectorAll("tr").forEach(function(tr){
+      var a=num(tr.querySelector(".qty").value)*num(tr.querySelector(".price").value);
+      tr.querySelector(".amt").textContent=money(a); sub+=a;
+    });
+    var vat=sub*num(document.getElementById("vatRate").value)/100;
+    document.getElementById("subtotal").textContent=money(sub);
+    document.getElementById("vatAmt").textContent=money(vat);
+    document.getElementById("grand").textContent=money(sub+vat);
+  }
+
+  function applyMode(mode){
+    var m=MODES[mode]; if(!m) return;
+    document.body.setAttribute("data-mode",mode);
+    document.getElementById("docTitle").textContent=m.title;
+    document.getElementById("noLabel").textContent=m.noLabel;
+    document.getElementById("dueLabel").textContent=m.due;
+    document.getElementById("toLabel").textContent=m.to;
+    document.getElementById("footLeftLabel").textContent=m.footL;
+    document.getElementById("thanksLine").textContent=m.thanks;
+    if(m.grand) document.getElementById("grandLabel").textContent=m.grand;
+    document.querySelectorAll("#modeSeg button").forEach(function(b){b.classList.toggle("on",b.dataset.mode===mode);});
+    var no=document.querySelector('[data-k="docNo"]');
+    if(!no.value || /^(INV|QUO|SLA)-/.test(no.value)) no.value=m.docNo+"-"+new Date().getFullYear()+"-001";
+  }
+
+  function collect(){
+    var d={mode:document.body.getAttribute("data-mode"),vat:document.getElementById("vatRate").value,fields:{},rows:[],sig:{}};
+    document.querySelectorAll("[data-k]").forEach(function(el){d.fields[el.dataset.k]=el.value;});
+    rowsEl.querySelectorAll("tr").forEach(function(tr){
+      d.rows.push({desc:tr.querySelector(".desc").value,qty:tr.querySelector(".qty").value,price:tr.querySelector(".price").value,
+        commit:tr.querySelector(".commit").value,target:tr.querySelector(".target").value});
+    });
+    document.querySelectorAll(".pad-wrap canvas").forEach(function(c){
+      var pad=c.closest(".pad-wrap").dataset.pad;
+      d.sig[pad]=c.closest(".pad-wrap").classList.contains("inked")?c.toDataURL("image/png"):"";
+    });
+    return d;
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(collect()));}catch(e){}}
+
+  function load(){
+    var raw;try{raw=localStorage.getItem(KEY);}catch(e){}
+    var d=raw?JSON.parse(raw):null;
+    if(d){
+      document.querySelectorAll("[data-k]").forEach(function(el){if(d.fields&&d.fields[el.dataset.k]!=null)el.value=d.fields[el.dataset.k];});
+      if(d.vat!=null)document.getElementById("vatRate").value=d.vat;
+      (d.rows&&d.rows.length?d.rows:[{}]).forEach(addRow);
+      applyMode(d.mode||"invoice");
+      if(d.sig){Object.keys(d.sig).forEach(function(k){ if(d.sig[k]) restoreSig(k,d.sig[k]); });}
+    }else{
+      var t=new Date(),due=new Date(t.getTime()+7*86400000);
+      document.querySelector('[data-k="docDate"]').value=iso(t);
+      document.querySelector('[data-k="dueDate"]').value=iso(due);
+      document.querySelector('[data-k="signADate"]').value=iso(t);
+      document.querySelector('[data-k="signBDate"]').value=iso(t);
+      addRow({}); applyMode("invoice");
+    }
+    autoGrow(); recalc();
+  }
+  function autoGrow(){document.querySelectorAll("textarea.f").forEach(function(t){t.style.height="auto";t.style.height=t.scrollHeight+"px";});}
+  document.addEventListener("input",function(e){if(e.target.tagName==="TEXTAREA"){e.target.style.height="auto";e.target.style.height=e.target.scrollHeight+"px";}});
+
+  function initPad(wrap){
+    var c=wrap.querySelector("canvas"), ctx=c.getContext("2d"), drawing=false, last=null;
+    function size(){
+      var r=wrap.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+      var prev=wrap.classList.contains("inked")?c.toDataURL():null;
+      c.width=r.width*dpr; c.height=r.height*dpr; ctx.scale(dpr,dpr);
+      ctx.lineWidth=2; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle="#07889B";
+      if(prev){var img=new Image();img.onload=function(){ctx.drawImage(img,0,0,r.width,r.height);};img.src=prev;}
+    }
+    size();
+    function pos(e){var r=c.getBoundingClientRect();var p=e.touches?e.touches[0]:e;return{x:p.clientX-r.left,y:p.clientY-r.top};}
+    function start(e){drawing=true;last=pos(e);wrap.classList.add("inked");e.preventDefault();}
+    function move(e){if(!drawing)return;var p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;e.preventDefault();}
+    function end(){if(drawing){drawing=false;save();}}
+    c.addEventListener("pointerdown",start); c.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",end);
+    wrap._ctx=ctx; wrap._resize=size;
+  }
+  function restoreSig(pad,dataUrl){
+    var wrap=document.querySelector('.pad-wrap[data-pad="'+pad+'"]'); if(!wrap)return;
+    var c=wrap.querySelector("canvas"),ctx=wrap._ctx||c.getContext("2d");
+    var img=new Image();img.onload=function(){var r=wrap.getBoundingClientRect();ctx.drawImage(img,0,0,r.width,r.height);wrap.classList.add("inked");};img.src=dataUrl;
+  }
+  function clearPad(pad){
+    var wrap=document.querySelector('.pad-wrap[data-pad="'+pad+'"]'),c=wrap.querySelector("canvas");
+    c.getContext("2d").clearRect(0,0,c.width,c.height);wrap.classList.remove("inked");save();
+  }
+  document.querySelectorAll(".pad-wrap").forEach(initPad);
+  document.querySelectorAll(".sign .clr").forEach(function(b){b.addEventListener("click",function(){clearPad(b.dataset.pad);});});
+
+  function exportHtml(){
+    save();
+    var clone=document.getElementById("doc").cloneNode(true);
+    clone.querySelectorAll(".pad-wrap").forEach(function(w){
+      var live=document.querySelector('.pad-wrap[data-pad="'+w.dataset.pad+'"] canvas');
+      var img=document.createElement("img");
+      img.src=w.classList.contains("inked")?live.toDataURL("image/png"):"";
+      img.style.cssText="display:block;width:100%;height:96px;object-fit:contain;";
+      var ph=w.querySelector(".pad-ph"); if(ph) ph.remove();
+      var cv=w.querySelector("canvas"); if(cv) cv.replaceWith(img);
+    });
+    clone.querySelectorAll("input,textarea").forEach(function(el){
+      var s=document.createElement("span"); s.textContent=el.value||""; s.style.whiteSpace="pre-wrap";
+      if(el.classList.contains("qty")||el.classList.contains("price")||el.classList.contains("target")) s.style.fontFamily="'IBM Plex Mono',monospace";
+      el.replaceWith(s);
+    });
+    clone.querySelectorAll(".del,.add-row,.sign .clr").forEach(function(el){el.remove();});
+    var vat=clone.querySelector(".vat-in"); if(vat){var vs=document.createElement("span");vs.textContent=document.getElementById("vatRate").value;vat.replaceWith(vs);}
+
+    var css=document.querySelector("style").textContent;
+    var mode=document.body.getAttribute("data-mode");
+    var noVal=document.querySelector('[data-k="docNo"]').value||mode;
+    var fname=(noVal).replace(/[^\w\-]+/g,"-");
+    var html='<!doctype html><html lang="en"><head><meta charset="utf-8" />'
+      +'<meta name="viewport" content="width=device-width, initial-scale=1" />'
+      +'<title>'+escapeHtml(MODES[mode].title+" "+noVal)+'</title>'
+      +'<link rel="preconnect" href="https://fonts.googleapis.com" />'
+      +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600&display=swap" rel="stylesheet" />'
+      +'<style>'+css+' body{padding:0;} .sheet-wrap{margin:0 auto;padding:24px;} .doc{margin:0 auto;}</style>'
+      +'</head><body data-mode="'+mode+'"><div class="sheet-wrap">'+clone.outerHTML+'</div></body></html>';
+    download(fname+".html",html);
+  }
+  function escapeHtml(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function download(name,text){
+    var b=new Blob([text],{type:"text/html"}),u=URL.createObjectURL(b),a=document.createElement("a");
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},1000);
+  }
+
+  document.getElementById("modeSeg").addEventListener("click",function(e){var b=e.target.closest("button");if(b){applyMode(b.dataset.mode);save();}});
+  document.getElementById("btnAdd").addEventListener("click",function(){var n=addRow({});n.querySelector(".desc").focus();save();});
+  document.getElementById("addInline").addEventListener("click",function(){var n=addRow({});n.querySelector(".desc").focus();save();});
+  document.getElementById("btnPrint").addEventListener("click",function(){save();window.print();});
+  document.getElementById("btnHtml").addEventListener("click",exportHtml);
+  document.getElementById("btnReset").addEventListener("click",function(){if(confirm("Clear this document and start over?")){try{localStorage.removeItem(KEY);}catch(e){}location.reload();}});
+  document.getElementById("vatRate").addEventListener("input",function(){recalc();save();});
+  document.querySelectorAll("[data-k]").forEach(function(el){el.addEventListener("input",save);});
+  window.addEventListener("resize",function(){document.querySelectorAll(".pad-wrap").forEach(function(w){if(w._resize)w._resize();});});
+
+  load();
+})();
+</script>
+</body>
+</html>

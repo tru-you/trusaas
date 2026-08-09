@@ -8,10 +8,13 @@ import {
   TrendingUp,
   Zap,
   FileSignature,
+  FileText,
+  ClipboardList,
   Car,
   Radar,
   Puzzle,
   Download,
+  X,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTruCrm } from '../../context/TruCrmContext';
@@ -19,7 +22,12 @@ import { usePwaInstall } from '../../hooks/usePwaInstall';
 import tsMark from '../../assets/brand/ts-mark.png';
 import wordmark from '../../assets/brand/trusaas-wordmark.png';
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+const SidebarContent: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) => {
   const { activeView, setActiveView, deals, invoices, workflowRules, proposals, getFinancialSummary, profile } = useApp();
 
   const { metrics: truCrmMetrics, overdue: truCrmOverdue, unworked: truCrmUnworked } = useTruCrm();
@@ -99,6 +107,18 @@ export const Sidebar: React.FC = () => {
       badgeColor: badgeQuiet,
     },
     {
+      id: 'documents',
+      label: 'Documents & Signing',
+      icon: FileText,
+      badge: null,
+    },
+    {
+      id: 'onboarding',
+      label: 'Client Onboarding',
+      icon: ClipboardList,
+      badge: null,
+    },
+    {
       id: 'workflows',
       label: 'Automated Workflows',
       icon: Workflow,
@@ -122,7 +142,7 @@ export const Sidebar: React.FC = () => {
   const allGroups = [...navGroups, { heading: 'Business operations', items: businessItems }];
 
   return (
-    <aside className="w-64 bg-white text-[color:var(--white-dim)] flex flex-col h-screen sticky top-0 shrink-0 border-r border-[rgba(10,20,32,0.08)] select-none">
+    <>
       {/* App Branding Header with Logo */}
       <div className="p-4 border-b border-[rgba(10,20,32,0.08)] flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -146,6 +166,15 @@ export const Sidebar: React.FC = () => {
             <p className="text-[11px] text-[rgba(10,20,32,0.45)] truncate mt-0.5">Personal CRM & operations</p>
           </div>
         </div>
+        {onNavigate && (
+          <button
+            onClick={onNavigate}
+            className="p-1.5 text-[#6B7685] hover:bg-[#EFEDE8] rounded-lg transition-colors lg:hidden"
+            aria-label="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Navigation List */}
@@ -163,7 +192,10 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={item.id}
                   id={`nav-${item.id}`}
-                  onClick={() => setActiveView(item.id)}
+                  onClick={() => {
+                    setActiveView(item.id);
+                    onNavigate?.();
+                  }}
                   className={`w-full flex items-center justify-between pl-3 pr-3 py-2.5 rounded-[8px] text-[length:var(--t-small)] transition-colors group border-l-2 ${
                     isActive
                       ? activeNavClass
@@ -230,11 +262,39 @@ export const Sidebar: React.FC = () => {
             <ShieldCheck className="w-3.5 h-3.5 text-[#0E9D98]" />
             Auto-Sync Active
           </span>
-          <span className="text-[rgba(10,20,32,0.45)] hover:text-[#1A2332] cursor-pointer" onClick={() => setActiveView('settings')}>
+          <span className="text-[rgba(10,20,32,0.45)] hover:text-[#1A2332] cursor-pointer" onClick={() => { setActiveView('settings'); onNavigate?.(); }}>
             v2.5 Pro
           </span>
         </div>
       </div>
-    </aside>
+    </>
   );
 };
+
+export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onMobileClose }) => {
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 bg-white text-[color:var(--white-dim)] flex-col h-screen sticky top-0 shrink-0 border-r border-[rgba(10,20,32,0.08)] select-none">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-[rgba(10,20,32,0.45)] backdrop-blur-sm lg:hidden"
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white text-[color:var(--white-dim)] flex-col border-r border-[rgba(10,20,32,0.08)] select-none shadow-2xl transition-transform duration-200 lg:hidden ${
+          mobileOpen ? 'flex translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <SidebarContent onNavigate={onMobileClose} />
+      </aside>
+    </>
+  );
+};
+

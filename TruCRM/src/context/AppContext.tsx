@@ -407,13 +407,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const sendProposal = (id: string) => {
+    const prop = proposals.find((p) => p.id === id);
     setProposals((prev) =>
       prev.map((p) => {
         if (p.id === id) {
           const updated = { ...p, status: 'Sent' as const };
+          if (prop) {
+            window.open(
+              `mailto:${encodeURIComponent(prop.clientEmail)}?subject=${encodeURIComponent(
+                `Proposal ${prop.proposalNumber} — ${prop.title}`
+              )}&body=${encodeURIComponent(
+                `Hi ${prop.clientName},\n\nPlease find attached proposal ${prop.proposalNumber} (${prop.title}) from ${profile.companyName}.\n\n` +
+                  `Proposal total: ${profile.currency}${prop.amount.toLocaleString()} (incl. ${profile.taxRate}% VAT)\n` +
+                  `Valid until: ${prop.validUntil}\n\n${prop.scopeSummary}\n\n` +
+                  `To attach the branded PDF: open Quotes & SLAs in the CRM, use Export Doc on this proposal, then Print → Save as PDF.\n\nBest regards,\n${profile.companyName}`
+              )}`,
+              '_blank'
+            );
+          }
           addNotification(
             'Proposal Sent to Client',
-            `Proposal ${p.proposalNumber} sent to ${p.clientEmail}.`,
+            `Opened your mail client for ${prop?.clientEmail || 'the client'} with proposal ${p.proposalNumber}.`,
             'info'
           );
           return updated;
