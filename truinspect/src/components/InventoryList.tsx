@@ -55,7 +55,7 @@ export default function InventoryList({
   syncStatus,
   onForceSync
 }: InventoryListProps) {
-  const { signOut, user, isDemo } = useAuth();
+  const { signOut, user } = useAuth();
   const [loggingOut, setLoggingOut] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
   /** Stock # from Flow deep-link (?stock=) — highlight + search */
@@ -1451,8 +1451,8 @@ export default function InventoryList({
               <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 space-y-2">
                 <div className="text-[13px] tracking-normal text-red-300/80 font-bold">Session</div>
                 <p className="text-[13px] text-neutral-400 leading-relaxed">
-                  {isDemo
-                    ? 'Signed in as demo inspector (offline). Log out returns to the login screen.'
+                  {user?.displayName
+                    ? `Signed in as ${user.displayName}`
                     : user?.email
                       ? `Signed in as ${user.email}`
                       : 'Signed in'}

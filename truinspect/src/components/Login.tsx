@@ -31,7 +31,7 @@ import { useAuth } from '../contexts/AuthContext';
 type ServerState = 'checking' | 'secured' | 'unconfigured' | 'unreachable';
 
 export default function Login() {
-  const { signInWithCode, enterDemoMode } = useAuth();
+  const { signInWithCode } = useAuth();
   const [code, setCode] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -141,18 +141,8 @@ export default function Login() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={enterDemoMode}
-              className="w-full flex items-center justify-center gap-2 min-h-[52px] rounded-xl tl-btn-3d text-[16px] font-semibold tracking-normal"
-            >
-              <LogIn size={16} />
-              Continue offline
-            </button>
-
             <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center leading-relaxed">
-              Inspections stay on this device and this server. Set the access code
-              to sign in properly — this notice goes away on its own.
+              Set the access code to enable sign-in — this notice goes away on its own.
             </p>
           </div>
         ) : (

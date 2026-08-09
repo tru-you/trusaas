@@ -410,18 +410,6 @@ const authenticate = async (req: any, res: any, next: any) => {
     return next();
   }
 
-  // Explicit demo / local tokens from the frontend offline login. These are an
-  // unconditional way in, so they only survive while no access code is
-  // configured — i.e. local development. With one set, `Bearer demo` is just a
-  // wrong token.
-  if (
-    !HAS_REAL_TOKEN_SECRET &&
-    (idToken === 'local-demo-token' || idToken === 'demo' || idToken.startsWith('local-'))
-  ) {
-    req.user = { uid: 'local-demo-user', email: 'demo@trulens.local', local: true };
-    return next();
-  }
-
   // Try real Firebase Admin verification when available
   if (fauth) {
     try {
@@ -457,8 +445,8 @@ const authenticate = async (req: any, res: any, next: any) => {
   if (LOCAL_MODE && !HAS_REAL_TOKEN_SECRET) {
     const payload = decodeJwtPayload(idToken);
     req.user = {
-      uid: payload?.user_id || payload?.sub || payload?.uid || 'local-demo-user',
-      email: payload?.email || 'demo@trulens.local',
+      uid: payload?.user_id || payload?.sub || payload?.uid || 'local-user',
+      email: payload?.email || 'local@truinspect.local',
       local: true,
     };
     return next();
@@ -497,7 +485,6 @@ if (apiKey) {
 type InspectScope = { uid: string; dealerSlug?: string | null };
 
 /* Scoping rule for both read paths:
-   - local-demo-user always wins (dev / PC demo mode).
    - Dealer-code login (token carries a dealerSlug): a record is visible only
      when its own dealerSlug matches. Untagged legacy records (captured before
      dealerSlug stamping existed) are hidden from EVERY dealer login — they
@@ -506,7 +493,6 @@ type InspectScope = { uid: string; dealerSlug?: string | null };
      to an ownerId match. */
 function passesScope(record: any, user?: InspectScope): boolean {
   if (!user) return true;
-  if (user.uid === 'local-demo-user') return true;
   if (user.dealerSlug) {
     return record.dealerSlug === user.dealerSlug;
   }
