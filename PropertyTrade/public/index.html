@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en" data-app="flowprop">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Flow Prop — Property Management</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#F4F8FC" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Flow Prop" />
+<link rel="icon" href="/icon.png" type="image/png" />
+<link rel="apple-touch-icon" href="/icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F4F8FC; --panel: #FFFFFF; --panel-2: #EAF1F9;
+  --border: rgba(10,20,32,0.08); --border-focus: rgba(21,199,192,0.5);
+  --text: #0A1420; --muted: rgba(10,20,32,0.55); --dim: rgba(10,20,32,0.35);
+  --cyan: #0E9D98; --cyan-dark: #0A7D79;
+  --green: #0F8A50; --amber: #D97706; --red: #DC2626;
+  --radius: 12px; --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+body { display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ---- Utilities ---- */
+.hidden { display: none !important; }
+.screen { display: none; flex-direction: column; flex: 1; overflow-y: auto; }
+.screen.active { display: flex; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, select, textarea { font-family: inherit; font-size: 16px; color: var(--text); background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; outline: none; width: 100%; }
+input:focus, select:focus, textarea:focus { border-color: var(--border-focus); background: var(--panel); box-shadow: 0 0 0 3px rgba(14,157,152,0.1); }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ---- Top Bar ---- */
+.topbar { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+.topbar-title { font-size: 16px; font-weight: 700; flex: 1; }
+.topbar-sub { font-size: 12px; color: var(--muted); }
+.topbar-back { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; color: var(--muted); }
+.topbar-back:hover { background: rgba(10,20,32,0.05); color: var(--text); }
+
+/* ---- Bottom Nav ---- */
+.bottomnav { display: flex; background: var(--panel); border-top: 1px solid var(--border); padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px)); position: sticky; bottom: 0; z-index: 50; }
+.bottomnav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; font-size: 10px; font-weight: 600; color: var(--dim); transition: color 0.15s; }
+.bottomnav button.active { color: var(--cyan); }
+.bottomnav svg { width: 22px; height: 22px; }
+
+/* ---- Cards ---- */
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: border-color 0.15s; }
+.card:hover { border-color: rgba(14,157,152,0.3); }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.card-sub { font-size: 13px; color: var(--muted); }
+.card-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+
+/* ---- Stat Cards ---- */
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; }
+.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.stat-value { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-value.green { color: #0F8A50; }
+.stat-value.amber { color: #B45309; }
+.stat-value.red { color: #DC2626; }
+.stat-value.cyan { color: #0E9D98; }
+
+/* ---- Badges ---- */
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+.badge-green { background: rgba(15,138,80,0.1); color: #0F8A50; }
+.badge-amber { background: rgba(217,119,6,0.1); color: #B45309; }
+.badge-red { background: rgba(220,38,38,0.1); color: #DC2626; }
+.badge-cyan { background: rgba(14,157,152,0.1); color: var(--cyan); }
+.badge-gray { background: rgba(10,20,32,0.05); color: var(--muted); }
+
+/* ---- Lists ---- */
+.list { display: flex; flex-direction: column; gap: 8px; padding: 16px; }
+.list-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-top: 16px; }
+.list-header h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+
+/* ---- Buttons ---- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 600; transition: all 0.15s; }
+.btn-primary { background: var(--cyan); color: #FFFFFF; }
+.btn-primary:hover { background: var(--cyan-dark); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-secondary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: rgba(14,157,152,0.3); }
+.btn-full { width: 100%; }
+
+/* ---- FAB ---- */
+.fab { position: fixed; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); right: 16px; width: 56px; height: 56px; border-radius: 50%; background: var(--cyan); color: #FFFFFF; display: grid; place-items: center; box-shadow: 0 4px 20px rgba(14,157,152,0.25); z-index: 40; }
+.fab svg { width: 24px; height: 24px; }
+
+/* ---- Tabs ---- */
+.tabs { display: flex; gap: 4px; padding: 4px; margin: 16px; background: var(--panel-2); border-radius: var(--radius); }
+.tab { flex: 1; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; text-align: center; color: var(--muted); transition: all 0.15s; }
+.tab.active { background: var(--cyan); color: #FFFFFF; }
+
+/* ---- Search ---- */
+.search-bar { margin: 0 16px 8px; position: relative; }
+.search-bar input { padding-left: 40px; }
+.search-bar svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--dim); }
+
+/* ---- Modal ---- */
+.modal-overlay { position: fixed; inset: 0; background: rgba(10,20,32,0.4); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--panel); border-radius: 16px 16px 0 0; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px)); }
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.modal .form-group { margin-bottom: 14px; }
+.modal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ---- Kanban ---- */
+.kanban { display: flex; gap: 12px; padding: 16px; overflow-x: auto; min-height: 300px; }
+.kanban-col { min-width: 260px; flex: 1; }
+.kanban-col-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 8px 0; display: flex; align-items: center; gap: 8px; }
+.kanban-col-title .count { background: rgba(10,20,32,0.06); padding: 2px 8px; border-radius: 99px; font-size: 11px; }
+.kanban-cards { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---- Login ---- */
+.login-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; position: relative; overflow: hidden; }
+.login-wrap .glow-1 { position: absolute; top: -12%; right: -18%; width: 288px; height: 288px; background: rgba(14,157,152,0.08); filter: blur(110px); border-radius: 50%; pointer-events: none; }
+.login-wrap .glow-2 { position: absolute; bottom: -12%; left: -18%; width: 288px; height: 288px; background: rgba(14,157,152,0.06); filter: blur(110px); border-radius: 50%; pointer-events: none; }
+.login-card { width: 100%; max-width: 380px; z-index: 1; }
+.login-logo { font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 8px; }
+.login-logo span { color: var(--cyan); }
+.login-tagline { font-size: 12px; color: var(--muted); text-align: center; letter-spacing: 0.08em; margin-bottom: 40px; }
+.login-footer { text-align: center; margin-top: 40px; font-size: 12px; color: var(--muted); }
+.login-footer a { color: var(--cyan); text-decoration: none; }
+
+/* ---- Empty state ---- */
+.empty { text-align: center; padding: 48px 24px; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+.empty-text { font-size: 14px; color: var(--muted); }
+
+/* ---- Detail ---- */
+.detail-header { padding: 16px; }
+.detail-header h1 { font-size: 20px; font-weight: 700; }
+.detail-tabs { display: flex; gap: 4px; padding: 0 16px; overflow-x: auto; }
+.detail-tab { padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; border-bottom: 2px solid transparent; }
+.detail-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.detail-section { padding: 16px; }
+.detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(10,20,32,0.06); }
+.detail-label { font-size: 13px; color: var(--muted); }
+.detail-value { font-size: 13px; font-weight: 500; text-align: right; }
+
+/* ---- Timeline ---- */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.timeline-item { display: flex; gap: 12px; padding: 10px 0; }
+.timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--cyan); margin-top: 5px; flex-shrink: 0; }
+.timeline-content { flex: 1; min-width: 0; }
+.timeline-author { font-size: 13px; font-weight: 600; }
+.timeline-date { font-size: 11px; color: var(--muted); }
+.timeline-text { font-size: 13px; color: var(--text); margin-top: 2px; }
+
+/* ---- Report Table ---- */
+.rpt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rpt-table th { text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid var(--border); }
+.rpt-table td { padding: 10px 12px; border-bottom: 1px solid rgba(10,20,32,0.04); }
+.rpt-table tr:hover td { background: rgba(14,157,152,0.03); }
+.rpt-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.rpt-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.rpt-summary-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.rpt-summary-value { font-size: 22px; font-weight: 800; color: var(--cyan); }
+.rpt-summary-label { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+.table-wrap { overflow-x: auto; }
+
+/* ---- Responsive ---- */
+@media (min-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .kanban { flex-wrap: nowrap; overflow-x: auto; }
+}
+@media (min-width: 1024px) {
+  .stats-grid { grid-template-columns: repeat(6, 1fr); }
+  body { max-width: 1200px; margin: 0 auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="s-login" class="login-wrap">
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  <div class="login-card">
+    <div class="login-logo">Flow<span>Prop</span></div>
+    <p class="login-tagline">Property management</p>
+
+    <h2 style="font-size:18px;font-weight:600;text-align:center;margin-bottom:6px;">Sign in this device</h2>
+    <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;">Signs in for 30 days</p>
+
+    <form id="login-form">
+      <label for="login-code">Agency access code</label>
+      <div style="position:relative;margin-bottom:12px;">
+        <input id="login-code" type="password" placeholder="Access code" autocomplete="current-password" />
+      </div>
+      <div id="login-error" class="hidden" style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);padding:10px 12px;border-radius:8px;font-size:13px;color:#DC2626;margin-bottom:12px;"></div>
+      <button type="submit" class="btn btn-primary btn-full" id="login-btn" style="min-height:48px;">Use this device</button>
+    </form>
+
+    <p style="margin-top:20px;font-size:13px;color:var(--muted);text-align:center;">Access is issued per agency. Ask your property manager for the code.</p>
+    <p class="login-footer"><a href="https://tru-property.co.za">Flow Prop</a> — by TruProperty · V 1.0</p>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app-shell" class="hidden" style="display:none;flex-direction:column;height:100%;">
+
+  <!-- Top Bar -->
+  <div class="topbar" id="topbar">
+    <div id="topbar-back" class="topbar-back hidden" onclick="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div class="topbar-title" id="topbar-title">Flow Prop</div>
+      <div class="topbar-sub" id="topbar-sub"></div>
+    </div>
+  </div>
+
+  <!-- Screens Container -->
+  <div style="flex:1;overflow-y:auto;position:relative;" id="screens">
+
+    <!-- DASHBOARD -->
+    <div id="s-dashboard" class="screen">
+      <div class="stats-grid" id="dash-stats"></div>
+      <div class="list-header"><h2>Expiring Leases</h2></div>
+      <div class="list" id="dash-expiring"></div>
+      <div class="list-header"><h2>Deposit Alerts</h2></div>
+      <div class="list" id="dash-deposit-alerts"></div>
+    </div>
+
+    <!-- PROPERTIES -->
+    <div id="s-properties" class="screen">
+      <div class="tabs" id="prop-tabs">
+        <div class="tab active" data-filter="all" onclick="filterProps('all',this)">All</div>
+        <div class="tab" data-filter="rental" onclick="filterProps('rental',this)">Rentals</div>
+        <div class="tab" data-filter="sale" onclick="filterProps('sale',this)">Sales</div>
+      </div>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="prop-search" type="text" placeholder="Search properties..." oninput="renderProperties()" />
+      </div>
+      <div class="list" id="prop-list"></div>
+      <div class="fab" onclick="showModal('property')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div id="s-payments" class="screen">
+      <div style="padding:16px;display:flex;gap:12px;align-items:center;">
+        <label style="margin:0;flex-shrink:0;">Month</label>
+        <input id="pay-month" type="month" onchange="renderPayments()" />
+      </div>
+      <div class="list" id="pay-list"></div>
+      <div class="fab" onclick="showModal('payment')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+
+    <!-- PIPELINE (Sales) -->
+    <div id="s-pipeline" class="screen">
+      <div class="kanban" id="pipeline-kanban"></div>
+    </div>
+
+    <!-- MORE -->
+    <div id="s-more" class="screen">
+      <div class="list">
+        <div class="card" onclick="nav('tenants')"><div class="card-title">Tenants</div><div class="card-sub">Manage tenants and FICA</div></div>
+        <div class="card" onclick="nav('buyers')"><div class="card-title">Buyers</div><div class="card-sub">Prospective buyers and requirements</div></div>
+        <div class="card" onclick="nav('maintenance')"><div class="card-title">Maintenance</div><div class="card-sub">Repair tickets and tracking</div></div>
+        <div class="card" onclick="nav('owners')"><div class="card-title">Owners</div><div class="card-sub">Landlords and property owners</div></div>
+        <div class="card" onclick="nav('commissions')"><div class="card-title">Commissions</div><div class="card-sub">Sales and rental commissions</div></div>
+        <div class="card" onclick="nav('reports')"><div class="card-title">Reports</div><div class="card-sub">Rent roll, arrears, commissions</div></div>
+        <div class="card" onclick="nav('settings')"><div class="card-title">Settings</div><div class="card-sub">Agency profile and agents</div></div>
+      </div>
+    </div>
+
+    <!-- TENANTS -->
+    <div id="s-tenants" class="screen">
+      <div class="search-bar" style="margin-top:12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="ten-search" type="text" placeholder="Search tenants..." oninput="renderTenants()" />
+      </div>
+      <div class="list" id="ten-list"></div>
+      <div class="fab" onclick="showModal('tenant')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+
+    <!-- BUYERS -->
+    <div id="s-buyers" class="screen">
+      <div class="search-bar" style="margin-top:12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="buy-search" type="text" placeholder="Search buyers..." oninput="renderBuyers()" />
+      </div>
+      <div class="list" id="buy-list"></div>
+      <div class="fab" onclick="showModal('buyer')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE -->
+    <div id="s-maintenance" class="screen">
+      <div class="kanban" id="maint-kanban"></div>
+      <div class="fab" onclick="showModal('maintenance')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+
+    <!-- OWNERS -->
+    <div id="s-owners" class="screen">
+      <div class="list" id="own-list"></div>
+      <div class="fab" onclick="showModal('owner')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="s-settings" class="screen">
+      <div class="list-header"><h2>Agency Profile</h2></div>
+      <div class="detail-section" id="settings-agency"></div>
+      <div class="list-header"><h2>Agents</h2></div>
+      <div class="list" id="settings-agents"></div>
+      <div style="padding:0 16px 16px;">
+        <button class="btn btn-secondary btn-full" onclick="showModal('agent')">Create Agent</button>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="s-reports" class="screen">
+      <div class="list">
+        <div class="card" onclick="renderReport('rent-roll')"><div class="card-title">Rent Roll</div><div class="card-sub">Monthly rent due vs collected</div></div>
+        <div class="card" onclick="renderReport('arrears')"><div class="card-title">Arrears</div><div class="card-sub">Outstanding balances</div></div>
+        <div class="card" onclick="renderReport('sales-pipeline')"><div class="card-title">Sales Pipeline</div><div class="card-sub">Listings, offers, sales status</div></div>
+        <div class="card" onclick="renderReport('commission')"><div class="card-title">Commission</div><div class="card-sub">Rental and sales commission</div></div>
+      </div>
+    </div>
+
+    <!-- REPORT DETAIL -->
+    <div id="s-report-detail" class="screen">
+      <div class="detail-header" id="rpt-header"></div>
+      <div class="detail-section" id="rpt-body"></div>
+    </div>
+
+    <!-- MAINTENANCE DETAIL -->
+    <div id="s-maint-detail" class="screen">
+      <div class="detail-header" id="maintd-header"></div>
+      <div class="detail-section" id="maintd-body"></div>
+      <div class="detail-section" id="maintd-timeline"></div>
+      <div style="padding:0 16px 16px;display:flex;gap:8px;">
+        <input id="maintd-note" type="text" placeholder="Add a note..." style="flex:1;" />
+        <button class="btn btn-primary" onclick="submitMaintNote()">Send</button>
+      </div>
+    </div>
+
+    <!-- OWNER DETAIL -->
+    <div id="s-owner-detail" class="screen">
+      <div class="detail-header" id="ownd-header"></div>
+      <div class="detail-section" id="ownd-body"></div>
+      <div class="list-header"><h2>Statement</h2></div>
+      <div class="detail-section" id="ownd-statement"></div>
+    </div>
+
+    <!-- PROPERTY DETAIL -->
+    <div id="s-property-detail" class="screen">
+      <div class="detail-header" id="propd-header"></div>
+      <div class="detail-tabs" id="propd-tabs">
+        <div class="detail-tab active" onclick="propDetailTab('info',this)">Info</div>
+        <div class="detail-tab" onclick="propDetailTab('interests',this)">Leads</div>
+        <div class="detail-tab" onclick="propDetailTab('viewings',this)">Viewings</div>
+        <div class="detail-tab" onclick="propDetailTab('offers',this)">Offers</div>
+        <div class="detail-tab" onclick="propDetailTab('mandates',this)">Mandate</div>
+        <div class="detail-tab" onclick="propDetailTab('leases',this)">Leases</div>
+        <div class="detail-tab" onclick="propDetailTab('docs',this)">Docs</div>
+      </div>
+      <div id="propd-tab-info" class="propd-panel">
+        <div class="detail-section" id="propd-body"></div>
+      </div>
+      <div id="propd-tab-interests" class="propd-panel" style="display:none;">
+        <div class="list" id="propd-interests"></div>
+        <div style="padding:0 16px 16px;">
+          <button class="btn btn-secondary btn-full" onclick="showModal('interest')">Add Lead</button>
+        </div>
+      </div>
+      <div id="propd-tab-viewings" class="propd-panel" style="display:none;">
+        <div class="list" id="propd-viewings"></div>
+        <div style="padding:0 16px 16px;">
+          <button class="btn btn-secondary btn-full" onclick="showModal('viewing')">Schedule Viewing</button>
+        </div>
+      </div>
+      <div id="propd-tab-offers" class="propd-panel" style="display:none;">
+        <div class="list" id="propd-offers"></div>
+      </div>
+      <div id="propd-tab-mandates" class="propd-panel" style="display:none;">
+        <div class="detail-section" id="propd-mandate"></div>
+        <div style="padding:0 16px 16px;">
+          <button class="btn btn-secondary btn-full" onclick="showModal('mandate')">Create Mandate</button>
+        </div>
+      </div>
+      <div id="propd-tab-leases" class="propd-panel" style="display:none;">
+        <div class="list" id="propd-leases"></div>
+        <div style="padding:0 16px 16px;">
+          <button class="btn btn-secondary btn-full" onclick="showModal('lease')">Create Lease</button>
+        </div>
+      </div>
+      <div id="propd-tab-docs" class="propd-panel" style="display:none;">
+        <div class="list" id="propd-docs"></div>
+        <div style="padding:0 16px 16px;">
+          <button class="btn btn-secondary btn-full" onclick="showModal('document',{parentType:'property',parentId:currentPropertyId})">Upload Document</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUYER DETAIL -->
+    <div id="s-buyer-detail" class="screen">
+      <div class="detail-header" id="buyd-header"></div>
+      <div class="detail-tabs" id="buyd-tabs">
+        <div class="detail-tab active" onclick="buyerDetailTab('info',this)">Info</div>
+        <div class="detail-tab" onclick="buyerDetailTab('interests',this)">Interests</div>
+        <div class="detail-tab" onclick="buyerDetailTab('viewings',this)">Viewings</div>
+        <div class="detail-tab" onclick="buyerDetailTab('offers',this)">Offers</div>
+      </div>
+      <div id="buyd-tab-info" class="buyd-panel">
+        <div class="detail-section" id="buyd-body"></div>
+      </div>
+      <div id="buyd-tab-interests" class="buyd-panel" style="display:none;">
+        <div class="list" id="buyd-interests"></div>
+      </div>
+      <div id="buyd-tab-viewings" class="buyd-panel" style="display:none;">
+        <div class="list" id="buyd-viewings"></div>
+      </div>
+      <div id="buyd-tab-offers" class="buyd-panel" style="display:none;">
+        <div class="list" id="buyd-offers"></div>
+      </div>
+    </div>
+
+    <!-- INTEREST DETAIL -->
+    <div id="s-interest-detail" class="screen">
+      <div class="detail-header" id="intd-header"></div>
+      <div class="detail-section" id="intd-body"></div>
+      <div class="detail-section" id="intd-timeline"></div>
+      <div style="padding:0 16px 16px;display:flex;gap:8px;">
+        <input id="intd-note" type="text" placeholder="Add a note..." style="flex:1;" />
+        <button class="btn btn-primary" onclick="submitInterestNote()">Send</button>
+      </div>
+    </div>
+
+    <!-- COMMISSIONS -->
+    <div id="s-commissions" class="screen">
+      <div class="list" id="comm-list"></div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottomnav" id="bottomnav">
+    <button onclick="nav('dashboard')" data-screen="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button onclick="nav('properties')" data-screen="properties">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Properties
+    </button>
+    <button onclick="nav('payments')" data-screen="payments">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+      Payments
+    </button>
+    <button onclick="nav('pipeline')" data-screen="pipeline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Pipeline
+    </button>
+    <button onclick="nav('more')" data-screen="more">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      More
+    </button>
+  </nav>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+// ============================================================
+// Flow Prop — Client Application
+// ============================================================
+
+const TOKEN_KEY = 'flowprop_token';
+const ACCOUNT_KEY = 'flowprop_account';
+let token = localStorage.getItem(TOKEN_KEY);
+let account = null;
+try { account = JSON.parse(localStorage.getItem(ACCOUNT_KEY)); } catch {}
+
+let currentScreen = 'dashboard';
+const screenStack = [];
+let propFilter = 'all';
+let currentPropertyId = null;
+let currentMaintId = null;
+
+// ---- API ----
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(opts.headers || {}) },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (res.status === 401) { logout(); throw new Error('Session expired'); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || res.statusText); }
+  return res.json();
+}
+
+// ---- Auth ----
+function logout() {
+  token = null; account = null;
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ACCOUNT_KEY);
+  showLogin();
+}
+
+function showLogin() {
+  document.getElementById('s-login').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('s-login').style.display = 'none';
+  const shell = document.getElementById('app-shell');
+  shell.classList.remove('hidden');
+  shell.style.display = 'flex';
+  document.getElementById('topbar-sub').textContent = account?.agencyName || '';
+  nav('dashboard');
+}
+
+document.getElementById('login-form').onsubmit = async (e) => {
+  e.preventDefault();
+  const code = document.getElementById('login-code').value.trim();
+  const errEl = document.getElementById('login-error');
+  if (!code) { errEl.textContent = 'Enter the access code for this agency.'; errEl.classList.remove('hidden'); return; }
+  errEl.classList.add('hidden');
+  document.getElementById('login-btn').disabled = true;
+  document.getElementById('login-btn').textContent = 'Checking...';
+  try {
+    const data = await fetch('/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    }).then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    token = data.token; account = data.account;
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
+    showApp();
+  } catch (err) {
+    errEl.textContent = err.message || 'Could not sign in.';
+    errEl.classList.remove('hidden');
+  } finally {
+    document.getElementById('login-btn').disabled = false;
+    document.getElementById('login-btn').textContent = 'Use this device';
+  }
+};
+
+// ---- Navigation ----
+function nav(screen, pushStack = true) {
+  if (pushStack && currentScreen !== screen) screenStack.push(currentScreen);
+  currentScreen = screen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('s-' + screen);
+  if (el) el.classList.add('active');
+
+  // Update bottom nav
+  document.querySelectorAll('.bottomnav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.screen === screen);
+  });
+
+  // Top bar
+  const titles = { dashboard: 'Dashboard', properties: 'Properties', payments: 'Payments', pipeline: 'Sales Pipeline', more: 'More', tenants: 'Tenants', buyers: 'Buyers', maintenance: 'Maintenance', owners: 'Owners', reports: 'Reports', settings: 'Settings', commissions: 'Commissions', 'property-detail': 'Property', 'maint-detail': 'Maintenance', 'owner-detail': 'Owner', 'report-detail': 'Report', 'buyer-detail': 'Buyer', 'interest-detail': 'Lead' };
+  document.getElementById('topbar-title').textContent = titles[screen] || 'Flow Prop';
+
+  const isDetail = ['tenants', 'buyers', 'maintenance', 'owners', 'reports', 'settings', 'commissions', 'property-detail', 'maint-detail', 'owner-detail', 'report-detail', 'buyer-detail', 'interest-detail'].includes(screen);
+  document.getElementById('topbar-back').classList.toggle('hidden', !isDetail);
+
+  // Load data
+  if (screen === 'dashboard') loadDashboard();
+  else if (screen === 'properties') renderProperties();
+  else if (screen === 'payments') { initPayMonth(); renderPayments(); }
+  else if (screen === 'pipeline') renderPipeline();
+  else if (screen === 'tenants') renderTenants();
+  else if (screen === 'buyers') renderBuyers();
+  else if (screen === 'maintenance') renderMaintenance();
+  else if (screen === 'owners') renderOwners();
+  else if (screen === 'commissions') renderCommissions();
+  else if (screen === 'settings') renderSettings();
+}
+
+function goBack() {
+  const prev = screenStack.pop() || 'dashboard';
+  nav(prev, false);
+}
+
+// ---- ZAR Formatting ----
+function zar(cents) {
+  if (!cents && cents !== 0) return 'R 0.00';
+  const n = Math.abs(cents) / 100;
+  return `R ${cents < 0 ? '-' : ''}${n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function dateSA(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+// ---- Dashboard ----
+async function loadDashboard() {
+  try {
+    const d = await api('/api/dashboard');
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-card"><div class="stat-value cyan">${d.occupancyRate}%</div><div class="stat-label">Occupancy</div></div>
+      <div class="stat-card"><div class="stat-value green">${zar(d.rentCollectedThisMonthZAR)}</div><div class="stat-label">Collected</div></div>
+      <div class="stat-card"><div class="stat-value ${d.arrearsCount > 0 ? 'red' : ''}">${d.arrearsCount}</div><div class="stat-label">Arrears</div></div>
+      <div class="stat-card"><div class="stat-value ${d.maintenanceUrgent > 0 ? 'amber' : ''}">${d.maintenanceOpen}</div><div class="stat-label">Maintenance</div></div>
+      <div class="stat-card"><div class="stat-value cyan">${d.activeListings}</div><div class="stat-label">For Sale</div></div>
+      <div class="stat-card"><div class="stat-value amber">${d.pendingOffers}</div><div class="stat-label">Offers</div></div>
+      <div class="stat-card"><div class="stat-value cyan">${d.activeLeads || 0}</div><div class="stat-label">Leads</div></div>
+      <div class="stat-card"><div class="stat-value">${d.viewingsThisWeek || 0}</div><div class="stat-label">Viewings</div></div>
+    `;
+
+    const expEl = document.getElementById('dash-expiring');
+    if (d.expiringLeases?.length) {
+      expEl.innerHTML = d.expiringLeases.map(l => `
+        <div class="card" onclick="navPropertyDetail('${l.propertyId}')">
+          <div class="card-title">${l.propertyId}</div>
+          <div class="card-sub">Expires ${dateSA(l.endDate)} · ${zar(l.monthlyRentZAR)}/mo</div>
+        </div>
+      `).join('');
+    } else {
+      expEl.innerHTML = '<div class="empty"><div class="empty-text">No leases expiring soon</div></div>';
+    }
+
+    const depEl = document.getElementById('dash-deposit-alerts');
+    if (d.depositAlerts?.length) {
+      depEl.innerHTML = d.depositAlerts.map(a => `
+        <div class="card" style="border-color:rgba(220,38,38,0.3);">
+          <div class="card-title" style="color:var(--red);">Deposit receipt overdue</div>
+          <div class="card-sub">Property ${a.propertyId} · Paid ${dateSA(a.depositPaidDate)}</div>
+        </div>
+      `).join('');
+    } else {
+      depEl.innerHTML = '<div class="empty"><div class="empty-text">No deposit alerts</div></div>';
+    }
+  } catch (err) {
+    console.error('Dashboard load failed:', err);
+  }
+}
+
+// ---- Properties ----
+let allProperties = [];
+function filterProps(f, el) {
+  propFilter = f;
+  document.querySelectorAll('#prop-tabs .tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderProperties();
+}
+
+async function renderProperties() {
+  try {
+    allProperties = await api('/api/properties');
+    const search = (document.getElementById('prop-search')?.value || '').toLowerCase();
+    let items = allProperties.filter(p => !p.deleted);
+    if (propFilter !== 'all') items = items.filter(p => p.purpose === propFilter || p.purpose === 'both');
+    if (search) items = items.filter(p => `${p.address} ${p.suburb} ${p.city}`.toLowerCase().includes(search));
+
+    const el = document.getElementById('prop-list');
+    if (!items.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div><div class="empty-text">No properties yet</div></div>'; return; }
+
+    el.innerHTML = items.map(p => {
+      const status = p.purpose === 'sale' ? p.salesStatus : p.rentalStatus;
+      const statusClass = { occupied: 'badge-green', vacant: 'badge-amber', available: 'badge-cyan', 'under-offer': 'badge-amber', sold: 'badge-green', withdrawn: 'badge-gray' }[status] || 'badge-gray';
+      const price = p.purpose === 'sale' ? zar(p.askingPriceZAR) : `${zar(p.monthlyRentZAR)}/mo`;
+      return `<div class="card" onclick="navPropertyDetail('${p.id}')">
+        <div class="card-title">${p.address}${p.unitNumber ? ' #' + p.unitNumber : ''}</div>
+        <div class="card-sub">${p.suburb || ''} ${p.city || ''} · ${p.propertyType} · ${p.bedrooms}bd ${p.bathrooms}ba</div>
+        <div class="card-row">
+          <span class="badge ${statusClass}">${status}</span>
+          <span style="font-size:13px;font-weight:600;margin-left:auto;">${price}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function navPropertyDetail(id) {
+  try {
+    const p = await api(`/api/properties/${id}`);
+    document.getElementById('propd-header').innerHTML = `
+      <h1>${p.address}${p.unitNumber ? ' #' + p.unitNumber : ''}</h1>
+      <div style="margin-top:6px;display:flex;gap:8px;align-items:center;">
+        <span class="badge badge-cyan">${p.purpose}</span>
+        <span class="badge badge-gray">${p.propertyType}</span>
+      </div>
+    `;
+    const rows = [
+      ['Suburb', p.suburb], ['City', p.city], ['Province', p.province],
+      ['Bedrooms', p.bedrooms], ['Bathrooms', p.bathrooms], ['Parking', p.parking],
+      ['Floor Area', p.floorArea ? p.floorArea + ' sqm' : ''],
+      ['Erf Number', p.erfNumber],
+    ];
+    if (p.purpose === 'rental' || p.purpose === 'both') {
+      rows.push(['Monthly Rent', zar(p.monthlyRentZAR)], ['Deposit', zar(p.depositZAR)], ['Status', p.rentalStatus]);
+    }
+    if (p.purpose === 'sale' || p.purpose === 'both') {
+      rows.push(['Asking Price', zar(p.askingPriceZAR)], ['Sales Status', p.salesStatus]);
+    }
+    if (p.features?.length) rows.push(['Features', p.features.join(', ')]);
+    if (p.notes) rows.push(['Notes', p.notes]);
+
+    document.getElementById('propd-body').innerHTML = rows.filter(r => r[1]).map(r =>
+      `<div class="detail-row"><span class="detail-label">${r[0]}</span><span class="detail-value">${r[1]}</span></div>`
+    ).join('');
+    currentPropertyId = id;
+    propDetailTab('info', document.querySelector('#propd-tabs .detail-tab'));
+    nav('property-detail');
+  } catch (err) { console.error(err); }
+}
+
+function propDetailTab(tab, el) {
+  document.querySelectorAll('#propd-tabs .detail-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.propd-panel').forEach(p => p.style.display = 'none');
+  const panel = document.getElementById('propd-tab-' + tab);
+  if (panel) panel.style.display = '';
+  if (tab === 'docs') loadPropertyDocs(currentPropertyId);
+  if (tab === 'interests') loadPropertyInterests(currentPropertyId);
+  if (tab === 'viewings') loadPropertyViewings(currentPropertyId);
+  if (tab === 'offers') loadPropertyOffers(currentPropertyId);
+  if (tab === 'mandates') loadPropertyMandate(currentPropertyId);
+  if (tab === 'leases') loadPropertyLeases(currentPropertyId);
+}
+
+async function loadPropertyInterests(propId) {
+  try {
+    const items = await api(`/api/interests?propertyId=${propId}`);
+    const el = document.getElementById('propd-interests');
+    const active = items.filter(i => !i.deleted);
+    if (!active.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No leads yet</div></div>'; return; }
+    const statusClass = { new: 'badge-cyan', contacted: 'badge-amber', viewing_scheduled: 'badge-amber', viewing_done: 'badge-green', offer_made: 'badge-green', won: 'badge-green', lost: 'badge-red' };
+    el.innerHTML = active.map(i => `
+      <div class="card" onclick="navInterestDetail('${i.id}')">
+        <div class="card-title">${i.buyerId}</div>
+        <div class="card-sub">Source: ${i.source} · ${dateSA(i.createdAt)}</div>
+        <div class="card-row"><span class="badge ${statusClass[i.status] || 'badge-gray'}">${i.status.replace(/_/g, ' ')}</span></div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function loadPropertyViewings(propId) {
+  try {
+    const items = await api(`/api/viewings?propertyId=${propId}`);
+    const el = document.getElementById('propd-viewings');
+    if (!items.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No viewings yet</div></div>'; return; }
+    const statusClass = { scheduled: 'badge-cyan', completed: 'badge-green', cancelled: 'badge-red', no_show: 'badge-amber' };
+    const ratingClass = { hot: 'badge-red', warm: 'badge-amber', cold: 'badge-gray', not_interested: 'badge-gray' };
+    el.innerHTML = items.map(v => `
+      <div class="card">
+        <div class="card-title">${dateSA(v.scheduledDate)} ${v.scheduledTime || ''}</div>
+        <div class="card-sub">Buyer: ${v.buyerId}</div>
+        <div class="card-row">
+          <span class="badge ${statusClass[v.status] || 'badge-gray'}">${v.status}</span>
+          ${v.rating ? `<span class="badge ${ratingClass[v.rating] || 'badge-gray'}" style="margin-left:4px;">${v.rating}</span>` : ''}
+          ${v.status === 'scheduled' ? `<button class="btn btn-primary" style="margin-left:auto;padding:4px 12px;font-size:12px;" onclick="event.stopPropagation();completeViewing('${v.id}')">Complete</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function completeViewing(id) {
+  const feedback = prompt('Feedback after viewing:');
+  if (feedback === null) return;
+  const rating = prompt('Rating (hot / warm / cold / not_interested):') || 'warm';
+  try {
+    await api(`/api/viewings/${id}/complete`, { method: 'PUT', body: { feedback, rating } });
+    loadPropertyViewings(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+async function loadPropertyOffers(propId) {
+  try {
+    const offers = await api(`/api/offers?propertyId=${propId}`);
+    const el = document.getElementById('propd-offers');
+    if (!offers.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No offers yet</div></div>'; return; }
+    const statusClass = { submitted: 'badge-cyan', countered: 'badge-amber', accepted: 'badge-green', rejected: 'badge-red', expired: 'badge-gray', cancelled: 'badge-gray' };
+    const sorted = offers.sort((a, b) => (b.offerAmountZAR || 0) - (a.offerAmountZAR || 0));
+    el.innerHTML = sorted.map((o, idx) => `
+      <div class="card" ${idx === 0 && o.status === 'submitted' ? 'style="border-color:var(--cyan);"' : ''}>
+        ${idx === 0 && o.status === 'submitted' ? '<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--cyan);margin-bottom:4px;">Best Offer</div>' : ''}
+        <div class="card-title">${zar(o.offerAmountZAR)}</div>
+        <div class="card-sub">Buyer ${o.buyerId} · ${dateSA(o.offerDate)} · Valid until ${dateSA(o.validUntil)}</div>
+        ${o.conditions?.length ? `<div class="card-sub" style="margin-top:2px;">Conditions: ${o.conditions.join(', ')}</div>` : ''}
+        <div class="card-row">
+          <span class="badge ${statusClass[o.status] || 'badge-gray'}">${o.status}</span>
+          ${o.status === 'submitted' ? `
+            <div style="display:flex;gap:4px;margin-left:auto;">
+              <button class="btn btn-primary" style="padding:4px 10px;font-size:11px;" onclick="event.stopPropagation();acceptOffer('${o.id}')">Accept</button>
+              <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;" onclick="event.stopPropagation();counterOffer('${o.id}')">Counter</button>
+              <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;color:#DC2626;" onclick="event.stopPropagation();rejectOffer('${o.id}')">Reject</button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function acceptOffer(id) {
+  if (!confirm('Accept this offer? Other active offers will be rejected.')) return;
+  try {
+    await api(`/api/offers/${id}/accept`, { method: 'POST' });
+    loadPropertyOffers(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+async function counterOffer(id) {
+  const amount = prompt('Counter amount (cents):');
+  if (!amount) return;
+  try {
+    await api(`/api/offers/${id}/counter`, { method: 'POST', body: { counterAmountZAR: +amount } });
+    loadPropertyOffers(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+async function rejectOffer(id) {
+  if (!confirm('Reject this offer?')) return;
+  try {
+    await api(`/api/offers/${id}/reject`, { method: 'POST' });
+    loadPropertyOffers(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+async function loadPropertyMandate(propId) {
+  try {
+    const mandates = await api(`/api/mandates?propertyId=${propId}`);
+    const el = document.getElementById('propd-mandate');
+    const active = mandates.filter(m => m.status === 'active');
+    if (!active.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">No active mandate.</p>'; return; }
+    const m = active[0];
+    el.innerHTML = [
+      ['Type', m.mandateType], ['Start', dateSA(m.startDate)], ['End', dateSA(m.endDate)],
+      ['Commission', m.commissionPercent + '%'], ['VAT Registered', m.vatRegistered ? 'Yes' : 'No'],
+      ['Owner', m.ownerId], ['Status', m.status],
+    ].filter(r => r[1]).map(r =>
+      `<div class="detail-row"><span class="detail-label">${r[0]}</span><span class="detail-value">${r[1]}</span></div>`
+    ).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function loadPropertyLeases(propId) {
+  try {
+    const leases = await api('/api/leases?propertyId=' + propId);
+    const el = document.getElementById('propd-leases');
+    if (!leases.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No leases</div></div>'; return; }
+    const statusClass = { draft: 'badge-gray', active: 'badge-green', expiring: 'badge-amber', expired: 'badge-red', terminated: 'badge-red' };
+    el.innerHTML = leases.map(l => `
+      <div class="card">
+        <div class="card-title">${zar(l.monthlyRentZAR)}/mo</div>
+        <div class="card-sub">Tenant ${l.tenantId} · ${dateSA(l.startDate)} — ${dateSA(l.endDate)}</div>
+        <div class="card-row">
+          <span class="badge ${statusClass[l.status] || 'badge-gray'}">${l.status}</span>
+          ${l.status === 'active' ? `<button class="btn btn-secondary" style="margin-left:auto;padding:4px 10px;font-size:11px;color:#DC2626;" onclick="event.stopPropagation();terminateLease('${l.id}')">Terminate</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function terminateLease(id) {
+  const reason = prompt('Reason for termination:');
+  if (reason === null) return;
+  try {
+    await api(`/api/leases/${id}/terminate`, { method: 'POST', body: { reason } });
+    loadPropertyLeases(currentPropertyId);
+  } catch (err) { alert(err.message); }
+
+async function loadPropertyDocs(propId) {
+  try {
+    const docs = await api(`/api/documents?parentType=property&parentId=${propId}`);
+    const el = document.getElementById('propd-docs');
+    if (!docs.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No documents</div></div>'; return; }
+    el.innerHTML = docs.map(d => `
+      <div class="card" onclick="window.open('/api/documents/${d.id}/download','_blank')">
+        <div class="card-title">${d.filename || d.docType}</div>
+        <div class="card-sub">${d.docType.replace(/_/g, ' ')} · ${dateSA(d.createdAt)} · ${d.uploadedBy}</div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Payments ----
+function initPayMonth() {
+  const now = new Date();
+  const m = document.getElementById('pay-month');
+  if (!m.value) m.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+async function renderPayments() {
+  try {
+    const month = document.getElementById('pay-month')?.value || '';
+    const payments = await api(`/api/payments?month=${month}`);
+    const el = document.getElementById('pay-list');
+    if (!payments.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No payments for this month</div></div>'; return; }
+    el.innerHTML = payments.map(p => {
+      const statusClass = { received: 'badge-green', pending: 'badge-amber', bounced: 'badge-red', reversed: 'badge-red' }[p.status] || 'badge-gray';
+      return `<div class="card">
+        <div class="card-title">${zar(p.amountZAR)}</div>
+        <div class="card-sub">Property ${p.propertyId} · ${dateSA(p.date)} · ${p.method}</div>
+        <div class="card-row"><span class="badge ${statusClass}">${p.status}</span><span style="font-size:12px;color:var(--muted);margin-left:auto;">${p.reference || ''}</span></div>
+      </div>`;
+    }).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Pipeline ----
+async function renderPipeline() {
+  try {
+    const properties = await api('/api/properties?purpose=sale');
+    const cols = { available: [], 'under-offer': [], sold: [], withdrawn: [] };
+    const labels = { available: 'Available', 'under-offer': 'Under Offer', sold: 'Sold', withdrawn: 'Withdrawn' };
+    for (const p of properties) {
+      if (!p.deleted && cols[p.salesStatus]) cols[p.salesStatus].push(p);
+    }
+    const el = document.getElementById('pipeline-kanban');
+    el.innerHTML = Object.entries(cols).map(([status, items]) => `
+      <div class="kanban-col">
+        <div class="kanban-col-title">${labels[status]} <span class="count">${items.length}</span></div>
+        <div class="kanban-cards">
+          ${items.map(p => `<div class="card" onclick="navPropertyDetail('${p.id}')">
+            <div class="card-title">${p.address}</div>
+            <div class="card-sub">${p.suburb || ''} · ${zar(p.askingPriceZAR)}</div>
+          </div>`).join('')}
+          ${items.length === 0 ? '<div class="empty" style="padding:24px;"><div class="empty-text">None</div></div>' : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Tenants ----
+async function renderTenants() {
+  try {
+    const search = (document.getElementById('ten-search')?.value || '').toLowerCase();
+    let tenants = await api('/api/tenants');
+    if (search) tenants = tenants.filter(t => `${t.firstName} ${t.lastName} ${t.email}`.toLowerCase().includes(search));
+    const el = document.getElementById('ten-list');
+    if (!tenants.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No tenants yet</div></div>'; return; }
+    el.innerHTML = tenants.map(t => {
+      const ficaClass = { verified: 'badge-green', submitted: 'badge-amber', pending: 'badge-gray', expired: 'badge-red' }[t.ficaStatus] || 'badge-gray';
+      return `<div class="card"><div class="card-title">${t.firstName} ${t.lastName}</div><div class="card-sub">${t.phone || ''} · ${t.email || ''}</div><div class="card-row"><span class="badge ${ficaClass}">FICA ${t.ficaStatus}</span></div></div>`;
+    }).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Buyers ----
+async function renderBuyers() {
+  try {
+    const search = (document.getElementById('buy-search')?.value || '').toLowerCase();
+    let buyers = await api('/api/buyers');
+    if (search) buyers = buyers.filter(b => `${b.firstName} ${b.lastName} ${b.email}`.toLowerCase().includes(search));
+    const el = document.getElementById('buy-list');
+    if (!buyers.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No buyers yet</div></div>'; return; }
+    el.innerHTML = buyers.map(b => `
+      <div class="card" onclick="navBuyerDetail('${b.id}')"><div class="card-title">${b.firstName} ${b.lastName}</div>
+      <div class="card-sub">${b.phone || ''} · Budget ${zar(b.budgetMin)} – ${zar(b.budgetMax)}</div>
+      <div class="card-row"><span class="badge ${b.preApproved ? 'badge-green' : 'badge-gray'}">${b.preApproved ? 'Pre-approved' : 'Not pre-approved'}</span></div></div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Maintenance ----
+async function renderMaintenance() {
+  try {
+    const items = await api('/api/maintenance');
+    const cols = { reported: [], assigned: [], in_progress: [], resolved: [] };
+    const labels = { reported: 'Reported', assigned: 'Assigned', in_progress: 'In Progress', resolved: 'Resolved' };
+    for (const m of items) { if (cols[m.status]) cols[m.status].push(m); }
+    const el = document.getElementById('maint-kanban');
+    const prioClass = { urgent: 'badge-red', high: 'badge-amber', medium: 'badge-gray', low: 'badge-gray' };
+    el.innerHTML = Object.entries(cols).map(([status, list]) => `
+      <div class="kanban-col">
+        <div class="kanban-col-title">${labels[status]} <span class="count">${list.length}</span></div>
+        <div class="kanban-cards">
+          ${list.map(m => `<div class="card" onclick="navMaintDetail('${m.id}')"><div class="card-title">${m.category}</div><div class="card-sub">${m.description?.slice(0, 60) || ''}</div><div class="card-row"><span class="badge ${prioClass[m.priority] || 'badge-gray'}">${m.priority}</span><span style="font-size:12px;color:var(--muted);margin-left:auto;">${dateSA(m.reportedDate)}</span></div></div>`).join('')}
+          ${list.length === 0 ? '<div class="empty" style="padding:16px;"><div class="empty-text">None</div></div>' : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Owners ----
+async function renderOwners() {
+  try {
+    const owners = await api('/api/owners');
+    const el = document.getElementById('own-list');
+    if (!owners.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No owners yet</div></div>'; return; }
+    el.innerHTML = owners.map(o => `<div class="card" onclick="navOwnerDetail('${o.id}')"><div class="card-title">${o.name}</div><div class="card-sub">${o.phone || ''} · ${o.email || ''} · ${o.commissionPercent}% commission</div></div>`).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Settings ----
+async function renderSettings() {
+  try {
+    const agency = await api('/api/agency');
+    const sA = document.getElementById('settings-agency');
+    sA.innerHTML = [
+      ['Name', agency.name], ['Slug', agency.slug], ['Region', agency.region],
+      ['EAAB Ref', agency.eaabRef], ['Email', agency.contactEmail], ['Phone', agency.contactPhone],
+      ['WhatsApp', agency.whatsapp], ['Address', agency.address],
+    ].filter(r => r[1]).map(r => `<div class="detail-row"><span class="detail-label">${r[0]}</span><span class="detail-value">${r[1]}</span></div>`).join('') || '<p style="color:var(--muted);font-size:13px;">No agency details set yet.</p>';
+
+    if (account?.role === 'admin') {
+      const agents = await api('/api/agents');
+      const sAg = document.getElementById('settings-agents');
+      sAg.innerHTML = agents.map(a => `<div class="card"><div class="card-title">${a.label}</div><div class="card-sub">${a.role} · ${a.active !== false ? 'Active' : 'Inactive'} · ${(a.assignedPropertyIds || []).length} properties</div></div>`).join('') || '<p style="color:var(--muted);font-size:13px;">No agents besides you.</p>';
+    }
+  } catch (err) { console.error(err); }
+}
+
+// ---- Modal ----
+function showModal(type) {
+  const m = document.getElementById('modal');
+  const o = document.getElementById('modal-overlay');
+
+  if (type === 'property') {
+    m.innerHTML = `<div class="modal-title">Add Property</div>
+      <div class="form-group"><label>Address</label><input id="m-address" placeholder="14 Oak Lane, Sandton" /></div>
+      <div class="form-row"><div class="form-group"><label>Suburb</label><input id="m-suburb" /></div><div class="form-group"><label>City</label><input id="m-city" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Province</label><input id="m-province" value="Gauteng" /></div><div class="form-group"><label>Postal Code</label><input id="m-postal" /></div></div>
+      <div class="form-row">
+        <div class="form-group"><label>Type</label><select id="m-type"><option>House</option><option>Flat</option><option>Townhouse</option><option>Estate</option><option>Farm</option><option>Commercial</option></select></div>
+        <div class="form-group"><label>Purpose</label><select id="m-purpose"><option value="rental">Rental</option><option value="sale">Sale</option><option value="both">Both</option></select></div>
+      </div>
+      <div class="form-row"><div class="form-group"><label>Bedrooms</label><input id="m-beds" type="number" value="3" /></div><div class="form-group"><label>Bathrooms</label><input id="m-baths" type="number" value="2" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Monthly Rent (cents)</label><input id="m-rent" type="number" placeholder="850000" /></div><div class="form-group"><label>Asking Price (cents)</label><input id="m-price" type="number" placeholder="195000000" /></div></div>
+      <div class="form-group"><label>Notes</label><textarea id="m-notes" rows="2"></textarea></div>
+      <button class="btn btn-primary btn-full" onclick="submitProperty()">Create Property</button>`;
+  } else if (type === 'tenant') {
+    m.innerHTML = `<div class="modal-title">Add Tenant</div>
+      <div class="form-row"><div class="form-group"><label>First Name</label><input id="m-fn" /></div><div class="form-group"><label>Last Name</label><input id="m-ln" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Phone</label><input id="m-phone" type="tel" /></div><div class="form-group"><label>Email</label><input id="m-email" type="email" /></div></div>
+      <div class="form-group"><label>SA ID Number</label><input id="m-id" /></div>
+      <div class="form-group"><label>Employer</label><input id="m-employer" /></div>
+      <div class="form-group"><label>Monthly Income (cents)</label><input id="m-income" type="number" /></div>
+      <button class="btn btn-primary btn-full" onclick="submitTenant()">Create Tenant</button>`;
+  } else if (type === 'buyer') {
+    m.innerHTML = `<div class="modal-title">Add Buyer</div>
+      <div class="form-row"><div class="form-group"><label>First Name</label><input id="m-fn" /></div><div class="form-group"><label>Last Name</label><input id="m-ln" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Phone</label><input id="m-phone" type="tel" /></div><div class="form-group"><label>Email</label><input id="m-email" type="email" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Budget Min (cents)</label><input id="m-budmin" type="number" /></div><div class="form-group"><label>Budget Max (cents)</label><input id="m-budmax" type="number" /></div></div>
+      <div class="form-group"><label>Requirements</label><textarea id="m-reqs" rows="2" placeholder="3 bed, garden, close to schools"></textarea></div>
+      <div class="form-group"><label>Source</label><select id="m-source"><option>walk-in</option><option>referral</option><option>web</option><option>portal</option></select></div>
+      <button class="btn btn-primary btn-full" onclick="submitBuyer()">Create Buyer</button>`;
+  } else if (type === 'payment') {
+    m.innerHTML = `<div class="modal-title">Record Payment</div>
+      <div class="form-group"><label>Lease ID</label><input id="m-leaseid" placeholder="lease_..." /></div>
+      <div class="form-group"><label>Amount (cents)</label><input id="m-amount" type="number" /></div>
+      <div class="form-row"><div class="form-group"><label>Date</label><input id="m-date" type="date" /></div><div class="form-group"><label>Method</label><select id="m-method"><option>eft</option><option>cash</option><option>debit_order</option><option>card</option><option>other</option></select></div></div>
+      <div class="form-group"><label>Reference</label><input id="m-ref" /></div>
+      <button class="btn btn-primary btn-full" onclick="submitPayment()">Record Payment</button>`;
+  } else if (type === 'maintenance') {
+    m.innerHTML = `<div class="modal-title">Log Maintenance</div>
+      <div class="form-group"><label>Property ID</label><input id="m-propid" placeholder="prop_..." /></div>
+      <div class="form-row"><div class="form-group"><label>Category</label><select id="m-cat"><option>plumbing</option><option>electrical</option><option>structural</option><option>appliance</option><option>pest</option><option>security</option><option>garden</option><option>other</option></select></div><div class="form-group"><label>Priority</label><select id="m-prio"><option>medium</option><option>low</option><option>high</option><option>urgent</option></select></div></div>
+      <div class="form-group"><label>Description</label><textarea id="m-desc" rows="3"></textarea></div>
+      <div class="form-group"><label>Reported By</label><input id="m-reporter" /></div>
+      <button class="btn btn-primary btn-full" onclick="submitMaintenance()">Log Ticket</button>`;
+  } else if (type === 'owner') {
+    m.innerHTML = `<div class="modal-title">Add Owner</div>
+      <div class="form-group"><label>Full Name</label><input id="m-name" /></div>
+      <div class="form-row"><div class="form-group"><label>Phone</label><input id="m-phone" type="tel" /></div><div class="form-group"><label>Email</label><input id="m-email" type="email" /></div></div>
+      <div class="form-group"><label>SA ID Number</label><input id="m-id" /></div>
+      <div class="form-row"><div class="form-group"><label>Bank</label><input id="m-bank" /></div><div class="form-group"><label>Account</label><input id="m-acct" /></div></div>
+      <div class="form-group"><label>Commission %</label><input id="m-comm" type="number" value="10" /></div>
+      <button class="btn btn-primary btn-full" onclick="submitOwner()">Create Owner</button>`;
+  } else if (type === 'agent') {
+    m.innerHTML = `<div class="modal-title">Create Agent</div>
+      <div class="form-group"><label>Name</label><input id="m-aname" /></div>
+      <div class="form-group"><label>Role</label><select id="m-arole"><option>agent</option><option>manager</option><option>admin</option></select></div>
+      <div id="m-agent-result" class="hidden" style="margin-top:12px;background:rgba(14,157,152,0.06);border:1px solid rgba(14,157,152,0.2);padding:14px;border-radius:8px;"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="submitAgent()">Create Agent</button>`;
+  } else if (type === 'interest') {
+    m.innerHTML = `<div class="modal-title">Add Lead</div>
+      <div class="form-group"><label>Buyer ID</label><input id="m-buyerid" placeholder="buy_..." /></div>
+      <div class="form-group"><label>Source</label><select id="m-intsource"><option value="walk_in">Walk-in</option><option value="referral">Referral</option><option value="web">Web</option><option value="portal">Portal</option><option value="showroom">Showroom</option><option value="whatsapp">WhatsApp</option></select></div>
+      <button class="btn btn-primary btn-full" onclick="submitInterest()">Add Lead</button>`;
+  } else if (type === 'viewing') {
+    m.innerHTML = `<div class="modal-title">Schedule Viewing</div>
+      <div class="form-group"><label>Buyer ID</label><input id="m-vbuyerid" placeholder="buy_..." /></div>
+      <div class="form-row"><div class="form-group"><label>Date</label><input id="m-vdate" type="date" /></div><div class="form-group"><label>Time</label><input id="m-vtime" type="time" /></div></div>
+      <div class="form-group"><label>Source</label><select id="m-vsource"><option value="web">Web</option><option value="walk_in">Walk-in</option><option value="referral">Referral</option><option value="portal">Portal</option><option value="showroom">Showroom</option><option value="whatsapp">WhatsApp</option></select></div>
+      <button class="btn btn-primary btn-full" onclick="submitViewing()">Schedule</button>`;
+  } else if (type === 'lease') {
+    m.innerHTML = `<div class="modal-title">Create Lease</div>
+      <div class="form-group"><label>Tenant ID</label><input id="m-ltenant" placeholder="ten_..." /></div>
+      <div class="form-row"><div class="form-group"><label>Start Date</label><input id="m-lstart" type="date" /></div><div class="form-group"><label>End Date</label><input id="m-lend" type="date" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Monthly Rent (cents)</label><input id="m-lrent" type="number" placeholder="850000" /></div><div class="form-group"><label>Deposit (cents)</label><input id="m-ldeposit" type="number" placeholder="850000" /></div></div>
+      <div class="form-group"><label>Escalation %</label><input id="m-lescalation" type="number" value="8" /></div>
+      <button class="btn btn-primary btn-full" onclick="submitLease()">Create Lease</button>`;
+  } else if (type === 'mandate') {
+    m.innerHTML = `<div class="modal-title">Create Mandate</div>
+      <div class="form-group"><label>Owner ID</label><input id="m-mowner" placeholder="own_..." /></div>
+      <div class="form-group"><label>Type</label><select id="m-mtype"><option value="sole">Sole</option><option value="dual">Dual</option><option value="open">Open</option></select></div>
+      <div class="form-row"><div class="form-group"><label>Start Date</label><input id="m-mstart" type="date" /></div><div class="form-group"><label>End Date</label><input id="m-mend" type="date" /></div></div>
+      <div class="form-row"><div class="form-group"><label>Commission %</label><input id="m-mcomm" type="number" value="7.5" step="0.5" /></div><div class="form-group"><label>VAT Registered</label><select id="m-mvat"><option value="false">No</option><option value="true">Yes</option></select></div></div>
+      <button class="btn btn-primary btn-full" onclick="submitMandate()">Create Mandate</button>`;
+  } else if (type === 'document') {
+    if (arguments[1]) docModalCtx = arguments[1];
+    m.innerHTML = `<div class="modal-title">Upload Document</div>
+      <div class="form-group"><label>Type</label><select id="m-doctype"><option value="other">Other</option><option value="lease_agreement">Lease Agreement</option><option value="fica_id">FICA ID</option><option value="fica_proof_of_address">FICA Proof of Address</option><option value="fica_proof_of_income">FICA Proof of Income</option><option value="deposit_receipt">Deposit Receipt</option><option value="inspection_report">Inspection Report</option><option value="maintenance_quote">Maintenance Quote</option><option value="coc_electrical">COC Electrical</option><option value="coc_plumbing">COC Plumbing</option><option value="rates_clearance">Rates Clearance</option><option value="mandate">Mandate</option><option value="offer_to_purchase">Offer to Purchase</option><option value="deed_of_sale">Deed of Sale</option><option value="bond_approval">Bond Approval</option></select></div>
+      <div class="form-group"><label>File</label><input id="m-docfile" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" /></div>
+      <div class="form-group"><label>Notes</label><input id="m-docnotes" /></div>
+      <button class="btn btn-primary btn-full" onclick="submitDocument()">Upload</button>`;
+  }
+
+  o.classList.add('active');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('active'); }
+
+// ---- Submit handlers ----
+async function submitProperty() {
+  try {
+    await api('/api/properties', { method: 'POST', body: {
+      address: document.getElementById('m-address').value,
+      suburb: document.getElementById('m-suburb').value,
+      city: document.getElementById('m-city').value,
+      province: document.getElementById('m-province').value,
+      postalCode: document.getElementById('m-postal').value,
+      propertyType: document.getElementById('m-type').value,
+      purpose: document.getElementById('m-purpose').value,
+      bedrooms: +document.getElementById('m-beds').value,
+      bathrooms: +document.getElementById('m-baths').value,
+      monthlyRentZAR: +document.getElementById('m-rent').value || 0,
+      askingPriceZAR: +document.getElementById('m-price').value || 0,
+      notes: document.getElementById('m-notes').value,
+    }});
+    closeModal(); renderProperties();
+  } catch (err) { alert(err.message); }
+}
+
+async function submitTenant() {
+  try {
+    await api('/api/tenants', { method: 'POST', body: {
+      firstName: document.getElementById('m-fn').value,
+      lastName: document.getElementById('m-ln').value,
+      phone: document.getElementById('m-phone').value,
+      email: document.getElementById('m-email').value,
+      idNumber: document.getElementById('m-id').value,
+      employer: document.getElementById('m-employer').value,
+      monthlyIncome: +document.getElementById('m-income').value || 0,
+    }});
+    closeModal(); renderTenants();
+  } catch (err) { alert(err.message); }
+}
+
+async function submitBuyer() {
+  try {
+    await api('/api/buyers', { method: 'POST', body: {
+      firstName: document.getElementById('m-fn').value,
+      lastName: document.getElementById('m-ln').value,
+      phone: document.getElementById('m-phone').value,
+      email: document.getElementById('m-email').value,
+      budgetMin: +document.getElementById('m-budmin').value || 0,
+      budgetMax: +document.getElementById('m-budmax').value || 0,
+      requirements: document.getElementById('m-reqs').value,
+      source: document.getElementById('m-source').value,
+    }});
+    closeModal(); renderBuyers();
+  } catch (err) { alert(err.message); }
+}
+
+async function submitPayment() {
+  try {
+    await api('/api/payments', { method: 'POST', body: {
+      leaseId: document.getElementById('m-leaseid').value,
+      amountZAR: +document.getElementById('m-amount').value || 0,
+      date: document.getElementById('m-date').value,
+      method: document.getElementById('m-method').value,
+      reference: document.getElementById('m-ref').value,
+    }});
+    closeModal(); renderPayments();
+  } catch (err) { alert(err.message); }
+}
+
+async function submitMaintenance() {
+  try {
+    await api('/api/maintenance', { method: 'POST', body: {
+      propertyId: document.getElementById('m-propid').value,
+      category: document.getElementById('m-cat').value,
+      priority: document.getElementById('m-prio').value,
+      description: document.getElementById('m-desc').value,
+      reportedBy: document.getElementById('m-reporter').value,
+    }});
+    closeModal(); renderMaintenance();
+  } catch (err) { alert(err.message); }
+}
+
+async function submitOwner() {
+  try {
+    await api('/api/owners', { method: 'POST', body: {
+      name: document.getElementById('m-name').value,
+      phone: document.getElementById('m-phone').value,
+      email: document.getElementById('m-email').value,
+      idNumber: document.getElementById('m-id').value,
+      bankName: document.getElementById('m-bank').value,
+      bankAccount: document.getElementById('m-acct').value,
+      commissionPercent: +document.getElementById('m-comm').value || 10,
+    }});
+    closeModal(); renderOwners();
+  } catch (err) { alert(err.message); }
+}
+
+async function submitAgent() {
+  try {
+    const data = await api('/api/agents', { method: 'POST', body: {
+      name: document.getElementById('m-aname').value,
+      role: document.getElementById('m-arole').value,
+    }});
+    const el = document.getElementById('m-agent-result');
+    el.innerHTML = `<p style="font-size:14px;font-weight:600;color:var(--cyan);">Agent created</p>
+      <p style="font-size:13px;color:var(--text);margin-top:6px;">Access code: <strong style="font-family:monospace;font-size:16px;letter-spacing:0.1em;">${data.code}</strong></p>
+      <p style="font-size:12px;color:var(--muted);margin-top:4px;">Save this — it will not be shown again.</p>`;
+    el.classList.remove('hidden');
+  } catch (err) { alert(err.message); }
+}
+
+async function submitInterest() {
+  try {
+    await api('/api/interests', { method: 'POST', body: {
+      propertyId: currentPropertyId,
+      buyerId: document.getElementById('m-buyerid').value,
+      source: document.getElementById('m-intsource').value,
+    }});
+    closeModal(); loadPropertyInterests(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+async function submitViewing() {
+  try {
+    await api('/api/viewings', { method: 'POST', body: {
+      propertyId: currentPropertyId,
+      buyerId: document.getElementById('m-vbuyerid').value,
+      scheduledDate: document.getElementById('m-vdate').value,
+      scheduledTime: document.getElementById('m-vtime').value,
+      source: document.getElementById('m-vsource').value,
+    }});
+    closeModal(); loadPropertyViewings(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+async function submitLease() {
+  try {
+    await api('/api/leases', { method: 'POST', body: {
+      propertyId: currentPropertyId,
+      tenantId: document.getElementById('m-ltenant').value,
+      startDate: document.getElementById('m-lstart').value,
+      endDate: document.getElementById('m-lend').value,
+      monthlyRentZAR: +document.getElementById('m-lrent').value || 0,
+      depositZAR: +document.getElementById('m-ldeposit').value || 0,
+      annualEscalation: +document.getElementById('m-lescalation').value || 8,
+    }});
+    closeModal(); loadPropertyLeases(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+async function submitMandate() {
+  try {
+    await api('/api/mandates', { method: 'POST', body: {
+      propertyId: currentPropertyId,
+      ownerId: document.getElementById('m-mowner').value,
+      mandateType: document.getElementById('m-mtype').value,
+      startDate: document.getElementById('m-mstart').value,
+      endDate: document.getElementById('m-mend').value,
+      commissionPercent: +document.getElementById('m-mcomm').value || 7.5,
+      vatRegistered: document.getElementById('m-mvat').value === 'true',
+    }});
+    closeModal(); loadPropertyMandate(currentPropertyId);
+  } catch (err) { alert(err.message); }
+}
+
+// ---- Maintenance Detail ----
+async function navMaintDetail(id) {
+  try {
+    currentMaintId = id;
+    const m = await api(`/api/maintenance/${id}`);
+    const prioClass = { urgent: 'badge-red', high: 'badge-amber', medium: 'badge-gray', low: 'badge-gray' };
+    const statusClass = { reported: 'badge-gray', assigned: 'badge-amber', in_progress: 'badge-cyan', resolved: 'badge-green' };
+    document.getElementById('maintd-header').innerHTML = `
+      <h1>${m.category}</h1>
+      <div style="margin-top:6px;display:flex;gap:8px;">
+        <span class="badge ${prioClass[m.priority] || 'badge-gray'}">${m.priority}</span>
+        <span class="badge ${statusClass[m.status] || 'badge-gray'}">${m.status.replace('_', ' ')}</span>
+      </div>
+    `;
+    const rows = [
+      ['Property', m.propertyId], ['Reported By', m.reportedBy], ['Reported', dateSA(m.reportedDate)],
+      ['Assigned To', m.assignedTo], ['Description', m.description],
+      ['Est. Cost', zar(m.estimatedCostZAR)], ['Actual Cost', zar(m.actualCostZAR)],
+    ];
+    if (m.resolvedDate) rows.push(['Resolved', dateSA(m.resolvedDate)]);
+    document.getElementById('maintd-body').innerHTML = rows.filter(r => r[1]).map(r =>
+      `<div class="detail-row"><span class="detail-label">${r[0]}</span><span class="detail-value">${r[1]}</span></div>`
+    ).join('');
+
+    const notes = m.notes || [];
+    document.getElementById('maintd-timeline').innerHTML = notes.length
+      ? `<h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:0.04em;margin-bottom:8px;">Timeline</h3>
+         <div class="timeline">${notes.map(n => `
+           <div class="timeline-item">
+             <div class="timeline-dot"></div>
+             <div class="timeline-content">
+               <div class="timeline-author">${n.author} <span class="timeline-date">${dateSA(n.date)}</span></div>
+               <div class="timeline-text">${n.text}</div>
+             </div>
+           </div>
+         `).join('')}</div>`
+      : '<p style="color:var(--muted);font-size:13px;">No notes yet.</p>';
+
+    nav('maint-detail');
+  } catch (err) { console.error(err); }
+}
+
+async function submitMaintNote() {
+  if (!currentMaintId) return;
+  const input = document.getElementById('maintd-note');
+  const text = input.value.trim();
+  if (!text) return;
+  try {
+    await api(`/api/maintenance/${currentMaintId}/note`, { method: 'POST', body: { text } });
+    input.value = '';
+    navMaintDetail(currentMaintId);
+  } catch (err) { alert(err.message); }
+}
+
+// ---- Owner Detail ----
+async function navOwnerDetail(id) {
+  try {
+    const o = await api(`/api/owners/${id}`);
+    document.getElementById('ownd-header').innerHTML = `<h1>${o.name}</h1>`;
+    const rows = [
+      ['Phone', o.phone], ['Email', o.email], ['WhatsApp', o.whatsapp],
+      ['ID Number', o.idNumber], ['Bank', o.bankName], ['Account', o.bankAccount],
+      ['Commission', o.commissionPercent + '%'],
+    ];
+    if (o.properties?.length) {
+      rows.push(['Properties', o.properties.map(p => p.address).join(', ')]);
+    }
+    document.getElementById('ownd-body').innerHTML = rows.filter(r => r[1]).map(r =>
+      `<div class="detail-row"><span class="detail-label">${r[0]}</span><span class="detail-value">${r[1]}</span></div>`
+    ).join('');
+
+    // Load statement
+    try {
+      const stmt = await api(`/api/reports/owner-statement/${id}`);
+      if (stmt.properties?.length) {
+        document.getElementById('ownd-statement').innerHTML = `
+          <div style="margin-bottom:12px;font-size:13px;color:var(--muted);">Month: ${stmt.month}</div>
+          <div class="table-wrap"><table class="rpt-table">
+            <tr><th>Property</th><th class="num">Rent</th><th class="num">Commission</th><th class="num">Maintenance</th><th class="num">Net</th></tr>
+            ${stmt.properties.map(p => `<tr><td>${p.address}</td><td class="num">${zar(p.rentCollectedZAR)}</td><td class="num">${zar(p.commissionZAR)}</td><td class="num">${zar(p.maintenanceZAR)}</td><td class="num" style="font-weight:600;">${zar(p.netPayableZAR)}</td></tr>`).join('')}
+            <tr style="font-weight:700;border-top:2px solid var(--border);"><td>Total</td><td class="num">${zar(stmt.totalRentZAR)}</td><td class="num">${zar(stmt.totalCommissionZAR)}</td><td class="num">${zar(stmt.totalMaintenanceZAR)}</td><td class="num" style="color:var(--cyan);">${zar(stmt.netPayableZAR)}</td></tr>
+          </table></div>
+          <div style="margin-top:8px;font-size:12px;color:var(--muted);">Pay to: ${stmt.bankName || '–'} · ${stmt.bankAccount || '–'}</div>
+        `;
+      } else {
+        document.getElementById('ownd-statement').innerHTML = '<p style="color:var(--muted);font-size:13px;">No income this month.</p>';
+      }
+    } catch { document.getElementById('ownd-statement').innerHTML = ''; }
+
+    nav('owner-detail');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Reports ----
+async function renderReport(type) {
+  const header = document.getElementById('rpt-header');
+  const body = document.getElementById('rpt-body');
+
+  if (type === 'rent-roll') {
+    header.innerHTML = '<h1>Rent Roll</h1>';
+    try {
+      const d = await api('/api/reports/rent-roll');
+      body.innerHTML = `
+        <div class="rpt-summary">
+          <div class="rpt-summary-card"><div class="rpt-summary-value">${zar(d.totalDueZAR)}</div><div class="rpt-summary-label">Due</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value" style="color:#0F8A50;">${zar(d.totalPaidZAR)}</div><div class="rpt-summary-label">Collected</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value" style="color:#DC2626;">${zar(d.totalOutstandingZAR)}</div><div class="rpt-summary-label">Outstanding</div></div>
+        </div>
+        <div class="table-wrap"><table class="rpt-table">
+          <tr><th>Property</th><th>Tenant</th><th class="num">Rent</th><th class="num">Paid</th><th class="num">Balance</th></tr>
+          ${d.rows.map(r => `<tr><td>${r.address}</td><td>${r.tenantName}</td><td class="num">${zar(r.monthlyRentZAR)}</td><td class="num">${zar(r.paidZAR)}</td><td class="num" style="color:${r.balanceZAR > 0 ? '#DC2626' : '#0F8A50'};">${zar(r.balanceZAR)}</td></tr>`).join('')}
+        </table></div>
+      `;
+    } catch (err) { body.innerHTML = '<p style="color:var(--muted);">No data.</p>'; }
+
+  } else if (type === 'arrears') {
+    header.innerHTML = '<h1>Arrears</h1>';
+    try {
+      const d = await api('/api/reports/arrears');
+      body.innerHTML = d.rows.length ? `
+        <div style="margin-bottom:12px;font-size:14px;font-weight:600;color:#DC2626;">${d.count} tenant${d.count !== 1 ? 's' : ''} in arrears</div>
+        <div class="table-wrap"><table class="rpt-table">
+          <tr><th>Property</th><th>Tenant</th><th>Phone</th><th class="num">Rent</th><th class="num">Paid</th><th class="num">Owing</th></tr>
+          ${d.rows.map(r => `<tr><td>${r.address}</td><td>${r.tenantName}</td><td>${r.phone}</td><td class="num">${zar(r.monthlyRentZAR)}</td><td class="num">${zar(r.paidZAR)}</td><td class="num" style="color:#DC2626;font-weight:600;">${zar(r.outstandingZAR)}</td></tr>`).join('')}
+        </table></div>
+      ` : '<div class="empty"><div class="empty-text">No arrears this month</div></div>';
+    } catch (err) { body.innerHTML = '<p style="color:var(--muted);">No data.</p>'; }
+
+  } else if (type === 'sales-pipeline') {
+    header.innerHTML = '<h1>Sales Pipeline</h1>';
+    try {
+      const d = await api('/api/reports/sales-pipeline');
+      body.innerHTML = `
+        <div class="rpt-summary">
+          <div class="rpt-summary-card"><div class="rpt-summary-value">${d.summary.available}</div><div class="rpt-summary-label">Available</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value" style="color:#B45309;">${d.summary.underOffer}</div><div class="rpt-summary-label">Under Offer</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value" style="color:#0F8A50;">${d.summary.sold}</div><div class="rpt-summary-label">Sold</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value">${zar(d.summary.totalListingValueZAR)}</div><div class="rpt-summary-label">Total Value</div></div>
+        </div>
+        <div class="table-wrap"><table class="rpt-table">
+          <tr><th>Property</th><th>Suburb</th><th class="num">Asking</th><th class="num">Days</th><th class="num">Offers</th></tr>
+          ${Object.values(d.pipeline).flat().map(r => `<tr><td>${r.address}</td><td>${r.suburb || ''}</td><td class="num">${zar(r.askingPriceZAR)}</td><td class="num">${r.daysOnMarket}</td><td class="num">${r.pendingOffers}</td></tr>`).join('')}
+        </table></div>
+      `;
+    } catch (err) { body.innerHTML = '<p style="color:var(--muted);">No data.</p>'; }
+
+  } else if (type === 'commission') {
+    header.innerHTML = '<h1>Commission Report</h1>';
+    try {
+      const d = await api('/api/reports/commission');
+      body.innerHTML = `
+        <div class="rpt-summary">
+          <div class="rpt-summary-card"><div class="rpt-summary-value">${zar(d.rental.totalCommissionZAR)}</div><div class="rpt-summary-label">Rental</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value">${zar(d.sales.totalCommissionZAR)}</div><div class="rpt-summary-label">Sales</div></div>
+          <div class="rpt-summary-card"><div class="rpt-summary-value" style="color:var(--cyan);">${zar(d.grandTotalZAR)}</div><div class="rpt-summary-label">Total</div></div>
+        </div>
+        ${d.rental.rows.length ? `<h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Rental Commission</h3>
+        <div class="table-wrap"><table class="rpt-table">
+          <tr><th>Property</th><th>Owner</th><th class="num">Rent</th><th class="num">%</th><th class="num">Commission</th></tr>
+          ${d.rental.rows.map(r => `<tr><td>${r.address}</td><td>${r.ownerName}</td><td class="num">${zar(r.rentCollectedZAR)}</td><td class="num">${r.commissionPercent}%</td><td class="num" style="font-weight:600;">${zar(r.commissionZAR)}</td></tr>`).join('')}
+        </table></div>` : ''}
+        ${d.sales.rows.length ? `<h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;">Sales Commission</h3>
+        <div class="table-wrap"><table class="rpt-table">
+          <tr><th>Property</th><th class="num">Sale Price</th><th class="num">Commission</th><th>Paid</th></tr>
+          ${d.sales.rows.map(r => `<tr><td>${r.address}</td><td class="num">${zar(r.salePriceZAR)}</td><td class="num" style="font-weight:600;">${zar(r.commissionZAR)}</td><td>${r.commissionPaid ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-amber">Pending</span>'}</td></tr>`).join('')}
+        </table></div>` : ''}
+      `;
+    } catch (err) { body.innerHTML = '<p style="color:var(--muted);">No data.</p>'; }
+  }
+
+  nav('report-detail');
+}
+
+// ---- Document Upload ----
+let docModalCtx = {};
+function showDocModal(parentType, parentId) {
+  docModalCtx = { parentType, parentId };
+  showModal('document');
+}
+
+async function submitDocument() {
+  const fileInput = document.getElementById('m-docfile');
+  const file = fileInput?.files?.[0];
+  if (!file) { alert('Select a file.'); return; }
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      await api('/api/documents', { method: 'POST', body: {
+        parentType: docModalCtx.parentType || 'property',
+        parentId: docModalCtx.parentId || currentPropertyId,
+        docType: document.getElementById('m-doctype').value,
+        filename: file.name,
+        mimeType: file.type,
+        dataUrl: reader.result,
+        notes: document.getElementById('m-docnotes')?.value || '',
+      }});
+      closeModal();
+      if (currentPropertyId) loadPropertyDocs(currentPropertyId);
+    } catch (err) { alert(err.message); }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ---- Buyer Detail ----
+let currentBuyerId = null;
+async function navBuyerDetail(id) {
+  try {
+    currentBuyerId = id;
+    const b = await api(`/api/buyers/${id}`);
+    document.getElementById('buyd-header').innerHTML = `<h1>${b.firstName} ${b.lastName}</h1>`;
+    const rows = [
+      ['Phone', b.phone], ['Email', b.email], ['Budget', `${zar(b.budgetMin)} – ${zar(b.budgetMax)}`],
+      ['Requirements', b.requirements], ['Source', b.source],
+      ['Pre-approved', b.preApproved ? 'Yes' : 'No'], ['FICA', b.ficaStatus || 'pending'],
+    ];
+    document.getElementById('buyd-body').innerHTML = rows.filter(r => r[1]).map(r =>
+      `<div class="detail-row"><span class="detail-label">${r[0]}</span><span class="detail-value">${r[1]}</span></div>`
+    ).join('');
+    buyerDetailTab('info', document.querySelector('#buyd-tabs .detail-tab'));
+    nav('buyer-detail');
+  } catch (err) { console.error(err); }
+}
+
+function buyerDetailTab(tab, el) {
+  document.querySelectorAll('#buyd-tabs .detail-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.buyd-panel').forEach(p => p.style.display = 'none');
+  const panel = document.getElementById('buyd-tab-' + tab);
+  if (panel) panel.style.display = '';
+  if (tab === 'interests') loadBuyerInterests(currentBuyerId);
+  if (tab === 'viewings') loadBuyerViewings(currentBuyerId);
+  if (tab === 'offers') loadBuyerOffers(currentBuyerId);
+}
+
+async function loadBuyerInterests(buyerId) {
+  try {
+    const items = await api(`/api/interests?buyerId=${buyerId}`);
+    const el = document.getElementById('buyd-interests');
+    const active = items.filter(i => !i.deleted);
+    if (!active.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No interests</div></div>'; return; }
+    const statusClass = { new: 'badge-cyan', contacted: 'badge-amber', viewing_scheduled: 'badge-amber', viewing_done: 'badge-green', offer_made: 'badge-green', won: 'badge-green', lost: 'badge-red' };
+    el.innerHTML = active.map(i => `
+      <div class="card" onclick="navInterestDetail('${i.id}')">
+        <div class="card-title">Property ${i.propertyId}</div>
+        <div class="card-sub">Source: ${i.source} · ${dateSA(i.createdAt)}</div>
+        <div class="card-row"><span class="badge ${statusClass[i.status] || 'badge-gray'}">${i.status.replace(/_/g, ' ')}</span></div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function loadBuyerViewings(buyerId) {
+  try {
+    const items = await api(`/api/viewings?buyerId=${buyerId}`);
+    const el = document.getElementById('buyd-viewings');
+    if (!items.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No viewings</div></div>'; return; }
+    const statusClass = { scheduled: 'badge-cyan', completed: 'badge-green', cancelled: 'badge-red', no_show: 'badge-amber' };
+    el.innerHTML = items.map(v => `
+      <div class="card">
+        <div class="card-title">${dateSA(v.scheduledDate)} ${v.scheduledTime || ''}</div>
+        <div class="card-sub">Property ${v.propertyId}</div>
+        <div class="card-row"><span class="badge ${statusClass[v.status] || 'badge-gray'}">${v.status}</span>${v.rating ? `<span class="badge badge-gray" style="margin-left:4px;">${v.rating}</span>` : ''}</div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+async function loadBuyerOffers(buyerId) {
+  try {
+    const offers = await api(`/api/offers?buyerId=${buyerId}`);
+    const el = document.getElementById('buyd-offers');
+    if (!offers.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No offers</div></div>'; return; }
+    const statusClass = { submitted: 'badge-cyan', countered: 'badge-amber', accepted: 'badge-green', rejected: 'badge-red', expired: 'badge-gray', cancelled: 'badge-gray' };
+    el.innerHTML = offers.map(o => `
+      <div class="card">
+        <div class="card-title">${zar(o.offerAmountZAR)} on ${o.propertyId}</div>
+        <div class="card-sub">${dateSA(o.offerDate)}</div>
+        <div class="card-row"><span class="badge ${statusClass[o.status] || 'badge-gray'}">${o.status}</span></div>
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Interest Detail ----
+let currentInterestId = null;
+async function navInterestDetail(id) {
+  try {
+    currentInterestId = id;
+    const i = await api(`/api/interests/${id}`);
+    const statusClass = { new: 'badge-cyan', contacted: 'badge-amber', viewing_scheduled: 'badge-amber', viewing_done: 'badge-green', offer_made: 'badge-green', won: 'badge-green', lost: 'badge-red' };
+    document.getElementById('intd-header').innerHTML = `
+      <h1>Lead ${i.id.slice(0, 12)}...</h1>
+      <div style="margin-top:6px;display:flex;gap:8px;">
+        <span class="badge ${statusClass[i.status] || 'badge-gray'}">${i.status.replace(/_/g, ' ')}</span>
+        <span class="badge badge-gray">${i.source}</span>
+      </div>
+    `;
+    const rows = [
+      ['Property', i.propertyId], ['Buyer', i.buyerId], ['Agent', i.agentId],
+      ['Created', dateSA(i.createdAt)], ['Updated', dateSA(i.updatedAt)],
+    ];
+    if (i.lostReason) rows.push(['Lost Reason', i.lostReason]);
+    document.getElementById('intd-body').innerHTML = `
+      ${rows.filter(r => r[1]).map(r => `<div class="detail-row"><span class="detail-label">${r[0]}</span><span class="detail-value">${r[1]}</span></div>`).join('')}
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px;" onclick="updateInterestStatus('contacted')">Contacted</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px;" onclick="updateInterestStatus('viewing_scheduled')">Viewing Set</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px;" onclick="updateInterestStatus('offer_made')">Offer Made</button>
+        <button class="btn btn-primary" style="font-size:12px;padding:6px 12px;" onclick="updateInterestStatus('won')">Won</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px;color:#DC2626;" onclick="loseInterest()">Lost</button>
+      </div>
+    `;
+
+    const notes = i.notes || [];
+    document.getElementById('intd-timeline').innerHTML = notes.length
+      ? `<h3 style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:0.04em;margin-bottom:8px;">Timeline</h3>
+         <div class="timeline">${notes.map(n => `
+           <div class="timeline-item">
+             <div class="timeline-dot"></div>
+             <div class="timeline-content">
+               <div class="timeline-author">${n.author} <span class="timeline-date">${dateSA(n.date)}</span></div>
+               <div class="timeline-text">${n.text}</div>
+             </div>
+           </div>
+         `).join('')}</div>`
+      : '<p style="color:var(--muted);font-size:13px;">No notes yet.</p>';
+
+    nav('interest-detail');
+  } catch (err) { console.error(err); }
+}
+
+async function updateInterestStatus(status) {
+  if (!currentInterestId) return;
+  try {
+    await api(`/api/interests/${currentInterestId}`, { method: 'PUT', body: { status } });
+    navInterestDetail(currentInterestId);
+  } catch (err) { alert(err.message); }
+}
+
+async function loseInterest() {
+  const reason = prompt('Reason for losing this lead:');
+  if (reason === null) return;
+  try {
+    await api(`/api/interests/${currentInterestId}`, { method: 'PUT', body: { status: 'lost', lostReason: reason } });
+    navInterestDetail(currentInterestId);
+  } catch (err) { alert(err.message); }
+}
+
+async function submitInterestNote() {
+  if (!currentInterestId) return;
+  const input = document.getElementById('intd-note');
+  const text = input.value.trim();
+  if (!text) return;
+  try {
+    await api(`/api/interests/${currentInterestId}/note`, { method: 'POST', body: { text } });
+    input.value = '';
+    navInterestDetail(currentInterestId);
+  } catch (err) { alert(err.message); }
+}
+
+// ---- Commissions List ----
+async function renderCommissions() {
+  try {
+    const items = await api('/api/commissions');
+    const el = document.getElementById('comm-list');
+    if (!items.length) { el.innerHTML = '<div class="empty"><div class="empty-text">No commissions yet</div></div>'; return; }
+    const statusClass = { pending: 'badge-amber', partially_paid: 'badge-cyan', paid: 'badge-green' };
+    el.innerHTML = items.map(c => `
+      <div class="card">
+        <div class="card-title">${zar(c.grossAmountZAR)} <span style="font-size:12px;color:var(--muted);font-weight:400;">(${c.type})</span></div>
+        <div class="card-sub">Property ${c.propertyId} · ${c.commissionPercent}% · VAT ${zar(c.vatAmountZAR)}</div>
+        <div class="card-row">
+          <span class="badge ${statusClass[c.status] || 'badge-gray'}">${c.status.replace(/_/g, ' ')}</span>
+          <span style="font-size:12px;color:var(--muted);margin-left:auto;">Net ${zar(c.netAmountZAR)}</span>
+        </div>
+        ${c.splits?.length ? `<div style="margin-top:8px;font-size:12px;color:var(--muted);">${c.splits.map(s => `${s.role}: ${s.percent}% = ${zar(s.amountZAR)} (${s.status})`).join(' · ')}</div>` : ''}
+      </div>
+    `).join('');
+  } catch (err) { console.error(err); }
+}
+
+// ---- Init ----
+if (token) { showApp(); } else { showLogin(); }
+</script>
+</body>
+</html>

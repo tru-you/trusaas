@@ -1,0 +1,14 @@
+{
+  "name": "TrueState Move-In — Live Move-In Inspection",
+  "short_name": "TrueState Move-In",
+  "description": "Live video move-in inspections for rental properties over a secure link.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    { "src": "/icon.png", "sizes": "600x600", "type": "image/png", "purpose": "any" }
+  ]
+}
