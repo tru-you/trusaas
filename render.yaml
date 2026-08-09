@@ -261,11 +261,10 @@ services:
     runtime: node
     plan: starter
     rootDir: TruCRM
-    # Chromium system libs (installed as root during build; pre-deploy runs as
-    # a non-root user so apt-get fails there) + Chrome binary for the headless
-    # scraper fallback. Puppeteer's own postinstall is skipped by Render's
-    # node_modules cache, so we install Chrome explicitly.
-    buildCommand: apt-get update && apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 libpangocairo-1.0-0 libcairo2 libxshmfence1 && npm install && npx puppeteer browsers install chrome && npm run build
+    # Headless scraping uses @sparticuz/chromium — a statically-linked Chromium
+    # shipped inside the npm package — so no apt-get is needed (Render build and
+    # pre-deploy phases cannot install system packages: non-root / read-only fs).
+    buildCommand: npm install && npm run build
     startCommand: node dist/server.cjs
     healthCheckPath: /api/health
     disk:

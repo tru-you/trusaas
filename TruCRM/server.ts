@@ -498,6 +498,23 @@ Format the output in clear Markdown.`,
     if (!browserPromise) {
       browserPromise = (async () => {
         const { default: puppeteer } = await import("puppeteer");
+        try {
+          // @sparticuz/chromium ships a statically-linked Chromium inside the
+          // npm package, so it runs on Render without apt-installed system
+          // libs (apt-get is unavailable in Render build/pre-deploy phases).
+          const chromiumModule: any = await import("@sparticuz/chromium");
+          const chromium = chromiumModule.default ?? chromiumModule;
+          return await puppeteer.launch({
+            headless: chromium.headless ?? true,
+            executablePath: await chromium.executablePath(),
+            args: chromium.args,
+          });
+        } catch (e: any) {
+          console.warn(
+            "[scraper] @sparticuz/chromium unavailable, falling back to bundled Chrome:",
+            e?.message
+          );
+        }
         return puppeteer.launch({
           headless: true,
           args: [
