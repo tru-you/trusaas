@@ -1,0 +1,72 @@
+/* TruFlow Light — service worker.
+   Bump VERSION on every deploy so old caches are dropped and clients update.
+   Strategy: never touch writes; navigations network-first with a cached shell
+   fallback; API network-first with cache fallback (last-synced data offline);
+   fonts + own static assets cache-first. */
+var VERSION = "tfl-2026-08-06a";
+var CORE = [
+  "/light/",
+  "/light/index.html",
+  "/light/manifest.webmanifest",
+  "/light/icon-192.png",
+  "/light/icon-512.png",
+  "/light/apple-touch-icon.png"
+];
+
+self.addEventListener("install", function (e) {
+  self.skipWaiting();
+  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(CORE).catch(function () {}); }));
+});
+
+self.addEventListener("activate", function (e) {
+  e.waitUntil(
+    caches.keys().then(function (keys) {
+      return Promise.all(keys.filter(function (k) { return k !== VERSION; }).map(function (k) { return caches.delete(k); }));
+    }).then(function () { return self.clients.claim(); })
+  );
+});
+
+self.addEventListener("fetch", function (e) {
+  var req = e.request;
+  if (req.method !== "GET") return; // writes always hit the network
+  var url;
+  try { url = new URL(req.url); } catch (err) { return; }
+
+  // App navigations — fresh when online, cached shell when not.
+  if (req.mode === "navigate") {
+    e.respondWith(fetch(req).catch(function () {
+      return caches.match("/light/index.html").then(function (r) { return r || caches.match("/light/"); });
+    }));
+    return;
+  }
+
+  // API — network-first, cache each GET so the app opens with last data offline.
+  if (url.origin === self.location.origin && url.pathname.indexOf("/api/") === 0) {
+    e.respondWith(
+      fetch(req).then(function (res) {
+        var copy = res.clone();
+        caches.open(VERSION).then(function (c) { c.put(req, copy); });
+        return res;
+      }).catch(function () { return caches.match(req); })
+    );
+    return;
+  }
+
+  // Google Fonts + our own /light/ static — cache-first.
+  if (url.hostname.indexOf("fonts.g") === 0 ||
+      (url.origin === self.location.origin && url.pathname.indexOf("/light/") === 0)) {
+    e.respondWith(
+      caches.match(req).then(function (cached) {
+        return cached || fetch(req).then(function (res) {
+          var copy = res.clone();
+          caches.open(VERSION).then(function (c) { c.put(req, copy); });
+          return res;
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else — network, fall back to cache if present.
+  e.respondWith(fetch(req).catch(function () { return caches.match(req); }));
+});

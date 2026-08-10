@@ -1,0 +1,18 @@
+<svg id="logo-propinspect" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 110" width="100%">
+            <defs>
+              <linearGradient id="metalTop3" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#FFFFFF"/><stop offset="20%" stop-color="#E2E8F0"/><stop offset="55%" stop-color="#94A3B8"/><stop offset="85%" stop-color="#475569"/><stop offset="100%" stop-color="#1E293B"/>
+              </linearGradient>
+              <linearGradient id="cyanTop3" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#A5F3FC"/><stop offset="25%" stop-color="#38BDF8"/><stop offset="70%" stop-color="#06B6D4"/><stop offset="100%" stop-color="#0891B2"/>
+              </linearGradient>
+              <filter id="dropShadow3" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#000000" flood-opacity="0.3"/></filter>
+            </defs>
+            <g filter="url(#dropShadow3)" transform="translate(10, 10)">
+              <text x="4" y="84" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="78"><tspan fill="#0F172A">Prop</tspan><tspan fill="#042F2E">Inspect</tspan></text>
+              <text x="3" y="83" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="78"><tspan fill="#1E293B">Prop</tspan><tspan fill="#0E7490">Inspect</tspan></text>
+              <text x="2" y="82" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="78"><tspan fill="#334155">Prop</tspan><tspan fill="#06B6D4">Inspect</tspan></text>
+              <text x="1" y="81" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="78"><tspan fill="#475569">Prop</tspan><tspan fill="#22D3EE">Inspect</tspan></text>
+              <text x="0" y="80" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="78"><tspan fill="url(#metalTop3)">Prop</tspan><tspan fill="url(#cyanTop3)">Inspect</tspan></text>
+            </g>
+          </svg>

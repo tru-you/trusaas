@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: proplens-inspect
+    runtime: node
+    rootDir: PropInspect
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.cjs
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /opt/render/project/data
+      - key: ADMIN_ACCESS_CODE
+        sync: false
+        value: ""
+      - key: DEEPSEEK_API_KEY
+        sync: false
+        value: ""
+      - key: GEMINI_API_KEY
+        sync: false
+        value: ""
+    disk:
+      name: proplens-inspect-data
+      mountPath: /opt/render/project/data
+      sizeGB: 5

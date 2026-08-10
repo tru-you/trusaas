@@ -307,3 +307,28 @@ services:
     buildCommand: npm install && npm run build
     startCommand: node dist/scrape-worker.cjs
     healthCheckPath: /api/health
+
+  # ── 6. PropInspect — property inspection reports & document generation ───────
+  - type: web
+    name: proplens-inspect
+    runtime: node
+    plan: starter
+    rootDir: PropInspect
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.cjs
+    healthCheckPath: /api/health
+    disk:
+      name: proplens-inspect-data
+      mountPath: /opt/render/project/data
+      sizeGB: 5
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /opt/render/project/data
+      - key: ADMIN_ACCESS_CODE
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

@@ -1,0 +1,77 @@
+{
+  "dealerships": [
+    {
+      "id": "d1",
+      "name": "MKR Properties",
+      "location": "Johannesburg",
+      "slug": "mkr-properties",
+      "websiteUrl": "https://mkrproperties.co.za",
+      "products": [
+        "lens",
+        "flow",
+        "flow-lite",
+        "inspect",
+        "live",
+        "value"
+      ]
+    },
+    {
+      "id": "d2",
+      "name": "Caledon Estates",
+      "location": "Kariega, Eastern Cape",
+      "slug": "caledon-estates",
+      "websiteUrl": "https://www.caledonestates.co.za",
+      "products": [
+        "lens",
+        "flow",
+        "flow-lite",
+        "inspect",
+        "live",
+        "value"
+      ]
+    },
+    {
+      "id": "true-cars",
+      "name": "True Cars",
+      "location": "Port Elizabeth",
+      "slug": "true-cars",
+      "websiteUrl": "https://www.true-cars.co.za",
+      "products": [
+        "lens",
+        "flow",
+        "flow-lite",
+        "inspect",
+        "live",
+        "value"
+      ]
+    }
+  ],
+  "settings": {
+    "tier": "premium",
+    "truLens": true,
+    "truInspect": true,
+    "websitePortal": true,
+    "multiPortalSync": true,
+    "trueAI": true,
+    "smartLedger": true,
+    "chatbot": true,
+    "liveReceptionist": true,
+    "seoAeo": true,
+    "syndication": true,
+    "truSocial": false
+  },
+  "socialAccounts": [],
+  "migrations": {
+    "prunedSeedDealers": true
+  },
+  "properties": [],
+  "enquiries": [],
+  "tasks": [],
+  "invoices": [],
+  "agreements": [],
+  "documents": [],
+  "docEvents": [],
+  "expenses": [],
+  "communications": [],
+  "users": []
+}

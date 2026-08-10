@@ -65,11 +65,17 @@ export function Shell({
   return (
     <div className="min-h-screen flex">
       <aside className="fixed inset-y-0 left-0 w-[236px] bg-card border-r border-line flex flex-col">
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-line/60">
-          <Logo />
-          <div className="leading-tight">
-            <p className="text-[15px] font-semibold tracking-tight text-ink">Flow Prop</p>
-            <p className="text-[10.5px] font-medium tracking-[0.12em] text-muted uppercase">
+        <div className="flex items-center justify-center px-5 h-16 border-b border-line/60">
+          <div className="text-center leading-tight">
+            <p className="text-[16px] font-bold tracking-tight"
+              style={{
+                background: 'linear-gradient(135deg, var(--cyan-bright), var(--cyan))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
+              Flow Prop
+            </p>
+            <p className="text-[9.5px] font-semibold tracking-[0.16em] text-muted/60 uppercase mt-0.5">
               Property agency
             </p>
           </div>
