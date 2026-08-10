@@ -1,60 +1,63 @@
 /* ============================================================================
-   TruSaaS brand tokens — CANONICAL SOURCE
+   TruSaaS brand tokens — VEHICLE apps (lifted dark)
    ----------------------------------------------------------------------------
-   Lifted from the holding site (tru-saas.com) so the apps look like they came
-   from the same company. Each app keeps a verbatim copy at src/brand.css
-   because they build independently; edit THIS file and copy it across.
+   Surface    Token       Hex
+   Page bg    --ink       #0F0F13
+   Card       --ink-2    #121214
+   Elevated   --ink-3    #1A1A1F
+   Border     --glass-line #2A2A30
 
-   The system in one line: near-black, one cyan accent, warm off-white at three
-   opacities, Inter at generous sizes in mid weights, no uppercase.
+   The earlier #06080D near-black was harsh at full brightness for a full
+   shift. These are lifted ~6-8 points — the apps still read dark, but the
+   surfaces separate without fighting the eye. The website stays cream; this
+   is the desk-tool palette.
    ========================================================================== */
 
 :root {
-  /* Surfaces ---------------------------------------------------------------
-     Two only. Anything that needs to sit "above" ink-2 uses --glass, not a
-     third background colour. */
-  --ink:        var(--tru-ink-900);
-  --ink-2:      var(--tru-ink-800);
-  --glass:      rgba(232, 234, 230, 0.055);
-  --glass-line: rgba(232, 234, 230, 0.14);
+  /* ── Surfaces ──────────────────────────────────────────────────── */
+  --ink:        #0F0F13;
+  --ink-2:      #121214;
+  --ink-3:      #1A1A1F;
+  --glass:      rgba(255, 255, 255, 0.06);
+  --glass-line: #2A2A30;
 
-  /* Text — one colour at four opacities. Not four different greys. */
-  --white:      var(--tru-paper);
-  --white-dim:  rgba(232, 234, 230, 0.72);
-  --muted:      rgba(232, 234, 230, 0.55);
-  --faint:      rgba(232, 234, 230, 0.32);
+  /* ── Text — white at four opacities ───────────────────────────── */
+  --white:      #E4E4E7;
+  --white-dim:  rgba(228, 228, 231, 0.72);
+  --muted:      rgba(228, 228, 231, 0.52);
+  --faint:      rgba(228, 228, 231, 0.30);
 
-  /* Accent — exactly one. Cyan carries every interactive and "live" state.
-     On a cyan fill the text is --ink, never white: cyan/white fails contrast. */
-  --cyan:       var(--tru-cyan-400);
-  --cyan-bright:var(--tru-cyan-300);
-  --cyan-soft:  rgba(79, 227, 220, 0.35);
-  --cyan-faint: rgba(79, 227, 220, 0.08);
+  /* ── Accent — the single cyan, calmer than before ───────────────
+     Was #4FE3DC which glared on the lifted blacks. Pulled back to
+     a slightly warmer teal that still reads interactive. */
+  --cyan:        #2DD4C4;
+  --cyan-bright: #5EEAD4;
+  --cyan-soft:   rgba(45, 212, 196, 0.35);
+  --cyan-faint:  rgba(45, 212, 196, 0.08);
+  --cyan-glow:   rgba(45, 212, 196, 0.22);
 
+  /* ── Amber — pricing / urgency emphasis ───────────────────────── */
+  --amber:       #F0B341;
+  --amber-soft:  rgba(240, 179, 65, 0.18);
 
-  /* Second accent — the blue from the logo. Cyan carries interactive and live
-     states; blue is for iconography and quiet emphasis, so the two never
-     compete for the same job. */
-  /* Retired as an accent — the brand is cyan only, and #4D9BFF glared on
-     black. Kept as a calm slate so anything still reaching for it is quiet. */
-  --blue:       #8AA2B8;
-  --blue-deep:  #63798F;
-  --blue-faint: rgba(77, 155, 255, 0.10);
+  /* ── Blue — calm slate for iconography ────────────────────────── */
+  --blue:        #8AA2B8;
+  --blue-deep:   #63798F;
+  --blue-faint:  rgba(138, 162, 184, 0.10);
 
-  /* Status without a traffic-light palette. Good/live reads cyan, warnings
-     de-emphasise to muted text rather than shouting in yellow, and one dusty
-     red is kept purely for destructive actions and genuine errors. */
-  --success:    var(--tru-cyan-400);
-  --warning:    rgba(232, 234, 230, 0.55);
-  --danger:     #B86A6A;
+  /* ── Status ────────────────────────────────────────────────────── */
+  --success:     #2DD4C4;
+  --success-bg:  rgba(45, 212, 196, 0.08);
+  --warning:     rgba(228, 228, 231, 0.52);
+  --warning-bg:  rgba(228, 228, 231, 0.055);
+  --danger:      #C06666;
+  --danger-bg:   rgba(192, 102, 102, 0.12);
 
-  /* Type */
-  --sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  /* ── Type ──────────────────────────────────────────────────────── */
+  --sans:  'Inter', system-ui, -apple-system, sans-serif;
+  --mono:  'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
 
-  /* Type scale. The floor is 12px — the apps had 197 instances of 8–10px text,
-     which is the single biggest reason they read as cheap. */
-  --t-micro: 12px;   /* labels, meta — the smallest allowed */
+  --t-micro: 12px;
   --t-small: 13px;
   --t-body:  15px;
   --t-lead:  17px;
@@ -62,27 +65,386 @@
   --t-h2:    28px;
   --t-h1:    38px;
 
-  /* Weights. 600 is the heaviest in normal use; 900 was used 66 times and made
-     everything shout at once. */
   --w-regular:  400;
   --w-medium:   500;
   --w-semibold: 600;
 
-  /* Headings tighten as they grow — this is most of what makes large type look
-     designed rather than merely big. */
   --track-h1: -0.022em;
   --track-h2: -0.015em;
   --track-h3: -0.01em;
 
-  /* Depth — restrained. A lit top hairline and a soft shadow is the whole
-     vocabulary; the cyan glow is reserved for genuinely live elements. */
-  --shadow-card:  0 1px 0 rgba(232,234,230,0.06) inset, 0 18px 40px -28px rgba(0,0,0,0.8);
-  --shadow-lift:  0 1px 0 rgba(232,234,230,0.09) inset, 0 26px 50px -28px rgba(0,0,0,0.9);
-  --shadow-modal: 0 40px 90px -40px rgba(0,0,0,0.95);
-  --glow-cyan:    0 0 8px var(--cyan);
+  /* ── Depth ───────────────────────────────────────────────────────
+     Hairline + one shadow. 3D is the buttons' job. */
+  --shadow-card:  0 1px 0 rgba(255, 255, 255, 0.04) inset,
+                  0 2px 12px rgba(0, 0, 0, 0.60);
+  --shadow-lift:  0 1px 0 rgba(255, 255, 255, 0.06) inset,
+                  0 4px 20px rgba(0, 0, 0, 0.70);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.80);
 
-  /* Radius */
+  /* ── Radius ────────────────────────────────────────────────────── */
   --r-sm:   8px;
-  --r-card: 18px;
+  --r-card: 16px;
   --r-pill: 100px;
+
+  /* ── Focus ring ────────────────────────────────────────────────── */
+  --focus-ring: rgba(45, 212, 196, 0.55);
+
+  /* ── Text on accent fill ───────────────────────────────────────── */
+  --text-on-accent: #0F0F13;
+  --text-primary:   #0F0F13;
+}
+
+/* ── Colour scheme ──────────────────────────────────────────────────── */
+:root { color-scheme: dark; }
+
+select option,
+select optgroup {
+  background-color: var(--ink-2);
+  color: var(--white);
+}
+
+/* ── Body ───────────────────────────────────────────────────────────── */
+body {
+  font-family: var(--sans);
+  background: var(--ink);
+  color: var(--white);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Headings ───────────────────────────────────────────────────────── */
+h1, h2, h3, h4 { font-weight: var(--w-semibold); color: var(--white); }
+
+h1 { font-size: var(--t-h2); letter-spacing: var(--track-h2); line-height: 1.15; }
+h2 { font-size: var(--t-h3); letter-spacing: var(--track-h3); line-height: 1.25; }
+h3 { font-size: var(--t-lead); letter-spacing: var(--track-h3); line-height: 1.35; }
+
+/* ── Grid / ambient ─────────────────────────────────────────────────── */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(70% 45% at 70% -10%, rgba(45, 212, 196, 0.045), transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SURFACES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Cards — ink-2, 2A2A30 border, restrained shadow. */
+.card, .v-card, .pipeline-card, .stat-card, .glass-panel {
+  position: relative;
+  background: var(--ink-2);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Only clickable cards react to hover */
+button.card:hover, a.card:hover, [role="button"].card:hover,
+button.v-card:hover, a.v-card:hover, [role="button"].v-card:hover,
+button.pipeline-card:hover, a.pipeline-card:hover, [role="button"].pipeline-card:hover,
+button.stat-card:hover, a.stat-card:hover, [role="button"].stat-card:hover,
+button.glass-panel:hover, a.glass-panel:hover, [role="button"].glass-panel:hover {
+  border-color: var(--cyan-soft);
+  box-shadow: 0 2px 18px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Sidebar — sits UNDER content, reads darker ────────────────────────
+   ink-2 would make it the lighter surface relative to the page (ink),
+   which inverts the visual hierarchy. Real ink (no suffix) makes it the
+   deepest surface on the screen, so main content floats above it. */
+.glass-sidebar {
+  background: var(--ink);
+  border-right: 1px solid var(--glass-line) !important;
+}
+
+.glass-nav-item {
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.glass-nav-item:hover {
+  background: var(--glass);
+}
+.glass-nav-item.is-active {
+  background: var(--cyan-faint);
+  box-shadow: inset 2px 0 0 var(--cyan);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   3D SCULPTED BUTTONS
+   ═══════════════════════════════════════════════════════════════════════
+   One solid side, one lit top hairline, one ambient shadow, press travel.
+   This is the interaction vocabulary that survived PropInspect's discipline. */
+
+/* ── Primary — teal fill, dark-teal side (4px), white hairline ──────── */
+.btn-primary {
+  background: var(--cyan);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 10px;
+  font-weight: var(--w-semibold);
+  text-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 4px 0 #0F7C73,
+    0 10px 22px -8px rgba(0, 0, 0, 0.85);
+  transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
+}
+.btn-primary:hover {
+  background: #5EEAD4;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    0 4px 0 #0F7C73,
+    0 14px 30px -8px rgba(45, 212, 196, 0.30);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    0 1px 0 #0F7C73,
+    0 2px 6px -3px rgba(0, 0, 0, 0.60);
+}
+.btn-primary:disabled {
+  background: rgba(228, 228, 231, 0.08);
+  color: var(--faint);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ── Secondary — raised neutral, same vocabulary ────────────────────── */
+.tru-btn-secondary {
+  background: var(--ink-2);
+  border: none;
+  color: var(--white);
+  border-radius: 10px;
+  font-weight: var(--w-medium);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 0 #0A0A0E,
+    0 8px 18px -8px rgba(0, 0, 0, 0.80);
+  transition: background 120ms ease, box-shadow 90ms ease, transform 90ms ease;
+}
+.tru-btn-secondary:hover {
+  background: var(--ink-3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 4px 0 #0A0A0E,
+    0 12px 24px -8px rgba(0, 0, 0, 0.85);
+  transform: translateY(-1px);
+}
+.tru-btn-secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.60), 0 2px 6px -3px rgba(0, 0, 0, 0.60);
+}
+
+/* ── Ghost — flat, no fill ───────────────────────────────────────────── */
+.tru-btn-ghost {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--white-dim);
+  border-radius: 10px;
+  font-weight: var(--w-medium);
+  transition: background 120ms ease, color 120ms ease;
+}
+.tru-btn-ghost:hover {
+  background: rgba(228, 228, 231, 0.06);
+  color: var(--white);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP BAR / HEADER — sticky chrome bar
+   ═══════════════════════════════════════════════════════════════════════
+   Uses ink-3 (the elevated surface, #1A1A1F) so it reads as chrome above
+   the cards below it, not as an extra card row. Glass/backdrop keeps it
+   semi-detached from the scroll. */
+
+.top-bar-chrome {
+  background: rgba(26, 26, 31, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset,
+              0 8px 24px rgba(0, 0, 0, 0.50);
+  border-radius: var(--r-card);
+}
+
+/* ── Logo float ─────────────────────────────────────────────────────── */
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.logo-float {
+  animation: logo-float 900ms cubic-bezier(.22, 1, .36, 1) 1;
+  transition: opacity 0.25s ease;
+}
+.logo-float:hover { opacity: 0.85; }
+
+/* ── Scroll progress ────────────────────────────────────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--cyan);
+  transform-origin: left;
+  z-index: 9999;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(228, 228, 231, 0.10);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(228, 228, 231, 0.20);
+}
+* { scrollbar-width: thin; scrollbar-color: rgba(228, 228, 231, 0.14) transparent; }
+
+/* ── Keyboard focus ─────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.btn-primary:focus-visible,
+.on-fill:focus-visible {
+  outline-color: var(--text-primary);
+}
+
+/* ── Safe area ──────────────────────────────────────────────────────── */
+:root {
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+}
+
+/* ── Touch targets ──────────────────────────────────────────────────── */
+@media (max-width: 767px), (pointer: coarse) {
+  button, [role="button"], a[href], select,
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea { min-height: 44px; }
+
+  button:not(:has(> :not(svg))),
+  [role="button"]:not(:has(> :not(svg))) { min-width: 44px; }
+
+  a[href]:not([class*="btn"]):not([class*="rounded"]) {
+    min-height: 0;
+    display: inline-block;
+    padding-block: 6px;
+  }
+  td, th { padding-block: 12px; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .btn-primary:active, .tru-btn-secondary:active { transform: none; }
+}
+
+/* ── Page gutters on notched phones ─────────────────────────────────── */
+@media (max-width: 767px) {
+  main {
+    padding-left: max(1rem, var(--safe-l));
+    padding-right: max(1rem, var(--safe-r));
+  }
+}
+
+/* ── Text-on-accent contrast override ───────────────────────────────── */
+.bg-cyan-400, .bg-cyan-500, .bg-cyan-600,
+.bg-teal-400, .bg-teal-500, .bg-teal-600,
+.bg-emerald-400, .bg-emerald-500, .bg-emerald-600,
+.bg-green-400, .bg-green-500, .bg-green-600,
+.bg-indigo-400, .bg-indigo-500, .bg-indigo-600,
+.bg-purple-400, .bg-purple-500, .bg-purple-600,
+.bg-violet-400, .bg-violet-500, .bg-violet-600 {
+  color: var(--text-on-accent);
+}
+.on-fill {
+  color: var(--text-on-accent) !important;
+  text-shadow: none;
+  font-weight: var(--w-semibold);
+}
+
+/* ── Glass-backed buttons (nav pills etc.) ──────────────────────────── */
+button[class*="bg-[color:var(--glass)]"],
+a[class*="bg-[color:var(--glass)]"] {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 2px 8px -4px rgba(0, 0, 0, 0.55);
+}
+button[class*="bg-[color:var(--glass)]"]:active,
+a[class*="bg-[color:var(--glass)]"]:active {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.40) inset;
+}
+
+/* ── Stacked tables on mobile ──────────────────────────────────────── */
+@media (max-width: 767px) {
+  table.stack-mobile { min-width: 0 !important; display: block; }
+  table.stack-mobile thead {
+    position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  table.stack-mobile tbody { display: block; }
+  table.stack-mobile tbody tr {
+    display: block;
+    border: 1px solid var(--glass-line);
+    border-radius: var(--r-sm);
+    background: var(--ink-2);
+    margin: 0 0.75rem 0.625rem;
+    padding: 0.25rem 0;
+  }
+  table.stack-mobile tbody tr:first-child { margin-top: 0.75rem; }
+  table.stack-mobile tbody td {
+    display: flex;
+    align-items: baseline; justify-content: space-between; gap: 1rem;
+    width: auto; text-align: right !important; border: 0 !important;
+    padding: 0.375rem 0.875rem !important;
+  }
+  table.stack-mobile tbody td::before {
+    content: attr(data-label);
+    flex: 0 0 auto; text-align: left;
+    color: var(--muted); font-weight: var(--w-regular); max-width: 45%;
+  }
+  table.stack-mobile tbody td:first-child {
+    display: block; text-align: left !important;
+    padding: 0.625rem 0.875rem !important;
+    margin-bottom: 0.125rem;
+    border-bottom: 1px solid var(--glass-line) !important;
+    background: var(--glass);
+  }
+  table.stack-mobile tbody td:first-child::before { content: none; }
+  table.stack-mobile tbody td:not([data-label]):not(:first-child) {
+    display: flex; gap: 0.5rem;
+    padding: 0.5rem 0.875rem 0.625rem !important;
+  }
+  table.stack-mobile tbody td:not([data-label])::before { content: none; }
+  table.stack-mobile tbody td:not([data-label]) > button { flex: 1 1 0; width: auto; }
+  table.stack-mobile tbody td:empty { display: none; }
 }
