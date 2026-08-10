@@ -114,12 +114,6 @@ export interface Property {
   engine?: string; conditionDeclaration?: any; fieldMeta?: any;
   stockNumber?: string;
 }
-// Compatibility aliases for components still being migrated
-export type Vehicle = Property;
-export type Lead = Enquiry;
-export type VehicleStatus = PropertyStatus;
-export type LeadStatus = EnquiryStatus;
-
 export type EnquiryStatus = 'New' | 'Contacted' | 'Viewing Scheduled' | 'Negotiating' | 'Closed Won' | 'Closed Lost';
 
 export interface Enquiry {

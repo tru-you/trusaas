@@ -9,6 +9,7 @@ import DamageTagger from './components/DamageTagger';
 import Assistant from './components/Assistant';
 import { Property, QualityReport, PointResult } from './types';
 import { useAuth } from './contexts/AuthContext';
+import { enqueue, flushQueue, count, NewOfflineEntry, OfflineEntry, PhotoUploadPayload } from './lib/offlineQueue';
 
 /** Keep client state crash-safe even if API returns partial records. */
 function normalizeProperty(raw: any): Property {
@@ -89,6 +90,12 @@ export default function App() {
      just took has silently disappeared. */
   const [uploadError, setUploadError] = React.useState<string | null>(null);
 
+  /* True while saves are sitting in the offline queue. The banner stays up
+     until a flush empties the queue — offline saves are NOT lost, unlike the
+     uploadError case above. */
+  const [offlinePending, setOfflinePending] = React.useState(false);
+  const flushingRef = React.useRef(false);
+
   // Load portfolio from server
   const fetchInventory = async () => {
     if (!user) return;
@@ -140,8 +147,27 @@ export default function App() {
       quality: {}
     };
 
+    /* Offline save: keep the record locally so the inspector can keep
+       working, and queue it for replay in order. */
+    const enqueueOrFail = async (): Promise<boolean> => {
+      if (await queueOffline('property', newVehicle)) {
+        setSyncStatus('synced');
+        setProperties(prev => [newVehicle, ...prev]);
+        return true;
+      }
+      return false;
+    };
+
+    if (!navigator.onLine) {
+      if (await enqueueOrFail()) return;
+      setSyncStatus('error');
+      setLoadError('Sync Error: Network failure or server unreachable');
+      return;
+    }
+
+    let res: Response;
     try {
-      const res = await fetch('/api/portfolio', {
+      res = await fetch('/api/portfolio', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -149,21 +175,24 @@ export default function App() {
         },
         body: JSON.stringify(newVehicle)
       });
-      if (res.ok) {
-        const updated = await res.json();
-        setProperties(prev => [updated.property, ...prev]);
-        setSyncStatus('synced');
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        console.error('Failed to create property - Server response:', res.status, errorData);
-        setSyncStatus('error');
-        setLoadError(`Sync Error (${res.status}): ${errorData.error || 'Check server connection'}`);
-      }
     } catch (e) {
+      if (await enqueueOrFail()) return;
       console.error('Failed to create property - Fetch error:', e);
       setSyncStatus('error');
       setLoadError('Sync Error: Network failure or server unreachable');
+      return;
     }
+    if (res.ok) {
+      const updated = await res.json();
+      setProperties(prev => [updated.property, ...prev]);
+      setSyncStatus('synced');
+    } else if (res.status === 0) {
+      if (await enqueueOrFail()) return;
+    }
+    const errorData = await res.json().catch(() => ({}));
+    console.error('Failed to create property - Server response:', res.status, errorData);
+    setSyncStatus('error');
+    setLoadError(`Sync Error (${res.status}): ${errorData.error || 'Check server connection'}`);
   };
 
   // Delete property
@@ -252,31 +281,144 @@ export default function App() {
     if (!user) return;
     setSyncStatus('syncing');
     setUploadError(null);
+    const token = await user.getIdToken();
+    const payload: PhotoUploadPayload = { propertyId, slotId, base64Image, qualityReport, assessment, closeups: closeupPhotos };
+
+    /* Offline save: the shot is already in local state (optimistic update in
+       handleSaveProcessedImage), so queue it and let the flush replay it. */
+    const enqueueOrFail = async (): Promise<boolean> => {
+      if (await queueOffline('photo', payload)) {
+        setSyncStatus('synced');
+        return true;
+      }
+      return false;
+    };
+
+    if (!navigator.onLine) {
+      if (await enqueueOrFail()) return;
+      setSyncStatus('error');
+      setUploadError('Could not reach the server to save that shot. It has NOT been kept — check signal and try again.');
+      return;
+    }
+
+    let res: Response;
     try {
-      const token = await user.getIdToken();
+      res = await fetch('/api/portfolio/upload-photo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
+      if (await enqueueOrFail()) return;
+      console.error('Failed to upload photo:', e);
+      setSyncStatus('error');
+      setUploadError('Could not reach the server to save that shot. It has NOT been kept — check signal and try again.');
+      return;
+    }
+    if (res.ok) {
+      const result = await res.json();
+      const saved = normalizeProperty(result.property);
+      setProperties(prev => prev.map(v => v.id === propertyId ? saved : v));
+      setSyncStatus('synced');
+    } else if (res.status === 0) {
+      if (await enqueueOrFail()) return;
+      setSyncStatus('error');
+      setUploadError(`Could not save that photo (server said ${res.status}). It has NOT been kept — try again.`);
+    } else {
+      setSyncStatus('error');
+      setUploadError(`Could not save that photo (server said ${res.status}). It has NOT been kept — try again.`);
+    }
+  };
+
+  /** Queue one save for later replay. Returns false if IndexedDB itself fails
+   *  (storage full, etc.) so the caller can fall back to its error UX. */
+  const queueOffline = React.useCallback(
+    async (type: 'photo' | 'property', payload: PhotoUploadPayload | Property) => {
+      try {
+        const entry: NewOfflineEntry = { type, payload, queuedAt: new Date().toISOString() };
+        await enqueue(entry);
+        setOfflinePending(true);
+        return true;
+      } catch (e) {
+        console.error('Failed to write to offline queue:', e);
+        return false;
+      }
+    },
+    [],
+  );
+
+  /** The exact network call for one queued entry — shared by the live save
+   *  paths and by flushQueue. Throws so the flush knows to stop on failure. */
+  const tryUpload = React.useCallback(async (entry: OfflineEntry): Promise<void> => {
+    if (!user) throw new Error('Not signed in');
+    const token = await user.getIdToken();
+    if (entry.type === 'photo') {
       const res = await fetch('/api/portfolio/upload-photo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ propertyId, slotId, base64Image, qualityReport, assessment, closeups: closeupPhotos }),
+        body: JSON.stringify(entry.payload),
       });
-      if (res.ok) {
-        const result = await res.json();
-        const saved = normalizeProperty(result.property);
-        setProperties(prev => prev.map(v => v.id === propertyId ? saved : v));
-        setSyncStatus('synced');
-      } else {
-        setSyncStatus('error');
-        setUploadError(`Could not save that photo (server said ${res.status}). It has NOT been kept — try again.`);
-      }
-    } catch (e) {
-      console.error('Failed to upload photo:', e);
-      setSyncStatus('error');
-      setUploadError('Could not reach the server to save that shot. It has NOT been kept — check signal and try again.');
+      if (!res.ok) throw new Error(`Server rejected photo upload (${res.status})`);
+      const result = await res.json();
+      const saved = normalizeProperty(result.property);
+      setProperties(prev => prev.map(v => v.id === entry.payload.propertyId ? saved : v));
+    } else {
+      const res = await fetch('/api/portfolio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(entry.payload),
+      });
+      if (!res.ok) throw new Error(`Server rejected property save (${res.status})`);
+      const data = await res.json();
+      const saved = normalizeProperty(data.property || entry.payload);
+      setProperties(prev => prev.some(v => v.id === saved.id)
+        ? prev.map(v => v.id === saved.id ? saved : v)
+        : [saved, ...prev]);
     }
-  };
+    setSyncStatus('synced');
+  }, [user]);
+
+  /** Replay the offline queue, oldest first. Guarded so an 'online' event and
+   *  the boot flush can never run over each other. */
+  const syncOffline = React.useCallback(async () => {
+    if (flushingRef.current) return;
+    if (!user) return;
+    if (!navigator.onLine) return;
+    flushingRef.current = true;
+    try {
+      const { flushed } = await flushQueue(tryUpload);
+      if (flushed > 0) await fetchInventory();
+      const remaining = await count();
+      if (remaining === 0) setOfflinePending(false);
+    } catch (e) {
+      console.error('Offline sync failed:', e);
+    } finally {
+      flushingRef.current = false;
+    }
+  }, [user, tryUpload]);
+
+  // Flush any queued saves on boot, once auth has resolved
+  React.useEffect(() => {
+    if (user && !loading) {
+      syncOffline();
+    }
+  }, [user, loading, syncOffline]);
+
+  // And whenever the device reports it is back online
+  React.useEffect(() => {
+    const handler = () => syncOffline();
+    window.addEventListener('online', handler);
+    return () => window.removeEventListener('online', handler);
+  }, [syncOffline]);
 
   /** Partial property update (publish flag, metadata, inspection stamps, etc.) */
   const handleUpdateVehicle = async (property: Property, patch: Partial<Property>): Promise<Property | null> => {
@@ -368,6 +510,17 @@ export default function App() {
         <Login />
       ) : (
         <>
+          {/* A save is sitting in the offline queue. Persistent — it stays up
+              across views until a flush empties the queue. */}
+          {offlinePending && (
+            <div
+              role="status"
+              className="absolute top-2 left-2 right-2 z-[60] mx-auto max-w-sm rounded-lg border border-amber-500/40 bg-amber-50 px-3 py-2 text-[13px] text-amber-800 shadow-lg"
+            >
+              <strong className="block mb-0.5">Offline save</strong>
+              Saved offline — will sync when you're back online
+            </div>
+          )}
           {activeView === 'portfolio' && (
             <>
               {loadError && (

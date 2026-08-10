@@ -1,9 +1,9 @@
-import { Invoice, Lead, Property, Dealership } from "../types";
+import { Invoice, Enquiry, Property, Dealership } from "../types";
 import { Printer } from "lucide-react";
 
 interface InvoicePreviewProps {
   invoice: Invoice;
-  lead?: Lead;
+  lead?: Enquiry;
   property?: Property;
   dealership?: Dealership;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense } from "react";
-import { Lead, Vehicle, User, Communication, Task, Agreement } from "../types";
+import { Enquiry, Property, User, Communication, Task, Agreement } from "../types";
 import { getAccount } from "../lib/session";
 import { fetchState, updateLead, updateLeadStatus, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
 import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature } from "lucide-react";
@@ -7,7 +7,7 @@ import AgreementPreview from "./AgreementPreview";
 
 interface EnquiryDetailModalProps {
   leadId: string;
-  properties: Vehicle[];
+  properties: Property[];
   users: User[];
   allCommunications: Communication[];
   allTasks: Task[];
@@ -36,7 +36,7 @@ export default function EnquiryDetailModal({
   docHubPanel,
   initialTab,
 }: EnquiryDetailModalProps) {
-  const [lead, setLead] = useState<Lead | null>(null);
+  const [lead, setLead] = useState<Enquiry | null>(null);
   // Who is logged in — communications used to be stamped "Marc van der Merwe"
   // regardless of who sent them.
   const currentUserName = getAccount()?.label || "";
@@ -155,7 +155,7 @@ export default function EnquiryDetailModal({
     // all. Go through fetchState so the token is attached like everywhere else.
     fetchState()
       .then((state: any) => {
-        const found = (state?.enquiries || []).find((l: Lead) => l.id === leadId);
+        const found = (state?.enquiries || []).find((l: Enquiry) => l.id === leadId);
         if (found) {
           setLead(found);
           setLeadStatus(found.status);

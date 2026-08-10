@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Vehicle } from "../types";
+import { Property } from "../types";
 import { openTruLens } from "../lib/productConfig";
 import { openStockWhatsApp } from "../lib/salesShare";
 import InspectionReport from "./InspectionReport";
@@ -48,17 +48,17 @@ interface SocialAccount {
 interface PropertyDetailModalProps {
   /** Documents filed against this property, rendered as its own tab. */
   documentsPanel?: React.ReactNode;
-  vehicle: Vehicle;
+  vehicle: Property;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateVehicle: (id: string, updates: Partial<Vehicle>) => Promise<void>;
+  onUpdateVehicle: (id: string, updates: Partial<Property>) => Promise<void>;
   /** Remove the unit from the portfolio. The owning screen does the checks and
    *  the confirming — this just asks for it. Optional, so the modal still
    *  renders for anywhere that shouldn't offer deletion. */
   onDeleteVehicle?: (id: string) => Promise<void>;
   /** Cancellation flow: put a sold unit back on the market (which re-lists it
    *  on the website) and reopen the deal that closed on it. Optional. */
-  onReturnToStock?: (vehicle: Vehicle) => void | Promise<void>;
+  onReturnToStock?: (vehicle: Property) => void | Promise<void>;
   settings?: any;
   dealershipId?: string;
   /** True only when this dealership has the `social` product AND TruSocial is
@@ -578,8 +578,8 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
                   <select
                     value={vehicle.category || ""}
                     onChange={(e) => {
-                      const val = e.target.value as Vehicle["category"] | "";
-                      onUpdateVehicle(vehicle.id, { category: val || undefined } as Partial<Vehicle>);
+                      const val = e.target.value as Property["category"] | "";
+                      onUpdateVehicle(vehicle.id, { category: val || undefined } as Partial<Property>);
                     }}
                     className="min-w-[180px] bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
                   >
@@ -626,7 +626,7 @@ Property details &amp; specs
                             const cur = (vehicle as any)[f.key];
                             const next = f.type === "number" ? (raw === "" ? 0 : Number(raw)) : raw;
                             if (next === cur) return;
-                            onUpdateVehicle(vehicle.id, { [f.key]: next } as Partial<Vehicle>);
+                            onUpdateVehicle(vehicle.id, { [f.key]: next } as Partial<Property>);
                           }}
                           className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
                         />
@@ -636,7 +636,7 @@ Property details &amp; specs
                       <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Bond / transfer status</label>
                       <select
                         defaultValue={(vehicle as any).bondStatus || "N/A"}
-                        onChange={(e) => onUpdateVehicle(vehicle.id, { bondStatus: e.target.value } as Partial<Vehicle>)}
+                        onChange={(e) => onUpdateVehicle(vehicle.id, { bondStatus: e.target.value } as Partial<Property>)}
                         className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
                       >
                         <option>N/A</option>
@@ -649,7 +649,7 @@ Property details &amp; specs
                       <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Occupancy</label>
                       <select
                         defaultValue={(vehicle as any).occupancy || "Vacant"}
-                        onChange={(e) => onUpdateVehicle(vehicle.id, { occupancy: e.target.value } as Partial<Vehicle>)}
+                        onChange={(e) => onUpdateVehicle(vehicle.id, { occupancy: e.target.value } as Partial<Property>)}
                         className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
                       >
                         <option>Vacant</option>
@@ -663,7 +663,7 @@ Property details &amp; specs
                         defaultValue={vehicle.description || ""}
                         onBlur={(e) => {
                           if (e.target.value === (vehicle.description || "")) return;
-                          onUpdateVehicle(vehicle.id, { description: e.target.value } as Partial<Vehicle>);
+                          onUpdateVehicle(vehicle.id, { description: e.target.value } as Partial<Property>);
                         }}
                         rows={3}
                         className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5 resize-y"
@@ -1286,7 +1286,7 @@ Property details &amp; specs
                 onChange={async () => {
                   setPublishing(true);
                   try {
-                    await onUpdateVehicle(vehicle.id, { showOnWebsite: !isPublished } as Partial<Vehicle>);
+                    await onUpdateVehicle(vehicle.id, { showOnWebsite: !isPublished } as Partial<Property>);
                   } finally {
                     setPublishing(false);
                   }

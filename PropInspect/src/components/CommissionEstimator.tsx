@@ -4,12 +4,12 @@ import {
   ChevronDown, ChevronUp, Briefcase, Percent, 
   Layers, Sliders, CheckCircle2, Info
 } from 'lucide-react';
-import { Vehicle, Lead, User } from '../types';
+import { Property, Enquiry, User } from '../types';
 
 interface CommissionEstimatorProps {
   users: User[];
-  enquiries: Lead[];
-  properties: Vehicle[];
+  enquiries: Enquiry[];
+  properties: Property[];
 }
 
 type EstModel = 'flat' | 'volume' | 'marginTier';
@@ -37,7 +37,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
     
     let totalRevenue = 0;
     let totalMargin = 0;
-    const items: { lead: Lead; vehicle: Vehicle; margin: number; commission: number }[] = [];
+    const items: { lead: Enquiry; vehicle: Property; margin: number; commission: number }[] = [];
 
     closedWonLeads.forEach(l => {
       const v = properties.find(veh => veh.id === l.propertyId);

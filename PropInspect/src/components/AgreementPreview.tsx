@@ -1,10 +1,10 @@
 import React, { useRef, useState } from "react";
-import { Agreement, Lead, Property, Dealership } from "../types";
+import { Agreement, Enquiry, Property, Dealership } from "../types";
 import { Printer, Shield, FileSignature, RotateCcw, Check } from "lucide-react";
 
 interface AgreementPreviewProps {
   agreement: Agreement;
-  lead?: Lead;
+  lead?: Enquiry;
   property?: Property;
   dealership?: Dealership;
   onSignAgreement?: (id: string, signature: string) => Promise<void>;

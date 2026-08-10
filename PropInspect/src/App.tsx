@@ -1,4 +1,4 @@
-import logo from "./assets/images/PI-AppIcon.svg";
+import logo from "./assets/truflow-logo.png";
 import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import Assistant from "./components/Assistant";
 import {
@@ -1452,7 +1452,7 @@ export default function App() {
               <span className="block h-1 w-10 rounded-full bg-[color:var(--glass-line)]" aria-hidden="true" />
             </div>
             <div className="flex items-center gap-3 px-5 pb-2 shrink-0">
-              <img src={logo} alt="PropInspect" className="h-9 w-auto max-w-[130px] object-contain shrink-0" />
+              <img src={logo} alt="TruFlow" className="h-9 w-auto max-w-[130px] object-contain shrink-0" />
               <span className="text-[length:var(--t-Enquiry)] font-semibold text-[color:var(--white)] flex-1">More</span>
               <button
                 type="button"
@@ -1596,7 +1596,7 @@ export default function App() {
       >
         <div className="mb-6 flex flex-col items-center">
           <div className="w-full flex items-center justify-center px-1">
-            <img src={logo} alt="PropInspect" className="h-12 w-auto max-w-full object-contain logo-float" />
+            <img src={logo} alt="TruFlow Premium" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
           {/* Admin dealer context switcher — pick a dealer to see their world. */}
           {isMasterAdmin && state?.dealerships && state.dealerships.length > 0 && (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { DMSState, Vehicle, Expense } from "../types";
+import { DMSState, Property, Expense } from "../types";
 import {
   Wrench,
   Activity,
@@ -13,7 +13,7 @@ import {
 
 interface AccountingReconProps {
   state: DMSState;
-  onUpdateVehicle: (id: string, updates: Partial<Vehicle>) => Promise<void>;
+  onUpdateVehicle: (id: string, updates: Partial<Property>) => Promise<void>;
   onAddExpense: (expense: Partial<Expense>) => Promise<void>;
   onReconcileExpense: (id: string, reconciled: boolean) => Promise<void>;
 }
