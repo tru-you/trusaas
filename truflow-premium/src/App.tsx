@@ -410,6 +410,7 @@ export default function App() {
   const [inventoryAgeFilter, setInventoryAgeFilter] = useState<"ALL" | "30" | "60" | "90">("ALL");
   const [leadCrmTab, setLeadCRMTab] = useState<"kanban" | "list">("kanban");
   const [filterOverdueOnly, setFilterOverdueOnly] = useState(false);
+  const [leadQuery, setLeadQuery] = useState("");
 
   // Modal Open states
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
@@ -828,6 +829,7 @@ export default function App() {
       category: "Deals & Finance",
       items: [
         { id: "deal_readiness", label: "Deal Readiness", icon: ClipboardCheck },
+        { id: "documents", label: "Documents", icon: FileText },
         { id: "payment", label: "Repayment calculator", icon: Calculator },
       ]
     },
@@ -852,16 +854,33 @@ export default function App() {
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
         ['dashboard', 'inventory', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web',
-         'deal_readiness', 'payment'].includes(item.id)
+         'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
         ['dashboard', 'inventory', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings',
-         'deal_readiness', 'payment'].includes(item.id)
+         'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     }
     return { ...group, items };
   }).filter(group => group.items.length > 0);
+
+  /* Mobile "More" sheet buckets, keyed by nav item id. One source so the
+     phone's three buckets can never drift from the sidebar's five groups: an
+     item only has to be added to groupedNavigation and to one bucket here.
+     Unmapped items fall back to the "other" profile bucket below so nothing
+     silently disappears from a phone. */
+  const MORE_BUCKETS: Record<string, "floor" | "desktop" | "account"> = {
+    upload: "floor",
+    media_web: "floor",
+    stock_health: "floor",
+    payment: "floor",
+    deal_readiness: "desktop",
+    accounting_recon: "desktop",
+    documents: "desktop",
+    manager: "account",
+    settings: "account",
+  };
 
   // Callback action handlers
   const handleSignAgreement = async (id: string, signature: string) => {
@@ -1094,6 +1113,16 @@ export default function App() {
   const getUserLabel = (id: string) => {
     const u = state.users.find((item) => item.id === id);
     return u ? u.name : "Unassigned Pool";
+  };
+
+  /* Lead search — filters the shared, tenant-scoped lead list on anything a
+     salesperson might reach for: name, phone, email or the stock it points at.
+     One matcher so Board and List answer the same query. */
+  const leadMatchesQuery = (l: { firstName?: string; lastName?: string; phone?: string; email?: string; vehicleId?: string }) => {
+    const q = leadQuery.trim().toLowerCase();
+    if (!q) return true;
+    return [l.firstName, l.lastName, l.phone, l.email, getVehicleLabel(l.vehicleId)]
+      .some((f) => (f || "").toLowerCase().includes(q));
   };
 
   const getLeadLabel = (id: string) => {
@@ -1354,13 +1383,16 @@ export default function App() {
           product reads the same on both), and account. Role filtering carries
           over — a bucket only shows the items the current role can reach. */}
       {(() => {
-        const byId = new Map(
-          filteredNavigation.flatMap((g) => g.items).map((i) => [i.id, i] as const)
+        /* Buckets now derive from groupedNavigation (see MORE_BUCKETS), so any
+           nav item added in one place automatically lands on a phone too. */
+        const allItems = filteredNavigation.flatMap((g) => g.items) as { id: string; label: string; icon: typeof Home }[];
+        const category = (id: string): "floor" | "desktop" | "account" | "other" =>
+          MORE_BUCKETS[id] || "other";
+        const floorItems = allItems.filter((i) => category(i.id) === "floor");
+        const desktopItems = allItems.filter((i) => category(i.id) === "desktop");
+        const accountItems = allItems.filter(
+          (i) => category(i.id) === "account" || category(i.id) === "other"
         );
-        const pick = (ids: string[]) => ids.map((id) => byId.get(id)).filter(Boolean) as { id: string; label: string; icon: typeof Home }[];
-        const floorItems = pick(["upload", "media_web", "stock_health", "payment"]);
-        const desktopItems = pick(["deal_readiness", "accounting_recon"]);
-        const accountItems = pick(["manager", "settings"]);
         return (
           <div
             role="dialog"
@@ -1602,7 +1634,7 @@ export default function App() {
                       >
                         {navAttention[n.id] > 99 ? "99+" : navAttention[n.id]}
                       </span>
-                    ) : (n.id === "deal_readiness" || n.id === "accounting_recon") ? (
+                    ) : (n.id === "deal_readiness" || n.id === "accounting_recon" || n.id === "documents") ? (
                       /* Desktop-only surface. A hint, not a disable — it exists so
                          the sidebar and the phone's More sheet describe the same
                          product. Dropped when a count badge takes the ml-auto slot. */
@@ -2803,6 +2835,17 @@ export default function App() {
                 })()}
               </div>
               <div className="flex gap-2">
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--faint)]" />
+                  <input
+                    type="search"
+                    value={leadQuery}
+                    onChange={(e) => setLeadQuery(e.target.value)}
+                    placeholder="Search leads…"
+                    aria-label="Search leads"
+                    className="pl-9 pr-3 py-2 rounded-lg border bg-[color:var(--glass)] border-white/5 text-[13px] text-[color:var(--white)] placeholder-[color:var(--faint)] outline-none focus:border-[color:var(--cyan-soft)] w-[180px] md:w-[220px]"
+                  />
+                </div>
                 <button
                   onClick={() => setFilterOverdueOnly(!filterOverdueOnly)}
                   className={`px-3 py-2 rounded-lg border text-[13px] font-semibold cursor-pointer active:scale-95 transition-all ${
@@ -2857,6 +2900,7 @@ export default function App() {
                   // one view ignoring tenant scoping, which is why its counts
                   // disagreed with the header above it.
                   const stageLeads = filteredLeads.filter((l) => {
+                    if (!leadMatchesQuery(l)) return false;
                     const statusMatch = l.status === stage;
                     const overdueMatch = !filterOverdueOnly || leadOverdue(l);
                     return statusMatch && overdueMatch;
@@ -2948,14 +2992,18 @@ export default function App() {
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Customer</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Origin</th>
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Next step</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Status</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Agent</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {state.leads
-                        .filter((l) => !filterOverdueOnly || (l.status === "New" || !l.lastContactedAt))
+                      {filteredLeads
+                        .filter((l) => {
+                          if (!leadMatchesQuery(l)) return false;
+                          return !filterOverdueOnly || leadOverdue(l);
+                        })
                         .map((l) => (
                           <tr key={l.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">
                             <td className="py-3 px-4 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">
@@ -2965,6 +3013,18 @@ export default function App() {
                             <td data-label="Asset" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{getVehicleLabel(l.vehicleId)}</td>
                             <td data-label="Origin" className="py-3 px-4">
                               <span className="text-[13px] text-[rgba(232,234,230,0.72)]">{l.source}</span>
+                            </td>
+                            <td data-label="Next step" className="py-3 px-4">
+                              {(() => {
+                                const d = dueLabel(l);
+                                return d ? (
+                                  <span className={`text-[13px] font-medium ${d.overdue ? "text-[color:var(--muted)]" : "text-[rgba(232,234,230,0.72)]"}`}>
+                                    {d.overdue ? "● " : ""}{d.text}
+                                  </span>
+                                ) : (
+                                  <span className="text-[13px] text-[color:var(--faint)]">—</span>
+                                );
+                              })()}
                             </td>
                             <td data-label="Status" className="py-3 px-4">
                               <span className="text-[13px] font-medium text-[color:var(--white)]">{l.status}</span>
@@ -3294,6 +3354,118 @@ export default function App() {
             </div>
           );
         })()}
+        {/* DOCUMENTS — DEALS IN PROGRESS */}
+        {activeSection === "documents" && (() => {
+          /* Same ordered labels as Deal Readiness: the ORDER comes from
+             DOC_STAGES so the rail and the modal DocHub can never disagree. */
+          const DOCHUB_LABELS: Record<DocStage, string> = {
+            proforma: "Proforma",
+            deed: "Offer to Purchase",
+            compliance: "Compliance",
+            invoice: "Invoice",
+            handover: "Handover",
+          };
+          const docsDeals = filteredLeads.filter(
+            (l) =>
+              (l.status === "Negotiating" || l.status === "Closed Won") &&
+              !(isDesktop && l.docFlowCompletedAt)
+          );
+          return (
+            <div className="flex flex-col gap-6 animate-in fade-in duration-200">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Documents</h1>
+                  {!isDesktop && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-[3px] rounded-full text-[12px] text-[color:var(--muted)] bg-[color:var(--glass)] border border-[color:var(--glass-line)]">
+                      <Monitor size={12} /> Desktop
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] max-w-2xl -mt-3 leading-relaxed">
+                Every live deal, at a glance — where its paperwork stands and one tap into the signing flow.
+              </p>
+
+              {docsDeals.length === 0 ? (
+                <div className="card p-8 text-center text-[13px] text-[rgba(232,234,230,0.72)]">
+                  No active deals yet. A deal appears here once a lead reaches <span className="text-[color:var(--white)] font-semibold">Negotiating</span>.
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {docsDeals.map((lead) => {
+                    const currentIdx = lead.docFlowCompletedAt
+                      ? DOC_STAGES.length
+                      : lead.docStage
+                      ? DOC_STAGES.indexOf(lead.docStage)
+                      : 0;
+                    const openHub = () => {
+                      setLeadInitialTab("dochub");
+                      setLeadDetailId(lead.id);
+                    };
+                    return (
+                      <div key={lead.id} className="card p-4 flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <div className="min-w-0">
+                            <span className="font-semibold text-[15px] text-[color:var(--white)] block truncate">
+                              {lead.firstName} {lead.lastName}
+                            </span>
+                            <span className="block text-[13px] text-[rgba(232,234,230,0.72)] truncate">
+                              {getVehicleLabel(lead.vehicleId)}
+                            </span>
+                          </div>
+                          <span className="text-[13px] font-medium text-[rgba(232,234,230,0.72)]">
+                            {lead.docFlowCompletedAt
+                              ? "Complete"
+                              : lead.docStage
+                              ? DOCHUB_LABELS[lead.docStage]
+                              : "Not started"}
+                          </span>
+                        </div>
+
+                        {/* DocHub stage rail — same five-dot language as Deal
+                            Readiness. The Open DocHub action stays desktop-only,
+                            matching where the modal's DocHub tab is available. */}
+                        <div className="flex items-center gap-3.5 pt-3 border-t border-white/5">
+                          <div className="flex items-end gap-1.5 flex-1 min-w-0">
+                            {DOC_STAGES.map((stage, idx) => {
+                              const filled = idx <= currentIdx;
+                              const current = idx === currentIdx;
+                              return (
+                                <div key={stage} className="flex-1 min-w-0 flex flex-col gap-1">
+                                  <span
+                                    className="h-[3px] rounded-full"
+                                    style={{ background: filled ? "var(--cyan)" : "rgba(232,234,230,0.14)" }}
+                                  />
+                                  <span className={`text-[11px] truncate ${current ? "text-[color:var(--white)] font-semibold" : "text-[color:var(--muted)]"}`}>
+                                    {DOCHUB_LABELS[stage]}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {isDesktop ? (
+                            <button
+                              type="button"
+                              onClick={openHub}
+                              className="shrink-0 px-3 min-h-[32px] rounded-[8px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)] text-[12px] font-semibold hover:bg-[color:var(--cyan)] hover:text-black transition-colors"
+                            >
+                              Open DocHub
+                            </button>
+                          ) : (
+                            <span className="shrink-0 inline-flex items-center gap-1 text-[12px] text-[color:var(--faint)]">
+                              <Monitor size={13} /> Desktop
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* ACCOUNTING & RECON SECTION */}
         {activeSection === "accounting_recon" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
