@@ -1,26 +1,33 @@
 import { Router } from 'express';
-import { requireRole } from '../lib/isolation.js';
-import { readStore, saveStore } from '../lib/auth.js';
+import { requireRole, scopeToAgency } from '../lib/isolation.js';
+import { readStore, saveStore, agencyById } from '../lib/auth.js';
 import { sanitizeString } from '../lib/validate.js';
 
 export default function agencyRoutes(dataDir) {
   const r = Router();
 
-  r.get('/api/agency', (req, res) => {
+  const getOwn = (req) => {
+    if (!req.agencyId) return {};
     const store = readStore(dataDir);
-    res.json(store.agency || {});
+    return agencyById(dataDir, req.agencyId) || store.agency || {};
+  };
+
+  r.get('/api/agency', (req, res) => {
+    res.json(getOwn(req));
   });
 
-  r.put('/api/agency', requireRole('admin'), (req, res) => {
+  r.put('/api/agency', scopeToAgency, requireRole('admin', 'principal'), (req, res) => {
     const store = readStore(dataDir);
     const b = req.body || {};
-    const a = store.agency || {};
-    for (const f of ['name', 'slug', 'region', 'ficaRef', 'contactEmail', 'contactPhone', 'whatsapp', 'address', 'bankName', 'bankAccount', 'bankBranch', 'eaabRef']) {
+    const a = getOwn(req);
+    // slug is permanent — it keys the public feed and satellite pairing.
+    for (const f of ['name', 'region', 'ficaRef', 'contactEmail', 'contactPhone', 'whatsapp', 'address', 'bankName', 'bankAccount', 'bankBranch', 'eaabRef']) {
       if (b[f] !== undefined) a[f] = sanitizeString(b[f], 300);
     }
     if (b.logoDataUrl !== undefined) a.logoDataUrl = b.logoDataUrl;
     a.updatedAt = new Date().toISOString();
-    store.agency = a;
+    store.agencies = store.agencies.map(x => (x.id === a.id ? a : x));
+    if (store.agency && store.agency.id === a.id) store.agency = a;
     saveStore(dataDir, store);
     res.json(a);
   });

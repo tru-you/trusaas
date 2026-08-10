@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TruDealer — Canonical Widgets Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --card-bg: rgba(18, 22, 33, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f1f5f9;
+      --text-dim: #94a3b8;
+      --accent: #1466E0;
+    }
+    body.light {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.08);
+      --text: #0f172a;
+      --text-dim: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 120px;
+      transition: background 0.3s, color 0.3s;
+    }
+    .nav {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(10, 13, 20, 0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo span {
+      background: linear-gradient(135deg, #60a5fa, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 24px 40px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      background: rgba(20, 102, 224, 0.12);
+      border: 1px solid rgba(20, 102, 224, 0.3);
+      color: #60a5fa;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 0 0 16px;
+      line-height: 1.15;
+    }
+    .hero p {
+      font-size: 17px;
+      color: var(--text-dim);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 24px -6px rgba(20, 102, 224, 0.5);
+    }
+    .grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+    .card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin: 0 0 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="logo">
+        🚗 <span>TruDealer</span> Widget Suite
+      </div>
+      <div>
+        <button class="btn" onclick="toggleTheme()">🌓 Toggle Host Theme</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="badge">Powered by TruDealer</div>
+    <h1>Canonical Dealer Widgets</h1>
+    <p>Unified suite of high-converting widgets for automotive dealer websites: Repayment Calculator, Affordability Pre-Qual, Contact Form, and AI Showroom Chat.</p>
+
+    <div class="controls">
+      <button class="btn btn-primary" onclick="TruDealer.open('repay')">⚡ Test Repay</button>
+      <button class="btn btn-primary" onclick="TruDealer.open('afford')">💳 Test Afford</button>
+      <button class="btn btn-primary" onclick="TruDealer.open('book')">📅 Test TruBook</button>
+      <button class="btn btn-primary" onclick="TruDealer.open('form')">📩 Test Contact</button>
+      <button class="btn btn-primary" onclick="TruDealer.open('chat')">💬 Test AI Chat</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>TruRepay — Finance Calculator</h2>
+      <p>Inline repayment estimator mounted directly on a vehicle detail page.</p>
+      <div id="finance-calc"></div>
+    </div>
+
+    <div class="card">
+      <h2>TruForm — Lead Capture</h2>
+      <p>Inline enquiry form configured with vehicle, trade-in, and finance fields.</p>
+      <div id="contact-form"></div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+    }
+  </script>
+
+  <!-- UNIVERSAL TRUDEALER LOADER -->
+  <script src="tru-loader.js"
+          data-dealer="Cars on Caledon"
+          data-slug="cars-on-caledon"
+          data-flow="https://premium.tru-saas.com"
+          data-wa="27618759389"
+          data-accent="#e30613"
+          data-widgets="afford,repay,form,chat,book"
+          data-repay-mode="inline"
+          data-repay-target="#finance-calc"
+          data-repay-price="459900"
+          data-repay-vehicle="2023 Toyota Fortuner 2.8 GD-6"
+          data-form-mode="inline"
+          data-form-target="#contact-form"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@ import { sanitizeString, isValidEnum, ENUMS } from '../lib/validate.js';
 export default function agentRoutes(dataDir) {
   const r = Router();
 
-  r.get('/api/agents', requireRole('admin'), (req, res) => {
+  r.get('/api/agents', requireRole('admin','principal'), (req, res) => {
     const store = readStore(dataDir);
     const agents = (store.agents || [])
       .filter(a => a.agencyId === req.agencyId)
@@ -14,7 +14,7 @@ export default function agentRoutes(dataDir) {
     res.json(agents);
   });
 
-  r.post('/api/agents', requireRole('admin'), (req, res) => {
+  r.post('/api/agents', requireRole('admin','principal'), (req, res) => {
     const b = req.body || {};
     if (!b.name) return res.status(400).json({ error: 'name required.' });
     const { agent, code } = createAgentCode(dataDir, {
@@ -27,7 +27,7 @@ export default function agentRoutes(dataDir) {
     res.status(201).json({ agent: safe, code });
   });
 
-  r.put('/api/agents/:id', requireRole('admin'), (req, res) => {
+  r.put('/api/agents/:id', requireRole('admin','principal'), (req, res) => {
     const store = readStore(dataDir);
     const agent = store.agents.find(a => a.id === req.params.id && a.agencyId === req.agencyId);
     if (!agent) return res.status(404).json({ error: 'Not found.' });
@@ -41,7 +41,7 @@ export default function agentRoutes(dataDir) {
     res.json(safe);
   });
 
-  r.delete('/api/agents/:id', requireRole('admin'), (req, res) => {
+  r.delete('/api/agents/:id', requireRole('admin','principal'), (req, res) => {
     const store = readStore(dataDir);
     const agent = store.agents.find(a => a.id === req.params.id && a.agencyId === req.agencyId);
     if (!agent) return res.status(404).json({ error: 'Not found.' });

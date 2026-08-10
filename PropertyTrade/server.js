@@ -28,6 +28,9 @@ import reportRoutes from './routes/reports.js';
 import interestRoutes from './routes/interests.js';
 import viewingRoutes from './routes/viewings.js';
 import commissionRoutes from './routes/commissions.js';
+import masterRoutes from './routes/master.js';
+import publicRoutes from './routes/public.js';
+import leadRoutes from './routes/leads.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
@@ -81,6 +84,9 @@ app.use(reportRoutes(DATA_DIR));
 app.use(interestRoutes(DATA_DIR));
 app.use(viewingRoutes(DATA_DIR));
 app.use(commissionRoutes(DATA_DIR));
+app.use('/api/master', masterRoutes(DATA_DIR));
+app.use(publicRoutes(DATA_DIR));
+app.use('/api/leads', leadRoutes(DATA_DIR));
 
 // SPA catch-all — serve index.html for client-side routing
 app.get('*', (_req, res) => {

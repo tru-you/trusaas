@@ -57,20 +57,33 @@
     var label = deferred ? 'Install' : isIosSafari() ? (iosHelp ? 'Got it' : 'How to install') : 'Install';
 
     el.innerHTML =
-      '<div style="max-width:380px;margin:0 auto;background:#FFFFFF;border:1px solid rgba(10,20,32,0.10);' +
-      'border-radius:18px;padding:14px;box-shadow:0 24px 60px -30px rgba(10,20,32,0.15)">' +
-        '<div style="font-size:13px;font-weight:600;color:#0A1420">Install ' + APP + '</div>' +
-        '<div style="font-size:12px;color:rgba(10,20,32,0.55);margin-top:2px;line-height:1.45">' +
-          (isIosSafari()
-            ? 'Add to your Home Screen to run it full-screen, without the browser bar.'
-            : 'Install on this device for one-tap access — no browser bar.') +
+      '<div style="max-width:380px;margin:0 auto;background:#FFFFFF;border:1px solid rgba(10,20,32,0.12);' +
+      'border-radius:18px;padding:14px;overflow:hidden;position:relative;' +
+      'background-image:linear-gradient(180deg,rgba(14,157,152,0.05),transparent 45%);' +
+      'box-shadow:0 1px 2px rgba(10,20,32,0.05),0 2px 8px -2px rgba(10,20,32,0.06),' +
+      '0 16px 36px -16px rgba(10,20,32,0.28)">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<span style="width:34px;height:34px;flex-shrink:0;border-radius:10px;display:grid;place-items:center;' +
+          'background:rgba(14,157,152,0.12);color:' + ACCENT + '">' +
+            '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" ' +
+            'stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 19h14"/></svg>' +
+          '</span>' +
+          '<div>' +
+            '<div style="font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#0A1420">Install ' + APP + '</div>' +
+            '<div style="font-size:11.5px;color:rgba(10,20,32,0.55);margin-top:1px;line-height:1.45">' +
+              (isIosSafari()
+                ? 'Add to your Home Screen to run it full-screen, without the browser bar.'
+                : 'Install on this device for one-tap access — no browser bar.') +
+            '</div>' +
+          '</div>' +
         '</div>' + steps +
         '<div style="display:flex;gap:8px;margin-top:12px">' +
-          '<button id="tru-install-go" style="flex:1;border:0;border-radius:999px;padding:9px 12px;' +
-          'background:' + ACCENT + ';color:#FFFFFF;font-size:12px;font-weight:600;cursor:pointer">' + label + '</button>' +
-          '<button id="tru-install-x" aria-label="Dismiss" style="border:1px solid rgba(10,20,32,0.10);' +
-          'background:transparent;border-radius:999px;padding:9px 14px;color:rgba(10,20,32,0.55);' +
-          'font-size:12px;cursor:pointer">✕</button>' +
+          '<button id="tru-install-go" style="flex:1;border:0;border-radius:999px;padding:10px 12px;' +
+          'background:' + ACCENT + ';color:#FFFFFF;font-size:12.5px;font-weight:600;cursor:pointer;' +
+          'box-shadow:0 8px 18px -8px rgba(14,157,152,0.55)">' + label + '</button>' +
+          '<button id="tru-install-x" aria-label="Dismiss" style="border:1px solid rgba(10,20,32,0.12);' +
+          'background:transparent;border-radius:999px;padding:10px 14px;color:rgba(10,20,32,0.55);' +
+          'font-size:12.5px;cursor:pointer">✕</button>' +
         '</div>' +
       '</div>';
 

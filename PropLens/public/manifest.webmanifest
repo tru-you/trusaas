@@ -1,0 +1,46 @@
+{
+  "id": "/",
+  "name": "PropLens — Property Capture",
+  "short_name": "PropLens",
+  "description": "Guided property photography, inspection reports and listing export for property professionals.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#06080D",
+  "theme_color": "#06080D",
+  "lang": "en-ZA",
+  "dir": "ltr",
+  "categories": ["business", "photo", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open catalogue",
+      "short_name": "Catalogue",
+      "description": "Property catalogue and capture queue",
+      "url": "/?view=inventory",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

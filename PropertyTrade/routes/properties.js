@@ -38,7 +38,7 @@ export default function propertyRoutes(dataDir) {
     res.json(item);
   });
 
-  r.post('/api/properties', requireRole('admin', 'manager'), (req, res) => {
+  r.post('/api/properties', requireRole('admin','manager','principal'), (req, res) => {
     const b = req.body || {};
     const id = newId('property');
     const item = {
@@ -63,6 +63,7 @@ export default function propertyRoutes(dataDir) {
       askingPriceZAR: sanitizeNumber(b.askingPriceZAR),
       salesStatus: isValidEnum(b.salesStatus, ENUMS.SALES_STATUSES) ? b.salesStatus : 'available',
       purpose: isValidEnum(b.purpose, ENUMS.PROPERTY_PURPOSES) ? b.purpose : 'rental',
+      published: b.published === true,
       currentLeaseId: null,
       currentTenantId: null,
       managingAgentId: b.managingAgentId || req.agentId,
@@ -86,7 +87,7 @@ export default function propertyRoutes(dataDir) {
       'address', 'unitNumber', 'suburb', 'city', 'province', 'postalCode',
       'propertyType', 'bedrooms', 'bathrooms', 'parking', 'floorArea', 'erfNumber',
       'monthlyRentZAR', 'depositZAR', 'rentalStatus', 'askingPriceZAR', 'salesStatus',
-      'purpose', 'managingAgentId', 'photos', 'features', 'notes', 'ownerId',
+      'purpose', 'published', 'managingAgentId', 'photos', 'features', 'notes', 'ownerId',
       'currentLeaseId', 'currentTenantId',
     ];
     for (const f of fields) {
@@ -97,7 +98,7 @@ export default function propertyRoutes(dataDir) {
     res.json(existing);
   });
 
-  r.delete('/api/properties/:id', requireRole('admin'), (req, res) => {
+  r.delete('/api/properties/:id', requireRole('admin','principal'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     existing.deleted = true;

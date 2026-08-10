@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TruRepay — Finance Calculator Demo</title>
+<style>
+  body{margin:0;font-family:Inter,system-ui,sans-serif;background:#0b0c12;color:#e8eae6;padding:40px 16px;}
+  .wrap{max-width:560px;margin:0 auto;}
+  h1{font-size:22px;margin:0 0 6px;}
+  p{color:#94a3b8;font-size:14px;margin:0 0 24px;}
+  #finance-calc{margin-top:16px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>TruRepay — on-page finance calculator</h1>
+    <p>Dealer-branded repayment calculator that files a lead into TruFlow. Inline instance below; a floating instance can be added at runtime.</p>
+    <div id="finance-calc"></div>
+  </div>
+
+  <script src="tru-repay.js"
+          data-dealer="True Cars"
+          data-slug="true-cars"
+          data-flow="https://premium.tru-saas.com"
+          data-wa="27620502091"
+          data-accent="#1466E0"
+          data-mode="inline"
+          data-target="#finance-calc"
+          data-price="459900"
+          data-vehicle="2023 Toyota Fortuner 2.8 GD-6 Raised Body"></script>
+</body>
+</html>

@@ -7,10 +7,10 @@
 
 :root {
   /* ---------- L1 · PRIMITIVES ---------- */
-  --tru-ink-900: #06080D;
-  --tru-ink-800: #0D1117;
-  --tru-ink-700: #161B22;
-  --tru-ink-600: #21262D;
+  --tru-ink-900: #0f0f13;
+  --tru-ink-800: #121214;
+  --tru-ink-700: #1a1a1f;
+  --tru-ink-600: #2a2a30;
   --tru-ink-500: #30363D;
   --tru-ink-300: #6E7681;
   --tru-ink-100: #B1BAC4;
@@ -30,7 +30,7 @@
   --bg-raised:     var(--tru-ink-800);
   --bg-overlay:    var(--tru-ink-700);
   --bg-inset:      var(--tru-ink-600);
-  --border-subtle: var(--tru-ink-500);
+  --border-subtle: var(--tru-ink-600);
   --border-strong: var(--tru-ink-300);
 
   --text-primary:   var(--tru-paper);
@@ -160,7 +160,7 @@
   --bg-base:       var(--tru-ink-900);
   --bg-raised:     var(--tru-ink-800);
   --bg-overlay:    var(--tru-ink-700);
-  --border-subtle: var(--tru-ink-500);
+  --border-subtle: var(--tru-ink-600);
   --text-primary:   var(--tru-paper);
   --text-secondary: var(--tru-ink-100);
   --text-on-accent: var(--tru-ink-900);

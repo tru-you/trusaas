@@ -11,7 +11,7 @@ export default function Settings({ agent }: { agent: AgentBrief | null }) {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const isAdmin = agent?.role === 'admin';
+  const isAdmin = agent?.role === 'admin' || agent?.role === 'principal';
 
   const load = useCallback(async () => {
     setError('');

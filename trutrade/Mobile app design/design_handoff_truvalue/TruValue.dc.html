@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E8EAE6;font-family:Inter,ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#4FE3DC}
+a:hover{color:#1FAFA8}
+@keyframes tv-pulse{50%{opacity:.35}}
+@keyframes tv-spin{to{transform:rotate(360deg)}}
+@keyframes tv-sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(120%)}}
+@keyframes tv-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 16px">
+<div style="width:390px;height:844px;border-radius:44px;border:8px solid #111;overflow:hidden;position:relative;box-shadow:0 30px 70px rgba(0,0,0,.35);background:#0A0A0A;display:flex;flex-direction:column">
+
+<sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px;padding:36px 26px;overflow-y:auto;background:radial-gradient(120% 60% at 50% -10%, rgba(79,227,220,.10), transparent 60%), #0A0A0A">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;animation:tv-float 5.5s ease-in-out infinite">
+    <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(160deg,#4FE3DC,#1FAFA8);display:grid;place-items:center;box-shadow:0 14px 32px -14px rgba(79,227,220,.6)">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3 13h2l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13h2M5 13h14v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-5Z" stroke="#04222a" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7.5" cy="16.5" r="1.2" fill="#04222a"/><circle cx="16.5" cy="16.5" r="1.2" fill="#04222a"/></svg>
+    </div>
+    <div style="font-size:27px;font-weight:800;letter-spacing:-.02em;color:#c9ced8">Tru<span style="color:#4FE3DC">Value</span></div>
+  </div>
+  <p style="text-align:center;color:#C9D1D9;font-size:14.5px;line-height:1.55;max-width:300px;margin:0 auto">Get your trade-in value in minutes. Walk your car with a few guided prompts — no dealer visit needed.</p>
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+    <div style="border:1px solid #2A2A2A;border-radius:999px;padding:6px 12px;font-size:11px;color:#6E7681;display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>2-minute walkthrough</div>
+    <div style="border:1px solid #2A2A2A;border-radius:999px;padding:6px 12px;font-size:11px;color:#6E7681;display:flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>AI-scored condition</div>
+  </div>
+  <button onClick="{{ goInfo }}" style="background:linear-gradient(180deg,#20323a 0%,#182831 55%,#111a20 100%);border:1px solid #2A2A2A;border-radius:16px;padding:18px;text-align:left;display:flex;align-items:center;gap:16px;box-shadow:inset 0 1.5px 0 rgba(160,240,255,.28),inset 0 -4px 9px rgba(0,20,30,.55),0 8px 20px -10px rgba(0,0,0,.8);transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);border-color:rgba(79,227,220,.5);box-shadow:inset 0 1.5px 0 rgba(160,240,255,.28),inset 0 -4px 9px rgba(0,20,30,.55),0 12px 26px -10px rgba(79,227,220,.35)" style-active="transform:translateY(0px) scale(.98)">
+    <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(160deg,#A8F5F0 0%,#4FE3DC 45%,#1FAFA8 100%);display:grid;place-items:center;flex:0 0 auto;box-shadow:inset 0 2px 0 rgba(255,255,255,.75),inset 0 -3px 7px rgba(0,45,66,.5),0 5px 16px -4px rgba(79,227,220,.5)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#04222a" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div style="flex:1"><div style="font-size:15.5px;font-weight:700;color:#fff;margin-bottom:3px">Start My Trade-In</div><div style="font-size:12.5px;color:#6E7681;line-height:1.4">Guided walkthrough + instant offer</div></div>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="color:#6E7681"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div style="text-align:center"><a href="#" onClick="{{ noop }}" style="font-size:12px;color:#6E7681;text-decoration:none">I'm a dealer &mdash; view submitted appraisals</a></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isInfo }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;padding:24px 22px;overflow-y:auto;background:#0A0A0A">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button onClick="{{ goLanding }}" style="width:32px;height:32px;border-radius:8px;border:1px solid #2A2A2A;background:none;display:grid;place-items:center;color:#C9D1D9;transition:border-color .18s ease,color .18s ease" style-hover="border-color:rgba(79,227,220,.5);color:#4FE3DC"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div style="font-size:19px;font-weight:800;color:#fff">Tell us about your vehicle</div>
+  </div>
+  <p style="font-size:13px;color:#6E7681;line-height:1.5;margin-top:-8px">We'll use this to pull market comps for your appraisal.</p>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <label style="font-size:11px;color:#6E7681;font-weight:600">License plate or VIN</label>
+    <input value="{{ vehicle.plate }}" onChange="{{ setPlate }}" placeholder="e.g. 7ABC123" style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:13px 14px;color:#fff;font-size:14px;font-family:inherit"/>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:11px;color:#6E7681;font-weight:600">Year</label><input value="{{ vehicle.year }}" onChange="{{ setYear }}" placeholder="2021" style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:13px 14px;color:#fff;font-size:14px;font-family:inherit"/></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:11px;color:#6E7681;font-weight:600">Make</label><input value="{{ vehicle.make }}" onChange="{{ setMake }}" placeholder="Honda" style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:13px 14px;color:#fff;font-size:14px;font-family:inherit"/></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:11px;color:#6E7681;font-weight:600">Model</label><input value="{{ vehicle.model }}" onChange="{{ setModel }}" placeholder="Accord" style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:13px 14px;color:#fff;font-size:14px;font-family:inherit"/></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:11px;color:#6E7681;font-weight:600">Mileage</label><input value="{{ vehicle.mileage }}" onChange="{{ setMileage }}" placeholder="42,000" style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:13px 14px;color:#fff;font-size:14px;font-family:inherit"/></div>
+  </div>
+  <div style="flex:1"></div>
+  <button onClick="{{ startWalkthrough }}" disabled="{{ infoIncomplete }}" style="color:#04222a;font-weight:800;font-size:15px;border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#A8F5F0,#4FE3DC);border:none;opacity:{{ infoOpacity }};box-shadow:inset 0 1.5px 0 rgba(255,255,255,.8),inset 0 -3px 6px rgba(0,45,66,.45),0 6px 16px -6px rgba(79,227,220,.5);transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.8),inset 0 -3px 6px rgba(0,45,66,.45),0 10px 22px -6px rgba(79,227,220,.65)" style-active="transform:translateY(0px) scale(.98)">
+    Begin Guided Walkthrough
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#04222a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCapture }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;background:#0A0A0A;min-height:0">
+  <div style="display:flex;align-items:center;gap:8px;padding:14px 14px 12px;border-bottom:1px solid #1F1F1F;background:rgba(10,10,10,.9)">
+    <button onClick="{{ backSection }}" style="width:30px;height:30px;border-radius:8px;border:1px solid #2A2A2A;background:linear-gradient(180deg,#22222a,#16161b);display:grid;place-items:center;color:#C9D1D9;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.13),inset 0 -3px 6px rgba(0,0,0,.55),0 4px 12px -4px rgba(0,0,0,.75);transition:border-color .18s ease,color .18s ease" style-hover="border-color:rgba(79,227,220,.5);color:#4FE3DC"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div style="width:7px;height:7px;border-radius:50%;background:#EF4444;box-shadow:0 0 10px #EF4444;animation:tv-pulse 1.4s infinite"></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;font-weight:600;color:#fff">GUIDED</div>
+    <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6E7681">SECTION {{ sectionNum }}/6</div>
+  </div>
+  <div style="position:relative;flex:1;background:#000;overflow:hidden;min-height:0;display:flex;align-items:center;justify-content:center">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;color:#3a3a3a;text-align:center;padding:30px">
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M3 9l1-3h16l1 3M3 9v9a1 1 0 0 0 1 1h1M3 9h18M21 9v9a1 1 0 0 1-1 1h-1M5 19h14M7 13h.01M17 13h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <div style="font-size:12px;color:#3a3a3a">Live camera preview</div>
+    </div>
+    <sc-if value="{{ justCaptured }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:rgba(16,185,129,.14);display:flex;align-items:center;justify-content:center">
+        <div style="width:64px;height:64px;border-radius:50%;background:#10B981;display:grid;place-items:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#04222a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </div>
+    </sc-if>
+    <div style="position:absolute;left:12px;right:12px;bottom:12px;background:rgba(12,12,14,.88);backdrop-filter:blur(14px);border:1px solid #2A2A2A;border-radius:16px;padding:14px 15px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#4FE3DC;border:1px solid rgba(79,227,220,.35);border-radius:6px;padding:2px 8px">{{ sectionNum }}/6</div>
+        <div style="font-size:14px;font-weight:700;color:#fff">{{ currentSection.name }}</div>
+      </div>
+      <div style="font-size:13px;line-height:1.45;color:#C9D1D9">{{ currentSection.instr }}</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:4px;padding:8px 14px;background:#141414;border-top:1px solid #1F1F1F;border-bottom:1px solid #1F1F1F;position:relative;overflow:hidden">
+    <sc-for list="{{ railSegs }}" as="seg" hint-placeholder-count="6">
+      <div style="flex:1;height:4px;border-radius:999px;background:{{ seg.color }};box-shadow:{{ seg.glow }};transition:.3s"></div>
+    </sc-for>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;padding:16px 24px 26px;background:#141414;justify-content:center">
+    <button onClick="{{ capture }}" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(180deg,#fff,#dcdcdc);border:4px solid #2A2A2A;box-shadow:0 0 0 3px #4FE3DC,inset 0 -3px 6px rgba(0,0,0,.2),0 4px 12px -4px rgba(0,0,0,.6);transition:transform .15s ease" style-active="transform:scale(.92)"></button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProcessing }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:36px;background:#0A0A0A">
+  <div style="width:56px;height:56px;border-radius:50%;border:3px solid #1F1F1F;border-top-color:#4FE3DC;animation:tv-spin 1s linear infinite"></div>
+  <div style="text-align:center">
+    <div style="font-size:17px;font-weight:800;color:#fff;line-height:1.35">Valuating your {{ vehicleLabel }}</div>
+    <div style="font-size:13px;color:#6E7681;margin-top:10px">TruAI is scoring your walkthrough</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;width:100%">
+    <sc-for list="{{ checklist }}" as="item" hint-placeholder-count="5">
+      <div style="display:flex;align-items:center;gap:10px;background:#141414;border:1px solid #2A2A2A;border-radius:10px;padding:10px 12px;opacity:{{ item.opacity }}">
+        <div style="width:18px;height:18px;border-radius:50%;background:{{ item.iconBg }};display:grid;place-items:center;flex:0 0 auto">
+          <sc-if value="{{ item.done }}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#04222a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></sc-if>
+        </div>
+        <div style="font-size:12.5px;color:#C9D1D9">{{ item.label }}</div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isResult }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;padding:26px 22px;overflow-y:auto;background:#0A0A0A">
+  <div style="text-align:center;padding:6px 0 2px">
+    <div style="font-size:20px;font-weight:800;color:#fff">Your Instant Offer</div>
+    <div style="color:#6E7681;font-size:13px;margin-top:4px">{{ vehicleLabel }} &middot; {{ vehicle.mileage }} mi</div>
+  </div>
+  <div style="background:linear-gradient(160deg,rgba(79,227,220,.10),rgba(10,10,14,.6));border:1px solid rgba(79,227,220,.35);border-radius:16px;padding:22px;text-align:center">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:#4FE3DC;text-transform:uppercase">Trade-in value</div>
+    <div style="font-size:38px;font-weight:800;color:#fff;margin-top:6px">{{ offerAmount }}</div>
+    <div style="font-size:12px;color:#6E7681;margin-top:6px">Valid 7 days &middot; market range $17,100&ndash;$19,400</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:14px"><div style="font-size:10px;color:#6E7681;font-family:'JetBrains Mono',monospace">EXTERIOR</div><div style="font-size:18px;font-weight:800;color:#fff;margin-top:4px">A&minus;</div></div>
+    <div style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:14px"><div style="font-size:10px;color:#6E7681;font-family:'JetBrains Mono',monospace">INTERIOR</div><div style="font-size:18px;font-weight:800;color:#fff;margin-top:4px">B+</div></div>
+    <div style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:14px"><div style="font-size:10px;color:#6E7681;font-family:'JetBrains Mono',monospace">MECHANICAL</div><div style="font-size:18px;font-weight:800;color:#fff;margin-top:4px">A</div></div>
+    <div style="background:#141414;border:1px solid #2A2A2A;border-radius:12px;padding:14px"><div style="font-size:10px;color:#6E7681;font-family:'JetBrains Mono',monospace">MILEAGE ADJ.</div><div style="font-size:18px;font-weight:800;color:#10B981;margin-top:4px">+$420</div></div>
+  </div>
+  <button style="color:#04222a;font-weight:800;font-size:15px;border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#A8F5F0,#4FE3DC);border:none;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.8),inset 0 -3px 6px rgba(0,45,66,.45),0 6px 16px -6px rgba(79,227,220,.5);transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.8),inset 0 -3px 6px rgba(0,45,66,.45),0 10px 22px -6px rgba(79,227,220,.65)" style-active="transform:translateY(0px) scale(.98)">Accept &amp; Schedule Drop-off</button>
+  <button style="color:#C9D1D9;font-weight:700;font-size:14px;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#22222a,#16161b);border:1px solid #2A2A2A;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.13),inset 0 -3px 6px rgba(0,0,0,.55),0 4px 12px -4px rgba(0,0,0,.75);transition:transform .18s ease,border-color .18s ease" style-hover="transform:translateY(-2px);border-color:rgba(79,227,220,.5)" style-active="transform:translateY(0px) scale(.98)">Get a Second Opinion</button>
+  <sc-if value="{{ showDealerHandoff }}" hint-placeholder-val="{{ true }}">
+    <div style="font-size:11px;color:#6E7681;text-align:center;line-height:1.5;font-style:italic">A copy of this appraisal has been sent to your dealer's TruCRM.</div>
+  </sc-if>
+  <div style="text-align:center"><button onClick="{{ restart }}" style="background:none;border:none;color:#6E7681;font-size:12px;text-decoration:underline">Start Over</button></div>
+</div>
+</sc-if>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;offerAmount&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;$18,240&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showDealerHandoff&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const SECTIONS = [
+  {name:'Front', instr:'Stand centered, capture the full front bumper and grille.'},
+  {name:'Driver Side', instr:'Walk the driver side, hold steady for the full profile.'},
+  {name:'Passenger Side', instr:'Walk the passenger side, capture the full profile.'},
+  {name:'Rear', instr:'Center on the rear bumper and taillights.'},
+  {name:'Wheels & Tires', instr:'Get close on each wheel — tread depth matters.'},
+  {name:'Interior & Odometer', instr:'Show the dash, seats, and a clear shot of the odometer.'}
+];
+const CHECKS = ['Decoding VIN', 'Analyzing 6 walkthrough captures', 'Pulling live market comps', 'Scoring condition grade', 'Finalizing offer'];
+
+class Component extends DCLogic {
+  state = {
+    screen: 0,
+    section: 0,
+    justCaptured: false,
+    vehicle: { plate: '', year: '2021', make: 'Honda', model: 'Accord', mileage: '42,000' },
+    processingStep: -1
+  };
+
+  goLanding = () => this.setState({ screen: 0 });
+  goInfo = () => this.setState({ screen: 1 });
+  noop = (e) => e && e.preventDefault && e.preventDefault();
+
+  setPlate = (e) => this.setState({ vehicle: { ...this.state.vehicle, plate: e.target.value } });
+  setYear = (e) => this.setState({ vehicle: { ...this.state.vehicle, year: e.target.value } });
+  setMake = (e) => this.setState({ vehicle: { ...this.state.vehicle, make: e.target.value } });
+  setModel = (e) => this.setState({ vehicle: { ...this.state.vehicle, model: e.target.value } });
+  setMileage = (e) => this.setState({ vehicle: { ...this.state.vehicle, mileage: e.target.value } });
+
+  startWalkthrough = () => {
+    if (!this.state.vehicle.make || !this.state.vehicle.model) return;
+    this.setState({ screen: 2, section: 0 });
+  };
+
+  backSection = () => {
+    if (this.state.section > 0) this.setState(s => ({ section: s.section - 1 }));
+    else this.setState({ screen: 1 });
+  };
+
+  capture = () => {
+    this.setState({ justCaptured: true });
+    clearTimeout(this._capT);
+    this._capT = setTimeout(() => {
+      if (this.state.section < SECTIONS.length - 1) {
+        this.setState(s => ({ section: s.section + 1, justCaptured: false }));
+      } else {
+        this.setState({ screen: 3, justCaptured: false, processingStep: -1 });
+        this.runProcessing();
+      }
+    }, 550);
+  };
+
+  runProcessing = () => {
+    clearInterval(this._procT);
+    this._procT = setInterval(() => {
+      this.setState(s => {
+        const next = s.processingStep + 1;
+        if (next >= CHECKS.length) {
+          clearInterval(this._procT);
+          setTimeout(() => this.setState({ screen: 4 }), 500);
+          return { processingStep: CHECKS.length - 1 };
+        }
+        return { processingStep: next };
+      });
+    }, 750);
+  };
+
+  restart = () => {
+    clearInterval(this._procT);
+    clearTimeout(this._capT);
+    this.setState({ screen: 0, section: 0, justCaptured: false, processingStep: -1 });
+  };
+
+  componentWillUnmount() {
+    clearInterval(this._procT);
+    clearTimeout(this._capT);
+  }
+
+  renderVals() {
+    const { screen, section, vehicle, processingStep, justCaptured } = this.state;
+    const currentSection = SECTIONS[section];
+    const infoIncomplete = !(vehicle.make && vehicle.model);
+    const railSegs = SECTIONS.map((s, i) => ({
+      color: i < section ? '#10B981' : i === section ? '#4FE3DC' : '#2A2A2A',
+      glow: i === section ? '0 0 8px #4FE3DC' : 'none'
+    }));
+    const checklist = CHECKS.map((label, i) => ({
+      label,
+      done: i <= processingStep,
+      iconBg: i <= processingStep ? '#10B981' : '#2A2A2A',
+      opacity: i <= processingStep + 1 ? 1 : 0.35
+    }));
+    return {
+      isLanding: screen === 0,
+      isInfo: screen === 1,
+      isCapture: screen === 2,
+      isProcessing: screen === 3,
+      isResult: screen === 4,
+      vehicle,
+      vehicleLabel: `${vehicle.year} ${vehicle.make} ${vehicle.model}`.trim(),
+      currentSection,
+      sectionNum: section + 1,
+      justCaptured,
+      railSegs,
+      checklist,
+      offerAmount: this.props.offerAmount ?? '$18,240',
+      showDealerHandoff: this.props.showDealerHandoff ?? true,
+      infoIncomplete,
+      infoOpacity: infoIncomplete ? 0.5 : 1,
+      goLanding: this.goLanding,
+      goInfo: this.goInfo,
+      noop: this.noop,
+      setPlate: this.setPlate,
+      setYear: this.setYear,
+      setMake: this.setMake,
+      setModel: this.setModel,
+      setMileage: this.setMileage,
+      startWalkthrough: this.startWalkthrough,
+      backSection: this.backSection,
+      capture: this.capture,
+      restart: this.restart
+    };
+  }
+}
+</script>
+</body>
+</html>

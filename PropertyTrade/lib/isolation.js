@@ -22,14 +22,19 @@ export function scopeToAgency(req, res, next) {
   next();
 }
 
+/** Full-access roles inside an agency: master 'admin' and 'principal' (and 'manager' for most data). */
+function fullAccess(role) {
+  return role === 'admin' || role === 'principal';
+}
+
 export function agentCanAccessProperty(req, propertyId) {
-  if (req.agentRole === 'admin' || req.agentRole === 'manager') return true;
+  if (fullAccess(req.agentRole) || req.agentRole === 'manager') return true;
   const assigned = req.auth.assignedPropertyIds || [];
   return assigned.includes(propertyId);
 }
 
 export function filterByAgentScope(req, items) {
-  if (req.agentRole === 'admin' || req.agentRole === 'manager') return items;
+  if (fullAccess(req.agentRole) || req.agentRole === 'manager') return items;
   const assigned = new Set(req.auth.assignedPropertyIds || []);
   return items.filter(item => {
     if (item.propertyId) return assigned.has(item.propertyId);

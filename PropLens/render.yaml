@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: proplens
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server.cjs
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATA_DIR
+        value: /opt/render/project/data
+      - key: TRULENS_ACCESS_CODE
+        sync: false
+        value: ""
+      - key: TRUFLOW_SYNC_KEY
+        sync: false
+        value: ""
+      - key: GEMINI_API_KEY
+        sync: false
+        value: ""
+    disk:
+      name: proplens-data
+      mountPath: /opt/render/project/data
+      sizeGB: 5
