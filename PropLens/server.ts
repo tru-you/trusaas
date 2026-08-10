@@ -701,7 +701,7 @@ function passesScope(record: any, user?: LensScope): boolean {
   return true;
 }
 
-async function getVehicle(id: string, user?: LensScope): Promise<any | null> {
+async function getProperty(id: string, user?: LensScope): Promise<any | null> {
   if (LOCAL_MODE || !fdb) {
     const found = readLocalStore().properties.find((v) => v.id === id);
     if (!found) return null;
@@ -1151,7 +1151,7 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
     // Stamp property if we can
     if (propertyId) {
       try {
-        const v = await getVehicle(propertyId, req.user);
+        const v = await getProperty(propertyId, req.user);
         if (v) {
           await saveProperty({
             ...v,
@@ -1287,16 +1287,16 @@ app.get('/api/portfolio', authenticate, async (req: any, res) => {
 // 2. Add or update property
 app.post('/api/portfolio', authenticate, async (req: any, res) => {
   try {
-    const vehicleData = req.body;
+    const propertyData = req.body;
     const userId = req.user.uid;
 
-    if (!vehicleData.id) {
+    if (!propertyData.id) {
       return res.status(400).json({ error: 'Property ID is required' });
     }
 
     const now = new Date().toISOString();
-    const { agencySlug: _claimedSlug, ownerId: _drop, createdAt: _dropCreated, ...safeData } = vehicleData;
-    const existing = await getVehicle(vehicleData.id, req.user);
+    const { agencySlug: _claimedSlug, ownerId: _drop, createdAt: _dropCreated, ...safeData } = propertyData;
+    const existing = await getProperty(propertyData.id, req.user);
 
     /* Token-pinned agencySlug wins; then existing record; body is last resort
        (legacy shared-code tokens where the picker is the only signal). */
@@ -1312,8 +1312,8 @@ app.post('/api/portfolio', authenticate, async (req: any, res) => {
         ownerId: existing.ownerId || userId,
         agencySlug,
         updatedAt: now,
-        photos: vehicleData.photos ?? existing.photos ?? {},
-        quality: vehicleData.quality ?? existing.quality ?? {},
+        photos: propertyData.photos ?? existing.photos ?? {},
+        quality: propertyData.quality ?? existing.quality ?? {},
       };
       const saved = await saveProperty(updatedProperty);
       return res.json({ success: true, property: saved });
@@ -1328,11 +1328,11 @@ app.post('/api/portfolio', authenticate, async (req: any, res) => {
       ...safeData,
       ownerId: userId,
       agencySlug,
-      listingRef: vehicleData.listingRef || listingRefFallback,
+      listingRef: propertyData.listingRef || listingRefFallback,
       createdAt: now,
       updatedAt: now,
-      photos: vehicleData.photos || {},
-      quality: vehicleData.quality || {},
+      photos: propertyData.photos || {},
+      quality: propertyData.quality || {},
     };
     await saveProperty(newProperty);
     res.json({ success: true, property: newProperty });
@@ -1352,7 +1352,7 @@ app.post('/api/portfolio/upload-photo', authenticate, async (req: any, res) => {
       return res.status(400).json({ error: 'propertyId, slotId, and base64Image are required' });
     }
 
-    const existingData = await getVehicle(propertyId, req.user);
+    const existingData = await getProperty(propertyId, req.user);
     if (!existingData) {
       return res.status(404).json({ error: 'Property not found' });
     }
@@ -1416,7 +1416,7 @@ app.delete('/api/portfolio/:id', authenticate, async (req: any, res) => {
   try {
     const id = req.params.id;
     const userId = req.user.uid;
-    const data = await getVehicle(id, req.user);
+    const data = await getProperty(id, req.user);
     if (!data) {
       return res.status(404).json({ error: 'Property not found' });
     }
@@ -1820,18 +1820,18 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
     const {
       propertyId,
       pmsUrl: pmsUrlOverride,
-      agencySlug: claimedDealerSlug,
+      agencySlug: claimedAgencySlug,
       createIfMissing = true,
     } = req.body || {};
 
     /* When the device signed in with a per-agency code, that wins. The
        body value is a claim from the client; the token is evidence. This is
        what stops a mis-set picker filing a homes into another agency's yard. */
-    const agencySlug = req.user?.agencySlug || claimedDealerSlug;
-    if (req.user?.agencySlug && claimedDealerSlug && claimedDealerSlug !== req.user.agencySlug) {
+    const agencySlug = req.user?.agencySlug || claimedAgencySlug;
+    if (req.user?.agencySlug && claimedAgencySlug && claimedAgencySlug !== req.user.agencySlug) {
       console.warn(
         `[export] device is signed in as "${req.user.agencySlug}" but requested ` +
-        `"${claimedDealerSlug}" — using the signed-in agency.`
+        `"${claimedAgencySlug}" — using the signed-in agency.`
       );
     }
 
@@ -1850,11 +1850,11 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
         success: false,
         error:
           'No agency selected on this device. Choose the agency in ' +
-          'TruLens before exporting, so the capture files into the right yard.',
+          'TruLens before exporting, so the capture files into the right portfolio.',
       });
     }
 
-    const property = await getVehicle(propertyId, req.user);
+    const property = await getProperty(propertyId, req.user);
     if (!property) {
       return res.status(404).json({ error: 'Property not found' });
     }
