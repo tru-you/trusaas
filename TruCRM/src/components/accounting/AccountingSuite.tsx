@@ -30,12 +30,16 @@ import {
   Pencil,
   Save,
   X,
+  FileSignature,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Transaction, Invoice, InvoiceItem } from '../../types';
 import defaultLogo from '../../assets/images/truesaas_logo_1784747570605.jpg';
 import { openTruDocs, invoiceToTruDocs } from '../../lib/truDocs';
 import { openMailTo } from '../../lib/contact';
+import { EsigShareTarget } from '../../lib/esig';
+import { apiFetch } from '../../lib/api';
+import { SignatureShareModal } from '../common/SignatureShareModal';
 
 export const AccountingSuite: React.FC = () => {
   const {
@@ -85,6 +89,9 @@ export const AccountingSuite: React.FC = () => {
   // Invoice Preview Modal
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  // Client e-signature link
+  const [esigTarget, setEsigTarget] = useState<EsigShareTarget | null>(null);
 
   // Editable invoice draft (working copy of the previewed invoice)
   const [draft, setDraft] = useState<Invoice | null>(null);
@@ -168,6 +175,32 @@ export const AccountingSuite: React.FC = () => {
     );
   };
 
+  // Publish a frozen copy of the invoice to the server and open the sharing
+  // modal — the client signs on their phone, the signature comes back here.
+  const requestInvoiceSignature = (inv: Invoice) => {
+    setEsigTarget({
+      id: `inv-${inv.invoiceNumber.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-')}`,
+      kind: 'invoice',
+      title: `Invoice ${inv.invoiceNumber}`,
+      clientName: inv.clientName,
+      clientEmail: inv.clientEmail,
+      clientPhone: '',
+      currency: profile.currency,
+      doc: invoiceToTruDocs(inv, profile),
+      onSigned: (signed) => {
+        const updated: Invoice = {
+          ...inv,
+          signatureImage: signed.signature,
+          signerName: signed.name,
+          signedAt: signed.signedAt,
+        };
+        updateInvoice(updated);
+        setPreviewInvoice(updated);
+        if (draft && draft.id === inv.id) setDraft(updated);
+      },
+    });
+  };
+
   const filteredTransactions = transactions.filter(
     (t) =>
       t.vendorOrClient.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -197,7 +230,7 @@ export const AccountingSuite: React.FC = () => {
     setScannedResult(null);
 
     try {
-      const res = await fetch('/api/ai/scan-receipt', {
+      const res = await apiFetch('/api/ai/scan-receipt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -333,8 +366,8 @@ export const AccountingSuite: React.FC = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-3">
-          <div className="bg-[#EFEDE8] p-1 rounded-xl flex items-center gap-1 border border-[rgba(10,20,32,0.08)]">
+        <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto">
+          <div className="bg-[#EFEDE8] p-1 rounded-xl flex items-center gap-1 border border-[rgba(10,20,32,0.08)] shrink-0">
             <button
               onClick={() => setActiveTab('ledger')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -1051,6 +1084,12 @@ export const AccountingSuite: React.FC = () => {
                   Thorough Invoice View
                 </span>
                 <span className="text-xs text-[#6E7681] font-mono">{previewInvoice.invoiceNumber}</span>
+                {previewInvoice.signerName && (
+                  <span className="px-2.5 py-1 bg-[rgba(16,185,129,0.12)] text-[#4ADE80] border border-[rgba(16,185,129,0.35)] rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Signed by {previewInvoice.signerName}
+                  </span>
+                )}
                 <button
                   onClick={() => (draft ? cancelEdit() : beginEdit(previewInvoice))}
                   className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
@@ -1103,6 +1142,15 @@ export const AccountingSuite: React.FC = () => {
                 >
                   <Mail className="w-3.5 h-3.5 text-[#F59E0B]" />
                   <span>Send Email</span>
+                </button>
+
+                <button
+                  onClick={() => requestInvoiceSignature(previewInvoice)}
+                  className="px-3 py-1.5 bg-[#161B22] text-[#E8EAE6] text-xs font-medium rounded-[10px] flex items-center gap-1.5 shadow-[inset_0_1px_0_rgba(232,234,230,0.10),0_4px_0_#06080D,0_8px_18px_-8px_rgba(0,0,0,0.95)] transition-all hover:bg-[#21262D] active:translate-y-[2px] active:shadow-[0_1px_0_#06080D]"
+                  title="Publish a client signing link — your client signs on their phone, the signature returns here"
+                >
+                  <FileSignature className="w-3.5 h-3.5 text-[#4FE3DC]" />
+                  <span>Request Signature</span>
                 </button>
 
                 {previewInvoice.status !== 'Paid' && (
@@ -1416,6 +1464,9 @@ export const AccountingSuite: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+      {esigTarget && (
+        <SignatureShareModal isOpen={!!esigTarget} onClose={() => setEsigTarget(null)} target={esigTarget} />
       )}
     </div>
   );

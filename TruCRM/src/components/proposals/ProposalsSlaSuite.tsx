@@ -24,11 +24,14 @@ import {
   DollarSign,
   Activity,
   Download,
+  Link2,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Proposal, ProposalStatus, SlaContract, SlaIncident } from '../../types';
 import { useFormAutoSave } from '../../hooks/useFormAutoSave';
 import { openTruDocs, proposalToTruDocs, slaToTruDocs } from '../../lib/truDocs';
+import { EsigShareTarget } from '../../lib/esig';
+import { SignatureShareModal } from '../common/SignatureShareModal';
 
 /**
  * Draw-to-sign signature pad. Works with mouse or finger (pointer events).
@@ -142,10 +145,14 @@ export const ProposalsSlaSuite: React.FC = () => {
     sendProposal,
     acceptProposal,
     addSlaContract,
+    updateSlaContract,
     deleteSlaContract,
     profile,
     deals,
   } = useApp();
+
+  // Client e-signature link
+  const [esigTarget, setEsigTarget] = useState<EsigShareTarget | null>(null);
 
   const [activeTab, setActiveTab] = useState<'proposals' | 'slas'>('proposals');
   const [proposalStatusFilter, setProposalStatusFilter] = useState<string>('All');
@@ -183,6 +190,56 @@ export const ProposalsSlaSuite: React.FC = () => {
 
   const updateProposalField = (field: string, val: any) => {
     setProposalForm((prev) => ({ ...prev, [field]: val }));
+  };
+
+  // Publish a frozen copy of the proposal to the server and open the sharing
+  // modal — the client signs on their phone, the signature comes back here.
+  const requestProposalSignature = (prop: Proposal) => {
+    setEsigTarget({
+      id: `prop-${prop.proposalNumber.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-')}`,
+      kind: 'quote',
+      title: `Quote ${prop.proposalNumber}`,
+      clientName: prop.company || prop.clientName,
+      clientEmail: prop.clientEmail,
+      clientPhone: '',
+      currency: profile.currency,
+      doc: proposalToTruDocs(prop, profile),
+      onSigned: (signed) => {
+        const updated: Proposal = {
+          ...prop,
+          status: 'Accepted',
+          signatureStatus: 'Signed',
+          signedDate: signed.signedAt.slice(0, 10),
+          signatureImage: signed.signature,
+          signerName: signed.name,
+        };
+        updateProposal(updated);
+        setSelectedProposal((sel) => (sel && sel.id === prop.id ? updated : sel));
+      },
+    });
+  };
+
+  const requestSlaSignature = (sla: SlaContract) => {
+    setEsigTarget({
+      id: `sla-${sla.id}`,
+      kind: 'sla',
+      title: `SLA ${sla.tier}`,
+      clientName: sla.company || sla.clientName,
+      clientEmail: '',
+      clientPhone: '',
+      currency: profile.currency,
+      doc: slaToTruDocs(sla, profile),
+      onSigned: (signed) => {
+        const updated: SlaContract = {
+          ...sla,
+          signatureImage: signed.signature,
+          signerName: signed.name,
+          signedAt: signed.signedAt,
+        };
+        updateSlaContract(updated);
+        setSelectedSla((sel) => (sel && sel.id === sla.id ? updated : sel));
+      },
+    });
   };
 
   const setNewTitle = (val: string) => updateProposalField('newTitle', val);
@@ -582,6 +639,16 @@ export const ProposalsSlaSuite: React.FC = () => {
                               <Download className="w-3.5 h-3.5" />
                             </button>
 
+                            {prop.status !== 'Accepted' && (
+                              <button
+                                onClick={() => requestProposalSignature(prop)}
+                                className="p-1.5 bg-white hover:bg-[rgba(14,157,152,0.08)] text-[#0E9D98] border border-[rgba(10,20,32,0.08)] hover:border-[rgba(14,157,152,0.20)] rounded-lg transition-colors"
+                                title="Publish a client signing link — the client signs on their phone, the signature returns here"
+                              >
+                                <Link2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
                             {prop.status === 'Draft' && (
                               <button
                                 onClick={() => sendProposal(prop.id)}
@@ -750,6 +817,16 @@ export const ProposalsSlaSuite: React.FC = () => {
                       <Download className="w-3.5 h-3.5" />
                     </button>
 
+                    {!sla.signerName && (
+                      <button
+                        onClick={() => requestSlaSignature(sla)}
+                        className="p-1.5 bg-[#FAFAF8] hover:bg-[rgba(14,157,152,0.08)] text-[rgba(10,20,32,0.50)] hover:text-[#0E9D98] rounded-lg border border-[rgba(10,20,32,0.08)] transition-colors"
+                        title="Publish a client signing link — the client signs on their phone, the signature returns here"
+                      >
+                        <Link2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+
                     <button
                       onClick={() => setSlaToDelete(sla)}
                       className="p-1.5 bg-[#FAFAF8] hover:bg-rose-50 text-[rgba(10,20,32,0.50)] hover:text-rose-400 rounded-lg border border-[rgba(10,20,32,0.08)] transition-colors"
@@ -787,6 +864,16 @@ export const ProposalsSlaSuite: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
+                {selectedProposal.signatureStatus !== 'Signed' && (
+                  <button
+                    onClick={() => requestProposalSignature(selectedProposal)}
+                    className="px-3 py-1.5 bg-[rgba(14,157,152,0.08)] hover:bg-[rgba(14,157,152,0.12)] text-[#0E9D98] border border-[rgba(14,157,152,0.20)] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    title="Publish a client signing link — the client signs on their phone, the signature returns here"
+                  >
+                    <Link2 className="w-3.5 h-3.5" />
+                    <span>Signing Link</span>
+                  </button>
+                )}
                 <button
                   onClick={() => window.print()}
                   className="px-3 py-1.5 bg-[#EFEDE8] hover:bg-[#EFEDE8] text-[#334155] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
@@ -1454,6 +1541,10 @@ export const ProposalsSlaSuite: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {esigTarget && (
+        <SignatureShareModal isOpen={!!esigTarget} onClose={() => setEsigTarget(null)} target={esigTarget} />
       )}
     </div>
   );

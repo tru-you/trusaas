@@ -25,6 +25,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { CarDealership } from '../../types/carDealer';
 import { useApp } from '../../context/AppContext';
+import { apiFetch } from '../../lib/api';
 
 interface CarDealerIntelModalProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ export const CarDealerIntelModal: React.FC<CarDealerIntelModalProps> = ({ isOpen
     setAnalysisReport(null);
     
     try {
-      const response = await fetch('/api/cardealer/analyze-dealership', {
+      const response = await apiFetch('/api/cardealer/analyze-dealership', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dealershipData: dealer }),

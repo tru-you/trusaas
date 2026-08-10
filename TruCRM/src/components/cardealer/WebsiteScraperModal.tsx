@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Globe, Search, X, Building2, Mail, Phone, Link2, Sparkles, Plus, Check, Loader2, List, Zap } from 'lucide-react';
 import { CarDealership, ClassifiedSource } from '../../types/carDealer';
 import { socket } from '../../lib/socket';
+import { apiFetch } from '../../lib/api';
 
 interface ScrapeResult {
   title: string;
@@ -117,7 +118,7 @@ export const WebsiteScraperModal: React.FC<WebsiteScraperModalProps> = ({
     setImported(false);
 
     try {
-      const res = await fetch('/api/cardealer/scrape-website', {
+      const res = await apiFetch('/api/cardealer/scrape-website', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: url.trim() }),
@@ -158,7 +159,7 @@ export const WebsiteScraperModal: React.FC<WebsiteScraperModalProps> = ({
     setImportedUrls([]);
 
     try {
-      const res = await fetch('/api/cardealer/scrape-batch', {
+      const res = await apiFetch('/api/cardealer/scrape-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ urls, socketId: socket.id }),

@@ -13,6 +13,7 @@ import { TruCrmSuite } from './components/trucrm/TruCrmSuite';
 import { ModuleDock } from './components/modules/ModuleDock';
 import { TruDocsView, OnboardingView } from './components/documents/DocViews';
 import { LoginScreen } from './components/auth/LoginScreen';
+import { AssistantChat } from './components/assistant/AssistantChat';
 
 const SESSION_KEY = 'trusaas_demo_session_v1';
 
@@ -67,6 +68,7 @@ export default function App() {
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
             <Navbar onMenuClick={() => setNavOpen(true)} />
             <MainContent />
+            <AssistantChat />
           </div>
         </div>
       </NotificationProvider>

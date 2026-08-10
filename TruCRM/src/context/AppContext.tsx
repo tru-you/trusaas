@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { socket } from '../lib/socket';
+import { useServerStore } from '../hooks/useServerStore';
 import {
   Deal,
   Contact,
@@ -106,60 +107,34 @@ const LOCAL_STORAGE_KEY = 'trusaas_app_state_v2';
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeView, setActiveView] = useState<string>('trucrm');
 
-  // Load from local storage or fallback to mock data
-  const [profile, setProfile] = useState<BusinessProfile>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_profile`);
-    return saved ? JSON.parse(saved) : initialProfile;
-  });
+  // Slices are synced to the server so every device (desktop, phone) reads and
+  // writes the same workspace. localStorage is only an instant cache.
+  const [profile, setProfile] = useServerStore<BusinessProfile>(
+    `${LOCAL_STORAGE_KEY}_profile`,
+    initialProfile
+  );
 
-  const [deals, setDeals] = useState<Deal[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_deals`);
-    return saved ? JSON.parse(saved) : initialDeals;
-  });
+  const [deals, setDeals] = useServerStore<Deal[]>(`${LOCAL_STORAGE_KEY}_deals`, initialDeals);
 
-  const [contacts, setContacts] = useState<Contact[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_contacts`);
-    return saved ? JSON.parse(saved) : initialContacts;
-  });
+  const [contacts, setContacts] = useServerStore<Contact[]>(`${LOCAL_STORAGE_KEY}_contacts`, initialContacts);
 
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_transactions`);
-    return saved ? JSON.parse(saved) : initialTransactions;
-  });
+  const [transactions, setTransactions] = useServerStore<Transaction[]>(
+    `${LOCAL_STORAGE_KEY}_transactions`,
+    initialTransactions
+  );
 
-  const [invoices, setInvoices] = useState<Invoice[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_invoices`);
-    return saved ? JSON.parse(saved) : initialInvoices;
-  });
+  const [invoices, setInvoices] = useServerStore<Invoice[]>(`${LOCAL_STORAGE_KEY}_invoices`, initialInvoices);
 
-  const [workflowRules, setWorkflowRules] = useState<WorkflowRule[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_workflows`);
-    return saved ? JSON.parse(saved) : initialWorkflowRules;
-  });
+  const [workflowRules, setWorkflowRules] = useServerStore<WorkflowRule[]>(
+    `${LOCAL_STORAGE_KEY}_workflows`,
+    initialWorkflowRules
+  );
 
-  const [proposals, setProposals] = useState<Proposal[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_proposals`);
-    return saved ? JSON.parse(saved) : initialProposals;
-  });
+  const [proposals, setProposals] = useServerStore<Proposal[]>(`${LOCAL_STORAGE_KEY}_proposals`, initialProposals);
 
-  const [slaContracts, setSlaContracts] = useState<SlaContract[]>(() => {
-    const saved = localStorage.getItem(`${LOCAL_STORAGE_KEY}_slas`);
-    return saved ? JSON.parse(saved) : initialSlaContracts;
-  });
+  const [slaContracts, setSlaContracts] = useServerStore<SlaContract[]>(`${LOCAL_STORAGE_KEY}_slas`, initialSlaContracts);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-
-  // Sync to local storage
-  useEffect(() => {
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_profile`, JSON.stringify(profile));
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_deals`, JSON.stringify(deals));
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_contacts`, JSON.stringify(contacts));
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_transactions`, JSON.stringify(transactions));
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_invoices`, JSON.stringify(invoices));
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_workflows`, JSON.stringify(workflowRules));
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_proposals`, JSON.stringify(proposals));
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_slas`, JSON.stringify(slaContracts));
-  }, [profile, deals, contacts, transactions, invoices, workflowRules, proposals, slaContracts]);
 
   // Helper notification adder
   const addNotification = (title: string, description: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
@@ -536,8 +511,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   };
 
+  // Clear only the business-workspace slices (never the TruCRM lead bank,
+  // market intel, the module dock, or the login session).
+  const clearAppSlices = () => {
+    ['profile', 'deals', 'contacts', 'transactions', 'invoices', 'workflows', 'proposals', 'slas'].forEach(
+      (s) => {
+        try {
+          localStorage.removeItem(`${LOCAL_STORAGE_KEY}_${s}`);
+        } catch {
+          // ignore
+        }
+      }
+    );
+  };
+
   const resetToSampleData = () => {
-    localStorage.clear();
+    clearAppSlices();
     setProfile(initialProfile);
     setDeals(initialDeals);
     setContacts(initialContacts);
@@ -550,7 +539,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteAllData = () => {
-    localStorage.clear();
+    clearAppSlices();
     setDeals([]);
     setContacts([]);
     setTransactions([]);

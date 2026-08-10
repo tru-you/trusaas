@@ -7,6 +7,8 @@
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs && esbuild scrape-worker.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/scrape-worker.cjs",
     "start": "node dist/server.cjs",
+    "worker:dev": "tsx scrape-worker.ts",
+    "worker:start": "node dist/scrape-worker.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"

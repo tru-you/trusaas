@@ -51,6 +51,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { CarDealership, ClassifiedSource, DealershipStatus } from '../../types/carDealer';
 import { initialCarDealerships } from '../../data/carDealerData';
 import { useApp } from '../../context/AppContext';
+import { useServerStore } from '../../hooks/useServerStore';
 import { CarDealerIntelModal } from './CarDealerIntelModal';
 import { ProspectFinderModal } from './ProspectFinderModal';
 import { WebsiteScraperModal } from './WebsiteScraperModal';
@@ -178,7 +179,12 @@ const SortableDealerCard: React.FC<SortableDealerCardProps> = ({
 export const CarDealerSuite: React.FC = () => {
   const { profile, addNotification, addDeal } = useApp();
 
-  const [dealerships, setDealerships] = useState<CarDealership[]>(initialCarDealerships);
+  // Market Intel lives in the shared server store, so scraped/indexed
+  // dealerships survive refreshes and stay in sync across your devices.
+  const [dealerships, setDealerships] = useServerStore<CarDealership[]>(
+    'trusaas_market_intel_v1',
+    initialCarDealerships
+  );
   const [viewMode, setViewMode] = useState<'grid' | 'kanban'>('grid');
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -403,7 +409,7 @@ export const CarDealerSuite: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setShowScraper(true)}
             className="px-4 py-2.5 bg-white hover:bg-[#F5F4F1] text-[#1A2332] font-bold rounded-xl text-xs border border-[rgba(10,20,32,0.10)] flex items-center gap-2 shadow-md transition-all"
@@ -559,7 +565,7 @@ export const CarDealerSuite: React.FC = () => {
                 className="bg-[#FAFAF8] rounded-3xl border border-[rgba(10,20,32,0.08)] overflow-hidden flex flex-col transition-all hover:border-[rgba(10,20,32,0.10)]"
               >
                 {/* Card Header */}
-                <div className="p-8 space-y-8">
+                <div className="p-5 sm:p-8 space-y-6 sm:space-y-8">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
@@ -571,13 +577,13 @@ export const CarDealerSuite: React.FC = () => {
                     </div>
                     <button
                       onClick={() => handleDeleteDealer(dealer.id)}
-                      className="p-2 text-[rgba(10,20,32,0.10)] hover:text-[rgba(10,20,32,0.30)] transition-colors"
+                      className="p-2 text-[rgba(10,20,32,0.10)] hover:text-[rgba(10,20,32,0.30)] transition-colors shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-8">
+                  <div className="grid grid-cols-2 gap-6 sm:gap-8">
                     <div className="space-y-2">
                       <span className="text-[10px] font-black text-[rgba(10,20,32,0.20)] uppercase tracking-[0.1em]">Inventory</span>
                       <div className="text-base font-medium text-[#1A2332]/80">{dealer.inventoryCount} units</div>
@@ -588,7 +594,7 @@ export const CarDealerSuite: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="pt-8 border-t border-[rgba(10,20,32,0.08)] flex items-center justify-between">
+                  <div className="pt-8 border-t border-[rgba(10,20,32,0.08)] flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-6">
                       <button 
                         onClick={() => { setIntelDealer(dealer); setIsIntelOpen(true); }}
@@ -724,8 +730,8 @@ export const CarDealerSuite: React.FC = () => {
       {/* Add Dealership Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white border border-[rgba(10,20,32,0.08)] w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden">
-            <div className="p-8 border-b border-[rgba(10,20,32,0.08)] flex items-center justify-between">
+          <div className="bg-white border border-[rgba(10,20,32,0.08)] w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-5 sm:p-8 border-b border-[rgba(10,20,32,0.08)] flex items-center justify-between shrink-0">
               <h3 className="text-xl font-black text-[#1A2332] tracking-tight">Index Asset</h3>
               <button
                 onClick={() => setShowAddModal(false)}
@@ -735,7 +741,7 @@ export const CarDealerSuite: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleAddDealership} className="p-8 space-y-6">
+            <form onSubmit={handleAddDealership} className="p-5 sm:p-8 space-y-6 overflow-y-auto min-h-0">
               <div>
                 <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Dealership Name</label>
                 <input
@@ -748,7 +754,7 @@ export const CarDealerSuite: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Source</label>
                   <select
@@ -776,7 +782,7 @@ export const CarDealerSuite: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Contact</label>
                   <input
@@ -799,7 +805,7 @@ export const CarDealerSuite: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <label className="text-[10px] font-bold text-[rgba(10,20,32,0.30)] uppercase tracking-[0.2em] block mb-2">Phone</label>
                   <input

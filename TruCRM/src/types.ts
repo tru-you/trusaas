@@ -103,6 +103,10 @@ export interface Invoice {
   items: InvoiceItem[];
   taxRate: number; // percentage, e.g. 10 for 10%
   notes?: string;
+  /** Filled when the client signs via a client signing link. */
+  signatureImage?: string;
+  signerName?: string;
+  signedAt?: string;
 }
 
 export interface WorkflowRule {
@@ -199,6 +203,10 @@ export interface SlaContract {
   supportCoverage: string; // e.g. '24/7/365 Phone & Priority Queue'
   monthlyFee: number;
   incidents: SlaIncident[];
+  /** Filled when the client signs via a client signing link. */
+  signatureImage?: string;
+  signerName?: string;
+  signedAt?: string;
 }
 
 export interface Notification {

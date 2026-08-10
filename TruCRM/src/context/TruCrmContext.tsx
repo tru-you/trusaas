@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo } from 'react';
 import {
   Lead,
   LeadActivity,
@@ -17,18 +17,7 @@ import {
   initialSalespeople,
   initialDealershipSettings,
 } from '../data/trucrmData';
-
-const KEY = 'trusaas_crm_v2';
-
-function load<T>(suffix: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(`${KEY}_${suffix}`);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    // Corrupt or unreadable storage should degrade to seed data, not a white screen.
-    return fallback;
-  }
-}
+import { useServerStore } from '../hooks/useServerStore';
 
 /**
  * Local-calendar YYYY-MM-DD. Must not use toISOString(), which is UTC — in SAST
@@ -193,28 +182,28 @@ interface TruCrmContextType {
 
 const TruCrmContext = createContext<TruCrmContextType | undefined>(undefined);
 
-export const TruCrmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [leads, setLeads] = useState<Lead[]>(() => load('leads', initialLeads));
-  const [activities, setActivities] = useState<LeadActivity[]>(() =>
-    load('activities', initialLeadActivities)
-  );
-  const [appointments, setAppointments] = useState<Appointment[]>(() =>
-    load('appointments', initialAppointments)
-  );
-  const [salespeople, setSalespeople] = useState<Salesperson[]>(() =>
-    load('salespeople', initialSalespeople)
-  );
-  const [settings, setSettings] = useState<DealershipSettings>(() =>
-    load('settings', initialDealershipSettings)
-  );
+const KEY = 'trusaas_crm_v2';
 
-  useEffect(() => {
-    localStorage.setItem(`${KEY}_leads`, JSON.stringify(leads));
-    localStorage.setItem(`${KEY}_activities`, JSON.stringify(activities));
-    localStorage.setItem(`${KEY}_appointments`, JSON.stringify(appointments));
-    localStorage.setItem(`${KEY}_salespeople`, JSON.stringify(salespeople));
-    localStorage.setItem(`${KEY}_settings`, JSON.stringify(settings));
-  }, [leads, activities, appointments, salespeople, settings]);
+export const TruCrmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Slices are synced to the server so the same lead bank shows on every
+  // device; localStorage is only an instant cache.
+  const [leads, setLeads] = useServerStore<Lead[]>(`${KEY}_leads`, initialLeads);
+  const [activities, setActivities] = useServerStore<LeadActivity[]>(
+    `${KEY}_activities`,
+    initialLeadActivities
+  );
+  const [appointments, setAppointments] = useServerStore<Appointment[]>(
+    `${KEY}_appointments`,
+    initialAppointments
+  );
+  const [salespeople, setSalespeople] = useServerStore<Salesperson[]>(
+    `${KEY}_salespeople`,
+    initialSalespeople
+  );
+  const [settings, setSettings] = useServerStore<DealershipSettings>(
+    `${KEY}_settings`,
+    initialDealershipSettings
+  );
 
   const nextReference = () => {
     const year = new Date().getFullYear();

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Puzzle, Plus, X, Check, Home, Car, Building2, Store, Wrench, Truck, Package, Cloud, Download, Trash2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useServerStore } from '../../hooks/useServerStore';
 
 export type InstalledModule = {
   id: string;
@@ -63,31 +64,13 @@ const ICONS: Record<string, React.ElementType> = {
   Cloud,
 };
 
-const loadModules = (): InstalledModule[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as InstalledModule[];
-  } catch {
-    // ignore corrupt storage
-  }
-  return [];
-};
-
 export const ModuleDock: React.FC = () => {
   const { setActiveView } = useApp();
-  const [modules, setModules] = useState<InstalledModule[]>(loadModules);
+  const [modules, setModules] = useServerStore<InstalledModule[]>(STORAGE_KEY, []);
   const [showCustom, setShowCustom] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customDesc, setCustomDesc] = useState('');
   const [customIcon, setCustomIcon] = useState('Package');
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(modules));
-    } catch {
-      // storage may be unavailable
-    }
-  }, [modules]);
 
   const isInstalled = (id: string) => modules.some((m) => m.id === id && m.installed);
 
