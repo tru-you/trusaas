@@ -495,7 +495,7 @@ export default function PortfolioList({
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#4FE3DC]/40 to-transparent" />
         <div className="flex items-start gap-2.5 min-w-0">
           <div className="h-8 w-8 rounded-[8px] bg-gradient-to-br from-white/[0.12] to-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0 mt-0.5">
-            <img src="/icons/tp-appicon.svg" alt="" className="h-5 w-5 brightness-0 invert" />
+            <img src="/icons/PL-AppIcon.svg" alt="" className="h-5 w-5 brightness-0 invert" />
           </div>
           <div className="min-w-0">
             <h1 className="text-[17px] font-semibold text-white truncate leading-tight">{agencyName}</h1>
