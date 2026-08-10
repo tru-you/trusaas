@@ -13,6 +13,7 @@ import Maintenance from './pages/Maintenance';
 import Reports from './pages/Reports';
 import Team from './pages/Team';
 import Settings from './pages/Settings';
+import Master from './pages/Master';
 import Placeholder from './pages/Placeholder';
 
 function parseHash(): string {
@@ -87,6 +88,8 @@ export default function App() {
         return <Team currentAgentId={agent?.id} />;
       case 'settings':
         return <Settings agent={agent} />;
+      case 'master':
+        return <Master agent={agent} />;
       default:
         return <Dashboard />;
     }

@@ -35,24 +35,20 @@ const TRULENS_CORE_SLOT_IDS = DEFAULT_TEMPLATE.slots
 // Load environment variables first
 dotenv.config();
 
-// Same Firebase project + named DB as TruFlow Premium photo sync
+// Same Firebase project + named DB as PropLens photo sync
 const FIREBASE_PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0151924955';
 const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d4757ec-a059-4566-98db-d15a4840f4ec';
-// Every device exports to this one FlowPMS. Overridable only by env (for local
-// dev), never per-phone — a stale localhost in a phone's storage used to break
-// exports silently. Production default is TruFlow Premium.
+// Every device exports to this one FlowPMS. Overridable only by env, never
+// per-phone. Set TRUFLOW_PMS_URL in production or exports fail with a clear
+// message instead of silently landing in the wrong system.
 const DEFAULT_PMS_URL =
   process.env.TRUFLOW_PMS_URL ||
   process.env.PMS_URL ||
   (process.env.NODE_ENV === 'production'
-    // TruFlow, not TruLens. This read lens.tru-saas.com — TruLens's own host —
-    // so with TRUFLOW_PMS_URL unset the app exported to itself and the agency
-    // picker would find no agencies. render.yaml does set it, so production
-    // is unaffected; this is the fallback being honest.
-    ? 'https://flow.tru-saas.com'
+    ? ''
     : 'http://localhost:3001');
-// Which agency owns captures made before agency tagging existed (matches
-// TruFlow Premium's DEFAULT_AGENCY_ID = d1 = mkr-autosales).
+// Legacy: agency captures made before agency tagging existed default to
+// mkr-autosales.
 /**
  * Device access code.
  *
@@ -930,7 +926,7 @@ app.get('/api/health', (_req, res) => {
     syncKeyConfigured: !!SYNC_KEY,
     agencyCodesConfigured: AGENCY_CODES.length,
     mode: LOCAL_MODE ? 'local' : 'cloud',
-    dmsUrl: DEFAULT_PMS_URL,
+    pmsUrl: DEFAULT_PMS_URL,
     port: PORT,
     uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
     ts: new Date().toISOString(),
@@ -1823,7 +1819,7 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
     const userId = req.user.uid;
     const {
       propertyId,
-      dmsUrl: dmsUrlOverride,
+      pmsUrl: pmsUrlOverride,
       agencySlug: claimedDealerSlug,
       createIfMissing = true,
     } = req.body || {};
@@ -1911,8 +1907,8 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
       }))
       .filter((r) => r.score !== null);
 
-    const dmsBase = String(dmsUrlOverride || DEFAULT_PMS_URL).replace(/\/$/, '');
-    const pushUrl = `${dmsBase}/api/sync/push-photos`;
+    const pmsBase = String(pmsUrlOverride || DEFAULT_PMS_URL).replace(/\/$/, '');
+    const pushUrl = `${pmsBase}/api/sync/push-photos`;
 
     const payload = {
       listingRef: property.listingRef,
@@ -1981,7 +1977,7 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
        and photos into a agency's portfolio. Sending it here is the half that
        has to ship first: set the key on TruFlow before this and every export
        starts failing. Same value on both services. */
-    const dmsRes = await fetch(pushUrl, {
+    const pmsRes = await fetch(pushUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1990,22 +1986,22 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
       body: JSON.stringify(payload),
     });
 
-    const dmsText = await dmsRes.text();
-    let dmsData: any = {};
+    const pmsText = await pmsRes.text();
+    let pmsData: any = {};
     try {
-      dmsData = JSON.parse(dmsText);
+      pmsData = JSON.parse(pmsText);
     } catch {
-      dmsData = { raw: dmsText };
+      pmsData = { raw: pmsText };
     }
 
-    if (!dmsRes.ok) {
-      console.error('FlowPMS export failed:', dmsRes.status, dmsData);
+    if (!pmsRes.ok) {
+      console.error('FlowPMS export failed:', pmsRes.status, pmsData);
       return res.status(502).json({
         success: false,
-        error: 'TruFlow FlowPMS rejected the export',
-        dmsStatus: dmsRes.status,
-        dmsUrl: pushUrl,
-        details: dmsData.error || dmsData.message || dmsData,
+        error: 'FlowPMS rejected the export',
+        dmsStatus: pmsRes.status,
+        pmsUrl: pushUrl,
+        details: pmsData.error || pmsData.message || pmsData,
       });
     }
 
@@ -2019,9 +2015,9 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
          successful export — re-exports must not push the deletion out or a
          busy property would live in Lens forever. */
       firstPmsExportAt: property.firstPmsExportAt || nowIso,
-      lastPmsExportStatus: dmsData.synced ? 'success' : 'partial',
-      lastPmsPropertyId: dmsData.property?.id || null,
-      lastDmsListingRef: dmsData.property?.listingRef || property.listingRef,
+      lastPmsExportStatus: pmsData.synced ? 'success' : 'partial',
+      lastPmsPropertyId: pmsData.property?.id || null,
+      lastDmsListingRef: pmsData.property?.listingRef || property.listingRef,
     };
 
     if (property.status === 'Ready' || property.status === 'Listed') {
@@ -2034,20 +2030,20 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
 
     res.json({
       success: true,
-      synced: !!dmsData.synced,
-      created: !!dmsData.created,
+      synced: !!pmsData.synced,
+      created: !!pmsData.created,
       message:
-        dmsData.message ||
+        pmsData.message ||
         // Names the walkaround explicitly, so "no walkaround" is visible at the
         // moment of export rather than discovered later in the public feed.
         `Exported ${buildDmsBreakdown(photos).stills} photos` +
         (buildDmsBreakdown(photos).walkaround
           ? ' and the 360 walkaround'
           : ' — no 360 walkaround in this capture') +
-        ' to TruFlow FlowPMS',
+        ' to FlowPMS',
       breakdown: buildDmsBreakdown(photos),
-      dmsUrl: pushUrl,
-      dmsVehicle: dmsData.property || null,
+      pmsUrl: pushUrl,
+      dmsVehicle: pmsData.property || null,
       property: updated,
     });
   } catch (error: any) {
@@ -2061,7 +2057,7 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
     res.status(isNetwork ? 503 : 500).json({
       success: false,
       error: isNetwork
-        ? `Cannot reach TruFlow FlowPMS at ${DEFAULT_PMS_URL}. Start TruFlow Premium (port 3001) or set TRUFLOW_PMS_URL.`
+        ? `Cannot reach FlowPMS at ${DEFAULT_PMS_URL || '(unset)'}. Set TRUFLOW_PMS_URL to your FlowPMS host.`
         : 'FlowPMS export failed',
       details: error instanceof Error ? error.message : String(error),
     });
@@ -2070,7 +2066,7 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
 
 app.get('/api/export/pms/config', authenticate, async (_req: any, res) => {
   res.json({
-    dmsUrl: DEFAULT_PMS_URL,
+    pmsUrl: DEFAULT_PMS_URL,
     pushEndpoint: `${DEFAULT_PMS_URL.replace(/\/$/, '')}/api/sync/push-photos`,
     mode: LOCAL_MODE ? 'local' : 'cloud',
     databaseId: AUTOLENS_DB_ID,

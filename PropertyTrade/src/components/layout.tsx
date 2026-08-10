@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   Home,
+  Crown,
 } from 'lucide-react';
 import { initials } from '../lib/format';
 import { AgentBrief } from '../lib/types';
@@ -33,6 +34,7 @@ export const NAV: NavItem[] = [
   { key: 'reports', label: 'Reports', icon: BarChart3 },
   { key: 'team', label: 'Team', icon: UserCog },
   { key: 'settings', label: 'Settings', icon: Settings },
+  { key: 'master', label: 'Master', icon: Crown },
 ];
 
 export function Logo({ size = 38 }: { size?: number }) {
@@ -59,6 +61,7 @@ export function Shell({
   onSignOut: () => void;
   children: React.ReactNode;
 }) {
+  const isMaster = agent?.role === 'admin' && !agent?.agencyId;
   return (
     <div className="min-h-screen flex">
       <aside className="fixed inset-y-0 left-0 w-[236px] bg-card border-r border-line flex flex-col">
@@ -74,6 +77,7 @@ export function Shell({
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
           {NAV.map((item) => {
+            if (item.key === 'master' && !isMaster) return null;
             const Icon = item.icon;
             const isActive = active === item.key;
             return (

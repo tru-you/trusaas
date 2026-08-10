@@ -8,12 +8,17 @@ services:
     startCommand: node dist/server.cjs
     healthCheckPath: /api/health
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: DATA_DIR
         value: /opt/render/project/data
       - key: TRULENS_ACCESS_CODE
         sync: false
         value: ""
       - key: TRUFLOW_SYNC_KEY
+        sync: false
+        value: ""
+      - key: TRUFLOW_PMS_URL
         sync: false
         value: ""
       - key: GEMINI_API_KEY
