@@ -15,10 +15,10 @@ services:
       - key: TRULENS_ACCESS_CODE
         sync: false
         value: ""
-      - key: TRUFLOW_SYNC_KEY
+      - key: FLOWPMS_SYNC_KEY
         sync: false
         value: ""
-      - key: TRUFLOW_PMS_URL
+      - key: FLOWPMS_URL
         sync: false
         value: ""
       - key: GEMINI_API_KEY

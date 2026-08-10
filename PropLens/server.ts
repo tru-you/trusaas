@@ -39,10 +39,10 @@ dotenv.config();
 const FIREBASE_PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0151924955';
 const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d4757ec-a059-4566-98db-d15a4840f4ec';
 // Every device exports to this one FlowPMS. Overridable only by env, never
-// per-phone. Set TRUFLOW_PMS_URL in production or exports fail with a clear
+// per-phone. Set FLOWPMS_URL in production or exports fail with a clear
 // message instead of silently landing in the wrong system.
 const DEFAULT_PMS_URL =
-  process.env.TRUFLOW_PMS_URL ||
+  process.env.FLOWPMS_URL ||
   process.env.PMS_URL ||
   (process.env.NODE_ENV === 'production'
     ? ''
@@ -62,10 +62,10 @@ const DEFAULT_PMS_URL =
  */
 const ACCESS_CODE = process.env.TRULENS_ACCESS_CODE || '';
 
-/** Shared secret for the TruFlow photo push. Must match TRUFLOW_SYNC_KEY on
- *  TruFlow. Unset here and the header is simply omitted, which is what keeps
+/** Shared secret for the FlowPMS photo push. Must match FLOWPMS_SYNC_KEY on
+ *  the FlowPMS. Unset here and the header is simply omitted, which is what keeps
  *  this deployable ahead of the key being set on the other side. */
-const SYNC_KEY = process.env.TRUFLOW_SYNC_KEY || '';
+const SYNC_KEY = process.env.FLOWPMS_SYNC_KEY || '';
 const TOKEN_SECRET =
   process.env.TRULENS_TOKEN_SECRET ||
   crypto.createHash('sha256').update(ACCESS_CODE || 'trulens-dev').digest('hex');
@@ -759,7 +759,7 @@ function mergeWithMeta(
   return { patch, fieldMeta: outMeta };
 }
 
-/** Non-media fields TruFlow may edit and push back to Lens. Photos, damage
+/** Non-media fields the FlowPMS may edit and push back to Lens. Photos, damage
  *  findings, VIR/slot assessment and condition declarations stay Lens-owned
  *  because they belong to the capture workflow. */
 const FLOW_EDITABLE_FIELDS = [
@@ -802,7 +802,7 @@ const STARTED_AT = Date.now();
  *  Deliberately public — it is the way in. Slow-hashed and rate-limited by
  *  nothing yet, so keep the code long. */
 /**
- * Ask TruFlow whether a code is real and whether it opens TruLens.
+ * Ask the FlowPMS whether a code is real and whether it opens TruLens.
  *
  * Agencies, their codes and their entitlements live in one place. This app
  * used to keep its own copy of every agency's code in TRULENS_AGENCY_CODES — a
@@ -811,10 +811,10 @@ const STARTED_AT = Date.now();
  * this service, and revoking meant editing that string and restarting again.
  *
  * Returns null on anything other than a clean yes, including an unreachable
- * TruFlow, so the caller can fall back to the environment list rather than
+ * the FlowPMS, so the caller can fall back to the environment list rather than
  * locking a yard out of their phones because the FlowPMS was briefly down.
  */
-async function verifyCodeWithTruFlow(
+async function verifyCodeWithFlowPMS(
   code: string
 ): Promise<{ agencySlug: string; agencyName?: string } | null> {
   if (!SYNC_KEY) return null; // no shared key configured — nothing to ask with
@@ -831,7 +831,7 @@ async function verifyCodeWithTruFlow(
          is visible rather than looking like a wrong code. */
       if (res.status === 403) {
         const body = await res.json().catch(() => ({}));
-        console.warn(`[auth] TruFlow refused a code for lens: ${body?.message || res.status}`);
+        console.warn(`[auth] FlowPMS refused a code for lens: ${body?.message || res.status}`);
       }
       return null;
     }
@@ -840,7 +840,7 @@ async function verifyCodeWithTruFlow(
       ? { agencySlug: body.agencySlug, agencyName: body.agencyName }
       : null;
   } catch (err: any) {
-    console.warn('[auth] could not reach TruFlow to verify a code:', err?.message || err);
+    console.warn('[auth] could not reach the FlowPMS to verify a code:', err?.message || err);
     return null;
   }
 }
@@ -848,9 +848,9 @@ async function verifyCodeWithTruFlow(
 app.post('/api/auth/device', async (req, res) => {
   const given = String(req.body?.code || '');
 
-  /* TruFlow first. A agency onboarded there works here immediately, with no
+  /* the FlowPMS first. A agency onboarded there works here immediately, with no
      environment variable to edit and no restart of this service. */
-  const central = await verifyCodeWithTruFlow(given);
+  const central = await verifyCodeWithFlowPMS(given);
   if (central) {
     return res.json({
       token: signDeviceToken(central.agencySlug),
@@ -861,7 +861,7 @@ app.post('/api/auth/device', async (req, res) => {
   }
 
   /* Then the local list. Kept as a fallback so phones already signed in keep
-     working, and so a TruFlow outage cannot stop a yard photographing homes. */
+     working, and so a FlowPMS outage cannot stop a yard photographing homes. */
   const agencySlug = agencyForCode(given);
   if (agencySlug) {
     return res.json({ token: signDeviceToken(agencySlug), expiresInDays: 30, agencySlug });
@@ -879,7 +879,7 @@ app.post('/api/auth/device', async (req, res) => {
   if (!ACCESS_CODE && AGENCY_CODES.length === 0 && !SYNC_KEY) {
     return res.status(503).json({
       error: 'No way to verify codes on this server.',
-      message: 'Set TRUFLOW_SYNC_KEY so codes can be checked against TruFlow, or set TRULENS_ACCESS_CODE.',
+      message: 'Set FLOWPMS_SYNC_KEY so codes can be checked against the FlowPMS, or set TRULENS_ACCESS_CODE.',
     });
   }
 
@@ -945,7 +945,7 @@ app.use((req, res, next) => {
 /** TruLens-only public listing — for agencies without FlowPMS (or as photo-first feed) */
 /* ── VIR, computed the same way TruFlow computes it ──────────────
  *
- * A agency site can be pointed at either feed — TruLens direct, or TruFlow —
+ * A agency site can be pointed at either feed — Lens direct, or the FlowPMS —
  * and the same homes has to report the same score either way, or switching the
  * source silently rewrites every property's condition rating.
  *
@@ -1079,7 +1079,7 @@ function toPublicFromLens(v: any, origin: string = '') {
     virReport: damage.length ? buildVirReport(damage) : undefined,
     damage: damage.length ? damage : undefined,
     /* Agency-declared condition — TruLens retail "no damage reported" statement,
-       not a graded VIR. Mirrors TruFlow's feed so a site gets the same line from
+       not a graded VIR. Mirrors FlowPMS feed so a site gets the same line from
        either source. Tagged damage takes precedence over a "no damage" claim. */
     conditionLabel: (() => {
       const d = (v as any).conditionDeclaration;
@@ -1435,7 +1435,7 @@ app.delete('/api/portfolio/:id', authenticate, async (req: any, res) => {
 //     removed from the FlowPMS, so the capture doesn't linger in TruLens.
 app.delete('/api/sync/property', (req, res) => {
   if (!SYNC_KEY) {
-    return res.status(503).json({ error: 'TRUFLOW_SYNC_KEY is not configured on this server.' });
+    return res.status(503).json({ error: 'FLOWPMS_SYNC_KEY is not configured on this server.' });
   }
   if (req.headers['x-tru-sync-key'] !== SYNC_KEY) {
     return res.status(401).json({ error: 'Invalid sync key.' });
@@ -1514,7 +1514,7 @@ app.delete('/api/sync/property', (req, res) => {
 //     a Lens re-export cannot stomp a fresher Flow edit and vice versa.
 app.put('/api/sync/property', (req, res) => {
   if (!SYNC_KEY) {
-    return res.status(503).json({ error: 'TRUFLOW_SYNC_KEY is not configured on this server.' });
+    return res.status(503).json({ error: 'FLOWPMS_SYNC_KEY is not configured on this server.' });
   }
   if (req.headers['x-tru-sync-key'] !== SYNC_KEY) {
     return res.status(401).json({ error: 'Invalid sync key.' });
@@ -1972,7 +1972,7 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
     };
 
     /* Service-to-service auth for the FlowPMS push. TruFlow leaves
-       /api/sync/push-photos open when its TRUFLOW_SYNC_KEY is unset — which is
+       /api/sync/push-photos open when its FLOWPMS_SYNC_KEY is unset — which is
        how it has been running — so anyone who knew the URL could write properties
        and photos into a agency's portfolio. Sending it here is the half that
        has to ship first: set the key on TruFlow before this and every export
@@ -2057,7 +2057,7 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
     res.status(isNetwork ? 503 : 500).json({
       success: false,
       error: isNetwork
-        ? `Cannot reach FlowPMS at ${DEFAULT_PMS_URL || '(unset)'}. Set TRUFLOW_PMS_URL to your FlowPMS host.`
+        ? `Cannot reach FlowPMS at ${DEFAULT_PMS_URL || '(unset)'}. Set FLOWPMS_URL to your FlowPMS host.`
         : 'FlowPMS export failed',
       details: error instanceof Error ? error.message : String(error),
     });
