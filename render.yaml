@@ -108,6 +108,12 @@ services:
         value: "1"
       - key: GEMINI_API_KEY
         sync: false
+      # Headless render worker (trusaas-crm-scraper): JS-heavy dealer pages
+      # (WeBuyCars, CMH...) are rendered there; JSON dealers (Car Store,
+      # McCarthy Toyota) answer via plain HTTP so most valuations skip the
+      # worker entirely. Comma-separated list = round-robin + failover.
+      - key: SCRAPER_SERVICE_URLS
+        value: https://trusaas-crm-scraper.onrender.com
 
   # ── 2. TruFlow Light — lightweight dealer console (NOT a separate service) ──
   #
