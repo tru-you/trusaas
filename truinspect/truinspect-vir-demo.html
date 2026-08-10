@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TruInspect — Vehicle Inspection Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+@page{size:A4 portrait;margin:0;}
+:root{
+  --paper:#FFFFFF;--ink:#121A26;--ink-2:#3A4553;--muted:#6E6656;--faint:#A79D8C;
+  --line:rgba(18,26,38,.12);--line-soft:rgba(18,26,38,.06);
+  --cyan:#07889B;--cyan-bg:rgba(7,136,155,.06);--cyan-lit:#00E0F5;
+  --green:#1A7A3A;--green-bg:rgba(26,122,58,.08);
+  --amber:#B07A26;--amber-bg:rgba(176,122,38,.08);
+  --red:#B03226;--red-bg:rgba(176,50,38,.08);
+  --night:#080C14;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --display:'Fraunces',Georgia,serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --s1:4pt;--s2:8pt;--s3:12pt;--s4:16pt;--s5:24pt;--s6:32pt;
+  --pad-x:14mm;--pad-t:12mm;--pad-b:14mm;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:#E1DACB;}
+body{font-family:var(--sans);font-size:8.8pt;line-height:1.44;color:var(--ink);-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4{font-family:var(--display);font-weight:400;letter-spacing:-.03em;}
+em{font-family:var(--display);font-style:italic;color:var(--cyan);font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;}
+.doc{width:210mm;margin:0 auto;}
+.page{position:relative;width:210mm;min-height:297mm;padding:var(--pad-t) var(--pad-x) var(--pad-b);background:var(--paper);overflow:hidden;break-after:page;}
+.page:last-child{break-after:auto;}
+
+/* ─── HEADER ─── */
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:var(--s3);border-bottom:2pt solid var(--ink);margin-bottom:var(--s4);}
+.hdr-left{display:flex;align-items:center;gap:8pt;}
+.hdr-left svg{width:18pt;height:18pt;flex:none;}
+.hdr-left .brand{font-family:var(--sans);font-size:13pt;font-weight:700;letter-spacing:-.03em;line-height:1;}
+.hdr-left .brand .t{color:var(--ink);}
+.hdr-left .brand .d{color:var(--cyan);}
+.hdr-right{text-align:right;}
+.hdr-right .doc-type{font-family:var(--mono);font-size:7pt;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);font-weight:600;}
+.hdr-right .doc-id{font-family:var(--mono);font-size:6.6pt;color:var(--muted);margin-top:2pt;}
+
+/* ─── VERDICT BANNER ─── */
+.verdict{display:flex;align-items:center;gap:10pt;padding:10pt 14pt;border-radius:5pt;margin-bottom:var(--s4);}
+.verdict.pass{background:var(--green-bg);border:1.2pt solid rgba(26,122,58,.3);}
+.verdict.caution{background:var(--amber-bg);border:1.2pt solid rgba(176,122,38,.3);}
+.verdict.fail{background:var(--red-bg);border:1.2pt solid rgba(176,50,38,.3);}
+.verdict .icon{width:28pt;height:28pt;border-radius:50%;display:grid;place-items:center;flex:none;font-size:14pt;color:#fff;}
+.verdict.pass .icon{background:var(--green);}
+.verdict.caution .icon{background:var(--amber);}
+.verdict.fail .icon{background:var(--red);}
+.verdict .body h3{font-size:13pt;line-height:1.1;font-variation-settings:"opsz" 72,"SOFT" 30;margin-bottom:2pt;}
+.verdict.pass .body h3{color:var(--green);}
+.verdict .body p{font-size:8pt;color:var(--ink-2);}
+
+/* ─── VEHICLE INFO ─── */
+.vehicle{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-bottom:var(--s4);}
+.vehicle .row{display:flex;justify-content:space-between;padding:4pt 0;border-bottom:1px solid var(--line-soft);}
+.vehicle .row .k{font-family:var(--mono);font-size:6.8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.vehicle .row .v{font-size:8.6pt;font-weight:600;color:var(--ink);text-align:right;}
+
+/* ─── PHOTO GRID ─── */
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:2.5mm;margin-bottom:var(--s4);}
+.photo{aspect-ratio:4/3;background:var(--line-soft);border-radius:3pt;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;}
+.photo span{font-family:var(--mono);font-size:5.6pt;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.photo.hero{grid-column:span 2;grid-row:span 2;}
+
+/* ─── PANEL INSPECTION ─── */
+.section-title{display:flex;align-items:center;gap:8pt;margin-bottom:var(--s3);}
+.section-title .n{font-family:var(--mono);font-size:6.6pt;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);font-weight:500;}
+.section-title .ln{flex:1;height:1px;background:var(--line);}
+
+.panel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:var(--s4);}
+.panel{padding:7pt 8pt;border:1px solid var(--line);border-radius:3pt;background:var(--paper);}
+.panel .name{font-family:var(--mono);font-size:6.4pt;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3pt;}
+.panel .grade{font-size:9pt;font-weight:700;}
+.panel .grade.good{color:var(--green);}
+.panel .grade.fair{color:var(--amber);}
+.panel .grade.poor{color:var(--red);}
+.panel .note{font-size:7.4pt;color:var(--ink-2);margin-top:2pt;}
+
+/* ─── TYRES ─── */
+.tyres{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin-bottom:var(--s4);}
+.tyre{padding:8pt;border:1px solid var(--line);border-radius:3pt;text-align:center;}
+.tyre .pos{font-family:var(--mono);font-size:6pt;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:4pt;}
+.tyre .depth{font-family:var(--display);font-size:18pt;font-weight:400;color:var(--ink);line-height:1;font-variation-settings:"opsz" 72,"SOFT" 30;}
+.tyre .depth i{font-style:italic;color:var(--cyan);font-size:9pt;font-variation-settings:"opsz" 72,"SOFT" 100;}
+.tyre .brand{font-size:7pt;color:var(--ink-2);margin-top:3pt;}
+.tyre.warn{border-color:rgba(176,122,38,.4);background:var(--amber-bg);}
+.tyre.warn .depth{color:var(--amber);}
+
+/* ─── MECHANICALS ─── */
+.checks{display:grid;grid-template-columns:repeat(2,1fr);gap:2mm;margin-bottom:var(--s4);}
+.check{display:flex;align-items:center;gap:6pt;padding:4pt 7pt;border-bottom:1px solid var(--line-soft);}
+.check .dot{width:5pt;height:5pt;border-radius:50%;flex:none;}
+.check .dot.g{background:var(--green);}
+.check .dot.a{background:var(--amber);}
+.check .dot.r{background:var(--red);}
+.check .lbl{font-size:7.8pt;color:var(--ink-2);}
+
+/* ─── FOOTER ─── */
+.foot{position:absolute;left:var(--pad-x);right:var(--pad-x);bottom:8mm;display:flex;justify-content:space-between;align-items:baseline;padding-top:var(--s2);border-top:1px solid var(--line);font-family:var(--mono);font-size:6pt;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+.foot .cy{color:var(--cyan);}
+
+/* ─── SIGNATURE ─── */
+.sig-row{display:grid;grid-template-columns:1fr 1fr;gap:6mm;margin-top:var(--s4);padding-top:var(--s3);border-top:1px solid var(--line);}
+.sig{padding-top:var(--s5);}
+.sig .line{border-top:1px solid var(--ink);padding-top:4pt;}
+.sig .lbl{font-family:var(--mono);font-size:6.4pt;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+
+@media screen{body{padding:12pt 0 24pt;}.page{box-shadow:0 4pt 24pt -8pt rgba(18,26,38,.35);margin-bottom:8pt;}}
+@media print{html,body{background:#fff;padding:0;}.page{box-shadow:none;min-height:0;height:297mm;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;left:-9999px;" aria-hidden="true">
+  <defs>
+    <linearGradient id="c1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#94A3B8"/><stop offset="100%" stop-color="#121A26"/></linearGradient>
+    <linearGradient id="c2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#22B8CC"/><stop offset="100%" stop-color="#065F73"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="doc">
+
+<!-- ══ PAGE 1 ══ -->
+<section class="page">
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#c1)"/><path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#c2)"/></svg>
+      <div class="brand"><span class="t">Tru</span><span class="d">Inspect</span></div>
+    </div>
+    <div class="hdr-right">
+      <div class="doc-type">Vehicle Inspection Report</div>
+      <div class="doc-id">VIR-2026-00847 · 28 Jul 2026 · 14:32</div>
+    </div>
+  </div>
+
+  <div class="verdict pass">
+    <div class="icon">✓</div>
+    <div class="body">
+      <h3>Inspection Passed</h3>
+      <p>This vehicle has been inspected by the dealership and meets the condition standard disclosed below. All findings are documented with photographs.</p>
+    </div>
+  </div>
+
+  <div class="vehicle">
+    <div class="row"><span class="k">Make / Model</span><span class="v">Volkswagen Polo 1.0 TSI Life</span></div>
+    <div class="row"><span class="k">Year</span><span class="v">2023</span></div>
+    <div class="row"><span class="k">VIN</span><span class="v">AAVZZZ6SZPU012847</span></div>
+    <div class="row"><span class="k">Reg</span><span class="v">CA 284 791</span></div>
+    <div class="row"><span class="k">Colour</span><span class="v">Reflex Silver</span></div>
+    <div class="row"><span class="k">Odometer</span><span class="v">38,420 km</span></div>
+    <div class="row"><span class="k">Service history</span><span class="v">Full · 3 stamps</span></div>
+    <div class="row"><span class="k">Dealer</span><span class="v">MKR Auto Sales · Gqeberha</span></div>
+  </div>
+
+  <div class="photos">
+    <div class="photo hero"><span>3/4 Front</span></div>
+    <div class="photo"><span>Rear</span></div>
+    <div class="photo"><span>Driver side</span></div>
+    <div class="photo"><span>Interior</span></div>
+    <div class="photo"><span>Dashboard</span></div>
+    <div class="photo"><span>Engine bay</span></div>
+    <div class="photo"><span>Boot</span></div>
+  </div>
+
+  <div class="section-title"><span class="n">Body panels</span><span class="ln"></span></div>
+  <div class="panel-grid">
+    <div class="panel"><div class="name">Bonnet</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Roof</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Boot lid</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Front bumper</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Rear bumper</div><div class="grade fair">Fair</div><div class="note">Minor scuff lower left — see photo</div></div>
+    <div class="panel"><div class="name">Driver front wing</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Driver rear quarter</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Passenger front wing</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Passenger rear quarter</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Driver front door</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Driver rear door</div><div class="grade good">Good</div></div>
+    <div class="panel"><div class="name">Passenger doors</div><div class="grade good">Good</div></div>
+  </div>
+
+  <div class="section-title"><span class="n">Tyres</span><span class="ln"></span></div>
+  <div class="tyres">
+    <div class="tyre"><div class="pos">Front left</div><div class="depth">5.2<i>mm</i></div><div class="brand">Continental · 195/55 R16</div></div>
+    <div class="tyre"><div class="pos">Front right</div><div class="depth">5.0<i>mm</i></div><div class="brand">Continental · 195/55 R16</div></div>
+    <div class="tyre warn"><div class="pos">Rear left</div><div class="depth">3.1<i>mm</i></div><div class="brand">Continental · 195/55 R16</div></div>
+    <div class="tyre"><div class="pos">Rear right</div><div class="depth">4.8<i>mm</i></div><div class="brand">Continental · 195/55 R16</div></div>
+  </div>
+
+  <div class="section-title"><span class="n">Mechanicals &amp; safety</span><span class="ln"></span></div>
+  <div class="checks">
+    <div class="check"><span class="dot g"></span><span class="lbl">Engine — runs clean, no misfires</span></div>
+    <div class="check"><span class="dot g"></span><span class="lbl">Transmission — smooth shift all gears</span></div>
+    <div class="check"><span class="dot g"></span><span class="lbl">Brakes — pads 60%+, discs even</span></div>
+    <div class="check"><span class="dot g"></span><span class="lbl">Suspension — no knocks or play</span></div>
+    <div class="check"><span class="dot g"></span><span class="lbl">Electrics — all lights, windows, locks</span></div>
+    <div class="check"><span class="dot g"></span><span class="lbl">A/C — blows cold both sides</span></div>
+    <div class="check"><span class="dot g"></span><span class="lbl">Airbags — no warning lights</span></div>
+    <div class="check"><span class="dot a"></span><span class="lbl">Rear left tyre — nearing replacement</span></div>
+  </div>
+
+  <div class="sig-row">
+    <div class="sig"><div class="line"><div class="lbl">Inspector signature</div></div></div>
+    <div class="sig"><div class="line"><div class="lbl">Customer acknowledgement</div></div></div>
+  </div>
+
+  <div class="foot">
+    <span class="cy">TruInspect · powered by TruSaaS</span>
+    <span>VIR-2026-00847 · 28 Jul 2026</span>
+    <span>Page 1 of 1</span>
+  </div>
+
+</section>
+</div>
+</body>
+</html>
