@@ -45,8 +45,8 @@ button,input,textarea{font-family:inherit;}
 
 /* Buttons — Premium "Button System 2026" */
 .btn-primary{background:var(--cyan-500);color:var(--ink);border:none;border-radius:var(--btn-r);font-family:var(--sans);font-weight:600;cursor:pointer;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 5px 0 var(--cyan-800), 0 10px 22px -8px rgba(0,0,0,.95);transition:background .12s ease, box-shadow .09s ease, transform .09s ease;}
-.btn-primary:active{transform:translateY(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 1px 0 var(--cyan-800), 0 2px 6px -3px rgba(0,0,0,.9);}
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 2px 0 var(--cyan-800), 0 5px 14px -4px rgba(0,0,0,.95);transition:background .12s ease, box-shadow .09s ease, transform .09s ease;}
+.btn-primary:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 1px 0 var(--cyan-800), 0 2px 4px -2px rgba(0,0,0,.9);}
 .btn-primary:disabled{background:rgba(232,234,230,.08);color:var(--faint);box-shadow:none;transform:none;}
 .tru-btn-ghost{background:transparent;border:none;box-shadow:none;color:var(--dim);border-radius:var(--btn-r);font-family:var(--sans);font-weight:500;cursor:pointer;transition:.12s ease;}
 .tru-btn-ghost:active{background:rgba(232,234,230,.06);} .tru-btn-ghost.danger{color:var(--danger);}
@@ -240,6 +240,15 @@ button,input,textarea{font-family:inherit;}
 .drow-m{margin-top:7px;}
 .drow-s{font-size:12px;color:var(--dim);margin-top:6px;}
 .drow-a{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.dfields{border-top:1px solid var(--glass-line);margin-top:10px;padding-top:8px;}
+.dfields summary{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);cursor:pointer;list-style:none;}
+.dfields summary::-webkit-details-marker{display:none;}
+.dfields summary::after{content:" ▸";display:inline-block;transition:transform .2s var(--ease);}
+.dfields[open] summary::after{transform:rotate(90deg);}
+.df-inner{margin-top:6px;display:flex;flex-direction:column;gap:4px;}
+.df-row{display:flex;align-items:baseline;gap:8px;font-size:12.5px;}
+.df-k{color:var(--faint);font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0;min-width:64px;}
+.df-v{color:var(--dim);word-break:break-word;}
 
 /* add-vehicle form */
 .addform{margin-top:18px;}
@@ -866,14 +875,28 @@ button,input,textarea{font-family:inherit;}
   }
   function docRow(l,st,docs){
     var state=docDoneFor(l,st,docs),mode=DOC_MODE[st],acc=DOC_ACT[st];
-    var pill="",acts="";
+    var pill="",acts="",fields="";
     if(state.k==="signed"){pill='<span class="pill cyan dot">Signed</span>';if(state.doc&&state.doc.fileData)acts+='<button class="tru-btn-ghost" data-act="view" data-doc="'+state.doc.id+'">View / Print</button>';}
     else if(state.k==="skip"){pill='<span class="pill mute dot">Skipped</span>';}
     else if(state.k==="draft"){pill='<span class="pill glass">Draft</span>';if(state.doc&&state.doc.fileData)acts+='<button class="tru-btn-ghost" data-act="view" data-doc="'+state.doc.id+'">View / Print</button>';acts+='<button class="tru-btn-ghost" data-act="finalise" data-stage="'+st+'" data-doc="'+state.doc.id+'">Sign &amp; finalise</button><button class="tru-btn-ghost danger" data-act="skip" data-stage="'+st+'">Skip</button>';}
     else{pill='<span class="pill glass">'+(mode==="confirm"?"Confirm":"Due")+'</span>';if(mode!=="confirm")acts='<button class="tru-btn-ghost" data-act="generate" data-stage="'+st+'">Generate</button>';acts+='<button class="tru-btn-ghost danger" data-act="skip" data-stage="'+st+'" style="border-color:var(--danger)">Skip tick</button>';}
     var sub=state.k==="skip"?(state.reason?("Skipped: "+esc(state.reason)):((state.by||"You")+" skipped")):(state.k==="signed"?"Signed · PDF rendered":((state.k==="draft"?"PDF rendered · awaiting signature":(acc.label+(acc.sub?" · "+acc.sub:"")))));
     var due=(l.docStage===st)?' <span class="pill cyan dot">Next</span>':'';
-    return '<div class="drow"><div class="drow-l">'+esc(DOC_LAB[st])+due+'</div><div class="drow-m">'+pill+'</div><div class="drow-s">'+esc(sub)+'</div><div class="drow-a">'+acts+'</div></div>';
+    // show captured fields from the generated doc
+    if(state.doc&&state.doc.fieldSnapshot){
+      var s=state.doc.fieldSnapshot;
+      var flds=[];
+      if(s.vin)flds.push(['VIN',esc(String(s.vin))]);
+      if(s.total&&typeof s.total==='number')flds.push(['Total',money(s.total)]);
+      if(s.priceBreakdown&&Array.isArray(s.priceBreakdown)){var prices=s.priceBreakdown.map(function(x){return esc(x.label)+' — '+money(x.amountIncl);}).join(', ');flds.push(['Lines',prices]);}
+      if(s.validityWindow)flds.push(['Valid until',esc(String(s.validityWindow))]);
+      if(s.docNumber)flds.push(['Doc #',esc(String(s.docNumber))]);
+      if(s.invoiceNo)flds.push(['Invoice #',esc(String(s.invoiceNo))]);
+      if(s.tradeInLine)flds.push(['Trade-in',esc(String(s.tradeInLine))]);
+      if(s.natisUpdated!==undefined)flds.push(['NATIS updated',s.natisUpdated?'Yes':'No']);
+      if(flds.length)fields='<details class="dfields"><summary>'+flds.length+' field'+(flds.length>1?'s':'')+' captured</summary><div class="df-inner">'+flds.map(function(f){return '<div class="df-row"><span class="df-k">'+f[0]+'</span><span class="df-v">'+f[1]+'</span></div>';}).join("")+'</div></details>';
+    }
+    return '<div class="drow"><div class="drow-l">'+esc(DOC_LAB[st])+due+'</div><div class="drow-m">'+pill+'</div><div class="drow-s">'+esc(sub)+'</div>'+fields+'<div class="drow-a">'+acts+'</div></div>';
   }
   function docAction(act,stage,docId,leadId){
     var l=findLead(leadId);

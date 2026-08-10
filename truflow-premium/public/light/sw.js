@@ -3,7 +3,7 @@
    Strategy: never touch writes; navigations network-first with a cached shell
    fallback; API network-first with cache fallback (last-synced data offline);
    fonts + own static assets cache-first. */
-var VERSION = "tfl-2026-08-06a";
+var VERSION = "tfl-2026-08-10a";
 var CORE = [
   "/light/",
   "/light/index.html",
