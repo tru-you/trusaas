@@ -13,7 +13,7 @@ export const PRODUCTS = ['flowpms', 'prop-lens', 'prop-inspect', 'prop-website',
  * Requests that need no login. Everything else is behind requireAuth.
  * Public paths are read-only or insert-only — they never leak rows.
  */
-const PUBLIC_PATHS = [
+ const PUBLIC_PATHS = [
   /^\/api\/health$/,
   /^\/api\/auth\/login$/,
   /^\/api\/auth\/verify-code$/,
@@ -21,6 +21,8 @@ const PUBLIC_PATHS = [
   /^\/api\/prop\/webhook\//,
   /^\/api\/prop\/widget\//,
   /^\/api\/social\/callback$/,
+  /^\/api\/public\/agencies$/,
+  /^\/api\/sync\/push-photos$/,
 ];
 
 function ensureDir(dir) {

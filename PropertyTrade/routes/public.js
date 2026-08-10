@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { agencyForSlug } from '../lib/auth.js';
+import { agencyForSlug, listAgencies } from '../lib/auth.js';
 import { query, save } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
 import { sanitizeString } from '../lib/validate.js';
@@ -11,6 +11,10 @@ import { sanitizeString } from '../lib/validate.js';
  */
 export default function publicRoutes(dataDir) {
   const r = Router();
+
+  r.get('/api/public/agencies', (req, res) => {
+    res.json(listAgencies(dataDir).map(a => ({ slug: a.slug, name: a.name, location: '' })));
+  });
 
   r.get('/api/prop/public/listings', (req, res) => {
     const agency = agencyForSlug(dataDir, String(req.query.agency || ''));

@@ -719,7 +719,7 @@ async function getVehicle(id: string, user?: LensScope): Promise<any | null> {
 
 /** Move a capture's photos onto disk, leaving references in the record.
  *
- *  Every write goes through saveVehicle, so this one place keeps image bytes out
+ *  Every write goes through saveProperty, so this one place keeps image bytes out
  *  of local-inventory.json and out of Firestore documents — the latter matters
  *  more than it looks, because a Firestore document has a hard 1 MiB ceiling and
  *  a couple of base64 photos will breach it.
@@ -772,7 +772,7 @@ const FLOW_EDITABLE_FIELDS = [
   'price', 'showOnWebsite', 'description', 'status', 'listingRef',
 ] as const;
 
-async function saveVehicle(property: any): Promise<any> {
+async function saveProperty(property: any): Promise<any> {
   const normalized = storeVehiclePhotos(normalizeProperty(property));
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
@@ -1157,7 +1157,7 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
       try {
         const v = await getVehicle(propertyId, req.user);
         if (v) {
-          await saveVehicle({
+          await saveProperty({
             ...v,
             lastWeb3dExportAt: payload.savedAt,
             web3dPublicPath: `/api/public/web3d/${encodeURIComponent(pkg.listingRef)}`,
@@ -1310,7 +1310,7 @@ app.post('/api/portfolio', authenticate, async (req: any, res) => {
       if (!LOCAL_MODE && existing.ownerId && existing.ownerId !== userId) {
         return res.status(403).json({ error: 'Forbidden' });
       }
-      const updatedVehicle = {
+      const updatedProperty = {
         ...existing,
         ...safeData,
         ownerId: existing.ownerId || userId,
@@ -1319,7 +1319,7 @@ app.post('/api/portfolio', authenticate, async (req: any, res) => {
         photos: vehicleData.photos ?? existing.photos ?? {},
         quality: vehicleData.quality ?? existing.quality ?? {},
       };
-      const saved = await saveVehicle(updatedVehicle);
+      const saved = await saveProperty(updatedProperty);
       return res.json({ success: true, property: saved });
     }
 
@@ -1328,7 +1328,7 @@ app.post('/api/portfolio', authenticate, async (req: any, res) => {
        precision makes collision from a single phone effectively impossible.
        Never overwrites a agency-typed value. */
     const listingRefFallback = 'STK-' + now.replace(/[-:T.Z]/g, '').slice(0, 14);
-    const newVehicle = {
+    const newProperty = {
       ...safeData,
       ownerId: userId,
       agencySlug,
@@ -1338,8 +1338,8 @@ app.post('/api/portfolio', authenticate, async (req: any, res) => {
       photos: vehicleData.photos || {},
       quality: vehicleData.quality || {},
     };
-    await saveVehicle(newVehicle);
-    res.json({ success: true, property: newVehicle });
+    await saveProperty(newProperty);
+    res.json({ success: true, property: newProperty });
   } catch (error) {
     console.error('POST /api/portfolio - Server Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -1403,11 +1403,11 @@ app.post('/api/portfolio/upload-photo', authenticate, async (req: any, res) => {
       status,
       updatedAt: now,
     };
-    /* Return what was actually stored, not what arrived. saveVehicle moves the
+    /* Return what was actually stored, not what arrived. saveProperty moves the
        photo onto disk and swaps in a reference, so echoing `updated` handed the
        client back the full base64 it had just uploaded — which it then held in
        memory until its next fetch, on a phone, for every shot in the capture. */
-    const saved = await saveVehicle(updated);
+    const saved = await saveProperty(updated);
     res.json({ success: true, property: saved });
   } catch (error) {
     console.error('POST /api/portfolio/upload-photo - Error:', error);
@@ -1599,7 +1599,7 @@ app.put('/api/sync/property', (req, res) => {
         return res.json({ updated: false, applied: [], reason: 'stale' });
       }
 
-      const saved = await saveVehicle({
+      const saved = await saveProperty({
         ...target,
         ...fieldsToApply,
         fieldMeta: nextMeta,
@@ -1927,22 +1927,18 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
       showOnWebsite: typeof property.showOnWebsite === "boolean" ? property.showOnWebsite : undefined,
       property: {
         id: property.id,
-        make: property.make,
-        model: property.model,
-        year: property.year,
-        trim: property.trim,
-        erfRef: property.erfRef,
-        listingRef: property.listingRef,
-        color: property.color,
-        price: property.price,
+        address: property.address,
+        suburb: property.suburb,
+        city: property.city,
         propertyType: property.propertyType,
-        /* TruFlow's importer has always read floorArea/transmission/fuelType off
-           this payload and fallen back to 0/"Automatic"/"Petrol" when absent —
-           and they were always absent, so every homes created from a capture was
-           published to the agency's website with invented specs. */
-        floorArea: property.floorArea,
-        transmission: property.transmission,
-        fuelType: property.fuelType,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        parkingSpaces: property.parkingSpaces,
+        erfRef: property.erfRef,
+        erfSize: property.erfSize,
+        floorSize: property.floorSize,
+        listingRef: property.listingRef,
+        price: property.price,
         vir,
         inspection: inspection.length ? inspection : undefined,
         /* Hand-tagged damage, flattened out of its per-slot map. Only confirmed
@@ -2024,7 +2020,7 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
          busy property would live in Lens forever. */
       firstPmsExportAt: property.firstPmsExportAt || nowIso,
       lastPmsExportStatus: dmsData.synced ? 'success' : 'partial',
-      lastDmsVehicleId: dmsData.property?.id || null,
+      lastPmsPropertyId: dmsData.property?.id || null,
       lastDmsListingRef: dmsData.property?.listingRef || property.listingRef,
     };
 
@@ -2034,7 +2030,7 @@ app.post('/api/export/pms', authenticate, async (req: any, res) => {
     }
 
     const updated = { ...property, ...exportMeta };
-    await saveVehicle(updated);
+    await saveProperty(updated);
 
     res.json({
       success: true,

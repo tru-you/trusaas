@@ -31,13 +31,14 @@ import commissionRoutes from './routes/commissions.js';
 import masterRoutes from './routes/master.js';
 import publicRoutes from './routes/public.js';
 import leadRoutes from './routes/leads.js';
+import syncRoutes from './routes/sync.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const PORT = process.env.PORT || 3000;
 
 const app = express();
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '50mb' }));
 app.use(rateLimit({ windowMs: 60_000, max: 60 }));
 
 // Serve the built React app (dist/) when present, else the static public/ shell.
@@ -87,6 +88,7 @@ app.use(commissionRoutes(DATA_DIR));
 app.use('/api/master', masterRoutes(DATA_DIR));
 app.use(publicRoutes(DATA_DIR));
 app.use('/api/leads', leadRoutes(DATA_DIR));
+app.use(syncRoutes(DATA_DIR));
 
 // SPA catch-all — serve index.html for client-side routing
 app.get('*', (_req, res) => {
