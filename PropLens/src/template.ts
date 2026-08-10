@@ -1,7 +1,7 @@
 /**
  * PROPLENS — Property capture template.
  *
- * The property equivalent of TruLens's 27-vehicle-slot template. Covers
+ * The property equivalent of TruLens's 27-property-slot template. Covers
  * exterior approach, interior rooms, and compliance/features — everything
  * an agent needs to list a property fast.
  *

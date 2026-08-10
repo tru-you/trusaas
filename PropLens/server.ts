@@ -20,7 +20,7 @@ import {
 } from './photoStore';
 import { DEFAULT_TEMPLATE } from './src/templates';
 
-/* Every TruLens template slot is `required: false` (dealer's call what goes on
+/* Every TruLens template slot is `required: false` (agency's call what goes on
    their site — see src/template.ts), so there is no `required` subset to pull
    from the template itself for the two "is this capture practically done"
    gates below. This hand-picks the same kind of "core shot, not an
@@ -29,7 +29,7 @@ import { DEFAULT_TEMPLATE } from './src/templates';
    and the roof, which was always optional even before this file's lists went
    stale and started referencing a 'video_360' slot TruLens has never had. */
 const TRULENS_CORE_SLOT_IDS = DEFAULT_TEMPLATE.slots
-  .filter((s) => !['spare_wheel', 'vehicle_jack', 'spare_keys', 'roof_sunroof'].includes(s.id))
+  .filter((s) => !['compliance_docs', 'geyser', 'roof_condition', 'pool_area'].includes(s.id))
   .map((s) => s.id);
 
 // Load environment variables first
@@ -38,28 +38,28 @@ dotenv.config();
 // Same Firebase project + named DB as TruFlow Premium photo sync
 const FIREBASE_PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0151924955';
 const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d4757ec-a059-4566-98db-d15a4840f4ec';
-// Every device exports to this one DMS. Overridable only by env (for local
+// Every device exports to this one FlowPMS. Overridable only by env (for local
 // dev), never per-phone — a stale localhost in a phone's storage used to break
 // exports silently. Production default is TruFlow Premium.
-const DEFAULT_DMS_URL =
-  process.env.TRUFLOW_DMS_URL ||
-  process.env.DMS_URL ||
+const DEFAULT_PMS_URL =
+  process.env.TRUFLOW_PMS_URL ||
+  process.env.PMS_URL ||
   (process.env.NODE_ENV === 'production'
     // TruFlow, not TruLens. This read lens.tru-saas.com — TruLens's own host —
-    // so with TRUFLOW_DMS_URL unset the app exported to itself and the dealer
-    // picker would find no dealerships. render.yaml does set it, so production
+    // so with TRUFLOW_PMS_URL unset the app exported to itself and the agency
+    // picker would find no agencies. render.yaml does set it, so production
     // is unaffected; this is the fallback being honest.
     ? 'https://flow.tru-saas.com'
     : 'http://localhost:3001');
-// Which dealer owns captures made before dealer tagging existed (matches
-// TruFlow Premium's DEFAULT_DEALERSHIP_ID = d1 = mkr-autosales).
+// Which agency owns captures made before agency tagging existed (matches
+// TruFlow Premium's DEFAULT_AGENCY_ID = d1 = mkr-autosales).
 /**
  * Device access code.
  *
  * Without one, this API was open in production: LOCAL_MODE accepted ANY bearer
- * token (`Bearer zzz` returned inventory), and a `local-` prefix short-circuited
- * auth entirely. Anyone could read, create or delete a dealer's captured
- * vehicles and their photos.
+ * token (`Bearer zzz` returned portfolio), and a `local-` prefix short-circuited
+ * auth entirely. Anyone could read, create or delete a agency's captured
+ * properties and their photos.
  *
  * Set TRULENS_ACCESS_CODE and the app exchanges it for a signed token that
  * every request must carry.
@@ -76,22 +76,22 @@ const TOKEN_SECRET =
 const DEVICE_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // a month on the yard phone
 
 /**
- * Per-dealership access codes.
+ * Per-agency access codes.
  *
- * TRULENS_DEALER_CODES = "cars-on-caledon:CODE1,mkr-autosales:CODE2"
+ * TRULENS_AGENCY_CODES = "homes-on-caledon:CODE1,mkr-autosales:CODE2"
  *
- * With one shared code the login could not tell which dealership was holding
- * the phone, so the dealer picker was the only thing deciding where a car
+ * With one shared code the login could not tell which agency was holding
+ * the phone, so the agency picker was the only thing deciding where a homes
  * filed — and a wrong tap put it in someone else's yard with no error. A code
- * from this map pins the dealership server-side and the picker becomes a
+ * from this map pins the agency server-side and the picker becomes a
  * confirmation rather than the source of truth.
  *
  * TRULENS_ACCESS_CODE still works exactly as before. Phones already signed in
- * keep their tokens, and a dealership without its own code yet behaves as it
+ * keep their tokens, and a agency without its own code yet behaves as it
  * always has.
  */
-const DEALER_CODES: Array<{ slug: string; code: string }> = String(
-  process.env.TRULENS_DEALER_CODES || ''
+const AGENCY_CODES: Array<{ slug: string; code: string }> = String(
+  process.env.TRULENS_AGENCY_CODES || ''
 )
   .split(',')
   .map((pair) => pair.trim())
@@ -112,24 +112,24 @@ function codeMatches(given: string, expected: string): boolean {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
-/** The dealership a code belongs to, or null for the legacy shared code. */
-function dealerForCode(given: string): string | null {
-  for (const entry of DEALER_CODES) {
+/** The agency a code belongs to, or null for the legacy shared code. */
+function agencyForCode(given: string): string | null {
+  for (const entry of AGENCY_CODES) {
     if (codeMatches(given, entry.code)) return entry.slug;
   }
   return null;
 }
 
-function signDeviceToken(dealerSlug?: string | null): string {
+function signDeviceToken(agencySlug?: string | null): string {
   const claims: Record<string, unknown> = { k: 'device', exp: Date.now() + DEVICE_TOKEN_TTL_MS };
-  if (dealerSlug) claims.d = dealerSlug;
+  if (agencySlug) claims.d = agencySlug;
   const payload = Buffer.from(JSON.stringify(claims)).toString('base64url');
   const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
   return `${payload}.${sig}`;
 }
 
 /** Claims when the token is valid, otherwise null. */
-function deviceTokenClaims(token: string): { dealerSlug?: string } | null {
+function deviceTokenClaims(token: string): { agencySlug?: string } | null {
   try {
     const [payload, sig] = String(token).split('.');
     if (!payload || !sig) return null;
@@ -138,13 +138,13 @@ function deviceTokenClaims(token: string): { dealerSlug?: string } | null {
     if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
     const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
     if (claims.k !== 'device' || !(claims.exp > Date.now())) return null;
-    return { dealerSlug: typeof claims.d === 'string' ? claims.d : undefined };
+    return { agencySlug: typeof claims.d === 'string' ? claims.d : undefined };
   } catch { return null; }
 }
 
-const LENS_DEFAULT_DEALER_SLUG = process.env.LENS_DEFAULT_DEALER_SLUG || 'mkr-autosales';
+const LENS_DEFAULT_AGENCY_SLUG = process.env.LENS_DEFAULT_AGENCY_SLUG || 'mkr-autosales';
 
-// Local PC mode: no Google Cloud credentials needed. Stores inventory in data/local-inventory.json
+// Local PC mode: no Google Cloud credentials needed. Stores portfolio in data/local-inventory.json
 // Set LOCAL_MODE=0 and provide GOOGLE_APPLICATION_CREDENTIALS to use real Firestore.
 const FORCE_CLOUD = process.env.LOCAL_MODE === '0' || process.env.FORCE_FIREBASE === '1';
 const hasAdc =
@@ -164,7 +164,7 @@ const LOCAL_DATA_FILE = path.join(LOCAL_DATA_DIR, 'local-inventory.json');
    is constructed. */
 initPhotoStore(LOCAL_DATA_DIR);
 
-type LocalStore = { vehicles: any[] };
+type LocalStore = { properties: any[] };
 
 function isValidPhotoData(value: unknown): value is string {
   if (typeof value !== 'string' || value.length < 32) return false;
@@ -172,7 +172,7 @@ function isValidPhotoData(value: unknown): value is string {
      form every capture takes once it is on disk. It has to be named explicitly:
      at ~75 characters it is far too short for the raw-base64 rule below and
      carries no data:/http prefix, so without this it reads as junk and
-     normalizeVehicle drops it — silently deleting every photo on the vehicle's
+     normalizeProperty drops it — silently deleting every photo on the property's
      next save. */
   /* Held in a boolean rather than tested inline: isStoredRef is a `value is
      string` predicate, and applying it to a value already known to be a string
@@ -210,55 +210,54 @@ function normalizeQuality(raw: any): Record<string, any> {
   return out;
 }
 
-/** Ensure every vehicle is safe for the UI (never crash on missing photos/price). */
-// ── Optional-extras normaliser ──────────────────────────────────
-// Folds free-text variants ("tow bar", "towbar", "tow-bar") into one
-// canonical label so filters, feeds, and dealer sites all agree.
-// "Part-leather" deliberately does NOT fold into "Leather Seats".
-// Table-stakes features (power steering, electric windows, central
-// locking, ABS, airbags) are dropped — listing them adds noise.
-const EXTRAS_ALIASES: [RegExp, string][] = [
-  [/\btow\s*-?\s*bar\b|\btow\s*-?\s*hitch\b/i, 'Towbar'],
-  [/\bcarplay\b|\bandroid\s*auto\b|\bsmartphone\s*mirror/i, 'Apple CarPlay / Android Auto'],
-  [/\bpdc\b|\bparking\s*sensor/i, 'Park Distance Control'],
-  [/\bpark\s*assist\b/i, 'Park Distance Control'],
-  [/\bsat\s*-?\s*nav\b|\bgps\b|\bbuilt.in\s*nav/i, 'Navigation'],
-  [/\bbi.xenon\b|\bhid\b|\bled\s*head/i, 'LED / Xenon Headlights'],
-  [/\breverse\s*cam|\brear\s*cam|\bback.up\s*cam/i, 'Reverse Camera'],
-  [/\b360.?\s*cam/i, '360° Camera'],
-  [/\bblind\s*spot/i, 'Blind Spot Monitor'],
-  [/\blane\s*(keep|assist|depart)/i, 'Lane Assist'],
-  [/\badaptive\s*cruise/i, 'Adaptive Cruise Control'],
-  [/\bheated\s*seat/i, 'Heated Seats'],
-  [/\belectric\s*seat|\bpower\s*seat/i, 'Electric Seats'],
-  [/\bkeyless/i, 'Keyless Entry & Start'],
-  [/\bdual.zone|\bclimate\s*control/i, 'Dual-Zone Climate Control'],
-  [/\bsunroof|\bpanoramic/i, 'Sunroof / Panoramic Roof'],
-  [/\balloy\s*wheel|\bmag\s*wheel/i, 'Alloy Wheels'],
-  [/\broof\s*rail/i, 'Roof Rails'],
-  [/\btint/i, 'Tinted Windows'],
-  [/\bdigital\s*cockpit|\bvirtual\s*cockpit/i, 'Digital Cockpit'],
-  [/\bawd\b|\b4wd\b|\b4x4\b|\ball.wheel/i, 'AWD / 4WD'],
-  [/\bbluetooth/i, 'Bluetooth'],
+/** Ensure every property is safe for the UI (never crash on missing photos/price). */
+// ── Property-features normaliser ───────────────────────────────
+// Folds free-text variants ("solar geyser", "solar", "solar water heater")
+// into one canonical label so filters, feeds, and agency sites all agree.
+// Table-stakes features (walls, roof, windows, doors, plumbing) are dropped —
+// listing them adds noise.
+const FEATURE_ALIASES: [RegExp, string][] = [
+  [/\bsolar\s*(geyser|water\s*heater|system|power|panels?)?\b/i, 'Solar'],
+  [/\bgeyser\b|\bwater\s*heater\b/i, 'Geyser'],
+  [/\bheat\s*pump/i, 'Heat Pump'],
+  [/\binverter\b|\beskom\s*backup|\bbackup\s*power|\bgenerator\b/i, 'Backup Power'],
+  [/\bfibre\b|\bfiber\b|\bftth\b/i, 'Fibre'],
+  [/\bair\s*conditioning|\bac\b|\bcooling/i, 'Air Conditioning'],
+  [/\bgas\s*(stove|cooker|hob)|\bgas\s*connection/i, 'Gas Stove / Hob'],
+  [/\bpool\b|\bswimming\s*pool/i, 'Pool'],
+  [/\bjacuzzi\b|\bhot\s*tub\b/i, 'Jacuzzi / Hot Tub'],
+  [/\bbraai\b|\bbarbecue\b|\bbraai\s*area/i, 'Braai / BBQ'],
+  [/\boutside\s*building|\bdomestic\s*quarters|\bstaff\s*quarters\b/i, 'Staff Quarters'],
+  [/\bgranny\s*flat|\bflatlet\b|\bcottage\b/i, 'Granny Flat / Flatlet'],
+  [/\balarm\b|\bburglar\s*alarm\b/i, 'Security Alarm'],
+  [/\bsecurity\s*gate|\belectric\s*gate\b/i, 'Electric Gate'],
+  [/\bsecurity\s*(camera|cctv)/i, 'CCTV'],
+  [/\bcomplex\b|\bestate\b|\bsectional\s*title\b/i, 'Complex / Estate'],
+  [/\bborehole\b|\bjojo\s*tank\b|\bwater\s*tank\b/i, 'Borehole / Water Tank'],
+  [/\bdouble\s*garage|\bgarage\b/i, 'Garage / Parking'],
+  [/\bfireplace\b|\bhearth\b/i, 'Fireplace'],
+  [/\bstudy\b|\bhome\s*office\b/i, 'Study / Office'],
+  [/\bpet\s*friendly\b|\bdog\s*friendly\b/i, 'Pet Friendly'],
+  [/\bprepaid\s*electricity\b|\bprepaid\s*meter\b/i, 'Prepaid Electricity'],
+  [/\bairbnb\b|\bguesthouse\b|\bincome\s*generating/i, 'Income Generating'],
 ];
-const EXTRAS_DROP = /\bpower\s*steer|\belectric\s*window|\bcentral\s*lock|\b[ae]\.?b\.?s\b|\bairbag/i;
-// "part-leather" must NOT fold into "Leather Seats"
-const LEATHER_YES = /\bleather\s*seat|\bfull\s*leather/i;
-const LEATHER_NO = /\bpart.leather/i;
+const FEATURES_DROP = /\bwalls?\b|\broof\b|\bwindows?\b|\bdoors?\b|\bfloor(ing)?\b|\bplumbing\b|\bcelling\b|\bpaint(ed)?\b/i;
+const SOLAR_YES = /\bsolar\b/i;
+const SOLAR_NO = /\bnon.solar\b/i;
 
-function normaliseExtras(raw: unknown): string[] | undefined {
+function normaliseFeatures(raw: unknown): string[] | undefined {
   if (!Array.isArray(raw) || !raw.length) return undefined;
   const out: string[] = [];
   const seen = new Set<string>();
   for (const item of raw) {
     const s = String(item || '').trim();
-    if (!s || EXTRAS_DROP.test(s)) continue;
+    if (!s || FEATURES_DROP.test(s)) continue;
     let label = s;
-    // Leather has a special guard
-    if (LEATHER_YES.test(s) && !LEATHER_NO.test(s)) {
-      label = 'Leather Seats';
+    // Solar has a special guard
+    if (SOLAR_YES.test(s) && !SOLAR_NO.test(s)) {
+      label = 'Solar';
     } else {
-      for (const [re, canonical] of EXTRAS_ALIASES) {
+      for (const [re, canonical] of FEATURE_ALIASES) {
         if (re.test(s)) { label = canonical; break; }
       }
     }
@@ -268,7 +267,7 @@ function normaliseExtras(raw: unknown): string[] | undefined {
   return out.length ? out : undefined;
 }
 
-function normalizeVehicle(raw: any): any {
+function normalizeProperty(raw: any): any {
   if (!raw || typeof raw !== 'object') return raw;
   const photosIn = raw.photos && typeof raw.photos === 'object' ? raw.photos : {};
   const photos: Record<string, string> = {};
@@ -287,15 +286,15 @@ function normalizeVehicle(raw: any): any {
     make: raw.make ?? '',
     model: raw.model ?? '',
     trim: raw.trim ?? '',
-    vin: raw.vin ?? '',
-    stockNumber: raw.stockNumber ?? '',
+    erfRef: raw.erfRef ?? '',
+    listingRef: raw.listingRef ?? '',
     color: raw.color ?? '',
     year: Number(raw.year) || new Date().getFullYear(),
     price: Number(raw.price) || 0,
     status: raw.status || 'In-Progress',
     photos,
     quality: normalizeQuality(raw.quality),
-    optionalExtras: normaliseExtras(raw.optionalExtras),
+    features: normaliseFeatures(raw.features),
   };
 }
 
@@ -303,19 +302,19 @@ function readLocalStore(): LocalStore {
   try {
     if (fs.existsSync(LOCAL_DATA_FILE)) {
       const parsed = JSON.parse(fs.readFileSync(LOCAL_DATA_FILE, 'utf-8'));
-      const vehicles = Array.isArray(parsed?.vehicles) ? parsed.vehicles.map(normalizeVehicle) : [];
-      return { vehicles };
+      const properties = Array.isArray(parsed?.properties) ? parsed.properties.map(normalizeProperty) : [];
+      return { properties };
     }
   } catch (e) {
     console.error('Local store read error:', e);
   }
-  return { vehicles: [] };
+  return { properties: [] };
 }
 
 function writeLocalStore(store: LocalStore) {
   try {
     if (!fs.existsSync(LOCAL_DATA_DIR)) fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
-    const safe = { vehicles: (store.vehicles || []).map(normalizeVehicle) };
+    const safe = { properties: (store.properties || []).map(normalizeProperty) };
     const tmp = `${LOCAL_DATA_FILE}.tmp`;
     fs.writeFileSync(tmp, JSON.stringify(safe, null, 2), 'utf-8');
     fs.renameSync(tmp, LOCAL_DATA_FILE);
@@ -328,17 +327,17 @@ function writeLocalStore(store: LocalStore) {
  * Move any base64 still in the local store onto disk.
  *
  * Runs once at boot rather than inside readLocalStore, which is on every request
- * path that touches inventory — converting there would re-scan every photo of
+ * path that touches portfolio — converting there would re-scan every photo of
  * every capture on every call, which is the cost this change removes.
  *
  * Idempotent: put() returns a stored reference unchanged, so a second run is a
  * no-op and an interrupted run simply resumes. Firestore-backed instances are
- * skipped: their documents are migrated as each vehicle is next saved, and
+ * skipped: their documents are migrated as each property is next saved, and
  * rewriting an entire collection at boot is not something to do unattended.
  */
 function migrateCapturesToFiles(): void {
   if (!LOCAL_MODE) {
-    console.log('[photos] cloud mode — captures convert as vehicles are saved.');
+    console.log('[photos] cloud mode — captures convert as properties are saved.');
     return;
   }
   let store: LocalStore;
@@ -351,7 +350,7 @@ function migrateCapturesToFiles(): void {
 
   let converted = 0;
   let already = 0;
-  for (const v of store.vehicles || []) {
+  for (const v of store.properties || []) {
     const photos = v?.photos;
     if (!photos || typeof photos !== 'object') continue;
     for (const [slotId, value] of Object.entries(photos)) {
@@ -377,10 +376,10 @@ function migrateCapturesToFiles(): void {
  * Move base64 frames out of orbit packages already sitting on disk.
  *
  * The write path converts new packages, but that leaves every existing one
- * untouched — and these are the largest objects the system produces: the Yaris
+ * untouched — and these are the largest objects the system produces: the the demo property
  * orbit was still being served at 20,004,300 bytes after the capture photos had
  * already moved. A client that times out at 12 seconds never receives it, which
- * is why dealer sites fell back to showing a different car entirely.
+ * is why agency sites fell back to showing a different homes entirely.
  *
  * Converted in place, one file at a time, so a failure on one package leaves
  * the rest alone.
@@ -410,7 +409,7 @@ function migrateOrbitsToFiles(): void {
         if (ref) { f.image = ref; changed = true; framesMoved++; }
       }
       /* Damage pins carry a base64 thumbnail each. Easy to overlook because
-         they are not frames, but on the Yaris the two of them were 717 KB —
+         they are not frames, but on the the demo property the two of them were 717 KB —
          the entire remaining weight of the package once the frames had moved. */
       for (const t of Array.isArray(pkg.damageTags) ? pkg.damageTags : []) {
         if (!t || typeof t !== 'object' || isStoredRef(t.thumb)) continue;
@@ -463,20 +462,20 @@ if (!LOCAL_MODE || hasAdc) {
 if (LOCAL_MODE) {
   console.log('────────────────────────────────────────────');
   console.log(' TruLens LOCAL PC MODE');
-  console.log(' Inventory file: ' + LOCAL_DATA_FILE);
-  console.log(' DMS export URL: ' + DEFAULT_DMS_URL);
+  console.log(' Portfolio file: ' + LOCAL_DATA_FILE);
+  console.log(' FlowPMS export URL: ' + DEFAULT_PMS_URL);
   console.log(' Open: http://localhost:3000');
   console.log('────────────────────────────────────────────');
 }
 
-/* Safety net: without an access code, per-dealer codes or an explicit token
+/* Safety net: without an access code, per-agency codes or an explicit token
    secret, TOKEN_SECRET falls back to sha256('trulens-dev') and the local-mode
    branches accept any Bearer string — fine on a laptop, a hole in prod. Warn
    only, never exit; an outage is worse than a noisy log line. */
-if (!ACCESS_CODE && DEALER_CODES.length === 0 && !process.env.TRULENS_TOKEN_SECRET) {
+if (!ACCESS_CODE && AGENCY_CODES.length === 0 && !process.env.TRULENS_TOKEN_SECRET) {
   console.warn('────────────────────────────────────────────');
   console.warn(' WARNING: no auth secret configured.');
-  console.warn(' Set TRULENS_ACCESS_CODE, TRULENS_DEALER_CODES or');
+  console.warn(' Set TRULENS_ACCESS_CODE, TRULENS_AGENCY_CODES or');
   console.warn(' TRULENS_TOKEN_SECRET. Without one, any Bearer token');
   console.warn(' is accepted — safe locally, NOT in production.');
   console.warn('────────────────────────────────────────────');
@@ -485,7 +484,7 @@ if (!ACCESS_CODE && DEALER_CODES.length === 0 && !process.env.TRULENS_TOKEN_SECR
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-// Increase payload limits for Base64 vehicle photos
+// Increase payload limits for Base64 property photos
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -493,12 +492,12 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
  *
  * Immutable for a year, which is safe because the filename is the SHA-256 of
  * the bytes — a path can never come to mean different content, so there is no
- * cache to bust. This is what lets a dealer website fetch each photo once
- * instead of pulling every photo of every car inside one JSON payload: the
+ * cache to bust. This is what lets a agency website fetch each photo once
+ * instead of pulling every photo of every homes inside one JSON payload: the
  * TruLens public feed carried 25 base64 images in a single response.
  *
- * Public and registered before authenticate: these are stock photos bound for
- * public dealer websites, and the path is an opaque hash. */
+ * Public and registered before authenticate: these are listing photos bound for
+ * public agency websites, and the path is an opaque hash. */
 app.use(
   MEDIA_ROUTE,
   express.static(mediaDir(), {
@@ -540,16 +539,16 @@ const authenticate = async (req: any, res: any, next: any) => {
   const idToken = authHeader.split('Bearer ')[1];
 
   // A signed device token, issued by POST /api/auth/device in exchange for the
-  // dealership's access code.
+  // agency's access code.
   const deviceClaims = deviceTokenClaims(idToken);
   if (deviceClaims) {
     req.user = {
       uid: 'device',
       email: 'device@trulens.local',
       local: true,
-      // Present only when signed in with a per-dealership code. Anything the
-      // request body claims about the dealership is overridden by this.
-      dealerSlug: deviceClaims.dealerSlug,
+      // Present only when signed in with a per-agency code. Anything the
+      // request body claims about the agency is overridden by this.
+      agencySlug: deviceClaims.agencySlug,
     };
     return next();
   }
@@ -615,27 +614,27 @@ if (apiKey) {
   console.warn('GEMINI_API_KEY not found — AI analysis runs in mock mode.');
 }
 
-// ==================== INVENTORY HELPERS ====================
+// ==================== PORTFOLIO HELPERS ====================
 
-/* Scope arg: dealerSlug is authoritative when the device is signed in with a
-   dealer code. ownerId (which phone captured it) is the legacy fallback for
-   pre-tagging captures and for local-demo mode where no dealer is bound.
+/* Scope arg: agencySlug is authoritative when the device is signed in with a
+   agency code. ownerId (which phone captured it) is the legacy fallback for
+   pre-tagging captures and for local-demo mode where no agency is bound.
    Before this, listVehicles filtered by ownerId alone, so a phone that
-   captured for dealer A and later signed in with dealer B's code saw A's
-   inventory in Lens — a cross-dealer read leak. */
-type LensScope = { uid: string; dealerSlug?: string | null };
+   captured for agency A and later signed in with agency B's code saw A's
+   portfolio in Lens — a cross-agency read leak. */
+type LensScope = { uid: string; agencySlug?: string | null };
 
-/* 14-day Lens retention: once a vehicle has been in the DMS for two weeks,
+/* 14-day Lens retention: once a property has been in the FlowPMS for two weeks,
    Flow is the source of truth and the Lens copy is deleted. Sweep runs
-   lazily on every listVehicles call — no cron, no scheduler. A vehicle
+   lazily on every listVehicles call — no cron, no scheduler. A property
    that never gets listed still eventually goes when someone opens the
-   inventory. Flow also proactively clears Lens on a hard delete via the
-   /api/sync/vehicle callback; sold status is deliberately NOT a trigger
-   because deals fall through and a sold-then-unsold vehicle should still
+   portfolio. Flow also proactively clears Lens on a hard delete via the
+   /api/sync/property callback; sold status is deliberately NOT a trigger
+   because deals fall through and a sold-then-unsold property should still
    be editable in Lens if it's inside the retention window. */
 const LENS_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 function isExpired(v: any, nowMs: number): boolean {
-  const first = v.firstDmsExportAt;
+  const first = v.firstPmsExportAt;
   if (!first) return false;
   const t = Date.parse(first);
   if (!Number.isFinite(t)) return false;
@@ -643,31 +642,31 @@ function isExpired(v: any, nowMs: number): boolean {
 }
 
 async function listVehicles(user: LensScope): Promise<any[]> {
-  const { uid, dealerSlug } = user;
+  const { uid, agencySlug } = user;
   const nowMs = Date.now();
 
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
-    const before = store.vehicles.length;
+    const before = store.properties.length;
     /* Drop expired rows in place before scoping — sweep applies globally so
-       any dealer opening their list also cleans anything they own that has
+       any agency opening their list also cleans anything they own that has
        aged out. */
-    store.vehicles = store.vehicles.filter((v) => !isExpired(v, nowMs));
-    if (store.vehicles.length !== before) writeLocalStore(store);
-    const list = store.vehicles
+    store.properties = store.properties.filter((v) => !isExpired(v, nowMs));
+    if (store.properties.length !== before) writeLocalStore(store);
+    const list = store.properties
       .filter((v) => passesScope(v, user))
-      .map(normalizeVehicle)
+      .map(normalizeProperty)
       .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
     return list;
   }
 
-  /* Firestore query: prefer dealerSlug when the token has one, fall back to
+  /* Firestore query: prefer agencySlug when the token has one, fall back to
      ownerId. The passesScope helper is JS-only, so we still need a where()
      that narrows the result set before it comes back. Legacy untagged rows
      captured by this user are still reachable via the ownerId branch. */
-  const query = dealerSlug
-    ? fdb.collection('vehicles').where('dealerSlug', '==', dealerSlug)
-    : fdb.collection('vehicles').where('ownerId', '==', uid);
+  const query = agencySlug
+    ? fdb.collection('properties').where('agencySlug', '==', agencySlug)
+    : fdb.collection('properties').where('ownerId', '==', uid);
   const snapshot = await query.orderBy('updatedAt', 'desc').get();
 
   const kept: any[] = [];
@@ -677,7 +676,7 @@ async function listVehicles(user: LensScope): Promise<any[]> {
     if (isExpired(data, nowMs)) {
       expiredRefs.push(doc.ref);
     } else {
-      kept.push(normalizeVehicle(data));
+      kept.push(normalizeProperty(data));
     }
   });
   /* Fire and forget the deletes — a failed delete just leaves the row for
@@ -692,15 +691,15 @@ async function listVehicles(user: LensScope): Promise<any[]> {
 
 /* Scoping rules for both read paths:
    - local-demo-user always wins (dev/PC demo mode).
-   - Explicitly tagged vehicle → the token's dealerSlug must match.
-   - Untagged (legacy) vehicle → fall back to ownerId match. Using the
-     default-dealer fallback for access decisions was a bug — it 404'd the
-     rightful owner of any legacy capture that predates dealer tagging. */
+   - Explicitly tagged property → the token's agencySlug must match.
+   - Untagged (legacy) property → fall back to ownerId match. Using the
+     default-agency fallback for access decisions was a bug — it 404'd the
+     rightful owner of any legacy capture that predates agency tagging. */
 function passesScope(record: any, user?: LensScope): boolean {
   if (!user) return true;
   if (user.uid === 'local-demo-user') return true;
-  if (record.dealerSlug) {
-    return !user.dealerSlug || record.dealerSlug === user.dealerSlug;
+  if (record.agencySlug) {
+    return !user.agencySlug || record.agencySlug === user.agencySlug;
   }
   if (user.uid && record.ownerId && record.ownerId !== user.uid) return false;
   return true;
@@ -708,14 +707,14 @@ function passesScope(record: any, user?: LensScope): boolean {
 
 async function getVehicle(id: string, user?: LensScope): Promise<any | null> {
   if (LOCAL_MODE || !fdb) {
-    const found = readLocalStore().vehicles.find((v) => v.id === id);
+    const found = readLocalStore().properties.find((v) => v.id === id);
     if (!found) return null;
-    return passesScope(found, user) ? normalizeVehicle(found) : null;
+    return passesScope(found, user) ? normalizeProperty(found) : null;
   }
-  const doc = await fdb.collection('vehicles').doc(id).get();
+  const doc = await fdb.collection('properties').doc(id).get();
   if (!doc.exists) return null;
   const data = doc.data() as any;
-  return passesScope(data, user) ? normalizeVehicle(data) : null;
+  return passesScope(data, user) ? normalizeProperty(data) : null;
 }
 
 /** Move a capture's photos onto disk, leaving references in the record.
@@ -725,11 +724,11 @@ async function getVehicle(id: string, user?: LensScope): Promise<any | null> {
  *  more than it looks, because a Firestore document has a hard 1 MiB ceiling and
  *  a couple of base64 photos will breach it.
  *
- *  Idempotent: put() hands back a reference unchanged, so re-saving a vehicle
+ *  Idempotent: put() hands back a reference unchanged, so re-saving a property
  *  that is already converted costs a map and nothing else. */
-function storeVehiclePhotos(vehicle: any): any {
-  const photos = vehicle?.photos;
-  if (!photos || typeof photos !== 'object') return vehicle;
+function storeVehiclePhotos(property: any): any {
+  const photos = property?.photos;
+  if (!photos || typeof photos !== 'object') return property;
   const next: Record<string, string> = {};
   for (const [slotId, value] of Object.entries(photos)) {
     const ref = putPhoto(value);
@@ -737,12 +736,12 @@ function storeVehiclePhotos(vehicle: any): any {
        capture is never silently lost — it simply stays base64. */
     next[slotId] = ref || (value as string);
   }
-  return { ...vehicle, photos: next };
+  return { ...property, photos: next };
 }
 
 /** Last-writer-wins merge, per field. Both sides of the Lens<->Flow sync stamp
  *  fieldMeta[f] = Date.now() on every field they change, and stale pushes lose:
- *  a Lens re-export cannot silently clobber a fresher DMS edit, and vice versa.
+ *  a Lens re-export cannot silently clobber a fresher FlowPMS edit, and vice versa.
  *  Absent map or absent key = 0, so legacy rows accept the first inbound write. */
 function mergeWithMeta(
   current: any,
@@ -768,34 +767,34 @@ function mergeWithMeta(
  *  findings, VIR/slot assessment and condition declarations stay Lens-owned
  *  because they belong to the capture workflow. */
 const FLOW_EDITABLE_FIELDS = [
-  'make', 'model', 'year', 'trim', 'vin', 'color',
-  'mileage', 'transmission', 'fuelType', 'vehicleType',
-  'price', 'showOnWebsite', 'description', 'status', 'stockNumber',
+  'make', 'model', 'year', 'trim', 'erfRef', 'color',
+  'floorArea', 'transmission', 'fuelType', 'propertyType',
+  'price', 'showOnWebsite', 'description', 'status', 'listingRef',
 ] as const;
 
-async function saveVehicle(vehicle: any): Promise<any> {
-  const normalized = storeVehiclePhotos(normalizeVehicle(vehicle));
+async function saveVehicle(property: any): Promise<any> {
+  const normalized = storeVehiclePhotos(normalizeProperty(property));
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
-    const idx = store.vehicles.findIndex((v) => v.id === normalized.id);
-    if (idx === -1) store.vehicles.unshift(normalized);
-    else store.vehicles[idx] = { ...store.vehicles[idx], ...normalized };
+    const idx = store.properties.findIndex((v) => v.id === normalized.id);
+    if (idx === -1) store.properties.unshift(normalized);
+    else store.properties[idx] = { ...store.properties[idx], ...normalized };
     writeLocalStore(store);
     return normalized;
   }
-  await fdb.collection('vehicles').doc(normalized.id).set(normalized, { merge: true });
+  await fdb.collection('properties').doc(normalized.id).set(normalized, { merge: true });
   return normalized;
 }
 
 async function deleteVehicle(id: string): Promise<boolean> {
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
-    const before = store.vehicles.length;
-    store.vehicles = store.vehicles.filter((v) => v.id !== id);
+    const before = store.properties.length;
+    store.properties = store.properties.filter((v) => v.id !== id);
     writeLocalStore(store);
-    return store.vehicles.length < before;
+    return store.properties.length < before;
   }
-  await fdb.collection('vehicles').doc(id).delete();
+  await fdb.collection('properties').doc(id).delete();
   return true;
 }
 
@@ -803,28 +802,28 @@ async function deleteVehicle(id: string): Promise<boolean> {
 
 // Health / mode check (no auth) + keep-alive pings
 const STARTED_AT = Date.now();
-/** Exchange the dealership's access code for a signed device token.
+/** Exchange the agency's access code for a signed device token.
  *  Deliberately public — it is the way in. Slow-hashed and rate-limited by
  *  nothing yet, so keep the code long. */
 /**
  * Ask TruFlow whether a code is real and whether it opens TruLens.
  *
- * Dealerships, their codes and their entitlements live in one place. This app
- * used to keep its own copy of every dealer's code in TRULENS_DEALER_CODES — a
+ * Agencies, their codes and their entitlements live in one place. This app
+ * used to keep its own copy of every agency's code in TRULENS_AGENCY_CODES — a
  * comma-separated "slug:CODE" string in the service configuration — so
- * onboarding a dealer meant pasting their code here in plaintext and restarting
+ * onboarding a agency meant pasting their code here in plaintext and restarting
  * this service, and revoking meant editing that string and restarting again.
  *
  * Returns null on anything other than a clean yes, including an unreachable
  * TruFlow, so the caller can fall back to the environment list rather than
- * locking a yard out of their phones because the DMS was briefly down.
+ * locking a yard out of their phones because the FlowPMS was briefly down.
  */
 async function verifyCodeWithTruFlow(
   code: string
-): Promise<{ dealerSlug: string; dealerName?: string } | null> {
+): Promise<{ agencySlug: string; agencyName?: string } | null> {
   if (!SYNC_KEY) return null; // no shared key configured — nothing to ask with
   try {
-    const res = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/auth/verify-code`, {
+    const res = await fetch(`${DEFAULT_PMS_URL.replace(/\/$/, '')}/api/auth/verify-code`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-tru-sync-key': SYNC_KEY },
       body: JSON.stringify({ code, product: 'lens' }),
@@ -832,7 +831,7 @@ async function verifyCodeWithTruFlow(
     });
     if (!res.ok) {
       /* 403 is a real answer, not a failure: the code is valid but this
-         dealership is not set up for TruLens. Logged so an onboarding mistake
+         agency is not set up for TruLens. Logged so an onboarding mistake
          is visible rather than looking like a wrong code. */
       if (res.status === 403) {
         const body = await res.json().catch(() => ({}));
@@ -841,8 +840,8 @@ async function verifyCodeWithTruFlow(
       return null;
     }
     const body = await res.json();
-    return body?.ok && body.dealerSlug
-      ? { dealerSlug: body.dealerSlug, dealerName: body.dealerName }
+    return body?.ok && body.agencySlug
+      ? { agencySlug: body.agencySlug, agencyName: body.agencyName }
       : null;
   } catch (err: any) {
     console.warn('[auth] could not reach TruFlow to verify a code:', err?.message || err);
@@ -853,35 +852,35 @@ async function verifyCodeWithTruFlow(
 app.post('/api/auth/device', async (req, res) => {
   const given = String(req.body?.code || '');
 
-  /* TruFlow first. A dealer onboarded there works here immediately, with no
+  /* TruFlow first. A agency onboarded there works here immediately, with no
      environment variable to edit and no restart of this service. */
   const central = await verifyCodeWithTruFlow(given);
   if (central) {
     return res.json({
-      token: signDeviceToken(central.dealerSlug),
+      token: signDeviceToken(central.agencySlug),
       expiresInDays: 30,
-      dealerSlug: central.dealerSlug,
-      dealerName: central.dealerName,
+      agencySlug: central.agencySlug,
+      agencyName: central.agencyName,
     });
   }
 
   /* Then the local list. Kept as a fallback so phones already signed in keep
-     working, and so a TruFlow outage cannot stop a yard photographing cars. */
-  const dealerSlug = dealerForCode(given);
-  if (dealerSlug) {
-    return res.json({ token: signDeviceToken(dealerSlug), expiresInDays: 30, dealerSlug });
+     working, and so a TruFlow outage cannot stop a yard photographing homes. */
+  const agencySlug = agencyForCode(given);
+  if (agencySlug) {
+    return res.json({ token: signDeviceToken(agencySlug), expiresInDays: 30, agencySlug });
   }
 
-  // Legacy shared code — still valid, but carries no dealership, so the picker
+  // Legacy shared code — still valid, but carries no agency, so the picker
   // remains the only thing that decides where captures file.
   if (ACCESS_CODE && codeMatches(given, ACCESS_CODE)) {
-    return res.json({ token: signDeviceToken(), expiresInDays: 30, dealerSlug: null });
+    return res.json({ token: signDeviceToken(), expiresInDays: 30, agencySlug: null });
   }
 
   /* Only now is "nothing is configured" worth reporting, and it is a different
      complaint from a wrong code: with central verification available this
      server needs no local codes at all. */
-  if (!ACCESS_CODE && DEALER_CODES.length === 0 && !SYNC_KEY) {
+  if (!ACCESS_CODE && AGENCY_CODES.length === 0 && !SYNC_KEY) {
     return res.status(503).json({
       error: 'No way to verify codes on this server.',
       message: 'Set TRUFLOW_SYNC_KEY so codes can be checked against TruFlow, or set TRULENS_ACCESS_CODE.',
@@ -927,11 +926,11 @@ app.get('/api/health', (_req, res) => {
     accessCodeConfigured,
     // Booleans and a count, never values. Lets you confirm from outside that
     // the env vars reached the process — otherwise invisible until an export
-    // fails or a dealer files a car into the wrong yard.
+    // fails or a agency files a homes into the wrong yard.
     syncKeyConfigured: !!SYNC_KEY,
-    dealerCodesConfigured: DEALER_CODES.length,
+    agencyCodesConfigured: AGENCY_CODES.length,
     mode: LOCAL_MODE ? 'local' : 'cloud',
-    dmsUrl: DEFAULT_DMS_URL,
+    dmsUrl: DEFAULT_PMS_URL,
     port: PORT,
     uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
     ts: new Date().toISOString(),
@@ -947,12 +946,12 @@ app.use((req, res, next) => {
   next();
 });
 
-/** TruLens-only public stock — for dealers without DMS (or as photo-first feed) */
+/** TruLens-only public listing — for agencies without FlowPMS (or as photo-first feed) */
 /* ── VIR, computed the same way TruFlow computes it ──────────────
  *
- * A dealer site can be pointed at either feed — TruLens direct, or TruFlow —
- * and the same car has to report the same score either way, or switching the
- * source silently rewrites every vehicle's condition rating.
+ * A agency site can be pointed at either feed — TruLens direct, or TruFlow —
+ * and the same homes has to report the same score either way, or switching the
+ * source silently rewrites every property's condition rating.
  *
  * Condition comes from confirmed damage findings, never from the photo-quality
  * scores in v.quality: quality is how well the shot was taken, condition is
@@ -1003,7 +1002,7 @@ function buildVirReport(damage: { panel?: string; severity: number }[]) {
  *  Derived rather than configured so localhost, staging and production each
  *  advertise URLs pointing at themselves with no env var to forget. Honours the
  *  proxy headers Render sets, or the scheme comes back http behind its TLS
- *  terminator and dealer sites end up fetching mixed content. */
+ *  terminator and agency sites end up fetching mixed content. */
 function originOf(req: any): string {
   const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'https')
     .split(',')[0]
@@ -1021,7 +1020,7 @@ function toPublicFromLens(v: any, origin: string = '') {
   ];
   /* Stored photos are served by this instance, but the sites reading this feed
      are on their own domains — a relative "/media/…" would resolve against the
-     dealer's host and 404. Legacy base64 passes through untouched, so a feed
+     agency's host and 404. Legacy base64 passes through untouched, so a feed
      keeps working on an instance whose migration has not run. */
   const abs = (s: string) => (isStoredRef(s) && origin ? `${origin}${s}` : s);
 
@@ -1048,13 +1047,13 @@ function toPublicFromLens(v: any, origin: string = '') {
   if (!canShow) return null;
 
   /* Same fields, same names, same meanings as toPublicVehicle in
-     truflow-premium/server.ts — a dealer site switches between the two feeds
+     truflow-premium/server.ts — a agency site switches between the two feeds
      by changing one base URL and nothing else. */
   const damage = flattenDamageFindings(v);
 
   return {
     id: v.id,
-    stockNumber: v.stockNumber,
+    listingRef: v.listingRef,
     year: v.year,
     make: v.make,
     model: v.model,
@@ -1062,12 +1061,12 @@ function toPublicFromLens(v: any, origin: string = '') {
     price: v.price || 0,
     // Absent (not 0) when unset, so a site can tell "no benchmark" from "free".
     truPrice: v.truPrice ? Number(v.truPrice) : undefined,
-    mileage: v.mileage || 0,
+    floorArea: v.floorArea || 0,
     transmission: v.transmission || '',
     fuelType: v.fuelType || '',
-    bodyType: v.vehicleType || '',
+    bodyType: v.propertyType || '',
     color: v.color || '',
-    vin: v.vin || '',
+    erfRef: v.erfRef || '',
     description: v.aiListingDescription || `${v.year} ${v.make} ${v.model}`,
     status: 'available',
     images,
@@ -1075,15 +1074,15 @@ function toPublicFromLens(v: any, origin: string = '') {
     photoCount: images.length,
     /* A pointer rather than the frames themselves: the orbit is a large set of
        base64 stills and this is a list endpoint, so a site fetches it lazily
-       for the car the buyer actually opened. */
+       for the homes the buyer actually opened. */
     web3dUrl: v.web3dPublicPath || undefined,
     /** TruLens inspection score 0–100, absent when nothing was tagged. */
     vir: damage.length ? computeVirFromDamage(damage) : undefined,
-    /* Absent — not [] — when the car was never inspected, so a site renders
+    /* Absent — not [] — when the homes was never inspected, so a site renders
        the report block only when there is one to render. */
     virReport: damage.length ? buildVirReport(damage) : undefined,
     damage: damage.length ? damage : undefined,
-    /* Dealer-declared condition — TruLens retail "no damage reported" statement,
+    /* Agency-declared condition — TruLens retail "no damage reported" statement,
        not a graded VIR. Mirrors TruFlow's feed so a site gets the same line from
        either source. Tagged damage takes precedence over a "no damage" claim. */
     conditionLabel: (() => {
@@ -1093,14 +1092,14 @@ function toPublicFromLens(v: any, origin: string = '') {
       return undefined;
     })(),
     conditionDeclaration: (v as any).conditionDeclaration || undefined,
-    optionalExtras: (v as any).optionalExtras?.length ? (v as any).optionalExtras : undefined,
+    features: (v as any).features?.length ? (v as any).features : undefined,
     daysInStock: null,
     source: 'trulens',
-    updatedAt: v.updatedAt || v.lastDmsExportAt || null,
+    updatedAt: v.updatedAt || v.lastPmsExportAt || null,
   };
 }
 
-// ── Web 3D / spin packages for dealer websites ─────────────────
+// ── Web 3D / spin packages for agency websites ─────────────────
 const WEB3D_DIR = path.join(LOCAL_DATA_DIR, 'web3d');
 
 function ensureWeb3dDir() {
@@ -1119,16 +1118,16 @@ try {
 // POST /api/export/web-3d — save package from TruLens client
 app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
   try {
-    const { vehicleId, package: pkg } = req.body || {};
-    if (!pkg?.stockNumber || !Array.isArray(pkg.frames)) {
-      return res.status(400).json({ error: 'package.stockNumber and package.frames required' });
+    const { propertyId, package: pkg } = req.body || {};
+    if (!pkg?.listingRef || !Array.isArray(pkg.frames)) {
+      return res.status(400).json({ error: 'package.listingRef and package.frames required' });
     }
 
     ensureWeb3dDir();
-    const safeStock = String(pkg.stockNumber).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeStock = String(pkg.listingRef).replace(/[^a-zA-Z0-9_-]/g, '_');
     const filePath = path.join(WEB3D_DIR, `${safeStock}.json`);
     /* Frames onto disk, references into the package.
-       This is the single largest payload the system produces: the Yaris orbit
+       This is the single largest payload the system produces: the the demo property orbit
        was 11 frames and 18.4 MB, ~10 seconds to fetch, against a client that
        gives up after 12. Stored as files the package itself is a few KB and each
        frame is fetched once and cached forever — and because they are content-
@@ -1140,7 +1139,7 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
         const ref = putPhoto(f.image);
         return ref ? { ...f, image: ref } : f;
       }),
-      // Damage pins carry a thumbnail each — 717 KB of the Yaris package.
+      // Damage pins carry a thumbnail each — 717 KB of the the demo property package.
       damageTags: Array.isArray(pkg.damageTags)
         ? pkg.damageTags.map((t: any) => {
             if (!t || typeof t !== 'object') return t;
@@ -1153,28 +1152,28 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
     };
     fs.writeFileSync(filePath, JSON.stringify(payload), 'utf-8');
 
-    // Stamp vehicle if we can
-    if (vehicleId) {
+    // Stamp property if we can
+    if (propertyId) {
       try {
-        const v = await getVehicle(vehicleId, req.user);
+        const v = await getVehicle(propertyId, req.user);
         if (v) {
           await saveVehicle({
             ...v,
             lastWeb3dExportAt: payload.savedAt,
-            web3dPublicPath: `/api/public/web3d/${encodeURIComponent(pkg.stockNumber)}`,
+            web3dPublicPath: `/api/public/web3d/${encodeURIComponent(pkg.listingRef)}`,
             updatedAt: payload.savedAt,
           });
         }
       } catch (e) {
-        console.warn('web3d vehicle stamp failed', e);
+        console.warn('web3d property stamp failed', e);
       }
     }
 
     res.json({
       success: true,
-      stockNumber: pkg.stockNumber,
-      publicUrl: `/api/public/web3d/${encodeURIComponent(pkg.stockNumber)}`,
-      embedUrl: `/embed/web3d-viewer.html?stock=${encodeURIComponent(pkg.stockNumber)}`,
+      listingRef: pkg.listingRef,
+      publicUrl: `/api/public/web3d/${encodeURIComponent(pkg.listingRef)}`,
+      embedUrl: `/embed/web3d-viewer.html?listing=${encodeURIComponent(pkg.listingRef)}`,
       frames: pkg.frames?.length || 0,
       damageTags: pkg.damageTags?.length || 0,
     });
@@ -1184,14 +1183,14 @@ app.post('/api/export/web-3d', authenticate, async (req: any, res) => {
   }
 });
 
-// GET /api/public/web3d/:stockNumber — public package for website players
-app.get('/api/public/web3d/:stockNumber', (req, res) => {
+// GET /api/public/web3d/:listingRef — public package for website players
+app.get('/api/public/web3d/:listingRef', (req, res) => {
   try {
     ensureWeb3dDir();
-    const safeStock = String(req.params.stockNumber).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeStock = String(req.params.listingRef).replace(/[^a-zA-Z0-9_-]/g, '_');
     const filePath = path.join(WEB3D_DIR, `${safeStock}.json`);
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ success: false, error: 'No web 3D package for this stock number' });
+      return res.status(404).json({ success: false, error: 'No web 3D package for this listing number' });
     }
     const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
     /* Frames stored as files are advertised as absolute URLs — the sites reading
@@ -1214,98 +1213,98 @@ app.get('/api/public/web3d/:stockNumber', (req, res) => {
   }
 });
 
-// GET /api/public/stock — website feed from TruLens (lens-only dealers)
+// GET /api/public/listing — website feed from TruLens (lens-only agencies)
 /**
- * The dealership list the picker shows, proxied from TruFlow.
+ * The agency list the picker shows, proxied from TruFlow.
  *
  * It used to be a hardcoded array in DealerSelect.tsx, which meant onboarding a
- * dealer needed a TruLens release on top of a TruFlow one — and while that list
- * was hand-maintained it drifted, carrying three sample dealerships whose slugs
- * TruFlow did not know. Picking one saved a capture with no dealership, and the
- * public feed reads untagged stock as the pilot dealer, so a shooter could put
- * cars on someone else's website by choosing the wrong row.
+ * agency needed a TruLens release on top of a TruFlow one — and while that list
+ * was hand-maintained it drifted, carrying three sample agencies whose slugs
+ * TruFlow did not know. Picking one saved a capture with no agency, and the
+ * public feed reads untagged listing as the pilot agency, so a shooter could put
+ * homes on someone else's website by choosing the wrong row.
  *
- * Proxied rather than fetched straight from the phone: it keeps the DMS URL
+ * Proxied rather than fetched straight from the phone: it keeps the FlowPMS URL
  * server-side and avoids relying on TruFlow's CORS for a screen that has to
  * work before anything else does.
  */
-app.get('/api/dealerships', async (_req, res) => {
+app.get('/api/agencies', async (_req, res) => {
   try {
-    const r = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/public/dealerships`, {
+    const r = await fetch(`${DEFAULT_PMS_URL.replace(/\/$/, '')}/api/public/agencies`, {
       signal: AbortSignal.timeout(8000),
     });
-    if (!r.ok) throw new Error(`DMS responded ${r.status}`);
+    if (!r.ok) throw new Error(`FlowPMS responded ${r.status}`);
     const list = await r.json();
-    if (!Array.isArray(list)) throw new Error('DMS returned an unexpected shape');
+    if (!Array.isArray(list)) throw new Error('FlowPMS returned an unexpected shape');
     res.setHeader('Cache-Control', 'no-store');
     res.json(list);
   } catch (err: any) {
     /* The phone falls back to its cached copy. Say so plainly rather than
-       returning an empty list, which would read as "no dealerships exist". */
-    console.warn('[dealerships] could not reach the DMS:', err?.message || err);
-    res.status(503).json({ error: 'Could not reach the DMS to load dealerships.' });
+       returning an empty list, which would read as "no agencies exist". */
+    console.warn('[agencies] could not reach the FlowPMS:', err?.message || err);
+    res.status(503).json({ error: 'Could not reach the FlowPMS to load agencies.' });
   }
 });
 
-app.get('/api/public/stock', async (req, res) => {
+app.get('/api/public/listing', async (req, res) => {
   try {
-    const dealer = String(req.query.dealer || '');
-    if (!dealer) {
-      return res.status(400).json({ success: false, error: 'dealer query parameter is required' });
+    const agency = String(req.query.agency || '');
+    if (!agency) {
+      return res.status(400).json({ success: false, error: 'agency query parameter is required' });
     }
-    let vehicles: any[] = [];
+    let properties: any[] = [];
     if (LOCAL_MODE || !fdb) {
-      vehicles = readLocalStore().vehicles.map(normalizeVehicle);
+      properties = readLocalStore().properties.map(normalizeProperty);
     } else {
-      const snapshot = await fdb.collection('vehicles').get();
-      vehicles = snapshot.docs.map((d) => normalizeVehicle(d.data()));
+      const snapshot = await fdb.collection('properties').get();
+      properties = snapshot.docs.map((d) => normalizeProperty(d.data()));
     }
-    const scoped = vehicles.filter(
-      (v: any) => (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealer
+    const scoped = properties.filter(
+      (v: any) => (v.agencySlug || LENS_DEFAULT_AGENCY_SLUG) === agency
     );
     const publicList = scoped.map((v: any) => toPublicFromLens(v, originOf(req))).filter(Boolean);
     res.json({
       success: true,
-      dealer,
+      agency,
       source: 'trulens',
       updatedAt: new Date().toISOString(),
       count: publicList.length,
-      vehicles: publicList,
+      properties: publicList,
     });
   } catch (error: any) {
-    console.error('public stock error', error);
-    res.status(500).json({ success: false, error: 'Failed to build stock feed', details: error.message });
+    console.error('public listing error', error);
+    res.status(500).json({ success: false, error: 'Failed to build listing feed', details: error.message });
   }
 });
 
-// 1. Get all vehicles
-app.get('/api/inventory', authenticate, async (req: any, res) => {
+// 1. Get all properties
+app.get('/api/portfolio', authenticate, async (req: any, res) => {
   try {
-    const vehicles = await listVehicles(req.user);
-    res.json(vehicles);
+    const properties = await listVehicles(req.user);
+    res.json(properties);
   } catch (error) {
-    console.error('GET /api/inventory - Error:', error);
+    console.error('GET /api/portfolio - Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// 2. Add or update vehicle
-app.post('/api/inventory', authenticate, async (req: any, res) => {
+// 2. Add or update property
+app.post('/api/portfolio', authenticate, async (req: any, res) => {
   try {
     const vehicleData = req.body;
     const userId = req.user.uid;
 
     if (!vehicleData.id) {
-      return res.status(400).json({ error: 'Vehicle ID is required' });
+      return res.status(400).json({ error: 'Property ID is required' });
     }
 
     const now = new Date().toISOString();
-    const { dealerSlug: _claimedSlug, ownerId: _drop, createdAt: _dropCreated, ...safeData } = vehicleData;
+    const { agencySlug: _claimedSlug, ownerId: _drop, createdAt: _dropCreated, ...safeData } = vehicleData;
     const existing = await getVehicle(vehicleData.id, req.user);
 
-    /* Token-pinned dealerSlug wins; then existing record; body is last resort
+    /* Token-pinned agencySlug wins; then existing record; body is last resort
        (legacy shared-code tokens where the picker is the only signal). */
-    const dealerSlug = req.user?.dealerSlug || existing?.dealerSlug || _claimedSlug || undefined;
+    const agencySlug = req.user?.agencySlug || existing?.agencySlug || _claimedSlug || undefined;
 
     if (existing) {
       if (!LOCAL_MODE && existing.ownerId && existing.ownerId !== userId) {
@@ -1315,51 +1314,51 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
         ...existing,
         ...safeData,
         ownerId: existing.ownerId || userId,
-        dealerSlug,
+        agencySlug,
         updatedAt: now,
         photos: vehicleData.photos ?? existing.photos ?? {},
         quality: vehicleData.quality ?? existing.quality ?? {},
       };
       const saved = await saveVehicle(updatedVehicle);
-      return res.json({ success: true, vehicle: saved });
+      return res.json({ success: true, property: saved });
     }
 
-    /* Timestamp fallback so no capture ever lands without a stock number.
+    /* Timestamp fallback so no capture ever lands without a listing number.
        Format keeps codes sortable and human-readable, and the second-level
        precision makes collision from a single phone effectively impossible.
-       Never overwrites a dealer-typed value. */
-    const stockNumberFallback = 'STK-' + now.replace(/[-:T.Z]/g, '').slice(0, 14);
+       Never overwrites a agency-typed value. */
+    const listingRefFallback = 'STK-' + now.replace(/[-:T.Z]/g, '').slice(0, 14);
     const newVehicle = {
       ...safeData,
       ownerId: userId,
-      dealerSlug,
-      stockNumber: vehicleData.stockNumber || stockNumberFallback,
+      agencySlug,
+      listingRef: vehicleData.listingRef || listingRefFallback,
       createdAt: now,
       updatedAt: now,
       photos: vehicleData.photos || {},
       quality: vehicleData.quality || {},
     };
     await saveVehicle(newVehicle);
-    res.json({ success: true, vehicle: newVehicle });
+    res.json({ success: true, property: newVehicle });
   } catch (error) {
-    console.error('POST /api/inventory - Server Error:', error);
+    console.error('POST /api/portfolio - Server Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// 3. Upload/Save photo for a specific vehicle slot
-app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
+// 3. Upload/Save photo for a specific property slot
+app.post('/api/portfolio/upload-photo', authenticate, async (req: any, res) => {
   try {
-    const { vehicleId, slotId, base64Image, qualityReport, assessment, closeups } = req.body;
+    const { propertyId, slotId, base64Image, qualityReport, assessment, closeups } = req.body;
     const userId = req.user.uid;
 
-    if (!vehicleId || !slotId || !base64Image) {
-      return res.status(400).json({ error: 'vehicleId, slotId, and base64Image are required' });
+    if (!propertyId || !slotId || !base64Image) {
+      return res.status(400).json({ error: 'propertyId, slotId, and base64Image are required' });
     }
 
-    const existingData = await getVehicle(vehicleId, req.user);
+    const existingData = await getVehicle(propertyId, req.user);
     if (!existingData) {
-      return res.status(404).json({ error: 'Vehicle not found' });
+      return res.status(404).json({ error: 'Property not found' });
     }
     if (
       !LOCAL_MODE &&
@@ -1409,21 +1408,21 @@ app.post('/api/inventory/upload-photo', authenticate, async (req: any, res) => {
        client back the full base64 it had just uploaded — which it then held in
        memory until its next fetch, on a phone, for every shot in the capture. */
     const saved = await saveVehicle(updated);
-    res.json({ success: true, vehicle: saved });
+    res.json({ success: true, property: saved });
   } catch (error) {
-    console.error('POST /api/inventory/upload-photo - Error:', error);
+    console.error('POST /api/portfolio/upload-photo - Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// 4. Delete vehicle
-app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
+// 4. Delete property
+app.delete('/api/portfolio/:id', authenticate, async (req: any, res) => {
   try {
     const id = req.params.id;
     const userId = req.user.uid;
     const data = await getVehicle(id, req.user);
     if (!data) {
-      return res.status(404).json({ error: 'Vehicle not found' });
+      return res.status(404).json({ error: 'Property not found' });
     }
     if (!LOCAL_MODE && data.ownerId && data.ownerId !== userId) {
       return res.status(403).json({ error: 'Forbidden' });
@@ -1431,72 +1430,72 @@ app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
     await deleteVehicle(id);
     res.json({ success: true });
   } catch (error) {
-    console.error('DELETE /api/inventory - Error:', error);
+    console.error('DELETE /api/portfolio - Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// 4b. Service-to-service delete — TruFlow calls this when a synced vehicle is
-//     removed from the DMS, so the capture doesn't linger in TruLens.
-app.delete('/api/sync/vehicle', (req, res) => {
+// 4b. Service-to-service delete — TruFlow calls this when a synced property is
+//     removed from the FlowPMS, so the capture doesn't linger in TruLens.
+app.delete('/api/sync/property', (req, res) => {
   if (!SYNC_KEY) {
     return res.status(503).json({ error: 'TRUFLOW_SYNC_KEY is not configured on this server.' });
   }
   if (req.headers['x-tru-sync-key'] !== SYNC_KEY) {
     return res.status(401).json({ error: 'Invalid sync key.' });
   }
-  const { stockNumber, dealerSlug } = req.body || {};
-  if (!stockNumber) {
-    return res.status(400).json({ error: 'stockNumber is required.' });
+  const { listingRef, agencySlug } = req.body || {};
+  if (!listingRef) {
+    return res.status(400).json({ error: 'listingRef is required.' });
   }
 
-  /* Only ever delete the capture belonging to the dealer who deleted it.
-     Stock numbers are dealer-chosen and short, so two yards routinely share
-     one. This matched on the number alone and removed EVERY vehicle carrying
-     it — a dealer deleting their own car silently destroyed another dealer's
+  /* Only ever delete the capture belonging to the agency who deleted it.
+     Listing numbers are agency-chosen and short, so two yards routinely share
+     one. This matched on the number alone and removed EVERY property carrying
+     it — a agency deleting their own homes silently destroyed another agency's
      capture and its photos. The Firestore branch batch-deleted the lot.
 
-     When no dealership is named (an older TruFlow that predates this) a single
+     When no agency is named (an older TruFlow that predates this) a single
      unambiguous match is still honoured, but anything wider is refused rather
      than guessed at — a deletion is not the place to pick one. */
   const matchesDealer = (v: any) =>
-    !dealerSlug || (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealerSlug;
+    !agencySlug || (v.agencySlug || LENS_DEFAULT_AGENCY_SLUG) === agencySlug;
 
   (async () => {
     try {
       if (LOCAL_MODE || !fdb) {
         const store = readLocalStore();
-        const doomed = store.vehicles.filter(
-          (v: any) => v.stockNumber === stockNumber && matchesDealer(v)
+        const doomed = store.properties.filter(
+          (v: any) => v.listingRef === listingRef && matchesDealer(v)
         );
-        if (!dealerSlug && doomed.length > 1) {
+        if (!agencySlug && doomed.length > 1) {
           return res.status(409).json({
             deleted: false,
             removed: 0,
             error:
-              `${doomed.length} vehicles share stock number ${stockNumber}. ` +
-              'Send dealerSlug to say which dealership this deletion is for.',
+              `${doomed.length} properties share listing number ${listingRef}. ` +
+              'Send agencySlug to say which agency this deletion is for.',
           });
         }
         const ids = new Set(doomed.map((v: any) => v.id));
-        store.vehicles = store.vehicles.filter((v: any) => !ids.has(v.id));
+        store.properties = store.properties.filter((v: any) => !ids.has(v.id));
         writeLocalStore(store);
         return res.json({ deleted: ids.size > 0, removed: ids.size });
       }
-      const snapshot = await fdb!.collection('vehicles')
-        .where('stockNumber', '==', stockNumber)
+      const snapshot = await fdb!.collection('properties')
+        .where('listingRef', '==', listingRef)
         .get();
       if (snapshot.empty) {
         return res.json({ deleted: false, removed: 0 });
       }
       const docs = snapshot.docs.filter((d) => matchesDealer(d.data()));
-      if (!dealerSlug && docs.length > 1) {
+      if (!agencySlug && docs.length > 1) {
         return res.status(409).json({
           deleted: false,
           removed: 0,
           error:
-            `${docs.length} vehicles share stock number ${stockNumber}. ` +
-            'Send dealerSlug to say which dealership this deletion is for.',
+            `${docs.length} properties share listing number ${listingRef}. ` +
+            'Send agencySlug to say which agency this deletion is for.',
         });
       }
       if (!docs.length) {
@@ -1507,43 +1506,43 @@ app.delete('/api/sync/vehicle', (req, res) => {
       await batch.commit();
       return res.json({ deleted: true, removed: docs.length });
     } catch (err: any) {
-      console.error('[sync] delete by stockNumber failed:', err);
+      console.error('[sync] delete by listingRef failed:', err);
       return res.status(500).json({ error: err?.message || 'Delete failed.' });
     }
   })();
 });
 
-// 4c. Service-to-service edit — TruFlow calls this when a dealer edits a
-//     Lens-originated vehicle in Premium or Light DMS. Non-media fields only;
+// 4c. Service-to-service edit — TruFlow calls this when a agency edits a
+//     Lens-originated property in Premium or Light FlowPMS. Non-media fields only;
 //     photos/damage/VIR stay Lens-owned. Per-field updatedAt decides winners so
 //     a Lens re-export cannot stomp a fresher Flow edit and vice versa.
-app.put('/api/sync/vehicle', (req, res) => {
+app.put('/api/sync/property', (req, res) => {
   if (!SYNC_KEY) {
     return res.status(503).json({ error: 'TRUFLOW_SYNC_KEY is not configured on this server.' });
   }
   if (req.headers['x-tru-sync-key'] !== SYNC_KEY) {
     return res.status(401).json({ error: 'Invalid sync key.' });
   }
-  const { stockNumber, dealerSlug, patch, fieldMeta } = req.body || {};
-  if (!stockNumber) {
-    return res.status(400).json({ error: 'stockNumber is required.' });
+  const { listingRef, agencySlug, patch, fieldMeta } = req.body || {};
+  if (!listingRef) {
+    return res.status(400).json({ error: 'listingRef is required.' });
   }
   if (!patch || typeof patch !== 'object') {
     return res.status(400).json({ error: 'patch is required.' });
   }
   /* Field-name translation: Flow uses retailPrice/bodyType, Lens uses
-     price/vehicleType. Normalise here so callers can send either. */
+     price/propertyType. Normalise here so callers can send either. */
   const normalised: Record<string, any> = { ...patch };
   if (normalised.retailPrice !== undefined && normalised.price === undefined) {
     normalised.price = normalised.retailPrice;
   }
-  if (normalised.bodyType !== undefined && normalised.vehicleType === undefined) {
-    normalised.vehicleType = normalised.bodyType;
+  if (normalised.bodyType !== undefined && normalised.propertyType === undefined) {
+    normalised.propertyType = normalised.bodyType;
   }
-  /* Same guard as DELETE /api/sync/vehicle — never touch a car that belongs to
-     another dealer just because they happen to share a short stock number. */
+  /* Same guard as DELETE /api/sync/property — never touch a homes that belongs to
+     another agency just because they happen to share a short listing number. */
   const matchesDealer = (v: any) =>
-    !dealerSlug || (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealerSlug;
+    !agencySlug || (v.agencySlug || LENS_DEFAULT_AGENCY_SLUG) === agencySlug;
 
   (async () => {
     try {
@@ -1552,35 +1551,35 @@ app.put('/api/sync/vehicle', (req, res) => {
 
       if (LOCAL_MODE || !fdb) {
         const store = readLocalStore();
-        const candidates = store.vehicles.filter(
-          (v: any) => v.stockNumber === stockNumber && matchesDealer(v),
+        const candidates = store.properties.filter(
+          (v: any) => v.listingRef === listingRef && matchesDealer(v),
         );
         if (candidates.length === 0) {
-          return res.status(404).json({ updated: false, error: 'Vehicle not found.' });
+          return res.status(404).json({ updated: false, error: 'Property not found.' });
         }
-        if (!dealerSlug && candidates.length > 1) {
+        if (!agencySlug && candidates.length > 1) {
           return res.status(409).json({
             updated: false,
             error:
-              `${candidates.length} vehicles share stock number ${stockNumber}. ` +
-              'Send dealerSlug to say which dealership this edit is for.',
+              `${candidates.length} properties share listing number ${listingRef}. ` +
+              'Send agencySlug to say which agency this edit is for.',
           });
         }
         target = candidates[0];
       } else {
-        const snapshot = await fdb!.collection('vehicles')
-          .where('stockNumber', '==', stockNumber)
+        const snapshot = await fdb!.collection('properties')
+          .where('listingRef', '==', listingRef)
           .get();
         const docs = snapshot.docs.filter((d) => matchesDealer(d.data()));
         if (docs.length === 0) {
-          return res.status(404).json({ updated: false, error: 'Vehicle not found.' });
+          return res.status(404).json({ updated: false, error: 'Property not found.' });
         }
-        if (!dealerSlug && docs.length > 1) {
+        if (!agencySlug && docs.length > 1) {
           return res.status(409).json({
             updated: false,
             error:
-              `${docs.length} vehicles share stock number ${stockNumber}. ` +
-              'Send dealerSlug to say which dealership this edit is for.',
+              `${docs.length} properties share listing number ${listingRef}. ` +
+              'Send agencySlug to say which agency this edit is for.',
           });
         }
         target = { id: docs[0].id, ...docs[0].data() };
@@ -1613,7 +1612,7 @@ app.put('/api/sync/vehicle', (req, res) => {
         id: saved.id,
       });
     } catch (err: any) {
-      console.error('[sync] PUT /api/sync/vehicle failed:', err);
+      console.error('[sync] PUT /api/sync/property failed:', err);
       return res.status(500).json({ error: err?.message || 'Update failed.' });
     }
   })();
@@ -1621,7 +1620,7 @@ app.put('/api/sync/vehicle', (req, res) => {
 
 // 5. AI Photo Quality Inspection & Listing Description Writer (Gemini)
 app.post('/api/gemini/analyze', authenticate, async (req: any, res) => {
-  const { base64Image, slotName, vehicleInfo } = req.body;
+  const { base64Image, slotName, propertyInfo } = req.body;
 
   if (!base64Image) {
     return res.status(400).json({ error: 'base64Image is required' });
@@ -1642,24 +1641,24 @@ app.post('/api/gemini/analyze', authenticate, async (req: any, res) => {
         status: 'Good',
         pitchDiff: 2,
         rollDiff: 1,
-        feedback: 'The vehicle alignment is perfect! A slightly lower angle would add even more prominence.',
+        feedback: 'The property alignment is perfect! A slightly lower angle would add even more prominence.',
       },
       aiAnalysis: {
-        identifiedVehicle: `${vehicleInfo?.year || '2022'} ${vehicleInfo?.make || 'Vehicle'} ${vehicleInfo?.model || ''}`,
-        suggestedTitle: `Stunning ${vehicleInfo?.year || '2022'} ${vehicleInfo?.make || 'Premium'} ${vehicleInfo?.model || 'Edition'}`,
-        suggestedDescription: `Take home this fully-inspected, highly desirable ${vehicleInfo?.year || '2022'} ${vehicleInfo?.make || 'Premium'} ${vehicleInfo?.model || 'model'}. Professionally photographed and detailed, featuring an immaculate exterior and highly polished features. Enquire today to secure a test drive!`,
+        identifiedSubject: `${propertyInfo?.address || 'Listed property'}`,
+        suggestedTitle: `Stunning ${propertyInfo?.address || 'Listed property'}`,
+        suggestedDescription: `Discover this fully-inspected, highly desirable ${propertyInfo?.address || 'listed property'}. Professionally photographed and detailed, featuring immaculate finishes and well-kept features. Book a viewing today!`,
         detectedIssues: ['Slight window reflections - adjust angle if reflection covers safety cameras.'],
       },
     });
   }
 
   try {
-    const prompt = `You are an expert automotive quality inspection agent. Examine the provided car photo (captured in slot: "${slotName || 'General Exterior'}").
+    const prompt = `You are an expert property listing quality inspection agent. Examine the provided property photo (captured in slot: "${slotName || 'General Exterior'}").
 Analyze the photo for listing quality, and provide precise JSON feedback on:
 1. Overall score (0-100).
 2. Lighting evaluation: Status ("Poor", "Fair", "Perfect"), and a short feedback message warning about shadows, glare, or darkness.
-3. Angle/framing evaluation: Status ("Off-Angle", "Good", "Perfect"), and feedback on whether the vehicle complies with standard automotive photography guides.
-4. Auto-identification and marketing generator: Guess/confirm the car details based on the image, write an attention-grabbing listing Title, a highly compelling dealer marketplace listing Description, and list any visible cosmetic issues or reflections.
+3. Angle/framing evaluation: Status ("Off-Angle", "Good", "Perfect"), and feedback on whether the property complies with standard estate photography guides.
+4. Auto-identification and marketing generator: Guess/confirm the property details based on the image, write an attention-grabbing listing Title, a highly compelling agency marketplace listing Description, and list any visible cosmetic issues or reflections.
 
 You MUST respond strictly with a valid JSON matching this schema:
 {
@@ -1677,7 +1676,7 @@ You MUST respond strictly with a valid JSON matching this schema:
     "feedback": string
   },
   "aiAnalysis": {
-    "identifiedVehicle": string,
+    "identifiedSubject": string,
     "suggestedTitle": string,
     "suggestedDescription": string,
     "detectedIssues": string[]
@@ -1724,7 +1723,7 @@ You MUST respond strictly with a valid JSON matching this schema:
             aiAnalysis: {
               type: Type.OBJECT,
               properties: {
-                identifiedVehicle: { type: Type.STRING },
+                identifiedSubject: { type: Type.STRING },
                 suggestedTitle: { type: Type.STRING },
                 suggestedDescription: { type: Type.STRING },
                 detectedIssues: {
@@ -1732,7 +1731,7 @@ You MUST respond strictly with a valid JSON matching this schema:
                   items: { type: Type.STRING },
                 },
               },
-              required: ['identifiedVehicle', 'suggestedTitle', 'suggestedDescription', 'detectedIssues'],
+              required: ['identifiedSubject', 'suggestedTitle', 'suggestedDescription', 'detectedIssues'],
             },
           },
           required: ['overallScore', 'lightingCheck', 'angleCheck', 'aiAnalysis'],
@@ -1758,12 +1757,12 @@ You MUST respond strictly with a valid JSON matching this schema:
           status: 'Good',
           pitchDiff: 0,
           rollDiff: 0,
-          feedback: 'Vehicle framing looks correct based on local validation.',
+          feedback: 'Property framing looks correct based on local validation.',
         },
         aiAnalysis: {
-          identifiedVehicle: `${vehicleInfo?.year || '2022'} ${vehicleInfo?.make || 'Vehicle'} ${vehicleInfo?.model || ''}`,
-          suggestedTitle: `New Listing: ${vehicleInfo?.year || ''} ${vehicleInfo?.make || ''} ${vehicleInfo?.model || ''}`,
-          suggestedDescription: `Automated analysis is currently in maintenance mode. This ${vehicleInfo?.year || '2022'} ${vehicleInfo?.make || 'Vehicle'} is ready for inspection and listing.`,
+          identifiedSubject: `${propertyInfo?.address || 'Listed property'}`,
+          suggestedTitle: `New Listing: ${propertyInfo?.address || 'Property'}`,
+          suggestedDescription: `Automated analysis is currently in maintenance mode. This ${propertyInfo?.address || 'property'} is ready for inspection and listing.`,
           detectedIssues: ['AI Analysis Service Offline - Using local heuristic checks.'],
         },
       });
@@ -1772,10 +1771,10 @@ You MUST respond strictly with a valid JSON matching this schema:
   }
 });
 
-// ==================== DMS EXPORT (TruFlow) ====================
+// ==================== FlowPMS EXPORT (TruFlow) ====================
 
 const SLOT_TO_DMS_CATEGORY: Record<string, string> = {
-  // Category 1: Front & Engine
+  // Category 1: Front & Bedrooms
   bonnet: 'images', front_bumper: 'images', front_windscreen: 'images',
   license_disc: 'extrasPhotos', engine_bay: 'extrasPhotos',
   // Category 2: Clockwise Exterior Walk-Around
@@ -1787,17 +1786,17 @@ const SLOT_TO_DMS_CATEGORY: Record<string, string> = {
   wheel_front_left: 'images', roof_sunroof: 'images',
   // Category 3: Interior, History & Verification
   steering_wheel: 'extrasPhotos', interior_cabin: 'extrasPhotos',
-  service_book: 'serviceBookPhotos', odometer: 'extrasPhotos', spare_keys: 'extrasPhotos',
+  service_book: 'serviceBookPhotos', erfSize: 'extrasPhotos', spare_keys: 'extrasPhotos',
 };
 
 function buildDmsBreakdown(photos: Record<string, string>) {
   const counts: Record<string, number> = {
-    images: 0, extrasPhotos: 0, damagePhotos: 0, vinPhotos: 0, serviceBookPhotos: 0,
+    images: 0, extrasPhotos: 0, damagePhotos: 0, erfPhotos: 0, serviceBookPhotos: 0,
   };
   /* The walkaround is counted separately, and by its MIME rather than by which
      slot it came from. It used to be lumped in with the photo count, so an
      export that silently carried no video was indistinguishable from one that
-     did — the only way to find out was to read the dealer's public feed
+     did — the only way to find out was to read the agency's public feed
      afterwards. Detecting on data:video/ also catches a clip filed in the wrong
      slot, which is the case a slot-based count would miss. */
   let walkaround = 0;
@@ -1811,7 +1810,7 @@ function buildDmsBreakdown(photos: Record<string, string>) {
     mainImages: counts.images,
     extras: counts.extrasPhotos,
     damage: counts.damagePhotos,
-    vin: counts.vinPhotos,
+    erfRef: counts.erfPhotos,
     serviceBook: counts.serviceBookPhotos,
     walkaround,
     stills,
@@ -1819,51 +1818,51 @@ function buildDmsBreakdown(photos: Record<string, string>) {
   };
 }
 
-app.post('/api/export/dms', authenticate, async (req: any, res) => {
+app.post('/api/export/pms', authenticate, async (req: any, res) => {
   try {
     const userId = req.user.uid;
     const {
-      vehicleId,
+      propertyId,
       dmsUrl: dmsUrlOverride,
-      dealerSlug: claimedDealerSlug,
+      agencySlug: claimedDealerSlug,
       createIfMissing = true,
     } = req.body || {};
 
-    /* When the device signed in with a per-dealership code, that wins. The
+    /* When the device signed in with a per-agency code, that wins. The
        body value is a claim from the client; the token is evidence. This is
-       what stops a mis-set picker filing a car into another dealer's yard. */
-    const dealerSlug = req.user?.dealerSlug || claimedDealerSlug;
-    if (req.user?.dealerSlug && claimedDealerSlug && claimedDealerSlug !== req.user.dealerSlug) {
+       what stops a mis-set picker filing a homes into another agency's yard. */
+    const agencySlug = req.user?.agencySlug || claimedDealerSlug;
+    if (req.user?.agencySlug && claimedDealerSlug && claimedDealerSlug !== req.user.agencySlug) {
       console.warn(
-        `[export] device is signed in as "${req.user.dealerSlug}" but requested ` +
-        `"${claimedDealerSlug}" — using the signed-in dealership.`
+        `[export] device is signed in as "${req.user.agencySlug}" but requested ` +
+        `"${claimedDealerSlug}" — using the signed-in agency.`
       );
     }
 
-    if (!vehicleId) {
-      return res.status(400).json({ error: 'vehicleId is required' });
+    if (!propertyId) {
+      return res.status(400).json({ error: 'propertyId is required' });
     }
 
-    /* Stop here rather than build and upload a multi-megabyte payload the DMS
+    /* Stop here rather than build and upload a multi-megabyte payload the FlowPMS
        will refuse. A device signed in with the legacy shared code carries no
-       dealership in its token, so the slug rests entirely on the phone's
+       agency in its token, so the slug rests entirely on the phone's
        localStorage — cleared browser data or a reinstalled PWA leaves it blank,
-       and an export with no dealership used to be filed against the DMS's
+       and an export with no agency used to be filed against the FlowPMS's
        default yard rather than rejected. */
-    if (!dealerSlug) {
+    if (!agencySlug) {
       return res.status(400).json({
         success: false,
         error:
-          'No dealership selected on this device. Choose the dealership in ' +
+          'No agency selected on this device. Choose the agency in ' +
           'TruLens before exporting, so the capture files into the right yard.',
       });
     }
 
-    const vehicle = await getVehicle(vehicleId, req.user);
-    if (!vehicle) {
-      return res.status(404).json({ error: 'Vehicle not found' });
+    const property = await getVehicle(propertyId, req.user);
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
     }
-    if (!LOCAL_MODE && vehicle.ownerId && vehicle.ownerId !== userId) {
+    if (!LOCAL_MODE && property.ownerId && property.ownerId !== userId) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -1874,7 +1873,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
        It does mean the upload is still large. Making the export post references
        and having TruFlow fetch them is the next step, and the one that actually
        shrinks what a phone sends over mobile data. */
-    const storedPhotos = vehicle.photos || {};
+    const storedPhotos = property.photos || {};
     const photos: Record<string, string> = {};
     for (const [slotId, value] of Object.entries(storedPhotos)) {
       const uri = asDataUri(value);
@@ -1888,23 +1887,23 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       });
     }
 
-    /* Vehicle-level inspection score. TruLens scores each slot as it is shot
-       and has never sent any of it on, so the DMS and the dealer's website had
-       no idea a car had been inspected at all. There is no single score on the
-       vehicle — it is the mean of the per-slot reports, rounded. */
-    const slotScores = Object.values(vehicle.quality || {})
+    /* Property-level inspection score. TruLens scores each slot as it is shot
+       and has never sent any of it on, so the FlowPMS and the agency's website had
+       no idea a homes had been inspected at all. There is no single score on the
+       property — it is the mean of the per-slot reports, rounded. */
+    const slotScores = Object.values(property.quality || {})
       .map((q: any) => (typeof q?.overallScore === 'number' ? q.overallScore : null))
       .filter((n): n is number => n !== null);
     const vir = slotScores.length
       ? Math.round(slotScores.reduce((a, b) => a + b, 0) / slotScores.length)
       : undefined;
 
-    /* The report itself, per section, so the dealer's website can render it
+    /* The report itself, per section, so the agency's website can render it
        rather than link out to an app the buyer cannot open. Sent as data and
-       not as HTML on purpose — each dealer site is hand-built, so the layout
+       not as HTML on purpose — each agency site is hand-built, so the layout
        belongs to the site and only the findings belong here.
        80+ reads as a pass; below that the section is worth a look. */
-    const inspection = Object.entries(vehicle.quality || {})
+    const inspection = Object.entries(property.quality || {})
       .map(([slotId, q]: [string, any]) => ({
         section: slotId,
         score: typeof q?.overallScore === 'number' ? q.overallScore : null,
@@ -1912,38 +1911,38 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
       }))
       .filter((r) => r.score !== null);
 
-    const dmsBase = String(dmsUrlOverride || DEFAULT_DMS_URL).replace(/\/$/, '');
+    const dmsBase = String(dmsUrlOverride || DEFAULT_PMS_URL).replace(/\/$/, '');
     const pushUrl = `${dmsBase}/api/sync/push-photos`;
 
     const payload = {
-      stockNumber: vehicle.stockNumber,
-      vehicleId: vehicle.id,
+      listingRef: property.listingRef,
+      propertyId: property.id,
       createIfMissing: createIfMissing !== false,
-      dealerSlug: dealerSlug || undefined,
+      agencySlug: agencySlug || undefined,
       /* TruLens has had a Publish / Unpublish toggle all along, but the value
-         never left this app — so it decided nothing about what the dealer's
+         never left this app — so it decided nothing about what the agency's
          website actually showed. TruFlow serves that feed, and it read "not
          set" as published, which is how a junk test capture ended up on a live
-         dealer feed. Sending it makes the button mean what it says. */
-      showOnWebsite: typeof vehicle.showOnWebsite === "boolean" ? vehicle.showOnWebsite : undefined,
-      vehicle: {
-        id: vehicle.id,
-        make: vehicle.make,
-        model: vehicle.model,
-        year: vehicle.year,
-        trim: vehicle.trim,
-        vin: vehicle.vin,
-        stockNumber: vehicle.stockNumber,
-        color: vehicle.color,
-        price: vehicle.price,
-        vehicleType: vehicle.vehicleType,
-        /* TruFlow's importer has always read mileage/transmission/fuelType off
+         agency feed. Sending it makes the button mean what it says. */
+      showOnWebsite: typeof property.showOnWebsite === "boolean" ? property.showOnWebsite : undefined,
+      property: {
+        id: property.id,
+        make: property.make,
+        model: property.model,
+        year: property.year,
+        trim: property.trim,
+        erfRef: property.erfRef,
+        listingRef: property.listingRef,
+        color: property.color,
+        price: property.price,
+        propertyType: property.propertyType,
+        /* TruFlow's importer has always read floorArea/transmission/fuelType off
            this payload and fallen back to 0/"Automatic"/"Petrol" when absent —
-           and they were always absent, so every car created from a capture was
-           published to the dealer's website with invented specs. */
-        mileage: vehicle.mileage,
-        transmission: vehicle.transmission,
-        fuelType: vehicle.fuelType,
+           and they were always absent, so every homes created from a capture was
+           published to the agency's website with invented specs. */
+        floorArea: property.floorArea,
+        transmission: property.transmission,
+        fuelType: property.fuelType,
         vir,
         inspection: inspection.length ? inspection : undefined,
         /* Hand-tagged damage, flattened out of its per-slot map. Only confirmed
@@ -1951,7 +1950,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
            accepted by a person before it can reach a buyer-facing report. The
            x/y stay attached so a site can plot the mark on the same photo. */
         damage: (() => {
-          const bySlot = (vehicle as any).damageFindings || {};
+          const bySlot = (property as any).damageFindings || {};
           const flat = Object.entries(bySlot).flatMap(([slotId, list]: [string, any]) =>
             (Array.isArray(list) ? list : [])
               .filter((f: any) => f && f.confirmed !== false)
@@ -1967,23 +1966,23 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
           );
           return flat.length ? flat : undefined;
         })(),
-        slotAssessment: Object.keys((vehicle as any).slotAssessment || {}).length
-          ? (vehicle as any).slotAssessment
+        slotAssessment: Object.keys((property as any).slotAssessment || {}).length
+          ? (property as any).slotAssessment
           : undefined,
-        /* Dealer's condition declaration — TruLens is retail (declared
+        /* Agency's condition declaration — TruLens is retail (declared
            condition), not a graded VIR. Carries the "no damage reported"
-           statement through to the DMS and on to the dealer's website. */
-        conditionDeclaration: (vehicle as any).conditionDeclaration || undefined,
-        description: vehicle.aiListingDescription || undefined,
-        optionalExtras: (vehicle as any).optionalExtras?.length ? (vehicle as any).optionalExtras : undefined,
+           statement through to the FlowPMS and on to the agency's website. */
+        conditionDeclaration: (property as any).conditionDeclaration || undefined,
+        description: property.aiListingDescription || undefined,
+        features: (property as any).features?.length ? (property as any).features : undefined,
       },
       photos,
     };
 
-    /* Service-to-service auth for the DMS push. TruFlow leaves
+    /* Service-to-service auth for the FlowPMS push. TruFlow leaves
        /api/sync/push-photos open when its TRUFLOW_SYNC_KEY is unset — which is
-       how it has been running — so anyone who knew the URL could write vehicles
-       and photos into a dealer's inventory. Sending it here is the half that
+       how it has been running — so anyone who knew the URL could write properties
+       and photos into a agency's portfolio. Sending it here is the half that
        has to ship first: set the key on TruFlow before this and every export
        starts failing. Same value on both services. */
     const dmsRes = await fetch(pushUrl, {
@@ -2004,10 +2003,10 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
     }
 
     if (!dmsRes.ok) {
-      console.error('DMS export failed:', dmsRes.status, dmsData);
+      console.error('FlowPMS export failed:', dmsRes.status, dmsData);
       return res.status(502).json({
         success: false,
-        error: 'TruFlow DMS rejected the export',
+        error: 'TruFlow FlowPMS rejected the export',
         dmsStatus: dmsRes.status,
         dmsUrl: pushUrl,
         details: dmsData.error || dmsData.message || dmsData,
@@ -2016,25 +2015,25 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
 
     const nowIso = new Date().toISOString();
     const exportMeta: any = {
-      // Remember which dealer this capture belongs to. Without it this app's
-      // own public feed can't tell one dealer's stock from another's.
-      dealerSlug: dealerSlug || vehicle.dealerSlug || undefined,
-      lastDmsExportAt: nowIso,
+      // Remember which agency this capture belongs to. Without it this app's
+      // own public feed can't tell one agency's listing from another's.
+      agencySlug: agencySlug || property.agencySlug || undefined,
+      lastPmsExportAt: nowIso,
       /* Anchor for the 7-day Lens retention window. Only set on the FIRST
          successful export — re-exports must not push the deletion out or a
-         busy vehicle would live in Lens forever. */
-      firstDmsExportAt: vehicle.firstDmsExportAt || nowIso,
-      lastDmsExportStatus: dmsData.synced ? 'success' : 'partial',
-      lastDmsVehicleId: dmsData.vehicle?.id || null,
-      lastDmsStockNumber: dmsData.vehicle?.stockNumber || vehicle.stockNumber,
+         busy property would live in Lens forever. */
+      firstPmsExportAt: property.firstPmsExportAt || nowIso,
+      lastPmsExportStatus: dmsData.synced ? 'success' : 'partial',
+      lastDmsVehicleId: dmsData.property?.id || null,
+      lastDmsListingRef: dmsData.property?.listingRef || property.listingRef,
     };
 
-    if (vehicle.status === 'Ready' || vehicle.status === 'Listed') {
+    if (property.status === 'Ready' || property.status === 'Listed') {
       exportMeta.status = 'Listed';
-      exportMeta.updatedAt = exportMeta.lastDmsExportAt;
+      exportMeta.updatedAt = exportMeta.lastPmsExportAt;
     }
 
-    const updated = { ...vehicle, ...exportMeta };
+    const updated = { ...property, ...exportMeta };
     await saveVehicle(updated);
 
     res.json({
@@ -2049,14 +2048,14 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
         (buildDmsBreakdown(photos).walkaround
           ? ' and the 360 walkaround'
           : ' — no 360 walkaround in this capture') +
-        ' to TruFlow DMS',
+        ' to TruFlow FlowPMS',
       breakdown: buildDmsBreakdown(photos),
       dmsUrl: pushUrl,
-      dmsVehicle: dmsData.vehicle || null,
-      vehicle: updated,
+      dmsVehicle: dmsData.property || null,
+      property: updated,
     });
   } catch (error: any) {
-    console.error('POST /api/export/dms - Error:', error);
+    console.error('POST /api/export/pms - Error:', error);
     const isNetwork =
       error?.cause?.code === 'ECONNREFUSED' ||
       error?.code === 'ECONNREFUSED' ||
@@ -2066,25 +2065,25 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
     res.status(isNetwork ? 503 : 500).json({
       success: false,
       error: isNetwork
-        ? `Cannot reach TruFlow DMS at ${DEFAULT_DMS_URL}. Start TruFlow Premium (port 3001) or set TRUFLOW_DMS_URL.`
-        : 'DMS export failed',
+        ? `Cannot reach TruFlow FlowPMS at ${DEFAULT_PMS_URL}. Start TruFlow Premium (port 3001) or set TRUFLOW_PMS_URL.`
+        : 'FlowPMS export failed',
       details: error instanceof Error ? error.message : String(error),
     });
   }
 });
 
-app.get('/api/export/dms/config', authenticate, async (_req: any, res) => {
+app.get('/api/export/pms/config', authenticate, async (_req: any, res) => {
   res.json({
-    dmsUrl: DEFAULT_DMS_URL,
-    pushEndpoint: `${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/sync/push-photos`,
+    dmsUrl: DEFAULT_PMS_URL,
+    pushEndpoint: `${DEFAULT_PMS_URL.replace(/\/$/, '')}/api/sync/push-photos`,
     mode: LOCAL_MODE ? 'local' : 'cloud',
     databaseId: AUTOLENS_DB_ID,
   });
 });
 
-// ==================== KREDO CARTRUST ====================
+// ==================== VALUATION CARTRUST ====================
 
-const KREDO_CONFIG_PATH = path.join(process.cwd(), 'data', 'kredo-config.json');
+const KREDO_CONFIG_PATH = path.join(process.cwd(), 'data', 'valuation-config.json');
 
 function readKredoConfig(): Record<string, { sandboxKey?: string; productionKey?: string; connectedAt?: string }> {
   try {
@@ -2098,26 +2097,26 @@ function writeKredoConfig(cfg: Record<string, any>) {
   fs.writeFileSync(KREDO_CONFIG_PATH, JSON.stringify(cfg, null, 2));
 }
 
-app.get('/api/kredo/status', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
+app.get('/api/valuation/status', authenticate, async (req: any, res) => {
+  const slug = req.user?.agencySlug || 'default';
   const cfg = readKredoConfig();
   const entry = cfg[slug];
   res.json({
     connected: !!(entry?.sandboxKey || entry?.productionKey),
-    dealerSlug: slug,
+    agencySlug: slug,
     hasSandboxKey: !!entry?.sandboxKey,
     hasProductionKey: !!entry?.productionKey,
     lastCheckedAt: entry?.connectedAt || null,
   });
 });
 
-app.post('/api/kredo/connect', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
+app.post('/api/valuation/connect', authenticate, async (req: any, res) => {
+  const slug = req.user?.agencySlug || 'default';
   const { sandboxKey, productionKey } = req.body || {};
   if (!sandboxKey && !productionKey) {
     return res.status(400).json({ ok: false, error: 'Provide at least one API key.' });
   }
-  // TODO(kredo-docs): validate the key against Kredo's test endpoint before storing
+  // TODO(valuation-docs): validate the key against Valuation's test endpoint before storing
   const cfg = readKredoConfig();
   cfg[slug] = {
     ...(sandboxKey ? { sandboxKey } : {}),
@@ -2125,85 +2124,85 @@ app.post('/api/kredo/connect', authenticate, async (req: any, res) => {
     connectedAt: new Date().toISOString(),
   };
   writeKredoConfig(cfg);
-  console.log(`[kredo] dealer ${slug} connected CarTrust`);
+  console.log(`[valuation] agency ${slug} connected CarTrust`);
   res.json({ ok: true });
 });
 
-app.post('/api/kredo/disconnect', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
+app.post('/api/valuation/disconnect', authenticate, async (req: any, res) => {
+  const slug = req.user?.agencySlug || 'default';
   const cfg = readKredoConfig();
   delete cfg[slug];
   writeKredoConfig(cfg);
-  console.log(`[kredo] dealer ${slug} disconnected CarTrust`);
+  console.log(`[valuation] agency ${slug} disconnected CarTrust`);
   res.json({ ok: true });
 });
 
-app.post('/api/kredo/lookup', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
-  const vin = String(req.body?.vin || '').trim().toUpperCase();
-  if (!vin || vin.length < 11) {
-    return res.status(400).json({ error: 'Invalid VIN' });
+app.post('/api/valuation/lookup', authenticate, async (req: any, res) => {
+  const slug = req.user?.agencySlug || 'default';
+  const erfRef = String(req.body?.erfRef || '').trim().toUpperCase();
+  if (!erfRef || erfRef.length < 11) {
+    return res.status(400).json({ error: 'Invalid Erf no.' });
   }
   const cfg = readKredoConfig();
   const entry = cfg[slug];
   if (!entry?.sandboxKey && !entry?.productionKey) {
-    return res.status(503).json({ error: 'Kredo not connected for this dealer.' });
+    return res.status(503).json({ error: 'Valuation not connected for this agency.' });
   }
   const apiKey = entry.productionKey || entry.sandboxKey;
 
-  // TODO(kredo-docs): Replace this stub with the real Kredo CarTrust API call.
+  // TODO(valuation-docs): Replace this stub with the real Valuation CarTrust API call.
   // Expected shape (based on marketplace positioning):
-  //   POST https://api.kredo.co.za/v1/cartrust/vin-lookup   (or similar)
+  //   POST https://api.valuation.co.za/v1/cartrust/erfRef-lookup   (or similar)
   //   Header: Authorization: Bearer <apiKey>  OR  x-api-key: <apiKey>
-  //   Body: { vin }
+  //   Body: { erfRef }
   //   Response: { stolen: bool, writtenOff: bool, financeEncumbered: bool, ... }
   //
   // For now, return a stubbed "all-clear" so the UI wires up end-to-end.
   // When real docs arrive, swap this block for a fetch() call.
   try {
-    console.log(`[kredo] CarTrust lookup for VIN=${vin} dealer=${slug} (STUB — real API not yet wired)`);
+    console.log(`[valuation] CarTrust lookup for Erf no.=${erfRef} agency=${slug} (STUB — real API not yet wired)`);
     const stubResult = {
-      vin,
+      erfRef,
       stolen: false,
       writtenOff: false,
       financeEncumbered: false,
       checkedAt: new Date().toISOString(),
-      raw: { stub: true, note: 'Replace with real Kredo API response when docs are available' },
+      raw: { stub: true, note: 'Replace with real Valuation API response when docs are available' },
     };
     res.json(stubResult);
   } catch (err: any) {
-    console.error(`[kredo] lookup failed for VIN=${vin}:`, err?.message || err);
+    console.error(`[valuation] lookup failed for Erf no.=${erfRef}:`, err?.message || err);
     res.status(502).json({ error: 'CarTrust lookup failed. Check your API key.' });
   }
 });
 
-app.post('/api/kredo/valuation', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
-  const vin = String(req.body?.vin || '').trim().toUpperCase();
-  if (!vin || vin.length < 11) {
-    return res.status(400).json({ error: 'Invalid VIN' });
+app.post('/api/valuation/valuation', authenticate, async (req: any, res) => {
+  const slug = req.user?.agencySlug || 'default';
+  const erfRef = String(req.body?.erfRef || '').trim().toUpperCase();
+  if (!erfRef || erfRef.length < 11) {
+    return res.status(400).json({ error: 'Invalid Erf no.' });
   }
   const cfg = readKredoConfig();
   const entry = cfg[slug];
   if (!entry?.sandboxKey && !entry?.productionKey) {
-    return res.status(503).json({ error: 'Kredo not connected for this dealer.' });
+    return res.status(503).json({ error: 'Valuation not connected for this agency.' });
   }
 
-  // TODO(kredo-docs): Replace with real Kredo CarValue API call.
-  // Expected: POST to Kredo's valuation endpoint with VIN, returns trade/retail/market values.
+  // TODO(valuation-docs): Replace with real Valuation CarValue API call.
+  // Expected: POST to Valuation's valuation endpoint with Erf no., returns trade/retail/market values.
   try {
-    console.log(`[kredo] CarValue lookup for VIN=${vin} dealer=${slug} (STUB)`);
+    console.log(`[valuation] CarValue lookup for Erf no.=${erfRef} agency=${slug} (STUB)`);
     const stubResult = {
-      vin,
+      erfRef,
       tradeValue: null,
       retailValue: null,
       marketValue: null,
       checkedAt: new Date().toISOString(),
-      raw: { stub: true, note: 'Replace with real Kredo CarValue response when docs are available' },
+      raw: { stub: true, note: 'Replace with real Valuation CarValue response when docs are available' },
     };
     res.json(stubResult);
   } catch (err: any) {
-    console.error(`[kredo] valuation failed for VIN=${vin}:`, err?.message || err);
+    console.error(`[valuation] valuation failed for Erf no.=${erfRef}:`, err?.message || err);
     res.status(502).json({ error: 'CarValue lookup failed. Check your API key.' });
   }
 });
@@ -2226,7 +2225,7 @@ async function startServer() {
     res.sendFile(path.join(publicDir, 'manifest.webmanifest'));
   });
 
-  // Icons + dealer website embeds
+  // Icons + agency website embeds
   app.use('/icons', express.static(path.join(publicDir, 'icons'), {
     maxAge: '7d',
     setHeaders(res) {

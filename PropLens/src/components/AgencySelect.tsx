@@ -42,9 +42,9 @@ function readCache(): Agency[] {
   }
 }
 
-export default function DealerSelect({ onSelected }: { onSelected: (slug: string, name: string) => void }) {
+export default function AgencySelect({ onSelected }: { onSelected: (slug: string, name: string) => void }) {
   const [choice, setChoice] = React.useState<string | null>(null);
-  const [dealerships, setDealerships] = React.useState<Agency[]>(() => readCache());
+  const [agencies, setAgencies] = React.useState<Agency[]>(() => readCache());
   const [loading, setLoading] = React.useState(true);
   const [stale, setStale] = React.useState(false);
 
@@ -55,7 +55,7 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
       if (!res.ok) throw new Error(String(res.status));
       const list = (await res.json()) as Agency[];
       if (!Array.isArray(list) || list.length === 0) throw new Error('empty');
-      setDealerships(list);
+      setAgencies(list);
       setStale(false);
       try { localStorage.setItem(CACHE_KEY, JSON.stringify(list)); } catch { /* private mode */ }
     } catch {
@@ -69,7 +69,7 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
   React.useEffect(() => { load(); }, [load]);
 
   const confirm = () => {
-    const d = dealerships.find((x) => x.slug === choice);
+    const d = agencies.find((x) => x.slug === choice);
     if (!d) return;
     onSelected(d.slug, d.name);
   };
@@ -89,7 +89,7 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
       </p>
 
       <div className="flex flex-col gap-3">
-        {dealerships.map((d) => {
+        {agencies.map((d) => {
           const active = choice === d.slug;
           return (
             <button
@@ -111,13 +111,13 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
           );
         })}
 
-        {dealerships.length === 0 && (
-          /* Still no invented list here — a wrong list is what put a dealer's
-             cars on someone else's website, and that rule does not bend.
+        {agencies.length === 0 && (
+          /* Still no invented list here — a wrong list is what put a agency's
+             homes on someone else's website, and that rule does not bend.
 
-             But "Could not load the dealership list." over a dead Try again and
+             But "Could not load the agency list." over a dead Try again and
              a Continue that can never enable is a dead end with nothing to act
-             on. The list comes from TruFlow via GET /api/dealerships, so the
+             on. The list comes from TruFlow via GET /api/agencies, so the
              thing that has gone wrong is nearly always that endpoint — say so,
              and say what unblocks it. */
           <div className="px-4 py-6 rounded-2xl border border-[rgba(10,20,32,0.10)] bg-[rgba(10,20,32,0.03)] text-center">
@@ -144,7 +144,7 @@ export default function DealerSelect({ onSelected }: { onSelected: (slug: string
         )}
       </div>
 
-      {stale && dealerships.length > 0 && (
+      {stale && agencies.length > 0 && (
         <p className="mt-3 text-[12px] text-center text-[rgba(10,20,32,0.55)]">
           Offline — showing the last known list.
         </p>

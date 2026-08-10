@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TruSaaS · 3D Stock Viewer</title>
+  <title>TruSaaS · 3D Listing Viewer</title>
   <style>
     :root {
       --bg: #0B1220; --ink: #E8EEF6; --muted: #8BA0B8; --accent: #15C7C0;
@@ -90,8 +90,8 @@
   </div>
   <script>
     const params = new URLSearchParams(location.search);
-    const stock = params.get('stock') || '';
-    const api = params.get('api') || `/api/public/web3d/${encodeURIComponent(stock)}`;
+    const listing = params.get('listing') || '';
+    const api = params.get('api') || `/api/public/web3d/${encodeURIComponent(listing)}`;
     const root = document.getElementById('root');
 
     function severityClass(s) {
@@ -99,8 +99,8 @@
     }
 
     async function main() {
-      if (!stock && !params.get('api')) {
-        root.innerHTML = '<div class="err">Missing ?stock=STK-…</div>';
+      if (!listing && !params.get('api')) {
+        root.innerHTML = '<div class="err">Missing ?listing=STK-…</div>';
         return;
       }
       const res = await fetch(api, { cache: 'no-store' });
@@ -206,7 +206,7 @@
           tagsEl.appendChild(el);
         });
         meta.innerHTML = `
-          <span><strong>${pkg.vehicle.year} ${pkg.vehicle.make} ${pkg.vehicle.model}</strong> · ${pkg.stockNumber}</span>
+          <span><strong>${pkg.property.year} ${pkg.property.make} ${pkg.property.model}</strong> · ${pkg.listingRef}</span>
           <span>Frame ${idx + 1}/${frames.length} · ${pkg.background || 'original'}</span>
         `;
       }
@@ -246,7 +246,7 @@
 
       if (frames.length) showFrame(0, true);
       else {
-        meta.innerHTML = `<span><strong>${pkg.stockNumber}</strong> · video mode</span><span>${pkg.damageTags?.length || 0} tags</span>`;
+        meta.innerHTML = `<span><strong>${pkg.listingRef}</strong> · video mode</span><span>${pkg.damageTags?.length || 0} tags</span>`;
         if (media.tagName === 'VIDEO') media.controls = true;
       }
     }

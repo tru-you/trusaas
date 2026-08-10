@@ -230,14 +230,14 @@
 @keyframes tl-shutter-flash { 0% { opacity: 0.92; } 100% { opacity: 0; } }
 .tl-shutter-flash { animation: tl-shutter-flash 220ms ease-out forwards; pointer-events: none; }
 
-/* Deep-link highlight when opened from Flow ?stock= */
-@keyframes tl-stock-pulse {
+/* Deep-link highlight when opened from Flow ?listing= */
+@keyframes tl-listing-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(14,157,152,0.45), 0 4px 12px -4px rgba(10,20,32,0.08); }
   50% { box-shadow: 0 0 0 6px rgba(14,157,152,0.15), 0 8px 20px -8px rgba(14,157,152,0.2); }
 }
-.tl-stock-highlight {
+.tl-listing-highlight {
   border-color: rgba(14,157,152,0.6) !important;
-  animation: tl-stock-pulse 1.1s ease-in-out 4;
+  animation: tl-listing-pulse 1.1s ease-in-out 4;
   background: linear-gradient(160deg, rgba(14,157,152,0.08), #FFFFFF) !important;
 }
 

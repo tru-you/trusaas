@@ -21,7 +21,7 @@ import proplensLogo from '../assets/images/proplens-logo.svg';
  * and said only "no access on this server".
  *
  * So the screen now asks GET /api/health first. It answers accessCodeConfigured
- * and dealerCodesConfigured (booleans and a count, never values) and exists
+ * and agencyCodesConfigured (booleans and a count, never values) and exists
  * precisely so this can be checked from outside. When both come back empty the
  * code field is replaced with an explanation and the offline route the server
  * is currently allowing anyway — no bypass, because the API only honours the
@@ -38,7 +38,7 @@ export default function Login() {
   const [codeError, setCodeError] = React.useState<string | null>(null);
   const [server, setServer] = React.useState<ServerState>('checking');
   /* Same two additions TruFlow's sign-in got, for the same reason: this code is
-     typed on a phone, outdoors, by someone standing next to a car. Entering it
+     typed on a phone, outdoors, by someone standing next to a homes. Entering it
      blind is how you fail the screen twice in a row. */
   const [reveal, setReveal] = React.useState(false);
   const [capsOn, setCapsOn] = React.useState(false);
@@ -170,7 +170,7 @@ export default function Login() {
         ) : (
           <form onSubmit={handleSubmit} className="w-full space-y-4">
             <div className="space-y-2">
-              <label htmlFor="dealer-code" className="block text-[12px] font-semibold text-[rgba(10,20,32,0.72)] ml-1">
+              <label htmlFor="agency-code" className="block text-[12px] font-semibold text-[rgba(10,20,32,0.72)] ml-1">
                 Agency access code
               </label>
               <div className="relative group">
@@ -182,10 +182,10 @@ export default function Login() {
                 {/* autoComplete was "one-time-code", which tells the browser to
                     expect an SMS OTP: it will not offer to save the value and
                     may try to autofill a message code over it. This is a
-                    per-dealership code the phone keeps for 30 days, so it is a
+                    per-agency code the phone keeps for 30 days, so it is a
                     password as far as a password manager is concerned. */}
                 <input
-                  id="dealer-code"
+                  id="agency-code"
                   type={reveal ? 'text' : 'password'}
                   value={deviceCode}
                   onChange={(e) => setDeviceCode(e.target.value)}

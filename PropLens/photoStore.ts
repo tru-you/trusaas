@@ -12,16 +12,16 @@
  * Photos as files, not as database rows.
  *
  * Every photo in this system is currently a base64 data URI stored inside
- * data.json. One vehicle with a full 22-shot capture makes its dealer's public
+ * data.json. One property with a full 22-shot capture makes its agency's public
  * feed 3.4 MB and 2.9 seconds; readState() parses the whole file — every photo
  * of every car — on each of 58 request paths; and writeState() serialises it all
- * back on every save. That is the wall this system hits at its third dealer.
+ * back on every save. That is the wall this system hits at its third agency.
  *
  * Photos move to files here, and the state keeps a short path instead.
  *
  * **Content-addressed.** The filename is the SHA-256 of the bytes, so:
  *   - the same photo pushed twice is stored once, which matters because TruLens
- *     re-exports the entire capture every time a dealer adds one more shot;
+ *     re-exports the entire capture every time a agency adds one more shot;
  *   - a re-export is idempotent — identical bytes resolve to the identical path,
  *     so nothing is rewritten and no URL changes;
  *   - the URL can be cached permanently by the browser, because a given path can
@@ -42,7 +42,7 @@ import sharp from "sharp";
 let MEDIA_DIR = "";
 
 /** The URL prefix these are served from. Public and unauthenticated: they are
- *  dealer stock photos destined for public websites, and the path is an opaque
+ *  agency listing photos destined for public websites, and the path is an opaque
  *  hash, so it leaks nothing and is not enumerable. */
 export const MEDIA_ROUTE = "/media";
 
@@ -94,7 +94,7 @@ export function isPhotoValue(value: unknown): value is string {
  * Write a data URI to disk and return its stored path.
  *
  * Returns the input unchanged when it is already a stored reference, so callers
- * can run this over a whole vehicle repeatedly without checking first — which is
+ * can run this over a whole property repeatedly without checking first — which is
  * what makes the migration and the push path safe to re-run.
  *
  * Returns null for anything that is neither, rather than throwing: a malformed
@@ -145,7 +145,7 @@ export function put(value: unknown): string | null {
 /** Convert an array of photo values, keeping anything already usable.
  *
  *  A remote http(s) URL is a valid photo everywhere else in this system —
- *  isValidPhotoData accepts one, dealer sites and seed records carry them — but
+ *  isValidPhotoData accepts one, agency sites and seed records carry them — but
  *  it is not ours to store, so put() returns null for it. An earlier version
  *  treated that null as "unusable" and dropped the entry, which meant any save
  *  carrying URL-backed images silently lost them. Only genuinely unusable

@@ -3,33 +3,33 @@ import {
   Camera, ChevronLeft,
   Check, Upload, HelpCircle, Images, X,
   RotateCcw, SkipForward} from 'lucide-react';
-import { Vehicle, QualityReport } from '../types';
+import { Property, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
 
 interface CameraGuideProps {
-  vehicle: Vehicle;
+  property: Property;
   onBack: () => void;
   onComplete?: () => void;
   onPhotoCaptured: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
   onEditRequested?: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
-  onBulkPhotosUploaded: (updatedVehicle: Vehicle) => void;
+  onBulkPhotosUploaded: (updatedVehicle: Property) => void;
 }
 
-export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptured, onEditRequested, onBulkPhotosUploaded }: CameraGuideProps) {
+export default function CameraGuide({ property, onBack, onComplete, onPhotoCaptured, onEditRequested, onBulkPhotosUploaded }: CameraGuideProps) {
   // A just-taken shot awaiting Redo / Keep. This is the whole point: shoot,
   // glance, keep or redo — no forced save-and-edit between every angle.
   const [pendingShot, setPendingShot] = React.useState<{ slotId: string; base64: string; report: QualityReport; kind: 'photo' | 'video' } | null>(null);
   const { user } = useAuth();
-  // Crash-safe: never read vehicle.photos when undefined
-  const photos = vehicle?.photos || {};
+  // Crash-safe: never read property.photos when undefined
+  const photos = property?.photos || {};
   /* Lazy initializer so this only runs once, at mount — reopening a
-     partially-shot vehicle should resume at the first real gap, not always
+     partially-shot property should resume at the first real gap, not always
      reset to slot 1. */
   const [selectedSlotId, setSelectedSlotId] = React.useState<string>(() => {
     // Resume at the first empty CORE shot, then any empty shot, then slot 1 —
     // so onboarding leads with the ~10 that make a property listing-ready.
-    const p = vehicle.photos || {};
+    const p = property.photos || {};
     const firstEmptyCore = DEFAULT_TEMPLATE.slots.find((s) => s.tier === 'core' && !p[s.id]);
     const firstEmptyAny = DEFAULT_TEMPLATE.slots.find((s) => !p[s.id]);
     return (firstEmptyCore || firstEmptyAny || DEFAULT_TEMPLATE.slots[0]).id;
@@ -47,7 +47,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
 
-  // Simulated vehicle visualizer state (for fallback / testing)
+  // Simulated property visualizer state (for fallback / testing)
   const [simPitch, setSimPitch] = React.useState(12); // Pitch (Phone vertical level)
   const [simRoll, setSimRoll] = React.useState(0); // Roll (Phone horizontal level)
   const simBrightness = 130; // constant — there is no live light metering behind it
@@ -236,7 +236,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
      set of photos on hand. Auto-assigns each to the next empty slot (core first)
      and uploads ONE AT A TIME: each file is read, POSTed, and turned into a disk
      file by the server before the next is read — so the browser never holds a
-     stack of base64. From here the normal Send-to-DMS
+     stack of base64. From here the normal Send-to-FlowPMS
      export carries them through. */
   const handleBulkDump = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -262,17 +262,17 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
 
     setBulkProgress({ current: 0, total: files.length, status: 'syncing' });
     const token = await user?.getIdToken();
-    let latest = vehicle;
+    let latest = property;
     for (let i = 0; i < files.length; i++) {
       setBulkProgress((p) => ({ ...p, current: i + 1 }));
       const slot = targets[i] || DEFAULT_TEMPLATE.slots[i % DEFAULT_TEMPLATE.slots.length];
       try {
         const base64 = await readDataUrl(files[i]); // one at a time — no base64 pile-up
-        const res = await fetch('/api/inventory/upload-photo', {
+        const res = await fetch('/api/portfolio/upload-photo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
-            vehicleId: vehicle.id,
+            propertyId: property.id,
             slotId: slot.id,
             base64Image: base64,
             qualityReport: importReport,
@@ -280,7 +280,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.vehicle) latest = data.vehicle;
+          if (data.property) latest = data.property;
         }
       } catch (err) {
         setBulkProgress((p) => ({ ...p, status: 'error' }));
@@ -341,7 +341,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
 
     ctx.fillStyle = '#9ca3af';
     ctx.font = '18px sans-serif';
-    ctx.fillText('This vehicle listing has been bypass-approved for launch by Lot Manager.', 540, 500);
+    ctx.fillText('This property listing has been bypass-approved for launch by Lot Manager.', 540, 500);
 
     ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
     ctx.font = 'bold 16px monospace';
@@ -493,7 +493,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
     setPendingShot({ slotId: selectedSlotId, base64: base64Data, report, kind: 'photo' });
   };
 
-  /* After a photo is saved (parent updates vehicle.photos), auto-advance to
+  /* After a photo is saved (parent updates property.photos), auto-advance to
      the next empty slot in walk-through ORDER — every PropLens slot is optional,
      so a required-first check here would never fire and this always fell
      through to plain order anyway. Kept explicit rather than relying on that
@@ -573,7 +573,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           <div className="absolute inset-0 z-40 bg-white tl-shutter-flash" aria-hidden />
         )}
 
-        {/* Header overlay — back · vehicle + count · help, with the progress bar.
+        {/* Header overlay — back · property + count · help, with the progress bar.
             Container is click-through; only the two buttons take pointer events. */}
         <div className="absolute top-0 inset-x-0 z-30 px-4 pt-3 pb-6 bg-gradient-to-b from-black/75 via-black/40 to-transparent pointer-events-none">
           <div className="flex items-center justify-between">
@@ -586,7 +586,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             </button>
             <div className="text-center min-w-0 px-2">
               <p className="text-[15px] text-[#E8EAE6] font-semibold truncate max-w-[220px]">
-                {vehicle.year} {vehicle.make} {vehicle.model}
+                {property.address} {property.suburb}
               </p>
               <p className="text-[12px] font-mono text-[#4FE3DC]">
                 {listingReady
@@ -679,7 +679,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             pitch come from simRoll/simPitch, and "Lighting Perfect" was a fixed
             verdict, so they reported confidence they did not have. They also sat
             on top of the only region that has to stay readable while framing a
-            car, on a screen that is already too short. */}
+            homes, on a screen that is already too short. */}
         {/* Slot identity — bottom-left on the feed. Just the panel label and the
             shot count; the framing guide and the per-shot instructions were
             removed so the live view stays clean. */}
@@ -835,7 +835,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         </div>
         )}
 
-        {/* Bulk "just these photos" upload — for a car no longer on the lot: pick
+        {/* Bulk "just these photos" upload — for a homes no longer on the lot: pick
             any photos and they upload straight through, auto-assigned and
             converted to files on arrival. Hidden while reviewing a shot. */}
         {!pendingShot && bulkProgress.status === 'idle' && (

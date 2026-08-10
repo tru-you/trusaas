@@ -31,6 +31,6 @@ TruLens is installable as a Progressive Web App:
 | `public/icons/*` | Home-screen icons |
 | Install banner | Chrome Install + iOS “Add to Home Screen” tips |
 
-**Dealer install (production):** host on **HTTPS**, open the URL on the phone → **Install** / **Add to Home Screen**.
+**Agency install (production):** host on **HTTPS**, open the URL on the phone → **Install** / **Add to Home Screen**.
 
 **Local phone demo:** same Wi‑Fi → `http://192.168.x.x:3000` (camera may be limited without HTTPS; use a tunnel like Cloudflare Tunnel for full camera + install).

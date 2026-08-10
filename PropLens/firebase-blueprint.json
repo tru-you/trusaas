@@ -1,15 +1,15 @@
 {
   "collections": [
     {
-      "name": "vehicles",
+      "name": "properties",
       "fields": [
         { "name": "id", "type": "string" },
         { "name": "ownerId", "type": "string" },
         { "name": "make", "type": "string" },
         { "name": "model", "type": "string" },
         { "name": "year", "type": "number" },
-        { "name": "vin", "type": "string" },
-        { "name": "stockNumber", "type": "string" },
+        { "name": "erfRef", "type": "string" },
+        { "name": "listingRef", "type": "string" },
         { "name": "status", "type": "string" },
         { "name": "photos", "type": "map" },
         { "name": "quality", "type": "map" },

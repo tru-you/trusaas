@@ -1,10 +1,10 @@
 import React from 'react';
 import { ChevronLeft, Save, RotateCcw, Check, AlertTriangle, MinusCircle } from 'lucide-react';
-import { Vehicle, QualityReport, PointResult } from '../types';
+import { Property, QualityReport, PointResult } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 
 interface ImageEditorProps {
-  vehicle: Vehicle;
+  property: Property;
   slotId: string;
   imageSrc: string;
   qualityReport: QualityReport;
@@ -13,7 +13,7 @@ interface ImageEditorProps {
 }
 
 export default function ImageEditor({
-  vehicle,
+  property,
   slotId,
   imageSrc,
   qualityReport,
@@ -21,7 +21,7 @@ export default function ImageEditor({
   onSave,
 }: ImageEditorProps) {
   const slot = DEFAULT_TEMPLATE.slots.find((s) => s.id === slotId);
-  const existing = vehicle.slotAssessment?.[slotId];
+  const existing = property.slotAssessment?.[slotId];
   const [rating, setRating] = React.useState<PointResult['rating']>(existing?.rating);
   const [note, setNote] = React.useState(existing?.comment || '');
   const [rotation, setRotation] = React.useState(0);

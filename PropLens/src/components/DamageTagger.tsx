@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Save, Trash2, Plus, AlertTriangle, Check, Sparkles, Loader2 } from 'lucide-react';
-import { Vehicle, DamageFinding } from '../types';
+import { Property, DamageFinding } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 
 /**
@@ -8,12 +8,12 @@ import { DEFAULT_TEMPLATE } from '../templates';
  * photo and records what's wrong. Nothing is inferred: every tag is a person's
  * judgement, because this goes on a report a buyer relies on.
  *
- * Tags are stored per photo slot on `vehicle.damageFindings`, each pinned to an
+ * Tags are stored per photo slot on `property.damageFindings`, each pinned to an
  * x/y position (0–1) so the report can plot the mark on the same photo.
  */
 
 interface DamageTaggerProps {
-  vehicle: Vehicle;
+  property: Property;
   initialSlotId?: string;
   onBack: () => void;
   onSave: (damageFindings: Record<string, DamageFinding[]>) => Promise<void> | void;
@@ -33,15 +33,15 @@ const SEVERITY_META: Record<number, { label: string; color: string }> = {
 
 const newId = () => `dmg_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
 
-export default function DamageTagger({ vehicle, initialSlotId, onBack, onSave }: DamageTaggerProps) {
+export default function DamageTagger({ property, initialSlotId, onBack, onSave }: DamageTaggerProps) {
   // Only slots that actually have a photo can be tagged.
   const shotSlots = React.useMemo(
-    () => DEFAULT_TEMPLATE.slots.filter((s) => vehicle.photos?.[s.id]),
-    [vehicle.photos],
+    () => DEFAULT_TEMPLATE.slots.filter((s) => property.photos?.[s.id]),
+    [property.photos],
   );
 
   const [findings, setFindings] = React.useState<Record<string, DamageFinding[]>>(
-    () => JSON.parse(JSON.stringify(vehicle.damageFindings || {})),
+    () => JSON.parse(JSON.stringify(property.damageFindings || {})),
   );
   const [slotId, setSlotId] = React.useState<string>(
     (initialSlotId && shotSlots.find(s => s.id === initialSlotId) ? initialSlotId : shotSlots[0]?.id) || '',
@@ -54,7 +54,7 @@ export default function DamageTagger({ vehicle, initialSlotId, onBack, onSave }:
   const imgWrapRef = React.useRef<HTMLDivElement | null>(null);
 
   const slot = DEFAULT_TEMPLATE.slots.find((s) => s.id === slotId);
-  const photo = vehicle.photos?.[slotId];
+  const photo = property.photos?.[slotId];
   const slotTags = findings[slotId] || [];
   const editing = slotTags.find((t) => t.id === editingId) || null;
 
@@ -112,7 +112,7 @@ export default function DamageTagger({ vehicle, initialSlotId, onBack, onSave }:
           base64Image: photo,
           slotId,
           slotName: slot?.name,
-          vehicleInfo: { year: vehicle.year, make: vehicle.make, model: vehicle.model },
+          propertyInfo: { address: property.address, suburb: property.suburb, propertyType: property.propertyType },
         }),
       });
       const data = await res.json();
@@ -182,7 +182,7 @@ export default function DamageTagger({ vehicle, initialSlotId, onBack, onSave }:
               <AlertTriangle size={15} className="text-[#4FE3DC]" /> Tag damage
             </h1>
             <p className="text-[13px] text-white/50 truncate">
-              {vehicle.year} {vehicle.make} {vehicle.model} · {vehicle.stockNumber}
+              {property.address} · {property.listingRef}
             </p>
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function DamageTagger({ vehicle, initialSlotId, onBack, onSave }:
               onClick={() => { setSlotId(s.id); setEditingId(null); }}
               className={`relative shrink-0 w-16 rounded-lg overflow-hidden border-2 ${active ? 'border-[#0E9D98]' : 'border-[rgba(10,20,32,0.10)]'}`}
             >
-              <img src={vehicle.photos[s.id]} alt={s.name} className="w-16 h-12 object-cover" />
+              <img src={property.photos[s.id]} alt={s.name} className="w-16 h-12 object-cover" />
               <span className="block text-[13px] leading-tight px-1 py-0.5 text-[#0A1420] truncate bg-[#EFEDE8]">{s.name}</span>
               {count > 0 && (
                 <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[13px] font-semibold flex items-center justify-center">{count}</span>

@@ -1,19 +1,19 @@
 /**
- * TruSaaS Public Stock Widget
- * One embed for every dealership HTML site — works with TruFlow Premium, Lite, or TruLens.
+ * TruSaaS Public Listing Widget
+ * One embed for every agency HTML site — works with TruFlow Premium, Lite, or TruLens.
  *
  * Usage:
- *   <div id="trusass-stock"></div>
+ *   <div id="trusass-listing"></div>
  *   <script
- *     src="http://localhost:3001/embed/stock-widget.js"
- *     data-api="http://localhost:3001/api/public/stock"
- *     data-dealer="mkr-autosales"
+ *     src="http://localhost:3001/embed/listings-widget.js"
+ *     data-api="http://localhost:3001/api/public/listing"
+ *     data-agency="stone-heights"
  *     data-theme="light"
  *     data-wa="27662912809"
  *   ></script>
  *
  * Optional data attributes:
- *   data-container  — element id (default: trusass-stock)
+ *   data-container  — element id (default: trusass-listing)
  *   data-limit      — max cards (default: 24)
  *   data-theme      — light | dark
  *   data-wa         — WhatsApp number for enquire links
@@ -22,33 +22,33 @@
   const script = document.currentScript;
   if (!script) return;
 
-  const containerId = script.getAttribute("data-container") || "trusass-stock";
+  const containerId = script.getAttribute("data-container") || "trusass-listing";
   const container = document.getElementById(containerId);
   if (!container) {
-    console.error("TruSaaS stock widget: #" + containerId + " not found");
+    console.error("TruSaaS listing widget: #" + containerId + " not found");
     return;
   }
 
   const apiAttr = script.getAttribute("data-api") || "";
-  // Default: same origin as the script, /api/public/stock
+  // Default: same origin as the script, /api/public/listing
   let apiBase = apiAttr;
   if (!apiBase) {
     try {
-      apiBase = new URL(script.src).origin + "/api/public/stock";
+      apiBase = new URL(script.src).origin + "/api/public/listing";
     } catch {
-      apiBase = "/api/public/stock";
+      apiBase = "/api/public/listing";
     }
   }
 
-  const dealer = script.getAttribute("data-dealer") || "demo";
+  const agency = script.getAttribute("data-agency") || "demo";
   const theme = script.getAttribute("data-theme") || "light";
   const limit = parseInt(script.getAttribute("data-limit") || "24", 10) || 24;
   const wa = (script.getAttribute("data-wa") || "").replace(/\D/g, "");
 
   const styles = document.createElement("style");
   styles.textContent = `
-    .ts-stock{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:${theme === "dark" ? "#E8EEF6" : "#0A1626"};}
-    .ts-stock *{box-sizing:border-box}
+    .ts-listing{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:${theme === "dark" ? "#E8EEF6" : "#0A1626"};}
+    .ts-listing *{box-sizing:border-box}
     .ts-meta{font-size:12px;opacity:.65;margin:0 0 14px}
     .ts-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
     .ts-filters input,.ts-filters select{
@@ -94,7 +94,7 @@
   function waLink(v) {
     if (!wa) return null;
     const msg = encodeURIComponent(
-      `Hi, I'm interested in ${v.year} ${v.make} ${v.model} (Stock ${v.stockNumber}).`
+      `Hi, I'm interested in ${v.year} ${v.make} ${v.model} (Listing ${v.listingRef}).`
     );
     return `https://wa.me/${wa}?text=${msg}`;
   }
@@ -107,13 +107,13 @@
     const img = hero
       ? `<img src="${hero}" alt="${title}" loading="lazy" referrerpolicy="no-referrer">`
       : `<div style="display:flex;align-items:center;justify-content:center;height:100%;opacity:.4;font-weight:800">${(v.make || "TS").slice(0, 2).toUpperCase()}</div>`;
-    const tags = [km(v.mileage), v.transmission, v.fuelType, v.bodyType].filter(Boolean);
+    const tags = [km(v.floorArea), v.transmission, v.fuelType, v.bodyType].filter(Boolean);
     const href = waLink(v);
     return `
-      <article class="ts-card" data-make="${v.make || ""}" data-year="${v.year || ""}" data-q="${title.toLowerCase()} ${v.trim || ""} ${v.stockNumber || ""}">
+      <article class="ts-card" data-make="${v.make || ""}" data-year="${v.year || ""}" data-q="${title.toLowerCase()} ${v.trim || ""} ${v.listingRef || ""}">
         <div class="ts-img">
           ${img}
-          <span class="ts-badge">${v.stockNumber || "STOCK"}</span>
+          <span class="ts-badge">${v.listingRef || "LISTING"}</span>
           ${(v.photoCount || (v.images && v.images.length) || 0) > 0 ? `<span class="ts-photos">${v.photoCount || v.images.length} photos</span>` : ""}
         </div>
         <div class="ts-body">
@@ -132,21 +132,21 @@
 
   function paint(list) {
     if (!list.length) {
-      container.innerHTML = `<div class="ts-stock"><div class="ts-empty">No vehicles available right now.</div></div>`;
+      container.innerHTML = `<div class="ts-listing"><div class="ts-empty">No properties available right now.</div></div>`;
       return;
     }
     const makes = [...new Set(list.map((v) => v.make).filter(Boolean))].sort();
     const years = [...new Set(list.map((v) => v.year).filter(Boolean))].sort((a, b) => b - a);
     container.innerHTML = `
-      <div class="ts-stock">
-        <div class="ts-meta">Showing <b>${list.length}</b> vehicle${list.length === 1 ? "" : "s"} · live from TruSaaS</div>
+      <div class="ts-listing">
+        <div class="ts-meta">Showing <b>${list.length}</b> property${list.length === 1 ? "" : "s"} · live from TruSaaS</div>
         <div class="ts-filters">
-          <input id="ts-q" type="search" placeholder="Search make, model, stock…">
+          <input id="ts-q" type="search" placeholder="Search make, model, listing…">
           <select id="ts-make"><option value="">All makes</option>${makes.map((m) => `<option value="${m}">${m}</option>`).join("")}</select>
           <select id="ts-year"><option value="">All years</option>${years.map((y) => `<option value="${y}">${y}</option>`).join("")}</select>
         </div>
         <div class="ts-grid" id="ts-grid">${list.slice(0, limit).map(card).join("")}</div>
-        <div class="ts-powered">Powered by <a href="https://true-cars.co.za/truesaas.html" target="_blank" rel="noopener" style="color:inherit"><b>TruSaaS</b></a> · <a href="https://true-cars.co.za" target="_blank" rel="noopener" style="color:inherit">true-cars.co.za</a></div>
+        <div class="ts-powered">Powered by <a href="https://true-homes.co.za/truesaas.html" target="_blank" rel="noopener" style="color:inherit"><b>TruSaaS</b></a> · <a href="https://true-homes.co.za" target="_blank" rel="noopener" style="color:inherit">true-homes.co.za</a></div>
       </div>`;
 
     const apply = () => {
@@ -154,29 +154,29 @@
       const make = document.getElementById("ts-make").value;
       const year = document.getElementById("ts-year").value;
       const filtered = all.filter((v) => {
-        const hay = `${v.year} ${v.make} ${v.model} ${v.trim || ""} ${v.stockNumber || ""}`.toLowerCase();
+        const hay = `${v.year} ${v.make} ${v.model} ${v.trim || ""} ${v.listingRef || ""}`.toLowerCase();
         return (!q || hay.includes(q)) && (!make || v.make === make) && (!year || String(v.year) === year);
       });
       document.getElementById("ts-grid").innerHTML = filtered.slice(0, limit).map(card).join("");
       container.querySelector(".ts-meta").innerHTML =
-        `Showing <b>${filtered.length}</b> vehicle${filtered.length === 1 ? "" : "s"} · live from TruSaaS`;
+        `Showing <b>${filtered.length}</b> property${filtered.length === 1 ? "" : "s"} · live from TruSaaS`;
     };
     document.getElementById("ts-q").addEventListener("input", apply);
     document.getElementById("ts-make").addEventListener("change", apply);
     document.getElementById("ts-year").addEventListener("change", apply);
   }
 
-  container.innerHTML = `<div class="ts-stock"><div class="ts-loading">Loading live stock…</div></div>`;
+  container.innerHTML = `<div class="ts-listing"><div class="ts-loading">Loading live listing…</div></div>`;
 
   const url = apiBase.includes("?")
-    ? `${apiBase}&dealer=${encodeURIComponent(dealer)}`
-    : `${apiBase}?dealer=${encodeURIComponent(dealer)}`;
+    ? `${apiBase}&agency=${encodeURIComponent(agency)}`
+    : `${apiBase}?agency=${encodeURIComponent(agency)}`;
 
   fetch(url, { cache: "no-store" })
     .then((r) => r.json())
     .then((data) => {
-      const list = Array.isArray(data.vehicles)
-        ? data.vehicles
+      const list = Array.isArray(data.properties)
+        ? data.properties
         : Array.isArray(data.data)
           ? data.data
           : Array.isArray(data)
@@ -184,13 +184,13 @@
             : [];
       all = list;
       if (!all.length) {
-        container.innerHTML = `<div class="ts-stock"><div class="ts-empty">No published stock yet. Export from TruLens → DMS, then refresh.</div></div>`;
+        container.innerHTML = `<div class="ts-listing"><div class="ts-empty">No published listing yet. Export from TruLens → FlowPMS, then refresh.</div></div>`;
         return;
       }
       paint(all);
     })
     .catch((err) => {
-      console.error("TruSaaS stock widget error", err);
-      container.innerHTML = `<div class="ts-stock"><div class="ts-empty">Could not load stock feed. Check API URL / CORS.</div></div>`;
+      console.error("TruSaaS listing widget error", err);
+      container.innerHTML = `<div class="ts-listing"><div class="ts-empty">Could not load listing feed. Check API URL / CORS.</div></div>`;
     });
 })();

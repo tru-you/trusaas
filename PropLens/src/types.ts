@@ -31,8 +31,9 @@ export interface Property {
   parkingSpaces?: number;
   erfSize?: number;
   floorSize?: number;
+  erfRef?: string;
   price: number;
-  stockNumber: string;
+  listingRef: string;
   status: 'In-Progress' | 'Ready' | 'Listed';
   createdAt: string;
   updatedAt: string;
@@ -43,11 +44,11 @@ export interface Property {
   agencyLogoDataUrl?: string;
   agencyPhone?: string;
   agencyWhatsApp?: string;
-  lastDmsExportAt?: string;
-  lastDmsExportStatus?: string;
-  firstDmsExportAt?: string;
-  lastDmsPropertyId?: string | null;
-  lastDmsStockNumber?: string;
+  lastPmsExportAt?: string;
+  lastPmsExportStatus?: string;
+  firstPmsExportAt?: string;
+  lastPmsPropertyId?: string | null;
+  lastDmsListingRef?: string;
   damageFindings?: Record<string, DamageFinding[]>;
   slotAssessment?: Record<string, PointResult>;
   conditionDeclaration?: {
@@ -67,7 +68,7 @@ export interface PointResult {
   comment?: string;
 }
 
-export interface DmsExportResult {
+export interface PmsExportResult {
   success: boolean;
   synced?: boolean;
   created?: boolean;
@@ -81,14 +82,14 @@ export interface DmsExportResult {
     total: number;
   };
   dmsUrl?: string;
-  dmsProperty?: { id?: string; stockNumber?: string; images?: string[] } | null;
+  dmsProperty?: { id?: string; listingRef?: string; images?: string[] } | null;
   property?: Property;
 }
 
 export interface DamageFinding {
   id: string;
   panel: string;
-  damageType: 'crack' | 'stain' | 'damp' | 'mould' | 'chip' | 'wear' | 'leak' | 'missing' | 'broken' | 'other';
+  damageType: 'crack' | 'stain' | 'damp' | 'mould' | 'chip' | 'wear' | 'leak' | 'missing' | 'broken' | 'scratch' | 'dent' | 'rust' | 'paint' | 'other';
   severity: 1 | 2 | 3 | 4 | 5;
   note: string;
   x: number;

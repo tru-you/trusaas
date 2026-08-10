@@ -3,17 +3,17 @@ import {
   ArrowLeft, Download, Printer, Award, AlertTriangle, CheckCircle2,
   Camera, FileText, ClipboardList, Clock, Check, MessageCircle,
 } from 'lucide-react';
-import { Vehicle, QualityReport, DamageFinding } from '../types';
+import { Property, QualityReport, DamageFinding } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
 import proplensLockup from '../assets/images/proplens-logo.svg';
-import trupropertyLockup from '../assets/images/trudealer-lockup.png';
+import trupropertyLockup from '../assets/images/trulens-lockup.png';
 
 interface ReportPreviewProps {
-  vehicle: Vehicle;
+  property: Property;
   onBack: () => void;
-  onVehicleUpdated?: (v: Vehicle) => void;
+  onVehicleUpdated?: (v: Property) => void;
 }
 
 function severityMeta(sev: number) {
@@ -24,8 +24,8 @@ function severityMeta(sev: number) {
   return { label: 'Cosmetic', color: '#475569', bg: '#F8FAFC' };
 }
 
-function computeCondition(vehicle: Vehicle) {
-  const all = Object.entries(vehicle.damageFindings || {}).flatMap(([slotId, list]) =>
+function computeCondition(property: Property) {
+  const all = Object.entries(property.damageFindings || {}).flatMap(([slotId, list]) =>
     (list || []).filter(f => f.confirmed !== false).map(f => ({ ...f, slotId }))
   );
   const sevPenalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
@@ -33,7 +33,7 @@ function computeCondition(vehicle: Vehicle) {
   const slotsWithTags = new Set(all.map(f => f.slotId));
   const rawPenalties: number[] = all.map(f => sevPenalties[f.severity] ?? 0.3);
 
-  const slotAssess = vehicle.slotAssessment || {};
+  const slotAssess = property.slotAssessment || {};
   for (const [slotId, res] of Object.entries(slotAssess)) {
     if (slotsWithTags.has(slotId)) continue;
     if (res?.rating === 'damage') rawPenalties.push(0.5);
@@ -54,7 +54,7 @@ function computeCondition(vehicle: Vehicle) {
   return { stars, label, findings: all, hasInput };
 }
 
-export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: ReportPreviewProps) {
+export default function ReportPreview({ property, onBack, onVehicleUpdated }: ReportPreviewProps) {
   const { user } = useAuth();
   const reportRef = useRef<HTMLDivElement>(null);
   const [waCopied, setWaCopied] = useState(false);
@@ -62,32 +62,32 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const [exporting, setExporting] = useState(false);
   const [publishBusy, setPublishBusy] = useState(false);
 
-  const dealerName =
-    vehicle.dealerName ||
+  const agencyName =
+    property.agencyName ||
     (typeof localStorage !== 'undefined' ? localStorage.getItem('proplens_agency_name') : null) ||
     '';
-  const dealerBranch =
+  const agencyBranch =
     (typeof localStorage !== 'undefined' ? localStorage.getItem('proplens_agency_branch') : null) ||
     '';
-  const dealerWa =
-    vehicle.dealerWhatsApp ||
+  const agencyWa =
+    property.agencyWhatsApp ||
     (typeof localStorage !== 'undefined' ? localStorage.getItem('proplens_agency_wa') : null) ||
     '';
 
-  const brandedVehicle = useMemo(
-    () => ({ ...vehicle, dealerName, dealerWhatsApp: dealerWa || vehicle.dealerWhatsApp }),
-    [vehicle, dealerName, dealerWa]
+  const brandedProperty = useMemo(
+    () => ({ ...property, agencyName, agencyWhatsApp: agencyWa || property.agencyWhatsApp }),
+    [property, agencyName, agencyWa]
   );
 
-  const readiness = useMemo(() => computeWebReadiness(brandedVehicle), [brandedVehicle]);
-  const condition = useMemo(() => computeCondition(vehicle), [vehicle]);
+  const readiness = useMemo(() => computeWebReadiness(brandedProperty), [brandedProperty]);
+  const condition = useMemo(() => computeCondition(property), [property]);
 
   /* PropLens is not a graded inspection — this report states a plain,
      agency-declared condition. `clear` = agency declared no visible damage;
      `damage` = visible damage tagged and shown; `undeclared` = not answered yet,
      so silence is never presented as a clean bill. */
   const findings = condition.findings;
-  const declared = vehicle.conditionDeclaration || null;
+  const declared = property.conditionDeclaration || null;
   const conditionState: 'clear' | 'damage' | 'undeclared' =
     findings.length > 0 ? 'damage' : declared?.noVisibleDamage ? 'clear' : 'undeclared';
   const conditionText =
@@ -99,13 +99,13 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const condColor = conditionState === 'clear' ? '#16A34A' : conditionState === 'damage' ? '#B03226' : '#6E6656';
   const coreSlots = DEFAULT_TEMPLATE.slots.filter((s) => s.tier === 'core');
   const waBlurb = useMemo(
-    () => whatsAppSalesBlurb(brandedVehicle, readiness, { agencyName: dealerName, waNumber: dealerWa || undefined }),
-    [brandedVehicle, readiness, dealerName, dealerWa]
+    () => whatsAppSalesBlurb(brandedProperty, readiness, { agencyName: agencyName, waNumber: agencyWa || undefined }),
+    [brandedProperty, readiness, agencyName, agencyWa]
   );
 
-  const capturedPhotos = DEFAULT_TEMPLATE.slots.filter(s => vehicle.photos?.[s.id]);
+  const capturedPhotos = DEFAULT_TEMPLATE.slots.filter(s => property.photos?.[s.id]);
 
-  const reportId = `PL-${(vehicle.stockNumber || vehicle.id).toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
+  const reportId = `PL-${(property.listingRef || property.id).toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)}`;
   const generatedAt = new Date().toLocaleString('en-ZA', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
@@ -137,11 +137,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           }
         })
       );
-      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PropLens Report · ${vehicle.year} ${vehicle.make} ${vehicle.model} · ${vehicle.stockNumber || ''}</title><style>*{box-sizing:border-box}body{margin:0;background:#F1F5F9;padding:16px;overflow-x:hidden}</style></head><body>${clone.outerHTML}</body></html>`;
+      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PropLens Report · ${property.address} ${property.suburb} · ${property.listingRef || ''}</title><style>*{box-sizing:border-box}body{margin:0;background:#F1F5F9;padding:16px;overflow-x:hidden}</style></head><body>${clone.outerHTML}</body></html>`;
       const blob = new Blob([html], { type: 'text/html' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `PropLens_Report_${vehicle.stockNumber || 'draft'}.html`;
+      a.download = `PropLens_Report_${property.listingRef || 'draft'}.html`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     } finally {
@@ -158,7 +158,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
       await html2pdf()
         .set({
           margin: [8, 8, 8, 8],
-          filename: `PropLens_Report_${vehicle.stockNumber || 'draft'}.pdf`,
+          filename: `PropLens_Report_${property.listingRef || 'draft'}.pdf`,
           image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -185,34 +185,34 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const handleTogglePublish = async () => {
     setPublishBusy(true);
     try {
-      const next = !vehicle.showOnWebsite;
+      const next = !property.showOnWebsite;
       await onVehicleUpdated?.({
-        ...vehicle,
+        ...property,
         showOnWebsite: next,
-        status: next && vehicle.status === 'In-Progress' ? 'Ready' : vehicle.status,
-        dealerName,
-        dealerWhatsApp: dealerWa || vehicle.dealerWhatsApp,
+        status: next && property.status === 'In-Progress' ? 'Ready' : property.status,
+        agencyName,
+        agencyWhatsApp: agencyWa || property.agencyWhatsApp,
       });
     } finally {
       setPublishBusy(false);
     }
   };
 
-  /* The dealer's condition declaration — the honest core of a TruLens report.
+  /* The agency's condition declaration — the honest core of a TruLens report.
      One explicit statement rather than a graded score, so "no damage reported"
-     is a claim the dealer made, not silence we dressed up. */
+     is a claim the agency made, not silence we dressed up. */
   const declareCondition = (noVisibleDamage: boolean) => {
     onVehicleUpdated?.({
-      ...vehicle,
+      ...property,
       conditionDeclaration: {
         noVisibleDamage,
         declaredAt: new Date().toISOString(),
-        declaredBy: vehicle.capturedBy || undefined,
+        declaredBy: property.capturedBy || undefined,
       },
     });
   };
 
-  const hero = vehicle.photos?.front_bumper || Object.values(vehicle.photos || {})[0];
+  const hero = property.photos?.front_bumper || Object.values(property.photos || {})[0];
 
   return (
     <div className="h-full w-full overflow-y-auto bg-[#F5F4F1] text-[#0A1420]">
@@ -222,15 +222,15 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           <div className="text-[12px] font-medium text-[rgba(10,20,32,0.55)] mb-2">Signed off by</div>
           <input
             type="text"
-            defaultValue={vehicle.capturedBy || ''}
+            defaultValue={property.capturedBy || ''}
             onBlur={(e) => {
               const v = e.target.value.trim();
-              if (v !== (vehicle.capturedBy || '')) onVehicleUpdated?.({ ...vehicle, capturedBy: v });
+              if (v !== (property.capturedBy || '')) onVehicleUpdated?.({ ...property, capturedBy: v });
             }}
             placeholder="Name of person signing off this report"
             className="w-full px-3 py-3 rounded-lg bg-white border border-[rgba(10,20,32,0.12)] text-[13px] text-[#0A1420] placeholder-[rgba(10,20,32,0.4)]"
           />
-          {!vehicle.capturedBy && (
+          {!property.capturedBy && (
             <p className="text-[12px] text-amber-600 mt-2">
               No name recorded — the signature line prints blank on the report.
             </p>
@@ -260,7 +260,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               disabled={publishBusy}
               className="flex items-center gap-1 px-3 py-2 bg-sky-50 border border-sky-300 rounded-lg text-[13px] font-bold text-sky-700 disabled:opacity-50"
             >
-              {publishBusy ? '…' : vehicle.showOnWebsite ? 'Unpublish' : 'Publish'}
+              {publishBusy ? '…' : property.showOnWebsite ? 'Unpublish' : 'Publish'}
             </button>
             <button onClick={exportHtml} disabled={exporting}
               title="Downloads a single file with every photo embedded — opens offline and survives being emailed"
@@ -287,7 +287,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="text-[13px] tracking-normal text-[rgba(10,20,32,0.55)] font-bold">Condition report</div>
               <div className="font-bold text-[16px]" style={{ color: condColor }}>{conditionText}</div>
               <div className="text-[rgba(10,20,32,0.55)] mt-1">
-                Core photos {coreSlots.filter((s) => vehicle.photos?.[s.id]).length}/{coreSlots.length}
+                Core photos {coreSlots.filter((s) => property.photos?.[s.id]).length}/{coreSlots.length}
                 {` · ${findings.length} damage tag${findings.length === 1 ? '' : 's'}`}
               </div>
             </div>
@@ -296,7 +296,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             </div>
           </div>
 
-          {/* Condition declaration — the dealer's explicit statement. Disabled to
+          {/* Condition declaration — the agency's explicit statement. Disabled to
               "no visible damage" once damage is tagged, since that would be a
               false claim; the report then reads "visible damage reported". */}
           <div className="mt-3 pt-3 border-t border-[rgba(10,20,32,0.10)]">
@@ -365,8 +365,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .hdr-left { display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap; }
             .tl-report .hdr-left img.logo { height:28px; width:auto; flex:none; }
             .tl-report .hdr-left img.lockup { height:16px; width:auto; flex:none; margin-left:6px; }
-            .tl-report .hdr-left .dealer { font-size:9.5px; color:var(--ink-2); margin-left:8px; line-height:1.35; overflow-wrap:break-word; }
-            .tl-report .hdr-left .dealer b { color:var(--ink); }
+            .tl-report .hdr-left .agency { font-size:9.5px; color:var(--ink-2); margin-left:8px; line-height:1.35; overflow-wrap:break-word; }
+            .tl-report .hdr-left .agency b { color:var(--ink); }
             .tl-report .hdr-right { text-align:right; flex:none; }
             .tl-report .hdr-right .doc-type { font-family:var(--mono); font-size:8.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--cyan); font-weight:700; white-space:nowrap; }
             .tl-report .hdr-right .doc-id { font-family:var(--mono); font-size:8.5px; color:var(--muted); margin-top:3px; white-space:nowrap; }
@@ -393,11 +393,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             .tl-report .verdict .score .num { font-family:var(--display); font-size:24px; font-weight:600; line-height:1; }
             .tl-report .verdict .score .lbl { font-family:var(--mono); font-size:7px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-top:3px; }
 
-            /* Vehicle info grid */
-            .tl-report .vehicle { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; margin-bottom:18px; }
-            .tl-report .vehicle .row { display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line-soft); }
-            .tl-report .vehicle .row .k { font-family:var(--mono); font-size:7.8px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
-            .tl-report .vehicle .row .v { font-size:10.5px; font-weight:700; color:var(--ink); text-align:right; overflow-wrap:break-word; word-break:break-word; }
+            /* Property info grid */
+            .tl-report .property { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; margin-bottom:18px; }
+            .tl-report .property .row { display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line-soft); }
+            .tl-report .property .row .k { font-family:var(--mono); font-size:7.8px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+            .tl-report .property .row .v { font-size:10.5px; font-weight:700; color:var(--ink); text-align:right; overflow-wrap:break-word; word-break:break-word; }
 
             /* Photo grid — hero 2x2 */
             .tl-report .photos { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:18px; break-inside:avoid; page-break-inside:avoid; }
@@ -509,10 +509,10 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="hdr-left">
                 <img className="logo" src={proplensLockup} alt="PropLens" />
                 <img className="lockup" src={trupropertyLockup} alt="TruProperty" />
-                {(dealerName || dealerBranch) && (
-                  <div className="dealer">
-                    {dealerName && <b>{dealerName}</b>}
-                    {dealerBranch ? <> · {dealerBranch}</> : null}
+                {(agencyName || agencyBranch) && (
+                  <div className="agency">
+                    {agencyName && <b>{agencyName}</b>}
+                    {agencyBranch ? <> · {agencyBranch}</> : null}
                   </div>
                 )}
               </div>
@@ -522,7 +522,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               </div>
             </div>
 
-            {/* Condition banner — a dealer declaration, not a graded score */}
+            {/* Condition banner — a agency declaration, not a graded score */}
             {(() => {
               const verdictClass = conditionState === 'clear' ? 'pass' : conditionState === 'damage' ? 'caution' : 'unknown';
               const VerdictIcon = conditionState === 'clear' ? CheckCircle2 : conditionState === 'damage' ? AlertTriangle : ClipboardList;
@@ -537,49 +537,49 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   <div className="icon"><VerdictIcon size={18} /></div>
                   <div className="body">
                     <h3>{conditionText}</h3>
-                    <p>{sub} · {coreSlots.filter((s) => vehicle.photos?.[s.id]).length}/{coreSlots.length} core photos captured.</p>
+                    <p>{sub} · {coreSlots.filter((s) => property.photos?.[s.id]).length}/{coreSlots.length} core photos captured.</p>
                   </div>
                 </div>
               );
             })()}
 
-            {/* Vehicle title */}
+            {/* Property title */}
             <div style={{ fontFamily:'var(--display)', fontWeight:600, fontSize:20, color:'var(--ink)', marginBottom:4, lineHeight:1.2 }}>
-              {vehicle.year} {vehicle.make} {vehicle.model}
+              {property.address} {property.suburb}
             </div>
             <div style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--muted)', marginBottom:14 }}>
-              {vehicle.trim} · {vehicle.color}
-              {vehicle.mileage ? ` · ${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : ''}
-              {vehicle.transmission ? ` · ${vehicle.transmission}` : ''}
-              {vehicle.fuelType ? ` · ${vehicle.fuelType}` : ''}
-              {' · Stock '}{vehicle.stockNumber}
+              {property.propertyType || 'House'} · {property.bedrooms != null ? `${property.bedrooms} bed` : ''}
+              {property.floorSize ? ` · ${Number(property.floorSize).toLocaleString('en-ZA')} m²` : ''}
+              {property.parkingSpaces != null ? ` · ${property.parkingSpaces} park` : ''}
+              {property.erfSize ? ` · Erf ${property.erfSize} m²` : ''}
+              {' · Listing '}{property.listingRef}
             </div>
 
-            {/* Vehicle info grid */}
-            <div className="vehicle">
-              <div className="row"><span className="k">Make / Model</span><span className="v">{vehicle.make} {vehicle.model}</span></div>
-              <div className="row"><span className="k">Year</span><span className="v">{vehicle.year || '—'}</span></div>
-              <div className="row"><span className="k">VIN</span><span className="v">{vehicle.vin || '—'}</span></div>
-              <div className="row"><span className="k">Stock</span><span className="v">{vehicle.stockNumber || '—'}</span></div>
-              <div className="row"><span className="k">Trim</span><span className="v">{vehicle.trim || '—'}</span></div>
-              <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
-              <div className="row"><span className="k">Type</span><span className="v">{vehicle.vehicleType || '—'}</span></div>
-              <div className="row"><span className="k">List price</span><span className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</span></div>
-              <div className="row"><span className="k">Mileage</span><span className="v">{vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString('en-ZA')} km` : '—'}</span></div>
+            {/* Property info grid */}
+            <div className="property">
+              <div className="row"><span className="k">Address</span><span className="v">{property.address} {property.suburb}</span></div>
+              <div className="row"><span className="k">Bedrooms</span><span className="v">{property.bedrooms != null ? property.bedrooms : '—'}</span></div>
+              <div className="row"><span className="k">Erf no.</span><span className="v">{property.erfRef || '—'}</span></div>
+              <div className="row"><span className="k">Listing</span><span className="v">{property.listingRef || '—'}</span></div>
+              <div className="row"><span className="k">Bathrooms</span><span className="v">{property.bathrooms != null ? property.bathrooms : '—'}</span></div>
+              <div className="row"><span className="k">Parking</span><span className="v">{property.parkingSpaces != null ? property.parkingSpaces : '—'}</span></div>
+              <div className="row"><span className="k">Type</span><span className="v">{property.propertyType || '—'}</span></div>
+              <div className="row"><span className="k">List price</span><span className="v">R {Number(property.price || 0).toLocaleString('en-ZA')}</span></div>
+              <div className="row"><span className="k">Floor size</span><span className="v">{property.floorSize ? `${Number(property.floorSize).toLocaleString('en-ZA')} m²` : '—'}</span></div>
               <div className="row"><span className="k">Photos</span><span className="v">{capturedPhotos.length} of {DEFAULT_TEMPLATE.slots.length}</span></div>
             </div>
 
             {/* Photo grid — hero + slots */}
             {(() => {
               const ordered = DEFAULT_TEMPLATE.slots;
-              const heroSlot = ordered.find(s => vehicle.photos?.[s.id] === hero) || ordered[0];
-              const rest = ordered.filter(s => s.id !== heroSlot?.id && vehicle.photos?.[s.id]).slice(0, 6);
+              const heroSlot = ordered.find(s => property.photos?.[s.id] === hero) || ordered[0];
+              const rest = ordered.filter(s => s.id !== heroSlot?.id && property.photos?.[s.id]).slice(0, 6);
               const tiles = heroSlot ? [heroSlot, ...rest] : rest;
               if (!tiles.length) return null;
               return (
                 <div className="photos">
                   {tiles.map((slot, i) => {
-                    const src = vehicle.photos?.[slot.id];
+                    const src = property.photos?.[slot.id];
                     const isHero = i === 0;
                     return (
                       <div className={`photo${isHero ? ' hero' : ''}`} key={slot.id}>
@@ -600,7 +600,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
             {/* Panel condition grades */}
             {(() => {
-              const sa = vehicle.slotAssessment || {};
+              const sa = property.slotAssessment || {};
               const rows = DEFAULT_TEMPLATE.slots
                 .map(s => ({ s, r: sa[s.id] }))
                 .filter(({ r }) => r && (r.rating || r.comment));
@@ -631,7 +631,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             {/* Damage findings */}
             <div className="section-title"><span className="n"><AlertTriangle size={11} /> Damage findings</span><span className="ln" /></div>
             {condition.findings.length === 0 ? (
-              <div className="no-issues"><CheckCircle2 size={13} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> {conditionState === 'clear' ? 'No damage reported — dealer declared the vehicle free of visible damage.' : 'No damage tagged on the captured photos.'}</div>
+              <div className="no-issues"><CheckCircle2 size={13} style={{display:'inline',verticalAlign:'-2px',marginRight:6}}/> {conditionState === 'clear' ? 'No damage reported — agency declared the property free of visible damage.' : 'No damage tagged on the captured photos.'}</div>
             ) : (
               condition.findings.map((f, i) => {
                 const sev = severityMeta(f.severity);
@@ -652,11 +652,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
             {/* Damage photos with pins */}
             {(() => {
-              const slotsWithDamage = Object.entries(vehicle.damageFindings || {})
+              const slotsWithDamage = Object.entries(property.damageFindings || {})
                 .filter(([, list]) => list && list.some(f => f.confirmed !== false))
                 .map(([slotId, list]) => ({
                   slot: DEFAULT_TEMPLATE.slots.find(s => s.id === slotId),
-                  src: vehicle.photos?.[slotId],
+                  src: property.photos?.[slotId],
                   findings: (list || []).filter(f => f.confirmed !== false),
                 }))
                 .filter(d => d.src && d.slot);
@@ -702,7 +702,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             })()}
 
             {/* Core photo checklist — the honest listing minimum. Shows exactly
-                which of the core shots are on the car so a gap is visible, not
+                which of the core shots are on the homes so a gap is visible, not
                 hidden. Photo-quality grading was removed — this is about coverage,
                 not how the images scored. */}
             {coreSlots.length > 0 && (
@@ -714,7 +714,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   </thead>
                   <tbody>
                     {coreSlots.map(s => {
-                      const has = !!vehicle.photos?.[s.id];
+                      const has = !!property.photos?.[s.id];
                       return (
                         <tr key={s.id}>
                           <td>{s.name}</td>
@@ -734,7 +734,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 <div className="gallery">
                   {capturedPhotos.slice(0, 15).map(slot => (
                     <div className="photo-tile" key={slot.id}>
-                      <img src={vehicle.photos[slot.id]} alt={slot.name} />
+                      <img src={property.photos[slot.id]} alt={slot.name} />
                       <div className="cap">{slot.name}</div>
                     </div>
                   ))}
@@ -747,17 +747,17 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
               <div className="card">
                 <div className="k">Agency</div>
-                <div style={{ fontWeight:700, fontSize:11 }}>{dealerName || '—'}</div>
-                {dealerBranch && <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>{dealerBranch}</div>}
-                {dealerWa && <div style={{ fontSize:10, marginTop:6 }}>WhatsApp {dealerWa}</div>}
+                <div style={{ fontWeight:700, fontSize:11 }}>{agencyName || '—'}</div>
+                {agencyBranch && <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>{agencyBranch}</div>}
+                {agencyWa && <div style={{ fontSize:10, marginTop:6 }}>WhatsApp {agencyWa}</div>}
               </div>
               <div className="card">
                 <div className="k">Property details</div>
                 <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:4 }}>
-                  ID <b style={{ fontFamily:'var(--mono)' }}>{vehicle.vin || '— not recorded —'}</b>
+                  ID <b style={{ fontFamily:'var(--mono)' }}>{property.erfRef || '— not recorded —'}</b>
                 </div>
                 <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>
-                  Stock {vehicle.stockNumber || '—'} · {vehicle.year} {vehicle.make} {vehicle.model}
+                  Listing {property.listingRef || '—'} · {property.address} {property.suburb}
                 </div>
                 <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>
                   Captured {generatedAt}
@@ -779,7 +779,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             <div className="sig-row">
               <div className="sig">
                 <div className="line">
-                  <div className="name">{vehicle.capturedBy || ''}</div>
+                  <div className="name">{property.capturedBy || ''}</div>
                 </div>
                 <div className="lbl">Signed off by</div>
               </div>
@@ -794,7 +794,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             {/* Footer */}
             <div className="accent" />
             <div className="foot">
-              <div>Prepared by <span className="cy">{dealerName}</span> · powered by <b>PropLens</b></div>
+              <div>Prepared by <span className="cy">{agencyName}</span> · powered by <b>PropLens</b></div>
               <div className="lockup-wrap">
                 <img className="lockup" src={trupropertyLockup} alt="TruProperty" />
               </div>

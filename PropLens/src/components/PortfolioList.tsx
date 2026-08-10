@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
+  Home, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
   FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown} from 'lucide-react';
@@ -8,34 +8,34 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 } from 'recharts';
-import { Vehicle } from '../types';
+import { Property } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 
-interface InventoryListProps {
-  vehicles: Vehicle[];
-  onSelectVehicle: (vehicle: Vehicle) => void;
-  onViewReport?: (vehicle: Vehicle) => void;
-  onAddVehicle: (newVehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => void;
+interface PortfolioListProps {
+  properties: Property[];
+  onSelectVehicle: (property: Property) => void;
+  onViewReport?: (property: Property) => void;
+  onAddVehicle: (newVehicle: Omit<Property, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => void;
   onDeleteVehicle: (id: string) => void;
-  onExportToDms?: (vehicle: Vehicle) => Promise<any>;
-  onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
+  onExportToDms?: (property: Property) => Promise<any>;
+  onUpdateVehicle?: (property: Property, patch: Partial<Property>) => Promise<Property | null>;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
 }
 
-// The DMS target is fixed for every device and controlled server-side
-// (TRUFLOW_DMS_URL). Phones no longer carry their own base URL  —  a stale
+// The FlowPMS target is fixed for every device and controlled server-side
+// (TRUFLOW_PMS_URL). Phones no longer carry their own base URL  —  a stale
 // localhost left in one phone's storage used to break its exports silently.
-// This constant is only used to open the DMS in a browser tab from the header,
-// and to show the dealer where their stock lands. It read lens.tru-saas.com  — 
-// TruLens's own address  —  so "Open TruFlow DMS" reopened TruLens, and Settings
-// told the dealer their cars went to the wrong place. flow. is canonical.
-const DMS_URL = 'https://flow.tru-saas.com';
+// This constant is only used to open the FlowPMS in a browser tab from the header,
+// and to show the agency where their listing lands. It read lens.tru-saas.com  — 
+// TruLens's own address  —  so "Open TruFlow FlowPMS" reopened TruLens, and Settings
+// told the agency their homes went to the wrong place. flow. is canonical.
+const PMS_URL = 'https://flow.tru-saas.com';
 
-export default function InventoryList({
-  vehicles,
+export default function PortfolioList({
+  properties,
   onSelectVehicle,
   onViewReport,
   onAddVehicle,
@@ -44,11 +44,11 @@ export default function InventoryList({
   onUpdateVehicle,
   syncStatus,
   onForceSync
-}: InventoryListProps) {
+}: PortfolioListProps) {
   const { signOut, user, isDemo } = useAuth();
   const [loggingOut, setLoggingOut] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
-  /** Stock # from Flow deep-link (?stock=)  —  highlight + search */
+  /** Listing # from Flow deep-link (?listing=)  —  highlight + search */
   const [highlightStock, setHighlightStock] = React.useState<string | null>(null);
   const [deepLinkBanner, setDeepLinkBanner] = React.useState<string | null>(null);
   const [copiedStockId, setCopiedStockId] = React.useState<string | null>(null);
@@ -58,11 +58,11 @@ export default function InventoryList({
   const [readinessFilter, setReadinessFilter] = React.useState<'ALL' | 'NEEDS' | 'READY'>('ALL');
   const [showAddForm, setShowAddForm] = React.useState(false);
   /* Progressive disclosure for the add/edit form: the three (now four) fields
-     someone types at the car stay visible; the rest sit behind this toggle.
+     someone types at the homes stay visible; the rest sit behind this toggle.
      The field values live in component state, not the inputs, so collapsing the
      block never loses what was typed. */
   const [showAllFields, setShowAllFields] = React.useState(false);
-  const [editingVehicle, setEditingVehicle] = React.useState<Vehicle | null>(null);
+  const [editingVehicle, setEditingVehicle] = React.useState<Property | null>(null);
   const [currentTab, setCurrentTab] = React.useState<'catalog' | 'dashboard' | 'settings'>('catalog');
   const [exportingId, setExportingId] = React.useState<string | null>(null);
   const [publishingId, setPublishingId] = React.useState<string | null>(null);
@@ -78,21 +78,21 @@ export default function InventoryList({
     }
   };
 
-  // Export system → PropLens deep-link: /?stock=STK-123
+  // Export system → PropLens deep-link: /?listing=STK-123
   React.useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      const stock = (params.get('stock') || params.get('stk') || '').trim();
-      if (!stock) return;
-      setSearchTerm(stock);
-      setHighlightStock(stock);
-      setDeepLinkBanner(stock);
+      const listing = (params.get('listing') || params.get('stk') || '').trim();
+      if (!listing) return;
+      setSearchTerm(listing);
+      setHighlightStock(listing);
+      setDeepLinkBanner(listing);
       setCurrentTab('catalog');
       setActiveFilter('All');
       setReadinessFilter('ALL');
       // Clean URL after read so refresh doesn't re-flash forever
       const url = new URL(window.location.href);
-      url.searchParams.delete('stock');
+      url.searchParams.delete('listing');
       url.searchParams.delete('stk');
       window.history.replaceState({}, '', url.pathname + url.search + url.hash);
     } catch {
@@ -100,11 +100,11 @@ export default function InventoryList({
     }
   }, []);
 
-  // Scroll highlighted unit into view once inventory is present
+  // Scroll highlighted unit into view once portfolio is present
   React.useEffect(() => {
-    if (!highlightStock || !vehicles.length) return;
-    const match = vehicles.find(
-      (v) => (v.stockNumber || '').toLowerCase() === highlightStock.toLowerCase()
+    if (!highlightStock || !properties.length) return;
+    const match = properties.find(
+      (v) => (v.listingRef || '').toLowerCase() === highlightStock.toLowerCase()
     );
     if (!match) {
       setDeepLinkBanner(`${highlightStock} · not in this catalogue yet  —  add or sync from export system`);
@@ -118,7 +118,7 @@ export default function InventoryList({
     }
     const t = window.setTimeout(() => setHighlightStock(null), 8000);
     return () => window.clearTimeout(t);
-  }, [highlightStock, vehicles]);
+  }, [highlightStock, properties]);
 
   /* The cursor-tracking card glow (.tl-card-lift) is retired  —  depth lives on
      the controls now, not the cards  —  so the pointermove listener that drove it
@@ -133,16 +133,16 @@ export default function InventoryList({
    * Everything below is computed from photos actually captured.
    */
   const fleet = React.useMemo(() => {
-    const rows = vehicles.map(v => ({ v, r: computeWebReadiness(v) }));
+    const rows = properties.map(v => ({ v, r: computeWebReadiness(v) }));
     // Listing-readiness is the 10-shot CORE set now. Every slot is optional, so
-    // the old missingRequired[] was always empty and read every car as "done".
+    // the old missingRequired[] was always empty and read every homes as "done".
     const shortOfPublish = rows
       .filter(({ r }) => !r.listingReady)
       .sort((a, b) => a.r.missingCore.length - b.r.missingCore.length);
-    const readyToExport = rows.filter(({ v, r }) => r.listingReady && !v.lastDmsExportAt);
+    const readyToExport = rows.filter(({ v, r }) => r.listingReady && !v.lastPmsExportAt);
     const done = rows.filter(({ r }) => r.listingReady).length;
     return { rows, shortOfPublish, readyToExport, done, total: rows.length };
-  }, [vehicles]);
+  }, [properties]);
 
   /** One sentence, the most useful thing true right now. */
   const nextAction = React.useMemo(() => {
@@ -152,7 +152,7 @@ export default function InventoryList({
     if (fleet.shortOfPublish.length > 0) {
       const nearest = fleet.shortOfPublish[0];
       const missing = nearest.r.missingCore;
-      const name = `${nearest.v.year} ${nearest.v.make} ${nearest.v.model}`.trim();
+      const name = `${nearest.v.address} ${nearest.v.suburb}`.trim();
       return {
         head: `${fleet.shortOfPublish.length} ${fleet.shortOfPublish.length === 1 ? 'property is' : 'properties are'} short of publishing`,
         body: `Closest: ${name}  —  ${missing.length === 1 ? missing[0] : `${missing.length} shots, starting with ${missing[0]}`}.`,
@@ -168,7 +168,7 @@ export default function InventoryList({
   }, [fleet]);
 
   // Settings state (persisted for inspection report / share branding)
-  const [dealershipName, setDealershipName] = React.useState(
+  const [agencyName, setAgencyName] = React.useState(
     () => localStorage.getItem('proplens_agency_name') || ''
   );
   const [branch, setBranch] = React.useState(
@@ -224,7 +224,7 @@ export default function InventoryList({
       cancelled = true;
     };
   }, [dealerSlug, nameFromCache]);
-  const [dealerWhatsApp, setDealerWhatsApp] = React.useState(
+  const [agencyWhatsApp, setDealerWhatsApp] = React.useState(
     () => localStorage.getItem('proplens_agency_wa') || ''
   );
   const [currency, setCurrency] = React.useState(
@@ -242,139 +242,136 @@ export default function InventoryList({
       localStorage.removeItem('proplens_export_url');
     }
   }, []);
-  const [make, setMake] = React.useState('');
-  const [model, setModel] = React.useState('');
-  const [year, setYear] = React.useState(new Date().getFullYear());
-  const [trim, setTrim] = React.useState('');
-  const [vin, setVin] = React.useState('');
-  const [stockNumber, setStockNumber] = React.useState('');
-  const [color, setColor] = React.useState('');
-  const [price, setPrice] = React.useState(24995);
-  const [vehicleType, setVehicleType] = React.useState('SUV');
-  /* Shown on every dealer website card. Mileage starts empty rather than 0 so
-     the field reads as "not filled in" instead of a car with no kilometres. */
-  const [mileage, setMileage] = React.useState('');
-  const [transmission, setTransmission] = React.useState<'Automatic' | 'Manual'>('Manual');
-  const [fuelType, setFuelType] = React.useState<'Petrol' | 'Diesel' | 'Hybrid' | 'Electric'>('Petrol');
+  const [address, setAddress] = React.useState('');
+  const [suburb, setSuburb] = React.useState('');
+  const [city, setCity] = React.useState('');
+  const [bedrooms, setBedrooms] = React.useState('');
+  const [bathrooms, setBathrooms] = React.useState('');
+  const [parking, setParking] = React.useState('');
+  const [erfRef, setErfRef] = React.useState('');
+  const [erfSize, setErfSize] = React.useState('');
+  const [floorSize, setFloorSize] = React.useState('');
+  const [listingRef, setListingRef] = React.useState('');
+  const [price, setPrice] = React.useState(2499500);
+  const [propertyType, setPropertyType] = React.useState<'House' | 'Townhouse' | 'Flat' | 'Duplex' | 'Estate' | 'Plot' | 'Commercial' | 'Farm'>('House');
   const [status, setStatus] = React.useState<'In-Progress' | 'Ready'>('In-Progress');
-  const [optionalExtras, setOptionalExtras] = React.useState<string[]>([]);
+  const [features, setFeatures] = React.useState<string[]>([]);
   const [extrasOpen, setExtrasOpen] = React.useState(false);
   const [scanningDisc, setScanningDisc] = React.useState(false);
   const [scanNote, setScanNote] = React.useState<string | null>(null);
 
-  // Fill the form from a scanned licence disc  —  everything stays editable.
-  const applyDiscScan = (d: any) => {
+  // Fill the form from a scanned licence deed  —  everything stays editable.
+  const applyDeedScan = (d: any) => {
     setScanningDisc(false);
     const titleCase = (v) => v.toLowerCase().split(' ').map((w) => w ? w[0].toUpperCase() + w.slice(1) : w).join(' ');
-    if (d.make) setMake(titleCase(d.make));
-    if (d.model) setModel(titleCase(d.model));
-    if (d.colour) setColor(titleCase(d.colour));
-    if (d.vin) setVin(d.vin);
-    if (d.year) setYear(d.year);
-    const got = ['make','model','vin','year'].filter((k) => (d as any)[k]).length;
+    if (d.address) setAddress(titleCase(d.address));
+    if (d.suburb) setSuburb(titleCase(d.suburb));
+    if (d.erfRef) setErfRef(d.erfRef);
+    if (d.propertyType) setPropertyType(d.propertyType);
+    const got = ['address', 'suburb', 'erfRef'].filter((k) => (d as any)[k]).length;
     setScanNote(
       got === 0
-        ? "Couldn't read that disc  —  try again, or type the details in."
-        : `Filled ${got} field${got > 1 ? 's' : ''} from the disc  —  check and adjust.`,
+        ? "Couldn't read that deed  —  try again, or type the details in."
+        : `Filled ${got} field${got > 1 ? 's' : ''} from the deed  —  check and adjust.`,
     );
     setTimeout(() => setScanNote(null), 5000);
   };
 
-  const startEditing = (v: Vehicle) => {
+  const startEditing = (v: Property) => {
     setEditingVehicle(v);
-    setMake(v.make);
-    setModel(v.model);
-    setYear(v.year);
-    setTrim(v.trim || '');
-    setVin(v.vin || '');
-    setStockNumber(v.stockNumber || '');
-    setColor(v.color || '');
-    setPrice(v.price || 24995);
-    setVehicleType(v.vehicleType || 'SUV');
-    setMileage(v.mileage != null ? String(v.mileage) : '');
-    setTransmission(v.transmission || 'Manual');
-    setFuelType(v.fuelType || 'Petrol');
+    setAddress(v.address || '');
+    setSuburb(v.suburb || '');
+    setCity(v.city || '');
+    setBedrooms(v.bedrooms != null ? String(v.bedrooms) : '');
+    setBathrooms(v.bathrooms != null ? String(v.bathrooms) : '');
+    setParking(v.parkingSpaces != null ? String(v.parkingSpaces) : '');
+    setErfRef(v.erfRef || '');
+    setErfSize(v.erfSize != null ? String(v.erfSize) : '');
+    setFloorSize(v.floorSize != null ? String(v.floorSize) : '');
+    setListingRef(v.listingRef || '');
+    setPrice(v.price || 2499500);
+    setPropertyType(v.propertyType || 'House');
     setStatus(v.status === 'Listed' ? 'Ready' : v.status);
-    setOptionalExtras(v.optionalExtras || []);
+    setFeatures(v.features || []);
     setExtrasOpen(false);
     setShowAddForm(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    /* Mileage is required alongside make/model. It could have been optional and
+    /* Address is required. It could have been optional and
        carried through as "unknown", but that means three systems each deciding
-       how to render a missing number, and the DMS schema has mileage as a
-       plain number with no null. The odometer is in front of whoever is
-       standing at the car, so ask once here and the rest of the chain can
+       how to render a missing string, and the FlowPMS schema has address as a
+       plain string with no null. The erf no. is in front of whoever is
+       standing at the property, so ask once here and the rest of the chain can
        trust it. */
-    if (!make || !model || !mileage.trim()) return;
+    if (!address.trim() || !suburb.trim()) return;
 
     if (editingVehicle && onUpdateVehicle) {
       onUpdateVehicle(editingVehicle, {
-        make,
-        model,
-        year: Number(year),
-        trim,
-        vin: vin.trim(),
-        stockNumber: stockNumber.trim(),
-        color: color.trim(),
+        address: address.trim(),
+        suburb: suburb.trim(),
+        city: city.trim(),
+        bedrooms: bedrooms ? Number(bedrooms) : undefined,
+        bathrooms: bathrooms ? Number(bathrooms) : undefined,
+        parkingSpaces: parking ? Number(parking) : undefined,
+        erfRef: erfRef.trim(),
+        erfSize: erfSize ? Number(erfSize) : undefined,
+        floorSize: floorSize ? Number(floorSize) : undefined,
+        listingRef: listingRef.trim(),
         price: Number(price),
-        vehicleType,
-        mileage: Number(mileage),
-        transmission,
-        fuelType,
+        propertyType,
         status,
-        optionalExtras,
+        features,
       });
     } else {
       onAddVehicle({
-        make,
-        model,
-        year: Number(year),
-        trim,
-        vin: vin.trim(),
-        stockNumber: stockNumber.trim(),
-        color: color.trim(),
+        address: address.trim(),
+        suburb: suburb.trim(),
+        city: city.trim(),
+        bedrooms: bedrooms ? Number(bedrooms) : undefined,
+        bathrooms: bathrooms ? Number(bathrooms) : undefined,
+        parkingSpaces: parking ? Number(parking) : undefined,
+        erfRef: erfRef.trim(),
+        erfSize: erfSize ? Number(erfSize) : undefined,
+        floorSize: floorSize ? Number(floorSize) : undefined,
+        listingRef: listingRef.trim(),
         price: Number(price),
-        vehicleType,
-        mileage: Number(mileage),
-        transmission,
-        fuelType,
+        propertyType,
         status,
-        optionalExtras,
+        features,
       });
     }
 
     // Reset form
     setEditingVehicle(null);
-    setMake('');
-    setModel('');
-    setYear(new Date().getFullYear());
-    setTrim('');
-    setVin('');
-    setStockNumber('');
-    setColor('');
-    setPrice(24995);
-    setVehicleType('SUV');
-    setMileage('');
-    setTransmission('Manual');
-    setFuelType('Petrol');
+    setAddress('');
+    setSuburb('');
+    setCity('');
+    setBedrooms('');
+    setBathrooms('');
+    setParking('');
+    setErfRef('');
+    setErfSize('');
+    setFloorSize('');
+    setListingRef('');
+    setPrice(2499500);
+    setPropertyType('House');
     setStatus('In-Progress');
-    setOptionalExtras([]);
+    setFeatures([]);
     setExtrasOpen(false);
     setShowAddForm(false);
   };
 
   // Filter and search logic
-  const filteredVehicles = vehicles.filter(v => {
-    const make = (v.make || '').toLowerCase();
-    const model = (v.model || '').toLowerCase();
-    const vin = (v.vin || '').toLowerCase();
-    const stock = (v.stockNumber || '').toLowerCase();
+  const filteredVehicles = properties.filter(v => {
+    const address = (v.address || '').toLowerCase();
+    const suburb = (v.suburb || '').toLowerCase();
+    const erfRef = (v.erfRef || '').toLowerCase();
+    const listing = (v.listingRef || '').toLowerCase();
     const q = searchTerm.toLowerCase();
     const matchesSearch =
-      make.includes(q) || model.includes(q) || vin.includes(q) || stock.includes(q);
+      address.includes(q) || suburb.includes(q) || erfRef.includes(q) || listing.includes(q);
     if (!matchesSearch) return false;
     if (activeFilter !== 'All' && v.status !== activeFilter) return false;
     if (readinessFilter !== 'ALL') {
@@ -387,9 +384,9 @@ export default function InventoryList({
     return true;
   });
 
-  const copyStockNumber = async (stock: string, id: string) => {
+  const copyListingRef = async (listing: string, id: string) => {
     try {
-      await navigator.clipboard.writeText(stock);
+      await navigator.clipboard.writeText(listing);
       setCopiedStockId(id);
       window.setTimeout(() => setCopiedStockId((cur) => (cur === id ? null : cur)), 1600);
     } catch {
@@ -408,22 +405,22 @@ export default function InventoryList({
     }
   };
 
-  const handleExportClick = async (e: React.MouseEvent, vehicle: Vehicle) => {
+  const handleExportClick = async (e: React.MouseEvent, property: Property) => {
     e.stopPropagation();
     if (!onExportToDms) {
       setExportToast({ type: 'err', text: 'Export handler not available' });
       return;
     }
-    const takenCount = Object.keys(vehicle.photos || {}).length;
+    const takenCount = Object.keys(property.photos || {}).length;
     if (takenCount === 0) {
       setExportToast({ type: 'err', text: 'No photos to export' });
       return;
     }
 
-    setExportingId(vehicle.id);
+    setExportingId(property.id);
     setExportToast(null);
     try {
-      const result = await onExportToDms(vehicle);
+      const result = await onExportToDms(property);
       if (result.success) {
         const b = result.breakdown;
         /* 360 views are called out on their own  —  their ABSENCE
@@ -439,7 +436,7 @@ export default function InventoryList({
               b.mainImages ? `${b.mainImages} main` : null,
               b.extras ? `${b.extras} extras` : null,
               b.damage ? `${b.damage} damage` : null,
-              b.vin ? `${b.vin} VIN` : null,
+              b.erfRef ? `${b.erfRef} Erf no.` : null,
               b.serviceBook ? `${b.serviceBook} service` : null,
               result.truOrbit ? '360 ✓' : 'no 360',
             ].filter(Boolean).join(', ')
@@ -453,7 +450,7 @@ export default function InventoryList({
       } else {
         setExportToast({
           type: 'err',
-          text: result.error || result.message || 'DMS export failed',
+          text: result.error || result.message || 'FlowPMS export failed',
         });
       }
     } catch (err) {
@@ -468,7 +465,7 @@ export default function InventoryList({
   };
 
   return (
-    <div id="inventory-list-container" className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden">
+    <div id="portfolio-list-container" className="flex flex-col h-full bg-[#F5F4F1] text-[#0A1420] overflow-hidden">
       
       {/* App header  —  the app bar is retired (62px of chrome that said what
           one line of type says better: whose properties this is, how much is left).
@@ -480,7 +477,7 @@ export default function InventoryList({
             <img src="/icons/tp-appicon.svg" alt="" className="h-5 w-5 brightness-0 invert" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-[17px] font-semibold text-white truncate leading-tight">{dealershipName}</h1>
+            <h1 className="text-[17px] font-semibold text-white truncate leading-tight">{agencyName}</h1>
             <p className="text-[13px] text-white/50 leading-tight truncate mt-0.5">
               {fleet.total === 0
                 ? 'No properties yet'
@@ -494,10 +491,10 @@ export default function InventoryList({
             Sync keeps its colour because that one is state, not decoration. */}
         <div className="flex items-center gap-0.5 shrink-0">
           <button
-            onClick={() => window.open(DMS_URL, '_blank')}
+            onClick={() => window.open(PMS_URL, '_blank')}
             className="flex items-center justify-center h-10 w-10 rounded-[10px] text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
-            aria-label={`Open export system (${DMS_URL})`}
-            title={`Open export system (${DMS_URL})`}
+            aria-label={`Open export system (${PMS_URL})`}
+            title={`Open export system (${PMS_URL})`}
           >
             <ExternalLink size={18} />
           </button>
@@ -541,7 +538,7 @@ export default function InventoryList({
           reaches. See the nav below the scroll area. */}
 
       {/* Main Panel Content */}
-      <div id="inventory-scroll-container" className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+      <div id="portfolio-scroll-container" className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {currentTab === 'catalog' ? (
           <>
             {/* Search & Add New Toggle */}
@@ -550,7 +547,7 @@ export default function InventoryList({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(10,20,32,0.55)]" size={16} />
             <input
               type="text"
-              placeholder="Search VIN, stock, make…"
+              placeholder="Search Erf no., listing, make…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full h-11 bg-[rgba(10,20,32,0.04)] text-[15px] text-[#0A1420] pl-10 pr-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] focus:border-[#0E9D98] outline-none placeholder-[rgba(10,20,32,0.40)] font-mono transition-colors"
@@ -565,7 +562,7 @@ export default function InventoryList({
           </button>
         </div>
 
-        {/* Add vehicle Form Box */}
+        {/* Add property Form Box */}
         {showAddForm && (
           <form onSubmit={handleSubmit} className="bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-2xl p-4 space-y-4 shadow-xl animate-in fade-in duration-200">
             {/* Header  —  a real title, a one-line subtitle, and a ghost close. */}
@@ -607,42 +604,53 @@ export default function InventoryList({
               <div className="flex-1 h-px bg-[rgba(10,20,32,0.08)]" />
             </div>
 
-            {/* The fields someone actually types at the car. Make and model stay
-                separate. Everything is 48px, 12px radius, recessed, 16px text. */}
+            {/* The fields someone actually types at the property. Address and
+                suburb stay separate. Everything is 48px, 12px radius, recessed,
+                16px text. */}
             <div className="space-y-3">
+              <div>
+                <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Address</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., 12 Oak Avenue"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Make</label>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Suburb</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g., Ford"
-                    value={make}
-                    onChange={(e) => setMake(e.target.value)}
+                    placeholder="e.g., Rosebank"
+                    value={suburb}
+                    onChange={(e) => setSuburb(e.target.value)}
                     className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Model</label>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">City</label>
                   <input
                     type="text"
-                    required
-                    placeholder="e.g., Mustang"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
+                    placeholder="e.g., Johannesburg"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
                     className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Mileage (km)</label>
+                <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Floor size (m²)</label>
                 <input
                   type="text"
                   inputMode="numeric"
                   required
-                  value={mileage}
-                  onChange={(e) => setMileage(e.target.value.replace(/[^\d]/g, ''))}
-                  placeholder="e.g. 78400"
+                  value={floorSize}
+                  onChange={(e) => setFloorSize(e.target.value.replace(/[^\d]/g, ''))}
+                  placeholder="e.g. 185"
                   className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors font-mono"
                 />
               </div>
@@ -650,7 +658,7 @@ export default function InventoryList({
                 <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Price (R)</label>
                 <input
                   type="number"
-                  placeholder="35000"
+                  placeholder="2500000"
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
                   className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors font-mono"
@@ -666,90 +674,87 @@ export default function InventoryList({
               onClick={() => setShowAllFields((v) => !v)}
               className="tru-btn-ghost w-full min-h-[44px] flex items-center justify-between px-3 text-[13px] cursor-pointer"
             >
-              <span>{showAllFields ? 'Fewer details' : 'Year, trim, colour, VIN, stock #  —  more details'}</span>
+              <span>{showAllFields ? 'Fewer details' : 'Bedrooms, bathrooms, parking, Erf no., listing #  —  more details'}</span>
               <ChevronDown size={16} className={`transition-transform ${showAllFields ? 'rotate-180' : ''}`} />
             </button>
 
             {showAllFields && (
               <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-150">
                 <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Year</label>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Bedrooms</label>
                   <input
                     type="number"
-                    placeholder="2024"
-                    value={year}
-                    onChange={(e) => setYear(Number(e.target.value))}
+                    placeholder="3"
+                    value={bedrooms}
+                    onChange={(e) => setBedrooms(e.target.value.replace(/[^\d]/g, ''))}
                     className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Trim</label>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Bathrooms</label>
                   <input
-                    type="text"
-                    placeholder="GT Premium"
-                    value={trim}
-                    onChange={(e) => setTrim(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Stock #</label>
-                  <input
-                    type="text"
-                    placeholder="STK-10293"
-                    value={stockNumber}
-                    onChange={(e) => setStockNumber(e.target.value)}
+                    type="number"
+                    placeholder="2"
+                    value={bathrooms}
+                    onChange={(e) => setBathrooms(e.target.value.replace(/[^\d]/g, ''))}
                     className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Colour</label>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Parking spaces</label>
+                  <input
+                    type="number"
+                    placeholder="2"
+                    value={parking}
+                    onChange={(e) => setParking(e.target.value.replace(/[^\d]/g, ''))}
+                    className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Erf size (m²)</label>
+                  <input
+                    type="number"
+                    placeholder="720"
+                    value={erfSize}
+                    onChange={(e) => setErfSize(e.target.value.replace(/[^\d]/g, ''))}
+                    className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Erf no.</label>
                   <input
                     type="text"
-                    placeholder="Magnetic Gray"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
+                    placeholder="e.g. 1258 JHB"
+                    value={erfRef}
+                    onChange={(e) => setErfRef(e.target.value)}
                     className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Vehicle type</label>
-                  <select
-                    value={vehicleType}
-                    onChange={(e) => setVehicleType(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] outline-none focus:border-[#0E9D98] transition-colors"
-                  >
-                    <option value="Sedan">Sedan</option>
-                    <option value="SUV">SUV</option>
-                    <option value="Bakkie / Truck">Bakkie / Truck</option>
-                    <option value="Hatchback">Hatchback</option>
-                    <option value="Crossover">Crossover</option>
-                    <option value="Coupe">Coupe</option>
-                    <option value="Convertible">Convertible</option>
-                  </select>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Listing #</label>
+                  <input
+                    type="text"
+                    placeholder="LST-0124"
+                    value={listingRef}
+                    onChange={(e) => setListingRef(e.target.value)}
+                    className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] placeholder-[rgba(10,20,32,0.32)] outline-none focus:border-[#0E9D98] transition-colors font-mono"
+                  />
                 </div>
                 <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Transmission</label>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Property type</label>
                   <select
-                    value={transmission}
-                    onChange={(e) => setTransmission(e.target.value as 'Automatic' | 'Manual')}
+                    value={propertyType}
+                    onChange={(e) => setPropertyType(e.target.value as 'House' | 'Townhouse' | 'Flat' | 'Duplex' | 'Estate' | 'Plot' | 'Commercial' | 'Farm')}
                     className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] outline-none focus:border-[#0E9D98] transition-colors"
                   >
-                    <option value="Manual">Manual</option>
-                    <option value="Automatic">Automatic</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Fuel</label>
-                  <select
-                    value={fuelType}
-                    onChange={(e) => setFuelType(e.target.value as 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric')}
-                    className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-[#0A1420] outline-none focus:border-[#0E9D98] transition-colors"
-                  >
-                    <option value="Petrol">Petrol</option>
-                    <option value="Diesel">Diesel</option>
-                    <option value="Hybrid">Hybrid</option>
-                    <option value="Electric">Electric</option>
+                    <option value="House">House</option>
+                    <option value="Townhouse">Townhouse</option>
+                    <option value="Flat">Flat</option>
+                    <option value="Duplex">Duplex</option>
+                    <option value="Estate">Estate</option>
+                    <option value="Plot">Plot</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Farm">Farm</option>
                   </select>
                 </div>
                 <div>
@@ -764,16 +769,16 @@ export default function InventoryList({
                   </select>
                 </div>
 
-                {/* Optional Extras  —  full-width multi-select checklist */}
+                {/* Features  —  full-width multi-select checklist */}
                 <div className="col-span-2 relative">
-                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Optional Extras</label>
+                  <label className="text-[13px] font-medium text-[rgba(10,20,32,0.72)] block mb-1">Features</label>
                   <button
                     type="button"
                     onClick={() => setExtrasOpen((v) => !v)}
                     className="w-full min-h-[48px] bg-[rgba(10,20,32,0.04)] px-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] text-[16px] text-left flex items-center justify-between outline-none focus:border-[#0E9D98] transition-colors cursor-pointer"
                   >
-                    <span className={optionalExtras.length ? 'text-[#0A1420]' : 'text-[rgba(10,20,32,0.32)]'}>
-                      {optionalExtras.length ? `${optionalExtras.length} selected` : 'Select features…'}
+                    <span className={features.length ? 'text-[#0A1420]' : 'text-[rgba(10,20,32,0.32)]'}>
+                      {features.length ? `${features.length} selected` : 'Select features…'}
                     </span>
                     <ChevronDown size={16} className={`text-[rgba(10,20,32,0.45)] transition-transform ${extrasOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -781,21 +786,21 @@ export default function InventoryList({
                   {extrasOpen && (
                     <div className="absolute z-50 left-0 right-0 mt-1 bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-[12px] shadow-2xl max-h-[320px] overflow-y-auto p-2 space-y-3 animate-in fade-in duration-100">
                       {([
-                        ['Safety', ['Park Distance Control', 'Reverse Camera', '360° Camera', 'Blind Spot Monitor', 'Lane Assist']],
-                        ['Comfort', ['Leather Seats', 'Heated Seats', 'Electric Seats', 'Sunroof / Panoramic Roof', 'Keyless Entry & Start', 'Dual-Zone Climate Control']],
-                        ['Tech', ['Navigation', 'Apple CarPlay / Android Auto', 'Bluetooth', 'Digital Cockpit']],
-                        ['Drivetrain', ['AWD / 4WD', 'Towbar', 'Adaptive Cruise Control']],
-                        ['Exterior', ['Alloy Wheels', 'LED / Xenon Headlights', 'Roof Rails', 'Tinted Windows']],
+                        ['Energy', ['Solar', 'Geyser', 'Heat Pump', 'Backup Power', 'Prepaid Electricity']],
+                        ['Comfort', ['Air Conditioning', 'Gas Stove / Hob', 'Fireplace', 'Study / Office', 'Fibre']],
+                        ['Outdoor', ['Pool', 'Jacuzzi / Hot Tub', 'Braai / BBQ', 'Garden', 'Borehole / Water Tank']],
+                        ['Security', ['Security Alarm', 'Electric Gate', 'CCTV', 'Pet Friendly']],
+                        ['Extras', ['Staff Quarters', 'Granny Flat / Flatlet', 'Complex / Estate', 'Income Generating']],
                       ] as [string, string[]][]).map(([group, items]) => (
                         <div key={group}>
                           <p className="text-[11px] font-semibold text-[rgba(10,20,32,0.4)] uppercase tracking-wider px-1 mb-1">{group}</p>
                           {items.map((item) => {
-                            const on = optionalExtras.includes(item);
+                            const on = features.includes(item);
                             return (
                               <button
                                 key={item}
                                 type="button"
-                                onClick={() => setOptionalExtras((prev) => on ? prev.filter((x) => x !== item) : [...prev, item])}
+                                onClick={() => setFeatures((prev) => on ? prev.filter((x) => x !== item) : [...prev, item])}
                                 className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-left hover:bg-[rgba(10,20,32,0.06)] transition-colors cursor-pointer"
                               >
                                 <span className={`w-[18px] h-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors ${on ? 'bg-[#0E9D98] border-[#0E9D98]' : 'border-[rgba(10,20,32,0.18)] bg-transparent'}`}>
@@ -810,9 +815,9 @@ export default function InventoryList({
                     </div>
                   )}
 
-                  {optionalExtras.length > 0 && (
+                  {features.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                      {optionalExtras.map((item) => (
+                      {features.map((item) => (
                         <span
                           key={item}
                           className="inline-flex items-center gap-1 bg-[rgba(14,157,152,0.10)] text-[#0E9D98] text-[12px] font-medium px-2 py-0.5 rounded-full"
@@ -820,7 +825,7 @@ export default function InventoryList({
                           {item}
                           <button
                             type="button"
-                            onClick={() => setOptionalExtras((prev) => prev.filter((x) => x !== item))}
+                            onClick={() => setFeatures((prev) => prev.filter((x) => x !== item))}
                             className="hover:text-[#0A1420] transition-colors cursor-pointer"
                           ><X size={11} /></button>
                         </span>
@@ -837,7 +842,7 @@ export default function InventoryList({
                 type="submit"
                 className="btn-primary on-fill w-full min-h-[48px] flex items-center justify-center gap-2 text-[15px] cursor-pointer"
               >
-                {editingVehicle ? <><Pencil size={15} /> Save changes</> : <><Plus size={15} /> Add vehicle</>}
+                {editingVehicle ? <><Pencil size={15} /> Save changes</> : <><Plus size={15} /> Add property</>}
               </button>
               <button
                 type="button"
@@ -882,7 +887,7 @@ export default function InventoryList({
 
         {/* Filters Panel */}
         {/* Filters  —  one scrolling row instead of two stacked ones.
-            Two full-width rows of chips cost 109px and pushed the first vehicle
+            Two full-width rows of chips cost 109px and pushed the first property
             below the fold. They are also two halves of the same question, so
             they read better side by side than stacked.
 
@@ -900,8 +905,8 @@ export default function InventoryList({
               { id: 'Listed' as const, label: 'Listed' },
             ]).map((f) => {
               const count = f.id === 'All'
-                ? vehicles.length
-                : vehicles.filter((v) => v.status === f.id).length;
+                ? properties.length
+                : properties.filter((v) => v.status === f.id).length;
               const on = activeFilter === f.id;
               return (
                 <button
@@ -944,7 +949,7 @@ export default function InventoryList({
           </div>
         </div>
 
-        {/* Vehicles Inventory List */}
+        {/* Vehicles Portfolio List */}
         <div className="space-y-3 pb-4">
           {filteredVehicles.length === 0 ? (
             <div className="text-center py-10 bg-gradient-to-b from-[#F5F4F1]/80 to-white/40 rounded-xl border border-dashed border-indigo-500/20 flex flex-col items-center justify-center p-5">
@@ -978,17 +983,17 @@ export default function InventoryList({
               </button>
             </div>
           ) : (
-            filteredVehicles.map(vehicle => {
+            filteredVehicles.map(property => {
               // Count completed photos (always use safe photos map)
-              const photos = vehicle.photos || {};
+              const photos = property.photos || {};
               const takenCount = Object.keys(photos).length;
               const totalCount = DEFAULT_TEMPLATE.slots.length;
               const coreTaken = DEFAULT_TEMPLATE.slots.filter(s => s.tier === 'core' && !!photos[s.id]).length;
               const totalCore = DEFAULT_TEMPLATE.slots.filter(s => s.tier === 'core').length;
-              const readiness = computeWebReadiness(vehicle);
+              const readiness = computeWebReadiness(property);
               /* Photos are files now, so the hero is usually "/media/<hash>.jpg"
                  rather than a data URI. Testing only for data: left every
-                 migrated vehicle with a blank thumbnail. */
+                 migrated property with a blank thumbnail. */
               const thumb =
                 typeof photos.front_bumper === 'string' &&
                 (photos.front_bumper.startsWith('data:') ||
@@ -996,18 +1001,18 @@ export default function InventoryList({
                   photos.front_bumper.startsWith('http'))
                   ? photos.front_bumper
                   : null;
-              const priceLabel = Number(vehicle.price || 0).toLocaleString();
+              const priceLabel = Number(property.price || 0).toLocaleString();
               const isHighlighted =
                 !!highlightStock &&
-                (vehicle.stockNumber || '').toLowerCase() === highlightStock.toLowerCase();
+                (property.listingRef || '').toLowerCase() === highlightStock.toLowerCase();
 
               return (
                 <div 
-                  key={vehicle.id}
-                  ref={(el) => { cardRefs.current[vehicle.id] = el; }}
-                  data-stock={vehicle.stockNumber}
+                  key={property.id}
+                  ref={(el) => { cardRefs.current[property.id] = el; }}
+                  data-listing={property.listingRef}
                   className={`bg-[#F5F4F1] rounded-2xl border border-[rgba(10,20,32,0.10)]/80 p-3 hover:border-[rgba(10,20,32,0.16)] hover:bg-white flex flex-col gap-2 relative ${
-                    isHighlighted ? 'tl-stock-highlight' : ''
+                    isHighlighted ? 'tl-listing-highlight' : ''
                   }`}
                 >
                   <div className="flex justify-between items-start">
@@ -1035,7 +1040,7 @@ export default function InventoryList({
                             the top of the scale. Everything else on the card was
                             the same 13px, which is why the list read as a wall. */}
                         <h3 className="text-[17px] font-semibold text-[#0A1420] leading-tight tracking-[-0.01em] flex items-center gap-2">
-                          {vehicle.year} {vehicle.make} {vehicle.model}
+                          {property.address}
                           {isHighlighted && (
                             <span className="text-[13px] font-semibold tracking-normal text-[#0E9D98] bg-[#0E9D98]/15 border border-[#0E9D98]/30 px-2 py-0.5 rounded">
                               From Flow
@@ -1043,7 +1048,7 @@ export default function InventoryList({
                           )}
                         </h3>
                         <p className="text-[13px] text-[rgba(10,20,32,0.55)] font-medium mt-0.5">
-                          {vehicle.trim || 'Standard Trim'} • <span className="text-[rgba(10,20,32,0.72)]">R {priceLabel}</span>
+                          {property.propertyType || 'House'} • <span className="text-[rgba(10,20,32,0.72)]">R {priceLabel}</span>
                         </p>
                         
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -1051,15 +1056,15 @@ export default function InventoryList({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (vehicle.stockNumber) copyStockNumber(vehicle.stockNumber, vehicle.id);
+                              if (property.listingRef) copyListingRef(property.listingRef, property.id);
                             }}
                             className="text-[12px] font-mono text-[rgba(10,20,32,0.42)] hover:text-[rgba(10,20,32,0.72)] flex items-center gap-1"
-                            title="Copy stock number"
+                            title="Copy listing number"
                           >
-                            {vehicle.stockNumber}
-                            {copiedStockId === vehicle.id ? <Check size={9} className="text-[#0E9D98]" /> : <Copy size={9} />}
+                            {property.listingRef}
+                            {copiedStockId === property.id ? <Check size={9} className="text-[#0E9D98]" /> : <Copy size={9} />}
                           </button>
-                          {/* The vehicle.status chip stood here. It is a field somebody
+                          {/* The property.status chip stood here. It is a field somebody
                               sets by hand, while the chip beside it is derived from the
                               photos, score, checklist and signature actually on the
                               record  —  so the two drifted apart and read "Capturing" next
@@ -1068,9 +1073,9 @@ export default function InventoryList({
                               status still drives the filter row above, where it is the
                               user's own label and belongs. On the card, the derived
                               stage is the one that cannot be wrong. */}
-                          {vehicle.lastDmsExportAt && (
-                            <span className="text-[12px] text-[rgba(10,20,32,0.55)] font-mono" title={vehicle.lastDmsExportAt}>
-                              Exported {new Date(vehicle.lastDmsExportAt).toLocaleDateString()}
+                          {property.lastPmsExportAt && (
+                            <span className="text-[12px] text-[rgba(10,20,32,0.55)] font-mono" title={property.lastPmsExportAt}>
+                              Exported {new Date(property.lastPmsExportAt).toLocaleDateString()}
                             </span>
                           )}
                           <span
@@ -1088,19 +1093,19 @@ export default function InventoryList({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          startEditing(vehicle);
-                          document.getElementById('inventory-scroll-container')?.scrollTo({ top: 0, behavior: 'smooth' });
+                          startEditing(property);
+                          document.getElementById('portfolio-scroll-container')?.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
                         className="flex items-center justify-center h-9 w-9 rounded-[12px] text-[rgba(10,20,32,0.55)] hover:text-[#0A1420] hover:bg-[rgba(10,20,32,0.06)] cursor-pointer transition-colors"
-                        title="Edit vehicle details"
+                        title="Edit property details"
                       >
                         <Pencil size={16} />
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm(`Remove ${vehicle.year} ${vehicle.make} from the catalogue?`)) {
-                            onDeleteVehicle(vehicle.id);
+                          if (confirm(`Remove ${property.address} from the catalogue?`)) {
+                            onDeleteVehicle(property.id);
                           }
                         }}
                         className="flex items-center justify-center h-9 w-9 rounded-[12px] text-[rgba(10,20,32,0.55)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
@@ -1139,7 +1144,7 @@ export default function InventoryList({
                     <div className="flex flex-col gap-2">
                       <button
                         type="button"
-                        onClick={() => onSelectVehicle(vehicle)}
+                        onClick={() => onSelectVehicle(property)}
                         className="btn-primary on-fill flex items-center justify-center gap-2 text-[15px] cursor-pointer whitespace-nowrap w-full min-h-[44px] px-2 py-2"
                         title="Open camera guide and take pictures"
                       >
@@ -1148,12 +1153,12 @@ export default function InventoryList({
 
                       <div className="grid grid-cols-3 gap-2">
                         <button
-                          onClick={(e) => handleExportClick(e, vehicle)}
-                          disabled={takenCount === 0 || exportingId === vehicle.id || !onExportToDms}
+                          onClick={(e) => handleExportClick(e, property)}
+                          disabled={takenCount === 0 || exportingId === property.id || !onExportToDms}
                           title={takenCount > 0 ? `Export ${takenCount} photos` : 'Take photos first'}
                           className="tru-btn-ghost flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
-                          {exportingId === vehicle.id ? (
+                          {exportingId === property.id ? (
                             <><RefreshCw size={13} className="animate-spin" /> Syncing</>
                           ) : (
                             <><Download size={13} /> Export</>
@@ -1161,7 +1166,7 @@ export default function InventoryList({
                         </button>
 
                         <button
-                          onClick={(e) => { e.stopPropagation(); onViewReport?.(vehicle); }}
+                          onClick={(e) => { e.stopPropagation(); onViewReport?.(property); }}
                           disabled={takenCount === 0}
                           title={takenCount > 0 ? 'View capture report' : 'Take photos first'}
                           className="tru-btn-ghost flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1169,22 +1174,22 @@ export default function InventoryList({
                           <FileText size={13} /> Report
                         </button>
 
-                        {/* Publish: a secondary when the car is web-ready, a disabled
+                        {/* Publish: a secondary when the homes is web-ready, a disabled
                             control when it isn't  —  never a coloured button that
                             refuses. No blue anywhere. */}
                         <button
                           type="button"
-                          disabled={!onUpdateVehicle || !isStructurallyWebReady(vehicle) || publishingId === vehicle.id}
+                          disabled={!onUpdateVehicle || !isStructurallyWebReady(property) || publishingId === property.id}
                           onClick={async (e) => {
                             e.stopPropagation();
                             if (!onUpdateVehicle) return;
-                            setPublishingId(vehicle.id);
-                            const nextShow = !vehicle.showOnWebsite;
-                            const saved = await onUpdateVehicle(vehicle, {
+                            setPublishingId(property.id);
+                            const nextShow = !property.showOnWebsite;
+                            const saved = await onUpdateVehicle(property, {
                               showOnWebsite: nextShow,
-                              status: nextShow && vehicle.status === 'In-Progress' ? 'Ready' : vehicle.status,
-                              dealerName: dealershipName,
-                              dealerWhatsApp: dealerWhatsApp || vehicle.dealerWhatsApp,
+                              status: nextShow && property.status === 'In-Progress' ? 'Ready' : property.status,
+                              agencyName: agencyName,
+                              agencyWhatsApp: agencyWhatsApp || property.agencyWhatsApp,
                             });
                             if (saved && onExportToDms) {
                               await onExportToDms(saved).catch(() => {});
@@ -1194,8 +1199,8 @@ export default function InventoryList({
                               setExportToast({
                                 type: 'ok',
                                 text: nextShow
-                                  ? `${vehicle.stockNumber} published to website feed`
-                                  : `${vehicle.stockNumber} removed from website feed`,
+                                  ? `${property.listingRef} published to website feed`
+                                  : `${property.listingRef} removed from website feed`,
                               });
                               setTimeout(() => setExportToast(null), 3200);
                             } else {
@@ -1204,22 +1209,22 @@ export default function InventoryList({
                             }
                           }}
                           title={
-                            vehicle.showOnWebsite
+                            property.showOnWebsite
                               ? 'Remove from public website listing'
                               : 'Publish to public website listing'
                           }
                           className={`flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 rounded-[12px] transition-colors disabled:cursor-not-allowed ${
-                            isStructurallyWebReady(vehicle)
+                            isStructurallyWebReady(property)
                               ? 'tru-btn-secondary'
                               : 'text-[rgba(10,20,32,0.30)]'
                           }`}
                         >
-                          {publishingId === vehicle.id ? (
+                          {publishingId === property.id ? (
                             <RefreshCw size={13} className="animate-spin" />
                           ) : (
                             <ExternalLink size={13} />
                           )}
-                          {vehicle.showOnWebsite ? 'Unpublish' : 'Publish'}
+                          {property.showOnWebsite ? 'Unpublish' : 'Publish'}
                         </button>
                       </div>
                     </div>
@@ -1244,10 +1249,10 @@ export default function InventoryList({
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-[13px] font-semibold text-[#0E9D98]">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0).toLocaleString()} ready
+                  R {properties.reduce((acc, v) => acc + (v.status === 'Ready' ? v.price : 0), 0).toLocaleString()} ready
                 </span>
                 <span className="text-[12px] text-[rgba(10,20,32,0.55)]">
-                  R {vehicles.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0).toLocaleString()} pending
+                  R {properties.reduce((acc, v) => acc + (v.status === 'In-Progress' ? v.price : 0), 0).toLocaleString()} pending
                 </span>
               </div>
             </div>
@@ -1256,28 +1261,28 @@ export default function InventoryList({
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-[#F5F4F1] p-2.5 rounded-xl border border-[rgba(10,20,32,0.10)] flex flex-col justify-between h-16">
                 <span className="text-[12px] text-[rgba(10,20,32,0.55)]">Properties</span>
-                <span className="text-[16px] font-semibold text-[#0A1420]">{vehicles.length}</span>
+                <span className="text-[16px] font-semibold text-[#0A1420]">{properties.length}</span>
               </div>
               <div className="bg-[#F5F4F1] p-2.5 rounded-xl border border-[rgba(10,20,32,0.10)] flex flex-col justify-between h-16">
                 <span className="text-[12px] text-[rgba(10,20,32,0.55)]">Ready</span>
-                <span className="text-[16px] font-semibold text-[#0E9D98]">{vehicles.filter(v => v.status === 'Ready').length}</span>
+                <span className="text-[16px] font-semibold text-[#0E9D98]">{properties.filter(v => v.status === 'Ready').length}</span>
               </div>
               <div className="bg-[#F5F4F1] p-2.5 rounded-xl border border-[rgba(10,20,32,0.10)] flex flex-col justify-between h-16">
                 <span className="text-[12px] text-[rgba(10,20,32,0.55)]">Pending</span>
-                <span className="text-[16px] font-semibold text-[#0A1420]">{vehicles.filter(v => v.status === 'In-Progress').length}</span>
+                <span className="text-[16px] font-semibold text-[#0A1420]">{properties.filter(v => v.status === 'In-Progress').length}</span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-[#F5F4F1] p-2.5 rounded-xl border border-[rgba(10,20,32,0.10)] flex flex-col justify-between h-16">
                 <span className="text-[12px] text-[rgba(10,20,32,0.55)]">Capture rate</span>
                 <span className="text-[16px] font-semibold text-[#0E9D98]">
-                  {Math.round((vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (vehicles.length * DEFAULT_TEMPLATE.slots.length || 1)) * 100)}%
+                  {Math.round((properties.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0) / (properties.length * DEFAULT_TEMPLATE.slots.length || 1)) * 100)}%
                 </span>
               </div>
               <div className="bg-[#F5F4F1] p-2.5 rounded-xl border border-[rgba(10,20,32,0.10)] flex flex-col justify-between h-16">
                 <span className="text-[12px] text-[rgba(10,20,32,0.55)]">Photos</span>
                 <span className="text-[16px] font-semibold text-[#0E9D98]">
-                  {vehicles.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0)}
+                  {properties.reduce((acc, v) => acc + Object.keys(v.photos || {}).length, 0)}
                 </span>
               </div>
             </div>
@@ -1292,8 +1297,8 @@ export default function InventoryList({
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Ready', value: vehicles.filter(v => v.status === 'Ready').length },
-                          { name: 'In-Progress', value: vehicles.filter(v => v.status === 'In-Progress').length }
+                          { name: 'Ready', value: properties.filter(v => v.status === 'Ready').length },
+                          { name: 'In-Progress', value: properties.filter(v => v.status === 'In-Progress').length }
                         ]}
                         cx="50%"
                         cy="50%"
@@ -1359,16 +1364,16 @@ export default function InventoryList({
                     names the work; the count is the urgency. */}
                 <span className="text-[13px] font-semibold text-[#0A1420]">Still to shoot</span>
                 <span className="text-[13px] text-[rgba(10,20,32,0.55)] font-medium">
-                  {vehicles.filter(v => v.status === 'In-Progress').length}
+                  {properties.filter(v => v.status === 'In-Progress').length}
                 </span>
               </div>
               <div className="space-y-2">
-                {vehicles.filter(v => v.status === 'In-Progress').length === 0 ? (
+                {properties.filter(v => v.status === 'In-Progress').length === 0 ? (
                   <div className="text-center py-2">
                     <p className="text-[13px] text-[rgba(10,20,32,0.55)]">All properties shot.</p>
                   </div>
                 ) : (
-                  vehicles.filter(v => v.status === 'In-Progress').slice(0, 3).map(v => {
+                  properties.filter(v => v.status === 'In-Progress').slice(0, 3).map(v => {
                     const missingCount = DEFAULT_TEMPLATE.slots.filter(s => s.required && !(v.photos || {})[s.id]).length;
                     return (
                       <div key={v.id} className="flex items-center justify-between p-2 bg-[#EFEDE8] rounded-lg border border-[rgba(10,20,32,0.06)]">
@@ -1377,7 +1382,7 @@ export default function InventoryList({
                             <Camera size={12} className="text-[rgba(10,20,32,0.55)]" />
                           </div>
                           <div>
-                            <p className="text-[13px] font-medium text-[#0A1420]">{v.year} {v.make}</p>
+                            <p className="text-[13px] font-medium text-[#0A1420]">{v.address}</p>
                             <p className="text-[13px] text-[rgba(10,20,32,0.55)]">Missing {missingCount} required shots</p>
                           </div>
                         </div>
@@ -1441,8 +1446,8 @@ export default function InventoryList({
                   <label className="text-[12px] text-[rgba(10,20,32,0.55)] font-semibold">Agency name</label>
                   <input
                     type="text"
-                    value={dealershipName}
-                    onChange={(e) => setDealershipName(e.target.value)}
+                    value={agencyName}
+                    onChange={(e) => setAgencyName(e.target.value)}
                     className="w-full bg-white border border-[rgba(10,20,32,0.10)] rounded-xl px-4 py-3 text-[13px] text-[#0A1420] focus:outline-none focus:border-[#0E9D98]/30"
                   />
                 </div>
@@ -1474,7 +1479,7 @@ export default function InventoryList({
                   <p className="text-[13px] text-[rgba(10,20,32,0.45)] leading-relaxed">
                     {dealerPinned
                       ? "Set by the access code this phone signed in with, and enforced by the server — captures cannot file to another agency, whatever this phone sends. To change it, sign out and sign in with that agency’s code."
-                      : "Chosen when this phone signed in. To change it, sign out and sign in again — or ask TruProperty for an agency code, which pins it server-side so a wrong pick cannot put properties in another agency’s stock."}
+                      : "Chosen when this phone signed in. To change it, sign out and sign in again — or ask TruProperty for an agency code, which pins it server-side so a wrong pick cannot put properties in another agency’s listing."}
                   </p>
                 </div>
               </div>
@@ -1495,13 +1500,13 @@ export default function InventoryList({
                 <div className="flex items-center justify-between gap-3 rounded-lg bg-white border border-[rgba(10,20,32,0.10)] px-3 py-3">
                   <div className="min-w-0">
                     <div className="text-[12px] text-[rgba(10,20,32,0.55)]">Target</div>
-                    <div className="text-[13px] font-mono text-[#0A1420] truncate">{DMS_URL}</div>
+                    <div className="text-[13px] font-mono text-[#0A1420] truncate">{PMS_URL}</div>
                   </div>
                   <button
                     type="button"
-                    onClick={() => window.open(DMS_URL, '_blank')}
+                    onClick={() => window.open(PMS_URL, '_blank')}
                     className="shrink-0 px-3 py-2 bg-[rgba(10,20,32,0.08)] hover:bg-[rgba(10,20,32,0.12)] border border-[rgba(10,20,32,0.12)] text-[#0A1420] rounded-lg text-[13px] font-bold cursor-pointer"
-                    title="Open DMS in browser"
+                    title="Open FlowPMS in browser"
                   >
                     Open
                   </button>
@@ -1564,14 +1569,14 @@ export default function InventoryList({
               </div>
             </div>
 
-            {/* Kredo CarTrust  —  removed for property capture */}
+            {/* Valuation CarTrust  —  removed for property capture */}
 
             {/* Data Management */}
             <div className="pt-2 space-y-2">
               <label className="block space-y-1">
                 <span className="text-[13px] tracking-normal text-[rgba(10,20,32,0.55)] font-bold">WhatsApp contact number</span>
                 <input
-                  value={dealerWhatsApp}
+                  value={agencyWhatsApp}
                   onChange={(e) => setDealerWhatsApp(e.target.value)}
                   placeholder="+27 …"
                   className="w-full bg-[#F5F4F1] border border-[rgba(10,20,32,0.10)] rounded-lg px-3 py-2 text-[13px] text-[#0A1420]"
@@ -1580,11 +1585,11 @@ export default function InventoryList({
               <button
                 type="button"
                 onClick={() => {
-                  localStorage.setItem('proplens_agency_name', dealershipName);
+                  localStorage.setItem('proplens_agency_name', agencyName);
                   localStorage.setItem('proplens_agency_branch', branch);
                   localStorage.setItem('proplens_agency_slug', dealerSlug);
                   if (dealerSlug) localStorage.setItem('proplens_agency_confirmed', '1');
-                  localStorage.setItem('proplens_agency_wa', dealerWhatsApp);
+                  localStorage.setItem('proplens_agency_wa', agencyWhatsApp);
                   localStorage.setItem('proplens_currency', currency);
                   localStorage.setItem('proplens_ai_threshold', String(aiThreshold));
                   setExportToast({ type: 'ok', text: 'Settings saved on this device (used in reports & WhatsApp)' });
@@ -1628,7 +1633,7 @@ export default function InventoryList({
       {/* ── Bottom navigation ────────────────────────────────────────────────
           Moved down from the top of the screen. On a phone held in one hand the
           top third is the hardest place to reach and the bottom is the easiest,
-          and this is an app used one-handed while the other hand is on the car.
+          and this is an app used one-handed while the other hand is on the homes.
 
           pb uses the safe-area inset so the labels clear the iOS home indicator
           rather than sitting under it. */}

@@ -106,7 +106,7 @@ self.addEventListener('fetch', (event) => {
              caches.match returns a *Promise* — always truthy — so the second
              branch never ran and a miss resolved to undefined. respondWith of
              undefined is what the browser reports as a load error, which is
-             what a yard phone hit whenever a navigation landed during a deploy
+             what a site phone hit whenever a navigation landed during a deploy
              restart or a signal drop. Await both, and always answer with a
              real page. */
           const cached = (await caches.match('/')) || (await caches.match('/index.html'));

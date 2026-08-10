@@ -1,16 +1,16 @@
 import React from 'react';
 import MobileDevice from './components/MobileDevice';
-import InventoryList from './components/InventoryList';
+import PortfolioList from './components/PortfolioList';
 import CameraGuide from './components/CameraGuide';
 import ImageEditor from './components/ImageEditor';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
 import DamageTagger from './components/DamageTagger';
-import { Vehicle, QualityReport, PointResult } from './types';
+import { Property, QualityReport, PointResult } from './types';
 import { useAuth } from './contexts/AuthContext';
 
 /** Keep client state crash-safe even if API returns partial records. */
-function normalizeVehicle(raw: any): Vehicle {
+function normalizeProperty(raw: any): Property {
   const photosIn = raw?.photos && typeof raw.photos === 'object' ? raw.photos : {};
   const photos: Record<string, string> = {};
   for (const [k, v] of Object.entries(photosIn)) {
@@ -30,7 +30,7 @@ function normalizeVehicle(raw: any): Vehicle {
     }
   }
   const qualityIn = raw?.quality && typeof raw.quality === 'object' ? raw.quality : {};
-  const quality: Vehicle['quality'] = {};
+  const quality: Property['quality'] = {};
   for (const [slotId, report] of Object.entries(qualityIn)) {
     if (!report || typeof report !== 'object') continue;
     const r = report as any;
@@ -47,35 +47,38 @@ function normalizeVehicle(raw: any): Vehicle {
   return {
     ...raw,
     id: String(raw?.id || ''),
-    make: raw?.make ?? '',
-    model: raw?.model ?? '',
-    year: Number(raw?.year) || new Date().getFullYear(),
-    trim: raw?.trim ?? '',
-    vin: raw?.vin ?? '',
-    stockNumber: raw?.stockNumber ?? '',
-    color: raw?.color ?? '',
+    address: raw?.address ?? '',
+    suburb: raw?.suburb ?? '',
+    city: raw?.city ?? '',
+    bedrooms: raw?.bedrooms,
+    bathrooms: raw?.bathrooms,
+    parkingSpaces: raw?.parkingSpaces,
+    erfRef: raw?.erfRef ?? '',
+    listingRef: raw?.listingRef ?? '',
+    erfSize: raw?.erfSize,
+    floorSize: raw?.floorSize,
     price: Number(raw?.price) || 0,
-    vehicleType: raw?.vehicleType,
+    propertyType: raw?.propertyType,
     status: raw?.status || 'In-Progress',
     createdAt: raw?.createdAt || new Date().toISOString(),
     updatedAt: raw?.updatedAt || new Date().toISOString(),
     photos,
     quality,
-  } as Vehicle;
+  } as Property;
 }
 
 export default function App() {
   const { user, loading } = useAuth();
-  const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
+  const [properties, setProperties] = React.useState<Property[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
-  const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'damage'>('inventory');
+  const [activeView, setActiveView] = React.useState<'portfolio' | 'camera' | 'editor' | 'report' | 'damage'>('portfolio');
   const [loadError, setLoadError] = React.useState<string | null>(null);
   
   // Editor view states
   const [activeSlotId, setActiveSlotId] = React.useState<string | null>(null);
   const [activeImageSrc, setActiveImageSrc] = React.useState<string | null>(null);
   const [activeQualityReport, setActiveQualityReport] = React.useState<QualityReport | null>(null);
-  const [damageReturnTo, setDamageReturnTo] = React.useState<'camera' | 'inventory'>('inventory');
+  const [damageReturnTo, setDamageReturnTo] = React.useState<'camera' | 'portfolio'>('portfolio');
   const [damageInitialSlot, setDamageInitialSlot] = React.useState<string | undefined>(undefined);
   
   // Sync status state
@@ -85,33 +88,33 @@ export default function App() {
      just took has silently disappeared. */
   const [uploadError, setUploadError] = React.useState<string | null>(null);
 
-  // Load inventory from server
+  // Load portfolio from server
   const fetchInventory = async () => {
     if (!user) return;
     setSyncStatus('syncing');
     setLoadError(null);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/inventory', {
+      const res = await fetch('/api/portfolio', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (res.ok) {
         const data = await res.json();
-        const list = Array.isArray(data) ? data.map(normalizeVehicle) : [];
-        setVehicles(list);
+        const list = Array.isArray(data) ? data.map(normalizeProperty) : [];
+        setProperties(list);
         
         setSyncStatus('synced');
       } else {
         const errBody = await res.json().catch(() => ({}));
         setSyncStatus('error');
-        setLoadError(errBody.error || `Failed to load inventory (${res.status})`);
+        setLoadError(errBody.error || `Failed to load portfolio (${res.status})`);
       }
     } catch (e) {
-      console.error('Failed to load inventory:', e);
+      console.error('Failed to load portfolio:', e);
       setSyncStatus('error');
-      setLoadError(e instanceof Error ? e.message : 'Network error loading inventory');
+      setLoadError(e instanceof Error ? e.message : 'Network error loading portfolio');
     }
   };
 
@@ -121,13 +124,13 @@ export default function App() {
     }
   }, [user]);
 
-  // Add vehicle
-  const handleAddVehicle = async (newVehicleData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => {
+  // Add property
+  const handleAddVehicle = async (newVehicleData: Omit<Property, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => {
     if (!user) return;
     setSyncStatus('syncing');
     const token = await user.getIdToken();
     
-    const newVehicle: Vehicle = {
+    const newVehicle: Property = {
       ...newVehicleData,
       id: 'prop-' + Math.floor(100000 + Math.random() * 900000),
       createdAt: new Date().toISOString(),
@@ -137,7 +140,7 @@ export default function App() {
     };
 
     try {
-      const res = await fetch('/api/inventory', {
+      const res = await fetch('/api/portfolio', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -147,41 +150,41 @@ export default function App() {
       });
       if (res.ok) {
         const updated = await res.json();
-        setVehicles(prev => [updated.vehicle, ...prev]);
+        setProperties(prev => [updated.property, ...prev]);
         setSyncStatus('synced');
       } else {
         const errorData = await res.json().catch(() => ({}));
-        console.error('Failed to create vehicle - Server response:', res.status, errorData);
+        console.error('Failed to create property - Server response:', res.status, errorData);
         setSyncStatus('error');
         alert(`Sync Error (${res.status}): ${errorData.error || 'Check server connection'}`);
       }
     } catch (e) {
-      console.error('Failed to create vehicle - Fetch error:', e);
+      console.error('Failed to create property - Fetch error:', e);
       setSyncStatus('error');
       alert('Sync Error: Network failure or server unreachable');
     }
   };
 
-  // Delete vehicle
+  // Delete property
   const handleDeleteVehicle = async (id: string) => {
     if (!user) return;
     setSyncStatus('syncing');
     try {
       const token = await user.getIdToken();
-      const res = await fetch(`/api/inventory/${id}`, {
+      const res = await fetch(`/api/portfolio/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       if (res.ok) {
-        setVehicles(prev => prev.filter(v => v.id !== id));
+        setProperties(prev => prev.filter(v => v.id !== id));
         setSyncStatus('synced');
       } else {
         setSyncStatus('error');
       }
     } catch (e) {
-      console.error('Failed to delete vehicle:', e);
+      console.error('Failed to delete property:', e);
       setSyncStatus('error');
     }
   };
@@ -210,7 +213,7 @@ export default function App() {
     if (!activeVehicleId || !targetSlot || !user) return;
 
     // Optimistic local update — photo, quality, assessment, and close-ups
-    setVehicles(prev => prev.map(v => {
+    setProperties(prev => prev.map(v => {
       if (v.id !== activeVehicleId) return v;
       return {
         ...v,
@@ -239,24 +242,24 @@ export default function App() {
     await uploadPhotoToServer(activeVehicleId, targetSlot, processedImage, updatedReport, assessment, closeupPhotos);
   };
 
-  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport: QualityReport, assessment?: PointResult, closeupPhotos?: string[]) => {
+  const uploadPhotoToServer = async (propertyId: string, slotId: string, base64Image: string, qualityReport: QualityReport, assessment?: PointResult, closeupPhotos?: string[]) => {
     if (!user) return;
     setSyncStatus('syncing');
     setUploadError(null);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/inventory/upload-photo', {
+      const res = await fetch('/api/portfolio/upload-photo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ vehicleId, slotId, base64Image, qualityReport, assessment, closeups: closeupPhotos }),
+        body: JSON.stringify({ propertyId, slotId, base64Image, qualityReport, assessment, closeups: closeupPhotos }),
       });
       if (res.ok) {
         const result = await res.json();
-        const saved = normalizeVehicle(result.vehicle);
-        setVehicles(prev => prev.map(v => v.id === vehicleId ? saved : v));
+        const saved = normalizeProperty(result.property);
+        setProperties(prev => prev.map(v => v.id === propertyId ? saved : v));
         setSyncStatus('synced');
       } else {
         setSyncStatus('error');
@@ -269,20 +272,20 @@ export default function App() {
     }
   };
 
-  /** Partial vehicle update (publish flag, metadata, inspection stamps, etc.) */
-  const handleUpdateVehicle = async (vehicle: Vehicle, patch: Partial<Vehicle>): Promise<Vehicle | null> => {
+  /** Partial property update (publish flag, metadata, inspection stamps, etc.) */
+  const handleUpdateVehicle = async (property: Property, patch: Partial<Property>): Promise<Property | null> => {
     if (!user) return null;
     setSyncStatus('syncing');
     try {
       const token = await user.getIdToken();
-      const { photos, quality, closeups, ...vehicleWithoutMedia } = vehicle;
+      const { photos, quality, closeups, ...propertyWithoutMedia } = property;
       const next = {
-        ...vehicleWithoutMedia,
+        ...propertyWithoutMedia,
         ...patch,
-        id: vehicle.id,
+        id: property.id,
         updatedAt: new Date().toISOString(),
       };
-      const res = await fetch('/api/inventory', {
+      const res = await fetch('/api/portfolio', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -295,36 +298,36 @@ export default function App() {
         return null;
       }
       const data = await res.json();
-      const saved = normalizeVehicle(data.vehicle || next);
-      setVehicles((prev) => prev.map((v) => (v.id === saved.id ? saved : v)));
+      const saved = normalizeProperty(data.property || next);
+      setProperties((prev) => prev.map((v) => (v.id === saved.id ? saved : v)));
       setSyncStatus('synced');
       return saved;
     } catch (e) {
-      console.error('Failed to update vehicle:', e);
+      console.error('Failed to update property:', e);
       setSyncStatus('error');
       return null;
     }
   };
 
-  // Select active vehicle to start capturing
-  const handleSelectVehicle = (vehicle: Vehicle) => {
+  // Select active property to start capturing
+  const handleSelectVehicle = (property: Property) => {
     try {
-      const safe = normalizeVehicle(vehicle);
-      setVehicles((prev) => prev.map((v) => (v.id === safe.id ? safe : v)));
+      const safe = normalizeProperty(property);
+      setProperties((prev) => prev.map((v) => (v.id === safe.id ? safe : v)));
       setActiveVehicleId(safe.id);
       setActiveView('camera');
       setLoadError(null);
     } catch (e) {
-      console.error('Failed to open vehicle:', e);
-      setLoadError(e instanceof Error ? e.message : 'Could not open vehicle');
+      console.error('Failed to open property:', e);
+      setLoadError(e instanceof Error ? e.message : 'Could not open property');
     }
   };
 
-  // Open the inspection Report for a vehicle
-  const handleViewReport = (vehicle: Vehicle) => {
+  // Open the inspection Report for a property
+  const handleViewReport = (property: Property) => {
     try {
-      const safe = normalizeVehicle(vehicle);
-      setVehicles((prev) => prev.map((v) => (v.id === safe.id ? safe : v)));
+      const safe = normalizeProperty(property);
+      setProperties((prev) => prev.map((v) => (v.id === safe.id ? safe : v)));
       setActiveVehicleId(safe.id);
       setActiveView('report');
       setLoadError(null);
@@ -334,23 +337,23 @@ export default function App() {
     }
   };
 
-  // If camera/report was opened but vehicle disappeared, bounce home instead of blank/error
+  // If camera/report was opened but property disappeared, bounce home instead of blank/error
   React.useEffect(() => {
     if (
       (activeView === 'camera' || activeView === 'report' || activeView === 'editor' || activeView === 'damage') &&
       activeVehicleId &&
-      !vehicles.find((v) => v.id === activeVehicleId)
+      !properties.find((v) => v.id === activeVehicleId)
     ) {
-      setActiveView('inventory');
+      setActiveView('portfolio');
       setActiveVehicleId(null);
       setLoadError('That property could not be loaded. It may have been removed — try again from the list.');
     }
-  }, [activeView, activeVehicleId, vehicles]);
+  }, [activeView, activeVehicleId, properties]);
 
   if (loading) return <div className="h-full w-full flex items-center justify-center bg-[#F5F4F1] text-[#0A1420]">Loading Auth...</div>;
 
   const activeVehicle = activeVehicleId
-    ? vehicles.find(v => v.id === activeVehicleId) || null
+    ? properties.find(v => v.id === activeVehicleId) || null
     : null;
 
   return (
@@ -359,7 +362,7 @@ export default function App() {
         <Login />
       ) : (
         <>
-          {activeView === 'inventory' && (
+          {activeView === 'portfolio' && (
             <>
               {loadError && (
                 <div className="absolute top-2 left-2 right-2 z-50 mx-auto max-w-sm rounded-lg border border-red-500/40 bg-red-50 px-3 py-2 text-[13px] text-red-700 shadow-lg">
@@ -392,8 +395,8 @@ export default function App() {
                   </button>
                 </div>
               )}
-              <InventoryList
-                vehicles={vehicles}
+              <PortfolioList
+                properties={properties}
                 onSelectVehicle={handleSelectVehicle}
                 onViewReport={handleViewReport}
                 onAddVehicle={handleAddVehicle}
@@ -407,12 +410,12 @@ export default function App() {
 
           {activeView === 'report' && activeVehicle && (
             <ReportPreview
-              vehicle={activeVehicle}
-              onBack={() => setActiveView('inventory')}
+              property={activeVehicle}
+              onBack={() => setActiveView('portfolio')}
               onVehicleUpdated={async (v) => {
                 const saved = await handleUpdateVehicle(activeVehicle, v);
                 if (!saved) {
-                  setVehicles((prev) => prev.map((x) => (x.id === v.id ? normalizeVehicle(v) : x)));
+                  setProperties((prev) => prev.map((x) => (x.id === v.id ? normalizeProperty(v) : x)));
                 }
               }}
             />
@@ -420,18 +423,18 @@ export default function App() {
 
           {activeView === 'damage' && activeVehicle && (
             <DamageTagger
-              vehicle={activeVehicle}
+              property={activeVehicle}
               initialSlotId={damageInitialSlot}
               onBack={() => setActiveView(damageReturnTo)}
               onSave={async (damageFindings) => {
-                /* Persisted through the same upsert every other vehicle change
-                   uses — POST /api/inventory merges the body over the stored
+                /* Persisted through the same upsert every other property change
+                   uses — POST /api/portfolio merges the body over the stored
                    record, so no new endpoint is needed. The optimistic fallback
                    matches ReportPreview: if the save fails we still show what
                    the inspector entered rather than silently dropping it. */
                 const saved = await handleUpdateVehicle(activeVehicle, { damageFindings });
                 if (!saved) {
-                  setVehicles((prev) =>
+                  setProperties((prev) =>
                     prev.map((x) => (x.id === activeVehicle.id ? { ...x, damageFindings } : x)),
                   );
                 }
@@ -441,20 +444,20 @@ export default function App() {
 
           {activeView === 'camera' && activeVehicle && (
             <CameraGuide
-              vehicle={activeVehicle}
-              onBack={() => setActiveView('inventory')}
+              property={activeVehicle}
+              onBack={() => setActiveView('portfolio')}
               onComplete={() => setActiveView('report')}
               onPhotoCaptured={handlePhotoCaptured}
               onEditRequested={handleEditSlot}
               onBulkPhotosUploaded={(updatedVehicle) => {
-                setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
+                setProperties(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
               }}
             />
           )}
 
           {activeView === 'editor' && activeVehicle && activeSlotId && activeImageSrc && activeQualityReport && (
             <ImageEditor
-              vehicle={activeVehicle}
+              property={activeVehicle}
               slotId={activeSlotId}
               imageSrc={activeImageSrc}
               qualityReport={activeQualityReport}
