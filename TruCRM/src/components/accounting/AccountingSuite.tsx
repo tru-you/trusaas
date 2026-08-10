@@ -575,7 +575,7 @@ export const AccountingSuite: React.FC = () => {
               {isScanning ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Extracting Financial Data with Gemini AI...
+                  Extracting Financial Data with DeepSeek AI...
                 </>
               ) : (
                 <>

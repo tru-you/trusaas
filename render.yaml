@@ -78,7 +78,7 @@ services:
       # Default export target = Premium (MKR path). Change to flow URL if dealer is on Lite.
       - key: TRUFLOW_DMS_URL
         value: https://premium.tru-saas.com  # custom domain on Render (onrender host still works as fallback)
-      - key: GEMINI_API_KEY
+      - key: DEEPSEEK_API_KEY
         sync: false
 
   # ── 1b. TruInspect — AI damage detection / PDF inspection reports ─────────
@@ -106,7 +106,7 @@ services:
         value: /var/data
       - key: LOCAL_MODE
         value: "1"
-      - key: GEMINI_API_KEY
+      - key: DEEPSEEK_API_KEY
         sync: false
       # Headless render worker (trusaas-crm-scraper): JS-heavy dealer pages
       # (WeBuyCars, CMH...) are rendered there; JSON dealers (Car Store,
@@ -212,7 +212,7 @@ services:
       # afterwards — rotate through /api/auth/codes/rotate.
       - key: ADMIN_ACCESS_CODE
         sync: false
-      - key: GEMINI_API_KEY
+      - key: DEEPSEEK_API_KEY
         sync: false
       # ── TruSocial (Zernio integration) ──
       # Team-level API key from docs.zernio.com. Required for profile
@@ -330,5 +330,4 @@ services:
         sync: false
       - key: DEEPSEEK_API_KEY
         sync: false
-      - key: GEMINI_API_KEY
-        sync: false
+      - key: 
