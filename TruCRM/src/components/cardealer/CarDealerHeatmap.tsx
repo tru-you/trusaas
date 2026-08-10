@@ -114,6 +114,19 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
     // Draw nodes / bubbles
     const nodeGroup = g.append('g').attr('class', 'dealer-nodes');
 
+    const tooltipAt = (event: any, d: MappedDealer) => {
+      // Pointer coords arrive in viewBox units (850×460); scale them to the
+      // rendered CSS size so the tooltip lands on the bubble on any screen.
+      const el = svgRef.current;
+      if (!el) return;
+      const [px, py] = d3.pointer(event, el);
+      const sx = el.clientWidth / 850;
+      const sy = el.clientHeight / 460;
+      const tx = Math.min(Math.max(px * sx + 15, 8), el.clientWidth - 272);
+      const ty = Math.min(Math.max(py * sy - 10, 8), el.clientHeight - 130);
+      setTooltip({ dealer: d, x: tx, y: ty });
+    };
+
     const nodes = nodeGroup
       .selectAll<SVGGElement, MappedDealer>('g')
       .data(mappedDealers)
@@ -121,11 +134,9 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
       .append('g')
       .attr('transform', (d) => `translate(${d.coord.x}, ${d.coord.y})`)
       .style('cursor', 'pointer')
-      .on('mouseover', (event, d) => {
-        const [x, y] = d3.pointer(event, svgRef.current);
-        setTooltip({ dealer: d, x: x + 15, y: y - 10 });
-      })
-      .on('mouseout', () => setTooltip(null));
+      .on('mouseover', (event, d) => tooltipAt(event, d))
+      .on('mouseout', () => setTooltip(null))
+      .on('click', (event, d) => tooltipAt(event, d));
 
     // Outer pulse ring
     nodes
@@ -184,8 +195,8 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
   }, [dealerships, metricMode]);
 
   return (
-    <div className="bg-white border border-[rgba(10,20,32,0.08)] rounded-[32px] p-8 shadow-xl relative overflow-hidden space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8">
+    <div className="bg-white border border-[rgba(10,20,32,0.08)] rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 shadow-xl relative overflow-hidden space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 sm:gap-8">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <h3 className="text-xl font-black text-[#1A2332] tracking-tight">Where the competition sits</h3>
@@ -221,10 +232,11 @@ export const CarDealerHeatmap: React.FC<CarDealerHeatmapProps> = ({ dealerships 
       </div>
 
       {/* SVG Container */}
-      <div className="relative w-full bg-[#FAFAF8] rounded-3xl border border-[rgba(10,20,32,0.08)] flex items-center justify-center p-8">
+      <div className="relative w-full bg-[#FAFAF8] rounded-3xl border border-[rgba(10,20,32,0.08)] flex items-center justify-center p-4 sm:p-8">
         <svg ref={svgRef} viewBox="0 0 850 460" className="w-full h-auto max-h-[460px]" />
 
-        {/* Floating Tooltip Card */}
+        {/* Floating Tooltip Card — clamped inside the map so it never clips
+          off-screen on phones */}
         {tooltip && (
           <div
             style={{ left: tooltip.x, top: tooltip.y }}

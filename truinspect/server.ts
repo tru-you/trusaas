@@ -1356,7 +1356,15 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
   }
 
   try {
-    const data = await fetchValuation(String(make), String(model), String(year));
+    const data = await fetchValuation(
+      String(make),
+      String(model),
+      String(year),
+      {
+        vin: String(req.body?.vin || '').trim().toUpperCase() || undefined,
+        dealerSlug: req.user?.dealerSlug || 'default',
+      },
+    );
     return res.json(data);
   } catch (err: any) {
     console.error('[valuation] unexpected error:', err.message);
