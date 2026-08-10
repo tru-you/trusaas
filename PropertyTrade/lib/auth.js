@@ -57,6 +57,24 @@ export function ensureAuthStore(dataDir) {
     console.log('='.repeat(56) + '\n');
   }
 
+  // FLOWPMS_ACCESS_CODE wins over any seeded random: forces the master
+  // admin's code on every boot so Render can set it and re-login.
+  const envCode = String(process.env.FLOWPMS_ACCESS_CODE || '').trim();
+  if (envCode) {
+    const master =
+      store.agents.find(a => a.label === 'Master admin') ||
+      (store.agency?.id
+        ? store.agents.find(a => a.role === 'admin' && a.agencyId === store.agency.id)
+        : null) ||
+      store.agents[0];
+    if (master) {
+      master.salt = crypto.randomBytes(16).toString('hex');
+      master.hash = crypto.scryptSync(envCode, master.salt, 32).toString('hex');
+      master.active = true;
+      console.log(`\n-- FLOWPMS_ACCESS_CODE set: master code = ${envCode}`);
+    }
+  }
+
   writeAuth(file, store);
   return store;
 }
