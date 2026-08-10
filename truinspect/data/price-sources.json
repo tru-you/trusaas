@@ -56,7 +56,7 @@
       "pages": 1,
       "json": {
         "url": "https://api.carstore.co.za/api/cars/",
-        "params": { "make": "{make}", "model": "{model}", "page_size": "200" },
+        "params": { "make": "{make}", "page_size": "200" },
         "resultsPath": "results",
         "priceField": "price",
         "titleField": "title",

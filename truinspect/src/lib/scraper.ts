@@ -553,6 +553,21 @@ async function fetchJsonDealerPrices(
   return [...new Set(prices)];
 }
 
+/** Robust central value for market samples: median for small samples, a
+ *  10%-trimmed mean for larger ones. A single outlier (one dealer's R487k
+ *  Yaris beside 28 R171k classified ads) must not bend the answer. */
+function robustAverage(prices: number[]): number | null {
+  if (!prices.length) return null;
+  const s = [...prices].sort((a, b) => a - b);
+  if (s.length <= 12) {
+    const mid = Math.floor(s.length / 2);
+    return Math.round(s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2);
+  }
+  const trim = Math.max(1, Math.floor(s.length * 0.1));
+  const core = s.slice(trim, s.length - trim);
+  return Math.round(core.reduce((a, b) => a + b, 0) / core.length);
+}
+
 // ==================== MAIN EXPORTED FUNCTION ====================
 
 export interface FetchValuationOptions {
@@ -639,7 +654,7 @@ export async function fetchValuation(
   // is final on its own and we're done.
   if (dealerPrices.length >= MIN_DEALER_LISTINGS) {
     const data: ValuationResult = {
-      averageRetailPrice: Math.round(dealerPrices.reduce((s, p) => s + p, 0) / dealerPrices.length),
+      averageRetailPrice: robustAverage(dealerPrices),
       listingsFound: dealerPrices.length,
       fallbackRequired: false,
       sources: dealerSources,
@@ -652,17 +667,25 @@ export async function fetchValuation(
   const kredo = await kredoCarValue(opts.vin, opts.dealerSlug || 'default');
   const kredoPrice = kredo ? kredo.retailValue ?? kredo.marketValue ?? kredo.tradeValue : null;
 
-  // Layer 3: classifieds — always fetched as part of the fallback. Rendered
-  // headlessly when a worker is configured, plain HTTP otherwise.
+  // Layer 3: classifieds — always fetched as part of the fallback. Plain HTTP
+  // first (AutoTrader serves its listing cards server-side, and the render
+  // worker may be asleep on a free instance); only when the plain page yields
+  // no listings is the worker render tried.
   const sources = buildSources();
   const fetchPromises = sources.map(async (src) => {
     const url = src.url(make, model, y);
     try {
-      const html = await fetchPageForParsing(url);
-      if (!html) {
-        return { name: src.name, html: null, selectors: src.selectors };
+      let html: string | null = null;
+      try {
+        html = await fetchWithRetry(url, { timeout: REQUEST_TIMEOUT, headers: DEFAULT_HEADERS });
+      } catch (err: any) {
+        console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
       }
-      return { name: src.name, html, selectors: src.selectors };
+      if (html && extractPrices(html, src.selectors).length > 0) {
+        return { name: src.name, html, selectors: src.selectors };
+      }
+      const rendered = await renderViaWorker(url);
+      return { name: src.name, html: rendered, selectors: src.selectors };
     } catch (err: any) {
       console.warn(`[scraper] ${src.name} failed:`, err.message);
       return { name: src.name, html: null, selectors: src.selectors };
@@ -718,9 +741,7 @@ export async function fetchValuation(
   }
 
   const data: ValuationResult = {
-    averageRetailPrice: Math.round(
-      allPrices.reduce((sum, p) => sum + p, 0) / allPrices.length,
-    ),
+    averageRetailPrice: robustAverage(allPrices),
     listingsFound: allPrices.length,
     fallbackRequired: dealerPrices.length < MIN_DEALER_LISTINGS,
     searchUrl: `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(urlMake(make))}&model=${mo}&year=${y}`,

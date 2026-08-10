@@ -34,7 +34,6 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
     valuation.averageRetailPrice !== null ? String(valuation.averageRetailPrice) : ''
   );
   const [carsUrl, setCarsUrl] = React.useState<string | null>(null);
-  const [sources, setSources] = React.useState<{ name: string; count: number; avg: number | null }[]>([]);
 
   const [kredoConnected, setKredoConnected] = React.useState(false);
   const [kredoValue, setKredoValue] = React.useState<CarValueResult | null>(null);
@@ -93,7 +92,6 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
         }),
       });
       const data = await res.json();
-      if (data.sources) setSources(data.sources);
       if (data.carsUrl) setCarsUrl(data.carsUrl);
       if (data.averageRetailPrice != null) {
         setManualPrice(String(data.averageRetailPrice));
@@ -131,7 +129,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
   const fmt = (n: number) => `R ${n.toLocaleString('en-ZA')}`;
 
   return (
-    <div className="flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
+    <div className="relative flex flex-col h-full bg-neutral-950 text-[#E8EAE6] overflow-hidden">
       {/* Header */}
       <div className="tl-glass p-4 border-b border-cyan-500/20 shrink-0">
         <div className="flex items-center gap-3">
@@ -155,23 +153,9 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           disabled={fetching}
           className="btn-primary on-fill w-full min-h-[52px] flex items-center justify-center gap-2 text-[16px] disabled:opacity-60"
         >
-          {fetching ? <Loader2 size={18} className="animate-spin" /> : <Zap size={18} />}
-          {fetching ? 'Fetching…' : 'Fetch Market Value'}
+          <Zap size={18} />
+          Fetch Market Value
         </button>
-
-        {/* Source breakdown (shown after any successful fetch) */}
-        {sources.length > 0 && (
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-3 flex items-center gap-3">
-            {sources.map((s) => (
-              <div key={s.name} className="flex-1 text-center">
-                <p className="text-[12px] text-neutral-500 font-semibold">{s.name}</p>
-                <p className="text-[13px] font-bold text-neutral-300">
-                  {s.count > 0 ? `${s.count} listings · ${fmt(s.avg!)}` : 'No results'}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Fallback deep links */}
         {valuation.fallbackRequired && valuation.searchUrl && (
@@ -316,6 +300,17 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           )}
         </div>
       </div>
+
+      {/* Loading overlay while the live market is being assessed */}
+      {fetching && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-neutral-950/90 backdrop-blur-sm px-8">
+          <Loader2 size={30} className="animate-spin text-cyan-400" />
+          <p className="text-[15px] font-bold text-[#E8EAE6]">Assessing live market…</p>
+          <p className="text-[12px] text-neutral-400 text-center">
+            Scanning dealer stock and SA classifieds for your {vehicle.year} {vehicle.make} {vehicle.model}
+          </p>
+        </div>
+      )}
 
       {/* Bottom nav */}
       <div className="shrink-0 p-3 border-t border-neutral-900 bg-neutral-950/95">
