@@ -3,6 +3,8 @@ import { newId } from '../lib/id.js';
 import { save, load, query } from '../lib/persist.js';
 import { requireFields, sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 import { requireRole, filterByAgentScope } from '../lib/isolation.js';
+import { paginate } from '../lib/paginate.js';
+import { recordAudit } from '../lib/audit.js';
 
 export default function interestRoutes(DATA_DIR) {
   const r = Router();
@@ -13,7 +15,7 @@ export default function interestRoutes(DATA_DIR) {
     if (req.query.propertyId) items = items.filter(i => i.propertyId === req.query.propertyId);
     if (req.query.buyerId) items = items.filter(i => i.buyerId === req.query.buyerId);
     if (req.query.status) items = items.filter(i => i.status === req.query.status);
-    res.json(items);
+    res.json(paginate(req, res, items));
   });
 
   r.get('/api/interests/:id', (req, res) => {
@@ -42,6 +44,7 @@ export default function interestRoutes(DATA_DIR) {
       updatedAt: now,
     };
     save(DATA_DIR, 'interests', id, interest);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'create', entityType: 'interest', entityId: id });
     res.status(201).json(interest);
   });
 
@@ -55,6 +58,7 @@ export default function interestRoutes(DATA_DIR) {
     if (req.body.lostReason !== undefined) item.lostReason = sanitizeString(req.body.lostReason);
     item.updatedAt = new Date().toISOString();
     save(DATA_DIR, 'interests', item.id, item);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'interest', entityId: item.id });
     res.json(item);
   });
 
@@ -68,6 +72,7 @@ export default function interestRoutes(DATA_DIR) {
     item.notes.push({ date: new Date().toISOString(), author: req.body.author || req.agentId, text });
     item.updatedAt = new Date().toISOString();
     save(DATA_DIR, 'interests', item.id, item);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'note', entityType: 'interest', entityId: item.id });
     res.json(item);
   });
 
@@ -77,6 +82,7 @@ export default function interestRoutes(DATA_DIR) {
     item.deleted = true;
     item.updatedAt = new Date().toISOString();
     save(DATA_DIR, 'interests', item.id, item);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'delete', entityType: 'interest', entityId: item.id });
     res.json({ ok: true });
   });
 

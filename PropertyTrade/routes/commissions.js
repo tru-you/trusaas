@@ -4,6 +4,8 @@ import { save, load, query } from '../lib/persist.js';
 import { requireRole } from '../lib/isolation.js';
 import { requireFields, sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 import { calculateSaleCommission, calculateRentalCommission, splitCommission } from '../lib/sa-rules.js';
+import { paginate } from '../lib/paginate.js';
+import { recordAudit } from '../lib/audit.js';
 
 export default function commissionRoutes(DATA_DIR) {
   const r = Router();
@@ -13,7 +15,7 @@ export default function commissionRoutes(DATA_DIR) {
     if (req.query.type) items = items.filter(c => c.type === req.query.type);
     if (req.query.propertyId) items = items.filter(c => c.propertyId === req.query.propertyId);
     if (req.query.status) items = items.filter(c => c.status === req.query.status);
-    res.json(items);
+    res.json(paginate(req, res, items));
   });
 
   r.get('/api/commissions/:id', (req, res) => {
@@ -73,6 +75,7 @@ export default function commissionRoutes(DATA_DIR) {
       updatedAt: now,
     };
     save(DATA_DIR, 'commissions', id, commission);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'create', entityType: 'commission', entityId: id });
     res.status(201).json(commission);
   });
 
@@ -93,6 +96,7 @@ export default function commissionRoutes(DATA_DIR) {
     }
     item.updatedAt = new Date().toISOString();
     save(DATA_DIR, 'commissions', item.id, item);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'commission', entityId: item.id });
     res.json(item);
   });
 
@@ -111,6 +115,7 @@ export default function commissionRoutes(DATA_DIR) {
 
     item.updatedAt = new Date().toISOString();
     save(DATA_DIR, 'commissions', item.id, item);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'pay', entityType: 'commission', entityId: item.id });
     res.json(item);
   });
 

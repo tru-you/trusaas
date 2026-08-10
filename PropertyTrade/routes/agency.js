@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireRole, scopeToAgency } from '../lib/isolation.js';
 import { readStore, saveStore, agencyById } from '../lib/auth.js';
 import { sanitizeString } from '../lib/validate.js';
+import { recordAudit } from '../lib/audit.js';
 
 export default function agencyRoutes(dataDir) {
   const r = Router();
@@ -29,6 +30,7 @@ export default function agencyRoutes(dataDir) {
     store.agencies = store.agencies.map(x => (x.id === a.id ? a : x));
     if (store.agency && store.agency.id === a.id) store.agency = a;
     saveStore(dataDir, store);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'agency', entityId: a.id });
     res.json(a);
   });
 

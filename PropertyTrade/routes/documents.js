@@ -3,6 +3,8 @@ import { save, load, query, remove } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
 import { requireRole } from '../lib/isolation.js';
 import { sanitizeString, isValidEnum } from '../lib/validate.js';
+import { paginate } from '../lib/paginate.js';
+import { recordAudit } from '../lib/audit.js';
 
 const TYPE = 'documents';
 
@@ -25,7 +27,7 @@ export default function documentRoutes(dataDir) {
       return true;
     });
     const safe = items.map(({ dataUrl, ...rest }) => rest);
-    res.json(safe);
+    res.json(paginate(req, res, safe));
   });
 
   r.get('/api/documents/:id', (req, res) => {
@@ -65,6 +67,7 @@ export default function documentRoutes(dataDir) {
     };
     save(dataDir, TYPE, id, item);
     const { dataUrl, ...safe } = item;
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'create', entityType: 'document', entityId: id });
     res.status(201).json(safe);
   });
 
@@ -72,6 +75,7 @@ export default function documentRoutes(dataDir) {
     const item = load(dataDir, TYPE, req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     remove(dataDir, TYPE, req.params.id);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'delete', entityType: 'document', entityId: item.id });
     res.json({ ok: true });
   });
 

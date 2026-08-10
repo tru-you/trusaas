@@ -4,6 +4,8 @@ import { newId } from '../lib/id.js';
 import { requireRole, agentCanAccessProperty, filterByAgentScope } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 import { isDepositReceiptOverdue, isDepositRefundOverdue, leaseExpiringWithin } from '../lib/sa-rules.js';
+import { paginate } from '../lib/paginate.js';
+import { recordAudit } from '../lib/audit.js';
 
 const TYPE = 'leases';
 
@@ -19,11 +21,12 @@ export default function leaseRoutes(dataDir) {
       return true;
     });
     items = filterByAgentScope(req, items);
-    res.json(items.map(l => ({
+    const rows = items.map(l => ({
       ...l,
       depositReceiptOverdue: isDepositReceiptOverdue(l),
       depositRefundOverdue: isDepositRefundOverdue(l),
-    })));
+    }));
+    res.json(paginate(req, res, rows));
   });
 
   r.get('/api/leases/:id', (req, res) => {
@@ -76,6 +79,7 @@ export default function leaseRoutes(dataDir) {
     prop.updatedAt = new Date().toISOString();
     save(dataDir, 'properties', prop.id, prop);
 
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'create', entityType: 'lease', entityId: id });
     res.status(201).json(item);
   });
 
@@ -94,6 +98,7 @@ export default function leaseRoutes(dataDir) {
     }
     existing.updatedAt = new Date().toISOString();
     save(dataDir, TYPE, existing.id, existing);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'lease', entityId: existing.id });
     res.json(existing);
   });
 
@@ -115,6 +120,7 @@ export default function leaseRoutes(dataDir) {
       save(dataDir, 'properties', prop.id, prop);
     }
 
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'terminate', entityType: 'lease', entityId: existing.id });
     res.json(existing);
   });
 

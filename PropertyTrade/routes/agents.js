@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireRole } from '../lib/isolation.js';
 import { readStore, saveStore, createAgentCode } from '../lib/auth.js';
 import { sanitizeString, isValidEnum, ENUMS } from '../lib/validate.js';
+import { recordAudit } from '../lib/audit.js';
 
 export default function agentRoutes(dataDir) {
   const r = Router();
@@ -24,6 +25,7 @@ export default function agentRoutes(dataDir) {
       assignedPropertyIds: Array.isArray(b.assignedPropertyIds) ? b.assignedPropertyIds : [],
     });
     const { salt, hash, ...safe } = agent;
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'create', entityType: 'agent', entityId: agent.id });
     res.status(201).json({ agent: safe, code });
   });
 
@@ -38,6 +40,7 @@ export default function agentRoutes(dataDir) {
     if (b.active !== undefined) agent.active = !!b.active;
     saveStore(dataDir, store);
     const { salt, hash, ...safe } = agent;
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'agent', entityId: agent.id });
     res.json(safe);
   });
 
@@ -47,6 +50,7 @@ export default function agentRoutes(dataDir) {
     if (!agent) return res.status(404).json({ error: 'Not found.' });
     agent.active = false;
     saveStore(dataDir, store);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'delete', entityType: 'agent', entityId: agent.id });
     res.json({ ok: true });
   });
 

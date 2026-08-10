@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { query, load, save } from '../lib/persist.js';
 import { requireRole, filterByAgentScope } from '../lib/isolation.js';
+import { paginate } from '../lib/paginate.js';
+import { recordAudit } from '../lib/audit.js';
 
 /**
  * Agency inbox: leads captured from the public website/webhook.
@@ -13,7 +15,7 @@ export default function leadRoutes(dataDir) {
   r.get('/', (req, res) => {
     const rows = query(dataDir, 'leads', req.agencyId, l => !l.deleted)
       .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-    res.json(filterByAgentScope(req, rows));
+    res.json(paginate(req, res, filterByAgentScope(req, rows)));
   });
 
   r.put('/:id', (req, res) => {
@@ -28,6 +30,7 @@ export default function leadRoutes(dataDir) {
     lead.status = b.status;
     lead.updatedAt = new Date().toISOString();
     save(dataDir, 'leads', lead.id, lead);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'lead', entityId: lead.id });
     res.json(lead);
   });
 

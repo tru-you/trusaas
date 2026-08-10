@@ -3,6 +3,8 @@ import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
 import { requireRole } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber } from '../lib/validate.js';
+import { paginate } from '../lib/paginate.js';
+import { recordAudit } from '../lib/audit.js';
 
 const TYPE = 'owners';
 
@@ -11,7 +13,7 @@ export default function ownerRoutes(dataDir) {
 
   r.get('/api/owners', (req, res) => {
     const items = query(dataDir, TYPE, req.agencyId);
-    res.json(items);
+    res.json(paginate(req, res, items));
   });
 
   r.get('/api/owners/:id', (req, res) => {
@@ -43,6 +45,7 @@ export default function ownerRoutes(dataDir) {
       updatedAt: new Date().toISOString(),
     };
     save(dataDir, TYPE, id, item);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'create', entityType: 'owner', entityId: id });
     res.status(201).json(item);
   });
 
@@ -55,6 +58,7 @@ export default function ownerRoutes(dataDir) {
     }
     existing.updatedAt = new Date().toISOString();
     save(dataDir, TYPE, existing.id, existing);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'owner', entityId: existing.id });
     res.json(existing);
   });
 

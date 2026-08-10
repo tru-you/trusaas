@@ -3,6 +3,8 @@ import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
 import { requireRole, agentCanAccessProperty, filterByAgentScope } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
+import { paginate } from '../lib/paginate.js';
+import { recordAudit } from '../lib/audit.js';
 
 const TYPE = 'maintenance';
 
@@ -18,7 +20,7 @@ export default function maintenanceRoutes(dataDir) {
       return true;
     });
     items = filterByAgentScope(req, items);
-    res.json(items);
+    res.json(paginate(req, res, items));
   });
 
   r.get('/api/maintenance/:id', (req, res) => {
@@ -54,6 +56,7 @@ export default function maintenanceRoutes(dataDir) {
       updatedAt: new Date().toISOString(),
     };
     save(dataDir, TYPE, id, item);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'create', entityType: 'maintenance', entityId: id });
     res.status(201).json(item);
   });
 
@@ -66,6 +69,7 @@ export default function maintenanceRoutes(dataDir) {
     }
     existing.updatedAt = new Date().toISOString();
     save(dataDir, TYPE, existing.id, existing);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'maintenance', entityId: existing.id });
     res.json(existing);
   });
 
@@ -81,6 +85,7 @@ export default function maintenanceRoutes(dataDir) {
     existing.notes.push(note);
     existing.updatedAt = new Date().toISOString();
     save(dataDir, TYPE, existing.id, existing);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'note', entityType: 'maintenance', entityId: existing.id });
     res.json(existing);
   });
 
@@ -92,6 +97,7 @@ export default function maintenanceRoutes(dataDir) {
     if (req.body?.actualCostZAR !== undefined) existing.actualCostZAR = sanitizeNumber(req.body.actualCostZAR);
     existing.updatedAt = new Date().toISOString();
     save(dataDir, TYPE, existing.id, existing);
+    recordAudit(dataDir, { agentId: req.agentId, agencyId: req.agencyId, action: 'resolve', entityType: 'maintenance', entityId: existing.id });
     res.json(existing);
   });
 

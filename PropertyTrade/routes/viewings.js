@@ -3,6 +3,8 @@ import { newId } from '../lib/id.js';
 import { save, load, query } from '../lib/persist.js';
 import { requireFields, sanitizeString, isValidEnum, ENUMS } from '../lib/validate.js';
 import { requireRole, filterByAgentScope } from '../lib/isolation.js';
+import { paginate } from '../lib/paginate.js';
+import { recordAudit } from '../lib/audit.js';
 
 export default function viewingRoutes(DATA_DIR) {
   const r = Router();
@@ -13,7 +15,7 @@ export default function viewingRoutes(DATA_DIR) {
     if (req.query.propertyId) items = items.filter(v => v.propertyId === req.query.propertyId);
     if (req.query.buyerId) items = items.filter(v => v.buyerId === req.query.buyerId);
     if (req.query.status) items = items.filter(v => v.status === req.query.status);
-    res.json(items);
+    res.json(paginate(req, res, items));
   });
 
   r.get('/api/viewings/:id', (req, res) => {
@@ -76,6 +78,7 @@ export default function viewingRoutes(DATA_DIR) {
       updatedAt: now,
     };
     save(DATA_DIR, 'viewings', id, viewing);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'create', entityType: 'viewing', entityId: id });
     res.status(201).json(viewing);
   });
 
@@ -89,6 +92,7 @@ export default function viewingRoutes(DATA_DIR) {
     if (req.body.agentId) item.agentId = sanitizeString(req.body.agentId);
     item.updatedAt = new Date().toISOString();
     save(DATA_DIR, 'viewings', item.id, item);
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'update', entityType: 'viewing', entityId: item.id });
     res.json(item);
   });
 
@@ -113,6 +117,7 @@ export default function viewingRoutes(DATA_DIR) {
       }
     }
 
+    recordAudit(DATA_DIR, { agentId: req.agentId, agencyId: req.agencyId, action: 'complete', entityType: 'viewing', entityId: item.id });
     res.json(item);
   });
 

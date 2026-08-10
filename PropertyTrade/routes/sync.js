@@ -3,6 +3,7 @@ import { agencyForSlug } from '../lib/auth.js';
 import { load, query, save } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
 import { sanitizeString, sanitizeNumber } from '../lib/validate.js';
+import { recordAudit } from '../lib/audit.js';
 
 /**
  * Satellite write surface (PropLens and friends).
@@ -85,6 +86,7 @@ export default function syncRoutes(dataDir) {
     item.status = created ? 'Ready' : item.status || 'Ready';
     item.updatedAt = new Date().toISOString();
     save(dataDir, 'properties', item.id, item);
+    recordAudit(dataDir, { agentId: null, agencyId: agency.id, action: created ? 'create' : 'update', entityType: 'property', entityId: item.id });
 
     const damageCount = Array.isArray(item.damageFindings) ? item.damageFindings.length : 0;
     res.json({

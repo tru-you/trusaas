@@ -33,6 +33,7 @@ import publicRoutes from './routes/public.js';
 import leadRoutes from './routes/leads.js';
 import syncRoutes from './routes/sync.js';
 import assistantRoutes from './routes/assistant.js';
+import auditRoutes from './routes/audit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
@@ -91,6 +92,7 @@ app.use(publicRoutes(DATA_DIR));
 app.use('/api/leads', leadRoutes(DATA_DIR));
 app.use(syncRoutes(DATA_DIR));
 app.use(assistantRoutes(DATA_DIR));
+app.use(auditRoutes(DATA_DIR));
 
 // SPA catch-all — serve index.html for client-side routing
 app.get('*', (_req, res) => {

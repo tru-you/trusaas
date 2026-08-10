@@ -7,6 +7,25 @@ import { Property, QualityReport } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
 
+/** Downscale a fully-drawn canvas so the longest edge is at most maxEdge
+    (keeps aspect ratio), returning a new canvas. Overlays should be drawn on
+    the source at full resolution first — the resize happens here, last, so
+    they stay sharp. */
+function downscaleCanvas(src: HTMLCanvasElement, maxEdge = 1600): HTMLCanvasElement {
+  const w = src.width, h = src.height;
+  const scale = Math.min(1, maxEdge / Math.max(w, h));
+  if (scale >= 1) return src;
+  const out = document.createElement('canvas');
+  out.width = Math.round(w * scale);
+  out.height = Math.round(h * scale);
+  const ctx = out.getContext('2d');
+  if (!ctx) return src;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(src, 0, 0, out.width, out.height);
+  return out;
+}
+
 interface CameraGuideProps {
   property: Property;
   onBack: () => void;
@@ -347,7 +366,7 @@ export default function CameraGuide({ property, onBack, onComplete, onPhotoCaptu
     ctx.font = 'bold 16px monospace';
     ctx.fillText('STATUS: LOT AUDIT EXEMPTED', 540, 580);
 
-    const base64Data = canvas.toDataURL('image/jpeg', 0.85);
+    const base64Data = downscaleCanvas(canvas).toDataURL('image/jpeg', 0.75);
     const report: QualityReport = {
       overallScore: 100,
       lightingCheck: {
@@ -451,7 +470,7 @@ export default function CameraGuide({ property, onBack, onComplete, onPhotoCaptu
       if (navigator.vibrate) navigator.vibrate(12);
     } catch { /* ignore */ }
 
-    const base64Data = canvas.toDataURL('image/jpeg', 0.85);
+    const base64Data = downscaleCanvas(canvas).toDataURL('image/jpeg', 0.75);
 
     // Calculate quality values (using our simulator stats or Canvas analysis)
     const pitchError = Math.abs(simPitch - activeSlot.idealAngle.pitch);
