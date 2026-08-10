@@ -297,6 +297,25 @@ function escapeRegex(s: string): string {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/** Trim / variant / engine / extras words that must not break model matching.
+ *  Users type sparse ("Yaris") or padded ("Yaris Cross 1.5 Touring Sport") model
+ *  fields, and dealer titles carry the same noise — so matching keys on the
+ *  cleaned base model instead of the raw string. Drop displacements ("1.5",
+ *  "1400cc") and variant words, never 3+ digit bare model numbers ("308"). */
+const MODEL_NOISE_RE = /(?:\b\d+\.\d+\b|\b\d+\s*(?:l|lit|litre|liter|cc)\b|\b(?:sport|sports|rs|gti|gtd|tdi|tsi|tfsi|ttsi|vvti|vvt-i|dsg|dsgi|touring|tourer|premium|flagship|executive|luxury|limited|edition|baseline|active|elegance|comfort|urban|ambition|advance|adventure|4x4|4wd|automatic|auto|manual|fwd|awd|rwd|style|storage|extras)\b)/gi;
+
+/** Reduce any vehicle-name string to its base model so variant/extras words
+ *  can't veto a genuine match. Empty for blank. */
+function modelCore(text: string): string {
+  const s = String(text || '').trim().toLowerCase();
+  if (!s || s === 'any' || s === '-') return '';
+  return s
+    .replace(/[-_]/g, ' ')
+    .replace(MODEL_NOISE_RE, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /** Listing titles spell makes in several ways ("VW Golf" vs "Volkswagen Golf",
  *  "Mercedes-Benz" vs "Mercedes"). When checking a make keyword, its aliases
  *  count too — otherwise real dealer stock almost never matches. */
@@ -382,8 +401,8 @@ function titleMentionsVehicle(title: string, make: string, model: string, year: 
     if (Math.abs(parseInt(ym[0], 10) - y) > 1) return false;
   }
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), 'i').test(t));
-  const modelOk =
-    !model || model.toLowerCase() === 'any' || new RegExp(escapeRegex(String(model)), 'i').test(t);
+  const q = modelCore(model);
+  const modelOk = !q || modelCore(t).includes(q);
   const matchOk = !match || new RegExp(escapeRegex(String(match)), 'i').test(t);
   return makeOk && modelOk && matchOk;
 }
@@ -541,9 +560,12 @@ async function fetchJsonDealerPrices(
     const itemModel = String(item[cfg.modelField || 'model'] ?? '').toLowerCase();
     const itemTitle = String(item[cfg.titleField || 'title'] ?? '').toLowerCase();
     const itemYear = Number(item[cfg.yearField || 'year'] ?? NaN);
-    const qModel = String(model).toLowerCase();
     const makeOk = makeVariants(make).some((kw) => itemMake.includes(kw));
-    const modelOk = !qModel || qModel === 'any' || itemModel.includes(qModel) || itemTitle.includes(qModel);
+    const q = modelCore(String(model));
+    const modelOk =
+      !q ||
+      modelCore(itemModel).includes(q) ||
+      modelCore(itemTitle).includes(q);
     const qYear = parseInt(year, 10);
     const yearOk = !Number.isFinite(itemYear) || !Number.isFinite(qYear) || Math.abs(itemYear - qYear) <= 1;
     if (!makeOk || !modelOk || !yearOk) continue;
@@ -583,12 +605,17 @@ export async function fetchValuation(
   year: string,
   opts: FetchValuationOptions = {},
 ): Promise<ValuationResult> {
-  const key = cacheKey(make, model, year, opts.vin);
+  // Strip trim/engine/extras before building URLs and cache keys: a user
+  // typing "Yaris 1.5 Touring Sport" must query the same classifieds and hit
+  // the same cache as a user typing just "Yaris". Listing-level matching runs
+  // on the cleaned base too, so a padded entry still lands the right stock.
+  const baseModel = modelCore(model);
+  const key = cacheKey(make, baseModel, year, opts.vin);
   const cached = cacheGet(key);
   if (cached) return cached;
 
   const m = encodeURIComponent(make);
-  const mo = encodeURIComponent(model);
+  const mo = encodeURIComponent(baseModel);
   const y = String(year);
 
   // Layer 1: dealer stock pages — real market data from as many competition
@@ -607,16 +634,16 @@ export async function fetchValuation(
   const collect = async (d: (typeof dealers)[number]): Promise<{ name: string; count: number; avg: number | null; prices: number[] }> => {
     try {
       const prices = d.json
-        ? await fetchJsonDealerPrices(d, make, model, y)
+        ? await fetchJsonDealerPrices(d, make, baseModel, y)
         : await (async () => {
             const pages = Math.max(1, d.pages ?? 2);
             // Serialised worker: one render at a time — pages must not pile
             // up concurrently or every client-side render timeout fires.
             const found: number[] = [];
             for (let p = 1; p <= pages; p++) {
-              const html = await fetchPageForParsing(expandDealerUrl(d, make, model, y, p));
+              const html = await fetchPageForParsing(expandDealerUrl(d, make, baseModel, y, p));
               if (!html) break;
-              found.push(...extractDealerPrices(html, d, make, model, y));
+              found.push(...extractDealerPrices(html, d, make, baseModel, y));
             }
             // Dedupe: a site that ignores the page param returns the same
             // listings again; identical prices would otherwise inflate the
@@ -673,7 +700,7 @@ export async function fetchValuation(
   // no listings is the worker render tried.
   const sources = buildSources();
   const fetchPromises = sources.map(async (src) => {
-    const url = src.url(make, model, y);
+    const url = src.url(make, baseModel, y);
     try {
       let html: string | null = null;
       try {
