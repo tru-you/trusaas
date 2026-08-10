@@ -1,0 +1,9 @@
+<svg id="icon-pl" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="130">
+            <rect x="10" y="10" width="180" height="180" rx="42" fill="#0F172A" stroke="#1E293B" stroke-width="3"/>
+            <g filter="url(#dropShadow4)" transform="translate(20, 125)">
+              <text x="3" y="3" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#0F172A">P</tspan><tspan fill="#042F2E">L</tspan></text>
+              <text x="2" y="2" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#334155">P</tspan><tspan fill="#0E7490">L</tspan></text>
+              <text x="1" y="1" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#64748B">P</tspan><tspan fill="#22D3EE">L</tspan></text>
+              <text x="0" y="0" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="url(#metalTop4)">P</tspan><tspan fill="url(#cyanTop4)">L</tspan></text>
+            </g>
+          </svg>
