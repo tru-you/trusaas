@@ -136,6 +136,14 @@ function deviceTokenClaims(token: string): { agencySlug?: string } | null {
     if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
     const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
     if (claims.k !== 'device' || !(claims.exp > Date.now())) return null;
+    // Revocation check. A token on the list is dead on arrival. When a
+    // "revoke everything" happened (revokedBefore set), any token expiring
+    // before that moment was issued before the revoke and is dead too.
+    const revoked = loadRevoked();
+    if (revoked.tokens.includes(token)) return null;
+    if (revoked.revokedBefore !== null && typeof claims.exp === 'number' && claims.exp < revoked.revokedBefore) {
+      return null;
+    }
     return { agencySlug: typeof claims.d === 'string' ? claims.d : undefined };
   } catch { return null; }
 }
@@ -155,6 +163,42 @@ const LOCAL_MODE = !FORCE_CLOUD; // default ON for PC friendliness
 // and survive deploys/restarts. Unset (local dev) = ./data, i.e. the old path.
 const LOCAL_DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 const LOCAL_DATA_FILE = path.join(LOCAL_DATA_DIR, 'local-inventory.json');
+
+/* Revoked device tokens live in their own file so the inventory shape is never
+   touched. `tokens` is the exact bearer strings that have been revoked one by
+   one; `revokedBefore` is a timestamp set by "revoke all for this user" that
+   kills every token that will expire before it (i.e. every token issued so
+   far, since a 30-day TTL means no current token can outlive it). */
+const REVOKED_FILE = path.join(LOCAL_DATA_DIR, 'revoked-tokens.json');
+
+type RevokedStore = { tokens: string[]; revokedBefore: number | null };
+
+function loadRevoked(): RevokedStore {
+  try {
+    if (fs.existsSync(REVOKED_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(REVOKED_FILE, 'utf-8'));
+      const tokens = Array.isArray(parsed?.tokens)
+        ? parsed.tokens.filter((t: any) => typeof t === 'string')
+        : [];
+      const revokedBefore = typeof parsed?.revokedBefore === 'number' ? parsed.revokedBefore : null;
+      return { tokens, revokedBefore };
+    }
+  } catch (e) {
+    console.error('Revoked-tokens read error:', e);
+  }
+  return { tokens: [], revokedBefore: null };
+}
+
+function persistRevoked(store: RevokedStore) {
+  try {
+    if (!fs.existsSync(LOCAL_DATA_DIR)) fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+    const tmp = `${REVOKED_FILE}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(store, null, 2), 'utf-8');
+    fs.renameSync(tmp, REVOKED_FILE);
+  } catch (e) {
+    console.error('Revoked-tokens write error:', e);
+  }
+}
 
 /* Captures are stored as files rather than base64 inside local-inventory.json —
    see photoStore.ts. Initialised before anything reads the store, and before the
@@ -903,6 +947,29 @@ app.post('/api/auth/device', async (req, res) => {
   return res.status(401).json({ error: 'That code is not recognised.' });
 });
 
+/* Revoke a device token. authenticate has already validated the bearer token,
+   so revoking the caller's own token kills exactly that phone. With
+   { allForUser: true }, every token issued so far dies at once — a stolen
+   batch of access codes no longer buys a month of access. */
+app.post('/api/auth/revoke', authenticate, async (req: any, res) => {
+  try {
+    const authHeader = String(req.headers.authorization || '');
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length).trim() : '';
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+    const revoked = loadRevoked();
+    if (req.body?.allForUser === true) {
+      revoked.revokedBefore = Date.now();
+    } else if (!revoked.tokens.includes(token)) {
+      revoked.tokens.push(token);
+    }
+    persistRevoked(revoked);
+    return res.json({ ok: true });
+  } catch (e: any) {
+    return res.status(500).json({ error: 'Revocation failed', message: String(e?.message || e) });
+  }
+});
+
 /** Which commit is actually running.
  *
  *  Confirming a deploy was otherwise inference, and the inferences were wrong in
@@ -950,9 +1017,27 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// CORS for public website feed
+// CORS for public website feed — explicit whitelist instead of `*`. Browser
+// requests carry an Origin header; non-browser clients (native phones, curl)
+// do not, so an absent header is allowed through and echoes nothing back.
+const ALLOWED_ORIGINS = [
+  'https://flowprop.onrender.com',
+  'https://flow.tru-saas.com',
+  'https://premium.tru-saas.com',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5173',
+  ...String(process.env.CORS_EXTRA_ORIGIN || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean),
+];
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   if (req.method === 'OPTIONS') return res.sendStatus(200);

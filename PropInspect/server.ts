@@ -84,9 +84,30 @@ const PORT = Number(process.env.PORT) || 3001;
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Custom lightweight CORS middleware for external website plugins & widget integrations
+// Custom lightweight CORS middleware for external website plugins & widget integrations.
+// Browsers only get the allow-origin header when the Origin is on the whitelist —
+// a random website can no longer make authenticated requests from a user's browser.
+// Non-browser clients (phones, server-to-server) send no Origin header and pass through.
+const ALLOWED_ORIGINS = [
+  "https://lens.tru-saas.com",
+  "https://flow.tru-saas.com",
+  "https://premium.tru-saas.com",
+  "https://www.real-cars.co.za",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:5173",
+];
+const EXTRA_ORIGIN = process.env.CORS_EXTRA_ORIGIN || "";
+if (EXTRA_ORIGIN) {
+  ALLOWED_ORIGINS.push(...EXTRA_ORIGIN.split(",").map(o => o.trim()).filter(Boolean));
+}
+
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.vary("Origin");
+  }
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   if (req.method === "OPTIONS") {
@@ -3424,7 +3445,7 @@ Current Salespeople Workloads:
 ${workloads.map(w => `- ${w.name} (ID: ${w.id}): ${w.activeLeadsCount} active enquiries`).join("\n")}
 
 Leads to assign:
-${newLeads.map(l => `- Enquiry ID: ${l.id}, Name: ${l.firstName} ${l.lastName}, Interested in Property: ${l.propertyId}`).join("\n")}
+${newLeads.map(l => `- Enquiry ID: ${l.id}, Interested in Property: ${l.propertyId}`).join("\n")}
 
 Rules:
 1. Assign each lead to the salesperson with the LOWEST workload.
@@ -3518,8 +3539,21 @@ app.post("/api/chat", async (req: any, res) => {
       `- Stock ${v.listingRef}: ${v.year} ${v.make} ${v.model} ${v.trim} (Price: R ${v.askingPrice.toLocaleString()}, ${v.mileage.toLocaleString()} km, ${v.daysInInventory} days in stock)`
     ).join("\n");
 
-    const leadsContext = activeLeads.map(l => 
-      `- ${l.firstName} ${l.lastName} (Phone: ${l.phone}, Email: ${l.email}, Intent: ${l.digitalScore}%, Status: ${l.status}, Interested in property ${l.propertyId})`
+    // Sanitize leads before the prompt is built: customer names, phone numbers
+    // and email addresses never leave this instance. The AI only sees the
+    // non-PII profile — intent score, status, interest and dates.
+    const sanitizedLeads = activeLeads.map(l => ({
+      id: l.id,
+      digitalScore: l.digitalScore,
+      status: l.status,
+      propertyId: l.propertyId,
+      source: l.source,
+      createdAt: l.createdAt,
+      lastContactedAt: l.lastContactedAt,
+    }));
+
+    const leadsContext = sanitizedLeads.map(l =>
+      `- Lead ${l.id} (Intent: ${l.digitalScore}%, Status: ${l.status}, Interested in property ${l.propertyId}, Source: ${l.source}, Created: ${l.createdAt})`
     ).join("\n");
 
     const tasksContext = pendingTasks.map(t => 
