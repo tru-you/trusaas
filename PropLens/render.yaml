@@ -2,6 +2,7 @@ services:
   - type: web
     name: proplens
     runtime: node
+    rootDir: PropLens
     plan: starter
     buildCommand: npm install && npm run build
     startCommand: node dist/server.cjs
