@@ -3,6 +3,7 @@
 import express from 'express';
 import http from 'node:http';
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ensureAuthStore, requireAuth } from './lib/auth.js';
 import { rateLimit } from './lib/config.js';
@@ -35,7 +36,11 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 app.use(express.json({ limit: '5mb' }));
 app.use(rateLimit({ windowMs: 60_000, max: 60 }));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve the built React app (dist/) when present, else the static public/ shell.
+const distDir = path.join(__dirname, 'dist');
+const staticDir = fs.existsSync(distDir) ? distDir : path.join(__dirname, 'public');
+app.use(express.static(staticDir));
 
 // Ensure auth store exists on boot
 ensureAuthStore(DATA_DIR);
@@ -79,7 +84,7 @@ app.use(commissionRoutes(DATA_DIR));
 
 // SPA catch-all — serve index.html for client-side routing
 app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(staticDir, 'index.html'));
 });
 
 const server = http.createServer(app);
