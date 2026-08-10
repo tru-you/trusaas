@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
-import { filterByAgentScope } from '../lib/isolation.js';
+import { requireRole, filterByAgentScope } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 
 const TYPE = 'offers';
@@ -27,7 +27,7 @@ export default function offerRoutes(dataDir) {
     res.json(item);
   });
 
-  r.post('/api/offers', (req, res) => {
+  r.post('/api/offers', requireRole('admin','principal','manager'), (req, res) => {
     const b = req.body || {};
     if (!b.propertyId || !b.buyerId) return res.status(400).json({ error: 'propertyId and buyerId required.' });
     const id = newId('offer');
@@ -66,7 +66,7 @@ export default function offerRoutes(dataDir) {
     res.status(201).json(item);
   });
 
-  r.post('/api/offers/:id/counter', (req, res) => {
+  r.post('/api/offers/:id/counter', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     existing.status = 'countered';
@@ -76,7 +76,7 @@ export default function offerRoutes(dataDir) {
     res.json(existing);
   });
 
-  r.post('/api/offers/:id/accept', (req, res) => {
+  r.post('/api/offers/:id/accept', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     existing.status = 'accepted';
@@ -86,7 +86,7 @@ export default function offerRoutes(dataDir) {
     res.json(existing);
   });
 
-  r.post('/api/offers/:id/reject', (req, res) => {
+  r.post('/api/offers/:id/reject', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     existing.status = 'rejected';

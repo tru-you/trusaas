@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
+import { requireRole } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 
 const TYPE = 'buyers';
@@ -26,7 +27,7 @@ export default function buyerRoutes(dataDir) {
     res.json(item);
   });
 
-  r.post('/api/buyers', (req, res) => {
+  r.post('/api/buyers', requireRole('admin','principal','manager'), (req, res) => {
     const b = req.body || {};
     const id = newId('buyer');
     const item = {
@@ -55,7 +56,7 @@ export default function buyerRoutes(dataDir) {
     res.status(201).json(item);
   });
 
-  r.put('/api/buyers/:id', (req, res) => {
+  r.put('/api/buyers/:id', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     const b = req.body || {};

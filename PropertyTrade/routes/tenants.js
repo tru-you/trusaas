@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
-import { filterByAgentScope } from '../lib/isolation.js';
+import { requireRole, filterByAgentScope } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 
 const TYPE = 'tenants';
@@ -28,7 +28,7 @@ export default function tenantRoutes(dataDir) {
     res.json(item);
   });
 
-  r.post('/api/tenants', (req, res) => {
+  r.post('/api/tenants', requireRole('admin','principal','manager'), (req, res) => {
     const b = req.body || {};
     const id = newId('tenant');
     const item = {
@@ -55,7 +55,7 @@ export default function tenantRoutes(dataDir) {
     res.status(201).json(item);
   });
 
-  r.put('/api/tenants/:id', (req, res) => {
+  r.put('/api/tenants/:id', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     const b = req.body || {};

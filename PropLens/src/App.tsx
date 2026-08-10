@@ -157,18 +157,23 @@ export default function App() {
         const errorData = await res.json().catch(() => ({}));
         console.error('Failed to create property - Server response:', res.status, errorData);
         setSyncStatus('error');
-        alert(`Sync Error (${res.status}): ${errorData.error || 'Check server connection'}`);
+        setLoadError(`Sync Error (${res.status}): ${errorData.error || 'Check server connection'}`);
       }
     } catch (e) {
       console.error('Failed to create property - Fetch error:', e);
       setSyncStatus('error');
-      alert('Sync Error: Network failure or server unreachable');
+      setLoadError('Sync Error: Network failure or server unreachable');
     }
   };
 
   // Delete property
   const handleDeleteVehicle = async (id: string) => {
     if (!user) return;
+    const property = properties.find((v) => v.id === id);
+    if (!property) return;
+    if (!window.confirm(`Are you sure you want to delete ${property.address}? This removes it and all its photos.`)) {
+      return;
+    }
     setSyncStatus('syncing');
     try {
       const token = await user.getIdToken();
@@ -369,13 +374,22 @@ export default function App() {
                 <div className="absolute top-2 left-2 right-2 z-50 mx-auto max-w-sm rounded-lg border border-red-500/40 bg-red-50 px-3 py-2 text-[13px] text-red-700 shadow-lg">
                   <strong className="block mb-0.5">Load error</strong>
                   {loadError}
-                  <button
-                    type="button"
-                    className="mt-1 underline text-red-700"
-                    onClick={() => { setLoadError(null); fetchInventory(); }}
-                  >
-                    Retry
-                  </button>
+                  <span className="mt-1 flex gap-3">
+                    <button
+                      type="button"
+                      className="underline text-red-700"
+                      onClick={() => { setLoadError(null); fetchInventory(); }}
+                    >
+                      Retry
+                    </button>
+                    <button
+                      type="button"
+                      className="underline text-red-700"
+                      onClick={() => setLoadError(null)}
+                    >
+                      Dismiss
+                    </button>
+                  </span>
                 </div>
               )}
               {/* A failed save has to be seen. The pending shot is already gone

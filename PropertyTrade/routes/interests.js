@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { newId } from '../lib/id.js';
 import { save, load, query } from '../lib/persist.js';
 import { requireFields, sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
-import { filterByAgentScope } from '../lib/isolation.js';
+import { requireRole, filterByAgentScope } from '../lib/isolation.js';
 
 export default function interestRoutes(DATA_DIR) {
   const r = Router();
@@ -22,7 +22,7 @@ export default function interestRoutes(DATA_DIR) {
     res.json(item);
   });
 
-  r.post('/api/interests', (req, res) => {
+  r.post('/api/interests', requireRole('admin','principal','manager'), (req, res) => {
     const err = requireFields(req.body, ['propertyId', 'buyerId']);
     if (err) return res.status(400).json({ error: err });
 
@@ -45,7 +45,7 @@ export default function interestRoutes(DATA_DIR) {
     res.status(201).json(interest);
   });
 
-  r.put('/api/interests/:id', (req, res) => {
+  r.put('/api/interests/:id', requireRole('admin','principal','manager'), (req, res) => {
     const item = load(DATA_DIR, 'interests', req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
 
@@ -58,7 +58,7 @@ export default function interestRoutes(DATA_DIR) {
     res.json(item);
   });
 
-  r.post('/api/interests/:id/note', (req, res) => {
+  r.post('/api/interests/:id/note', requireRole('admin','principal','manager'), (req, res) => {
     const item = load(DATA_DIR, 'interests', req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     const text = sanitizeString(req.body.text, 1000);
@@ -71,7 +71,7 @@ export default function interestRoutes(DATA_DIR) {
     res.json(item);
   });
 
-  r.delete('/api/interests/:id', (req, res) => {
+  r.delete('/api/interests/:id', requireRole('admin','principal','manager'), (req, res) => {
     const item = load(DATA_DIR, 'interests', req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     item.deleted = true;

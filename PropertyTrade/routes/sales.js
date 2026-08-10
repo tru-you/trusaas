@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
-import { filterByAgentScope } from '../lib/isolation.js';
+import { requireRole, filterByAgentScope } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 
 const TYPE = 'sales';
@@ -25,7 +25,7 @@ export default function saleRoutes(dataDir) {
     res.json(item);
   });
 
-  r.post('/api/sales', (req, res) => {
+  r.post('/api/sales', requireRole('admin','principal','manager'), (req, res) => {
     const b = req.body || {};
     if (!b.propertyId || !b.buyerId || !b.offerId) {
       return res.status(400).json({ error: 'propertyId, buyerId, and offerId required.' });
@@ -64,7 +64,7 @@ export default function saleRoutes(dataDir) {
     res.status(201).json(item);
   });
 
-  r.put('/api/sales/:id', (req, res) => {
+  r.put('/api/sales/:id', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     const b = req.body || {};

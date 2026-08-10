@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { save, load, query, remove } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
+import { requireRole } from '../lib/isolation.js';
 import { sanitizeString, isValidEnum } from '../lib/validate.js';
 
 const TYPE = 'documents';
@@ -45,7 +46,7 @@ export default function documentRoutes(dataDir) {
     res.send(buf);
   });
 
-  r.post('/api/documents', (req, res) => {
+  r.post('/api/documents', requireRole('admin','principal','manager'), (req, res) => {
     const b = req.body || {};
     if (!b.parentType || !b.parentId) return res.status(400).json({ error: 'parentType and parentId required.' });
     const id = newId('document');
@@ -67,7 +68,7 @@ export default function documentRoutes(dataDir) {
     res.status(201).json(safe);
   });
 
-  r.delete('/api/documents/:id', (req, res) => {
+  r.delete('/api/documents/:id', requireRole('admin','principal','manager'), (req, res) => {
     const item = load(dataDir, TYPE, req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     remove(dataDir, TYPE, req.params.id);

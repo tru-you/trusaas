@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { newId } from '../lib/id.js';
 import { save, load, query } from '../lib/persist.js';
 import { requireFields, sanitizeString, isValidEnum, ENUMS } from '../lib/validate.js';
-import { filterByAgentScope } from '../lib/isolation.js';
+import { requireRole, filterByAgentScope } from '../lib/isolation.js';
 
 export default function viewingRoutes(DATA_DIR) {
   const r = Router();
@@ -22,7 +22,7 @@ export default function viewingRoutes(DATA_DIR) {
     res.json(item);
   });
 
-  r.post('/api/viewings', (req, res) => {
+  r.post('/api/viewings', requireRole('admin','principal','manager'), (req, res) => {
     const err = requireFields(req.body, ['propertyId', 'buyerId', 'scheduledDate']);
     if (err) return res.status(400).json({ error: err });
 
@@ -79,7 +79,7 @@ export default function viewingRoutes(DATA_DIR) {
     res.status(201).json(viewing);
   });
 
-  r.put('/api/viewings/:id', (req, res) => {
+  r.put('/api/viewings/:id', requireRole('admin','principal','manager'), (req, res) => {
     const item = load(DATA_DIR, 'viewings', req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
 
@@ -92,7 +92,7 @@ export default function viewingRoutes(DATA_DIR) {
     res.json(item);
   });
 
-  r.put('/api/viewings/:id/complete', (req, res) => {
+  r.put('/api/viewings/:id/complete', requireRole('admin','principal','manager'), (req, res) => {
     const item = load(DATA_DIR, 'viewings', req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
 

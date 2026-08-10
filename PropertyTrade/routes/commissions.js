@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { newId } from '../lib/id.js';
 import { save, load, query } from '../lib/persist.js';
+import { requireRole } from '../lib/isolation.js';
 import { requireFields, sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 import { calculateSaleCommission, calculateRentalCommission, splitCommission } from '../lib/sa-rules.js';
 
@@ -21,7 +22,7 @@ export default function commissionRoutes(DATA_DIR) {
     res.json(item);
   });
 
-  r.post('/api/commissions', (req, res) => {
+  r.post('/api/commissions', requireRole('admin','principal','manager'), (req, res) => {
     const err = requireFields(req.body, ['type', 'propertyId']);
     if (err) return res.status(400).json({ error: err });
     if (!isValidEnum(req.body.type, ENUMS.COMMISSION_TYPES)) {
@@ -75,7 +76,7 @@ export default function commissionRoutes(DATA_DIR) {
     res.status(201).json(commission);
   });
 
-  r.put('/api/commissions/:id', (req, res) => {
+  r.put('/api/commissions/:id', requireRole('admin','principal','manager'), (req, res) => {
     const item = load(DATA_DIR, 'commissions', req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
 
@@ -95,7 +96,7 @@ export default function commissionRoutes(DATA_DIR) {
     res.json(item);
   });
 
-  r.put('/api/commissions/:id/splits/:idx/pay', (req, res) => {
+  r.put('/api/commissions/:id/splits/:idx/pay', requireRole('admin','principal','manager'), (req, res) => {
     const item = load(DATA_DIR, 'commissions', req.params.id);
     if (!item || item.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
 

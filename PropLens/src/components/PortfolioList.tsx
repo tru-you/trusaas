@@ -48,6 +48,11 @@ export default function PortfolioList({
   const { signOut, user, isDemo } = useAuth();
   const [loggingOut, setLoggingOut] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
+  /* The input types straight into its own state; the actual filter term only
+     updates 300ms after typing stops, so re-filtering the whole portfolio no
+     longer runs on every keystroke. */
+  const [searchInput, setSearchInput] = React.useState('');
+  const searchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   /** Listing # from Flow deep-link (?listing=)  —  highlight + search */
   const [highlightStock, setHighlightStock] = React.useState<string | null>(null);
   const [deepLinkBanner, setDeepLinkBanner] = React.useState<string | null>(null);
@@ -98,6 +103,22 @@ export default function PortfolioList({
     } catch {
       /* ignore */
     }
+  }, []);
+
+  /* searchTerm can change from outside the input (deep-link, clear filters) —
+     mirror those into the input box, and drop any in-flight debounce. */
+  React.useEffect(() => {
+    setSearchInput(searchTerm);
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = null;
+    }
+  }, [searchTerm]);
+
+  React.useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
   }, []);
 
   // Scroll highlighted unit into view once portfolio is present
@@ -548,8 +569,13 @@ export default function PortfolioList({
             <input
               type="text"
               placeholder="Search Erf no., listing, make…"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchInput}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchInput(value);
+                if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+                searchTimerRef.current = setTimeout(() => setSearchTerm(value), 300);
+              }}
               className="w-full h-11 bg-[rgba(10,20,32,0.04)] text-[15px] text-[#0A1420] pl-10 pr-3 rounded-[12px] border border-[rgba(10,20,32,0.10)] shadow-[inset_0_2px_4px_rgba(10,20,32,0.08)] focus:border-[#0E9D98] outline-none placeholder-[rgba(10,20,32,0.40)] font-mono transition-colors"
             />
           </div>

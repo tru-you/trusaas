@@ -10,7 +10,27 @@ import {
 export default function authRoutes(dataDir) {
   const r = Router();
 
-  r.post('/api/auth/login', (req, res) => {
+  const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+  const LOGIN_MAX_ATTEMPTS = 10;
+  const loginAttempts = new Map();
+
+  function loginLimiter(req, res, next) {
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    const now = Date.now();
+    const entry = loginAttempts.get(ip);
+    if (entry && entry.resetAt <= now) {
+      loginAttempts.delete(ip);
+    }
+    const current = loginAttempts.get(ip) || { count: 0, resetAt: now + LOGIN_WINDOW_MS };
+    if (current.count >= LOGIN_MAX_ATTEMPTS) {
+      return res.status(429).json({ error: 'Too many attempts. Try again later.' });
+    }
+    current.count += 1;
+    loginAttempts.set(ip, current);
+    next();
+  }
+
+  r.post('/api/auth/login', loginLimiter, (req, res) => {
     const { code, remember } = req.body || {};
     if (!code) return res.status(400).json({ error: 'Code is required.' });
     const result = loginWithCode(code, dataDir);

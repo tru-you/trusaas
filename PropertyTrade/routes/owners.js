@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
+import { requireRole } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber } from '../lib/validate.js';
 
 const TYPE = 'owners';
@@ -20,7 +21,7 @@ export default function ownerRoutes(dataDir) {
     res.json({ ...item, properties });
   });
 
-  r.post('/api/owners', (req, res) => {
+  r.post('/api/owners', requireRole('admin','principal','manager'), (req, res) => {
     const b = req.body || {};
     const id = newId('owner');
     const item = {
@@ -45,7 +46,7 @@ export default function ownerRoutes(dataDir) {
     res.status(201).json(item);
   });
 
-  r.put('/api/owners/:id', (req, res) => {
+  r.put('/api/owners/:id', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     const b = req.body || {};

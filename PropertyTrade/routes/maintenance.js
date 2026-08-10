@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
-import { agentCanAccessProperty, filterByAgentScope } from '../lib/isolation.js';
+import { requireRole, agentCanAccessProperty, filterByAgentScope } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 
 const TYPE = 'maintenance';
@@ -27,7 +27,7 @@ export default function maintenanceRoutes(dataDir) {
     res.json(item);
   });
 
-  r.post('/api/maintenance', (req, res) => {
+  r.post('/api/maintenance', requireRole('admin','principal','manager'), (req, res) => {
     const b = req.body || {};
     if (!b.propertyId) return res.status(400).json({ error: 'propertyId required.' });
     const id = newId('maintenance');
@@ -57,7 +57,7 @@ export default function maintenanceRoutes(dataDir) {
     res.status(201).json(item);
   });
 
-  r.put('/api/maintenance/:id', (req, res) => {
+  r.put('/api/maintenance/:id', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     const b = req.body || {};
@@ -69,7 +69,7 @@ export default function maintenanceRoutes(dataDir) {
     res.json(existing);
   });
 
-  r.post('/api/maintenance/:id/note', (req, res) => {
+  r.post('/api/maintenance/:id/note', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     const note = {
@@ -84,7 +84,7 @@ export default function maintenanceRoutes(dataDir) {
     res.json(existing);
   });
 
-  r.put('/api/maintenance/:id/resolve', (req, res) => {
+  r.put('/api/maintenance/:id/resolve', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     existing.status = 'resolved';

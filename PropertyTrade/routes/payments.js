@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { save, load, query } from '../lib/persist.js';
 import { newId } from '../lib/id.js';
-import { agentCanAccessProperty, filterByAgentScope } from '../lib/isolation.js';
+import { requireRole, agentCanAccessProperty, filterByAgentScope } from '../lib/isolation.js';
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 
 const TYPE = 'payments';
@@ -21,7 +21,7 @@ export default function paymentRoutes(dataDir) {
     res.json(items);
   });
 
-  r.post('/api/payments', (req, res) => {
+  r.post('/api/payments', requireRole('admin','principal','manager'), (req, res) => {
     const b = req.body || {};
     if (!b.leaseId) return res.status(400).json({ error: 'leaseId required.' });
 
@@ -50,7 +50,7 @@ export default function paymentRoutes(dataDir) {
     res.status(201).json(item);
   });
 
-  r.put('/api/payments/:id', (req, res) => {
+  r.put('/api/payments/:id', requireRole('admin','principal','manager'), (req, res) => {
     const existing = load(dataDir, TYPE, req.params.id);
     if (!existing || existing.agencyId !== req.agencyId) return res.status(404).json({ error: 'Not found.' });
     const b = req.body || {};
