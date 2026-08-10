@@ -174,22 +174,9 @@ function cachePut(key: string, data: ValuationResult): void {
 
 // ==================== SOURCE DEFINITIONS ====================
 
-/** Classifieds/search sites key makes by their canonical spelling — AutoTrader
- *  knows "Volkswagen", not "VW", and returns an empty page otherwise. */
-const CANONICAL_MAKES: Record<string, string> = {
-  vw: 'Volkswagen',
-  volkswagen: 'Volkswagen',
-  'mercedes-benz': 'Mercedes-Benz',
-  mercedes: 'Mercedes-Benz',
-  'land rover': 'Land Rover',
-  landrover: 'Land Rover',
-  'alfa romeo': 'Alfa Romeo',
-  alfa: 'Alfa Romeo',
-};
+import { CANONICAL_MAKES, urlMake } from './makeAliases';
 
-export function urlMake(make: string): string {
-  return CANONICAL_MAKES[String(make).toLowerCase().trim()] || String(make);
-}
+export { CANONICAL_MAKES, urlMake };
 
 function buildSources(): ScraperSource[] {
   const sources: ScraperSource[] = [];

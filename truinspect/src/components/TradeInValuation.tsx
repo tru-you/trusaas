@@ -4,7 +4,7 @@ import { Vehicle } from '../types';
 import { InspectionItem, ValuationState, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
 import { kredoValuation, kredoStatus, type CarValueResult } from '../lib/kredo';
-import { urlMake } from '../lib/scraper';
+import { urlMake } from '../lib/makeAliases';
 
 interface TradeInValuationProps {
   vehicle: Vehicle;
