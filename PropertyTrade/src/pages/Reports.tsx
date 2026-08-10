@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { apiGet } from '../lib/api';
+import { apiGet, getToken } from '../lib/api';
 import { CommissionReport, RentRollReport, ArrearsReport, SalesPipeline } from '../lib/types';
 import { fmtDate, fmtZAR, titleCase } from '../lib/format';
 import { Badge, Button, Card, CardHeader, Empty, Input, Spinner } from '../components/ui';
@@ -13,6 +13,31 @@ export default function Reports() {
   const [pipeline, setPipeline] = useState<SalesPipeline | null>(null);
   const [commission, setCommission] = useState<CommissionReport | null>(null);
   const [error, setError] = useState('');
+  const [exporting, setExporting] = useState<'rent-roll' | 'properties' | null>(null);
+  const [exportError, setExportError] = useState('');
+
+  const downloadCsv = async (kind: 'rent-roll' | 'properties') => {
+    setExporting(kind);
+    setExportError('');
+    try {
+      const token = getToken();
+      const url = kind === 'rent-roll' ? `/api/reports/rent-roll.csv?month=${month}` : '/api/properties/export.csv';
+      const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!res.ok) throw new Error(`Download failed (${res.status}).`);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = kind === 'rent-roll' ? `rent-roll-${month}.csv` : 'properties.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : 'Download failed.');
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const load = useCallback(async () => {
     setError('');
@@ -41,10 +66,20 @@ export default function Reports() {
 
   return (
     <div className="space-y-5 animate-fade">
-      <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-center gap-2.5">
         <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-auto" />
         <p className="text-[13px] text-muted">Refreshes when the month changes.</p>
+        <div className="flex-1" />
+        <Button variant="ghost" disabled={!!exporting} onClick={() => downloadCsv('rent-roll')}>
+          {exporting === 'rent-roll' ? 'Exporting…' : 'Export rent roll (CSV)'}
+        </Button>
+        <Button variant="ghost" disabled={!!exporting} onClick={() => downloadCsv('properties')}>
+          {exporting === 'properties' ? 'Exporting…' : 'Export properties (CSV)'}
+        </Button>
       </div>
+      {exportError && (
+        <p className="mt-3 text-[13px] text-danger bg-danger/10 rounded-[10px] px-3 py-2.5">{exportError}</p>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-5 items-start">
         <Card>

@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Vehicle } from "../types";
 import { openTruLens } from "../lib/productConfig";
 import { openStockWhatsApp } from "../lib/salesShare";
+import InspectionReport from "./InspectionReport";
 import {
   X,
   Camera,
@@ -86,6 +87,13 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
   const [activeTab, setActiveTab] = useState<"specs" | "inspection" | "recon" | "publish" | "docs">("specs");
   const [newReconName, setNewReconName] = useState("");
   const [newReconCost, setNewReconCost] = useState("");
+
+  // Inspection report overlay (own full-screen modal above this one)
+  const [showInspection, setShowInspection] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) setShowInspection(false);
+  }, [isOpen]);
 
   // Recon Category, Photo and Market check States
   const [reconCategory, setReconCategory] = useState<string>("Repairs / Building");
@@ -275,6 +283,14 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
             >
               {webReadyHint.label} · {photoCount} photo{photoCount === 1 ? "" : "s"}
             </span>
+            <button
+              onClick={() => setShowInspection(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[color:var(--glass-line)] bg-[color:var(--glass)] text-[color:var(--cyan)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
+              title="Open the inspection report for this property"
+            >
+              <FileText size={14} />
+              Inspection report
+            </button>
             {onReturnToStock && vehicle.status === "SOLD" && (
               <button
                 onClick={() => onReturnToStock(vehicle)}
@@ -327,6 +343,15 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
                 <Trash2 size={14} />
               </button>
             )}
+            <button
+              onClick={() => setShowInspection(true)}
+              aria-label="Inspection report"
+              title="Inspection report"
+              className="h-9 w-9 grid place-items-center rounded-full text-[color:var(--white)] cursor-pointer"
+              style={{ background: "rgba(6,8,13,0.6)", border: "1px solid rgba(255,255,255,0.12)" }}
+            >
+              <FileText size={14} />
+            </button>
           </div>
           <div className="md:hidden absolute left-4 bottom-3 z-20 min-w-0 pr-16">
             <div className="text-[20px] font-semibold tracking-[-0.015em] text-[color:var(--white)] leading-tight truncate">
@@ -1333,6 +1358,10 @@ Property details &amp; specs
           )}
         </div>
       </div>
+
+      {showInspection && (
+        <InspectionReport propertyId={vehicle.id} onClose={() => setShowInspection(false)} />
+      )}
     </div>
   );
 }

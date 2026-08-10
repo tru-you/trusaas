@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   SquareKanban,
@@ -13,8 +13,11 @@ import {
   LogOut,
   Home,
   Crown,
+  CalendarDays,
+  Bell,
 } from 'lucide-react';
-import { initials } from '../lib/format';
+import { apiGet } from '../lib/api';
+import { fmtDate, initials } from '../lib/format';
 import { AgentBrief } from '../lib/types';
 
 export interface NavItem {
@@ -25,6 +28,7 @@ export interface NavItem {
 
 export const NAV: NavItem[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'calendar', label: 'Calendar', icon: CalendarDays },
   { key: 'deals', label: 'Deal pipeline', icon: SquareKanban },
   { key: 'properties', label: 'Listings', icon: Building2 },
   { key: 'tenants', label: 'Tenants', icon: UserRound },
@@ -48,6 +52,13 @@ export function Logo({ size = 38 }: { size?: number }) {
   );
 }
 
+interface NotificationItem {
+  id: string;
+  title: string;
+  sub: string;
+  date: string;
+}
+
 export function Shell({
   active,
   onNav,
@@ -62,6 +73,22 @@ export function Shell({
   children: React.ReactNode;
 }) {
   const isMaster = agent?.role === 'admin' && !agent?.agencyId;
+  const [notif, setNotif] = useState<{ open: boolean; items: NotificationItem[] }>({ open: false, items: [] });
+
+  const loadNotifs = useCallback(async () => {
+    try {
+      const data = await apiGet<{ items: NotificationItem[] }>('/api/notifications');
+      setNotif((n) => ({ ...n, items: data.items }));
+    } catch {
+      /* keep the last list */
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNotifs();
+    const t = setInterval(loadNotifs, 60000);
+    return () => clearInterval(t);
+  }, [loadNotifs]);
   return (
     <div className="min-h-screen flex">
       <aside className="fixed inset-y-0 left-0 w-[236px] bg-card border-r border-line flex flex-col">
@@ -123,7 +150,47 @@ export function Shell({
           <h1 className="text-[17px] font-semibold tracking-tight text-ink">
             {NAV.find((n) => n.key === active)?.label || ''}
           </h1>
-          <p className="text-[12.5px] text-muted">{agent?.agencyName || ''}</p>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                onClick={() => setNotif((n) => ({ ...n, open: !n.open }))}
+                title="Notifications"
+                aria-label="Notifications"
+                className="w-9 h-9 rounded-[10px] flex items-center justify-center text-muted hover:text-ink hover:bg-slate-soft transition-colors"
+              >
+                <Bell size={17} />
+                {notif.items.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center">
+                    {notif.items.length}
+                  </span>
+                )}
+              </button>
+              {notif.open && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setNotif((n) => ({ ...n, open: false }))}
+                  />
+                  <div className="absolute right-0 top-full mt-2 z-50 w-[320px] bg-card rounded-[var(--r-card)] border border-line shadow-3 overflow-hidden animate-rise">
+                    <p className="px-4 pt-3.5 pb-2 text-[13px] font-semibold text-ink">Notifications</p>
+                    <div className="max-h-[320px] overflow-y-auto">
+                      {notif.items.length === 0 && (
+                        <p className="px-4 py-6 text-[12.5px] text-muted text-center">You're all caught up.</p>
+                      )}
+                      {notif.items.slice(0, 20).map((it) => (
+                        <div key={it.id} className="px-4 py-2.5 border-t border-line/60 hover:bg-paper">
+                          <p className="text-[13px] font-semibold text-ink leading-snug">{it.title}</p>
+                          <p className="text-[12px] text-muted truncate">{it.sub}</p>
+                          <p className="text-[11px] text-faint mt-0.5">{fmtDate(it.date)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <p className="text-[12.5px] text-muted">{agent?.agencyName || ''}</p>
+          </div>
         </div>
         <div className="px-8 py-6">{children}</div>
       </main>

@@ -4,6 +4,7 @@ import { AgentBrief } from './lib/types';
 import { Shell } from './components/layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Calendar from './pages/Calendar';
 import Deals from './pages/Deals';
 import Properties from './pages/Properties';
 import Tenants from './pages/Tenants';
@@ -73,6 +74,8 @@ export default function App() {
     switch (route) {
       case 'deals':
         return <Deals />;
+      case 'calendar':
+        return <Calendar />;
       case 'properties':
         return <Properties />;
       case 'tenants':

@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, KeyRound, CalendarRange } from 'lucide-react';
+import { Plus, KeyRound, CalendarRange, Pencil } from 'lucide-react';
 import { api, apiGet } from '../lib/api';
 import { Lease, Property, Tenant } from '../lib/types';
 import { fmtDate, fmtZAR, titleCase } from '../lib/format';
@@ -21,6 +21,7 @@ export default function Leases() {
   const [status, setStatus] = useState('');
   const [expiringOnly, setExpiringOnly] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Lease | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [formBusy, setFormBusy] = useState(false);
   const [formError, setFormError] = useState('');
@@ -69,8 +70,8 @@ export default function Leases() {
     setFormBusy(true);
     setFormError('');
     try {
-      await api('/api/leases', {
-        method: 'POST',
+      await api(editing ? `/api/leases/${editing.id}` : '/api/leases', {
+        method: editing ? 'PUT' : 'POST',
         body: {
           ...form,
           monthlyRentZAR: Number(form.monthlyRentZAR) || 0,
@@ -79,6 +80,7 @@ export default function Leases() {
         },
       });
       setModalOpen(false);
+      setEditing(null);
       setForm({ ...emptyForm });
       load();
     } catch (err) {
@@ -86,6 +88,37 @@ export default function Leases() {
     } finally {
       setFormBusy(false);
     }
+  };
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ ...emptyForm });
+    setModalOpen(true);
+  };
+
+  const openEdit = (l: Lease) => {
+    setEditing(l);
+    setForm({
+      propertyId: l.propertyId,
+      tenantId: l.tenantId,
+      startDate: l.startDate,
+      endDate: l.endDate,
+      monthlyRentZAR: String(l.monthlyRentZAR),
+      annualEscalation: String(l.annualEscalation ?? ''),
+      depositZAR: String(l.depositZAR),
+      depositBankName: l.depositBankName ?? '',
+      depositAccountNumber: l.depositAccountNumber ?? '',
+      depositPaidDate: l.depositPaidDate ?? '',
+      depositReceiptSentDate: l.depositReceiptSentDate ?? '',
+      moveInDate: l.moveInDate ?? '',
+      status: l.status,
+    });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditing(null);
   };
 
   const rendered = useMemo(() => leases ?? [], [leases]);
@@ -113,7 +146,7 @@ export default function Leases() {
           Expiring within 60 days
         </button>
         <div className="flex-1" />
-        <Button variant="accent" onClick={() => setModalOpen(true)}>
+        <Button variant="accent" onClick={openCreate}>
           <Plus size={16} /> New lease
         </Button>
       </div>
@@ -134,7 +167,17 @@ export default function Leases() {
                       {tenantById.get(l.tenantId) ? `${tenantById.get(l.tenantId)!.firstName} ${tenantById.get(l.tenantId)!.lastName}` : '—'}
                     </p>
                   </div>
-                  <Badge tone={tone as 'teal' | 'amber' | 'red' | 'neutral'}>{titleCase(l.status)}</Badge>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => openEdit(l)}
+                      title="Edit"
+                      aria-label={`Edit lease for ${shortAddr(l.propertyId)}`}
+                      className="w-7 h-7 rounded-[8px] flex items-center justify-center text-muted hover:text-ink hover:bg-slate-soft transition-colors"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <Badge tone={tone as 'teal' | 'amber' | 'red' | 'neutral'}>{titleCase(l.status)}</Badge>
+                  </div>
                 </div>
 
                 <div className="mt-3.5 flex items-center gap-2 text-[12.5px] text-ink-dim">
@@ -169,12 +212,12 @@ export default function Leases() {
 
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="New lease"
+        onClose={closeModal}
+        title={editing ? 'Edit lease' : 'New lease'}
         wide
         footer={
           <>
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={closeModal}>Cancel</Button>
             <Button variant="accent" onClick={submit} disabled={formBusy}>
               {formBusy ? 'Saving…' : 'Save lease'}
             </Button>

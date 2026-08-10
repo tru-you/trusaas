@@ -1746,6 +1746,40 @@ app.get("/api/all-vehicles", (req: any, res) => {
   res.json(scopeToDealer(state.properties, req.auth));
 });
 
+// Single-property inspection report for the report overlay. Signed-in only
+// (requireAuth runs above), and dealer-scoped like /api/all-vehicles so one
+// tenant can never read another tenant's inspection notes. Inspection fields
+// are optional on the record, so the payload defaults them to empty shapes.
+app.get("/api/inspection/:propertyId", (req: any, res) => {
+  const state = readState();
+  const found = scopeToDealer(state.properties, req.auth).find(
+    (v: any) => v.id === req.params.propertyId
+  );
+  if (!found) return res.status(404).json({ error: "Property not found" });
+
+  res.json({
+    property: {
+      id: found.id,
+      address: found.address || "",
+      suburb: found.suburb || "",
+      propertyType: found.propertyType || "",
+      bedrooms: found.bedrooms || 0,
+      bathrooms: found.bathrooms || 0,
+      garages: found.garages || 0,
+      erfSize: found.erfSize || "",
+      floorSize: found.floorSize || "",
+      listingRef: found.listingRef || "",
+      askingPrice: found.askingPrice || 0,
+      images: found.images || [],
+    },
+    inspectionResults: found.inspectionResults || {},
+    damage: found.damage || [],
+    slotAssessment: found.slotAssessment || {},
+    virReport: found.virReport || [],
+    conditionDeclaration: (found as any).conditionDeclaration || {},
+  });
+});
+
 /** One-off tidy of make/model/trim across ALL stored vehicles. Admin only.
  *
  *  The write paths above now normalise on the way in, so nothing NEW arrives

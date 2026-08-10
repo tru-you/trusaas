@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Mail, Phone } from 'lucide-react';
+import { Plus, Search, Mail, Phone, Pencil } from 'lucide-react';
 import { api, apiGet } from '../lib/api';
 import { Tenant } from '../lib/types';
 import { fmtDate, fmtZAR, initials, titleCase } from '../lib/format';
@@ -19,6 +19,7 @@ export default function Tenants() {
   const [search, setSearch] = useState('');
   const [fica, setFica] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Tenant | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [formBusy, setFormBusy] = useState(false);
   const [formError, setFormError] = useState('');
@@ -52,11 +53,12 @@ export default function Tenants() {
     setFormBusy(true);
     setFormError('');
     try {
-      await api('/api/tenants', {
-        method: 'POST',
+      await api(editing ? `/api/tenants/${editing.id}` : '/api/tenants', {
+        method: editing ? 'PUT' : 'POST',
         body: { ...form, monthlyIncome: Number(form.monthlyIncome) || 0 },
       });
       setModalOpen(false);
+      setEditing(null);
       setForm({ ...emptyForm });
       load();
     } catch (err) {
@@ -64,6 +66,37 @@ export default function Tenants() {
     } finally {
       setFormBusy(false);
     }
+  };
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ ...emptyForm });
+    setModalOpen(true);
+  };
+
+  const openEdit = (t: Tenant) => {
+    setEditing(t);
+    setForm({
+      firstName: t.firstName,
+      lastName: t.lastName,
+      idNumber: t.idNumber,
+      phone: t.phone,
+      email: t.email,
+      whatsapp: t.whatsapp,
+      emergencyContactName: t.emergencyContactName,
+      emergencyContactPhone: t.emergencyContactPhone,
+      employer: t.employer,
+      employerPhone: t.employerPhone,
+      monthlyIncome: String(t.monthlyIncome),
+      ficaStatus: t.ficaStatus,
+      notes: t.notes,
+    });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditing(null);
   };
 
   if (error) return <Empty title="Could not load tenants" hint={error} action={<Button onClick={load}>Retry</Button>} />;
@@ -86,7 +119,7 @@ export default function Tenants() {
           {FICA_STATUSES.map((o) => <option key={o} value={o}>{titleCase(o)}</option>)}
         </Select>
         <div className="flex-1" />
-        <Button variant="accent" onClick={() => setModalOpen(true)}>
+        <Button variant="accent" onClick={openCreate}>
           <Plus size={16} /> Add tenant
         </Button>
       </div>
@@ -109,6 +142,14 @@ export default function Tenants() {
                     </h3>
                     <p className="text-[12.5px] text-muted truncate">{t.employer || 'No employer on file'}</p>
                   </div>
+                  <button
+                    onClick={() => openEdit(t)}
+                    title="Edit"
+                    aria-label={`Edit ${t.firstName} ${t.lastName}`}
+                    className="w-7 h-7 rounded-[8px] flex items-center justify-center text-muted hover:text-ink hover:bg-slate-soft transition-colors"
+                  >
+                    <Pencil size={14} />
+                  </button>
                   <Badge tone={ficaTone as 'teal' | 'red' | 'amber'}>FICA {titleCase(t.ficaStatus)}</Badge>
                 </div>
                 <div className="mt-3.5 space-y-1.5 text-[12.5px] text-ink-dim">
@@ -127,12 +168,12 @@ export default function Tenants() {
 
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Add tenant"
+        onClose={closeModal}
+        title={editing ? 'Edit tenant' : 'Add tenant'}
         wide
         footer={
           <>
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={closeModal}>Cancel</Button>
             <Button variant="accent" onClick={submit} disabled={formBusy}>
               {formBusy ? 'Saving…' : 'Save tenant'}
             </Button>

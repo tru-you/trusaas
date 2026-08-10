@@ -5,11 +5,38 @@ import { requireRole, agentCanAccessProperty, filterByAgentScope } from '../lib/
 import { sanitizeString, sanitizeNumber, isValidEnum, ENUMS } from '../lib/validate.js';
 import { paginate } from '../lib/paginate.js';
 import { recordAudit } from '../lib/audit.js';
+import { csvBuild } from '../lib/csv.js';
 
 const TYPE = 'properties';
 
 export default function propertyRoutes(dataDir) {
   const r = Router();
+
+  r.get('/api/properties/export.csv', (req, res) => {
+    let items = query(dataDir, TYPE, req.agencyId, p => !p.deleted);
+    items = filterByAgentScope(req, items);
+    const csv = csvBuild([
+      ['ID', 'Address', 'Suburb', 'City', 'Type', 'Bedrooms', 'Bathrooms', 'Parking', 'FloorSize', 'ErfSize', 'Price', 'Status', 'ListingRef'],
+      ...items.map(p => [
+        p.id,
+        p.address,
+        p.suburb,
+        p.city,
+        p.propertyType,
+        p.bedrooms,
+        p.bathrooms,
+        p.parking,
+        p.floorArea,
+        p.erfNumber,
+        (p.purpose === 'sale' || p.purpose === 'both') ? p.askingPriceZAR : p.monthlyRentZAR,
+        (p.purpose === 'sale' || p.purpose === 'both') ? p.salesStatus : p.rentalStatus,
+        p.listingRef || '',
+      ]),
+    ]);
+    res.set('Content-Type', 'text/csv; charset=utf-8');
+    res.set('Content-Disposition', 'attachment; filename="properties-export.csv"');
+    res.send(csv + '\r\n');
+  });
 
   r.get('/api/properties', (req, res) => {
     const { purpose, status, type, search } = req.query;

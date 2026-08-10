@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Search, MapPin, BedDouble, Bath, CarFront } from 'lucide-react';
+import { Plus, Search, MapPin, BedDouble, Bath, CarFront, Pencil } from 'lucide-react';
 import { api, apiGet } from '../lib/api';
 import { Property } from '../lib/types';
 import { fmtZAR, titleCase } from '../lib/format';
@@ -24,6 +24,7 @@ export default function Properties() {
   const [purpose, setPurpose] = useState('');
   const [status, setStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Property | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [formBusy, setFormBusy] = useState(false);
   const [formError, setFormError] = useState('');
@@ -61,8 +62,8 @@ export default function Properties() {
     setFormBusy(true);
     setFormError('');
     try {
-      await api('/api/properties', {
-        method: 'POST',
+      await api(editing ? `/api/properties/${editing.id}` : '/api/properties', {
+        method: editing ? 'PUT' : 'POST',
         body: {
           ...form,
           bedrooms: Number(form.bedrooms) || 0,
@@ -75,6 +76,7 @@ export default function Properties() {
         },
       });
       setModalOpen(false);
+      setEditing(null);
       setForm({ ...emptyForm });
       load();
     } catch (err) {
@@ -82,6 +84,42 @@ export default function Properties() {
     } finally {
       setFormBusy(false);
     }
+  };
+
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ ...emptyForm });
+    setModalOpen(true);
+  };
+
+  const openEdit = (p: Property) => {
+    setEditing(p);
+    setForm({
+      purpose: p.purpose,
+      propertyType: p.propertyType,
+      address: p.address,
+      unitNumber: p.unitNumber,
+      suburb: p.suburb,
+      city: p.city,
+      province: p.province,
+      postalCode: p.postalCode,
+      bedrooms: String(p.bedrooms),
+      bathrooms: String(p.bathrooms),
+      parking: String(p.parking),
+      floorArea: String(p.floorArea),
+      erfNumber: p.erfNumber,
+      monthlyRentZAR: String(p.monthlyRentZAR),
+      depositZAR: String(p.depositZAR),
+      askingPriceZAR: String(p.askingPriceZAR),
+      rentalStatus: p.rentalStatus,
+      salesStatus: p.salesStatus,
+    });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditing(null);
   };
 
   if (error) return <Empty title="Could not load listings" hint={error} action={<Button onClick={load}>Retry</Button>} />;
@@ -110,7 +148,7 @@ export default function Properties() {
           ))}
         </Select>
         <div className="flex-1" />
-        <Button variant="accent" onClick={() => setModalOpen(true)}>
+        <Button variant="accent" onClick={openCreate}>
           <Plus size={16} /> New listing
         </Button>
       </div>
@@ -129,7 +167,17 @@ export default function Properties() {
                   <h3 className="text-[15px] font-semibold text-ink tracking-tight leading-snug">
                     {p.unitNumber ? `${p.unitNumber} ` : ''}{p.address}
                   </h3>
-                  <Badge tone={isSale ? 'ink' : 'teal'}>{titleCase(p.purpose)}</Badge>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => openEdit(p)}
+                      title="Edit"
+                      aria-label={`Edit ${p.address}`}
+                      className="w-7 h-7 rounded-[8px] flex items-center justify-center text-muted hover:text-ink hover:bg-slate-soft transition-colors"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <Badge tone={isSale ? 'ink' : 'teal'}>{titleCase(p.purpose)}</Badge>
+                  </div>
                 </div>
                 <p className="mt-0.5 text-[13px] text-muted flex items-center gap-1">
                   <MapPin size={12} className="text-faint" />
@@ -164,12 +212,12 @@ export default function Properties() {
 
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="New listing"
+        onClose={closeModal}
+        title={editing ? 'Edit listing' : 'New listing'}
         wide
         footer={
           <>
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={closeModal}>Cancel</Button>
             <Button variant="accent" onClick={submit} disabled={formBusy}>
               {formBusy ? 'Saving…' : 'Save listing'}
             </Button>

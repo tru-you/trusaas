@@ -3,47 +3,73 @@ import { load, query } from '../lib/persist.js';
 import { filterByAgentScope } from '../lib/isolation.js';
 import { requireRole } from '../lib/isolation.js';
 import { formatZAR, formatDateSA } from '../lib/sa-rules.js';
+import { csvBuild } from '../lib/csv.js';
+
+export function computeRentRoll(dataDir, agencyId, month) {
+  const leases = query(dataDir, 'leases', agencyId, l => l.status === 'active');
+
+  const rows = [];
+  let totalDue = 0;
+  let totalPaid = 0;
+
+  for (const lease of leases) {
+    const prop = load(dataDir, 'properties', lease.propertyId);
+    const tenant = load(dataDir, 'tenants', lease.tenantId);
+    const payments = query(dataDir, 'payments', agencyId, p =>
+      p.leaseId === lease.id && p.dueDate === month && p.status === 'received'
+    );
+    const paid = payments.reduce((sum, p) => sum + p.amountZAR, 0);
+    totalDue += lease.monthlyRentZAR;
+    totalPaid += paid;
+
+    rows.push({
+      propertyId: lease.propertyId,
+      address: prop?.address || '',
+      tenantName: tenant ? `${tenant.firstName} ${tenant.lastName}` : '',
+      monthlyRentZAR: lease.monthlyRentZAR,
+      paidZAR: paid,
+      balanceZAR: lease.monthlyRentZAR - paid,
+      leaseEnd: lease.endDate,
+    });
+  }
+
+  return {
+    month,
+    totalDueZAR: totalDue,
+    totalPaidZAR: totalPaid,
+    totalOutstandingZAR: totalDue - totalPaid,
+    rows,
+  };
+}
+
+function currentMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
 
 export default function reportRoutes(dataDir) {
   const r = Router();
 
   r.get('/api/reports/rent-roll', (req, res) => {
-    const leases = query(dataDir, 'leases', req.agencyId, l => l.status === 'active');
-    const now = new Date();
-    const month = req.query.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const month = req.query.month || currentMonth();
+    const report = computeRentRoll(dataDir, req.agencyId, month);
+    res.json({ ...report, rows: filterByAgentScope(req, report.rows) });
+  });
 
-    const rows = [];
-    let totalDue = 0;
-    let totalPaid = 0;
-
-    for (const lease of leases) {
-      const prop = load(dataDir, 'properties', lease.propertyId);
-      const tenant = load(dataDir, 'tenants', lease.tenantId);
-      const payments = query(dataDir, 'payments', req.agencyId, p =>
-        p.leaseId === lease.id && p.dueDate === month && p.status === 'received'
-      );
-      const paid = payments.reduce((sum, p) => sum + p.amountZAR, 0);
-      totalDue += lease.monthlyRentZAR;
-      totalPaid += paid;
-
-      rows.push({
-        propertyId: lease.propertyId,
-        address: prop?.address || '',
-        tenantName: tenant ? `${tenant.firstName} ${tenant.lastName}` : '',
-        monthlyRentZAR: lease.monthlyRentZAR,
-        paidZAR: paid,
-        balanceZAR: lease.monthlyRentZAR - paid,
-        leaseEnd: lease.endDate,
-      });
-    }
-
-    res.json({
-      month,
-      totalDueZAR: totalDue,
-      totalPaidZAR: totalPaid,
-      totalOutstandingZAR: totalDue - totalPaid,
-      rows: filterByAgentScope(req, rows),
-    });
+  r.get('/api/reports/rent-roll.csv', (req, res) => {
+    const month = req.query.month || currentMonth();
+    const report = computeRentRoll(dataDir, req.agencyId, month);
+    const scoped = filterByAgentScope(req, report.rows);
+    const csv = csvBuild([
+      ['Month', 'Property', 'Address', 'Tenant', 'RentDue', 'RentPaid', 'Outstanding'],
+      ...scoped.map(row => [
+        month, row.propertyId, row.address, row.tenantName,
+        row.monthlyRentZAR, row.paidZAR, row.balanceZAR,
+      ]),
+    ]);
+    res.set('Content-Type', 'text/csv; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="rent-roll-${month}.csv"`);
+    res.send(csv + '\r\n');
   });
 
   r.get('/api/reports/arrears', (req, res) => {
