@@ -15,10 +15,15 @@ services:
       - key: DEEPSEEK_API_KEY
         sync: false
         value: ""
-      - key: ENABLE_HEADLESS
-        sync: false
-        value: ""
     disk:
       name: trucrm-data
       mountPath: /opt/render/project/data
       sizeGB: 5
+
+  - type: web
+    name: trusaas-crm-scraper
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node dist/scrape-worker.cjs
+    healthCheckPath: /api/health

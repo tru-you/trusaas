@@ -118,6 +118,7 @@ async function deepseekChat(opts: {
   model: string;
   systemMessage?: string;
   userMessage: string;
+  messages?: Array<{ role: string; content: string }>;
   jsonMode?: boolean;
   thinking?: boolean;
   reasoningEffort?: "low" | "medium" | "high";
@@ -127,11 +128,21 @@ async function deepseekChat(opts: {
     return { content: "" };
   }
 
-  const messages: Record<string, string>[] = [];
-  if (opts.systemMessage) {
-    messages.push({ role: "system", content: opts.systemMessage });
+  // A full conversation history (chat assistant) wins over the single-shot
+  // system + user message shape used by the one-off tools.
+  let messages: Record<string, string>[];
+  if (opts.messages && opts.messages.length > 0) {
+    messages = opts.messages.map((m) => ({ role: m.role, content: m.content }));
+    if (opts.systemMessage) {
+      messages.unshift({ role: "system", content: opts.systemMessage });
+    }
+  } else {
+    messages = [];
+    if (opts.systemMessage) {
+      messages.push({ role: "system", content: opts.systemMessage });
+    }
+    messages.push({ role: "user", content: opts.userMessage });
   }
-  messages.push({ role: "user", content: opts.userMessage });
 
   const body: Record<string, unknown> = {
     model: opts.model,
@@ -202,6 +213,7 @@ async function startServer() {
       ok: true,
       product: 'trucrm',
       accessCodeConfigured: !!ACCESS_CODE,
+      aiConfigured: !!process.env.DEEPSEEK_API_KEY,
       port: PORT,
       ts: new Date().toISOString(),
     });
@@ -222,6 +234,51 @@ async function startServer() {
     }
 
     res.json({ token: signDeviceToken(), expiresInDays: 30 });
+  });
+
+  // ── Assistant (free-form DeepSeek chat) ────────────────────────────────────
+
+  const ASSISTANT_SYSTEM_PROMPT =
+    "You are TruAssistant, a practical operations assistant embedded in the user's " +
+    "personal TruSaaS workspace: TruCRM (leads at car dealerships, appointments, " +
+    "market intel on competitor dealers), proposals/SLAs, workflows, and accounting. " +
+    "Answer directly and concisely in plain text; use short markdown lists or tables " +
+    "when they actually help. Be honest when you don't know. The user is one person " +
+    "running a small business — skip marketing fluff.";
+
+  app.post("/api/assistant/chat", async (req, res) => {
+    const messages = Array.isArray(req.body?.messages) ? req.body.messages : null;
+    if (!messages) {
+      return res.status(400).json({ error: 'messages array required' });
+    }
+    const history: Array<{ role: string; content: string }> = messages
+      .filter((m: any) => m && typeof m.content === 'string')
+      .map((m: any) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content.slice(0, 20000) }))
+      .slice(-24);
+
+    if (!history.length || history[history.length - 1].role !== 'user') {
+      return res.status(400).json({ error: 'last message must be from the user' });
+    }
+
+    if (!process.env.DEEPSEEK_API_KEY) {
+      return res.status(503).json({
+        error: 'AI assistant is not configured.',
+        message: 'Add a DEEPSEEK_API_KEY to the server environment to enable chat.',
+      });
+    }
+
+    try {
+      const result = await deepseekChat({
+        model: "deepseek-v4-flash",
+        systemMessage: ASSISTANT_SYSTEM_PROMPT,
+        userMessage: history[history.length - 1].content,
+        messages: history,
+      });
+      res.json({ reply: result.content });
+    } catch (err: any) {
+      console.error('[assistant] chat failed:', err?.message || err);
+      res.status(502).json({ error: 'AI request failed. Try again in a moment.' });
+    }
   });
 
   // ── Leads ─────────────────────────────────────────────────────────────────
@@ -422,7 +479,6 @@ Format the output in clear Markdown.`,
 
   const SCRAPE_TIMEOUT_MS = 15000;
   const MAX_CRAWL_PAGES = 5;
-  const HEADLESS_ENABLED = process.env.ENABLE_HEADLESS === "true";
 
   const USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
@@ -491,112 +547,33 @@ Format the output in clear Markdown.`,
     throw lastError || new Error("Failed to fetch page");
   }
 
-  // Lazy singleton headless browser (puppeteer). Only used when ENABLE_HEADLESS=true.
-  let headlessBrowser: any = null;
-  let lastHeadlessUsedAt = 0;
-  const HEADLESS_IDLE_MS = 90000;
-
-  async function getHeadlessBrowser(): Promise<any> {
-    // Close an idle browser so the container doesn't sit at peak memory
-    // between scrapes (Render starter = 512 MB).
-    if (headlessBrowser && Date.now() - lastHeadlessUsedAt > HEADLESS_IDLE_MS) {
-      headlessBrowser.close().catch(() => {});
-      headlessBrowser = null;
-    }
-    if (!headlessBrowser) {
-      headlessBrowser = await (async () => {
-        const { default: puppeteer } = await import("puppeteer");
-        try {
-          // @sparticuz/chromium ships a statically-linked Chromium inside the
-          // npm package, so it runs on Render without apt-installed system
-          // libs (apt-get is unavailable in Render build/pre-deploy phases).
-          // Launch it with puppeteer's own defaults + minimal flags: the
-          // Lambda-oriented sparticuz args (--single-process, --headless='shell',
-          // SwiftShader graphics) are memory-heavy and crash a 512 MB instance.
-          const chromiumModule: any = await import("@sparticuz/chromium");
-          const chromium = chromiumModule.default ?? chromiumModule;
-          return await puppeteer.launch({
-            headless: true,
-            executablePath: await chromium.executablePath(),
-            args: [
-              "--no-sandbox",
-              "--disable-setuid-sandbox",
-              "--disable-dev-shm-usage",
-              "--disable-gpu",
-              "--disable-extensions",
-            ],
-          });
-        } catch (e: any) {
-          console.warn(
-            "[scraper] @sparticuz/chromium unavailable, falling back to bundled Chrome:",
-            e?.message
-          );
-        }
-        return puppeteer.launch({
-          headless: true,
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--disable-extensions",
-          ],
-        });
-      })().catch((e) => {
-        console.error("[scraper] headless browser failed to launch:", e?.message);
-        headlessBrowser = null;
-        throw e;
-      });
-    }
-    lastHeadlessUsedAt = Date.now();
-    return headlessBrowser;
-  }
-
+  // Remote headless renderer: the dedicated trucrm-scraper service (its own
+  // Render instance) runs Chromium and renders pages on request. The CRM
+  // never launches a browser in-process — Chromium + Node together exceed a
+  // 512 MB instance, so in-process browsing crashed the CRM service.
+  //
+  // No local fallback: without a configured worker, pages that need JS get
+  // the plain-HTTP result (or fail soft), and scraping stays a CRM feature
+  // only when the worker is reachable.
   async function renderWithHeadless(url: string): Promise<string | null> {
-    // Prefer the dedicated scraper worker (trusaas-crm-scraper): Chromium +
-    // Node together exceed a 512 MB Render instance, so running the browser
-    // in-process crashed the whole CRM service. The worker has its own
-    // instance and only renders pages on request.
     const workerUrl = (process.env.SCRAPER_SERVICE_URL || "").trim();
-    if (workerUrl) {
-      try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 60000);
-        const res = await fetch(`${workerUrl}/scrape`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
-          signal: controller.signal,
-        });
-        clearTimeout(timer);
-        if (!res.ok) return null;
-        const data: any = await res.json();
-        return data?.ok && typeof data?.html === "string" ? data.html : null;
-      } catch (e: any) {
-        console.warn("[scraper] remote headless render failed, falling back to local:", e?.message);
-      }
-    }
-    let page: any;
+    if (!workerUrl) return null;
     try {
-      const browser = await getHeadlessBrowser();
-      page = await browser.newPage();
-      await page.setUserAgent(pickUserAgent());
-      await page.setViewport({ width: 1366, height: 900 });
-      // domcontentloaded + fixed settle time instead of networkidle2, which
-      // hangs forever on sites with long-polling / websockets.
-      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-      await page.waitForNetworkIdle({ idleTime: 800, timeout: 15000 }).catch(() => {});
-      await new Promise((r) => setTimeout(r, 2000));
-      const html = await page.content();
-      if (html.length < 200) return null;
-      return html;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 60000);
+      const res = await fetch(`${workerUrl}/scrape`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) return null;
+      const data: any = await res.json();
+      return data?.ok && typeof data?.html === "string" ? data.html : null;
     } catch (e: any) {
-      console.warn(`[scraper] headless render failed for ${url}:`, e?.message);
-      // Browser process may have crashed (OOM etc.) — force a relaunch next time.
-      headlessBrowser = null;
+      console.warn("[scraper] remote headless render failed:", e?.message);
       return null;
-    } finally {
-      if (page) await page.close().catch(() => {});
     }
   }
 
@@ -727,6 +704,21 @@ Format the output in clear Markdown.`,
     }
   };
 
+  // Many dealer sites only answer on www (or only on the apex) — return the
+  // twin hostname of a URL, or null if there is none.
+  function alternateHostUrl(pageUrl: string): string | null {
+    try {
+      const u = new URL(pageUrl);
+      const host = u.hostname;
+      const alt = host.startsWith("www.") ? host.slice(4) : `www.${host}`;
+      if (alt === host || !alt.includes(".")) return null;
+      u.hostname = alt;
+      return u.toString();
+    } catch {
+      return null;
+    }
+  }
+
   async function scrapeWebsite(rawUrl: string, options?: { crawl?: boolean; onPage?: (page: string) => void; headless?: boolean }) {
     const url = String(rawUrl || "").trim();
     if (!/^https?:\/\//i.test(url)) {
@@ -734,7 +726,7 @@ Format the output in clear Markdown.`,
     }
 
     const crawl = options?.crawl !== false;
-    const useHeadless = options?.headless !== false && HEADLESS_ENABLED;
+    const useHeadless = options?.headless !== false;
 
     const pagesToFetch: string[] = [url];
     if (crawl) {
@@ -754,9 +746,18 @@ Format the output in clear Markdown.`,
       } catch (e: any) {
         lastError = e?.message || "Failed to fetch page";
         fetched.push({ pageUrl, html: "", ok: false, error: lastError });
-        // Homepage unreachable (bot-blocked / DNS-blocked): contact pages will
-        // fail the same way — bail to the headless fallback immediately.
-        if (i === 0 && useHeadless) break;
+        // Homepage unreachable — try the www/apex twin first (many SA dealer
+        // sites only respond on one of the two).
+        if (i === 0) {
+          const alt = alternateHostUrl(pageUrl);
+          if (alt && !pagesToFetch.includes(alt)) {
+            pagesToFetch.splice(1, 0, alt);
+            continue;
+          }
+        }
+        // Two homepage variants failed (bot-blocked / DNS-blocked): contact
+        // pages will fail the same way — bail to the headless fallback.
+        if (fetched.filter((f) => !f.ok).length >= 2 && useHeadless) break;
       }
     }
 
@@ -989,6 +990,141 @@ ${cleanText}`,
       console.error("Error in /api/cardealer/scrape-batch:", error);
       res.status(500).json({ error: "Failed to run batch scrape", message: error.message });
     }
+  });
+
+  // ── E-signature sharing (client-facing signing links) ─────────────────────
+  // The CRM publishes a frozen document under a unique slug; the client opens
+  // /tru-sign.html?id=<slug> (public, no auth), signs on their phone, and the
+  // signature comes back to the CRM via /esig/status.
+
+  const ESIG_DIR = path.join(DATA_DIR, 'esig');
+
+  function esigPath(id: string): string {
+    const safe = String(id).replace(/[^a-zA-Z0-9_-]/g, '');
+    return path.join(ESIG_DIR, `${safe}.json`);
+  }
+
+  function esigRead(id: string): any | null {
+    try {
+      const file = esigPath(id);
+      if (!fs.existsSync(file)) return null;
+      return JSON.parse(fs.readFileSync(file, 'utf-8'));
+    } catch (e) {
+      console.error(`[esig] read error ${id}:`, e);
+      return null;
+    }
+  }
+
+  function esigWrite(id: string, data: unknown): void {
+    ensureDataDir();
+    if (!fs.existsSync(ESIG_DIR)) fs.mkdirSync(ESIG_DIR, { recursive: true });
+    const file = esigPath(id);
+    const tmp = `${file}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf-8');
+    fs.renameSync(tmp, file);
+  }
+
+  // CRM publishes a document for signing (auth-gated like the rest of /api).
+  app.post("/api/esig/publish", (req, res) => {
+    const body = req.body || {};
+    const id = String(body.id || '').trim();
+    if (!id || !/^[a-zA-Z0-9_-]{6,}$/.test(id)) {
+      return res.status(400).json({ error: "Invalid document id" });
+    }
+    if (esigRead(id)?.signed) {
+      return res.json({ ok: true, url: `/tru-sign.html?id=${encodeURIComponent(id)}`, signed: true });
+    }
+    esigWrite(id, {
+      id,
+      kind: body.kind || 'document',
+      docNo: String(body.docNo || ''),
+      mode: body.mode || 'invoice',
+      vat: String(body.vat ?? 15),
+      currency: String(body.currency || 'R'),
+      fields: body.fields || {},
+      rows: Array.isArray(body.rows) ? body.rows : [],
+      publishedAt: new Date().toISOString(),
+      signed: null,
+    });
+    res.json({ ok: true, url: `/tru-sign.html?id=${encodeURIComponent(id)}` });
+  });
+
+  // Client signing page fetches the document (public).
+  app.get("/esig/doc", (req, res) => {
+    const doc = esigRead(String(req.query.id || ''));
+    if (!doc) return res.status(404).json({ error: "Document not found" });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(doc);
+  });
+
+  // Client submits their signature (public).
+  app.post("/esig/sign", (req, res) => {
+    const id = String(req.body?.id || '').trim();
+    const doc = esigRead(id);
+    if (!doc) return res.status(404).json({ error: "Document not found" });
+    if (doc.signed) return res.json({ ok: true, signedAt: doc.signed.signedAt });
+    const name = String(req.body?.name || '').trim();
+    const signature = String(req.body?.signature || '').trim();
+    if (!name || !signature) {
+      return res.status(400).json({ error: "Name and signature are required" });
+    }
+    doc.signed = { name, signature, signedAt: new Date().toISOString() };
+    esigWrite(id, doc);
+    console.log(`[esig] ${doc.docNo} signed by ${name}`);
+    res.json({ ok: true, signedAt: doc.signed.signedAt });
+  });
+
+  // CRM polls for the signature (public read; slug is the secret).
+  app.get("/esig/status", (req, res) => {
+    const doc = esigRead(String(req.query.id || ''));
+    if (!doc) return res.status(404).json({ error: "Document not found" });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ signed: !!doc.signed, ...(doc.signed || {}) });
+  });
+
+  // ── App state store (single-user) ─────────────────────────────────────────
+  // The CRM is a single-user app, so the whole workspace is persisted as one
+  // JSON file per slice on the server. Every device (desktop, phone) reads and
+  // writes the same files, so data survives browser cache clears and is shared
+  // across devices. Keys are whitelisted to the exact slices the frontend
+  // manages — nothing else can be read or written through this endpoint.
+
+  const DB_KEYS = new Set([
+    'leads',
+    'activities',
+    'appointments',
+    'salespeople',
+    'settings',
+    'profile',
+    'deals',
+    'contacts',
+    'transactions',
+    'invoices',
+    'workflows',
+    'proposals',
+    'slas',
+    'dealerships',
+    'modules',
+  ]);
+
+  const dbFile = (key: string) => `${String(key).replace(/[^a-z0-9_-]/gi, '')}.json`;
+
+  app.get("/api/db/:key", (req, res) => {
+    const key = String(req.params.key || '');
+    if (!DB_KEYS.has(key)) return res.status(400).json({ error: 'Unknown store key' });
+    const data = readStore(dbFile(key), null);
+    if (data === null) return res.status(404).json({ key, exists: false });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ key, exists: true, data });
+  });
+
+  app.put("/api/db/:key", (req, res) => {
+    const key = String(req.params.key || '');
+    if (!DB_KEYS.has(key)) return res.status(400).json({ error: 'Unknown store key' });
+    const data = req.body?.data;
+    if (data === undefined) return res.status(400).json({ error: 'Missing data' });
+    writeStore(dbFile(key), data);
+    res.json({ key, ok: true, updatedAt: new Date().toISOString() });
   });
 
   // ── Static / Vite ─────────────────────────────────────────────────────────
