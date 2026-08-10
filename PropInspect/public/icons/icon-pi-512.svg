@@ -1,38 +1,123 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+
   <defs>
-    <linearGradient id="silver" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#E2E8F0"/>
-      <stop offset="45%" stop-color="#CBD5E1"/>
-      <stop offset="100%" stop-color="#94A3B8"/>
+    <!-- Chrome metallic gradient -->
+    <linearGradient id="chrome" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3F4F6"/>
+      <stop offset="15%" stop-color="#D1D5DB"/>
+      <stop offset="35%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#9CA3AF"/>
+      <stop offset="75%" stop-color="#E5E7EB"/>
+      <stop offset="100%" stop-color="#6B7280"/>
     </linearGradient>
 
-    <linearGradient id="cyan" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0D9488"/>
-      <stop offset="50%" stop-color="#14B8A6"/>
-      <stop offset="100%" stop-color="#5EEAD4"/>
+    <!-- Darker chrome for extrusion/shadow side -->
+    <linearGradient id="chrome-dark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4B5563"/>
+      <stop offset="100%" stop-color="#1F2937"/>
     </linearGradient>
 
-    <filter id="depth" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+    <!-- Cyan glass gradient -->
+    <linearGradient id="glass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5EEAD4" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#14B8A6" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#0F766E" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Glass edge highlight -->
+    <linearGradient id="glass-edge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CCFBF1" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#99F6E4" stop-opacity="0.4"/>
+    </linearGradient>
+
+    <!-- Chrome rivet -->
+    <radialGradient id="rivet" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="30%" stop-color="#E5E7EB"/>
+      <stop offset="70%" stop-color="#9CA3AF"/>
+      <stop offset="100%" stop-color="#374151"/>
+    </radialGradient>
+
+    <!-- Glow filter for glass letter -->
+    <filter id="cyan-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft drop shadow for metallic letter -->
+    <filter id="metal-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="6" dy="10" stdDeviation="8" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+
+    <!-- Inner bevel for metallic -->
+    <filter id="metal-bevel" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+      <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.8" specularExponent="15" lighting-color="#FFFFFF" result="spec">
+        <fePointLight x="100" y="100" z="200"/>
+      </feSpecularLighting>
+      <feComposite in="spec" in2="SourceAlpha" operator="in" result="specOut"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="specOut"/>
+      </feMerge>
     </filter>
   </defs>
 
-  <g filter="url(#depth)">
-    <text x="178" y="352" 
-          font-family="'Inter Tight', Inter, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" 
-          font-weight="900" 
-          font-size="232" 
-          fill="url(#silver)" 
-          text-anchor="middle"
-          letter-spacing="-4">P</text>
 
-    <text x="340" y="352" 
-          font-family="'Inter Tight', Inter, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" 
-          font-weight="900" 
-          font-size="232" 
-          fill="url(#cyan)" 
-          text-anchor="middle"
-          letter-spacing="-4">I</text>
+  <rect x="0" y="0" width="512" height="512" fill="none"/>
+
+  <!-- Metallic P (left) -->
+  <g filter="url(#metal-shadow)">
+    <path d="M95 115 L95 405 L165 405 L165 285 L195 285 C235 285 255 255 255 200 C255 145 235 115 195 115 Z M165 165 L190 165 C205 165 210 180 210 200 C210 220 205 235 190 235 L165 235 Z" 
+          fill="url(#chrome-dark)" transform="translate(8,8)"/>
+    <path d="M95 115 L95 405 L165 405 L165 285 L195 285 C235 285 255 255 255 200 C255 145 235 115 195 115 Z M165 165 L190 165 C205 165 210 180 210 200 C210 220 205 235 190 235 L165 235 Z" 
+          fill="url(#chrome)" filter="url(#metal-bevel)"/>
   </g>
+
+  <!-- P Rivets -->
+  
+    <circle cx="95" cy="115" r="14" fill="url(#rivet)" stroke="#4B5563" stroke-width="1.5"/>
+    <circle cx="92" cy="112" r="4.8999999999999995" fill="#FFFFFF" opacity="0.8"/>
+  
+    <circle cx="255" cy="115" r="14" fill="url(#rivet)" stroke="#4B5563" stroke-width="1.5"/>
+    <circle cx="252" cy="112" r="4.8999999999999995" fill="#FFFFFF" opacity="0.8"/>
+  
+    <circle cx="95" cy="405" r="14" fill="url(#rivet)" stroke="#4B5563" stroke-width="1.5"/>
+    <circle cx="92" cy="402" r="4.8999999999999995" fill="#FFFFFF" opacity="0.8"/>
+  
+    <circle cx="165" cy="405" r="14" fill="url(#rivet)" stroke="#4B5563" stroke-width="1.5"/>
+    <circle cx="162" cy="402" r="4.8999999999999995" fill="#FFFFFF" opacity="0.8"/>
+
+  <!-- Glass I (right, overlapping) -->
+  <g filter="url(#cyan-glow)">
+    <!-- I Extrusion -->
+    <path d="M225 115 L225 155 L245 155 L245 365 L225 365 L225 405 L345 405 L345 365 L325 365 L325 155 L345 155 L345 115 Z" 
+          fill="#042F2E" transform="translate(6,6)" opacity="0.6"/>
+    <!-- I Front -->
+    <path d="M225 115 L225 155 L245 155 L245 365 L225 365 L225 405 L345 405 L345 365 L325 365 L325 155 L345 155 L345 115 Z" 
+          fill="url(#glass)" stroke="url(#glass-edge)" stroke-width="3"/>
+    <!-- Glass highlight -->
+    <path d="M235 125 L235 145 L255 145 L255 375 L235 375 L235 395 L335 395 L335 375 L315 375 L315 145 L335 145 L335 125 Z" 
+          fill="none" stroke="#FFFFFF" stroke-width="4" opacity="0.25" stroke-linecap="round"/>
+  </g>
+
+  <!-- I Rivets -->
+  
+    <circle cx="225" cy="115" r="12" fill="url(#rivet)" stroke="#4B5563" stroke-width="1.5"/>
+    <circle cx="222" cy="112" r="4.199999999999999" fill="#FFFFFF" opacity="0.8"/>
+  
+    <circle cx="345" cy="115" r="12" fill="url(#rivet)" stroke="#4B5563" stroke-width="1.5"/>
+    <circle cx="342" cy="112" r="4.199999999999999" fill="#FFFFFF" opacity="0.8"/>
+  
+    <circle cx="225" cy="405" r="12" fill="url(#rivet)" stroke="#4B5563" stroke-width="1.5"/>
+    <circle cx="222" cy="402" r="4.199999999999999" fill="#FFFFFF" opacity="0.8"/>
+  
+    <circle cx="345" cy="405" r="12" fill="url(#rivet)" stroke="#4B5563" stroke-width="1.5"/>
+    <circle cx="342" cy="402" r="4.199999999999999" fill="#FFFFFF" opacity="0.8"/>
+
 </svg>
