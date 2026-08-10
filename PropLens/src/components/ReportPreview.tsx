@@ -7,8 +7,8 @@ import { Property, QualityReport, DamageFinding } from '../types';
 import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
-import proplensLockup from '../assets/images/proplens-logo.svg';
-import trupropertyLockup from '../assets/images/trulens-lockup.png';
+import proplensLockup from '../assets/images/PL-AppIcon.svg';
+import trupropertyLockup from '../assets/images/TruProperty-Logo.svg';
 
 interface ReportPreviewProps {
   property: Property;

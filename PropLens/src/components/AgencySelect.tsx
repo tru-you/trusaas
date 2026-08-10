@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-import proplensLogo from '../assets/images/proplens-logo.svg';
+import plIcon from '../assets/images/PL-AppIcon.svg';
 
 /**
  * "Which agency are you?" — shown once, straight after the generic login,
@@ -77,7 +77,7 @@ export default function AgencySelect({ onSelected }: { onSelected: (slug: string
   return (
     <div className="min-h-full flex flex-col justify-center px-6 py-10 bg-[#F5F4F1] text-[#0A1420]">
       <img
-        src={proplensLogo}
+        src={plIcon}
         alt="PropLens"
         className="h-9 w-auto object-contain mx-auto mb-8"
       />
