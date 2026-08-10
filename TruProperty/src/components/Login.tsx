@@ -1,7 +1,7 @@
 import React from 'react';
 import { LogIn, Lock, AlertCircle, Loader2, ShieldOff, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import propInspectLogo from '../assets/images/propinspect-logo.svg';
+import tpIcon from '../assets/images/TP-AppIcon.svg';
 
 /**
  * One field: the access code issued for this instance.
@@ -97,7 +97,7 @@ export default function Login() {
       <div className="w-full max-w-sm z-10 flex flex-col items-center">
 
         <div className="text-center mb-10">
-          <img src={propInspectLogo} alt="PropInspect" className="h-20 w-full max-w-xs mx-auto object-contain" />
+          <img src={tpIcon} alt="TruProperty" className="h-20 w-full max-w-xs mx-auto object-contain" />
           <p className="mt-3 text-[12px] text-[rgba(10,20,32,0.50)] tracking-[0.08em]">
             Property inspection reports
           </p>

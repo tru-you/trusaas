@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { api, setToken } from '../lib/api';
-import { Logo } from '../components/layout';
+import tpIcon from '../assets/TP-AppIcon.svg';
 import { Button, Card, Input } from '../components/ui';
 
 export default function Login({ onLoggedIn }: { onLoggedIn: (token: string) => void }) {
@@ -32,7 +32,7 @@ export default function Login({ onLoggedIn }: { onLoggedIn: (token: string) => v
     <div className="min-h-screen flex items-center justify-center px-4">
       <Card className="w-full max-w-[400px] p-8 animate-rise">
         <div className="flex flex-col items-center text-center">
-          <Logo size={46} />
+          <img src={tpIcon} alt="PropertyTrade" className="w-14 h-14 mx-auto object-contain" />
           <h1 className="mt-5 text-[22px] font-semibold tracking-tight text-ink">Flow Prop</h1>
           <p className="mt-1.5 text-[13.5px] text-muted">
             Property management for South African rental and sales agencies.

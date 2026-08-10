@@ -1,7 +1,7 @@
 import React from 'react';
 import { Lock, AlertCircle, Loader2, Monitor, ShieldOff, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import proplensLogo from '../assets/images/proplens-logo.svg';
+import plIcon from '../assets/images/PL-AppIcon.svg';
 
 /**
  * One field: the access code issued for this agency.
@@ -107,7 +107,7 @@ export default function Login() {
             positioned into the gap below the logo where it could collide. */}
         <div className="text-center mb-10">
           <img
-            src={proplensLogo}
+            src={plIcon}
             alt="PropLens"
             className="w-44 max-w-full object-contain mx-auto"
           />
