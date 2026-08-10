@@ -1,14 +1,15 @@
 {
-  "name": "TrueState Move-In — Live Move-In Inspection",
-  "short_name": "TrueState Move-In",
-  "description": "Live video move-in inspections for rental properties over a secure link.",
+  "name": "PropertyTrade — Deal & Lease Management",
+  "short_name": "PropertyTrade",
+  "description": "Property deal flow, lease tracking, and commission management for agencies.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "background_color": "#F3F0E7",
+  "theme_color": "#F3F0E7",
   "icons": [
-    { "src": "/icon.png", "sizes": "600x600", "type": "image/png", "purpose": "any" }
+    { "src": "/icons/icon-pf-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/icons/TP-AppIcon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

@@ -6,6 +6,7 @@ import ImageEditor from './components/ImageEditor';
 import Login from './components/Login';
 import ReportPreview from './components/ReportPreview';
 import DamageTagger from './components/DamageTagger';
+import Assistant from './components/Assistant';
 import { Property, QualityReport, PointResult } from './types';
 import { useAuth } from './contexts/AuthContext';
 
@@ -470,6 +471,7 @@ export default function App() {
               onSave={handleSaveProcessedImage}
             />
           )}
+          <Assistant />
         </>
       )}
     </MobileDevice>

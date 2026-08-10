@@ -14,6 +14,7 @@ import Reports from './pages/Reports';
 import Team from './pages/Team';
 import Settings from './pages/Settings';
 import Master from './pages/Master';
+import Assistant from './components/Assistant';
 import Placeholder from './pages/Placeholder';
 
 function parseHash(): string {
@@ -98,8 +99,11 @@ export default function App() {
   const placeholderKeys = ['owners', 'buyers', 'documents', 'commissions', 'mandates'];
 
   return (
-    <Shell active={route} onNav={(k) => (location.hash = `#/${k}`)} agent={agent} onSignOut={handleSignOut}>
-      {placeholderKeys.includes(route) ? <Placeholder title={route} /> : page}
-    </Shell>
+    <>
+      <Shell active={route} onNav={(k) => (location.hash = `#/${k}`)} agent={agent} onSignOut={handleSignOut}>
+        {placeholderKeys.includes(route) ? <Placeholder title={route} /> : page}
+      </Shell>
+      {agent && <Assistant />}
+    </>
   );
 }

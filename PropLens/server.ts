@@ -2199,6 +2199,28 @@ app.post('/api/valuation/valuation', authenticate, async (req: any, res) => {
   }
 });
 
+// DeepSeek AI assistant proxy — authenticate required.
+app.post('/api/assistant', authenticate, async (req: any, res) => {
+  const key = process.env.DEEPSEEK_API_KEY;
+  if (!key) return res.status(503).json({ error: 'DEEPSEEK_API_KEY not configured.' });
+  const { messages, model } = req.body || {};
+  if (!Array.isArray(messages) || !messages.length) {
+    return res.status(400).json({ error: 'messages array is required.' });
+  }
+  try {
+    const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ model: model || 'deepseek-chat', messages, max_tokens: 2048, temperature: 0.7 }),
+    });
+    const data = await r.json();
+    if (!r.ok) return res.status(r.status).json({ error: data.error?.message || 'DeepSeek API error.' });
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: 'Could not reach the DeepSeek API.' });
+  }
+});
+
 // ==================== VITE & STATIC FILES ====================
 
 async function startServer() {

@@ -1,0 +1,9 @@
+<svg id="icon-tp" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="130">
+            <rect x="10" y="10" width="180" height="180" rx="42" fill="#0F172A" stroke="#1E293B" stroke-width="3"/>
+            <g filter="url(#dropShadow1)" transform="translate(18, 125)">
+              <text x="3" y="3" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#0F172A">T</tspan><tspan fill="#042F2E">P</tspan></text>
+              <text x="2" y="2" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#334155">T</tspan><tspan fill="#0E7490">P</tspan></text>
+              <text x="1" y="1" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="#64748B">T</tspan><tspan fill="#22D3EE">P</tspan></text>
+              <text x="0" y="0" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="95"><tspan fill="url(#metalTop1)">T</tspan><tspan fill="url(#cyanTop1)">P</tspan></text>
+            </g>
+          </svg>
