@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
 import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
@@ -101,11 +100,14 @@ const AGENCY_CODES: Array<{ slug: string; code: string }> = String(
   })
   .filter(Boolean) as Array<{ slug: string; code: string }>;
 
-/** Constant-time compare that does not leak length via early return. */
+/** Constant-time compare that does not leak length via early return. Both
+ * inputs are hashed first so the comparison always runs over 32-byte digests
+ * regardless of the lengths of the raw codes — the early length check this
+ * function used to do leaked the expected code's length via timing. */
 function codeMatches(given: string, expected: string): boolean {
-  const a = Buffer.from(given);
-  const b = Buffer.from(expected);
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
+  const a = crypto.createHash('sha256').update(String(given)).digest();
+  const b = crypto.createHash('sha256').update(String(expected)).digest();
+  return crypto.timingSafeEqual(a, b);
 }
 
 /** The agency a code belongs to, or null for the legacy shared code. */
@@ -592,22 +594,37 @@ const authenticate = async (req: any, res: any, next: any) => {
   return res.status(401).json({ error: 'Unauthorized' });
 };
 
-// Initialize Gemini Client
-const apiKey = process.env.GEMINI_API_KEY;
-let ai: GoogleGenAI | null = null;
+// ---- AI (DeepSeek) ----
+const DEEPSEEK_BASE = 'https://api.deepseek.com/chat/completions';
+const aiConfigured = !!process.env.DEEPSEEK_API_KEY;
 
-if (apiKey) {
-  ai = new GoogleGenAI({
-    apiKey: apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
+async function deepseekText(
+  messages: { role: 'system' | 'user' | 'assistant'; content: string }[],
+  opts: { json?: boolean; temperature?: number; maxTokens?: number } = {},
+): Promise<string | null> {
+  const key = process.env.DEEPSEEK_API_KEY;
+  if (!key) return null;
+  const body: any = {
+    model: 'deepseek-chat',
+    messages,
+    temperature: opts.temperature ?? 0.7,
+    max_tokens: opts.maxTokens ?? 2048,
+  };
+  if (opts.json) body.response_format = { type: 'json_object' };
+  const r = await fetch(DEEPSEEK_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify(body),
   });
-  console.log('Gemini API initialized successfully.');
+  if (!r.ok) throw new Error(`DeepSeek API error ${r.status}`);
+  const data = await r.json();
+  return data.choices?.[0]?.message?.content ?? '';
+}
+
+if (aiConfigured) {
+  console.log('DeepSeek API configured.');
 } else {
-  console.warn('GEMINI_API_KEY not found — AI analysis runs in mock mode.');
+  console.warn('DEEPSEEK_API_KEY not found — AI analysis runs in mock mode.');
 }
 
 // ==================== PORTFOLIO HELPERS ====================
@@ -1614,7 +1631,8 @@ app.put('/api/sync/property', (req, res) => {
   })();
 });
 
-// 5. AI Photo Quality Inspection & Listing Description Writer (Gemini)
+// 5. AI Listing Description Writer (DeepSeek) — kept at /api/gemini/analyze for
+// frontend compatibility; no image is sent to the model.
 app.post('/api/gemini/analyze', authenticate, async (req: any, res) => {
   const { base64Image, slotName, propertyInfo } = req.body;
 
@@ -1622,9 +1640,7 @@ app.post('/api/gemini/analyze', authenticate, async (req: any, res) => {
     return res.status(400).json({ error: 'base64Image is required' });
   }
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-
-  if (!ai) {
+  if (!aiConfigured) {
     return res.json({
       overallScore: 85,
       lightingCheck: {
@@ -1649,28 +1665,14 @@ app.post('/api/gemini/analyze', authenticate, async (req: any, res) => {
   }
 
   try {
-    const prompt = `You are an expert property listing quality inspection agent. Examine the provided property photo (captured in slot: "${slotName || 'General Exterior'}").
-Analyze the photo for listing quality, and provide precise JSON feedback on:
-1. Overall score (0-100).
-2. Lighting evaluation: Status ("Poor", "Fair", "Perfect"), and a short feedback message warning about shadows, glare, or darkness.
-3. Angle/framing evaluation: Status ("Off-Angle", "Good", "Perfect"), and feedback on whether the property complies with standard estate photography guides.
-4. Auto-identification and marketing generator: Guess/confirm the property details based on the image, write an attention-grabbing listing Title, a highly compelling agency marketplace listing Description, and list any visible cosmetic issues or reflections.
+    const prompt = `You are an expert property listing copywriter. Write a listing title and description for the property captured in slot "${slotName || 'General Exterior'}".
+Property details: ${propertyInfo?.address || 'address not provided'}${propertyInfo?.type ? `, ${propertyInfo.type}` : ''}${propertyInfo?.suburb ? `, ${propertyInfo.suburb}` : ''}.
 
-You MUST respond strictly with a valid JSON matching this schema:
+You cannot see the photo, so provide sensible neutral values for the quality checks. Respond strictly with valid JSON matching this schema:
 {
   "overallScore": number,
-  "lightingCheck": {
-    "status": "Poor" | "Fair" | "Perfect",
-    "brightness": number (0-255),
-    "contrast": number (0-255),
-    "feedback": string
-  },
-  "angleCheck": {
-    "status": "Off-Angle" | "Good" | "Perfect",
-    "pitchDiff": number,
-    "rollDiff": number,
-    "feedback": string
-  },
+  "lightingCheck": { "status": "Poor" | "Fair" | "Perfect", "brightness": number, "contrast": number, "feedback": string },
+  "angleCheck": { "status": "Off-Angle" | "Good" | "Perfect", "pitchDiff": number, "rollDiff": number, "feedback": string },
   "aiAnalysis": {
     "identifiedSubject": string,
     "suggestedTitle": string,
@@ -1679,67 +1681,12 @@ You MUST respond strictly with a valid JSON matching this schema:
   }
 }`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
-      contents: [
-        {
-          inlineData: {
-            mimeType: 'image/jpeg',
-            data: base64Data,
-          },
-        },
-        prompt,
-      ],
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            overallScore: { type: Type.INTEGER },
-            lightingCheck: {
-              type: Type.OBJECT,
-              properties: {
-                status: { type: Type.STRING },
-                brightness: { type: Type.INTEGER },
-                contrast: { type: Type.INTEGER },
-                feedback: { type: Type.STRING },
-              },
-              required: ['status', 'brightness', 'contrast', 'feedback'],
-            },
-            angleCheck: {
-              type: Type.OBJECT,
-              properties: {
-                status: { type: Type.STRING },
-                pitchDiff: { type: Type.NUMBER },
-                rollDiff: { type: Type.NUMBER },
-                feedback: { type: Type.STRING },
-              },
-              required: ['status', 'pitchDiff', 'rollDiff', 'feedback'],
-            },
-            aiAnalysis: {
-              type: Type.OBJECT,
-              properties: {
-                identifiedSubject: { type: Type.STRING },
-                suggestedTitle: { type: Type.STRING },
-                suggestedDescription: { type: Type.STRING },
-                detectedIssues: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING },
-                },
-              },
-              required: ['identifiedSubject', 'suggestedTitle', 'suggestedDescription', 'detectedIssues'],
-            },
-          },
-          required: ['overallScore', 'lightingCheck', 'angleCheck', 'aiAnalysis'],
-        },
-      },
-    });
-
-    const resultText = response.text || '';
+    const resultText = await deepseekText([{ role: 'user', content: prompt }], { json: true });
+    if (!resultText) throw new Error('No AI response');
     const parsedData = JSON.parse(resultText);
     res.json(parsedData);
   } catch (error: any) {
-    console.error('Gemini analysis error:', error);
+    console.error('DeepSeek analysis error:', error);
     if (error.message?.includes('403') || error.message?.includes('PERMISSION_DENIED') || error.message?.includes('access')) {
       return res.json({
         overallScore: 82,

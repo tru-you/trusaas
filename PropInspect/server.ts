@@ -3,7 +3,6 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import { initializeApp as initFirebaseAdmin, getApps as getFirebaseApps } from "firebase-admin/app";
 import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
@@ -36,6 +35,33 @@ import { DOC_STAGES, FIXED_STAGE_MODES } from "./src/types";
 import { canAdvance } from "./src/lib/docValidator";
 
 dotenv.config();
+
+// ---- AI (DeepSeek) ----
+const DEEPSEEK_BASE = "https://api.deepseek.com/chat/completions";
+const aiConfigured = !!process.env.DEEPSEEK_API_KEY;
+
+async function deepseekText(
+  messages: { role: "system" | "user" | "assistant"; content: string }[],
+  opts: { json?: boolean; temperature?: number; maxTokens?: number } = {},
+): Promise<string | null> {
+  const key = process.env.DEEPSEEK_API_KEY;
+  if (!key) return null;
+  const body: any = {
+    model: "deepseek-chat",
+    messages,
+    temperature: opts.temperature ?? 0.7,
+    max_tokens: opts.maxTokens ?? 2048,
+  };
+  if (opts.json) body.response_format = { type: "json_object" };
+  const r = await fetch(DEEPSEEK_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`DeepSeek API error ${r.status}`);
+  const data = await r.json();
+  return data.choices?.[0]?.message?.content ?? "";
+}
 
 // Initialize Firebase Admin — same project as AutoLens Pro
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "gen-lang-client-0151924955";
@@ -1072,7 +1098,19 @@ function freshDefaultState(): DMSState {
   return structuredClone(DEFAULT_MOCK_STATE);
 }
 
+/* readState() is on 80+ request paths and reads, backfills and merges every
+   dealer file on every call. A short TTL keeps burst reads off the disk while
+   writeState() invalidates immediately so a write is never hidden. Callers
+   mutate the returned state before handing it to writeState(), so cache hits
+   are always served as a deep clone. */
+let stateCache: { data: any; at: number } | null = null;
+const STATE_CACHE_TTL_MS = 2000;
+
 function readState(): DMSState {
+  if (stateCache && Date.now() - stateCache.at < STATE_CACHE_TTL_MS) {
+    return structuredClone(stateCache.data);
+  }
+
   if (isPerDealerMode()) {
     try {
       const shared = backfillShared(readShared());
@@ -1089,6 +1127,10 @@ function readState(): DMSState {
       }
 
       backfillVehicles(merged.properties);
+      /* Store a clone so mutations a caller makes to the returned object
+         (without a following writeState) can never leak into later reads —
+         exactly the semantics of re-reading the files every call. */
+      stateCache = { data: structuredClone(merged), at: Date.now() };
       return merged;
     } catch (err) {
       console.error("Error reading per-dealer state:", err);
@@ -1144,6 +1186,7 @@ function readState(): DMSState {
         }
       }
 
+      stateCache = { data: structuredClone(parsed), at: Date.now() };
       return parsed;
     }
   } catch (err) {
@@ -1191,6 +1234,7 @@ function writeState(state: any) {
         for (const k of TENANT_SCOPED_COLLECTIONS) empty[k] = [];
         writeDealerData(id, empty);
       }
+      stateCache = null;
     } catch (err) {
       console.error("Error writing per-dealer state:", err);
     }
@@ -1200,6 +1244,7 @@ function writeState(state: any) {
   // Legacy monolithic path
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), "utf-8");
+    stateCache = null;
   } catch (err) {
     console.error("Error writing data file:", err);
   }
@@ -3370,12 +3415,9 @@ app.post("/api/enquiries/auto-assign", async (req, res) => {
       return { id: u.id, name: u.name, activeLeadsCount };
     });
 
-    const apiKey = process.env.GEMINI_API_KEY;
     let assignments: { leadId: string, assignedUserId: string, reasoning: string }[] = [];
 
-    if (apiKey) {
-      const ai = new GoogleGenAI({ apiKey });
-      
+    if (aiConfigured) {
       const systemInstruction = `
 You are the Enquiry CRM AI Agent for TruFlow Light www.real-cars.co.za. Your task is to assign NEW enquiries to salespeople based on their current workload.
 Current Salespeople Workloads:
@@ -3392,21 +3434,15 @@ Rules:
 Response MUST be a valid JSON array of objects with keys "leadId", "assignedUserId", "reasoning". No extra text.
 `;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
-        contents: "Assign these enquiries.",
-        config: {
-          systemInstruction,
-          responseMimeType: "application/json"
-        }
-      });
-
-      const responseText = response.text;
+      const responseText = await deepseekText([
+        { role: "system", content: systemInstruction },
+        { role: "user", content: "Assign these enquiries." },
+      ], { json: true });
 
       try {
         // Clean markdown code blocks if present
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        assignments = JSON.parse(jsonMatch ? jsonMatch[0] : responseText);
+        const jsonMatch = responseText?.match(/\[[\s\S]*\]/);
+        assignments = JSON.parse(jsonMatch ? jsonMatch[0] : responseText || "");
       } catch (e) {
         console.error("Failed to parse AI assignment response:", e);
         // Fallback to manual assignment if AI fails
@@ -3532,34 +3568,24 @@ ${tasksContext || "None"}
 - **Concise & Actionable:** Don't just list data; tell the user what to DO with it (e.g., "Dispatch a quote to David Moyo" or "Price-drop the BMW X5").
 `;
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    if (!aiConfigured) {
       // If API key is missing, fall back to smart template responses
-      console.warn("GEMINI_API_KEY environment variable is not defined. Falling back to local intelligence.");
+      console.warn("DEEPSEEK_API_KEY environment variable is not defined. Falling back to local intelligence.");
       return res.json({ text: getSmartFallbackResponse(query, state) });
     }
 
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
+    const resultText = await deepseekText([
+      { role: "system", content: systemInstruction },
+      { role: "user", content: query },
+    ], { temperature: 0.7 });
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: query,
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-      }
-    });
+    if (!resultText) {
+      return res.json({ text: getSmartFallbackResponse(query, state) });
+    }
 
-    res.json({ text: response.text });
+    res.json({ text: resultText });
   } catch (error: any) {
-    console.error("Gemini Co-Pilot integration failure:", error);
+    console.error("DeepSeek Co-Pilot integration failure:", error);
     res.status(500).json({ error: "AI assistant service is currently sleeping or configured incorrectly. Please check settings.", details: error.message });
   }
 });
@@ -4952,10 +4978,8 @@ app.post("/api/integration/sync-inventory", (req: any, res) => {
   }
 });
 
-// --- TRULENS: GEMINI PHOTO ANALYSIS ---
-
-const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
-const geminiAi = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
+// --- TRULENS: LISTING COPY WRITER (DeepSeek) ---
+// Kept at /api/gemini/analyze for frontend compatibility; no image is sent.
 
 app.post('/api/gemini/analyze', async (req, res) => {
   const { base64Image, slotName, propertyInfo } = req.body;
@@ -4964,9 +4988,7 @@ app.post('/api/gemini/analyze', async (req, res) => {
     return res.status(400).json({ error: 'base64Image is required' });
   }
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-
-  if (!geminiAi) {
+  if (!aiConfigured) {
     return res.json({
       overallScore: 85,
       lightingCheck: { status: 'Perfect', brightness: 128, contrast: 135, feedback: 'Excellent soft overhead lighting. Very clean representation with minimal glare.' },
@@ -4981,67 +5003,27 @@ app.post('/api/gemini/analyze', async (req, res) => {
   }
 
   try {
-    const prompt = `You are an expert property inspection agent. Examine the provided property photo (captured in slot: "${slotName || 'General Exterior'}").
-Analyze the photo for listing quality, and provide precise JSON feedback on:
-1. Overall score (0-100).
-2. Lighting evaluation: Status ("Poor", "Fair", "Perfect"), and a short feedback message.
-3. Angle/framing evaluation: Status ("Off-Angle", "Good", "Perfect"), and feedback.
-4. Auto-identification and marketing generator: Guess/confirm the property details, write a listing Title, Description, and list any visible cosmetic issues.
+    const prompt = `You are an expert property listing copywriter. Write a listing title and description for the property captured in slot "${slotName || 'General Exterior'}".
+Property details: ${propertyInfo?.address || 'address not provided'}.
 
-Respond strictly with valid JSON matching the required schema.`;
+You cannot see the photo, so provide sensible neutral values for the quality checks. Respond strictly with valid JSON matching this schema:
+{
+  "overallScore": number,
+  "lightingCheck": { "status": "Poor" | "Fair" | "Perfect", "brightness": number, "contrast": number, "feedback": string },
+  "angleCheck": { "status": "Off-Angle" | "Good" | "Perfect", "pitchDiff": number, "rollDiff": number, "feedback": string },
+  "aiAnalysis": {
+    "identifiedSubject": string,
+    "suggestedTitle": string,
+    "suggestedDescription": string,
+    "detectedIssues": string[]
+  }
+}`;
 
-    const response = await geminiAi.models.generateContent({
-      model: 'gemini-flash-latest',
-      contents: [
-        { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
-        prompt,
-      ],
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            overallScore: { type: Type.INTEGER },
-            lightingCheck: {
-              type: Type.OBJECT,
-              properties: {
-                status: { type: Type.STRING },
-                brightness: { type: Type.INTEGER },
-                contrast: { type: Type.INTEGER },
-                feedback: { type: Type.STRING },
-              },
-              required: ['status', 'brightness', 'contrast', 'feedback'],
-            },
-            angleCheck: {
-              type: Type.OBJECT,
-              properties: {
-                status: { type: Type.STRING },
-                pitchDiff: { type: Type.NUMBER },
-                rollDiff: { type: Type.NUMBER },
-                feedback: { type: Type.STRING },
-              },
-              required: ['status', 'pitchDiff', 'rollDiff', 'feedback'],
-            },
-            aiAnalysis: {
-              type: Type.OBJECT,
-              properties: {
-                identifiedSubject: { type: Type.STRING },
-                suggestedTitle: { type: Type.STRING },
-                suggestedDescription: { type: Type.STRING },
-                detectedIssues: { type: Type.ARRAY, items: { type: Type.STRING } },
-              },
-              required: ['identifiedSubject', 'suggestedTitle', 'suggestedDescription', 'detectedIssues'],
-            },
-          },
-          required: ['overallScore', 'lightingCheck', 'angleCheck', 'aiAnalysis'],
-        },
-      },
-    });
-
-    const resultText = response.text || '';
+    const resultText = await deepseekText([{ role: 'user', content: prompt }], { json: true });
+    if (!resultText) throw new Error('No AI response');
     res.json(JSON.parse(resultText));
   } catch (error: any) {
-    console.error('Gemini analysis error:', error);
+    console.error('DeepSeek analysis error:', error);
     if (error.message?.includes('403') || error.message?.includes('PERMISSION_DENIED')) {
       return res.json({
         overallScore: 82,

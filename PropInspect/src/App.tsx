@@ -1,5 +1,5 @@
 import logo from "./assets/truflow-logo.png";
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import Assistant from "./components/Assistant";
 import {
   Home,
@@ -353,7 +353,10 @@ export default function App() {
   const mine = (d?: string) => !d || d === dealershipId;
   const showAll = (isMasterAdmin && !adminDealerScope) || !dealershipId;
 
-  const filteredVehicles = !state ? [] : showAll ? state.properties : state.properties.filter(v => mine(v.dealershipId));
+  const filteredVehicles = useMemo(
+    () => (!state ? [] : showAll ? state.properties : state.properties.filter((v) => mine(v.dealershipId))),
+    [state, showAll, dealershipId],
+  );
   /** Stock the dealer can still act on: tenant-scoped, minus archived units.
    *
    *  Anything that lists, counts or offers a car to work with should read this
@@ -362,14 +365,35 @@ export default function App() {
    *  new-enquiry dropdown and the aged-stock counts. `filteredVehicles` is still
    *  the right source where sold history matters — Stock Health's realised
    *  margin has to keep counting them. */
-  const activeStock = filteredVehicles.filter((v) => !v.archivedAt);
-  const filteredLeads = !state ? [] : showAll ? state.enquiries : state.enquiries.filter(l => mine(l.dealershipId));
-  const filteredTasks = !state ? [] : showAll ? state.tasks : state.tasks.filter(t => mine(t.dealershipId));
-  const filteredInvoices = !state ? [] : showAll ? state.invoices : state.invoices.filter(i => mine(i.dealershipId));
-  const filteredAgreements = !state ? [] : showAll ? state.agreements : state.agreements.filter(a => mine(a.dealershipId));
-  const filteredDocuments = !state ? [] : showAll ? (state.documents || []) : (state.documents || []).filter(d => mine(d.dealershipId));
-  const filteredCommunications = !state ? [] : showAll ? state.communications : state.communications.filter(c => mine(c.dealershipId));
-  const filteredExpenses = !state ? [] : showAll ? state.expenses : state.expenses.filter(e => mine(e.dealershipId));
+  const activeStock = useMemo(() => filteredVehicles.filter((v) => !v.archivedAt), [filteredVehicles]);
+  const filteredLeads = useMemo(
+    () => (!state ? [] : showAll ? state.enquiries : state.enquiries.filter((l) => mine(l.dealershipId))),
+    [state, showAll, dealershipId],
+  );
+  const filteredTasks = useMemo(
+    () => (!state ? [] : showAll ? state.tasks : state.tasks.filter((t) => mine(t.dealershipId))),
+    [state, showAll, dealershipId],
+  );
+  const filteredInvoices = useMemo(
+    () => (!state ? [] : showAll ? state.invoices : state.invoices.filter((i) => mine(i.dealershipId))),
+    [state, showAll, dealershipId],
+  );
+  const filteredAgreements = useMemo(
+    () => (!state ? [] : showAll ? state.agreements : state.agreements.filter((a) => mine(a.dealershipId))),
+    [state, showAll, dealershipId],
+  );
+  const filteredDocuments = useMemo(
+    () => (!state ? [] : showAll ? (state.documents || []) : (state.documents || []).filter((d) => mine(d.dealershipId))),
+    [state, showAll, dealershipId],
+  );
+  const filteredCommunications = useMemo(
+    () => (!state ? [] : showAll ? state.communications : state.communications.filter((c) => mine(c.dealershipId))),
+    [state, showAll, dealershipId],
+  );
+  const filteredExpenses = useMemo(
+    () => (!state ? [] : showAll ? state.expenses : state.expenses.filter((e) => mine(e.dealershipId))),
+    [state, showAll, dealershipId],
+  );
   const [selectedDetailVehicle, setSelectedDetailVehicle] = useState<Property | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leadDetailId, setLeadDetailId] = useState<string | null>(null);
@@ -587,6 +611,226 @@ export default function App() {
     return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
   }, []);
 
+  // Derived metrics
+  const formatZAR = (num: number) => {
+    return "R " + Math.round(num).toLocaleString("en-ZA");
+  };
+
+  const activeVehiclesCount = useMemo(
+    () => (state ? state.properties.filter((v) => v.status !== "SOLD" && !v.archivedAt).length : 0),
+    [state],
+  );
+  const unresolvedLeadsCount = useMemo(
+    () => (state ? state.enquiries.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost").length : 0),
+    [state],
+  );
+  /**
+   * Stock that cannot sell yet, because it isn't online.
+   *
+   * This replaced a "Website analytics" card of hardcoded numbers (51 visits,
+   * 94% bounce) that were never wired to anything. A car in stock with no
+   * photos is dead capital — it is paying floorplan and cannot be shopped —
+   * and nothing in the app put that number in front of the dealer daily.
+   * Stock health already owns the money view; this owns the "why isn't it
+   * moving" view, and every figure comes from the same readiness helper the
+   * Stock media page scores each vehicle with.
+   */
+  const notOnline = useMemo(() => {
+    const inStock = activeStock.filter((v) => v.status !== "SOLD");
+    const graded = inStock.map((v) => ({ v, r: computeDmsGalleryReadiness(v as any) }));
+    const noPhotos = graded.filter((g) => g.r.level === "capture");
+    const incomplete = graded.filter((g) => g.r.level === "partial");
+    const blocked = [...noPhotos, ...incomplete];
+    // Worst offender by age, because "4 cars need photos" is a chore whereas
+    // "one has been sitting 34 days" is a decision.
+    const oldest = blocked.reduce<(typeof blocked)[number] | null>(
+      (worst, g) => (!worst || (g.v.daysInInventory || 0) > (worst.v.daysInInventory || 0) ? g : worst),
+      null,
+    );
+    return {
+      inStock: inStock.length,
+      blocked: blocked.length,
+      noPhotos: noPhotos.length,
+      incomplete: incomplete.length,
+      ready: graded.filter((g) => g.r.webReady).length,
+      oldest,
+    };
+  }, [activeStock]);
+
+  const soldUnitsCount = useMemo(
+    () => (state ? state.properties.filter((v) => v.status === "SOLD").length : 0),
+    [state],
+  );
+  const totalRevenue = useMemo(
+    () => (state ? state.invoices.filter((i) => i.status === "Paid").reduce((sum, i) => sum + i.amount, 0) : 0),
+    [state],
+  );
+
+  /* Leads waiting on a first reply ------------------------------------------
+     The number that actually decides whether a Enquiry converts is how long it
+     sat before anyone answered it — pipeline value can't be acted on at 9am,
+     but "3 people are waiting, one since yesterday" can. A Enquiry counts as
+     waiting when it is still open and has never been contacted. */
+  const openLeads = useMemo(
+    () => (state ? state.enquiries.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost") : []),
+    [state],
+  );
+  const awaitingReply = useMemo(() => openLeads.filter((l) => !l.lastContactedAt), [openLeads]);
+  const negotiatingCount = useMemo(() => openLeads.filter((l) => l.status === "Negotiating").length, [openLeads]);
+  const oldestWaitMs = useMemo(() => {
+    return awaitingReply.reduce((worst, l) => {
+      const waited = Date.now() - new Date(l.createdAt).getTime();
+      return Number.isFinite(waited) && waited > worst ? waited : worst;
+    }, 0);
+  }, [awaitingReply]);
+  /** "4h" / "2d" / "18m" — the shape a dealer reads at a glance. */
+  const formatWait = (ms: number) => {
+    const mins = Math.floor(ms / 60000);
+    if (mins < 60) return `${Math.max(mins, 1)}m`;
+    const hrs = Math.floor(mins / 60);
+    return hrs < 24 ? `${hrs}h` : `${Math.floor(hrs / 24)}d`;
+  };
+  // Anything unanswered for more than an hour is the one thing on this screen
+  // allowed to draw the eye. Under an hour the dealer is on top of it.
+  const replyIsLate = useMemo(() => oldestWaitMs > 60 * 60 * 1000, [oldestWaitMs]);
+
+  /** Whose floor this is. Matches the signed-in dealership first, then
+   *  falls back so the banner never renders a bare "· live". */
+  const currentDealership = useMemo(
+    () => (state?.dealerships || []).find((d: any) => d.id === dealershipId),
+    [state, dealershipId],
+  );
+  const dealershipLabel = useMemo(
+    () => currentDealership?.name
+      || account?.label || "Your dealership",
+    [currentDealership, account],
+  );
+  // The embed snippet was reading from a localStorage default that ships as
+  // "mkr-autosales", so every dealer's Settings page showed MKR. Prefer the
+  // signed-in dealership's slug; fall through to the stored value only for the
+  // master admin, who has no dealership of their own.
+  const currentDealerSlug = useMemo(
+    () => currentDealership?.slug || (isMasterAdmin ? undefined : dealershipId),
+    [currentDealership, isMasterAdmin, dealershipId],
+  );
+  const dealerProducts: string[] = useMemo(
+    () => (currentDealership as any)?.products || [],
+    [currentDealership],
+  );
+  const hasProduct = (p: string) => isMasterAdmin && !adminDealerScope ? true : dealerProducts.includes(p);
+  const todayLabel = new Date().toLocaleDateString("en-ZA", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  /* Card subtexts should answer "compared to what?" — "Ready for viewing" and
+     "Cleared this cycle" are decoration. Aged stock and unpaid invoices are
+     the two numbers a dealer principal actually chases. */
+  const AGED_DAYS = 60;
+  /* Uses stockAge(), the same helper Stock Health measures with. This counted
+     `daysInInventory` directly — a value written once on create and never
+     updated — while Stock Health preferred `dateAcquired`, so the Overview tile
+     and the Stock Health tile reported different aged-stock counts for the same
+     floor, at the same threshold. */
+  const agedStockCount = useMemo(
+    () => (state ? state.properties.filter(
+      (v) => v.status !== "SOLD" && !v.archivedAt && stockAge(v) > AGED_DAYS
+    ).length : 0),
+    [state],
+  );
+  /* The headline money figure is deal value less what was spent making the car
+     ready — sale price minus recon, summed over sold units. It replaces the old
+     invoice-derived "Banked" number, which assumed the DMS raised the invoice;
+     dealers invoice from their own systems, so that number was never real. */
+  /* End-of-day totals, computed once. The CSV export and the on-screen report
+     each derived these four lines independently and identically, so changing
+     one would have silently disagreed with the other. */
+  const eodTotals = useMemo(() => {
+    if (!state) return { sold: [], totalRevenue: 0, totalProfit: 0, reconTotal: 0, marginPct: "0.0" };
+    const sold = state.properties.filter((v) => v.status === "SOLD");
+    const totalRevenue = sold.reduce((s, v) => s + (v.askingPrice || 0), 0);
+    const totalProfit = sold.reduce(
+      (s, v) => s + ((v.askingPrice || 0) - (v.costPrice || 0)),
+      0,
+    );
+    const reconTotal = state.properties
+      .flatMap((v: any) => v.maintenanceTasks || [])
+      .reduce((s: number, t: any) => s + (t.cost || 0), 0);
+    const marginPct = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : "0.0";
+    return { sold, totalRevenue, totalProfit, reconTotal, marginPct };
+  }, [state]);
+
+  const soldVehicles = useMemo(
+    () => (state ? state.properties.filter((v) => v.status === "SOLD") : []),
+    [state],
+  );
+  const grossAfterRecon = useMemo(
+    () => soldVehicles.reduce((sum, v) => sum + ((v.askingPrice || 0) - reconSpend(v)), 0),
+    [soldVehicles],
+  );
+  const outstandingRevenue = useMemo(
+    () => (state ? state.invoices
+      .filter((i) => i.status !== "Paid")
+      .reduce((sum, i) => sum + i.amount, 0) : 0),
+    [state],
+  );
+
+  /* The morning strip -------------------------------------------------------
+     What a dealer needs to know before the doors open, in the order it costs
+     money: who has been left hanging, what was promised for today, and what
+     has to physically leave the yard. Kept in the chrome so it follows you
+     off the dashboard — the numbers are useless on a screen you've navigated
+     away from. */
+  const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date(startOfToday); endOfToday.setDate(endOfToday.getDate() + 1);
+  const isToday = (d?: string | null) => {
+    if (!d) return false;
+    const t = new Date(d).getTime();
+    return t >= startOfToday.getTime() && t < endOfToday.getTime();
+  };
+  // Anything promised for today — an open task, or a Enquiry's next action.
+  const dueTodayCount = useMemo(
+    () => state
+      ? state.tasks.filter((t) => t.status !== "Completed" && isToday(t.dueDate)).length +
+        openLeads.filter((l) => isToday(l.nextActionAt)).length
+      : 0,
+    [state, openLeads],
+  );
+  // Overdue is worse than due: it was promised and the day has passed.
+  const overdueCount = useMemo(
+    () => state
+      ? state.tasks.filter(
+        (t) => t.status !== "Completed" && t.dueDate && new Date(t.dueDate) < startOfToday
+      ).length +
+        openLeads.filter(
+          (l) => l.nextActionAt && new Date(l.nextActionAt) < startOfToday
+        ).length
+      : 0,
+    [state, openLeads],
+  );
+  /* The "Going out" tile and its top-bar chip are gone. It counted properties in
+     PENDING — a status nothing had written since the stock kanban was removed —
+     so it read zero forever. Rebuilding it on `Closed Won && !docFlowCompletedAt`
+     was worse: no historical deal carries that stamp, so it counted every deal
+     ever closed. Neither number was true, and Deal Readiness already answers
+     "what is still outstanding" properly. */
+
+  /* Nav "needs attention" signals — one shared rule per destination, so the
+     bottom bar and the sidebar read from the same source. Each value is a
+     genuine to-do count: enquiries waiting on a first reply, overdue tasks/actions,
+     and stock that can't sell yet because it has no photos / an incomplete
+     listing. Rendered as a dot on mobile (a number on a tab is noise) and as a
+     count on desktop, and only when the value is > 0. */
+  const navAttention: Record<string, number> = useMemo(
+    () => ({
+      enquiries: awaitingReply.length,
+      tasks: overdueCount,
+      inventory: notOnline.blocked,
+    }),
+    [awaitingReply, overdueCount, notOnline],
+  );
+
   if (!isLoggedIn) {
     return (
       // setIsLoggedIn inline, not handleLogin — this early return runs before
@@ -630,177 +874,6 @@ export default function App() {
       </div>
     );
   }
-
-  // Derived metrics
-  const formatZAR = (num: number) => {
-    return "R " + Math.round(num).toLocaleString("en-ZA");
-  };
-
-  const activeVehiclesCount = state.properties.filter((v) => v.status !== "SOLD" && !v.archivedAt).length;
-  const unresolvedLeadsCount = state.enquiries.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost").length;
-  /**
-   * Stock that cannot sell yet, because it isn't online.
-   *
-   * This replaced a "Website analytics" card of hardcoded numbers (51 visits,
-   * 94% bounce) that were never wired to anything. A car in stock with no
-   * photos is dead capital — it is paying floorplan and cannot be shopped —
-   * and nothing in the app put that number in front of the dealer daily.
-   * Stock health already owns the money view; this owns the "why isn't it
-   * moving" view, and every figure comes from the same readiness helper the
-   * Stock media page scores each vehicle with.
-   */
-  const notOnline = (() => {
-    const inStock = activeStock.filter((v) => v.status !== "SOLD");
-    const graded = inStock.map((v) => ({ v, r: computeDmsGalleryReadiness(v as any) }));
-    const noPhotos = graded.filter((g) => g.r.level === "capture");
-    const incomplete = graded.filter((g) => g.r.level === "partial");
-    const blocked = [...noPhotos, ...incomplete];
-    // Worst offender by age, because "4 cars need photos" is a chore whereas
-    // "one has been sitting 34 days" is a decision.
-    const oldest = blocked.reduce<(typeof blocked)[number] | null>(
-      (worst, g) => (!worst || (g.v.daysInInventory || 0) > (worst.v.daysInInventory || 0) ? g : worst),
-      null,
-    );
-    return {
-      inStock: inStock.length,
-      blocked: blocked.length,
-      noPhotos: noPhotos.length,
-      incomplete: incomplete.length,
-      ready: graded.filter((g) => g.r.webReady).length,
-      oldest,
-    };
-  })();
-
-  const soldUnitsCount = state.properties.filter((v) => v.status === "SOLD").length;
-  const totalRevenue = state.invoices.filter((i) => i.status === "Paid").reduce((sum, i) => sum + i.amount, 0);
-
-  /* Leads waiting on a first reply ------------------------------------------
-     The number that actually decides whether a Enquiry converts is how long it
-     sat before anyone answered it — pipeline value can't be acted on at 9am,
-     but "3 people are waiting, one since yesterday" can. A Enquiry counts as
-     waiting when it is still open and has never been contacted. */
-  const openLeads = state.enquiries.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost");
-  const awaitingReply = openLeads.filter((l) => !l.lastContactedAt);
-  const negotiatingCount = openLeads.filter((l) => l.status === "Negotiating").length;
-  const oldestWaitMs = awaitingReply.reduce((worst, l) => {
-    const waited = Date.now() - new Date(l.createdAt).getTime();
-    return Number.isFinite(waited) && waited > worst ? waited : worst;
-  }, 0);
-  /** "4h" / "2d" / "18m" — the shape a dealer reads at a glance. */
-  const formatWait = (ms: number) => {
-    const mins = Math.floor(ms / 60000);
-    if (mins < 60) return `${Math.max(mins, 1)}m`;
-    const hrs = Math.floor(mins / 60);
-    return hrs < 24 ? `${hrs}h` : `${Math.floor(hrs / 24)}d`;
-  };
-  // Anything unanswered for more than an hour is the one thing on this screen
-  // allowed to draw the eye. Under an hour the dealer is on top of it.
-  const replyIsLate = oldestWaitMs > 60 * 60 * 1000;
-
-  /** Whose floor this is. Matches the signed-in dealership first, then
-   *  falls back so the banner never renders a bare "· live". */
-  const currentDealership = (state?.dealerships || []).find((d: any) => d.id === dealershipId);
-  const dealershipLabel =
-    currentDealership?.name
-    || account?.label || "Your dealership";
-  // The embed snippet was reading from a localStorage default that ships as
-  // "mkr-autosales", so every dealer's Settings page showed MKR. Prefer the
-  // signed-in dealership's slug; fall through to the stored value only for the
-  // master admin, who has no dealership of their own.
-  const currentDealerSlug = currentDealership?.slug || (isMasterAdmin ? undefined : dealershipId);
-  const dealerProducts: string[] = (currentDealership as any)?.products || [];
-  const hasProduct = (p: string) => isMasterAdmin && !adminDealerScope ? true : dealerProducts.includes(p);
-  const todayLabel = new Date().toLocaleDateString("en-ZA", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  /* Card subtexts should answer "compared to what?" — "Ready for viewing" and
-     "Cleared this cycle" are decoration. Aged stock and unpaid invoices are
-     the two numbers a dealer principal actually chases. */
-  const AGED_DAYS = 60;
-  /* Uses stockAge(), the same helper Stock Health measures with. This counted
-     `daysInInventory` directly — a value written once on create and never
-     updated — while Stock Health preferred `dateAcquired`, so the Overview tile
-     and the Stock Health tile reported different aged-stock counts for the same
-     floor, at the same threshold. */
-  const agedStockCount = state.properties.filter(
-    (v) => v.status !== "SOLD" && !v.archivedAt && stockAge(v) > AGED_DAYS
-  ).length;
-  /* The headline money figure is deal value less what was spent making the car
-     ready — sale price minus recon, summed over sold units. It replaces the old
-     invoice-derived "Banked" number, which assumed the DMS raised the invoice;
-     dealers invoice from their own systems, so that number was never real. */
-  /* End-of-day totals, computed once. The CSV export and the on-screen report
-     each derived these four lines independently and identically, so changing
-     one would have silently disagreed with the other. */
-  const eodTotals = (() => {
-    const sold = state.properties.filter((v) => v.status === "SOLD");
-    const totalRevenue = sold.reduce((s, v) => s + (v.askingPrice || 0), 0);
-    const totalProfit = sold.reduce(
-      (s, v) => s + ((v.askingPrice || 0) - (v.costPrice || 0)),
-      0,
-    );
-    const reconTotal = state.properties
-      .flatMap((v: any) => v.maintenanceTasks || [])
-      .reduce((s: number, t: any) => s + (t.cost || 0), 0);
-    const marginPct = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : "0.0";
-    return { sold, totalRevenue, totalProfit, reconTotal, marginPct };
-  })();
-
-  const soldVehicles = state.properties.filter((v) => v.status === "SOLD");
-  const grossAfterRecon = soldVehicles.reduce(
-    (sum, v) => sum + ((v.askingPrice || 0) - reconSpend(v)),
-    0
-  );
-  const outstandingRevenue = state.invoices
-    .filter((i) => i.status !== "Paid")
-    .reduce((sum, i) => sum + i.amount, 0);
-
-  /* The morning strip -------------------------------------------------------
-     What a dealer needs to know before the doors open, in the order it costs
-     money: who has been left hanging, what was promised for today, and what
-     has to physically leave the yard. Kept in the chrome so it follows you
-     off the dashboard — the numbers are useless on a screen you've navigated
-     away from. */
-  const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
-  const endOfToday = new Date(startOfToday); endOfToday.setDate(endOfToday.getDate() + 1);
-  const isToday = (d?: string | null) => {
-    if (!d) return false;
-    const t = new Date(d).getTime();
-    return t >= startOfToday.getTime() && t < endOfToday.getTime();
-  };
-  // Anything promised for today — an open task, or a Enquiry's next action.
-  const dueTodayCount =
-    state.tasks.filter((t) => t.status !== "Completed" && isToday(t.dueDate)).length +
-    openLeads.filter((l) => isToday(l.nextActionAt)).length;
-  // Overdue is worse than due: it was promised and the day has passed.
-  const overdueCount =
-    state.tasks.filter(
-      (t) => t.status !== "Completed" && t.dueDate && new Date(t.dueDate) < startOfToday
-    ).length +
-    openLeads.filter(
-      (l) => l.nextActionAt && new Date(l.nextActionAt) < startOfToday
-    ).length;
-  /* The "Going out" tile and its top-bar chip are gone. It counted properties in
-     PENDING — a status nothing had written since the stock kanban was removed —
-     so it read zero forever. Rebuilding it on `Closed Won && !docFlowCompletedAt`
-     was worse: no historical deal carries that stamp, so it counted every deal
-     ever closed. Neither number was true, and Deal Readiness already answers
-     "what is still outstanding" properly. */
-
-  /* Nav "needs attention" signals — one shared rule per destination, so the
-     bottom bar and the sidebar read from the same source. Each value is a
-     genuine to-do count: enquiries waiting on a first reply, overdue tasks/actions,
-     and stock that can't sell yet because it has no photos / an incomplete
-     listing. Rendered as a dot on mobile (a number on a tab is noise) and as a
-     count on desktop, and only when the value is > 0. */
-  const navAttention: Record<string, number> = {
-    enquiries: awaitingReply.length,
-    tasks: overdueCount,
-    inventory: notOnline.blocked,
-  };
 
   // Grouped menu sections for elegant layout
   const groupedNavigation = [

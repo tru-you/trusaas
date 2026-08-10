@@ -118,7 +118,7 @@ export default function DamageTagger({ property, initialSlotId, onBack, onSave }
       const data = await res.json();
       const suggestions: DamageFinding[] = Array.isArray(data.findings) ? data.findings : [];
       if (!data.aiMode) {
-        setScanMsg('AI vision is off on the server — tag by hand, or add a GEMINI key to enable it.');
+        setScanMsg('AI damage detection is off — tag any damage by hand.');
       } else if (!suggestions.length) {
         setScanMsg('AI saw no clear damage in this photo. Tag anything it missed by hand.');
       } else {

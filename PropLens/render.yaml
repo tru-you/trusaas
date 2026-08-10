@@ -21,7 +21,7 @@ services:
       - key: FLOWPMS_URL
         sync: false
         value: ""
-      - key: GEMINI_API_KEY
+      - key: DEEPSEEK_API_KEY
         sync: false
         value: ""
     disk:
