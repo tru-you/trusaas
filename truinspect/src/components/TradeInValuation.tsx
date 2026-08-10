@@ -4,6 +4,7 @@ import { Vehicle } from '../types';
 import { InspectionItem, ValuationState, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
 import { kredoValuation, kredoStatus, type CarValueResult } from '../lib/kredo';
+import { urlMake } from '../lib/scraper';
 
 interface TradeInValuationProps {
   vehicle: Vehicle;
@@ -88,21 +89,23 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           model: vehicle.model,
           year: vehicle.year,
           variant: vehicle.trim,
+          vin: vehicle.vin,
         }),
       });
       const data = await res.json();
       if (data.sources) setSources(data.sources);
       if (data.carsUrl) setCarsUrl(data.carsUrl);
-      if (data.fallbackRequired) {
-        setValuation((v) => ({ ...v, fallbackRequired: true, searchUrl: data.searchUrl }));
-        if (data.carsUrl) setCarsUrl(data.carsUrl);
-      } else {
+      if (data.averageRetailPrice != null) {
         setManualPrice(String(data.averageRetailPrice));
         recalc(data.averageRetailPrice, valuation.marginPercentage);
-        setValuation((v) => ({ ...v, fallbackRequired: false }));
       }
+      setValuation((v) => ({
+        ...v,
+        fallbackRequired: !!data.fallbackRequired,
+        searchUrl: data.searchUrl,
+      }));
     } catch {
-      const atUrl = `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(vehicle.make)}&model=${encodeURIComponent(vehicle.model)}&year=${vehicle.year}`;
+      const atUrl = `https://www.autotrader.co.za/cars-for-sale?make=${encodeURIComponent(urlMake(vehicle.make))}&model=${encodeURIComponent(vehicle.model)}&year=${vehicle.year}`;
       setCarsUrl(`https://www.cars.co.za/usedcars/${encodeURIComponent(vehicle.make)}/${encodeURIComponent(vehicle.model)}/?Year=${vehicle.year}`);
       setValuation((v) => ({
         ...v,
@@ -156,8 +159,8 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           {fetching ? 'Fetching…' : 'Fetch Market Value'}
         </button>
 
-        {/* Source breakdown (shown after successful fetch) */}
-        {!valuation.fallbackRequired && sources.length > 0 && (
+        {/* Source breakdown (shown after any successful fetch) */}
+        {sources.length > 0 && (
           <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-3 flex items-center gap-3">
             {sources.map((s) => (
               <div key={s.name} className="flex-1 text-center">
@@ -173,9 +176,16 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
         {/* Fallback deep links */}
         {valuation.fallbackRequired && valuation.searchUrl && (
           <div className="rounded-xl border border-[rgba(232,234,230,0.14)] bg-[rgba(232,234,230,0.055)] p-4">
-            <p className="text-[13px] text-[rgba(232,234,230,0.72)] mb-3">
-              Auto-scrape unavailable — enter the market average manually after checking listings.
-            </p>
+            {valuation.averageRetailPrice != null ? (
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mb-3">
+                Dealer stock was thin — this price blends dealer listings with online
+                classifieds. Cross-check before finalising.
+              </p>
+            ) : (
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mb-3">
+                Auto-scrape unavailable — enter the market average manually after checking listings.
+              </p>
+            )}
             <div className="flex flex-col gap-2">
               <a
                 href={valuation.searchUrl}
