@@ -219,6 +219,28 @@ button,input,textarea{font-family:inherit;}
 .tl-d{font-size:13px;color:var(--dim);margin-top:2px;line-height:1.45;word-break:break-word;}
 .tl-empty{text-align:center;padding:14px;color:var(--muted);font-size:13px;}
 
+/* documents (doc flow workbench) */
+.grp{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin:16px 2px 8px;}
+.grp:first-child{margin-top:0;}
+.dcard{padding:14px;}
+.dc-head{display:flex;align-items:center;gap:12px;}
+.dc-main{flex:1;min-width:0;}
+.dc-nm{font-weight:600;font-size:15px;}
+.dc-veh{font-size:12.5px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dc-side{flex-shrink:0;}
+.dc-dots{display:flex;gap:6px;margin-top:13px;}
+.dchip{flex:1;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;border:1px solid var(--glass-line);color:var(--faint);background:var(--ink-2);}
+.dchip.on{background:var(--cyan);color:var(--ink);border-color:transparent;}
+.dchip.due{border-color:var(--cyan-soft);color:var(--cyan);background:var(--cyan-faint);}
+.dchip.skip{color:var(--danger);border-color:var(--danger-faint);background:var(--danger-faint);}
+.docrows{margin-top:6px;}
+.docloading{text-align:center;padding:18px;color:var(--muted);font-size:13px;}
+.drow{border:1px solid var(--glass-line);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;}
+.drow-l{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;}
+.drow-m{margin-top:7px;}
+.drow-s{font-size:12px;color:var(--dim);margin-top:6px;}
+.drow-a{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+
 /* add-vehicle form */
 .addform{margin-top:18px;}
 .uf-note{background:var(--cyan-faint);border:1px solid var(--cyan-soft);border-radius:var(--r);padding:13px 15px;font-size:13px;color:var(--dim);line-height:1.5;margin-top:6px;}
@@ -336,6 +358,13 @@ button,input,textarea{font-family:inherit;}
       <div class="stack" id="stockList" style="margin-top:12px"></div>
     </section>
 
+    <section class="screen" id="s-docs">
+      <div class="h-hi">Documents</div>
+      <p style="margin:4px 2px 14px;color:var(--muted);font-size:13px;line-height:1.5">Work through every deal's paperwork: generate a proforma, invoice or handover doc, tick to skip a stage, or sign &amp; finalise. Selling is never blocked by the doc flow.</p>
+      <div id="docsList" class="stack"></div>
+      <div style="height:14px"></div>
+    </section>
+
     <section class="screen" id="s-acct">
       <div class="h-hi">Account</div>
       <div class="card acct">
@@ -367,6 +396,7 @@ button,input,textarea{font-family:inherit;}
     <div class="tab on" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h14V9"/></svg><span>Home</span></div>
     <div class="tab" data-tab="leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg><span>Leads</span></div>
     <div class="tab" data-tab="stock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14l-1.5-5H6.5L5 17Z"/><path d="M8 12l1-4h6l1 4"/><circle cx="7.5" cy="17.4" r="1.3"/><circle cx="16.5" cy="17.4" r="1.3"/></svg><span>Stock</span></div>
+    <div class="tab" data-tab="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span>Docs</span></div>
     <div class="tab" data-tab="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Add</span></div>
     <div class="tab" data-tab="acct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Account</span></div>
   </nav>
@@ -472,8 +502,8 @@ button,input,textarea{font-family:inherit;}
   function loadLeads(){
     api("GET","/api/leads").then(function(x){cachedLeads=Array.isArray(x)?x:[];
       cachedLeads.sort(function(a,b){return new Date(b.createdAt||0)-new Date(a.createdAt||0);});
-      renderHome();renderLeads();
-    }).catch(function(){cachedLeads=[];renderHome();renderLeads();});
+      renderHome();renderLeads();renderDocs();
+    }).catch(function(){cachedLeads=[];renderHome();renderLeads();renderDocs();});
   }
   function loadInventory(){
     api("GET","/api/all-vehicles").then(function(x){cachedStock=Array.isArray(x)?x:[];renderHome();renderStock();
@@ -770,6 +800,130 @@ button,input,textarea{font-family:inherit;}
     api("PUT","/api/leads/"+curLeadId,{journey:journey,lastContactedAt:todayISO()}).then(function(res){
       if(res&&res.lead)updateLeadCache(res.lead);renderHome();renderLeads();openLead(curLeadId);toast("Note logged");
     }).catch(function(){toast("Couldn't save — check connection",true);if(btn){btn.disabled=false;btn.textContent="Log note";}});
+  }
+
+  /* ── Documents (per-deal doc flow: generate / skip / sign+finalise) ── */
+  var DOC_STAGES=["proforma","deed","compliance","invoice","handover"];
+  var DOC_LAB={"proforma":"Proforma","deed":"Deed / OTP","compliance":"Compliance","invoice":"Invoice","handover":"Handover"};
+  var DOC_MODE={proforma:"generate",deed:"generate",compliance:"confirm",invoice:"generate",handover:"generate"};
+  var DOC_ACT={"proforma":{"label":"Generates","sub":"Draft, no PDF yet"},"deed":{"label":"Generates","sub":"Draft, no PDF yet"},"compliance":{"label":"Confirm","sub":"Natis · roadworthy"},"invoice":{"label":"Generates","sub":"Draft, no PDF yet"},"handover":{"label":"Generates","sub":"Draft, no PDF yet"}};
+  function skipsOf(l){return (l&&l.docSkips)||{};}
+  function docDoneFor(l,st,docs){var s=skipsOf(l)[st];if(s)return {k:"skip",at:s.at,by:s.by,reason:s.reason};var d=(docs||[]).filter(function(x){return x.stage===st&&x.status==="Signed";})[0];if(d)return {k:"signed",doc:d};var dr=(docs||[]).filter(function(x){return x.stage===st&&x.status!=="Void";})[0];if(dr&&dr.status==="Draft")return {k:"draft",doc:dr};return {k:"none"};}
+  function renderDocs(){
+    var box=$("#docsList");box.innerHTML="";
+    var arr=cachedLeads.filter(function(l){return (l.status||"New")!=="Closed Lost";});
+    if(!arr.length){box.appendChild(emptyState("No deals yet","Open a lead, then work its paperwork here."));return;}
+    // In-progress first (no completion stamp), then completed flows.
+    arr.sort(function(a,b){return ((b.docFlowCompletedAt?1:0)-(a.docFlowCompletedAt?1:0))||(new Date(b.createdAt||0)-new Date(a.createdAt||0));});
+    var pending=arr.filter(function(l){return !l.docFlowCompletedAt;});
+    var doneArr=arr.filter(function(l){return !!l.docFlowCompletedAt;});
+    if(pending.length){box.appendChild(el("div","grp","IN PROGRESS"));pending.forEach(function(l){box.appendChild(docCard(l,false));});}
+    if(doneArr.length){box.appendChild(el("div","grp","DONE"));doneArr.forEach(function(l){box.appendChild(docCard(l,true));});}
+  }
+  function docCard(l,done){
+    var nm=((l.firstName||"")+" "+(l.lastName||"")).trim()||"New enquiry";
+    var veh=l.vehicleId?vehById(l.vehicleId):null;
+    var vehTxt=veh?(vName(veh)+(vPrice(veh)?" · "+money(vPrice(veh)):"")):"No vehicle yet";
+    var due=l.docStage?DOC_LAB[l.docStage]:null;
+    // minimap of the 5 stages
+    var dots=DOC_STAGES.map(function(st){
+      var idx=DOC_STAGES.indexOf(st),di=l.docStage?DOC_STAGES.indexOf(l.docStage):-1;
+      var pre=idx<di, skip=!!skipsOf(l)[st];
+      var cls=skip?"skip":(di>=0&&idx===di?"due":(pre?"on":"off"));
+      return '<span class="dchip '+cls+'" title="'+esc(DOC_LAB[st])+'">'+(skip?"✕":(pre?"✓":"·"))+'</span>';
+    }).join("");
+    var st=l.status||"New",cls=LEAD_PILL[st]||"neutral",lbl=LEAD_LBL[st]||st;
+    var c=el("div","card dcard");
+    c.innerHTML='<div class="dc-head"><div class="lav" style="background:'+colr(nm)+'">'+esc(initials(nm))+'</div><div class="dc-main"><div class="dc-nm">'+esc(nm)+'</div><div class="dc-veh">'+esc(vehTxt)+'</div></div><div class="dc-side"><span class="pill '+(done?"cyan dot":"glass")+'">'+(done?"Done":(due?"Next: "+esc(due):"To do"))+'</span></div></div>'+
+      '<div class="dc-dots">'+dots+'</div>';
+    c.addEventListener("click",function(){openDocs(l.id);});
+    return c;
+  }
+  function openDocs(id){
+    curLeadId=id;
+    var l=findLead(id);if(!l){closeSheet();return;}
+    var nm=((l.firstName||"")+" "+(l.lastName||"")).trim()||"New enquiry";
+    var veh=l.vehicleId?vehById(l.vehicleId):null;
+    $("#sheetFoot").style.display="none";
+    $("#sheetBody").innerHTML=
+      '<div class="ld-head"><div class="lav" style="background:'+colr(nm)+'">'+esc(initials(nm))+'</div><div class="nm"><div class="n">'+esc(nm)+'</div><div class="s">'+esc(veh?(vName(veh)+(vPrice(veh)?" · "+money(vPrice(veh)):"")):"No vehicle yet")+'</div></div><button class="ld-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>'+
+      '<div class="lbl">Doc flow</div><div id="docRows" class="docrows"></div><div style="height:8px"></div>';
+    $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
+    loadDocRows(id);
+    openSheet();
+  }
+  function loadDocRows(id){
+    var rows=$("#docRows");if(!rows)return;
+    rows.innerHTML='<div class="docloading">Loading paperwork…</div>';
+    api("GET","/api/deals/"+id+"/documents").then(function(docs){
+      docs=Array.isArray(docs)?docs:[];
+      var l=findLead(id);if(!l)return;
+      rows.innerHTML=DOC_STAGES.map(function(st){return docRow(l,st,docs);}).join("");
+      Array.prototype.forEach.call(rows.querySelectorAll("[data-act]"),function(b){
+        b.addEventListener("click",function(){docAction(b.getAttribute("data-act"),b.getAttribute("data-stage"),b.getAttribute("data-doc"),id);});
+      });
+    }).catch(function(){rows.innerHTML='<div class="docloading" style="color:var(--danger)">Couldn\'t load paperwork — check connection.</div>';});
+  }
+  function docRow(l,st,docs){
+    var state=docDoneFor(l,st,docs),mode=DOC_MODE[st],acc=DOC_ACT[st];
+    var pill="",acts="";
+    if(state.k==="signed"){pill='<span class="pill cyan dot">Signed</span>';if(state.doc&&state.doc.fileData)acts+='<button class="tru-btn-ghost" data-act="view" data-doc="'+state.doc.id+'">View / Print</button>';}
+    else if(state.k==="skip"){pill='<span class="pill mute dot">Skipped</span>';}
+    else if(state.k==="draft"){pill='<span class="pill glass">Draft</span>';if(state.doc&&state.doc.fileData)acts+='<button class="tru-btn-ghost" data-act="view" data-doc="'+state.doc.id+'">View / Print</button>';acts+='<button class="tru-btn-ghost" data-act="finalise" data-stage="'+st+'" data-doc="'+state.doc.id+'">Sign &amp; finalise</button><button class="tru-btn-ghost danger" data-act="skip" data-stage="'+st+'">Skip</button>';}
+    else{pill='<span class="pill glass">'+(mode==="confirm"?"Confirm":"Due")+'</span>';if(mode!=="confirm")acts='<button class="tru-btn-ghost" data-act="generate" data-stage="'+st+'">Generate</button>';acts+='<button class="tru-btn-ghost danger" data-act="skip" data-stage="'+st+'" style="border-color:var(--danger)">Skip tick</button>';}
+    var sub=state.k==="skip"?(state.reason?("Skipped: "+esc(state.reason)):((state.by||"You")+" skipped")):(state.k==="signed"?"Signed · PDF rendered":((state.k==="draft"?"PDF rendered · awaiting signature":(acc.label+(acc.sub?" · "+acc.sub:"")))));
+    var due=(l.docStage===st)?' <span class="pill cyan dot">Next</span>':'';
+    return '<div class="drow"><div class="drow-l">'+esc(DOC_LAB[st])+due+'</div><div class="drow-m">'+pill+'</div><div class="drow-s">'+esc(sub)+'</div><div class="drow-a">'+acts+'</div></div>';
+  }
+  function docAction(act,stage,docId,leadId){
+    var l=findLead(leadId);
+    if(act==="view"){
+      var d=null;
+      api("GET","/api/deals/"+leadId+"/documents").then(function(docs){
+        var arr=Array.isArray(docs)?docs:[];
+        for(var i=0;i<arr.length;i++){if(arr[i].id===docId){d=arr[i];break;}}
+        if(d&&d.fileData){window.open(d.fileData,"_blank");}
+        else toast("No file to view yet",true);
+      }).catch(function(){toast("Couldn't load document — check connection",true);});
+      return;
+    }
+    if(act==="generate"){
+      var sn=(new Date().toISOString().slice(0,10));
+      api("POST","/api/documents",{leadId:leadId,vehicleId:l&&l.vehicleId,stage:stage,mode:"generate",fileName:stage+"-"+sn,mimeType:"application/pdf"}).then(function(res){
+        if(res&&res.error){toast(res.error,true);return;}
+        toast(DOC_LAB[stage]+" draft created");loadDocRows(leadId);
+      }).catch(function(){toast("Couldn't create — check connection",true);});
+      return;
+    }
+    if(act==="skip"){
+      var reason=prompt("Reason for skipping "+DOC_LAB[stage]+" (optional):","");
+      if(reason===null)return;
+      api("POST","/api/deals/"+leadId+"/docs/skip",{stage:stage,reason:reason}).then(function(res){
+        if(res&&res.error){toast(res.error,true);return;}
+        if(res&&res.lead){var ll=findLead(leadId);if(ll)for(var k in res.lead){ll[k]=res.lead[k];}}
+        renderDocs();renderHome();renderLeads();loadDocRows(leadId);toast(DOC_LAB[stage]+" skipped");
+      }).catch(function(){toast("Couldn't skip — check connection",true);});
+      return;
+    }
+    if(act==="finalise"){
+      if(!docId)return;
+      var name=prompt("Sign as (full name) — this is the buyer's signature:","");
+      if(!name)return;
+      api("POST","/api/documents/"+docId+"/sign",{signature:"TYPED:"+name,signedBy:name}).then(function(r1){
+        if(r1&&r1.error){toast(r1.error,true);return;}
+        return api("POST","/api/documents/"+docId+"/finalize").then(function(res2){
+          if(res2&&res2.error){
+            var miss=(res2.missing&&res2.missing.length)?("Needs: "+res2.missing.join(", ")):null;
+            if(miss)toast(DOC_LAB[stage]+" blocked — "+miss+". Skip it instead.",true);
+            else toast(res2.error,true);
+            loadDocRows(leadId);
+            return;
+          }
+          if(res2&&res2.lead){var ll=findLead(leadId);if(ll)for(var k in res2.lead){ll[k]=res2.lead[k];}}
+          renderDocs();renderHome();renderLeads();loadDocRows(leadId);toast(DOC_LAB[stage]+" signed & finalised");
+        });
+      }).catch(function(){toast("Couldn't finalise — check connection",true);loadDocRows(leadId);});
+    }
   }
 
   /* ── Add vehicle (POST /api/inventory) ── */

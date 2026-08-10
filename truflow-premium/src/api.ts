@@ -493,6 +493,26 @@ export async function finalizeStageDocument(
   return body;
 }
 
+/** Skip (bypass) a DocHub stage on a deal — the dealer ticks it as
+ *  intentionally complete when the stage genuinely doesn't apply, or
+ *  the paperwork happened outside the DMS. Records an audit trail
+ *  (who + when + optional reason) and advances `lead.docStage`.
+ *  Selling is never blocked by the doc flow. */
+export async function skipDocStage(
+  leadId: string,
+  stage: DocStage,
+  reason?: string,
+): Promise<{ message: string; lead: { id: string; docStage: DocStage | null; docFlowCompletedAt?: string; docSkips?: Record<string, unknown> } }> {
+  const res = await authFetch(`/api/deals/${leadId}/docs/skip`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ stage, reason: reason || undefined }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `Stage skip failed (${res.status})`);
+  return body;
+}
+
 /** Dealer self-service update of identity fields (name, trading-as, VAT,
  *  contact email, address, registration number, website URL). Admins can
  *  target another dealership by passing dealershipId. */

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck, ExternalLink, SkipForward } from "lucide-react";
 import type { DealerDocument, Dealership, DocMode, DocStage, Lead } from "../../types";
 import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "../../types";
 import { authFetch } from "../../lib/session";
-import { createStageDocument, finalizeStageDocument, signDocument, updateLead } from "../../api";
+import { createStageDocument, finalizeStageDocument, signDocument, updateLead, skipDocStage } from "../../api";
 
 interface Props {
   lead: Lead;
@@ -170,6 +170,24 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
     }
   };
 
+  const handleSkipStage = async (stage: DocStage) => {
+    setBusyStage(stage);
+    setFlashError(null);
+    setMissing(null);
+    try {
+      const raw = window.prompt(`Reason for skipping "${STAGE_LABEL[stage]}" (optional):`);
+      if (raw === null) { setBusyStage(null); return; } // cancelled
+      const reason = raw.trim();
+      await skipDocStage(lead.id, stage, reason || undefined);
+      await reload();
+      onLeadRefresh?.();
+    } catch (err) {
+      setFlashError((err as Error).message || "Skip failed");
+    } finally {
+      setBusyStage(null);
+    }
+  };
+
   const patchChecklist = async (patch: Partial<NonNullable<Lead["dealChecklist"]>>) => {
     await updateLead(lead.id, {
       dealChecklist: { ...(lead.dealChecklist || {}), ...patch } as Lead["dealChecklist"],
@@ -301,9 +319,20 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                         }}
                         disabled={busyStage === stage}
                       />
-                    </label>
-                  )}
-                  {mode !== "confirm" && doc && doc.status !== "Signed" && (
+                     </label>
+                   )}
+                   {current && !done && (
+                     <button
+                       type="button"
+                       onClick={() => void handleSkipStage(stage)}
+                       disabled={busyStage === stage}
+                       className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md border border-amber-500/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/10 disabled:opacity-50"
+                     >
+                       {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SkipForward className="w-3.5 h-3.5" />}
+                       Skip
+                     </button>
+                   )}
+                   {mode !== "confirm" && doc && doc.status !== "Signed" && (
                     <button
                       type="button"
                       onClick={() => void handleSignAndFinalize(doc)}
@@ -312,6 +341,17 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                     >
                       {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Sign & finalise"}
                     </button>
+                  )}
+                  {mode !== "confirm" && doc && doc.fileData && (
+                    <a
+                      href={doc.fileData}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md border border-white/15 text-xs font-semibold hover:bg-white/5"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      View / Print
+                    </a>
                   )}
                   {doc && doc.status === "Signed" && (
                     <span className="text-xs text-emerald-300">✓ {mode === "confirm" ? "Confirmed" : "Signed"}</span>

@@ -27,7 +27,9 @@ const STAGE_DESC: Record<DocStage, string> = {
 };
 
 /** Per-dealer DocHub configuration. Modes per stage:
- *  `generate` (TruFlow renders a PDF from a template — deferred in v1),
+ *  `generate` (TruFlow renders a PDF from the deal data using the templates
+ *              in docPdf.ts — generated docs carry a full fieldSnapshot so they
+ *              can be finalised immediately),
  *  `attach`   (dealer uploads their own signed doc),
  *  `confirm`  (checkboxes only — fixed for compliance; NATIS/RWC are
  *              government paperwork and cannot be produced by the dealer). */

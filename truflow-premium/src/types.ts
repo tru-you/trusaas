@@ -62,6 +62,11 @@ export interface Dealership {
    *  and they are per dealer. */
   invoiceSeq?: number;
   agreementSeq?: number;
+  /** High-water mark for DocHub generated document numbers (proforma, offer,
+   *  invoice, handover). Kept separate from invoiceSeq/agreementSeq because
+   *  those feed the accounting collections; this one counts rendered PDFs.
+   *  Monotonic and per dealer so a number is never reissued. */
+  docSeq?: number;
   /** DocHub: per-stage mode. 'attach' = dealer uploads their own signed
    *  document; 'generate' = TruFlow renders one from a template. Missing keys
    *  default to 'attach' (least surprise for dealers already using their own
@@ -307,6 +312,12 @@ export interface Lead {
    *  DocStage also types `Document.stage` and `Dealership.docFlow`, where a
    *  "complete" document or a per-stage mode for it would both be nonsense. */
   docFlowCompletedAt?: string;
+  /** DocHub: stages the dealer intentionally bypassed (deal happened outside
+   *  the DMS, or the stage genuinely does not apply). Recorded so the audit
+   *  trail shows the stage was deliberately skipped rather than silently
+   *  absent, and so `finalize`'s ordering gate can treat a skipped stage as
+   *  satisfied. Advancing `docStage` treats these as complete — never forced. */
+  docSkips?: Partial<Record<DocStage, { at: string; by?: string; reason?: string }>>;
 }
 
 export interface Task {

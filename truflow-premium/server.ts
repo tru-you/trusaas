@@ -34,6 +34,8 @@ import { tidyStr, cleanModelName, normaliseExtras } from "./saNormalize";
 import type { DMSState, Vehicle, Lead, User, DealerDocument, Dealership, DocEvent, DocStage, DocMode } from "./src/types";
 import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "./src/types";
 import { canAdvance } from "./src/lib/docValidator";
+import { renderProforma, renderOffer, renderTaxInvoice, renderHandover, VAT_RATE } from "./docPdf";
+import type { BuyerBlock, VehicleBlock } from "./docPdf";
 
 dotenv.config();
 
@@ -2576,7 +2578,7 @@ app.get("/api/invoices", (req: any, res) => {
 function nextDocNumber(
   state: any,
   dealershipId: string | undefined,
-  opts: { prefix: string; rows: any[]; field: string; seqKey: "invoiceSeq" | "agreementSeq" },
+  opts: { prefix: string; rows: any[]; field: string; seqKey: "invoiceSeq" | "agreementSeq" | "docSeq" },
 ): string {
   const year = new Date().getFullYear();
   const dealer = (state.dealerships || []).find((d: any) => d.id === dealershipId);
@@ -2592,6 +2594,192 @@ function nextDocNumber(
   if (dealer) dealer[opts.seqKey] = next;
 
   return `${opts.prefix}-${year}-${String(next).padStart(5, "0")}`;
+}
+
+/** Next sequential number for a DocHub-generated document.
+ *
+ *  Same discipline as nextDocNumber: per dealer, monotonic, seeded from the
+ *  highest number that dealer has already issued. The number is carried on
+ *  `fieldSnapshot.docNumber` (there is no dedicated column on DealerDocument),
+ *  and the counter lives on `dealer.docSeq` so it survives the document rows
+ *  being edited or pruned.
+ *
+ *  Mutates the dealership in `state`; the caller's writeState persists it. */
+function nextDocNum(state: any, dealershipId: string | undefined, prefix: string): string {
+  const year = new Date().getFullYear();
+  const dealer = (state.dealerships || []).find((d: any) => d.id === dealershipId);
+
+  let highest = 0;
+  for (const row of state.documents || []) {
+    if (dealershipId && row.dealershipId !== dealershipId) continue;
+    const num = row.fieldSnapshot?.docNumber;
+    const m = typeof num === "string" ? /(\d+)\s*$/.exec(num) : null;
+    if (m) highest = Math.max(highest, parseInt(m[1], 10) || 0);
+  }
+
+  const next = Math.max(highest, Number(dealer?.docSeq) || 0) + 1;
+  if (dealer) dealer.docSeq = next;
+
+  return `${prefix}-${year}-${String(next).padStart(5, "0")}`;
+}
+
+/** Render a DocHub `generate`-mode document from the actual deal.
+ *
+ *  `generate` used to be a stub: it persisted a Draft with empty `fileData`
+ *  and an empty `fieldSnapshot`, and the comment "v1 defers PDF rendering"
+ *  meant no bytes ever reached the client — the templates in docPdf.ts were
+ *  proven-working but never imported here. This builds a complete snapshot
+ *  from the lead/vehicle/dealer (merged over anything the caller supplied),
+ *  renders the matching template, and returns the file as a data URL.
+ *
+ *  Throws on failure; the caller turns it into a 500 so a bad template or a
+ *  missing pdf-lib never produces a silent empty Draft. */
+async function renderGeneratedDoc(
+  state: any,
+  stage: DocStage,
+  lead: Lead | undefined,
+  vehicle: Vehicle | undefined,
+  dealership: Dealership | undefined,
+  incoming: Record<string, unknown>,
+): Promise<{ fileData: string; mimeType: string; fileName: string; snapshot: Record<string, unknown> }> {
+  const settings = dealership?.docSettings || {};
+  const dealer = {
+    name: dealership?.name,
+    tradingAs: dealership?.tradingAs,
+    address: dealership?.address,
+    registrationNumber: dealership?.registrationNumber,
+    vatNumber: dealership?.vatNumber,
+    contactEmail: dealership?.contactEmail,
+    websiteUrl: dealership?.websiteUrl,
+  };
+  const buyer: BuyerBlock = {
+    name: [lead?.firstName, lead?.lastName].filter(Boolean).join(" ").trim() || "Customer",
+    address: lead?.address,
+    idOrBrn: lead?.idOrBrn,
+    vatNumber: lead?.buyerVatNumber,
+    phone: lead?.phone && lead.phone !== "N/A" ? lead.phone : undefined,
+  };
+  const vehDesc = vehicle
+    ? [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(" ").trim() || "Vehicle"
+    : "Vehicle";
+  const vehicleBlock: VehicleBlock = {
+    description: vehDesc,
+    vin: vehicle?.vin,
+    engineNumber: vehicle?.engineNumber,
+    mmCode: vehicle?.mmCode,
+    stockNumber: vehicle?.stockNumber,
+    mileage: vehicle?.mileage,
+    colour: vehicle?.color,
+    registrationNumber: vehicle?.registrationNumber,
+  };
+
+  const lines: { label: string; amountIncl: number }[] = Array.isArray(incoming.priceBreakdown) && (incoming.priceBreakdown as any[]).length
+    ? (incoming.priceBreakdown as any[]).map((l: any) => ({ label: String(l.label || "Vehicle"), amountIncl: Number(l.amountIncl) || 0 }))
+    : [{ label: vehDesc, amountIncl: Number(vehicle?.retailPrice) || 0 }];
+  const totalIncl = typeof incoming.total === "number"
+    ? incoming.total
+    : lines.reduce((s, l) => s + l.amountIncl, 0);
+
+  const now = new Date();
+  const snap: Record<string, unknown> = { ...incoming };
+  const dealershipId = dealership?.id;
+
+  let bytes: Uint8Array;
+  let fileName: string;
+  let docNumber: string;
+
+  switch (stage) {
+    case "proforma": {
+      docNumber = nextDocNum(state, dealershipId, "PRO");
+      snap.vin = incoming.vin ?? vehicle?.vin;
+      snap.priceBreakdown = lines;
+      snap.validityWindow = incoming.validityWindow ?? "14 days from date of issue";
+      snap.total = totalIncl;
+      snap.docNumber = docNumber;
+      bytes = await renderProforma({
+        dealer, buyer, vehicle: vehicleBlock,
+        proformaNumber: docNumber,
+        issuedAt: now,
+        validUntil: String(snap.validityWindow),
+        lines, totalIncl, docSettings: settings,
+      });
+      fileName = `Proforma-${docNumber}.pdf`;
+      break;
+    }
+    case "deed": {
+      docNumber = nextDocNum(state, dealershipId, "OTP");
+      const defects = Array.isArray(incoming.disclosedDefects)
+        ? (incoming.disclosedDefects as string[])
+        : (vehicle?.damage || []).map((d) => d.note).filter(Boolean) as string[];
+      snap.disclosedDefects = defects;
+      snap.tradeInLine = incoming.tradeInLine ?? "No trade-in";
+      snap.total = totalIncl;
+      snap.docNumber = docNumber;
+      bytes = await renderOffer({
+        dealer, buyer, vehicle: vehicleBlock,
+        offerNumber: docNumber,
+        issuedAt: now,
+        lines, totalIncl,
+        depositAmount: typeof incoming.deposit === "number" ? incoming.deposit : undefined,
+        balanceDue: typeof incoming.balanceDue === "number" ? incoming.balanceDue : undefined,
+        disclosedDefects: defects.length ? defects : undefined,
+        docSettings: settings,
+      });
+      fileName = `Offer-to-Purchase-${docNumber}.pdf`;
+      break;
+    }
+    case "invoice": {
+      docNumber = nextDocNum(state, dealershipId, "INV");
+      const excl = Math.round(totalIncl / (1 + VAT_RATE));
+      snap.invoiceNo = incoming.invoiceNo ?? docNumber;
+      snap.vin = incoming.vin ?? vehicle?.vin;
+      snap.vatBreakdown = { subtotal: excl, vat: totalIncl - excl, total: totalIncl };
+      snap.total = totalIncl;
+      snap.docNumber = docNumber;
+      bytes = await renderTaxInvoice({
+        dealer, buyer, vehicle: vehicleBlock,
+        invoiceNumber: docNumber,
+        issuedAt: now,
+        totalIncl,
+        lines, docSettings: settings,
+      });
+      fileName = `Tax-Invoice-${docNumber}.pdf`;
+      break;
+    }
+    case "handover": {
+      docNumber = nextDocNum(state, dealershipId, "HND");
+      snap.warrantyDoc = incoming.warrantyDoc ?? settings.warrantyTerms ?? "As per the terms agreed in the Offer to Purchase.";
+      snap.natisUpdated = incoming.natisUpdated ?? !!(lead?.dealChecklist?.natis);
+      snap.docNumber = docNumber;
+      bytes = await renderHandover({
+        dealer, buyer, vehicle: vehicleBlock,
+        handoverNumber: docNumber,
+        issuedAt: now,
+        invoiceRef: String(incoming.invoiceNo || ""),
+        checklist: [
+          { label: "Vehicle keys (all sets) handed over", checked: true },
+          { label: "Spare wheel and jack present", checked: true },
+          { label: "Owner's manual / service book", checked: true },
+          { label: "NATIS document (registration certificate) handed to buyer", checked: !!lead?.dealChecklist?.natis },
+          { label: "Roadworthy certificate provided", checked: !!lead?.dealChecklist?.roadworthy },
+          { label: "Licence disc valid and in windscreen", checked: true },
+          { label: "Vehicle condition walkthrough completed with buyer", checked: true },
+        ],
+        docSettings: settings,
+      });
+      fileName = `Handover-${docNumber}.pdf`;
+      break;
+    }
+    default:
+      throw new Error(`No template for stage '${stage}'`);
+  }
+
+  return {
+    fileData: "data:application/pdf;base64," + Buffer.from(bytes).toString("base64"),
+    mimeType: "application/pdf",
+    fileName,
+    snapshot: snap,
+  };
 }
 
 app.post("/api/invoices", (req: any, res) => {
@@ -2689,7 +2877,7 @@ app.get("/api/documents", (req: any, res) => {
   res.json(scopeToDealer(state.documents || [], req.auth));
 });
 
-app.post("/api/documents", (req: any, res) => {
+app.post("/api/documents", async (req: any, res) => {
   const state = readState();
   const {
     fileName,
@@ -2761,7 +2949,8 @@ app.post("/api/documents", (req: any, res) => {
       }
     }
     // Attach mode: a file is what the whole point is. Reject without one.
-    // Generate mode: v1 defers PDF rendering, so no file is required yet.
+    // Generate mode: the PDF is rendered server-side from a template — no
+    // fileData required from the caller.
     // Confirm mode: no file at all — this stage is verified by checklist flags.
     if (mode === "attach" && !fileData) {
       return res.status(400).json({ error: "fileData is required for attach mode" });
@@ -2795,7 +2984,7 @@ app.post("/api/documents", (req: any, res) => {
       const csvRows = [
         ["ContactName","EmailAddress","InvoiceNumber","InvoiceDate","DueDate","Description","Quantity","UnitAmount","AccountCode","TaxType","Currency"].join(","),
       ];
-      const contact = lead?.name || "Customer";
+      const contact = [lead?.firstName, lead?.lastName].filter(Boolean).join(" ").trim() || "Customer";
       const email = lead?.email || "";
       if (lines.length > 0) {
         for (const line of lines) {
@@ -2803,12 +2992,32 @@ app.post("/api/documents", (req: any, res) => {
           csvRows.push([csvEsc(contact), csvEsc(email), csvEsc(invNo), issued, issued, csvEsc(line.label), "1", String(unitExcl), "200", "OUTPUT2", "ZAR"].join(","));
         }
       } else {
-        const desc = vehicle ? `${vehicle.year || ""} ${vehicle.make || ""} ${vehicle.model || ""} ${vehicle.variant || ""}`.trim() : "Vehicle sale";
+        const desc = vehicle ? `${vehicle.year || ""} ${vehicle.make || ""} ${vehicle.model || ""} ${vehicle.trim || ""}`.trim() : "Vehicle sale";
         csvRows.push([csvEsc(contact), csvEsc(email), csvEsc(invNo), issued, issued, csvEsc(desc), "1", String(totalExcl), "200", "OUTPUT2", "ZAR"].join(","));
       }
       connectFileData = "data:text/csv;base64," + Buffer.from(csvRows.join("\r\n"), "utf-8").toString("base64");
       connectMimeType = "text/csv";
       connectFileName = `${stageTyped}-${invNo}.csv`;
+    }
+
+    // Generate mode: render the document from a template. No longer a stub —
+    // build a complete snapshot from the deal, render the PDF, and carry the
+    // bytes + snapshot on the record so the client can preview and the stage
+    // can be finalised without a re-entry of data.
+    let renderedSnapshot: Record<string, unknown> | undefined = undefined;
+    if (mode === "generate") {
+      const dealership = (state.dealerships || []).find((d: any) => d.id === docDealershipId);
+      const vehicle = resolvedVehicleId ? state.vehicles.find((v: any) => v.id === resolvedVehicleId) : undefined;
+      const incoming = fieldSnapshot || {};
+      try {
+        const rendered = await renderGeneratedDoc(state, stageTyped, lead, vehicle, dealership, incoming);
+        connectFileData = rendered.fileData;
+        connectMimeType = rendered.mimeType;
+        connectFileName = rendered.fileName;
+        renderedSnapshot = rendered.snapshot;
+      } catch (e: any) {
+        return res.status(500).json({ error: `Could not generate the ${stageTyped} document: ${e?.message || "renderer error"}` });
+      }
     }
 
     const newDoc: DealerDocument = {
@@ -2823,7 +3032,7 @@ app.post("/api/documents", (req: any, res) => {
       dealershipId: docDealershipId,
       stage: stageTyped,
       mode: mode as DocMode,
-      fieldSnapshot: (mode === "generate" || mode === "connect") ? (fieldSnapshot || {}) : undefined,
+      fieldSnapshot: renderedSnapshot ?? ((mode === "generate" || mode === "connect") ? (fieldSnapshot || {}) : undefined),
     };
     if (!state.documents) state.documents = [];
     state.documents.unshift(newDoc);
@@ -3220,8 +3429,18 @@ app.post("/api/documents/:id/finalize", (req: any, res) => {
       .filter((d) => d.leadId === doc.leadId && d.status === "Signed" && d.stage)
       .map((d) => d.stage),
   );
+  /* A stage the dealer deliberately skipped still counts as satisfied — a deal
+     completed outside the DMS, or a stage that never applied, must not block
+     finalising the stages after it. Keyed on the presence of a skip so a deal
+     with none behaves exactly as before: skipped stages are actively recorded
+     (lead.docSkips), never just absent. */
+  const skippedStages = new Set(
+    Object.keys((lead as any)?.docSkips || {}).filter((s): s is DocStage =>
+      DOC_STAGES.includes(s as DocStage),
+    ),
+  );
   const missingEarlier = DOC_STAGES.slice(0, DOC_STAGES.indexOf(doc.stage)).filter(
-    (s) => !signedStages.has(s),
+    (s) => !signedStages.has(s) && !skippedStages.has(s),
   );
   if (missingEarlier.length > 0) {
     return res.status(422).json({
@@ -3308,6 +3527,67 @@ app.post("/api/documents/:id/finalize", (req: any, res) => {
     lead: lead
       ? { id: lead.id, docStage: lead.docStage, docFlowCompletedAt: lead.docFlowCompletedAt }
       : null,
+  });
+});
+
+/** Bypass a DocHub stage on a lead.
+ *
+ *  Some deals happen partly outside the DMS — a cash sale off the floor, or a
+ *  stage (proforma, invoice, handover) that genuinely does not apply to them.
+ *  Forcing those deals through every document gate writes paperwork nobody
+ *  needed. Instead the dealer ticks the stage as intentionally skipped.
+ *
+ *  This is a docflow-only write, deliberately scoped to match `finalize`:
+ *  it records the skip with an audit (who + when + optional reason), advances
+ *  `lead.docStage`, and marks the deal complete when the LAST stage is skipped.
+ *  It never touches `lead.status` or any vehicle field — the sale itself is
+ *  still recorded by the normal vehicle → SOLD coupling, so a skipped-stage
+ *  deal still goes Sold exactly when the dealer sells the car. A skip on a
+ *  stage already behind the current one is recorded for the audit trail but
+ *  never yanks the pointer backwards. */
+app.post("/api/deals/:leadId/docs/skip", (req: any, res) => {
+  const state = readState();
+  const lead = (state.leads || []).find((l: any) => l.id === req.params.leadId);
+  if (!lead) return res.status(404).json({ error: "Lead not found" });
+  if (!mayTouch(lead, req.auth)) return res.status(404).json({ error: "Lead not found" });
+
+  const stage = String(req.body?.stage || "");
+  if (!DOC_STAGES.includes(stage as DocStage)) {
+    return res.status(400).json({ error: "Unknown document stage." });
+  }
+  const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+
+  const skips = lead.docSkips || {};
+  if (skips[stage as DocStage]) {
+    return res
+      .status(409)
+      .json({ error: "This stage is already skipped." });
+  }
+
+  const now = new Date().toISOString();
+  skips[stage as DocStage] = {
+    at: now,
+    by: req.auth?.userId || req.auth?.label || undefined,
+    reason: reason || undefined,
+  };
+  lead.docSkips = skips;
+
+  /* Mirror finalize's advancement: move past this stage but never backwards.
+     Skipping the last stage sets the deal complete (docflow dimension only). */
+  const currentIdx = lead.docStage ? DOC_STAGES.indexOf(lead.docStage) : -1;
+  const thisIdx = DOC_STAGES.indexOf(stage as DocStage);
+  if (thisIdx >= currentIdx) {
+    const nextStage = DOC_STAGES[thisIdx + 1] ?? null;
+    lead.docStage = nextStage;
+    if (nextStage === null) {
+      lead.docFlowCompletedAt = lead.docFlowCompletedAt || now;
+    }
+  }
+
+  writeState(state);
+  res.json({
+    message: "Document stage skipped.",
+    lead: { id: lead.id, docStage: lead.docStage, docFlowCompletedAt: lead.docFlowCompletedAt, docSkips: lead.docSkips },
   });
 });
 

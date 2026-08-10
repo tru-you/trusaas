@@ -478,3 +478,71 @@ test("completion is backfilled from evidence, not guessed", () => {
     "must be idempotent — never overwrite an existing stamp"
   );
 });
+
+test("generate mode actually renders a PDF instead of an empty Draft", () => {
+  /* The templates in docPdf.ts were proven-working but never imported — the
+     POST /api/documents handler created a Draft with empty fileData and a
+     comment promising "v1 defers PDF rendering". A generated doc must carry
+     real PDF bytes and a full snapshot, or the client can never preview it. */
+  const start = body.indexOf("async function renderGeneratedDoc");
+  assert.ok(start !== -1, "the generate renderer must exist");
+  const fn = body.slice(start, body.indexOf("\napp.", start));
+  assert.match(
+    fn,
+    /renderProforma/,
+    "the renderer must produce the proforma PDF"
+  );
+  assert.match(
+    fn,
+    /data:application\/pdf;base64,/,
+    "the rendered bytes must be returned as a data URL the client can open"
+  );
+  assert.match(
+    fn,
+    /renderProforma|renderOffer|renderTaxInvoice|renderHandover/,
+    "at least one stage template must be wired in"
+  );
+  assert.match(
+    fn,
+    /nextDocNum/,
+    "generated documents must draw from the monotonic per-dealer sequence"
+  );
+  assert.doesNotMatch(
+    body,
+    /Generate mode: v1 defers PDF rendering/,
+    "the 'v1 defers PDF rendering' stub is gone — generation works now"
+  );
+});
+
+test("generate documents carry a complete fieldSnapshot", () => {
+  /* The validator requires vin/priceBreakdown/validityWindow (proforma), etc.
+     A generated doc with an empty snapshot could never be finalised without the
+     dealer re-entering data. The snapshot must be built from the actual deal. */
+  const start = body.indexOf("async function renderGeneratedDoc");
+  assert.ok(start !== -1, "the generate renderer must exist");
+  const fn = body.slice(start, body.indexOf("\napp.", start));
+  assert.match(
+    fn,
+    /snap\.vin = incoming\.vin \?\? vehicle\?\.vin/,
+    "proforma snapshot must fill vin from the vehicle"
+  );
+  assert.match(
+    fn,
+    /snap\.invoiceNo = incoming\.invoiceNo \?\? docNumber/,
+    "invoice snapshot must carry the sequential number"
+  );
+  assert.match(
+    fn,
+    /snap\.warrantyDoc = incoming\.warrantyDoc \?\? settings\.warrantyTerms/,
+    "handover snapshot must default the warranty clause"
+  );
+});
+
+test("generate documents are numbered sequentially per dealer", () => {
+  const start = body.indexOf("function nextDocNum");
+  assert.ok(start !== -1, "nextDocNum must exist");
+  const fn = body.slice(start, body.indexOf("\napp.", start));
+  assert.match(fn, /dealer\.docSeq = next/, "the counter must persist on the dealership");
+  assert.match(fn, /Math\.max\(highest,/, "it must never fall below what was already issued");
+  assert.match(fn, /fieldSnapshot\?\.docNumber/, "the number must be read back from issued docs");
+});
