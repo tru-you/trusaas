@@ -50,7 +50,14 @@ export default function Login() {
         const res = await fetch('/api/health', { cache: 'no-store' });
         if (!res.ok) throw new Error(String(res.status));
         const d = await res.json();
-        const configured = !!d?.accessCodeConfigured || Number(d?.agencyCodesConfigured) > 0;
+        /* The server is "secured" when codes can be verified at all — local
+           codes OR the FlowPMS pairing (FLOWPMS_SYNC_KEY set), which is now the
+           primary path. Otherwise the screen wrongly reported "no access code
+           set" on a FlowPMS-paired instance. */
+        const configured =
+          !!d?.accessCodeConfigured ||
+          Number(d?.agencyCodesConfigured) > 0 ||
+          !!d?.syncKeyConfigured;
         if (alive) setServer(configured ? 'secured' : 'unconfigured');
       } catch {
         // Offline or the server is down. Keep the code field — a cached PWA
