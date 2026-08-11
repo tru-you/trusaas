@@ -883,7 +883,7 @@ async function verifyCodeWithFlowPMS(
     const res = await fetch(`${DEFAULT_PMS_URL.replace(/\/$/, '')}/api/auth/verify-code`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-tru-sync-key': SYNC_KEY },
-      body: JSON.stringify({ code, product: 'lens' }),
+      body: JSON.stringify({ code, product: 'prop-lens' }),
       signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) {
@@ -897,8 +897,8 @@ async function verifyCodeWithFlowPMS(
       return null;
     }
     const body = await res.json();
-    return body?.ok && body.agencySlug
-      ? { agencySlug: body.agencySlug, agencyName: body.agencyName }
+    return body?.ok && body?.agency?.slug
+      ? { agencySlug: body.agency.slug, agencyName: body.agency.name || '' }
       : null;
   } catch (err: any) {
     console.warn('[auth] could not reach the FlowPMS to verify a code:', err?.message || err);

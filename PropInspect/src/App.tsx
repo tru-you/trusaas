@@ -1,10 +1,9 @@
-import logo from "./assets/truflow-logo.png";
+import logo from "./assets/images/PI-AppIcon.svg";
 import React, { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import Assistant from "./components/Assistant";
 import {
   Home,
   TrendingUp,
-  Car,
   Upload,
   Users,
   Star,
@@ -48,10 +47,10 @@ import {
   refreshFromServer,
   resetState,
   updateSettings,
-  createVehicle,
-  updateVehicle,
-  setVehicleStatus,
-  deleteVehicle,
+  createProperty,
+  updateProperty,
+  setPropertyStatus,
+  deleteProperty,
   createLead,
   updateLead,
   autoAssignLeads,
@@ -74,25 +73,25 @@ import {
   deleteDocument
 } from "./api";
 
-import { Property, Enquiry, Task, Invoice, Agreement, User, Communication, Expense, DMSState, Dealership, DocStage } from "./types";
+import { Property, Enquiry, Task, Invoice, Agreement, User, Communication, Expense, DMSState, Agency, DocStage } from "./types";
 import { DOC_STAGES } from "./types";
 
 import Counter from "./components/Counter";
 import ChatWidget from "./components/ChatWidget";
 import DocumentsHub from "./components/DocumentsHub";
-import DealerDetailsSettings from "./components/DealerDetailsSettings";
+import AgencyDetailsSettings from "./components/AgencyDetailsSettings";
 import DocSettingsPanel from "./components/DocSettingsPanel";
 import PwaInstallBanner from "./components/PwaInstallBanner";
 import InstallAppButton from "./components/InstallAppButton";
 
 /* Split out of the initial bundle — none of these is needed to paint the
    dashboard, and together they were roughly a third of a 540KB single chunk
-   that every dealer downloaded before the login screen appeared. They load
+   that every agency downloaded before the login screen appeared. They load
    when the modal or section is first opened. */
 const EnquiryDetailModal = lazy(() => import("./components/EnquiryDetailModal"));
 const AccountingRecon = lazy(() => import("./components/AccountingRecon"));
 const PropertyDetailModal = lazy(() => import("./components/PropertyDetailModal"));
-const DealershipAdmin = lazy(() => import("./components/DealershipAdmin"));
+const AgencyAdmin = lazy(() => import("./components/AgencyAdmin"));
 const TruSocialSettings = lazy(() => import("./components/TruSocialSettings"));
 /* DocHub — desktop-only, so the chunk (plus any future pdf-lib dep it
    pulls in) never reaches a phone. Gated on useIsDesktop() at the render site
@@ -109,21 +108,21 @@ import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
   PRODUCT_NAME,
   PRODUCT_TIER,
-  getDealerSlug,
+  getAgencySlug,
   openTruLens,
   openSupportWhatsApp,
 } from "./lib/productConfig";
 import {
-  openStockWhatsApp,
-  copyStockBlurb,
+  openListingWhatsApp,
+  copyListingBlurb,
 } from "./lib/salesShare";
 import { initGlassMotion } from "./lib/glassMotion";
 import { TRUFLOW_LITE_URL } from "./lib/ecosystem";
 
-/** Which dealership a newly-added vehicle belongs to — loaded from the
- *  server so every onboarded dealer appears automatically.
+/** Which agency a newly-added property belongs to — loaded from the
+ *  server so every onboarded agency appears automatically.
  *  The hardcoded DEALERSHIPS array was removed because it only listed MKR
- *  and Cars on Caledon, so every other dealer got the wrong name and URL. */
+ *  and Homes on Caledon, so every other agency got the wrong name and URL. */
 
 
 /* ── Pipeline discipline ────────────────────────────────────────────────────
@@ -140,7 +139,7 @@ const daysBetween = (iso?: string | null) =>
 const STAGE_SLA_DAYS: Record<string, number> = {
   "New": 1,
   "Contacted": 3,
-  "Test Drive Scheduled": 2,
+  "Viewing Scheduled": 2,
   "Negotiating": 3,
 };
 
@@ -174,17 +173,17 @@ function dueLabel(l: any): { text: string; overdue: boolean } | null {
 const NEXT_STEP_ON_STAGE: Record<string, { action: string; inDays: number }> = {
   "New":                  { action: "First contact",       inDays: 0 },
   "Contacted":            { action: "Follow up",           inDays: 2 },
-  "Test Drive Scheduled": { action: "Confirm test drive",   inDays: 1 },
+  "Viewing Scheduled": { action: "Confirm viewing",   inDays: 1 },
   "Negotiating":          { action: "Chase decision",       inDays: 2 },
 };
 
 
-/* ── Stock economics ────────────────────────────────────────────────────────
-   Everything here already existed in the data and was never added up. A car's
+/* ── Listing economics ────────────────────────────────────────────────────────
+   Everything here already existed in the data and was never added up. A home's
    real cost is what you paid plus what you spent getting it saleable, and the
    number a principal actually wants is what's left after both. */
 
-/** What has been spent reconditioning this car. */
+/** What has been spent reconditioning this home. */
 function reconSpend(v: any): number {
   return (v.maintenanceTasks || []).reduce((sum: number, t: any) => sum + (Number(t.cost) || 0), 0);
 }
@@ -194,7 +193,7 @@ function costBasis(v: any): number {
   return (Number(v.costPrice) || 0) + reconSpend(v);
 }
 
-/** Gross margin. Projected while the car is in stock, realised once it's sold. */
+/** Gross margin. Projected while the home is in listing, realised once it's sold. */
 function grossMargin(v: any): { rand: number; pct: number } {
   const retail = Number(v.askingPrice) || 0;
   const basis = costBasis(v);
@@ -202,17 +201,17 @@ function grossMargin(v: any): { rand: number; pct: number } {
   return { rand, pct: retail > 0 ? (rand / retail) * 100 : 0 };
 }
 
-/** Days a car has been in stock. Prefers the acquisition date over the stored
+/** Days a home has been in listing. Prefers the acquisition date over the stored
  *  counter, which is written once on create and then never moves. */
-function stockAge(v: any): number {
+function marketAge(v: any): number {
   if (v.dateAcquired) {
     const d = Math.floor((Date.now() - new Date(v.dateAcquired).getTime()) / 86400000);
     if (!Number.isNaN(d) && d >= 0) return d;
   }
-  return Number(v.daysInInventory) || 0;
+  return Number(v.daysOnMarket) || 0;
 }
 
-/** Bands match the colours already used on the vehicle cards. */
+/** Bands match the colours already used on the property cards. */
 const AGE_BANDS = [
   { key: "0-30",  label: "Under 30 days", min: 0,  max: 30,       tone: "var(--cyan)" },
   { key: "31-60", label: "31 to 60 days", min: 31, max: 60,       tone: "var(--cyan-bright)" },
@@ -228,33 +227,28 @@ function ageBand(days: number) {
  *  hid their options behind a click and gave no sense of what was set. Here the
  *  choices are visible and the active one reads in the accent. */
 /**
- * The add-vehicle form.
- *
- * fuelType and transmission were `as any` in the useState initialiser, which
- * switched off checking for the two fields most likely to be typo'd — every
- * <option> already emits exactly the values Property allows, so the cast was
- * hiding nothing but itself.
+ * The add-property form.
  *
  * category is the form's own type, not Property's: the select offers an "Auto —
- * decide from price & model" choice whose value is "", and Property has no such
+ * decide from price & property type" choice whose value is "", and Property has no such
  * member. "" is translated to undefined at the API boundary rather than being
  * sent as an empty string the website would have to special-case.
  */
-type NewVehicleForm = {
-  year: number;
-  make: string;
-  model: string;
-  trim: string;
-  engine: string;
-  fuelType: Property["fuelType"];
-  transmission: Property["transmission"];
-  bodyType: string;
+type NewPropertyForm = {
+  yearBuilt: number;
+  propertyType: Property["propertyType"];
+  suburb: string;
+  finish: string;
+  bedrooms: number;
+  bathrooms: number;
+  garages: number;
+  erfSize: string;
   askingPrice: number;
   costPrice: number;
-  mileage: number;
-  stockNumber: string;
+  floorSize: string;
+  listingRef: string;
   description: string;
-  dealershipId: string;
+  agencyId: string;
   category: NonNullable<Property["category"]> | "";
 };
 
@@ -333,68 +327,68 @@ export default function App() {
   const currentUser = state ? (state.users.find(u => u.id === currentUserId) || state.users[0]) : null;
   const sessionAccount = getAccount();
   const isMasterAdmin = sessionAccount?.role === 'admin';
-  const rawDealershipId = sessionAccount?.dealershipId;
+  const rawAgencyId = sessionAccount?.agencyId;
   const isDesktop = useIsDesktop();
 
-  const [adminDealerScope, setAdminDealerScope] = useState<string | null>(null);
-  const dealershipId = (isMasterAdmin && adminDealerScope) ? adminDealerScope : rawDealershipId;
+  const [adminAgencyScope, setAdminAgencyScope] = useState<string | null>(null);
+  const agencyId = (isMasterAdmin && adminAgencyScope) ? adminAgencyScope : rawAgencyId;
 
   /* Tenant scoping ----------------------------------------------------------
      The server already scopes /api/state to the signed-in tenant, so this is a
      second, narrower net — useful for an admin looking at everything, wrong as
      a hard filter.
 
-     It used to filter on `dealershipId` even when that was undefined, which
+     It used to filter on `agencyId` even when that was undefined, which
      happens whenever there is no user record for the tenant (the demo ships
      with none). Every list then matched nothing: the Leads header read
      "0 open" while the board beside it showed two, because the board built its
-     own list straight off state.enquiries. Records with no dealershipId are kept
+     own list straight off state.enquiries. Records with no agencyId are kept
      too — TruLens imports arrive without one. */
-  const mine = (d?: string) => !d || d === dealershipId;
-  const showAll = (isMasterAdmin && !adminDealerScope) || !dealershipId;
+  const mine = (d?: string) => !d || d === agencyId;
+  const showAll = (isMasterAdmin && !adminAgencyScope) || !agencyId;
 
-  const filteredVehicles = useMemo(
-    () => (!state ? [] : showAll ? state.properties : state.properties.filter((v) => mine(v.dealershipId))),
-    [state, showAll, dealershipId],
+  const filteredProperties = useMemo(
+    () => (!state ? [] : showAll ? state.properties : state.properties.filter((v) => mine(v.agencyId))),
+    [state, showAll, agencyId],
   );
-  /** Stock the dealer can still act on: tenant-scoped, minus archived units.
+  /** Listing the agency can still act on: tenant-scoped, minus archived units.
    *
-   *  Anything that lists, counts or offers a car to work with should read this
-   *  rather than `filteredVehicles`. Archived units were originally excluded in
+   *  Anything that lists, counts or offers a home to work with should read this
+   *  rather than `filteredProperties`. Archived units were originally excluded in
    *  one list only, so they went on leaking into the photo-readiness tiles, the
-   *  new-enquiry dropdown and the aged-stock counts. `filteredVehicles` is still
-   *  the right source where sold history matters — Stock Health's realised
+   *  new-enquiry dropdown and the aged-listing counts. `filteredProperties` is still
+   *  the right source where sold history matters — Listing Health's realised
    *  margin has to keep counting them. */
-  const activeStock = useMemo(() => filteredVehicles.filter((v) => !v.archivedAt), [filteredVehicles]);
+  const activeListings = useMemo(() => filteredProperties.filter((v) => !v.archivedAt), [filteredProperties]);
   const filteredLeads = useMemo(
-    () => (!state ? [] : showAll ? state.enquiries : state.enquiries.filter((l) => mine(l.dealershipId))),
-    [state, showAll, dealershipId],
+    () => (!state ? [] : showAll ? state.enquiries : state.enquiries.filter((l) => mine(l.agencyId))),
+    [state, showAll, agencyId],
   );
   const filteredTasks = useMemo(
-    () => (!state ? [] : showAll ? state.tasks : state.tasks.filter((t) => mine(t.dealershipId))),
-    [state, showAll, dealershipId],
+    () => (!state ? [] : showAll ? state.tasks : state.tasks.filter((t) => mine(t.agencyId))),
+    [state, showAll, agencyId],
   );
   const filteredInvoices = useMemo(
-    () => (!state ? [] : showAll ? state.invoices : state.invoices.filter((i) => mine(i.dealershipId))),
-    [state, showAll, dealershipId],
+    () => (!state ? [] : showAll ? state.invoices : state.invoices.filter((i) => mine(i.agencyId))),
+    [state, showAll, agencyId],
   );
   const filteredAgreements = useMemo(
-    () => (!state ? [] : showAll ? state.agreements : state.agreements.filter((a) => mine(a.dealershipId))),
-    [state, showAll, dealershipId],
+    () => (!state ? [] : showAll ? state.agreements : state.agreements.filter((a) => mine(a.agencyId))),
+    [state, showAll, agencyId],
   );
   const filteredDocuments = useMemo(
-    () => (!state ? [] : showAll ? (state.documents || []) : (state.documents || []).filter((d) => mine(d.dealershipId))),
-    [state, showAll, dealershipId],
+    () => (!state ? [] : showAll ? (state.documents || []) : (state.documents || []).filter((d) => mine(d.agencyId))),
+    [state, showAll, agencyId],
   );
   const filteredCommunications = useMemo(
-    () => (!state ? [] : showAll ? state.communications : state.communications.filter((c) => mine(c.dealershipId))),
-    [state, showAll, dealershipId],
+    () => (!state ? [] : showAll ? state.communications : state.communications.filter((c) => mine(c.agencyId))),
+    [state, showAll, agencyId],
   );
   const filteredExpenses = useMemo(
-    () => (!state ? [] : showAll ? state.expenses : state.expenses.filter((e) => mine(e.dealershipId))),
-    [state, showAll, dealershipId],
+    () => (!state ? [] : showAll ? state.expenses : state.expenses.filter((e) => mine(e.agencyId))),
+    [state, showAll, agencyId],
   );
-  const [selectedDetailVehicle, setSelectedDetailVehicle] = useState<Property | null>(null);
+  const [selectedDetailProperty, setSelectedDetailProperty] = useState<Property | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leadDetailId, setLeadDetailId] = useState<string | null>(null);
   const [leadInitialTab, setLeadInitialTab] = useState<"overview" | "dochub" | undefined>(undefined);
@@ -417,7 +411,7 @@ export default function App() {
     };
   }, [sidebarOpen]);
   // The view follows the logged-in account. This was a "simulated role
-  // selector" pill that let anyone flip to Dealer Owner regardless of their
+  // selector" pill that let anyone flip to Agency Owner regardless of their
   // real login — a permissions hole now that seats are live. principal/admin
   // see the owner view; managers and salespeople see their own.
   const account = sessionAccount;
@@ -429,10 +423,10 @@ export default function App() {
   const [docFlowSettingsOpen, setDocFlowSettingsOpen] = useState(false);
 
   // Filters & Searches
-  const [inventorySearch, setInventorySearch] = useState("");
-  const [inventoryStatusFilter, setInventoryStatusFilter] = useState("ALL");
-  const [inventoryPhotoFilter, setInventoryPhotoFilter] = useState<"ALL" | "NEEDS" | "PARTIAL" | "READY">("ALL");
-  const [inventoryAgeFilter, setInventoryAgeFilter] = useState<"ALL" | "30" | "60" | "90">("ALL");
+  const [listingSearch, setInventorySearch] = useState("");
+  const [listingStatusFilter, setInventoryStatusFilter] = useState("ALL");
+  const [listingPhotoFilter, setInventoryPhotoFilter] = useState<"ALL" | "NEEDS" | "PARTIAL" | "READY">("ALL");
+  const [listingAgeFilter, setInventoryAgeFilter] = useState<"ALL" | "30" | "60" | "90">("ALL");
   const [leadCrmTab, setLeadCRMTab] = useState<"kanban" | "list">("kanban");
   const [filterOverdueOnly, setFilterOverdueOnly] = useState(false);
 
@@ -485,7 +479,7 @@ export default function App() {
             // Native Browser Notification (if supported/permitted)
             if ("Notification" in window && Notification.permission === "granted") {
               try {
-                new Notification("TruFlow: Task Due Soon", {
+                new Notification("PropInspect: Task Due Soon", {
                   body: message,
                   icon: "https://ais-dev-qn66bypajuveujrpl7bhld-891304121884.europe-west2.run.app/favicon.ico"
                 });
@@ -536,17 +530,13 @@ export default function App() {
   const [newTaskForm, setNewTaskForm] = useState({ title: "", leadId: "", propertyId: "", assignedUserId: "", dueDate: new Date().toISOString().slice(0, 10), priority: "Normal" as any, status: "Pending" as any });
   const [newUserForm, setNewUserForm] = useState({ name: "", email: "", role: "salesperson" as any, phone: "" });
   // Staff logins ("seats") — the principal manages these, and activeSeats is
-  // what the dealership is billed on.
+  // what the agency is billed on.
   const [seats, setSeats] = useState<Seat[]>([]);
   const [activeSeats, setActiveSeats] = useState(0);
   const [seatError, setSeatError] = useState("");
   /** A freshly issued code, shown once. Never fetched back from the server. */
   const [issuedCode, setIssuedCode] = useState<{ name: string; code: string } | null>(null);
-  const [newVehicleForm, setNewVehicleForm] = useState<NewVehicleForm>({ year: new Date().getFullYear(), make: "", model: "", trim: "", engine: "", fuelType: "Petrol", transmission: "Automatic", bodyType: "", askingPrice: 0, costPrice: 0, mileage: 0, stockNumber: "", description: "", dealershipId: getAccount()?.dealershipId || "", category: "" });
-
-  const [vinInput, setVinInput] = useState("");
-  const [vinDecoding, setVinDecoding] = useState(false);
-  const [vinDecodeStatus, setVinDecodeStatus] = useState("");
+  const [newPropertyForm, setNewPropertyForm] = useState<NewPropertyForm>({ yearBuilt: new Date().getFullYear(), propertyType: "House", suburb: "", finish: "", bedrooms: 0, bathrooms: 0, garages: 0, erfSize: "", askingPrice: 0, costPrice: 0, floorSize: "", listingRef: "", description: "", agencyId: getAccount()?.agencyId || "", category: "" });
 
   // Currently Focused Documents for View Previews
   const [activeInvoiceId, setActiveInvoiceId] = useState<string | null>(null);
@@ -616,7 +606,7 @@ export default function App() {
     return "R " + Math.round(num).toLocaleString("en-ZA");
   };
 
-  const activeVehiclesCount = useMemo(
+  const activeListingsCount = useMemo(
     () => (state ? state.properties.filter((v) => v.status !== "SOLD" && !v.archivedAt).length : 0),
     [state],
   );
@@ -625,37 +615,37 @@ export default function App() {
     [state],
   );
   /**
-   * Stock that cannot sell yet, because it isn't online.
+   * Listing that cannot sell yet, because it isn't online.
    *
    * This replaced a "Website analytics" card of hardcoded numbers (51 visits,
-   * 94% bounce) that were never wired to anything. A car in stock with no
+   * 94% bounce) that were never wired to anything. A home in listing with no
    * photos is dead capital — it is paying floorplan and cannot be shopped —
-   * and nothing in the app put that number in front of the dealer daily.
-   * Stock health already owns the money view; this owns the "why isn't it
+   * and nothing in the app put that number in front of the agency daily.
+   * Listing health already owns the money view; this owns the "why isn't it
    * moving" view, and every figure comes from the same readiness helper the
-   * Stock media page scores each vehicle with.
+   * Listing media page scores each property with.
    */
   const notOnline = useMemo(() => {
-    const inStock = activeStock.filter((v) => v.status !== "SOLD");
-    const graded = inStock.map((v) => ({ v, r: computeDmsGalleryReadiness(v as any) }));
+    const inListings = activeListings.filter((v) => v.status !== "SOLD");
+    const graded = inListings.map((v) => ({ v, r: computeDmsGalleryReadiness(v as any) }));
     const noPhotos = graded.filter((g) => g.r.level === "capture");
     const incomplete = graded.filter((g) => g.r.level === "partial");
     const blocked = [...noPhotos, ...incomplete];
-    // Worst offender by age, because "4 cars need photos" is a chore whereas
+    // Worst offender by age, because "4 homes need photos" is a chore whereas
     // "one has been sitting 34 days" is a decision.
     const oldest = blocked.reduce<(typeof blocked)[number] | null>(
-      (worst, g) => (!worst || (g.v.daysInInventory || 0) > (worst.v.daysInInventory || 0) ? g : worst),
+      (worst, g) => (!worst || (g.v.daysOnMarket || 0) > (worst.v.daysOnMarket || 0) ? g : worst),
       null,
     );
     return {
-      inStock: inStock.length,
+      inListings: inListings.length,
       blocked: blocked.length,
       noPhotos: noPhotos.length,
       incomplete: incomplete.length,
       ready: graded.filter((g) => g.r.webReady).length,
       oldest,
     };
-  }, [activeStock]);
+  }, [activeListings]);
 
   const soldUnitsCount = useMemo(
     () => (state ? state.properties.filter((v) => v.status === "SOLD").length : 0),
@@ -683,7 +673,7 @@ export default function App() {
       return Number.isFinite(waited) && waited > worst ? waited : worst;
     }, 0);
   }, [awaitingReply]);
-  /** "4h" / "2d" / "18m" — the shape a dealer reads at a glance. */
+  /** "4h" / "2d" / "18m" — the shape a agency reads at a glance. */
   const formatWait = (ms: number) => {
     const mins = Math.floor(ms / 60000);
     if (mins < 60) return `${Math.max(mins, 1)}m`;
@@ -691,33 +681,33 @@ export default function App() {
     return hrs < 24 ? `${hrs}h` : `${Math.floor(hrs / 24)}d`;
   };
   // Anything unanswered for more than an hour is the one thing on this screen
-  // allowed to draw the eye. Under an hour the dealer is on top of it.
+  // allowed to draw the eye. Under an hour the agency is on top of it.
   const replyIsLate = useMemo(() => oldestWaitMs > 60 * 60 * 1000, [oldestWaitMs]);
 
-  /** Whose floor this is. Matches the signed-in dealership first, then
+  /** Whose floor this is. Matches the signed-in agency first, then
    *  falls back so the banner never renders a bare "· live". */
-  const currentDealership = useMemo(
-    () => (state?.dealerships || []).find((d: any) => d.id === dealershipId),
-    [state, dealershipId],
+  const currentAgency = useMemo(
+    () => (state?.agencies || []).find((d: any) => d.id === agencyId),
+    [state, agencyId],
   );
-  const dealershipLabel = useMemo(
-    () => currentDealership?.name
-      || account?.label || "Your dealership",
-    [currentDealership, account],
+  const agencyLabel = useMemo(
+    () => currentAgency?.name
+      || account?.label || "Your agency",
+    [currentAgency, account],
   );
   // The embed snippet was reading from a localStorage default that ships as
-  // "mkr-autosales", so every dealer's Settings page showed MKR. Prefer the
-  // signed-in dealership's slug; fall through to the stored value only for the
-  // master admin, who has no dealership of their own.
-  const currentDealerSlug = useMemo(
-    () => currentDealership?.slug || (isMasterAdmin ? undefined : dealershipId),
-    [currentDealership, isMasterAdmin, dealershipId],
+  // "mkr-autosales", so every agency's Settings page showed MKR. Prefer the
+  // signed-in agency's slug; fall through to the stored value only for the
+  // master admin, who has no agency of their own.
+  const currentAgencySlug = useMemo(
+    () => currentAgency?.slug || (isMasterAdmin ? undefined : agencyId),
+    [currentAgency, isMasterAdmin, agencyId],
   );
-  const dealerProducts: string[] = useMemo(
-    () => (currentDealership as any)?.products || [],
-    [currentDealership],
+  const agencyProducts: string[] = useMemo(
+    () => (currentAgency as any)?.products || [],
+    [currentAgency],
   );
-  const hasProduct = (p: string) => isMasterAdmin && !adminDealerScope ? true : dealerProducts.includes(p);
+  const hasProduct = (p: string) => isMasterAdmin && !adminAgencyScope ? true : agencyProducts.includes(p);
   const todayLabel = new Date().toLocaleDateString("en-ZA", {
     day: "numeric",
     month: "long",
@@ -725,24 +715,24 @@ export default function App() {
   });
 
   /* Card subtexts should answer "compared to what?" — "Ready for viewing" and
-     "Cleared this cycle" are decoration. Aged stock and unpaid invoices are
-     the two numbers a dealer principal actually chases. */
+     "Cleared this cycle" are decoration. Aged listing and unpaid invoices are
+     the two numbers a agency principal actually chases. */
   const AGED_DAYS = 60;
-  /* Uses stockAge(), the same helper Stock Health measures with. This counted
-     `daysInInventory` directly — a value written once on create and never
-     updated — while Stock Health preferred `dateAcquired`, so the Overview tile
-     and the Stock Health tile reported different aged-stock counts for the same
+  /* Uses marketAge(), the same helper Listing Health measures with. This counted
+     `daysOnMarket` directly — a value written once on create and never
+     updated — while Listing Health preferred `dateAcquired`, so the Overview tile
+     and the Listing Health tile reported different aged-listing counts for the same
      floor, at the same threshold. */
-  const agedStockCount = useMemo(
+  const agedListingsCount = useMemo(
     () => (state ? state.properties.filter(
-      (v) => v.status !== "SOLD" && !v.archivedAt && stockAge(v) > AGED_DAYS
+      (v) => v.status !== "SOLD" && !v.archivedAt && marketAge(v) > AGED_DAYS
     ).length : 0),
     [state],
   );
-  /* The headline money figure is deal value less what was spent making the car
+  /* The headline money figure is deal value less what was spent making the home
      ready — sale price minus recon, summed over sold units. It replaces the old
      invoice-derived "Banked" number, which assumed the DMS raised the invoice;
-     dealers invoice from their own systems, so that number was never real. */
+     agencies invoice from their own systems, so that number was never real. */
   /* End-of-day totals, computed once. The CSV export and the on-screen report
      each derived these four lines independently and identically, so changing
      one would have silently disagreed with the other. */
@@ -761,13 +751,13 @@ export default function App() {
     return { sold, totalRevenue, totalProfit, reconTotal, marginPct };
   }, [state]);
 
-  const soldVehicles = useMemo(
+  const soldProperties = useMemo(
     () => (state ? state.properties.filter((v) => v.status === "SOLD") : []),
     [state],
   );
   const grossAfterRecon = useMemo(
-    () => soldVehicles.reduce((sum, v) => sum + ((v.askingPrice || 0) - reconSpend(v)), 0),
-    [soldVehicles],
+    () => soldProperties.reduce((sum, v) => sum + ((v.askingPrice || 0) - reconSpend(v)), 0),
+    [soldProperties],
   );
   const outstandingRevenue = useMemo(
     () => (state ? state.invoices
@@ -777,7 +767,7 @@ export default function App() {
   );
 
   /* The morning strip -------------------------------------------------------
-     What a dealer needs to know before the doors open, in the order it costs
+     What a agency needs to know before the doors open, in the order it costs
      money: who has been left hanging, what was promised for today, and what
      has to physically leave the yard. Kept in the chrome so it follows you
      off the dashboard — the numbers are useless on a screen you've navigated
@@ -810,7 +800,7 @@ export default function App() {
     [state, openLeads],
   );
   /* The "Going out" tile and its top-bar chip are gone. It counted properties in
-     PENDING — a status nothing had written since the stock kanban was removed —
+     PENDING — a status nothing had written since the listing kanban was removed —
      so it read zero forever. Rebuilding it on `Closed Won && !docFlowCompletedAt`
      was worse: no historical deal carries that stamp, so it counted every deal
      ever closed. Neither number was true, and Deal Readiness already answers
@@ -819,14 +809,14 @@ export default function App() {
   /* Nav "needs attention" signals — one shared rule per destination, so the
      bottom bar and the sidebar read from the same source. Each value is a
      genuine to-do count: enquiries waiting on a first reply, overdue tasks/actions,
-     and stock that can't sell yet because it has no photos / an incomplete
+     and listing that can't sell yet because it has no photos / an incomplete
      listing. Rendered as a dot on mobile (a number on a tab is noise) and as a
      count on desktop, and only when the value is > 0. */
   const navAttention: Record<string, number> = useMemo(
     () => ({
       enquiries: awaitingReply.length,
       tasks: overdueCount,
-      inventory: notOnline.blocked,
+      portfolio: notOnline.blocked,
     }),
     [awaitingReply, overdueCount, notOnline],
   );
@@ -859,10 +849,10 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[color:var(--ink)] flex flex-col items-center justify-center p-6 text-[color:var(--white)] font-sans gap-3">
         <div className="w-12 h-12 rounded-full border-4 border-t-[color:var(--cyan)] border-[color:var(--cyan-faint)] animate-spin" />
-        <div className="font-semibold text-[16px] tracking-wide">Starting TruFlow Premium…</div>
+        <div className="font-semibold text-[16px] tracking-wide">Starting PropInspect…</div>
         <div className="text-[13px] text-[rgba(232,234,230,0.72)] text-center max-w-xs">
-          Loading floor data from <span className="font-mono text-[color:var(--cyan)]">localhost:3001</span>.
-          If this hangs, restart the server (`npm run dev` in truflow-premium).
+          Loading portfolio data from <span className="font-mono text-[color:var(--cyan)]">localhost:3001</span>.
+          If this hangs, restart the server (`npm run dev` in propinspect).
         </div>
         <button
           type="button"
@@ -881,8 +871,8 @@ export default function App() {
       category: "Showroom Floor",
       items: [
         { id: "dashboard", label: "Overview", icon: Home },
-        { id: "inventory", label: "All Vehicles", icon: Car },
-        { id: "upload", label: "Add vehicle", icon: Upload },
+        { id: "portfolio", label: "All Properties", icon: Home },
+        { id: "upload", label: "Add property", icon: Upload },
       ]
     },
     {
@@ -890,7 +880,7 @@ export default function App() {
       items: [
         { id: "enquiries", label: "Enquiry CRM", icon: Users },
         { id: "tasks", label: "Tasks", icon: CheckSquare },
-        { id: "stock_health", label: "Stock health", icon: TrendingUp },
+        { id: "listing_health", label: "Listing health", icon: TrendingUp },
         { id: "accounting_recon", label: "Finance & Recon", icon: Receipt },
       ]
     },
@@ -898,7 +888,7 @@ export default function App() {
       /* Built, backed by real server routes, and previously unreachable — no nav
          entry pointed at any of them. Invoices and agreements each have full
          GET/POST/PUT routes behind them (including pay and sign); the repayment
-         calculator is self-contained arithmetic seeded from real stock. */
+         calculator is self-contained arithmetic seeded from real listing. */
       category: "Deals & Finance",
       items: [
         { id: "deal_readiness", label: "Deal Readiness", icon: ClipboardCheck },
@@ -908,11 +898,11 @@ export default function App() {
     {
       category: "Media & Web",
       items: [
-        { id: "media_web", label: "Stock media", icon: Image },
+        { id: "media_web", label: "Listing media", icon: Image },
       ]
     },
     {
-      category: "Dealer Settings",
+      category: "Agency Settings",
       items: [
         { id: "manager", label: "Team & Users", icon: Users },
         { id: "settings", label: "Settings", icon: SettingsIcon },
@@ -925,12 +915,12 @@ export default function App() {
     let items = group.items;
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'enquiries', 'tasks', 'accounting_recon', 'media_web',
+        ['dashboard', 'portfolio', 'upload', 'enquiries', 'tasks', 'accounting_recon', 'media_web',
          'deal_readiness', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'enquiries', 'tasks', 'accounting_recon', 'manager', 'settings',
+        ['dashboard', 'portfolio', 'upload', 'enquiries', 'tasks', 'accounting_recon', 'manager', 'settings',
          'deal_readiness', 'payment'].includes(item.id)
       );
     }
@@ -957,45 +947,45 @@ export default function App() {
     loadAllState();
   };
 
-  const handleUpdateVehicle = async (id: string, updates: Partial<Property>) => {
-    await updateVehicle(id, updates);
+  const handleUpdateProperty = async (id: string, updates: Partial<Property>) => {
+    await updateProperty(id, updates);
     loadAllState();
   };
 
-  /** Cancellation: a closed sale fell through. Put the car back in stock — which
+  /** Cancellation: a closed sale fell through. Put the home back in listing — which
    *  re-lists it on the website, since the public feed only publishes INVENTORY
    *  — and reopen the deals that closed on it, so the two never drift apart.
    *
    *  The reopen is the server's job now: this used to look up one Closed Won
    *  Enquiry here and force it to Negotiating, which both missed any second deal
-   *  on the car and invented a stage the deal may never have been at. */
-  const handleReturnToStock = async (v: Property) => {
-    const label = `${v.year} ${v.make} ${v.model}`;
-    if (!confirm(`Return ${label} to stock?\n\nThis re-lists it on your website and reopens the linked deal.`)) return;
+   *  on the home and invented a stage the deal may never have been at. */
+  const handleReturnToListing = async (v: Property) => {
+    const label = propertyLabel(v);
+    if (!confirm(`Return ${label} to the market?\n\nThis re-lists it on your website and reopens the linked deal.`)) return;
     try {
-      const { coupledLeads } = await setVehicleStatus(v.id, "INVENTORY");
+      const { coupledLeads } = await setPropertyStatus(v.id, "INVENTORY");
       loadAllState();
       addNotification(
-        "Returned to stock",
-        `${label} is back in inventory and live on your website again` +
+        "Returned to market",
+        `${label} is back on the market and live on your website again` +
           (coupledLeads.length
             ? `, and ${coupledLeads.length === 1 ? "its deal was" : `${coupledLeads.length} deals were`} reopened.`
             : "."),
         "info",
       );
     } catch (err: any) {
-      addNotification("Could not return to stock", err?.message || "Something went wrong.", "warning");
+      addNotification("Could not return to market", err?.message || "Something went wrong.", "warning");
     }
   };
 
-  /** Mark a car sold, resolving which deal closed on it when that is ambiguous.
+  /** Mark a home sold, resolving which deal closed on it when that is ambiguous.
    *
-   *  A car can carry several open deals, and only the dealer knows which
-   *  customer actually bought it — so ask, rather than guess. A car with no
+   *  A home can carry several open deals, and only the agency knows which
+   *  customer actually bought it — so ask, rather than guess. A home with no
    *  open deals is sold outside the system entirely (cash off the floor,
    *  invoiced elsewhere), which must stay a single click: no prompt at all. */
   const handleMarkSold = async (v: Property) => {
-    const label = `${v.year} ${v.make} ${v.model}`;
+    const label = propertyLabel(v);
     const openLeads = state.enquiries.filter(
       (l) => l.propertyId === v.id && l.status !== "Closed Won" && l.status !== "Closed Lost",
     );
@@ -1009,14 +999,14 @@ export default function App() {
           openLeads.map((l, i) => `${i + 1}. ${l.firstName} ${l.lastName}`).join("\n") +
           `\n0. Sold outside the system — no deal here\n\nEnter a number:`,
       );
-      if (choice === null) return; // cancelled — do not touch the car
+      if (choice === null) return; // cancelled — do not touch the home
       const n = parseInt(choice, 10);
       if (n >= 1 && n <= openLeads.length) {
         closeLeadId = openLeads[n - 1].id;
       } else if (n !== 0) {
         /* Anything that is neither a listed deal nor the explicit "0 — sold
-           outside the system" is a typo, not an instruction. Selling the car
-           anyway would leave the buyer's deal sitting open with the dealer
+           outside the system" is a typo, not an instruction. Selling the home
+           anyway would leave the buyer's deal sitting open with the agency
            told only "Marked sold." */
         addNotification(
           "Not sold",
@@ -1028,7 +1018,7 @@ export default function App() {
     }
 
     try {
-      const { coupledLeads } = await setVehicleStatus(v.id, "SOLD", closeLeadId);
+      const { coupledLeads } = await setPropertyStatus(v.id, "SOLD", closeLeadId);
       loadAllState();
       addNotification(
         "Marked sold",
@@ -1041,20 +1031,20 @@ export default function App() {
     }
   };
 
-  /** Remove a unit from stock.
-   *  Deleting a car that a deal, invoice or Enquiry points at leaves those records
-   *  referencing something that no longer exists — the Enquiry's vehicle shows as
+  /** Remove a unit from listing.
+   *  Deleting a home that a deal, invoice or Enquiry points at leaves those records
+   *  referencing something that no longer exists — the Enquiry's property shows as
    *  blank and the invoice loses what it was for. So say what is attached
    *  before asking, and archive rather than delete once the sale is recorded
-   *  here: that is a record of a transaction, not stock to tidy away.
+   *  here: that is a record of a transaction, not listing to tidy away.
    *
-   *  A car sold outside the DMS has no record here to protect, so it deletes
+   *  A home sold outside the DMS has no record here to protect, so it deletes
    *  cleanly. Refusing those outright — as this used to, pointing at an
    *  "archive" that did not exist — left them stuck on the floor forever. */
-  const handleDeleteVehicle = async (id: string) => {
+  const handleDeleteProperty = async (id: string) => {
     const v = state.properties.find((x) => x.id === id);
     if (!v) return;
-    const label = `${v.year} ${v.make} ${v.model} (${v.stockNumber})`;
+    const label = `${propertyLabel(v)} (${v.listingRef})`;
 
     /* Already archived: the sale here is what stopped it being deleted in the
        first place, so running this again would only re-archive it. Say where
@@ -1062,7 +1052,7 @@ export default function App() {
     if (v.archivedAt) {
       addNotification(
         "Already archived",
-        `${label} is archived and still counted in your sold figures. Filter stock by "Archived" to restore it.`,
+        `${label} is archived and still counted in your sold figures. Filter listings by "Archived" to restore it.`,
         "info",
       );
       return;
@@ -1070,7 +1060,7 @@ export default function App() {
 
     /* Is the sale actually recorded here? A closed deal, an invoice, an
        agreement or a signed document all mean deleting would destroy the record
-       of a transaction — those get archived instead. A car sold outside the DMS
+       of a transaction — those get archived instead. A home sold outside the DMS
        has none of them, so deleting it destroys nothing and simply removes it.
 
        An open or lost enquiry is not a record of a sale: those are unlinked by
@@ -1092,21 +1082,21 @@ export default function App() {
         !confirm(
           `${label} has ${recorded} against it, so it cannot be deleted without ` +
             `destroying the record of the sale.\n\nArchive it instead? It leaves the ` +
-            `stock list but stays in your sold figures.`,
+            `active listings but stays in your sold figures.`,
         )
       )
         return;
       try {
         /* Status goes with it: archiving retires a unit whose sale is recorded,
-           so leaving it INVENTORY kept it counting as live stock and publishing
-           to the dealer's website. The server enforces the same pairing, so a
+           so leaving it INVENTORY kept it counting as live listing and publishing
+           to the agency's website. The server enforces the same pairing, so a
            Light or raw-API archive cannot get this wrong either. */
-        await updateVehicle(id, { archivedAt: new Date().toISOString(), status: "SOLD" });
-        setSelectedDetailVehicle(null);
+        await updateProperty(id, { archivedAt: new Date().toISOString(), status: "SOLD" });
+        setSelectedDetailProperty(null);
         loadAllState();
         addNotification("Archived", `${label} is off the floor and still counted in sold figures.`, "info");
       } catch (err: any) {
-        addNotification("Could not archive vehicle", err?.message || "Something went wrong.", "warning");
+        addNotification("Could not archive property", err?.message || "Something went wrong.", "warning");
       }
       return;
     }
@@ -1115,24 +1105,24 @@ export default function App() {
       (l) => l.propertyId === id && l.status !== "Closed Won",
     ).length;
     const warning = openEnquiries
-      ? `\n\n${openEnquiries} enquir${openEnquiries === 1 ? "y" : "ies"} will be kept but unlinked from this car.`
+      ? `\n\n${openEnquiries} enquir${openEnquiries === 1 ? "y" : "ies"} will be kept but unlinked from this home.`
       : "";
-    if (!confirm(`Remove ${label} from stock?${warning}\n\nThis cannot be undone.`)) return;
+    if (!confirm(`Remove ${label} from the market?${warning}\n\nThis cannot be undone.`)) return;
 
     try {
-      await deleteVehicle(id);
-      setSelectedDetailVehicle(null);
+      await deleteProperty(id);
+      setSelectedDetailProperty(null);
       loadAllState();
-      addNotification("Removed from stock", `${label} is no longer on the floor.`, "info");
+      addNotification("Removed from listing", `${label} is no longer on the floor.`, "info");
     } catch (err: any) {
-      addNotification("Could not remove vehicle", err?.message || "Something went wrong.", "warning");
+      addNotification("Could not remove property", err?.message || "Something went wrong.", "warning");
     }
   };
 
   /* Tasks accumulate — completed and stale ones clutter the list with no way to
      clear them. A direct per-row delete keeps it tidy. Guarded by a confirm
-     because it removes the task for the whole dealership and isn't reversible,
-     matching the stock-removal flow. */
+     because it removes the task for the whole agency and isn't reversible,
+     matching the listing-removal flow. */
   const handleDeleteTask = async (id: string, title: string) => {
     if (!confirm(`Delete "${title}"?\n\nThis removes the task for everyone and cannot be undone.`)) return;
     try {
@@ -1145,7 +1135,7 @@ export default function App() {
   };
 
   const handleUploadDocument = async (doc: { fileName: string; mimeType: string; fileData: string; leadId?: string; propertyId?: string }) => {
-    await uploadDocument({ ...doc, dealershipId });
+    await uploadDocument({ ...doc, agencyId });
     loadAllState();
   };
 
@@ -1160,9 +1150,12 @@ export default function App() {
   };
 
   // Helper selectors
-  const getVehicleLabel = (id: string) => {
+  const propertyLabel = (v: any) =>
+    v?.address || `${v?.propertyType || "Property"} · ${v?.suburb || ""}`;
+
+  const getPropertyLabel = (id: string) => {
     const v = state.properties.find((item) => item.id === id);
-    return v ? `${v.year} ${v.make} ${v.model}` : "Generic Query Asset";
+    return v ? propertyLabel(v) : "Generic Query Asset";
   };
 
   const getUserLabel = (id: string) => {
@@ -1199,11 +1192,11 @@ export default function App() {
   };
 
   const handleResetState = () => {
-    // Typed confirmation, not an OK button. This deletes every dealership's
-    // stock, enquiries, invoices and signed documents, permanently.
+    // Typed confirmation, not an OK button. This deletes every agency's
+    // listing, enquiries, invoices and signed documents, permanently.
     const typed = prompt(
-      "This permanently deletes ALL data for EVERY dealership on this instance — " +
-      "stock, enquiries, invoices and signed documents. There is no backup.\n\n" +
+      "This permanently deletes ALL data for EVERY agency on this instance — " +
+      "listing, enquiries, invoices and signed documents. There is no backup.\n\n" +
       "Type RESET EVERYTHING to confirm."
     );
     if (typed === "RESET EVERYTHING") {
@@ -1215,7 +1208,7 @@ export default function App() {
     }
   };
 
-  /** Sign out → access-code splash. Does not wipe inventory.
+  /** Sign out → access-code splash. Does not wipe portfolio.
    *  Discards the token too, otherwise "sign out" left a working session
    *  sitting in storage for the next person on a shared yard device. */
   const handleLogout = () => {
@@ -1317,16 +1310,16 @@ export default function App() {
     }
   };
 
-  const handlePublishVehicle = async (e: React.FormEvent) => {
+  const handlePublishProperty = async (e: React.FormEvent) => {
     e.preventDefault();
     // Metadata only — gallery comes from TruLens Export to DMS
-    const { category, ...vehicleFields } = newVehicleForm;
-    await createVehicle({
-      ...vehicleFields,
+    const { category, ...propertyFields } = newPropertyForm;
+    await createProperty({
+      ...propertyFields,
       // "" is the form's "Auto" choice, not a category. Sending it would put an
       // empty string on the record and leave the website matching against a
       // tier that doesn't exist; omitting the key lets it fall back to guessing
-      // from price and model, which is what "Auto" promises.
+      // from price and property type, which is what "Auto" promises.
       ...(category ? { category } : {}),
       images: [] as string[],
       damagePhotos: [] as string[],
@@ -1334,58 +1327,58 @@ export default function App() {
       serviceBookPhotos: [] as string[],
       extrasPhotos: [] as string[],
     });
-    const stock = newVehicleForm.stockNumber;
+    const listing = newPropertyForm.listingRef;
     addNotification(
-      "Property on floor",
-      `${newVehicleForm.year} ${newVehicleForm.make} ${newVehicleForm.model} (${stock}) — open TruLens to shoot, then Export to DMS`,
+      "Property on the market",
+      `${newPropertyForm.propertyType} · ${newPropertyForm.suburb} (${listing}) — open TruLens to shoot, then Export to DMS`,
       "info"
     );
-    setActiveSection("inventory");
-    setNewVehicleForm({
-      year: new Date().getFullYear(),
-      make: "",
-      model: "",
-      trim: "",
-      engine: "",
-      fuelType: "Petrol",
-      transmission: "Automatic",
-      bodyType: "",
+    setActiveSection("portfolio");
+    setNewPropertyForm({
+      yearBuilt: new Date().getFullYear(),
+      propertyType: "House",
+      suburb: "",
+      finish: "",
+      bedrooms: 0,
+      bathrooms: 0,
+      garages: 0,
+      erfSize: "",
       askingPrice: 0,
       costPrice: 0,
-      mileage: 0,
-      stockNumber: "",
+      floorSize: "",
+      listingRef: "",
       description: "",
-      dealershipId: dealershipId || "",
+      agencyId: agencyId || "",
       category: "",
     });
     loadAllState();
-    if (hasProduct("lens") && confirm("Stock created. Open TruLens now to shoot this unit?")) {
-      openTruLens(stock);
+    if (hasProduct("lens") && confirm("Listing created. Open TruLens now to shoot this unit?")) {
+      openTruLens(listing);
     }
   };
 
   const handleExportCSV = () => {
     const { sold, totalRevenue, totalProfit, reconTotal } = eodTotals;
     const rows: (string | number)[][] = [
-      ["TruFlow - End of Day Operations Summary"],
+      ["PropInspect - End of Day Operations Summary"],
       ["Date", new Date().toISOString().split('T')[0]],
       [],
       ["Key Performance Indicators", "Value"],
       ["Leads Engaged / Worked", `${state.enquiries.length} Leads`],
-      ["Vehicles Moved (Sold)", `${sold.length} Units`],
-      ["Total Reconditioning Outlay", `R ${reconTotal.toLocaleString()}`],
+      ["Properties Moved (Sold)", `${sold.length} Units`],
+      ["Total Prep & Maintenance Outlay", `R ${reconTotal.toLocaleString()}`],
       ["Gross Sales Revenue", `R ${totalRevenue.toLocaleString()}`],
       ["Total Profit Realized", `R ${totalProfit.toLocaleString()}`],
       [],
       ["Finalized Sales Transactions"],
-      ["Stock Ref", "Property Model", "Sale Amount", "Calculated Gross Margin"],
-      ...sold.map(v => [v.stockNumber || "", `${v.year} ${v.make} ${v.model}`, `R ${(v.askingPrice || 0).toLocaleString()}`, `R ${((v.askingPrice || 0) - (v.costPrice || 0)).toLocaleString()}`]),
+      ["Listing Ref", "Property", "Sale Amount", "Calculated Gross Margin"],
+      ...sold.map(v => [v.listingRef || "", propertyLabel(v), `R ${(v.askingPrice || 0).toLocaleString()}`, `R ${((v.askingPrice || 0) - (v.costPrice || 0)).toLocaleString()}`]),
     ];
     const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `TruFlow_EOD_Summary_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `PropInspect_EOD_Summary_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1423,7 +1416,7 @@ export default function App() {
       )}
 
       {/* Mobile More sheet. Three fixed buckets instead of the sidebar's five
-          nav categories: what a salesperson can do standing next to a car, what
+          nav categories: what a salesperson can do standing next to a home, what
           only works on a desktop (shown greyed and inert, not hidden, so the
           product reads the same on both), and account. Role filtering carries
           over — a bucket only shows the items the current role can reach. */}
@@ -1432,7 +1425,7 @@ export default function App() {
           filteredNavigation.flatMap((g) => g.items).map((i) => [i.id, i] as const)
         );
         const pick = (ids: string[]) => ids.map((id) => byId.get(id)).filter(Boolean) as { id: string; label: string; icon: typeof Home }[];
-        const floorItems = pick(["upload", "media_web", "stock_health", "payment"]);
+        const floorItems = pick(["upload", "media_web", "listing_health", "payment"]);
         const desktopItems = pick(["deal_readiness", "accounting_recon"]);
         const accountItems = pick(["manager", "settings"]);
         return (
@@ -1452,7 +1445,7 @@ export default function App() {
               <span className="block h-1 w-10 rounded-full bg-[color:var(--glass-line)]" aria-hidden="true" />
             </div>
             <div className="flex items-center gap-3 px-5 pb-2 shrink-0">
-              <img src={logo} alt="TruFlow" className="h-9 w-auto max-w-[130px] object-contain shrink-0" />
+              <img src={logo} alt="PropInspect" className="h-9 w-auto max-w-[130px] object-contain shrink-0" />
               <span className="text-[length:var(--t-Enquiry)] font-semibold text-[color:var(--white)] flex-1">More</span>
               <button
                 type="button"
@@ -1560,7 +1553,7 @@ export default function App() {
                   type="button"
                   onClick={() =>
                     openSupportWhatsApp(
-                      `TruFlow ${PRODUCT_TIER} support · ${dealershipLabel}\nSection: ${activeSection}\n\n`
+                      `PropInspect ${PRODUCT_TIER} support · ${agencyLabel}\nSection: ${activeSection}\n\n`
                     )
                   }
                   className="flex-1 min-h-[48px] flex items-center justify-center gap-2 px-3 rounded-xl text-[13px] font-semibold text-[color:var(--white)] bg-[rgba(37,211,102,0.10)] border border-[rgba(37,211,102,0.28)] cursor-pointer"
@@ -1596,29 +1589,29 @@ export default function App() {
       >
         <div className="mb-6 flex flex-col items-center">
           <div className="w-full flex items-center justify-center px-1">
-            <img src={logo} alt="TruFlow Premium" className="h-12 w-auto max-w-full object-contain logo-float" />
+            <img src={logo} alt="PropInspect" className="h-12 w-auto max-w-full object-contain logo-float" />
           </div>
-          {/* Admin dealer context switcher — pick a dealer to see their world. */}
-          {isMasterAdmin && state?.dealerships && state.dealerships.length > 0 && (
+          {/* Admin agency context switcher — pick a agency to see their world. */}
+          {isMasterAdmin && state?.agencies && state.agencies.length > 0 && (
             <div className="mt-2 w-full px-1">
               <select
-                value={adminDealerScope || ""}
-                onChange={(e) => setAdminDealerScope(e.target.value || null)}
+                value={adminAgencyScope || ""}
+                onChange={(e) => setAdminAgencyScope(e.target.value || null)}
                 className="w-full bg-[color:var(--ink-2)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] cursor-pointer"
               >
-                <option value="">All dealerships</option>
-                {state.dealerships.map((d) => (
+                <option value="">All agencies</option>
+                {state.agencies.map((d) => (
                   <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
               </select>
             </div>
           )}
-          {/* The dealer's OWN showroom. This was hardcoded to true-cars.co.za,
-              so every dealership's sidebar linked to our consumer site instead
+          {/* The agency's OWN showroom. This was hardcoded to true-homes.co.za,
+              so every agency's sidebar linked to our consumer site instead
               of to their website. */}
           {(() => {
-            const mine = dealershipId
-              ? (state?.dealerships || []).find((d: any) => d.id === dealershipId)
+            const mine = agencyId
+              ? (state?.agencies || []).find((d: any) => d.id === agencyId)
               : undefined;
             const site = mine?.websiteUrl;
             if (!site) return null;
@@ -1635,7 +1628,7 @@ export default function App() {
                   {hasProduct("flow-lite") && (
                     <a href={TRUFLOW_LITE_URL} target="_blank" rel="noopener noreferrer"
                        className="text-[13px] px-3 py-1 rounded-full bg-[rgba(0,136,255,0.08)] text-[#38BDF8] border border-[rgba(0,136,255,0.2)] hover:bg-[rgba(0,136,255,0.12)] transition-colors">
-                      TruFlow Light
+                      PropInspect
                     </a>
                   )}
                 </div>
@@ -1698,7 +1691,7 @@ export default function App() {
             type="button"
             onClick={() =>
               openSupportWhatsApp(
-                `TruFlow ${PRODUCT_TIER} support · ${dealershipLabel}\nSection: ${activeSection}\n\n`
+                `PropInspect ${PRODUCT_TIER} support · ${agencyLabel}\nSection: ${activeSection}\n\n`
               )
             }
             className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-[color:var(--white)] bg-[rgba(37,211,102,0.10)] border border-[rgba(37,211,102,0.28)] hover:bg-[rgba(37,211,102,0.16)] transition-colors cursor-pointer"
@@ -1712,7 +1705,7 @@ export default function App() {
             type="button"
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl text-[13px] font-semibold tracking-normal text-[color:var(--white-dim)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] hover:bg-[color:var(--glass)] hover:text-[color:var(--white-dim)] transition-all cursor-pointer"
-            title="Sign out of TruFlow"
+            title="Sign out of PropInspect"
           >
             <LogOut size={14} />
             Log out
@@ -1777,10 +1770,10 @@ export default function App() {
                type="button"
                onClick={() => setAssistOpen(true)}
                className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)] hover:text-[color:var(--ink)] transition-colors cursor-pointer text-[13px] font-semibold"
-               title="Ask Dealer Assist"
+               title="Ask Agency Assist"
              >
                <Sparkles size={14} />
-               Dealer Assist
+               Agency Assist
              </button>
              {/* Who is signed in now lives under the sidebar logo — it was
                  repeated three times across the top bar. */}
@@ -1796,7 +1789,7 @@ export default function App() {
            </div>
         </div>
 
-        {/* Mobile Header — the section a dealer is on, plus one number worth
+        {/* Mobile Header — the section a agency is on, plus one number worth
             reading, plus Assist. Navigation itself moved to the bottom tab bar
             and the More sheet; the hamburger, logo and counter strip are gone.
             top offset clears the notch on an installed PWA. */}
@@ -1807,14 +1800,14 @@ export default function App() {
           const metaMap: Record<string, { title: string; sub: string }> = {
             dashboard: {
               title: "Today",
-              sub: `${dealershipLabel} · ${todayLabel}`,
+              sub: `${agencyLabel} · ${todayLabel}`,
             },
             enquiries: {
               title: "Leads",
               sub: `${awaitingReply.length} waiting · ${negotiatingCount} negotiating`,
             },
-            inventory: {
-              title: "Stock",
+            portfolio: {
+              title: "Listings",
               sub: `${state.properties.length} properties`,
             },
             tasks: {
@@ -1823,15 +1816,15 @@ export default function App() {
             },
           };
           const meta = metaMap[activeSection] || {
-            title: navMatch?.label || "TruFlow",
-            sub: dealershipLabel,
+            title: navMatch?.label || "PropInspect",
+            sub: agencyLabel,
           };
           return (
             <div
               style={{ top: "calc(0.5rem + var(--safe-t))" }}
               className="flex items-center gap-3 md:hidden sticky z-[60] rounded-xl px-3 py-2 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]"
             >
-              <img src="/favicon.svg" alt="TruFlow" className="h-9 w-9 shrink-0 rounded-lg" />
+              <img src="/favicon.svg" alt="PropInspect" className="h-9 w-9 shrink-0 rounded-lg" />
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-[length:var(--t-Enquiry)] font-semibold text-[color:var(--white)] leading-tight truncate">
                   {meta.title}
@@ -1843,8 +1836,8 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setAssistOpen(true)}
-                aria-label="Ask Dealer Assist"
-                title="Ask Dealer Assist"
+                aria-label="Ask Agency Assist"
+                title="Ask Agency Assist"
                 className="h-11 w-11 shrink-0 grid place-items-center rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] cursor-pointer"
               >
                 <Sparkles size={16} />
@@ -1857,10 +1850,10 @@ export default function App() {
         {activeSection === "dashboard" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
             {/* Framed header. The plain heading read like a page title on a
-                form; a dealer opening this at 8am should see whose floor it is,
+                form; a agency opening this at 8am should see whose floor it is,
                 that it is live, and have the assistant one click away. */}
             {/* Framed header — desktop only. On a phone the sticky mobile header
-                already names the dealership and date, so this card is redundant
+                already names the agency and date, so this card is redundant
                 there (hidden md:flex). The date folds into the live pill; the
                 page-title heading and the strapline prose are gone. */}
             <div className="card py-5 px-6 hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -1868,17 +1861,17 @@ export default function App() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[length:var(--t-micro)] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--cyan)] animate-pulse" />
-                    {dealershipLabel} · live · {new Date().toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
+                    {agencyLabel} · live · {new Date().toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
                   </span>
                 </div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">
-                  Dealership overview
+                  Agency overview
                 </h1>
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={() => navigateTo("upload")} className="btn btn-primary">
-                  New inventory
+                  New listing
                 </button>
               </div>
             </div>
@@ -1913,11 +1906,11 @@ export default function App() {
                     {overdueCount > 0 ? `${overdueCount} already late` : "Nothing overdue"}
                   </div>
                 </button>
-                <button onClick={() => navigateTo("inventory")} className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)]">
-                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cars in stock</div>
-                  <div className="text-[28px] leading-none font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
+                <button onClick={() => navigateTo("portfolio")} className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)]">
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Homes on market</div>
+                  <div className="text-[28px] leading-none font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeListingsCount} /></div>
                   <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                    {agedStockCount > 0 ? `${agedStockCount} over ${AGED_DAYS} days` : `None over ${AGED_DAYS} days`}
+                    {agedListingsCount > 0 ? `${agedListingsCount} over ${AGED_DAYS} days` : `None over ${AGED_DAYS} days`}
                   </div>
                 </button>
               </div>
@@ -1928,7 +1921,7 @@ export default function App() {
                 </div>
                 <span className="w-px h-8 bg-[color:var(--glass-line)] shrink-0" />
                 <div className="text-right">
-                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Gross after recon</div>
+                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Gross after prep</div>
                   <div className="text-[20px] leading-none font-semibold text-[color:var(--cyan-bright)] mt-1"><Counter value={grossAfterRecon} prefix="R " /></div>
                 </div>
               </div>
@@ -1972,14 +1965,14 @@ export default function App() {
                 </div>
               </button>
               <button
-                onClick={() => navigateTo("inventory")}
+                onClick={() => navigateTo("portfolio")}
                 className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)] transition-colors"
               >
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cars in stock</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
+                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Homes in listing</div>
+                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeListingsCount} /></div>
                 <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                  {agedStockCount > 0
-                    ? `${agedStockCount} over ${AGED_DAYS} days`
+                  {agedListingsCount > 0
+                    ? `${agedListingsCount} over ${AGED_DAYS} days`
                     : `None over ${AGED_DAYS} days`}
                 </div>
               </button>
@@ -1987,18 +1980,18 @@ export default function App() {
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Units sold</div>
                 <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={soldUnitsCount} /></div>
                 <div className="text-[13px] text-[rgba(232,234,230,0.55)] font-semibold mt-1">
-                  {activeVehiclesCount + soldUnitsCount > 0
-                    ? `${Math.round((soldUnitsCount / (activeVehiclesCount + soldUnitsCount)) * 100)}% of the floor moved`
-                    : "No stock loaded yet"}
+                  {activeListingsCount + soldUnitsCount > 0
+                    ? `${Math.round((soldUnitsCount / (activeListingsCount + soldUnitsCount)) * 100)}% of the floor moved`
+                    : "No listings loaded yet"}
                 </div>
               </div>
               <div className="stat-card p-4 border-[color:var(--glass-line)]">
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Gross after recon</div>
                 <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--cyan-bright)] mt-1"><Counter value={grossAfterRecon} prefix="R " /></div>
                 <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                  {soldVehicles.length > 0
-                    ? `${soldVehicles.length} sold · deal value less recon`
-                    : "No units sold yet"}
+                  {soldProperties.length > 0
+                    ? `${soldProperties.length} sold · deal value less prep`
+                    : "No homes sold yet"}
                 </div>
               </div>
             </div>
@@ -2024,7 +2017,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Stock that can't sell yet — see the notOnline note above. */}
+            {/* Listing that can't sell yet — see the notOnline note above. */}
             <div className="card p-4 md:p-6">
               <div className="flex items-center justify-between mb-4 gap-2">
                 <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">
@@ -2035,7 +2028,7 @@ export default function App() {
                   onClick={() => navigateTo("media_web")}
                   className="btn btn-secondary btn-sm shrink-0"
                 >
-                  Stock media
+                  Listing media
                 </button>
               </div>
 
@@ -2043,14 +2036,14 @@ export default function App() {
                 /* An all-clear is worth stating plainly — a card that vanishes
                    when there is nothing wrong just reads as broken. */
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
-                  {notOnline.inStock > 0 ? (
+                  {notOnline.inListings > 0 ? (
                     <>
-                      All <span className="text-[color:var(--cyan)] font-semibold">{notOnline.inStock}</span>{" "}
-                      {notOnline.inStock === 1 ? "car" : "cars"} in stock {notOnline.inStock === 1 ? "has" : "have"} a
+                      All <span className="text-[color:var(--cyan)] font-semibold">{notOnline.inListings}</span>{" "}
+                      {notOnline.inListings === 1 ? "home" : "homes"} on the market {notOnline.inListings === 1 ? "has" : "have"} a
                       web-ready gallery.
                     </>
                   ) : (
-                    "No cars in stock."
+                    "No homes listed yet."
                   )}
                 </p>
               ) : (
@@ -2060,7 +2053,7 @@ export default function App() {
                       {notOnline.blocked}
                     </span>
                     <span className="text-[13px] text-[rgba(232,234,230,0.72)]">
-                      of {notOnline.inStock} in stock can&apos;t be shopped yet
+                      of {notOnline.inListings} on the market can&apos;t be sold yet
                     </span>
                   </div>
 
@@ -2088,21 +2081,21 @@ export default function App() {
                     <p className="text-[13px] text-[color:var(--muted)]">
                       Longest waiting:{" "}
                       <span className="text-[color:var(--white-dim)]">
-                        {notOnline.oldest.v.year} {notOnline.oldest.v.make} {notOnline.oldest.v.model}
+                        {propertyLabel(notOnline.oldest.v)}
                       </span>
-                      {typeof notOnline.oldest.v.daysInInventory === "number" && (
-                        <> — {notOnline.oldest.v.daysInInventory} days in stock</>
+                      {typeof notOnline.oldest.v.daysOnMarket === "number" && (
+                        <> — {notOnline.oldest.v.daysOnMarket} days on market</>
                       )}
                     </p>
                   )}
                 </>
               )}
 
-              {/* Shooting stock is the one desk-adjacent task that belongs on the
+              {/* Shooting listing is the one desk-adjacent task that belongs on the
                   floor, so this card keeps its primary action on the phone.
                   Mobile only — TruLens captures with the phone camera, so a
                   "shoot" button on a desktop would point at a dead end. Desktop
-                  keeps the "Stock media" link in the header instead. */}
+                  keeps the "Listing media" link in the header instead. */}
               {hasProduct("lens") && (
                 <button
                   type="button"
@@ -2118,9 +2111,9 @@ export default function App() {
             {/* Featured Catalog list */}
             <div className="card">
               <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-[16px]">Recent Showroom Inventory</h3>
+                <h3 className="font-semibold text-[16px]">Recent Showroom Portfolio</h3>
                 <button
-                  onClick={() => navigateTo("inventory")}
+                  onClick={() => navigateTo("portfolio")}
                   className="btn btn-secondary btn-sm"
                 >
                   View Database
@@ -2130,22 +2123,22 @@ export default function App() {
                 {state.properties.filter((v) => v.status === "INVENTORY").slice(0, 4).map((v) => (
                   <div
                     key={v.id}
-                    onClick={() => setSelectedDetailVehicle(v)}
+                    onClick={() => setSelectedDetailProperty(v)}
                     className="v-card p-3 cursor-pointer group hover:-translate-y-0.5 transition-transform duration-200"
                   >
                     <div className="aspect-[4/3] rounded-lg bg-[color:var(--ink-2)] flex items-center justify-center overflow-hidden mb-3 shadow-md shadow-black/40">
                       {v.images && v.images.length > 0 ? (
-                        <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        <img src={v.images[0]} alt={`${v.propertyType}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full bg-[color:var(--ink-2)] border border-white/5 flex items-center justify-center text-[rgba(232,234,230,0.45)] font-semibold text-lg">
-                          {v.make.slice(0, 2).toUpperCase()}
+                          {(v.propertyType || "Pr").slice(0, 2).toUpperCase()}
                         </div>
                       )}
                     </div>
-                    <h4 className="font-semibold text-[13px] text-[color:var(--white)] truncate">{v.year} {v.make} {v.model}</h4>
-                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] truncate mt-0.5">{v.transmission} / {v.fuelType}</p>
+                    <h4 className="font-semibold text-[13px] text-[color:var(--white)] truncate">{v.propertyType} · {v.suburb}</h4>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] truncate mt-0.5">{v.bedrooms} bed · {v.bathrooms} bath · {v.erfSize || "—"} erf</p>
                     <div className="text-[16px] font-semibold text-[color:var(--cyan-bright)] mt-2">{formatZAR(v.askingPrice)}</div>
-                    <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-2 font-mono">Stock Ref: {v.stockNumber}</div>
+                    <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-2 font-mono">Listing Ref: {v.listingRef}</div>
                   </div>
                 ))}
               </div>
@@ -2167,7 +2160,7 @@ export default function App() {
                   <thead>
                     <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px] bg-[color:var(--glass)]">
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Customer</th>
-                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
+                      <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Home</th>
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Channel</th>
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Stage</th>
                       <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Agent</th>
@@ -2181,7 +2174,7 @@ export default function App() {
                           {l.firstName} {l.lastName}
                           <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{l.phone}</span>
                         </td>
-                        <td data-label="Model" className="py-3 px-4 font-semibold">{getVehicleLabel(l.propertyId)}</td>
+                        <td data-label="Model" className="py-3 px-4 font-semibold">{getPropertyLabel(l.propertyId)}</td>
                         <td data-label="Channel" className="py-3 px-4">
                           <span className="px-2 py-0.5 bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] rounded text-[13px] font-semibold tracking-normal">
                             {l.source}
@@ -2210,14 +2203,14 @@ export default function App() {
           </div>
         )}
 
-        {/* ALL VEHICLES SECTION */}
-        {activeSection === "inventory" && (
+        {/* ALL PROPERTIES SECTION */}
+        {activeSection === "portfolio" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Stock</h1>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Listings</h1>
                 <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                  Manage live pre-owned floor assets and pricing
+                  Manage your live portfolio and pricing
                   {state.properties.some((v: any) => (v.images?.length || 0) > 0) && (
                     <span className="text-[color:var(--cyan)] ml-2">
                       · {state.properties.filter((v: any) => (v.images?.length || 0) > 0).length} with TruLens photos
@@ -2238,7 +2231,7 @@ export default function App() {
                       .catch((err) => alert(err.message || "Refresh failed"));
                   }}
                   className="btn btn-secondary text-[13px] font-semibold px-3 py-2 flex items-center gap-2"
-                  title="Reload inventory from server (shows photos exported from TruLens)"
+                  title="Reload portfolio from server (shows photos exported from TruLens)"
                 >
                   <RefreshCw size={12} /> Refresh photos
                 </button>
@@ -2246,24 +2239,24 @@ export default function App() {
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(232,234,230,0.72)]" />
                   <input
                     type="text"
-                    value={inventorySearch}
+                    value={listingSearch}
                     onChange={(e) => setInventorySearch(e.target.value)}
-                    placeholder="Search model, make, VIN..."
+                    placeholder="Search suburb, type, listing ref..."
                     className="w-full md:w-56 bg-[color:var(--glass)] border border-white/5 rounded-lg pl-9 pr-3 py-2 text-[13px] md:text-[15px] text-[color:var(--white)] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[color:var(--cyan)]"
                   />
                 </div>
                 <Segmented
-                  value={inventoryStatusFilter}
+                  value={listingStatusFilter}
                   onChange={setInventoryStatusFilter}
                   options={[
                     { value: "ALL", label: "All" },
-                    { value: "INVENTORY", label: "In stock" },
+                    { value: "INVENTORY", label: "On market" },
                     { value: "SOLD", label: "Sold" },
                     { value: "ARCHIVED", label: "Archived" },
                   ]}
                 />
                 <Segmented
-                  value={inventoryPhotoFilter}
+                  value={listingPhotoFilter}
                   onChange={setInventoryPhotoFilter}
                   options={[
                     { value: "ALL", label: "All photos" },
@@ -2273,7 +2266,7 @@ export default function App() {
                   ]}
                 />
                 <Segmented
-                  value={inventoryAgeFilter}
+                  value={listingAgeFilter}
                   onChange={setInventoryAgeFilter}
                   options={[
                     { value: "ALL", label: "Any age" },
@@ -2289,57 +2282,58 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {state.properties
                 .filter((v) => {
-                  /* Archived units are off the floor: retired sold stock kept
+                  /* Archived units are off the floor: retired sold listing kept
                      only so the sale still counts in the money figures. Hidden
                      from every other view, but reachable through their own
                      filter — archiving must not be a one-way door. */
-                  if (inventoryStatusFilter === "ARCHIVED") {
+                  if (listingStatusFilter === "ARCHIVED") {
                     if (!v.archivedAt) return false;
                   } else if (v.archivedAt) {
                     return false;
                   }
                   const mSearch =
-                    (v.make || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
-                    (v.model || "").toLowerCase().includes(inventorySearch.toLowerCase()) ||
-                    (v.stockNumber || "").toLowerCase().includes(inventorySearch.toLowerCase());
+                    (v.suburb || "").toLowerCase().includes(listingSearch.toLowerCase()) ||
+                    (v.propertyType || "").toLowerCase().includes(listingSearch.toLowerCase()) ||
+                    (v.address || "").toLowerCase().includes(listingSearch.toLowerCase()) ||
+                    (v.listingRef || "").toLowerCase().includes(listingSearch.toLowerCase());
                   const mStatus =
-                    inventoryStatusFilter === "ALL" ||
-                    inventoryStatusFilter === "ARCHIVED" ||
-                    v.status === inventoryStatusFilter;
+                    listingStatusFilter === "ALL" ||
+                    listingStatusFilter === "ARCHIVED" ||
+                    v.status === listingStatusFilter;
                   const r = computeDmsGalleryReadiness(v as any);
                   const mPhoto =
-                    inventoryPhotoFilter === "ALL" ||
-                    (inventoryPhotoFilter === "NEEDS" && r.level === "capture") ||
-                    (inventoryPhotoFilter === "PARTIAL" && r.level === "partial") ||
-                    (inventoryPhotoFilter === "READY" && r.webReady);
-                  const days = Number(v.daysInInventory) || 0;
-                  const mAge = inventoryAgeFilter === "ALL" || days >= Number(inventoryAgeFilter);
+                    listingPhotoFilter === "ALL" ||
+                    (listingPhotoFilter === "NEEDS" && r.level === "capture") ||
+                    (listingPhotoFilter === "PARTIAL" && r.level === "partial") ||
+                    (listingPhotoFilter === "READY" && r.webReady);
+                  const days = Number(v.daysOnMarket) || 0;
+                  const mAge = listingAgeFilter === "ALL" || days >= Number(listingAgeFilter);
                   return mSearch && mStatus && mPhoto && mAge;
                 })
                 .map((v) => {
                   const readiness = computeDmsGalleryReadiness(v as any);
-                  const days = Number(v.daysInInventory) || 0;
+                  const days = Number(v.daysOnMarket) || 0;
                   const ageTone =
                     days >= 90 ? "text-[color:var(--muted)]" : days >= 60 ? "text-[color:var(--warning)]" : days >= 30 ? "text-[color:var(--cyan-bright)]" : "text-[color:var(--white)]";
                   return (
                     <div
                       key={v.id}
-                      onClick={() => setSelectedDetailVehicle(v)}
+                      onClick={() => setSelectedDetailProperty(v)}
                       className="v-card flex flex-col h-full group hover:-translate-y-1 transition-all duration-200 cursor-pointer"
                     >
                       {/* Card Image area */}
                       <div className="aspect-[16/10] bg-[color:var(--ink-2)] flex items-center justify-center relative border-b border-white/5 overflow-hidden select-none">
                         {v.images && v.images.length > 0 ? (
-                          <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                          <img src={v.images[0]} alt={`${v.propertyType}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                         ) : (
                           <div className="w-14 h-14 bg-[color:var(--cyan)] rounded-xl flex items-center justify-center text-[color:var(--ink)] font-semibold text-xl shadow-lg">
-                            {(v.make || "??").slice(0, 2).toUpperCase()}
+                            {(v.propertyType || "Pr").slice(0, 2).toUpperCase()}
                           </div>
                         )}
                         <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[13px] font-semibold font-mono tracking-wider  ${
                           v.archivedAt ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : v.status === "INVENTORY" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--glass)] text-[color:var(--muted)]"
                         }`}>
-                          {v.archivedAt ? "Archived" : v.status === "INVENTORY" ? "Showroom Floor" : "Delivered"}
+                          {v.archivedAt ? "Archived" : v.status === "INVENTORY" ? "Showroom Floor" : "Transferred"}
                         </span>
                         <span
                           className="absolute top-3 left-3 px-2 py-0.5 rounded text-[13px] font-semibold border max-w-[70%] truncate"
@@ -2353,18 +2347,18 @@ export default function App() {
                       {/* Info Area */}
                       <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                         <div>
-                          <h4 className="font-semibold text-[16px] text-[color:var(--white)] truncate">{v.year || ""} {v.make || "Property"} {v.model || ""}</h4>
+                          <h4 className="font-semibold text-[16px] text-[color:var(--white)] truncate">{v.propertyType} · {v.suburb}</h4>
                           <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                            {v.trim || "Standard Specs"} · <span className="font-mono">{v.stockNumber}</span>
+                            {v.yearBuilt || "—"} · <span className="font-mono">{v.listingRef}</span>
                             {v.category === "select" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">Select</span>}
                             {v.category === "performance" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-semibold bg-red-500/15 text-red-400 border border-red-500/30">Performance</span>}
                           </p>
                           <div className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] flex flex-wrap gap-x-2 gap-y-1 mt-2">
-                            <span>{Number(v.mileage || 0).toLocaleString()} km</span>
+                            <span>{v.bedrooms || 0} bed</span>
                             <span>•</span>
-                            <span>{v.transmission || "—"}</span>
+                            <span>{v.bathrooms || 0} bath</span>
                             <span>•</span>
-                            <span>{v.fuelType || "—"}</span>
+                            <span>{v.erfSize || "—"} erf</span>
                             {readiness.photoCount > 0 && (
                               <>
                                 <span>•</span>
@@ -2380,13 +2374,13 @@ export default function App() {
                             <div className="text-base font-semibold text-[color:var(--cyan-bright)] font-mono mt-0.5">{formatZAR(Number(v.askingPrice) || 0)}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Days in stock</div>
+                            <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Days on market</div>
                             <div className={`text-[13px] font-semibold mt-0.5 ${ageTone}`}>{days} Days{days >= 60 ? " · age" : ""}</div>
                           </div>
                         </div>
 
                         {/* Web + sold at a glance — Light-style, one tap each.
-                            Kept out of the modal so a dealer can publish or mark
+                            Kept out of the modal so a agency can publish or mark
                             sold from the list without clicking through. */}
                         <div
                           className="flex items-center justify-between gap-2 pt-1"
@@ -2394,7 +2388,7 @@ export default function App() {
                         >
                           <label
                             className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] cursor-pointer select-none"
-                            title={v.showOnWebsite !== false ? "On website — tap to unpublish" : "Publish this vehicle to the dealer website"}
+                            title={v.showOnWebsite !== false ? "On website — tap to unpublish" : "Publish this property to the agency website"}
                           >
                             <span
                               className={
@@ -2414,26 +2408,26 @@ export default function App() {
                               className="sr-only"
                               checked={v.showOnWebsite !== false}
                               onChange={() =>
-                                handleUpdateVehicle(v.id, { showOnWebsite: v.showOnWebsite === false } as Partial<Property>)
+                                handleUpdateProperty(v.id, { showOnWebsite: v.showOnWebsite === false } as Partial<Property>)
                               }
                             />
                             <span>Web</span>
                           </label>
                           {/* Both go through the coupling helpers, not a bare
-                              status write. "Unsell" used to flip the car and
+                              status write. "Unsell" used to flip the home and
                               leave its deal sitting at Closed Won — the same
-                              action as "Return to stock" in the detail modal,
+                              action as "Return to listing" in the detail modal,
                               but only that one reopened the deal. */}
                           {v.archivedAt ? (
                             <button
                               type="button"
                               onClick={async () => {
                                 try {
-                                  await updateVehicle(v.id, { archivedAt: null });
+                                  await updateProperty(v.id, { archivedAt: null });
                                   loadAllState();
-                                  addNotification("Restored", `${v.year} ${v.make} ${v.model} is back on the floor.`, "info");
+                                  addNotification("Restored", `${propertyLabel(v)} is back on the floor.`, "info");
                                 } catch (err: any) {
-                                  addNotification("Could not restore vehicle", err?.message || "Something went wrong.", "warning");
+                                  addNotification("Could not restore property", err?.message || "Something went wrong.", "warning");
                                 }
                               }}
                               title="Bring this unit back onto the floor"
@@ -2445,7 +2439,7 @@ export default function App() {
                             <button
                               type="button"
                               onClick={() => handleMarkSold(v)}
-                              title="Mark this car sold — closes its deal and unpublishes from the website"
+                              title="Mark this home sold — closes its deal and unpublishes from the website"
                               className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
                             >
                               Mark sold
@@ -2453,11 +2447,11 @@ export default function App() {
                           ) : (
                             <button
                               type="button"
-                              onClick={() => handleReturnToStock(v)}
-                              title="Return this car to inventory and reopen its deal"
+                              onClick={() => handleReturnToListing(v)}
+                              title="Return this home to the market and reopen its deal"
                               className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
                             >
-                              Unsell
+                              Relist
                             </button>
                           )}
                         </div>
@@ -2471,7 +2465,7 @@ export default function App() {
                             <button
                               type="button"
                               className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
-                              onClick={() => openTruLens(v.stockNumber)}
+                              onClick={() => openTruLens(v.listingRef)}
                               title="Guided shoot in TruLens"
                             >
                               <Camera size={11} /> Shoot
@@ -2480,8 +2474,8 @@ export default function App() {
                           <button
                             type="button"
                             className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25"
-                            onClick={() => openStockWhatsApp(v as any)}
-                            title="WhatsApp stock blurb"
+                            onClick={() => openListingWhatsApp(v as any)}
+                            title="WhatsApp listing blurb"
                           >
                             <MessageCircle size={11} /> WhatsApp
                           </button>
@@ -2490,8 +2484,8 @@ export default function App() {
                             className="px-2 py-2 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
                             onClick={async () => {
                               try {
-                                await copyStockBlurb(v as any);
-                                addNotification("Copied", `Share text for ${v.stockNumber}`, "info");
+                                await copyListingBlurb(v as any);
+                                addNotification("Copied", `Share text for ${v.listingRef}`, "info");
                               } catch {
                                 addNotification("Copy failed", "Could not access clipboard", "error");
                               }
@@ -2509,14 +2503,14 @@ export default function App() {
           </div>
         )}
 
-        {/* UPLOAD VEHICLE SECTION */}
+        {/* UPLOAD PROPERTY SECTION */}
         {activeSection === "upload" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Add vehicle</h1>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Add property</h1>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                  Create stock metadata here.{hasProduct("lens") && <> <b className="text-[color:var(--white)]">Photos only in TruLens</b> (guided shoot → Export to DMS).</>}
+                  Create listing metadata here.{hasProduct("lens") && <> <b className="text-[color:var(--white)]">Photos only in TruLens</b> (guided shoot → Export to DMS).</>}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -2542,60 +2536,61 @@ export default function App() {
 
             <div className="card max-w-[700px] mx-auto w-full">
               <div className="card-body p-6 flex flex-col gap-4">
-                <form onSubmit={handlePublishVehicle} className="flex flex-col gap-4">
-                  {/* Showroom tier — which category page this car lands on */}
+                <form onSubmit={handlePublishProperty} className="flex flex-col gap-4">
+                  {/* Portfolio tier — which category page this home lands on */}
                   <div className="flex flex-col gap-1">
-                    <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Showroom Category</label>
+                    <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Portfolio Category</label>
                     <select
-                      value={newVehicleForm.category}
-                      onChange={(e) => setNewVehicleForm((p) => ({ ...p, category: e.target.value as NewVehicleForm["category"] }))}
+                      value={newPropertyForm.category}
+                      onChange={(e) => setNewPropertyForm((p) => ({ ...p, category: e.target.value as NewPropertyForm["category"] }))}
                       className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                     >
-                      <option value="">Auto — decide from price &amp; model</option>
-                      <option value="used">Premium Used</option>
-                      <option value="select">Premium Select</option>
-                      <option value="performance">Premium Performance</option>
+                      <option value="">Auto — decide from price &amp; property type</option>
+                      <option value="residential">Residential</option>
+                      <option value="commercial">Commercial</option>
+                      <option value="luxury">Luxury</option>
+                      <option value="used">Established Resale</option>
                     </select>
-                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Leave on Auto and the website guesses from price and model name. Pick a tier to override that guess.</p>
+                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Leave on Auto and the website guesses from price and property type. Pick a tier to override that guess.</p>
                   </div>
 
                   {/* Specification grid panel */}
                   <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-4 flex flex-col gap-3">
-                    <span className="text-[13px] font-semibold font-mono tracking-wider  text-[color:var(--cyan)]">Showroom Property Specifications</span>
+                    <span className="text-[13px] font-semibold font-mono tracking-wider  text-[color:var(--cyan)]">Property Specifications</span>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Year</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Built</label>
                         <input
                           type="number"
-                          value={newVehicleForm.year}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, year: parseInt(e.target.value) || 2026 }))}
+                          value={newPropertyForm.yearBuilt}
+                          onChange={(e) => setNewPropertyForm((p) => ({ ...p, yearBuilt: parseInt(e.target.value) || new Date().getFullYear() }))}
                           className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Make</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Type</label>
                         <input
                           type="text"
-                          value={newVehicleForm.make}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, make: e.target.value }))}
+                          value={newPropertyForm.propertyType}
+                          onChange={(e) => setNewPropertyForm((p) => ({ ...p, propertyType: e.target.value as NewPropertyForm["propertyType"] }))}
                           className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Model</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Estate</label>
                         <input
                           type="text"
-                          value={newVehicleForm.model}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, model: e.target.value }))}
+                          value={newPropertyForm.suburb}
+                          onChange={(e) => setNewPropertyForm((p) => ({ ...p, suburb: e.target.value }))}
                           className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Trim Level</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Finish</label>
                         <input
                           type="text"
-                          value={newVehicleForm.trim}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, trim: e.target.value }))}
+                          value={newPropertyForm.finish}
+                          onChange={(e) => setNewPropertyForm((p) => ({ ...p, finish: e.target.value }))}
                           className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                         />
                       </div>
@@ -2603,44 +2598,38 @@ export default function App() {
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Engine</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Bedrooms</label>
                         <input
-                          type="text"
-                          value={newVehicleForm.engine}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, engine: e.target.value }))}
+                          type="number"
+                          value={newPropertyForm.bedrooms}
+                          onChange={(e) => setNewPropertyForm((p) => ({ ...p, bedrooms: parseInt(e.target.value) || 0 }))}
                           className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Transmission</label>
-                        <select
-                          value={newVehicleForm.transmission}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, transmission: e.target.value as NewVehicleForm["transmission"] }))}
-                          className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
-                        >
-                          <option className="bg-[color:var(--ink-2)]" value="Automatic">Automatic</option>
-                          <option className="bg-[color:var(--ink-2)]" value="Manual">Manual</option>
-                        </select>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Bathrooms</label>
+                        <input
+                          type="number"
+                          value={newPropertyForm.bathrooms}
+                          onChange={(e) => setNewPropertyForm((p) => ({ ...p, bathrooms: parseInt(e.target.value) || 0 }))}
+                          className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
+                        />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Fuel Type</label>
-                        <select
-                          value={newVehicleForm.fuelType}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, fuelType: e.target.value as NewVehicleForm["fuelType"] }))}
-                          className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none font-sans"
-                        >
-                          <option className="bg-[color:var(--ink-2)]" value="Diesel">Diesel</option>
-                          <option className="bg-[color:var(--ink-2)]" value="Petrol">Petrol</option>
-                          <option className="bg-[color:var(--ink-2)]" value="Hybrid">Hybrid</option>
-                          <option className="bg-[color:var(--ink-2)]" value="Electric">Electric</option>
-                        </select>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Parking</label>
+                        <input
+                          type="number"
+                          value={newPropertyForm.garages}
+                          onChange={(e) => setNewPropertyForm((p) => ({ ...p, garages: parseInt(e.target.value) || 0 }))}
+                          className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
+                        />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Body Type</label>
+                        <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Erf size</label>
                         <input
                           type="text"
-                          value={newVehicleForm.bodyType}
-                          onChange={(e) => setNewVehicleForm((p) => ({ ...p, bodyType: e.target.value }))}
+                          value={newPropertyForm.erfSize}
+                          onChange={(e) => setNewPropertyForm((p) => ({ ...p, erfSize: e.target.value }))}
                           className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                         />
                       </div>
@@ -2650,11 +2639,11 @@ export default function App() {
                   {/* Retail specs */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Retail Price (ZAR)</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Asking Price (ZAR)</label>
                       <input
                         type="number"
-                        value={newVehicleForm.askingPrice}
-                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, askingPrice: parseFloat(e.target.value) || 0 }))}
+                        value={newPropertyForm.askingPrice}
+                        onChange={(e) => setNewPropertyForm((p) => ({ ...p, askingPrice: parseFloat(e.target.value) || 0 }))}
                         className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
                       />
                     </div>
@@ -2662,26 +2651,26 @@ export default function App() {
                       <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Cost Price (ZAR)</label>
                       <input
                         type="number"
-                        value={newVehicleForm.costPrice}
-                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, costPrice: parseFloat(e.target.value) || 0 }))}
+                        value={newPropertyForm.costPrice}
+                        onChange={(e) => setNewPropertyForm((p) => ({ ...p, costPrice: parseFloat(e.target.value) || 0 }))}
                         className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Mileage (km)</label>
-                      <input
-                        type="number"
-                        value={newVehicleForm.mileage}
-                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, mileage: parseInt(e.target.value) || 0 }))}
-                        className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Stock Number</label>
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Floor size (m²)</label>
                       <input
                         type="text"
-                        value={newVehicleForm.stockNumber}
-                        onChange={(e) => setNewVehicleForm((p) => ({ ...p, stockNumber: e.target.value }))}
+                        value={newPropertyForm.floorSize}
+                        onChange={(e) => setNewPropertyForm((p) => ({ ...p, floorSize: e.target.value }))}
+                        className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Listing Ref</label>
+                      <input
+                        type="text"
+                        value={newPropertyForm.listingRef}
+                        onChange={(e) => setNewPropertyForm((p) => ({ ...p, listingRef: e.target.value }))}
                         className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none font-mono"
                       />
                     </div>
@@ -2693,16 +2682,16 @@ export default function App() {
                         <Camera size={12} /> Photos live in TruLens only
                       </span>
                       <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
-                        After you save this unit, open <b className="text-[color:var(--white)]">TruLens</b>, shoot the guided slots for stock{" "}
-                        <span className="font-mono text-[color:var(--cyan)]">{newVehicleForm.stockNumber}</span>, then tap{" "}
+                        After you save this unit, open <b className="text-[color:var(--white)]">TruLens</b>, shoot the guided slots for listing{" "}
+                        <span className="font-mono text-[color:var(--cyan)]">{newPropertyForm.listingRef}</span>, then tap{" "}
                         <b className="text-[color:var(--white)]">Export to DMS</b>. Gallery appears here automatically.
                       </p>
                       <button
                         type="button"
-                        onClick={() => openTruLens(newVehicleForm.stockNumber)}
+                        onClick={() => openTruLens(newPropertyForm.listingRef)}
                         className="self-start mt-1 text-[13px] font-semibold tracking-normal px-3 py-2 rounded-lg bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
                       >
-                        Open TruLens for this stock #
+                        Open TruLens for this listing #
                       </button>
                     </div>
                   )}
@@ -2711,8 +2700,8 @@ export default function App() {
                     <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Description</label>
                     <textarea
                       rows={3}
-                      value={newVehicleForm.description}
-                      onChange={(e) => setNewVehicleForm((p) => ({ ...p, description: e.target.value }))}
+                      value={newPropertyForm.description}
+                      onChange={(e) => setNewPropertyForm((p) => ({ ...p, description: e.target.value }))}
                       className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors outline-none font-sans"
                     ></textarea>
                   </div>
@@ -2720,13 +2709,13 @@ export default function App() {
                   <div className="flex justify-end gap-2 mt-2">
                     <button
                       type="button"
-                      onClick={() => setActiveSection("inventory")}
+                      onClick={() => setActiveSection("portfolio")}
                       className="btn btn-secondary"
                     >
                       Cancel
                     </button>
                     <button type="submit" className="btn btn-primary">
-                      Publish to Active Stock
+                      Publish to Active Listings
                     </button>
                   </div>
                 </form>
@@ -2736,46 +2725,46 @@ export default function App() {
         )}
 
         {/* Enquiry CRM SECTION */}
-        {/* STOCK HEALTH — ageing and margin, the two numbers that decide whether
+        {/* LISTING HEALTH — ageing and margin, the two numbers that decide whether
             a yard makes money. Everything shown was already in the data. */}
-        {activeSection === "stock_health" && (() => {
+        {activeSection === "listing_health" && (() => {
           /* `live` excludes archived units explicitly. Archiving now forces
              SOLD, so the status test would catch them anyway — but this once
              relied on that invariant while nothing maintained it, and an
-             archived car sat in Capital in stock. Say it outright.
+             archived home sat in Capital in listing. Say it outright.
 
-             `sold` deliberately keeps them: archiving retires a car from the
+             `sold` deliberately keeps them: archiving retires a home from the
              floor without retracting the sale, so realised margin must still
              count it. Filtering them here would shrink the money figures every
-             time a dealer tidied up. */
-          const live = filteredVehicles.filter((v) => v.status === "INVENTORY" && !v.archivedAt);
-          const sold = filteredVehicles.filter((v) => v.status === "SOLD");
+             time a agency tidied up. */
+          const live = filteredProperties.filter((v) => v.status === "INVENTORY" && !v.archivedAt);
+          const sold = filteredProperties.filter((v) => v.status === "SOLD");
 
           const capitalTiedUp = live.reduce((sum, v) => sum + costBasis(v), 0);
           const reconTotal    = live.reduce((sum, v) => sum + reconSpend(v), 0);
           const projected     = live.reduce((sum, v) => sum + grossMargin(v).rand, 0);
           const realised      = sold.reduce((sum, v) => sum + grossMargin(v).rand, 0);
-          const aged          = live.filter((v) => stockAge(v) > 60);
+          const aged          = live.filter((v) => marketAge(v) > 60);
           const agedCapital   = aged.reduce((sum, v) => sum + costBasis(v), 0);
 
-          const byAge = [...live].sort((a, b) => stockAge(b) - stockAge(a));
+          const byAge = [...live].sort((a, b) => marketAge(b) - marketAge(a));
 
           return (
             <div className="flex flex-col gap-6 animate-in fade-in duration-200">
               <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Stock health</h1>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Listing health</h1>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
-                  What your stock is costing you, and what it stands to make
+                  What your listings are costing you, and what they stand to make
                 </p>
               </div>
 
               {/* The four numbers worth knowing before opening the yard */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Capital in stock", value: formatZAR(capitalTiedUp), sub: `${live.length} cars, incl. ${formatZAR(reconTotal)} recon` },
+                  { label: "Capital in listings", value: formatZAR(capitalTiedUp), sub: `${live.length} homes, incl. ${formatZAR(reconTotal)} prep` },
                   { label: "Projected margin", value: formatZAR(projected), sub: "if everything sells at asking" },
                   { label: "Realised margin", value: formatZAR(realised), sub: `${sold.length} sold` },
-                  { label: "Tied up over 60 days", value: formatZAR(agedCapital), sub: `${aged.length} ${aged.length === 1 ? "car" : "cars"}`, warn: aged.length > 0 },
+                  { label: "Tied up over 60 days", value: formatZAR(agedCapital), sub: `${aged.length} ${aged.length === 1 ? "home" : "homes"}`, warn: aged.length > 0 },
                 ].map((c) => (
                   <div key={c.label} className="card p-4 flex flex-col gap-1">
                     <span className="text-[13px] text-[rgba(232,234,230,0.55)]">{c.label}</span>
@@ -2789,7 +2778,7 @@ export default function App() {
               <div className="card p-4 flex flex-col gap-3">
                 <span className="text-[13px] font-semibold text-[color:var(--white)]">Ageing</span>
                 {AGE_BANDS.map((b) => {
-                  const inBand = live.filter((v) => { const d = stockAge(v); return d >= b.min && d <= b.max; });
+                  const inBand = live.filter((v) => { const d = marketAge(v); return d >= b.min && d <= b.max; });
                   const cap = inBand.reduce((sum, v) => sum + costBasis(v), 0);
                   const share = live.length ? (inBand.length / live.length) * 100 : 0;
                   return (
@@ -2808,10 +2797,10 @@ export default function App() {
               {/* Oldest first — this is the list to work through */}
               <div className="card p-0 overflow-x-auto">
                 <div className="px-4 py-3 border-b border-white/5">
-                  <span className="text-[13px] font-semibold text-[color:var(--white)]">Oldest stock first</span>
+                  <span className="text-[13px] font-semibold text-[color:var(--white)]">Oldest listing first</span>
                 </div>
                 {byAge.length === 0 ? (
-                  <p className="px-4 py-6 text-[13px] text-[rgba(232,234,230,0.55)]">No cars in stock yet.</p>
+                  <p className="px-4 py-6 text-[13px] text-[rgba(232,234,230,0.55)]">No listings yet.</p>
                 ) : (
                   <table className="w-full text-[13px] stack-mobile">
                     <thead>
@@ -2819,26 +2808,26 @@ export default function App() {
                         <th className="text-left font-medium px-4 py-2">Property</th>
                         <th className="text-right font-medium px-3 py-2">Age</th>
                         <th className="text-right font-medium px-3 py-2">Cost</th>
-                        <th className="text-right font-medium px-3 py-2">Recon</th>
+                        <th className="text-right font-medium px-3 py-2">Prep</th>
                         <th className="text-right font-medium px-3 py-2">Asking</th>
                         <th className="text-right font-medium px-4 py-2">Margin</th>
                       </tr>
                     </thead>
                     <tbody>
                       {byAge.map((v) => {
-                        const days = stockAge(v);
+                        const days = marketAge(v);
                         const band = ageBand(days);
                         const m = grossMargin(v);
                         return (
-                          <tr key={v.id} onClick={() => setSelectedDetailVehicle(v)}
+                          <tr key={v.id} onClick={() => setSelectedDetailProperty(v)}
                               className="border-t border-white/5 cursor-pointer hover:bg-white/[0.03]">
                             <td data-label="Property" className="px-4 py-3 text-[13px] md:text-[15px]">
-                              <span className="text-[color:var(--white)]">{v.year} {v.make} {v.model}</span>
-                              <span className="text-[13px] text-[rgba(232,234,230,0.55)] ml-2">{v.stockNumber}</span>
+                              <span className="text-[color:var(--white)]">{propertyLabel(v)}</span>
+                              <span className="text-[13px] text-[rgba(232,234,230,0.55)] ml-2">{v.listingRef}</span>
                             </td>
                             <td data-label="Age" className="px-3 py-3 text-[13px] md:text-[15px] text-right" style={{ color: band.tone }}>{days}d</td>
                             <td data-label="Cost" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.costPrice || 0)}</td>
-                            <td data-label="Recon" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
+                            <td data-label="Prep" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
                             <td data-label="Asking" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.askingPrice || 0)}</td>
                             <td data-label="Margin" className={`px-4 py-3 text-[13px] md:text-[15px] text-right font-medium ${m.rand < 0 ? "text-[color:var(--muted)]" : "text-[color:var(--white)]"}`}>
                               {formatZAR(m.rand)}
@@ -2926,7 +2915,7 @@ export default function App() {
 
             {leadCrmTab === "kanban" ? (
               <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-thin">
-                {["New", "Contacted", "Test Drive Scheduled", "Negotiating", "Closed Won", "Closed Lost"].map((stage) => {
+                {["New", "Contacted", "Viewing Scheduled", "Negotiating", "Closed Won", "Closed Lost"].map((stage) => {
                   // Off the scoped list, not state.enquiries — the board was the
                   // one view ignoring tenant scoping, which is why its counts
                   // disagreed with the header above it.
@@ -2959,7 +2948,7 @@ export default function App() {
                                 <span className="bg-[color:var(--glass)] text-[color:var(--muted)] text-[12px] px-2 py-0.5 rounded font-medium tracking-normal border border-[color:var(--glass-line)]">Cold</span>
                               )}
                             </div>
-                            <div className="text-[13px] md:text-[15px] text-[color:var(--white-dim)] truncate">{getVehicleLabel(l.propertyId)}</div>
+                            <div className="text-[13px] md:text-[15px] text-[color:var(--white-dim)] truncate">{getPropertyLabel(l.propertyId)}</div>
                             <div className="text-[12px] text-[color:var(--muted)] mt-1">{l.source}</div>
 
                             {/* The next step, and whether it has slipped. This is the
@@ -2986,8 +2975,8 @@ export default function App() {
                                     title="WhatsApp this Enquiry"
                                     onClick={() => {
                                       const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, "27");
-                                      const interest = getVehicleLabel(l.propertyId);
-                                      const text = `Hi ${l.firstName}, following up from the dealership re ${interest}. When works for a chat?`;
+                                      const interest = getPropertyLabel(l.propertyId);
+                                      const text = `Hi ${l.firstName}, following up from the agency re ${interest}. When works for a chat?`;
                                       window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
                                     }}
                                   >
@@ -3020,7 +3009,7 @@ export default function App() {
                     <thead>
                       <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] tracking-normal text-[13px]">
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Customer</th>
-                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Car</th>
+                        <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Home</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Origin</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Status</th>
                         <th className="py-3 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Agent</th>
@@ -3036,7 +3025,7 @@ export default function App() {
                               {l.firstName} {l.lastName}
                               <span className="block text-[13px] font-normal text-[rgba(232,234,230,0.72)] mt-0.5">{l.phone} / {l.email}</span>
                             </td>
-                            <td data-label="Asset" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{getVehicleLabel(l.propertyId)}</td>
+                            <td data-label="Asset" className="py-3 px-4 text-[13px] md:text-[15px] font-semibold">{getPropertyLabel(l.propertyId)}</td>
                             <td data-label="Origin" className="py-3 px-4">
                               <span className="text-[13px] text-[rgba(232,234,230,0.72)]">{l.source}</span>
                             </td>
@@ -3050,8 +3039,8 @@ export default function App() {
                                   type="button"
                                   onClick={() => {
                                     const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, "27");
-                                    const interest = getVehicleLabel(l.propertyId);
-                                    const text = `Hi ${l.firstName}, following up from the dealership re ${interest}. When works for a chat?`;
+                                    const interest = getPropertyLabel(l.propertyId);
+                                    const text = `Hi ${l.firstName}, following up from the agency re ${interest}. When works for a chat?`;
                                     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
                                   }}
                                   className="px-3 py-2 bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-semibold"
@@ -3077,7 +3066,7 @@ export default function App() {
         )}
 
         {/* DEAL READINESS SECTION — replaces the old Invoices + Agreements
-            generators. Dealers issue invoices and contracts from their own
+            generators. Agencies issue invoices and contracts from their own
             systems; here we track only the status of each step to close and
             hand a deal over, so no customer documents live on the server. */}
         {activeSection === "deal_readiness" && (() => {
@@ -3086,7 +3075,7 @@ export default function App() {
             { key: "roadworthy", label: "Roadworthy" },
             { key: "invoiced", label: "Invoiced" },
             { key: "depositReceived", label: "Deposit" },
-            { key: "delivered", label: "Delivered" },
+            { key: "delivered", label: "Transferred" },
           ] as const;
           const FINANCE_OPTS = ["N/A", "Submitted", "Approved", "Declined"] as const;
           /* Labels only — the ORDER comes from DOC_STAGES so this cannot drift
@@ -3100,7 +3089,7 @@ export default function App() {
             occupation: "occupation",
           };
           /* Completed deals drop off: this page is what is still outstanding.
-             They stay reachable through Enquiry CRM, and the vehicle keeps its
+             They stay reachable through Enquiry CRM, and the property keeps its
              own record of the sale.
 
              Desktop only. The DocHub stage strip that explains WHY a deal
@@ -3124,12 +3113,12 @@ export default function App() {
              visit, so it now lives behind a header button + dialog rather than a
              full-width card at the top of the page. Desktop-only, same as before;
              the components behind it stay lazy-loaded. */
-          const docFlowTarget = state?.dealerships
-            ? (dealershipId ? state.dealerships.filter((d) => d.id === dealershipId) : state.dealerships)
+          const docFlowTarget = state?.agencies
+            ? (agencyId ? state.agencies.filter((d) => d.id === agencyId) : state.agencies)
             : [];
           const docFlowDemo =
-            dealershipId && docFlowTarget.length === 0
-              ? [{ id: dealershipId, name: sessionAccount?.label || "Demo Dealership", location: "" }]
+            agencyId && docFlowTarget.length === 0
+              ? [{ id: agencyId, name: sessionAccount?.label || "Demo Agency", location: "" }]
               : [];
           const docFlowList = docFlowTarget.length > 0 ? docFlowTarget : docFlowDemo;
           return (
@@ -3185,13 +3174,13 @@ export default function App() {
                     <div className="p-5 flex flex-col gap-6">
                       {docFlowTarget.length === 0 && docFlowDemo.length > 0 && (
                         <div className="text-[12px] text-amber-300 border border-amber-500/30 bg-amber-500/10 rounded-md px-3 py-2">
-                          Preview only — this account has no persisted dealership record, so Save will not work.
-                          Sign in with a dealer code to persist changes.
+                          Preview only — this account has no persisted agency record, so Save will not work.
+                          Sign in with a agency code to persist changes.
                         </div>
                       )}
                       {docFlowList.map((d) => (
                         <Suspense key={d.id} fallback={<div className="text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
-                          <DocFlowSettings dealership={d as Dealership} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                          <DocFlowSettings agency={d as Agency} isAdmin={isMasterAdmin} onSaved={loadAllState} />
                         </Suspense>
                       ))}
                     </div>
@@ -3245,7 +3234,7 @@ export default function App() {
                               {Enquiry.firstName} {Enquiry.lastName}
                             </span>
                             <span className="block text-[13px] text-[rgba(232,234,230,0.72)] truncate">
-                              {getVehicleLabel(Enquiry.propertyId)}
+                              {getPropertyLabel(Enquiry.propertyId)}
                             </span>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
@@ -3376,7 +3365,7 @@ export default function App() {
               state={state}
               onAddExpense={handleCreateExpense}
               onReconcileExpense={handleReconcileExpense}
-              onUpdateVehicle={handleUpdateVehicle}
+              onUpdateProperty={handleUpdateProperty}
             />
             </Suspense>
           </div>
@@ -3391,7 +3380,7 @@ export default function App() {
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Use this form for remote customer registration.</p>
             </div>
             <div className="max-w-lg">
-              <CustomerLeadForm dealershipId={dealershipId || "d1"} properties={activeStock as any} onSuccess={() => alert("Enquiry Captured!")} />
+              <CustomerLeadForm agencyId={agencyId || "d1"} properties={activeListings as any} onSuccess={() => alert("Enquiry Captured!")} />
             </div>
           </div>
         )}
@@ -3440,7 +3429,7 @@ export default function App() {
                         <td className="py-3 px-4">
                           <span className={`font-semibold text-[13px] md:text-[15px] text-[color:var(--white)] block ${t.status === "Completed" ? "line-through" : ""}`}>{t.title}</span>
                           <span className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] block mt-0.5">
-                            Focus: {getVehicleLabel(t.propertyId || "")} / Enquiry: {getLeadLabel(t.leadId || "")}
+                            Focus: {getPropertyLabel(t.propertyId || "")} / Enquiry: {getLeadLabel(t.leadId || "")}
                           </span>
                         </td>
                         <td data-label="Priority" className="py-3 px-4">
@@ -3646,13 +3635,13 @@ export default function App() {
           </div>
         )}
 
-        {/* STOCK MEDIA HUB — gallery only; capture lives in TruLens */}
+        {/* LISTING MEDIA HUB — gallery only; capture lives in TruLens */}
         {activeSection === "media_web" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)] flex items-center gap-2">
-                  <Image size={24} className="text-[color:var(--cyan)]" /> Stock media & web readiness
+                  <Image size={24} className="text-[color:var(--cyan)]" /> Listing media & web readiness
                 </h1>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium max-w-xl">
                   Premium stores gallery + publish evidence. Capture is <b className="text-[color:var(--white)]">only in TruLens</b>.
@@ -3672,36 +3661,36 @@ export default function App() {
               <div className="card p-4">
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">With photos</div>
                 <div className="text-2xl font-semibold text-[color:var(--cyan)] mt-1">
-                  {activeStock.filter(v => (v.images?.length || 0) > 0).length}
+                  {activeListings.filter(v => (v.images?.length || 0) > 0).length}
                 </div>
               </div>
               <div className="card p-4">
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Need shoot</div>
                 <div className="text-2xl font-semibold text-[color:var(--warning)] mt-1">
-                  {activeStock.filter(v => computeDmsGalleryReadiness(v).level === "capture").length}
+                  {activeListings.filter(v => computeDmsGalleryReadiness(v).level === "capture").length}
                 </div>
               </div>
               <div className="card p-4">
                 <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Web-ready gallery</div>
                 <div className="text-2xl font-semibold text-[color:var(--cyan-bright)] mt-1">
-                  {activeStock.filter(v => computeDmsGalleryReadiness(v).webReady).length}
+                  {activeListings.filter(v => computeDmsGalleryReadiness(v).webReady).length}
                 </div>
               </div>
               <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Public stock feed</div>
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Public listing feed</div>
                 <a
                   className="text-[13px] text-[color:var(--cyan-bright)] font-mono mt-2 block break-all hover:underline"
-                  href={`/api/public/stock?dealer=${encodeURIComponent(currentDealerSlug || getDealerSlug())}`}
+                  href={`/api/public/listings?agency=${encodeURIComponent(currentAgencySlug || getAgencySlug())}`}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  /api/public/stock?dealer={currentDealerSlug || getDealerSlug()}
+                  /api/public/listings?agency={currentAgencySlug || getAgencySlug()}
                 </a>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {activeStock.map(v => {
+              {activeListings.map(v => {
                 const r = computeDmsGalleryReadiness(v as any);
                 return (
                   <div key={v.id} className="card overflow-hidden flex flex-col">
@@ -3729,8 +3718,8 @@ export default function App() {
                     </div>
                     <div className="p-3 flex flex-col gap-2 flex-1">
                       <div>
-                        <div className="text-[16px] font-semibold text-[color:var(--white)]">{v.year} {v.make} {v.model}</div>
-                        <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{v.stockNumber}</div>
+                        <div className="text-[16px] font-semibold text-[color:var(--white)]">{propertyLabel(v)}</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{v.listingRef}</div>
                       </div>
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)]">
                         {(v as any).lastPhotoSync
@@ -3744,13 +3733,13 @@ export default function App() {
                         <button
                           type="button"
                           className="btn btn-secondary text-[13px] flex-1"
-                          onClick={() => setSelectedDetailVehicle(v)}
+                          onClick={() => setSelectedDetailProperty(v)}
                         >
-                          Open stock card
+                          Open listing card
                         </button>
                         <button
                           type="button"
-                          onClick={() => openTruLens(v.stockNumber)}
+                          onClick={() => openTruLens(v.listingRef)}
                           className="btn btn-primary text-[13px] flex items-center justify-center gap-1 px-3"
                           title="Complete guided shoot in TruLens"
                         >
@@ -3771,12 +3760,12 @@ export default function App() {
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Settings</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
-                {PRODUCT_NAME} — stock, CRM, media hub, full finance & website embeds
+                {PRODUCT_NAME} — listing, CRM, media hub, full finance & website embeds
               </p>
             </div>
 
             {/* Backup. Admin only, and the server enforces that independently.
-                The mounted disk holds the only copy of every dealer's photos,
+                The mounted disk holds the only copy of every agency's photos,
                 and taking one previously meant the Render shell or a pasted
                 console snippet — the endpoint cannot be reached by typing its
                 URL, because auth is a bearer token from localStorage rather
@@ -3790,7 +3779,7 @@ export default function App() {
                 </div>
                 <div className="card-body p-5 flex flex-col gap-3">
                   <p className="text-[13px] text-[rgba(232,234,230,0.72)] max-w-2xl">
-                    Downloads the entire DMS — every dealership, vehicle, photo, Enquiry and
+                    Downloads the entire DMS — every agency, property, photo, Enquiry and
                     invoice — as a dated JSON file. The disk on the server holds the only
                     copy, so keep a recent one somewhere else.
                   </p>
@@ -3811,14 +3800,14 @@ export default function App() {
                           }
                           const blob = await res.blob();
                           /* Surface the size. A backup taken while signed in as a
-                             dealership used to come back as that dealer's slice with
+                             agency used to come back as that agency's slice with
                              nothing to say it was partial, and a partial backup that
                              looks complete is worse than none. */
                           const mb = blob.size / 1024 / 1024;
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement("a");
                           a.href = url;
-                          a.download = `truflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                          a.download = `propinspect-backup-${new Date().toISOString().slice(0, 10)}.json`;
                           document.body.appendChild(a);
                           a.click();
                           document.body.removeChild(a);
@@ -3858,16 +3847,16 @@ export default function App() {
                           try {
                             const parsed = JSON.parse(await file.text());
                             const properties = Array.isArray(parsed?.properties) ? parsed.properties.length : null;
-                            const dealers = Array.isArray(parsed?.dealerships) ? parsed.dealerships.length : null;
-                            if (properties === null || dealers === null) {
-                              addNotification("Not a TruFlow backup", "No properties/dealerships arrays in that file.", "warning");
+                            const agencies = Array.isArray(parsed?.agencies) ? parsed.agencies.length : null;
+                            if (properties === null || agencies === null) {
+                              addNotification("Not a PropInspect backup", "No properties/agencies arrays in that file.", "warning");
                               return;
                             }
                             if (!confirm(
                               `Replace EVERYTHING on this instance with this file?\n\n` +
-                              `${file.name}\n${dealers} dealerships, ${properties} properties\n\n` +
+                              `${file.name}\n${agencies} agencies, ${properties} properties\n\n` +
                               `The current state is snapshotted on the server first, but every ` +
-                              `dealership on this instance is overwritten.`
+                              `agency on this instance is overwritten.`
                             )) return;
                             const res = await authFetch("/api/admin/restore", {
                               method: "POST",
@@ -3881,7 +3870,7 @@ export default function App() {
                             }
                             addNotification(
                               "Restored",
-                              `${body.restored?.dealerships ?? 0} dealerships, ${body.restored?.properties ?? 0} properties. ` +
+                              `${body.restored?.agencies ?? 0} agencies, ${body.restored?.properties ?? 0} properties. ` +
                               `Previous state kept as ${body.previousStateSavedAs || "—"}.`,
                               "info"
                             );
@@ -3909,26 +3898,26 @@ export default function App() {
               </div>
             )}
 
-            {/* Onboarding a dealership. Admin only — the server enforces it too,
+            {/* Onboarding a agency. Admin only — the server enforces it too,
                 so this gate only avoids rendering a form that would 403. */}
             {getAccount()?.role === "admin" && (
               <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
-                <DealershipAdmin onNotify={addNotification} />
+                <AgencyAdmin onNotify={addNotification} />
               </Suspense>
             )}
 
             {/* TruSocial — connect and auto-publish to social channels.
-                For a dealer login, show their own panel. For master admin,
-                show one panel per dealer that has the "social" product. */}
+                For a agency login, show their own panel. For master admin,
+                show one panel per agency that has the "social" product. */}
             {(() => {
-              const socialDealers = dealershipId
-                ? hasProduct("social") ? [currentDealership] : []
-                : (state?.dealerships || []).filter((d: any) => (d.products || []).includes("social"));
-              return socialDealers.map((d: any) => (
+              const socialAgencies = agencyId
+                ? hasProduct("social") ? [currentAgency] : []
+                : (state?.agencies || []).filter((d: any) => (d.products || []).includes("social"));
+              return socialAgencies.map((d: any) => (
                 <Suspense key={d.id} fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
                   <TruSocialSettings
-                    dealershipId={d.id}
-                    dealerName={dealershipId ? undefined : d.name}
+                    agencyId={d.id}
+                    dealerName={agencyId ? undefined : d.name}
                     truSocialEnabled={!!d.truSocialEnabled}
                     onNotify={addNotification}
                   />
@@ -3936,38 +3925,38 @@ export default function App() {
               ));
             })()}
 
-            {/* Dealer details — self-service editor for the identity fields
+            {/* Agency details — self-service editor for the identity fields
                 quoted on invoices, agreements and public listings. Admins
-                targeting another dealership pass isAdmin so the server
-                accepts the dealershipId. Loops for admins per the standing
-                per-dealer settings rule. Demo (no real dealer row in shared
+                targeting another agency pass isAdmin so the server
+                accepts the agencyId. Loops for admins per the standing
+                per-agency settings rule. Demo (no real agency row in shared
                 state) still gets a stub so the form is testable — Save 404s
                 and the amber banner explains why. */}
-            {state?.dealerships && (() => {
-              const target = dealershipId
-                ? state.dealerships.filter((d) => d.id === dealershipId)
-                : state.dealerships;
+            {state?.agencies && (() => {
+              const target = agencyId
+                ? state.agencies.filter((d) => d.id === agencyId)
+                : state.agencies;
               const synthesizedDemo =
-                dealershipId && target.length === 0
+                agencyId && target.length === 0
                   ? [{
-                      id: dealershipId,
-                      name: sessionAccount?.label || "Demo Dealership",
+                      id: agencyId,
+                      name: sessionAccount?.label || "Demo Agency",
                       location: "",
-                    } as Dealership]
+                    } as Agency]
                   : [];
               const list = target.length > 0 ? target : synthesizedDemo;
               return (
                 <>
                   {target.length === 0 && synthesizedDemo.length > 0 && (
                     <div className="text-[12px] text-amber-300 border border-amber-500/30 bg-amber-500/10 rounded-md px-3 py-2">
-                      Preview only — this account has no persisted dealership record, so Save will not work.
-                      Sign in with a dealer code to persist changes.
+                      Preview only — this account has no persisted agency record, so Save will not work.
+                      Sign in with a agency code to persist changes.
                     </div>
                   )}
                   {list.map((d) => (
                     <React.Fragment key={d.id}>
-                      <DealerDetailsSettings dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
-                      <DocSettingsPanel dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                      <AgencyDetailsSettings agency={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                      <DocSettingsPanel agency={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
                     </React.Fragment>
                   ))}
                 </>
@@ -3980,11 +3969,11 @@ export default function App() {
             <div className="card border-[color:var(--cyan-soft)]">
               <div className="card-header border-b border-white/5 px-5 py-3">
                 <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
-                  <Download size={14} className="text-[color:var(--cyan-bright)]" /> Install TruFlow as an app
+                  <Download size={14} className="text-[color:var(--cyan-bright)]" /> Install PropInspect as an app
                 </h3>
               </div>
               <div className="card-body p-5">
-                <InstallAppButton appName="TruFlow" />
+                <InstallAppButton appName="PropInspect" />
               </div>
             </div>
 
@@ -3996,8 +3985,8 @@ export default function App() {
                 {getAccount()?.role === "admin" ? (
                   <>
                     <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
-                      Deletes all stock, enquiries, invoices and signed documents for
-                      <b className="text-[color:var(--white)]"> every dealership</b> on this instance and
+                      Deletes all listing, enquiries, invoices and signed documents for
+                      <b className="text-[color:var(--white)]"> every agency</b> on this instance and
                       restores the seed data. There is no backup.
                     </p>
                     <div>
@@ -4016,7 +4005,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Mobile bottom tab bar. Five destinations: the four things a dealer
+        {/* Mobile bottom tab bar. Five destinations: the four things a agency
             touches hourly, plus a More opener for everything else. Above md the
             permanent sidebar is the navigation and this stays hidden. */}
         {(() => {
@@ -4050,14 +4039,14 @@ export default function App() {
               dot: navAttention.enquiries > 0,
             });
           }
-          if (AVAILABLE.has("inventory")) {
+          if (AVAILABLE.has("portfolio")) {
             tabs.push({
-              id: "inventory",
-              label: "Stock",
-              icon: Car,
-              action: () => navigateTo("inventory"),
-              active: activeSection === "inventory",
-              dot: navAttention.inventory > 0,
+              id: "portfolio",
+              label: "Listings",
+              icon: Home,
+              action: () => navigateTo("portfolio"),
+              active: activeSection === "portfolio",
+              dot: navAttention.portfolio > 0,
             });
           }
           if (AVAILABLE.has("tasks")) {
@@ -4117,14 +4106,14 @@ export default function App() {
         })()}
       </main>
 
-      {/* Dealer Assist. Opens from the top bar — no floating launcher. */}
-      <PwaInstallBanner appName="TruFlow Premium" accent="var(--blue)" dismissKey="truflow_premium_pwa_dismissed" />
+      {/* Agency Assist. Opens from the top bar — no floating launcher. */}
+      <PwaInstallBanner appName="PropInspect" accent="var(--blue)" dismissKey="truflow_premium_pwa_dismissed" />
       <ChatWidget open={assistOpen} onOpenChange={setAssistOpen} />
 
       {/* The public-facing website chatbot simulation used to float bottom-left
-          of the dealer's own workstation, which put two different assistants on
-          one screen — one for the dealer, one pretending to be the customer's.
-          It belongs on the dealer's website, not in the DMS. Component kept;
+          of the agency's own workstation, which put two different assistants on
+          one screen — one for the agency, one pretending to be the customer's.
+          It belongs on the agency's website, not in the DMS. Component kept;
           only the render is removed. */}
 
       {/* --- FORM MODALS --- */}
@@ -4159,10 +4148,10 @@ export default function App() {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Select vehicle</label>
+                <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Select property</label>
                 <select value={newLeadForm.propertyId} onChange={(e) => setNewLeadForm((p) => ({ ...p, propertyId: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] font-sans">
                   {state.properties.map((v) => (
-                    <option key={v.id} className="bg-[color:var(--ink-2)]" value={v.id}>{v.year} {v.make} {v.model}</option>
+                    <option key={v.id} className="bg-[color:var(--ink-2)]" value={v.id}>{propertyLabel(v)}</option>
                   ))}
                 </select>
               </div>
@@ -4172,7 +4161,7 @@ export default function App() {
                   <option className="bg-[color:var(--ink-2)]" value="Website">Website Form</option>
                   <option className="bg-[color:var(--ink-2)]" value="Walk-in">Walk-in Showroom</option>
                   <option className="bg-[color:var(--ink-2)]" value="Facebook">Facebook Enquiry Gen</option>
-                  <option className="bg-[color:var(--ink-2)]" value="AutoTrader">AutoTrader</option>
+                  <option className="bg-[color:var(--ink-2)]" value="Property24">Property24</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1">
@@ -4212,11 +4201,11 @@ export default function App() {
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Associate Stock</label>
+                  <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">Associate Listing</label>
                   <select value={newTaskForm.propertyId} onChange={(e) => setNewTaskForm((p) => ({ ...p, propertyId: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] font-sans">
                     <option className="bg-[color:var(--ink-2)]" value="">None</option>
                     {state.properties.map((v) => (
-                      <option key={v.id} className="bg-[color:var(--ink-2)]" value={v.id}>{v.year} {v.make} {v.model}</option>
+                      <option key={v.id} className="bg-[color:var(--ink-2)]" value={v.id}>{propertyLabel(v)}</option>
                     ))}
                   </select>
                 </div>
@@ -4306,7 +4295,7 @@ export default function App() {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] text-[rgba(232,234,230,0.72)] tracking-normal font-semibold">E-mail Address</label>
-                <input type="email" required placeholder="name@dealership.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
+                <input type="email" required placeholder="name@agency.co.za" value={newUserForm.email} onChange={(e) => setNewUserForm((p) => ({ ...p, email: e.target.value }))} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-4 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)]/60 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
@@ -4322,7 +4311,7 @@ export default function App() {
                 </div>
               </div>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
-                They'll get their own access code and see only this dealership's stock and enquiries.
+                They'll get their own access code and see only this agency's listing and enquiries.
                 This adds a billable seat.
               </p>
               <div className="flex justify-end gap-2 mt-2">
@@ -4337,7 +4326,7 @@ export default function App() {
 
       {/* --- DETAIL MODALS ---
           Both of these are lazy(), so they must sit inside a Suspense boundary.
-          Without one, clicking a Enquiry or a vehicle threw on render and the
+          Without one, clicking a Enquiry or a property threw on render and the
           error boundary swallowed it — the row simply did nothing. */}
       {leadDetailId && (
         <Suspense fallback={<div className="fixed inset-0 z-[400] grid place-items-center bg-black/60 text-[13px] text-[rgba(232,234,230,0.72)]">Opening…</div>}>
@@ -4356,7 +4345,7 @@ export default function App() {
               leadId={leadDetailId}
               documents={filteredDocuments.filter((d) => d.leadId === leadDetailId)}
               getLeadLabel={getLeadLabel}
-              getVehicleLabel={getVehicleLabel}
+              getPropertyLabel={getPropertyLabel}
               onUpload={handleUploadDocument}
               onSign={handleSignDocument}
               onDelete={handleDeleteDocument}
@@ -4366,13 +4355,13 @@ export default function App() {
             if (!isDesktop) return undefined;
             const leadForPanel = state.enquiries.find((l) => l.id === leadDetailId);
             if (!leadForPanel) return undefined;
-            const dealerForPanel = state.dealerships.find(
-              (d) => d.id === (leadForPanel.dealershipId || dealershipId),
+            const dealerForPanel = state.agencies.find(
+              (d) => d.id === (leadForPanel.agencyId || agencyId),
             );
             return (
               <DocHubPanel
                 Enquiry={leadForPanel}
-                dealership={dealerForPanel}
+                agency={dealerForPanel}
                 onLeadRefresh={loadAllState}
               />
             );
@@ -4381,34 +4370,34 @@ export default function App() {
         </Suspense>
       )}
 
-      {selectedDetailVehicle && (
+      {selectedDetailProperty && (
         <Suspense fallback={<div className="fixed inset-0 z-[400] grid place-items-center bg-black/60 text-[13px] text-[rgba(232,234,230,0.72)]">Opening…</div>}>
         <PropertyDetailModal
-          vehicle={state.properties.find((v) => v.id === selectedDetailVehicle.id) || selectedDetailVehicle}
+          property={state.properties.find((v) => v.id === selectedDetailProperty.id) || selectedDetailProperty}
           isOpen={true}
-          onClose={() => setSelectedDetailVehicle(null)}
-          onUpdateVehicle={handleUpdateVehicle}
-          onDeleteVehicle={handleDeleteVehicle}
-          onReturnToStock={handleReturnToStock}
+          onClose={() => setSelectedDetailProperty(null)}
+          onUpdateProperty={handleUpdateProperty}
+          onDeleteProperty={handleDeleteProperty}
+          onReturnToListing={handleReturnToListing}
           settings={state.settings}
-          dealershipId={dealershipId || selectedDetailVehicle?.dealershipId}
+          agencyId={agencyId || selectedDetailProperty?.agencyId}
           hasLens={hasProduct("lens")}
           truSocialEnabled={(() => {
-            // Publish tab shows only for a dealer that both carries the "social"
+            // Publish tab shows only for a agency that both carries the "social"
             // product and has TruSocial switched on — the publish targets are
             // OAuth connections, so anything less would only ever fail.
-            const d: any = (state?.dealerships || []).find(
-              (x: any) => x.id === (dealershipId || selectedDetailVehicle?.dealershipId)
+            const d: any = (state?.agencies || []).find(
+              (x: any) => x.id === (agencyId || selectedDetailProperty?.agencyId)
             );
             return !!d?.truSocialEnabled && hasProduct("social");
           })()}
           documentsPanel={
             <DocumentsHub
               embedded
-              propertyId={selectedDetailVehicle.id}
-              documents={filteredDocuments.filter((d) => d.propertyId === selectedDetailVehicle.id)}
+              propertyId={selectedDetailProperty.id}
+              documents={filteredDocuments.filter((d) => d.propertyId === selectedDetailProperty.id)}
               getLeadLabel={getLeadLabel}
-              getVehicleLabel={getVehicleLabel}
+              getPropertyLabel={getPropertyLabel}
               onUpload={handleUploadDocument}
               onSign={handleSignDocument}
               onDelete={handleDeleteDocument}
@@ -4452,7 +4441,7 @@ export default function App() {
                 <span className="text-[13px] text-[color:var(--cyan)]">Active response</span>
               </div>
               <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-3 flex flex-col gap-0.5">
-                <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]  font-mono">Cars Moved</span>
+                <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]  font-mono">Homes Sold</span>
                 <span className="text-lg font-semibold text-[color:var(--white)]">{sold.length} Units</span>
                 <span className="text-[13px] text-[color:var(--cyan)]">Closed Won status</span>
               </div>
@@ -4465,11 +4454,11 @@ export default function App() {
 
             <div className="bg-[color:var(--ink)] rounded-xl border border-white/5 p-4 flex flex-col gap-3">
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
-                <span className="text-[rgba(232,234,230,0.72)] font-medium">Reconditioning Expenditures</span>
+                <span className="text-[rgba(232,234,230,0.72)] font-medium">Prep & Maintenance Outlay</span>
                 <span className="font-mono font-semibold text-[color:var(--muted)]">- R {reconTotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-[13px] border-b border-white/3 pb-3">
-                <span className="text-[rgba(232,234,230,0.72)] font-medium">Gross Dealership Revenue</span>
+                <span className="text-[rgba(232,234,230,0.72)] font-medium">Gross Agency Revenue</span>
                 <span className="font-mono font-semibold text-[color:var(--white)]">R {totalRevenue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
@@ -4485,8 +4474,8 @@ export default function App() {
                 {sold.map(v => (
                   <div key={v.id} className="bg-[color:var(--glass)] border border-white/5 rounded-xl px-3 py-3 flex justify-between items-center text-[13px]">
                     <div>
-                      <span className="font-semibold text-[color:var(--white)] block">{v.year} {v.make} {v.model} {v.trim}</span>
-                      <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Stock ID: {v.stockNumber}</span>
+                      <span className="font-semibold text-[color:var(--white)] block">{propertyLabel(v)}</span>
+                      <span className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 block font-mono">Listing Ref: {v.listingRef}</span>
                     </div>
                     <span className="font-mono font-semibold text-[color:var(--cyan)]">R {((v.askingPrice || 0) - (v.costPrice || 0)).toLocaleString()} profit</span>
                   </div>

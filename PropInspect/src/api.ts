@@ -1,14 +1,14 @@
 import { authFetch } from "./lib/session";
-import { Property, Enquiry, Task, Invoice, Agreement, DealerDocument, User, Communication, Expense, DMSState, DocStage, DocMode, Dealership } from "./types";
+import { Property, Enquiry, Task, Invoice, Agreement, DealerDocument, User, Communication, Expense, DMSState, DocStage, DocMode, Agency } from "./types";
 
 /**
  * An EMPTY state, not a populated one.
  *
- * This was 113 lines of seed data belonging to MKR Auto Sales and Cars on
- * Caledon — real dealerships. fetchState falls back to it when /api/state is
- * unreachable and the browser has no cache, which is precisely a dealer's first
+ * This was 113 lines of seed data belonging to MKR Auto Sales and Homes on
+ * Caledon — real agencies. fetchState falls back to it when /api/state is
+ * unreachable and the browser has no cache, which is precisely a agency's first
  * load during a deploy restart or on a bad connection. They were shown another
- * dealer's dealerships, properties, enquiries and invoices as their own DMS, and it
+ * agency's agencies, properties, enquiries and invoices as their own DMS, and it
  * was written to localStorage, so it persisted after the server came back.
  *
  * The server is the only source of truth for tenant data. When it cannot be
@@ -25,13 +25,13 @@ const EMPTY_STATE: DMSState = {
   users: [],
   communications: [],
   expenses: [],
-  dealerships: [],
+  agencies: [],
   digitalProducts: [],
   digitalSales: [],
 };
 
 /**
- * Load DMS state from the TruFlow server (data.json).
+ * Load DMS state from the PropInspect server (data.json).
  * This is what receives TruLens "Export to DMS" pushes — NOT browser localStorage alone.
  */
 export async function fetchState(): Promise<DMSState> {
@@ -61,12 +61,12 @@ export async function fetchState(): Promise<DMSState> {
     }
   }
   // Deliberately not cached: writing this would make a transient outage look
-  // like a real empty dealership on every later load.
+  // like a real empty agency on every later load.
   return EMPTY_STATE;
 }
 
 async function updateState(mutator: (state: DMSState) => void): Promise<DMSState> {
-  // Prefer server truth, mutate, then try to persist vehicle updates via API
+  // Prefer server truth, mutate, then try to persist property updates via API
   const state = await fetchState();
   mutator(state);
   try {
@@ -130,43 +130,43 @@ export async function updateSettings(settings: Partial<DMSState['settings']>): P
   return state.settings;
 }
 
-export async function createVehicle(vehicle: Partial<Property>): Promise<Property> {
+export async function createProperty(property: Partial<Property>): Promise<Property> {
   // Persist to server first — a local-only push here used to get silently
   // wiped by the very next fetchState() (server truth wins), so properties
   // added via this form never actually survived a refresh.
   try {
-    const res = await authFetch("/api/inventory", {
+    const res = await authFetch("/api/portfolio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(vehicle),
+      body: JSON.stringify(property),
     });
     if (res.ok) {
       const body = await res.json();
-      if (body.vehicle) return body.vehicle as Property;
+      if (body.property) return body.property as Property;
     }
   } catch (err) {
-    console.warn("createVehicle server failed, local fallback", err);
+    console.warn("createProperty server failed, local fallback", err);
   }
 
-  const newV = { ...vehicle, id: 'v' + Date.now(), status: vehicle.status || 'INVENTORY' } as Property;
+  const newV = { ...property, id: 'v' + Date.now(), status: property.status || 'INVENTORY' } as Property;
   await updateState(s => s.properties.push(newV));
   return newV;
 }
 
-export async function updateVehicle(id: string, updates: Partial<Property>): Promise<Property> {
+export async function updateProperty(id: string, updates: Partial<Property>): Promise<Property> {
   // Persist to server so TruLens-exported photos and edits stay in sync
   try {
-    const res = await authFetch(`/api/inventory/${id}`, {
+    const res = await authFetch(`/api/portfolio/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
     });
     if (res.ok) {
       const body = await res.json();
-      if (body.vehicle) return body.vehicle as Property;
+      if (body.property) return body.property as Property;
     }
   } catch (err) {
-    console.warn("updateVehicle server failed, local fallback", err);
+    console.warn("updateProperty server failed, local fallback", err);
   }
 
   let updatedV;
@@ -181,42 +181,42 @@ export async function updateVehicle(id: string, updates: Partial<Property>): Pro
   return updatedV;
 }
 
-/** Change a vehicle's status.
+/** Change a property's status.
  *
- *  Separate from `updateVehicle` because a status change is the one edit that
+ *  Separate from `updateProperty` because a status change is the one edit that
  *  moves another record: the server couples the linked deal (SOLD closes it,
- *  back-in-stock reopens it) and reports what it did.
+ *  back-in-listing reopens it) and reports what it did.
  *
- *  `closeLeadId` names which deal closed, for a car carrying several open ones.
+ *  `closeLeadId` names which deal closed, for a home carrying several open ones.
  *  Omit it and the server closes a deal only when there is exactly one
- *  candidate — a car sold outside the system has none, and stays untouched.
+ *  candidate — a home sold outside the system has none, and stays untouched.
  *  No local fallback: a coupled write that only half-applied offline is worse
  *  than a failure the caller can retry. */
-export async function setVehicleStatus(
+export async function setPropertyStatus(
   id: string,
   status: Property["status"],
   closeLeadId?: string,
-): Promise<{ vehicle: Property; coupledLeads: { id: string; status: string }[] }> {
-  const res = await authFetch(`/api/inventory/${id}`, {
+): Promise<{ property: Property; coupledLeads: { id: string; status: string }[] }> {
+  const res = await authFetch(`/api/portfolio/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(closeLeadId ? { status, closeLeadId } : { status }),
   });
   if (!res.ok) throw new Error(`Property status update failed (${res.status})`);
   const body = await res.json();
-  return { vehicle: body.vehicle as Property, coupledLeads: body.coupledLeads ?? [] };
+  return { property: body.property as Property, coupledLeads: body.coupledLeads ?? [] };
 }
 
 export async function addReconTask(propertyId: string, task: Omit<Property['maintenanceTasks'][0], 'id'>) {
-  // No dedicated /api/inventory/:id/recon route on the server, but the general
-  // PUT /api/inventory/:id accepts the whole vehicle payload, so we push the
-  // updated maintenanceTasks array through updateVehicle. Same reason as
+  // No dedicated /api/portfolio/:id/recon route on the server, but the general
+  // PUT /api/portfolio/:id accepts the whole property payload, so we push the
+  // updated maintenanceTasks array through updateProperty. Same reason as
   // updateLead — a bare local mutation gets wiped by fetchState().
   const newTask = { ...task, id: 'rc-' + Date.now() };
   const state = await fetchState();
   const v = state.properties.find(x => x.id === propertyId);
   const nextTasks = [...(v?.maintenanceTasks || []), newTask];
-  await updateVehicle(propertyId, { maintenanceTasks: nextTasks } as Partial<Property>);
+  await updateProperty(propertyId, { maintenanceTasks: nextTasks } as Partial<Property>);
   return newTask;
 }
 
@@ -225,7 +225,7 @@ export async function updateReconTask(propertyId: string, taskId: string, update
   const v = state.properties.find(x => x.id === propertyId);
   if (!v?.maintenanceTasks) return undefined;
   const nextTasks = v.maintenanceTasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
-  await updateVehicle(propertyId, { maintenanceTasks: nextTasks } as Partial<Property>);
+  await updateProperty(propertyId, { maintenanceTasks: nextTasks } as Partial<Property>);
   return nextTasks.find(t => t.id === taskId);
 }
 
@@ -301,8 +301,8 @@ export async function updateLead(id: string, updates: Partial<Enquiry>): Promise
 /** Change a lead's stage.
  *
  *  Separate from `updateLead` because a status change is the one edit that
- *  moves another record: the server couples the linked vehicle (Closed Won →
- *  SOLD, reopened → back in stock) and reports what it did, so the UI can say
+ *  moves another record: the server couples the linked property (Closed Won →
+ *  SOLD, reopened → back in listing) and reports what it did, so the UI can say
  *  so without duplicating the rule. Every other lead edit should use
  *  `updateLead`. No local fallback — a coupled write that only half-applied
  *  offline is worse than a failure the caller can retry. */
@@ -365,7 +365,7 @@ export async function updateTask(id: string, updates: Partial<Task>): Promise<Ta
 }
 
 export async function createInvoice(invoice: Omit<Invoice, "id" | "invoiceNumber">): Promise<Invoice> {
-  // Same story as updateLead/updateVehicle: local push gets wiped by the next
+  // Same story as updateLead/updateProperty: local push gets wiped by the next
   // fetchState() (server truth wins), so an auto-generated invoice from a
   // Closed Won never survived a refresh. Persist to server; fall back local.
   try {
@@ -405,14 +405,14 @@ export async function createAgreement(agreement: Omit<Agreement, "id" | "agreeme
   return newA;
 }
 
-/** Upload a dealer's own document (any file type/template) — persisted server-side. */
+/** Upload a agency's own document (any file type/template) — persisted server-side. */
 export async function uploadDocument(doc: {
   fileName: string;
   mimeType: string;
   fileData: string;
   leadId?: string;
   propertyId?: string;
-  dealershipId?: string;
+  agencyId?: string;
 }): Promise<DealerDocument> {
   const res = await authFetch("/api/documents", {
     method: "POST",
@@ -444,7 +444,7 @@ export async function deleteDocument(id: string): Promise<void> {
 // --- DocHub -------------------------------------------------------------
 
 /** Create a DocHub stage document. Modes:
- *   - 'attach'   — fileData required (dealer's own signed doc)
+ *   - 'attach'   — fileData required (agency's own signed doc)
  *   - 'generate' — fieldSnapshot captured (PDF rendering deferred)
  *   - 'confirm'  — no file, no snapshot; server verifies checklist flags on
  *                  finalize (used for compliance: NATIS + roadworthy) */
@@ -492,36 +492,36 @@ export async function finalizeStageDocument(
   return body;
 }
 
-/** Dealer self-service update of identity fields (name, trading-as, VAT,
+/** Agency self-service update of identity fields (name, trading-as, VAT,
  *  contact email, address, registration number, website URL). Admins can
- *  target another dealership by passing dealershipId. */
-export async function updateDealershipSelf(
-  patch: Partial<Pick<Dealership, "name" | "tradingAs" | "vatNumber" | "contactEmail" | "address" | "registrationNumber" | "websiteUrl" | "docSettings">>,
-  dealershipId?: string,
-): Promise<Dealership> {
-  const res = await authFetch("/api/dealership/self", {
+ *  target another agency by passing agencyId. */
+export async function updateAgencySelf(
+  patch: Partial<Pick<Agency, "name" | "tradingAs" | "vatNumber" | "contactEmail" | "address" | "registrationNumber" | "websiteUrl" | "docSettings">>,
+  agencyId?: string,
+): Promise<Agency> {
+  const res = await authFetch("/api/agency/self", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...patch, dealershipId }),
+    body: JSON.stringify({ ...patch, agencyId }),
   });
-  if (!res.ok) throw new Error(`Dealership update failed (${res.status})`);
+  if (!res.ok) throw new Error(`Agency update failed (${res.status})`);
   const body = await res.json();
-  return body.dealership as Dealership;
+  return body.agency as Agency;
 }
 
-/** Save the current dealer's per-stage mode configuration. */
+/** Save the current agency's per-stage mode configuration. */
 export async function updateDocFlow(
   docFlow: Partial<Record<DocStage, DocMode>>,
-  dealershipId?: string,
-): Promise<Dealership> {
+  agencyId?: string,
+): Promise<Agency> {
   const res = await authFetch("/api/docflow", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ docFlow, dealershipId }),
+    body: JSON.stringify({ docFlow, agencyId }),
   });
   if (!res.ok) throw new Error(`DocFlow update failed (${res.status})`);
   const body = await res.json();
-  return body.dealership as Dealership;
+  return body.agency as Agency;
 }
 
 export type Seat = {
@@ -531,13 +531,13 @@ export type Seat = {
   email: string;
   phone: string;
   role: "principal" | "manager" | "salesperson";
-  dealershipId?: string;
+  agencyId?: string;
   isActive: boolean;
   createdAt: string;
   rotatedAt?: string;
 };
 
-/** Staff logins for this dealership, plus the billable active count. */
+/** Staff logins for this agency, plus the billable active count. */
 export async function fetchSeats(): Promise<{ seats: Seat[]; activeSeats: number }> {
   const res = await authFetch("/api/auth/users", { cache: "no-store" });
   if (!res.ok) throw new Error("Could not load staff logins.");
@@ -546,7 +546,7 @@ export async function fetchSeats(): Promise<{ seats: Seat[]; activeSeats: number
 
 /**
  * Add a staff member. Creates the person AND their login in one step, and
- * books the seat — the old version wrote a user with no dealership and no way
+ * books the seat — the old version wrote a user with no agency and no way
  * to sign in.
  *
  * The returned code is shown once and is not recoverable; hand it over, and
@@ -626,14 +626,14 @@ export async function generateDocument(type: string, id: string): Promise<Blob> 
   return new Blob(["Mock PDF Content"], { type: "application/pdf" });
 }
 
-/** No VIN decoder is wired up. Returning invented make/model would put wrong
- *  details on a real vehicle record, so this reports that it's unavailable. */
+/** No erf-ref lookup is wired up. Returning invented property details would put wrong
+ *  details on a real property record, so this reports that it's unavailable. */
 export async function decodeVin(_vin: string): Promise<never> {
-  throw new Error("VIN decoding isn't available yet — enter the details manually.");
+  throw new Error("Erf-ref lookup isn't available yet — enter the details manually.");
 }
 
 /**
- * The dealership co-pilot. This used to return the literal string
+ * The agency co-pilot. This used to return the literal string
  * "This is a mock AI response in the Lite version." — which the compose
  * screens dropped straight into a message body, ready to send to a customer.
  * The server has had a real Gemini-backed endpoint all along; nothing called it.
@@ -657,7 +657,7 @@ export async function createCommunication(comm: Omit<Communication, "id" | "sent
 }
 
 export async function deleteLead(id: string): Promise<void> {
-  // Same bug as deleteVehicle had: local-only, so the lead came back on refresh.
+  // Same bug as deleteProperty had: local-only, so the lead came back on refresh.
   const res = await authFetch(`/api/enquiries/${id}`, { method: "DELETE" });
   if (!res.ok && res.status !== 404) {
     const body = await res.json().catch(() => ({}));
@@ -767,18 +767,18 @@ export async function reconcileExpense(id: string, reconciled: boolean): Promise
   return updated as Expense;
 }
 
-export async function deleteVehicle(id: string): Promise<void> {
-  /* Delete on the server FIRST, exactly as createVehicle and updateVehicle
+export async function deleteProperty(id: string): Promise<void> {
+  /* Delete on the server FIRST, exactly as createProperty and updateProperty
      already do. This function alone still went through updateState, which only
      writes localStorage — so the row vanished from the screen, the next
-     fetchState() pulled server truth back, and the car returned. Deleting it
-     "again" did the same thing forever. DELETE /api/inventory/:id existed the
+     fetchState() pulled server truth back, and the home returned. Deleting it
+     "again" did the same thing forever. DELETE /api/portfolio/:id existed the
      whole time; nothing called it. */
-  const res = await authFetch(`/api/inventory/${id}`, { method: "DELETE" });
+  const res = await authFetch(`/api/portfolio/${id}`, { method: "DELETE" });
   if (!res.ok && res.status !== 404) {
     // 404 means it is already gone, which is the outcome we wanted anyway.
     const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error || `Could not delete vehicle (server said ${res.status}).`);
+    throw new Error(body?.error || `Could not delete property (server said ${res.status}).`);
   }
   // Keep the cached copy in step so the UI does not show it until the next fetch.
   await updateState(s => { s.properties = s.properties.filter(v => v.id !== id); });
