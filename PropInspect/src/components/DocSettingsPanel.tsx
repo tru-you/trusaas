@@ -1,16 +1,16 @@
 import React, { useRef, useState } from "react";
 import { Check, Loader2, FileText, Plus, X, Upload, Trash2 } from "lucide-react";
-import type { Dealership, DocSettings } from "../types";
-import { updateDealershipSelf } from "../api";
+import type { Agency, DocSettings } from "../types";
+import { updateAgencySelf } from "../api";
 
 interface Props {
-  dealership: Dealership;
+  agency: Agency;
   isAdmin?: boolean;
-  onSaved?: (updated: Dealership) => void;
+  onSaved?: (updated: Agency) => void;
 }
 
-export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props) {
-  const ds = dealership.docSettings || {};
+export default function DocSettingsPanel({ agency, isAdmin, onSaved }: Props) {
+  const ds = agency.docSettings || {};
   const bd = ds.bankingDetails || {};
 
   const [logo, setLogo] = useState<string>(ds.logo || "");
@@ -70,9 +70,9 @@ export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props
         footerNote,
         warrantyTerms,
       };
-      const updated = await updateDealershipSelf(
+      const updated = await updateAgencySelf(
         { docSettings },
-        isAdmin ? dealership.id : undefined,
+        isAdmin ? agency.id : undefined,
       );
       onSaved?.(updated);
       if (updated.docSettings?.logo) {
@@ -104,7 +104,7 @@ export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props
           Document settings
           {isAdmin && (
             <span className="ml-2 text-[12px] text-[rgba(232,234,230,0.55)] font-normal">
-              — {dealership.name}
+              — {agency.name}
             </span>
           )}
         </h3>
@@ -122,15 +122,15 @@ export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props
         <div>
           <div className={sectionCls}>Logo</div>
           <p className="text-xs text-[rgba(232,234,230,0.55)] mb-2">
-            Appears top-left on every generated document next to your dealer name.
-            PNG or JPG, max 2 MB. Your website URL from Dealer Details is also printed on documents.
+            Appears top-left on every generated document next to your agency name.
+            PNG or JPG, max 2 MB. Your website URL from Agency Details is also printed on documents.
           </p>
           <div className="flex items-center gap-4">
             {logoPreview ? (
               <div className="relative group">
                 <img
                   src={logoPreview}
-                  alt="Dealer logo"
+                  alt="Agency logo"
                   className="h-16 max-w-[200px] object-contain rounded border border-[rgba(138,162,184,0.15)] bg-white/5 p-1"
                 />
                 <button
@@ -247,7 +247,7 @@ export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props
             className={inputCls + " w-full min-h-[80px] resize-y"}
             value={ownershipClause}
             onChange={(e) => { setOwnershipClause(e.target.value); dirty(); }}
-            placeholder="Ownership of the vehicle remains vested in the Seller until the full purchase price has been received in cleared funds..."
+            placeholder="Ownership of the property remains vested in the Seller until the full purchase price has been received in cleared funds..."
           />
         </div>
 

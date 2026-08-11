@@ -58,7 +58,7 @@ export default function AmortizationCalc({ initialPrice = 485000 }: Amortization
         </div>
         <div className="card-body p-4 flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <label className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">Vehicle Total Price (ZAR)</label>
+            <label className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)]">Property Total Price (ZAR)</label>
             <input
               type="number"
               value={price}

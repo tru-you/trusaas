@@ -3,23 +3,23 @@ import type { DocStage, Enquiry } from '../types';
 /** Fields DocHub's generator must have before a stage can be finalised.
  *
  *  Only enforced when the doc's `mode === 'generate'` — for `mode === 'attach'`
- *  the dealer's own uploaded document is authoritative and we cannot inspect
+ *  the agency's own uploaded document is authoritative and we cannot inspect
  *  its contents to validate.
  *
  *  Note what is NOT here: the offer to purchase used to require a
- *  `voetstootsClause`. A blanket "sold as is" does not survive a dealer sale to
+ *  `voetstootsClause`. A blanket "sold as is" does not survive a agency sale to
  *  a consumer — the CPA gives the buyer a right to goods of good quality (s55)
  *  and an implied warranty (s56) that a seller in the ordinary course of
  *  business cannot contract out of. What the CPA does allow is excluding a
  *  SPECIFIC defect the buyer was expressly told about and accepted (s55(6)),
- *  so the offer requires `disclosedDefects` instead — the actual findings from
- *  the vehicle's capture record, shown to the buyer before they sign, rather
- *  than a catch-all clause that would not hold. */
+   *  so the offer requires `disclosedDefects` instead — the actual findings from
+   *  the property's inspection record, shown to the buyer before they sign, rather
+   *  than a catch-all clause that would not hold. */
 const REQUIRED_FIELDS: Record<DocStage, readonly string[]> = {
-  offer: ['vin', 'priceBreakdown', 'validityWindow'],
+  offer: ['erfRef', 'priceBreakdown', 'validityWindow'],
   transfer: ['disclosedDefects', 'tradeInLine'], // ncaDisclosure added conditionally below
   compliance: ['rwcRef', 'rwcDate', 'natisMatch'],
-  invoice: ['invoiceNo', 'vatBreakdown', 'vin'], // buyerAddress added conditionally below
+  invoice: ['invoiceNo', 'vatBreakdown', 'erfRef'], // buyerAddress added conditionally below
   occupation: ['warrantyDoc', 'natisUpdated'],
 };
 
@@ -63,9 +63,9 @@ export function canAdvance(
     if (typeof value === 'string' && value.trim() === '') return true;
     if (typeof value === 'boolean') return value === false;
     /* An empty array counts as present — but only because the generator fills
-       `disclosedDefects` from the vehicle's capture record, so `[]` means "we
+       `disclosedDefects` from the property's inspection record, so `[]` means "we
        looked and found none", not "nobody checked". Absent still fails, which
-       is the case where the capture was never done. Keeping those two apart is
+       is the case where the inspection was never done. Keeping those two apart is
        the whole point of disclosing specific defects rather than relying on a
        blanket clause. */
     return false;

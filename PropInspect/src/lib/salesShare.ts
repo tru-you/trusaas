@@ -1,8 +1,8 @@
-/** WhatsApp / share helpers for stock units */
+/** WhatsApp / share helpers for listing units */
 
 export const WA_NUMBER_KEY = "truflow_wa_number";
 
-export function getDealerWaNumber(): string {
+export function getAgencyWaNumber(): string {
   try {
     return (localStorage.getItem(WA_NUMBER_KEY) || "").replace(/\D/g, "");
   } catch {
@@ -10,7 +10,7 @@ export function getDealerWaNumber(): string {
   }
 }
 
-export function setDealerWaNumber(raw: string) {
+export function setAgencyWaNumber(raw: string) {
   localStorage.setItem(WA_NUMBER_KEY, raw.trim());
 }
 
@@ -18,34 +18,37 @@ export function formatZar(n: number): string {
   return "R " + Math.round(Number(n) || 0).toLocaleString("en-ZA");
 }
 
-export function buildStockWhatsAppBlurb(
+export function buildListingWhatsAppBlurb(
   v: {
-    year: number;
-    make: string;
-    model: string;
-    trim?: string;
-    stockNumber: string;
+    address?: string;
+    propertyType?: string;
+    suburb?: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    erfSize?: string;
+    floorSize?: string;
+    listingRef: string;
     retailPrice: number;
-    mileage?: number;
-    transmission?: string;
-    fuelType?: string;
     images?: string[];
   },
-  opts?: { dealerName?: string }
+  opts?: { agencyName?: string }
 ): string {
-  const dealer = opts?.dealerName || "Our dealership";
+  const agency = opts?.agencyName || "Our agency";
   const photos = v.images?.length || 0;
+  const title = v.address || `${v.propertyType || "Property"} · ${v.suburb || ""}`;
   return (
-    `*${v.year} ${v.make} ${v.model}*\n` +
-    `${v.trim || "Standard"} · Stock *${v.stockNumber}*\n` +
+    `*${title}*\n` +
+    `Listing *${v.listingRef}*\n` +
     `${formatZar(v.retailPrice)}` +
-    (v.mileage != null ? ` · ${Number(v.mileage).toLocaleString("en-ZA")} km` : "") +
-    `\n` +
-    (v.transmission || v.fuelType
-      ? `${[v.transmission, v.fuelType].filter(Boolean).join(" · ")}\n`
+    (v.bedrooms || v.bathrooms
+      ? ` · ${v.bedrooms || 0} bed · ${v.bathrooms || 0} bath`
       : "") +
+    (v.erfSize || v.floorSize
+      ? ` · ${v.erfSize || v.floorSize} m²`
+      : "") +
+    `\n` +
     (photos ? `Gallery: ${photos} photos (TruLens)\n` : `Photos: shoot in TruLens\n`) +
-    `\n${dealer}\n— TruFlow stock share`
+    `\n${agency}\n— PropInspect listing share`
   );
 }
 
@@ -55,18 +58,18 @@ async function fetchImageAsFile(url: string, index: number): Promise<File | null
     if (!res.ok) return null;
     const blob = await res.blob();
     const ext = blob.type === "image/webp" ? "webp" : blob.type === "image/png" ? "png" : "jpg";
-    return new File([blob], `vehicle-${index + 1}.${ext}`, { type: blob.type });
+    return new File([blob], `property-${index + 1}.${ext}`, { type: blob.type });
   } catch {
     return null;
   }
 }
 
-/** Opens WhatsApp (web/app) with prefilled stock blurb + images via Web Share API */
-export async function openStockWhatsApp(
-  v: Parameters<typeof buildStockWhatsAppBlurb>[0],
+/** Opens WhatsApp (web/app) with prefilled listing blurb + images via Web Share API */
+export async function openListingWhatsApp(
+  v: Parameters<typeof buildListingWhatsAppBlurb>[0],
   phoneOverride?: string
 ) {
-  const text = buildStockWhatsAppBlurb(v);
+  const text = buildListingWhatsAppBlurb(v);
 
   // Try Web Share API with images (mobile browsers)
   if (navigator.share && v.images?.length) {
@@ -86,7 +89,7 @@ export async function openStockWhatsApp(
   }
 
   // Fallback: wa.me text-only link
-  const digits = (phoneOverride || getDealerWaNumber()).replace(/\D/g, "");
+  const digits = (phoneOverride || getAgencyWaNumber()).replace(/\D/g, "");
   if (!digits) {
     void navigator.clipboard?.writeText(text).catch(() => undefined);
     alert(
@@ -98,8 +101,8 @@ export async function openStockWhatsApp(
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-export async function copyStockBlurb(v: Parameters<typeof buildStockWhatsAppBlurb>[0]) {
-  const text = buildStockWhatsAppBlurb(v);
+export async function copyListingBlurb(v: Parameters<typeof buildListingWhatsAppBlurb>[0]) {
+  const text = buildListingWhatsAppBlurb(v);
   await navigator.clipboard.writeText(text);
   return text;
 }

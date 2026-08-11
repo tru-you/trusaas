@@ -1,20 +1,20 @@
-import { Invoice, Enquiry, Property, Dealership } from "../types";
+import { Invoice, Enquiry, Property, Agency } from "../types";
 import { Printer } from "lucide-react";
 
 interface InvoicePreviewProps {
   invoice: Invoice;
   lead?: Enquiry;
   property?: Property;
-  dealership?: Dealership;
+  agency?: Agency;
 }
 
-export default function InvoicePreview({ invoice, lead, property, dealership }: InvoicePreviewProps) {
+export default function InvoicePreview({ invoice, lead, property, agency }: InvoicePreviewProps) {
   const exVat = invoice.amount / 1.15;
   const vat = invoice.amount - exVat;
 
-  const dealerName = dealership?.name || "Your Dealership";
-  const dealerAddress = dealership?.address || dealership?.location || "";
-  const dealerVat = dealership?.vatNumber || "";
+  const dealerName = agency?.name || "Your Agency";
+  const dealerAddress = agency?.address || agency?.location || "";
+  const dealerVat = agency?.vatNumber || "";
 
   const formatZAR = (num: number) => {
     return "R " + Math.round(num).toLocaleString("en-ZA");

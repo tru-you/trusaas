@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck } from "lucide-react";
-import type { DealerDocument, Dealership, DocMode, DocStage, Enquiry } from "../../types";
+import type { DealerDocument, Agency, DocMode, DocStage, Enquiry } from "../../types";
 import { DOC_STAGES, FIXED_STAGE_MODES } from "../../types";
 import { authFetch } from "../../lib/session";
 import { createStageDocument, finalizeStageDocument, signDocument, updateLead } from "../../api";
 
 interface Props {
   Enquiry: Enquiry;
-  dealership: Dealership | undefined;
+  agency: Agency | undefined;
   onLeadRefresh?: () => void;
 }
 
@@ -22,7 +22,7 @@ const STAGE_LABEL: Record<DocStage, string> = {
 /** Lazy chunk root. All DocHub UI lives inside this file (or files it
  *  imports) so React.lazy() keeps the whole feature out of the mobile bundle.
  *  Nothing here is safe to import at the top of any always-loaded module. */
-export default function DocHubPanel({ Enquiry, dealership, onLeadRefresh }: Props) {
+export default function DocHubPanel({ Enquiry, agency, onLeadRefresh }: Props) {
   const [docs, setDocs] = useState<DealerDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyStage, setBusyStage] = useState<DocStage | null>(null);
@@ -30,7 +30,7 @@ export default function DocHubPanel({ Enquiry, dealership, onLeadRefresh }: Prop
   const [loadError, setLoadError] = useState<string | null>(null);
   const [missing, setMissing] = useState<{ stage: DocStage; fields: string[] } | null>(null);
 
-  const docFlow = dealership?.docFlow || {};
+  const docFlow = agency?.docFlow || {};
   /* `docStage: null` means two opposite things — never started, or finished the
      last stage with nothing left due. `docFlowCompletedAt` is what tells them
      apart; reading docStage alone rendered a finished deal as if it were sitting
@@ -41,7 +41,7 @@ export default function DocHubPanel({ Enquiry, dealership, onLeadRefresh }: Prop
 
   /* A failed load must not look like an empty one. Swallowing the error left
      `docs` at [] and the panel then offered an Upload button for every stage,
-     including stages that already had a signed document — inviting the dealer
+     including stages that already had a signed document — inviting the agency
      to file a duplicate. Say so instead. */
   const reload = async () => {
     try {

@@ -1,7 +1,7 @@
 export type PropertyStatus = 'AVAILABLE' | 'SOLD' | 'RENTED' | 'INVENTORY';
 export type PropertyArchive = string;
 
-export interface Dealership {
+export interface Agency {
   id: string;
   name: string;
   location: string;
@@ -53,12 +53,12 @@ export interface DocEvent {
   action: 'created' | 'signed' | 'finalized' | 'voided';
   userId?: string;
   timestamp: string;
-  dealershipId?: string;
+  agencyId?: string;
 }
 
 export interface SocialAccount {
   accountId: string;
-  dealershipId: string;
+  agencyId: string;
   platform: string;
   username?: string;
   connectedAt: string;
@@ -85,7 +85,7 @@ export interface Property {
   levy: number;
   listingRef: string;
   dateAcquired: string;
-  daysInInventory: number;
+  daysOnMarket: number;
   description: string;
   images?: string[];
   damagePhotos?: string[];
@@ -93,13 +93,13 @@ export interface Property {
   lastPhotoSync?: string;
   maintenanceTasks?: { id: string; name: string; cost: number; status: 'Pending' | 'In Progress' | 'Completed'; dateAdded: string; category?: string; photo?: string }[];
   inspectionResults?: Record<string, 'Pass' | 'Attention'>;
-  dealershipId?: string;
+  agencyId?: string;
   category?: 'residential' | 'commercial' | 'luxury' | 'used' | 'select' | 'performance';
   truPrice?: number;
   retailPrice?: number;
   source?: string;
   showOnWebsite?: boolean;
-  virReport?: { section: string; rating: 'ok' | 'note' | 'damage'; note?: string }[];
+  inspectionReport?: { section: string; rating: 'ok' | 'note' | 'damage'; note?: string }[];
   damage?: {
     section: string; type: string;
     severity: number; note: string;
@@ -133,7 +133,7 @@ export interface Enquiry {
   idOrBrn?: string;
   address?: string;
   journey?: { time: string; action: string; detail: string }[];
-  dealershipId?: string;
+  agencyId?: string;
   nextAction?: string;
   nextActionAt?: string | null;
   stageChangedAt?: string;
@@ -160,7 +160,7 @@ export interface Task {
   dueDate: string;
   priority: 'Normal' | 'High' | 'Urgent' | 'Low';
   status: 'Pending' | 'In Progress' | 'Completed';
-  dealershipId?: string;
+  agencyId?: string;
 }
 
 export interface Invoice {
@@ -174,7 +174,7 @@ export interface Invoice {
   dueDate: string;
   additionalCharges?: number;
   chargeDescription?: string;
-  dealershipId?: string;
+  agencyId?: string;
 }
 
 export interface Agreement {
@@ -184,12 +184,12 @@ export interface Agreement {
   propertyId: string;
   purchasePrice: number;
   depositAmount: number;
-  type: 'Property Sale' | 'Deposit Hold' | 'Offer to Purchase' | 'Lease Agreement' | 'Bond Application' | 'Vehicle Sale' | 'Trade-In Transfer' | 'Finance Application';
+  type: 'Property Sale' | 'Deposit Hold' | 'Offer to Purchase' | 'Lease Agreement' | 'Bond Application' | 'Home Sale' | 'Finance Application';
   status: 'Pending Signature' | 'Signed' | 'Completed';
   signature?: string;
   signedAt?: string;
   signedBy?: string;
-  dealershipId?: string;
+  agencyId?: string;
   date?: string;
 }
 
@@ -205,7 +205,7 @@ export interface DealerDocument {
   signedAt?: string;
   leadId?: string;
   propertyId?: string;
-  dealershipId?: string;
+  agencyId?: string;
   stage?: DocStage;
   mode?: DocMode;
   fieldSnapshot?: Record<string, unknown>;
@@ -218,7 +218,7 @@ export interface User {
   role: 'salesperson' | 'manager' | 'admin';
   phone: string;
   isActive: boolean;
-  dealershipId?: string;
+  agencyId?: string;
 }
 
 export interface Communication {
@@ -229,7 +229,7 @@ export interface Communication {
   content: string;
   sentBy: string;
   sentAt: string;
-  dealershipId?: string;
+  agencyId?: string;
 }
 
 export interface Expense {
@@ -240,7 +240,7 @@ export interface Expense {
   category: string;
   referenceId?: string;
   reconciled: boolean;
-  dealershipId?: string;
+  agencyId?: string;
 }
 
 export interface DMSState {
@@ -255,7 +255,7 @@ export interface DMSState {
   communications: Communication[];
   expenses: Expense[];
   digitalProducts?: any[]; digitalSales?: any[];
-  dealerships: Dealership[];
+  agencies: Agency[];
   settings?: PremiumSettings;
   socialAccounts?: SocialAccount[];
 }

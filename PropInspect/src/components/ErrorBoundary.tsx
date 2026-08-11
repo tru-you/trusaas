@@ -6,7 +6,7 @@ import { RefreshCw } from "lucide-react";
  *
  * React unmounts the entire tree when a render throws, which is exactly what
  * happened on 2026-07-23: a single ReferenceError in one effect left every
- * signed-in dealer staring at a white page, with nothing on screen to explain
+ * signed-in agency staring at a white page, with nothing on screen to explain
  * it and no way back except knowing to reload.
  *
  * A yard depends on this during a working day, so the failure mode has to be

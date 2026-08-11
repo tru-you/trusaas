@@ -7,8 +7,8 @@ import { canAdvance } from "../src/lib/docValidator";
 export type DocumentRoutesDeps = {
   readState: () => any;
   writeState: (state: any) => void;
-  scopeToDealer: <T extends { dealershipId?: string }>(rows: T[], auth: any) => T[];
-  mayTouch: (row: { dealershipId?: string } | undefined, auth: any) => boolean;
+  scopeToAgency: <T extends { agencyId?: string }>(rows: T[], auth: any) => T[];
+  mayTouch: (row: { agencyId?: string } | undefined, auth: any) => boolean;
   newId: (prefix: string) => string;
 };
 
@@ -35,15 +35,15 @@ export function recomputeDocStage(state: any, lead: any): void {
   }
 }
 
-/** Dealer Documents API — dealership uploads its own files (any doc type/template)
- *  and captures a signature on them. No fixed template: whatever the dealer needs. */
+/** Agency Documents API — agency uploads its own files (any doc type/template)
+ *  and captures a signature on them. No fixed template: whatever the agency needs. */
 export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
   const router = express.Router();
-  const { readState, writeState, scopeToDealer, mayTouch, newId } = deps;
+  const { readState, writeState, scopeToAgency, mayTouch, newId } = deps;
 
   router.get("/api/documents", (req: any, res) => {
     const state = readState();
-    res.json(scopeToDealer(state.documents || [], req.auth));
+    res.json(scopeToAgency(state.documents || [], req.auth));
   });
 
   router.post("/api/documents", (req: any, res) => {
@@ -58,13 +58,13 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
       mode,
       fieldSnapshot,
     } = req.body || {};
-    // Take the dealership from the session, not the request. Untagged documents
-    // fall to the default dealership, so a dealer's own uploads disappeared from
+    // Take the agency from the session, not the request. Untagged documents
+    // fall to the default agency, so a agency's own uploads disappeared from
     // their list the moment scoping was switched on.
-    const dealershipId =
-      req.auth?.role === "admin" ? req.body?.dealershipId : req.auth?.dealershipId;
+    const agencyId =
+      req.auth?.role === "admin" ? req.body?.agencyId : req.auth?.agencyId;
 
-    // DocHub path: a stage was named. Validate it, honour the dealer's
+    // DocHub path: a stage was named. Validate it, honour the agency's
     // configured mode for that stage, and allow the doc to exist as a Draft
     // even before a file has been attached. Non-DocHub uploads keep the
     // original strict "need a file up front" contract.
@@ -80,24 +80,24 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
       }
 
       /* The lead must be the caller's own. `mayTouch` guards the DOCUMENT, which
-         is created under the caller's dealership and therefore always passes —
+         is created under the caller's agency and therefore always passes —
          it says nothing about the lead the document names. Finalising and voiding
          both write `docStage`, `docFlowCompletedAt` and `dealChecklist` onto that
-         lead, so an unchecked id here let one dealer advance another dealer's
+         lead, so an unchecked id here let one agency advance another agency's
          deal. 404 rather than 403: the caller should not learn whether an id
          exists elsewhere.
 
-         Admins may act for any dealership, and often send no dealershipId, so the
+         Admins may act for any agency, and often send no agencyId, so the
          document takes the lead's — a document and the deal it belongs to must
          never end up under different tenants. */
       const ownerLead = state.enquiries.find((l: any) => l.id === leadId);
       if (!ownerLead) return res.status(404).json({ error: "Enquiry not found" });
-      if (req.auth?.role !== "admin" && ownerLead.dealershipId !== dealershipId) {
+      if (req.auth?.role !== "admin" && ownerLead.agencyId !== agencyId) {
         return res.status(404).json({ error: "Enquiry not found" });
       }
-      const docDealershipId = ownerLead.dealershipId ?? dealershipId;
+      const docAgencyId = ownerLead.agencyId ?? agencyId;
       // Fixed-mode stages (compliance = confirm) cannot be overridden by any
-      // caller. Non-fixed stages must match the dealer's configured mode; admins
+      // caller. Non-fixed stages must match the agency's configured mode; admins
       // can cross the line for support work.
       const fixedMode = FIXED_STAGE_MODES[stageTyped];
       if (fixedMode && mode !== fixedMode) {
@@ -106,11 +106,11 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
         });
       }
       if (!fixedMode && req.auth?.role !== "admin") {
-        const dealer = (state.dealerships || []).find((d: any) => d.id === docDealershipId);
-        const configured = dealer?.docFlow?.[stageTyped] || "attach";
+        const agency = (state.agencies || []).find((d: any) => d.id === docAgencyId);
+        const configured = agency?.docFlow?.[stageTyped] || "attach";
         if (configured !== (mode as DocMode)) {
           return res.status(400).json({
-            error: `Dealer's ${stageTyped} stage is set to '${configured}', not '${mode}'. Change it in Doc Flow Settings first.`,
+            error: `Agency's ${stageTyped} stage is set to '${configured}', not '${mode}'. Change it in Doc Flow Settings first.`,
           });
         }
       }
@@ -136,7 +136,7 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
         uploadedAt: new Date().toISOString(),
         leadId,
         propertyId: resolvedVehicleId,
-        dealershipId: docDealershipId,
+        agencyId: docAgencyId,
         stage: stageTyped,
         mode: mode as DocMode,
         fieldSnapshot: mode === "generate" ? (fieldSnapshot || {}) : undefined,
@@ -152,7 +152,7 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
         userId: req.auth?.userId,
         timestamp: new Date().toISOString(),
         // Follows the document, so the audit row is scoped with what it describes.
-        dealershipId: docDealershipId,
+        agencyId: docAgencyId,
       });
       writeState(state);
       return res.status(201).json({ message: "Document created.", document: newDoc });
@@ -171,7 +171,7 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
       uploadedAt: new Date().toISOString(),
       leadId: leadId || undefined,
       propertyId: propertyId || undefined,
-      dealershipId,
+      agencyId,
     };
     if (!state.documents) state.documents = [];
     state.documents.unshift(newDoc);
@@ -252,7 +252,7 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
       action: "voided",
       userId: req.auth?.userId,
       timestamp: new Date().toISOString(),
-      dealershipId: doc.dealershipId,
+      agencyId: doc.agencyId,
     });
 
     const lead = (state.enquiries || []).find((l: any) => l.id === doc.leadId);
@@ -273,15 +273,15 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
     });
   });
 
-  /** Per-stage mode configuration. Dealers self-serve for their own dealership;
-   *  admins may target any dealership by passing `dealershipId` in the body. */
+  /** Per-stage mode configuration. Agencys self-serve for their own agency;
+   *  admins may target any agency by passing `agencyId` in the body. */
   router.put("/api/docflow", (req: any, res) => {
     const state = readState();
     const targetId =
-      req.auth?.role === "admin" ? (req.body?.dealershipId || req.auth?.dealershipId) : req.auth?.dealershipId;
-    if (!targetId) return res.status(400).json({ error: "dealershipId required" });
-    const i = (state.dealerships || []).findIndex((d: any) => d.id === targetId);
-    if (i === -1) return res.status(404).json({ error: "Dealership not found" });
+      req.auth?.role === "admin" ? (req.body?.agencyId || req.auth?.agencyId) : req.auth?.agencyId;
+    if (!targetId) return res.status(400).json({ error: "agencyId required" });
+    const i = (state.agencies || []).findIndex((d: any) => d.id === targetId);
+    if (i === -1) return res.status(404).json({ error: "Agency not found" });
 
     const { docFlow } = req.body || {};
     if (!docFlow || typeof docFlow !== "object") {
@@ -292,16 +292,16 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
       const mode = docFlow[stage];
       if (mode === "generate" || mode === "attach") clean[stage] = mode;
     }
-    state.dealerships[i].docFlow = { ...(state.dealerships[i].docFlow || {}), ...clean };
+    state.agencies[i].docFlow = { ...(state.agencies[i].docFlow || {}), ...clean };
     writeState(state);
-    res.json({ dealership: state.dealerships[i] });
+    res.json({ agency: state.agencies[i] });
   });
 
-  /** Docs for a specific deal (lead). Scoped to the caller's dealership. */
+  /** Docs for a specific deal (lead). Scoped to the caller's agency. */
   router.get("/api/deals/:leadId/documents", (req: any, res) => {
     const state = readState();
     const all = (state.documents || []).filter((d: any) => d.leadId === req.params.leadId);
-    res.json(scopeToDealer(all, req.auth));
+    res.json(scopeToAgency(all, req.auth));
   });
 
   /** Finalise a DocHub document — runs the validator (generate mode only),
@@ -363,7 +363,7 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
         return res.status(422).json({ error: "Compliance not confirmed.", missing });
       }
     } else {
-      // Attach mode: dealer's own doc must be present and signed before we
+      // Attach mode: agency's own doc must be present and signed before we
       // treat the stage as complete. /api/documents/:id/sign is the existing
       // canvas-signature endpoint they'll have hit already.
       if (!doc.fileData) return res.status(422).json({ error: "No file attached." });
@@ -386,10 +386,10 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
       action: "finalized",
       userId: req.auth?.userId,
       timestamp: new Date().toISOString(),
-      dealershipId: doc.dealershipId,
+      agencyId: doc.agencyId,
     });
 
-    // Advance the lead's stage. If already past this stage (e.g. dealer went
+    // Advance the lead's stage. If already past this stage (e.g. agency went
     // back and re-finalised an earlier stage), leave the current position
     // alone rather than yanking them backwards.
     if (lead) {

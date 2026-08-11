@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Property } from "../types";
 import { openTruLens } from "../lib/productConfig";
-import { openStockWhatsApp } from "../lib/salesShare";
+import { openListingWhatsApp } from "../lib/salesShare";
 import InspectionReport from "./InspectionReport";
 import {
   X,
@@ -39,7 +39,7 @@ import { authFetch } from "../lib/session";
 
 interface SocialAccount {
   accountId: string;
-  dealershipId: string;
+  agencyId: string;
   platform: string;
   username?: string;
   connectedAt: string;
@@ -48,20 +48,20 @@ interface SocialAccount {
 interface PropertyDetailModalProps {
   /** Documents filed against this property, rendered as its own tab. */
   documentsPanel?: React.ReactNode;
-  vehicle: Property;
+  property: Property;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateVehicle: (id: string, updates: Partial<Property>) => Promise<void>;
+  onUpdateProperty: (id: string, updates: Partial<Property>) => Promise<void>;
   /** Remove the unit from the portfolio. The owning screen does the checks and
    *  the confirming — this just asks for it. Optional, so the modal still
    *  renders for anywhere that shouldn't offer deletion. */
-  onDeleteVehicle?: (id: string) => Promise<void>;
+  onDeleteProperty?: (id: string) => Promise<void>;
   /** Cancellation flow: put a sold unit back on the market (which re-lists it
    *  on the website) and reopen the deal that closed on it. Optional. */
-  onReturnToStock?: (vehicle: Property) => void | Promise<void>;
+  onReturnToListing?: (property: Property) => void | Promise<void>;
   settings?: any;
-  dealershipId?: string;
-  /** True only when this dealership has the `social` product AND TruSocial is
+  agencyId?: string;
+  /** True only when this agency has the `social` product AND TruSocial is
    *  switched on. Gates the Publish tab: publishing goes to OAuth-connected
    *  accounts, so offering it to an agent with no connections would only ever
    *  fail — the tab is omitted entirely instead. */
@@ -69,7 +69,7 @@ interface PropertyDetailModalProps {
   hasLens?: boolean;
 }
 
-export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled, hasLens = true}: PropertyDetailModalProps) {
+export default function PropertyDetailModal({ property, isOpen, onClose, onUpdateProperty, onDeleteProperty, onReturnToListing, settings, documentsPanel, agencyId, truSocialEnabled, hasLens = true}: PropertyDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -133,7 +133,7 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
   ] as const;
 
   const galleryPhotos = GALLERY_FIELDS.flatMap((field) =>
-    (((vehicle as any)[field] as string[] | undefined) ?? [])
+    (((property as any)[field] as string[] | undefined) ?? [])
       // Mapped before filtering so `index` stays the position in the source
       // array — that is what a delete has to write back against.
       .map((src, index) => ({ src, field, index }))
@@ -145,22 +145,22 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
   /* Mirrors what readState does on the server: a row that predates the flag is
      backfilled to true, so "not explicitly false" is genuinely published. The
      public feed itself tests === true. */
-  const isPublished = vehicle.showOnWebsite !== false;
+  const isPublished = property.showOnWebsite !== false;
   const webReadyHint =
     photoCount >= 6
       ? { label: "Gallery ready for web", color: "var(--cyan)" }
       : { label: "Shoot in TruLens before publishing", color: "var(--warning)" };
 
-  // Preset gorgeous South African vehicle snapshots for the phone camera simulator
-  /** Save a TruPrice benchmark the dealer has worked out themselves.
+  // Preset gorgeous South African property snapshots for the phone camera simulator
+  /** Save a TruPrice benchmark the agency has worked out themselves.
    *  This replaced a "market crawler" that invented comparable listings and
-   *  attributed them to real, named dealerships, then offered to reprice the
-   *  car from those invented numbers. */
+   *  attributed them to real, named agencies, then offered to reprice the
+   *  home from those invented numbers. */
   const handleSaveTruPrice = async () => {
     const value = Number(truPriceInput.replace(/[^0-9]/g, ""));
     if (!value) return;
     setSavingTruPrice(true);
-    await onUpdateVehicle(vehicle.id, { truPrice: value });
+    await onUpdateProperty(property.id, { truPrice: value });
     setSavingTruPrice(false);
     setEditingTruPrice(false);
   };
@@ -171,7 +171,7 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
     if (!files) return;
 
     setUploading(true);
-    const existingImages = vehicle.images || [];
+    const existingImages = property.images || [];
     const readPromises = Array.from(files).map((file: any) => {
       return new Promise<string>((resolve) => {
         const reader = new FileReader();
@@ -181,7 +181,7 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
     });
 
     Promise.all(readPromises).then(async (newBase64s) => {
-      await onUpdateVehicle(vehicle.id, {
+      await onUpdateProperty(property.id, {
         images: [...existingImages, ...newBase64s]
       });
       setActiveImageIndex(existingImages.length);
@@ -195,8 +195,8 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
     const target = galleryPhotos[indexToDelete];
     if (!target) return;
     if (!confirm("Remove this image from showroom listing?")) return;
-    const source = ((vehicle as any)[target.field] as string[] | undefined) || [];
-    await onUpdateVehicle(vehicle.id, {
+    const source = ((property as any)[target.field] as string[] | undefined) || [];
+    await onUpdateProperty(property.id, {
       [target.field]: source.filter((_, i) => i !== target.index),
     } as any);
     setActiveImageIndex(Math.max(0, indexToDelete - 1));
@@ -204,10 +204,10 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
 
   // Load connected social accounts when syndication tab opens
   const loadSocialAccounts = async () => {
-    if (!dealershipId) return;
+    if (!agencyId) return;
     setSocialLoading(true);
     try {
-      const res = await authFetch(`/api/social/accounts?dealershipId=${encodeURIComponent(dealershipId)}`);
+      const res = await authFetch(`/api/social/accounts?agencyId=${encodeURIComponent(agencyId)}`);
       if (res.ok) {
         const data = await res.json();
         setSocialAccounts(data.accounts || []);
@@ -216,15 +216,18 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
     setSocialLoading(false);
   };
 
+  const propertyTitle = () =>
+    property.address || `${property.propertyType || "Property"} · ${property.suburb || ""}`;
+
   const buildDefaultCaption = () =>
-    `${vehicle.address || `${vehicle.make} ${vehicle.model}`} · ${vehicle.suburb || ""}\n` +
-    `${vehicle.bedrooms || "?"} bed · ${vehicle.bathrooms || "?"} bath · ${vehicle.erfSize || "?"} erf\n` +
-    `R ${Math.round(vehicle.askingPrice).toLocaleString("en-ZA")}\n\n` +
-    (vehicle.description ? vehicle.description + "\n\n" : "") +
+    `${propertyTitle()}\n` +
+    `${property.bedrooms || "?"} bed · ${property.bathrooms || "?"} bath · ${property.erfSize || "?"} erf\n` +
+    `R ${Math.round(property.askingPrice).toLocaleString("en-ZA")}\n\n` +
+    (property.description ? property.description + "\n\n" : "") +
     `Contact us to book a viewing or enquire about this property!`;
 
   const handleSocialPublish = async () => {
-    if (!dealershipId || !selectedAccounts.size) return;
+    if (!agencyId || !selectedAccounts.size) return;
     setSocialPublishing(true);
     setSocialResult(null);
     try {
@@ -232,8 +235,8 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          dealershipId,
-          propertyId: vehicle.id,
+          agencyId,
+          propertyId: property.id,
           caption: socialCaption,
           accountIds: Array.from(selectedAccounts),
         }),
@@ -253,8 +256,8 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
-  // No stand-in photo. This fell back to a stock image of an unrelated car,
-  // which the public feed then served as the vehicle's hero shot.
+  // No stand-in photo. This fell back to a listing image of an unrelated home,
+  // which the public feed then served as the property's hero shot.
   const imagesList = galleryPhotos.map((p) => p.src);
   // Deleting the last photo, or a shorter capture replacing a longer one,
   // leaves the index past the end — which rendered an empty frame.
@@ -271,10 +274,10 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
         <div className="hidden md:flex items-center justify-between gap-3 px-5 py-3.5 border-b border-white/10 bg-[color:var(--ink)] shrink-0">
           <div className="flex items-baseline gap-2 min-w-0">
             <h3 className="text-[18px] font-semibold text-[color:var(--white)] leading-tight truncate">
-              {vehicle.address || `${vehicle.make} ${vehicle.model}`}
+              {propertyTitle()}
             </h3>
-            <span className="text-[13px] text-[color:var(--white-dim)] truncate">{vehicle.suburb || vehicle.trim || ""}</span>
-            <span className="text-[13px] font-mono text-[color:var(--muted)] shrink-0">{vehicle.listingRef || vehicle.stockNumber}</span>
+            <span className="text-[13px] text-[color:var(--white-dim)] truncate">{property.suburb || ""}</span>
+            <span className="text-[13px] font-mono text-[color:var(--muted)] shrink-0">{property.listingRef}</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span
@@ -291,9 +294,9 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
               <FileText size={14} />
               Inspection report
             </button>
-            {onReturnToStock && vehicle.status === "SOLD" && (
+            {onReturnToListing && property.status === "SOLD" && (
               <button
-                onClick={() => onReturnToStock(vehicle)}
+                onClick={() => onReturnToListing(property)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[color:var(--glass-line)] bg-[color:var(--glass)] text-[color:var(--cyan)] hover:text-[color:var(--white)] text-[13px] font-semibold transition-colors cursor-pointer"
                 title="Cancellation — put this property back on the market and reopen the deal"
               >
@@ -355,10 +358,10 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
           </div>
           <div className="md:hidden absolute left-4 bottom-3 z-20 min-w-0 pr-16">
             <div className="text-[20px] font-semibold tracking-[-0.015em] text-[color:var(--white)] leading-tight truncate">
-              {vehicle.address || `${vehicle.make} ${vehicle.model}`}
+              {propertyTitle()}
             </div>
             <div className="text-[13px] text-[color:var(--white-dim)] truncate">
-              {vehicle.suburb || vehicle.trim || ""} · <span className="font-mono">{vehicle.listingRef || vehicle.stockNumber}</span>
+              {property.suburb || ""} · <span className="font-mono">{property.listingRef}</span>
             </div>
           </div>
           <div className="md:hidden absolute right-4 bottom-3 z-20">
@@ -388,7 +391,7 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
           <div className="h-[230px] md:h-auto flex items-center justify-center md:min-h-[300px] md:max-h-[480px] md:flex-1 overflow-hidden">
             <img
               src={imagesList[safeIndex]}
-              alt={`${vehicle.make} ${vehicle.model}`}
+              alt={`${property.propertyType} · ${property.suburb}`}
               className="w-full h-full object-cover md:w-auto md:max-h-full md:max-w-full md:object-contain md:rounded-none"
             />
           </div>
@@ -454,7 +457,7 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
         {/* RIGHT COLUMN: DETAIL SPECS, INSPECTION & RECON TABS */}
         <div className="md:w-2/5 max-md:flex-1 max-md:min-h-0 p-4 md:p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
           <div>
-            {/* Header (car name, trim, stock, close, return-to-stock) moved to
+            {/* Header (home name, finish, listing, close, return-to-market) moved to
                 the modal's top title bar so the detail panel opens straight on
                 the tab row. */}
 
@@ -515,12 +518,12 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
                   <div className="flex justify-between items-start gap-3">
                     <div className="min-w-0">
                       <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] tracking-wider">Retail</span>
-                      <div className="text-[38px] leading-none font-semibold tracking-[-0.022em] text-[color:var(--white)] font-mono mt-1">{formatZAR(vehicle.askingPrice)}</div>
-                      {vehicle.truPrice ? (
+                      <div className="text-[38px] leading-none font-semibold tracking-[-0.022em] text-[color:var(--white)] font-mono mt-1">{formatZAR(property.askingPrice)}</div>
+                      {property.truPrice ? (
                         <div className="text-[13px] mt-2 text-[color:var(--white-dim)]">
-                          TruPrice <span className="font-semibold text-[color:var(--cyan)]">{formatZAR(vehicle.truPrice)}</span>
-                          {vehicle.truPrice > vehicle.askingPrice
-                            ? ` · ${formatZAR(vehicle.truPrice - vehicle.askingPrice)} below market`
+                          TruPrice <span className="font-semibold text-[color:var(--cyan)]">{formatZAR(property.truPrice)}</span>
+                          {property.truPrice > property.askingPrice
+                            ? ` · ${formatZAR(property.truPrice - property.askingPrice)} below market`
                             : " · at or above market"}
                         </div>
                       ) : (
@@ -528,11 +531,11 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
                       )}
                     </div>
                     <button
-                      onClick={() => { setTruPriceInput(String(vehicle.truPrice || vehicle.askingPrice || "")); setEditingTruPrice(true); }}
+                      onClick={() => { setTruPriceInput(String(property.truPrice || property.askingPrice || "")); setEditingTruPrice(true); }}
                       className="px-3 min-h-[32px] text-[13px] font-semibold rounded-[8px] text-[color:var(--white-dim)] hover:text-[color:var(--white)] cursor-pointer shrink-0"
                       style={{ background: "rgba(232,234,230,0.06)" }}
                     >
-                      {vehicle.truPrice ? "Edit" : "Set"}
+                      {property.truPrice ? "Edit" : "Set"}
                     </button>
                   </div>
 
@@ -576,10 +579,10 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
                 <div className="flex items-center justify-between gap-3 py-3 border-y border-white/[0.07]">
                   <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Showroom category</span>
                   <select
-                    value={vehicle.category || ""}
+                    value={property.category || ""}
                     onChange={(e) => {
                       const val = e.target.value as Property["category"] | "";
-                      onUpdateVehicle(vehicle.id, { category: val || undefined } as Partial<Property>);
+                      onUpdateProperty(property.id, { category: val || undefined } as Partial<Property>);
                     }}
                     className="min-w-[180px] bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
                   >
@@ -590,8 +593,8 @@ export default function PropertyDetailModal({ vehicle, isOpen, onClose, onUpdate
                   </select>
                 </div>
 
-                {/* Vehicle details — collapsed by default so the modal stays
-                    scannable. Dealer identity fields are rare-touch (usually
+                {/* Property details — collapsed by default so the modal stays
+                    scannable. Agency identity fields are rare-touch (usually
                     only once, to correct a typo the disc scanner missed), so
                     they live one tap deeper. Every input saves on blur; the
                     server stamps a per-field updatedAt and pushes back to
@@ -620,13 +623,13 @@ Property details &amp; specs
                         <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>
                         <input
                           type={f.type}
-                          defaultValue={(vehicle as any)[f.key] ?? ""}
+                          defaultValue={(property as any)[f.key] ?? ""}
                           onBlur={(e) => {
                             const raw = e.target.value;
-                            const cur = (vehicle as any)[f.key];
+                            const cur = (property as any)[f.key];
                             const next = f.type === "number" ? (raw === "" ? 0 : Number(raw)) : raw;
                             if (next === cur) return;
-                            onUpdateVehicle(vehicle.id, { [f.key]: next } as Partial<Property>);
+                            onUpdateProperty(property.id, { [f.key]: next } as Partial<Property>);
                           }}
                           className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
                         />
@@ -635,8 +638,8 @@ Property details &amp; specs
                     <div className="flex flex-col">
                       <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Bond / transfer status</label>
                       <select
-                        defaultValue={(vehicle as any).bondStatus || "N/A"}
-                        onChange={(e) => onUpdateVehicle(vehicle.id, { bondStatus: e.target.value } as Partial<Property>)}
+                        defaultValue={(property as any).bondStatus || "N/A"}
+                        onChange={(e) => onUpdateProperty(property.id, { bondStatus: e.target.value } as Partial<Property>)}
                         className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
                       >
                         <option>N/A</option>
@@ -648,8 +651,8 @@ Property details &amp; specs
                     <div className="flex flex-col">
                       <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Occupancy</label>
                       <select
-                        defaultValue={(vehicle as any).occupancy || "Vacant"}
-                        onChange={(e) => onUpdateVehicle(vehicle.id, { occupancy: e.target.value } as Partial<Property>)}
+                        defaultValue={(property as any).occupancy || "Vacant"}
+                        onChange={(e) => onUpdateProperty(property.id, { occupancy: e.target.value } as Partial<Property>)}
                         className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
                       >
                         <option>Vacant</option>
@@ -660,10 +663,10 @@ Property details &amp; specs
                     <div className="flex flex-col col-span-2">
                       <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Agent notes</label>
                       <textarea
-                        defaultValue={vehicle.description || ""}
+                        defaultValue={property.description || ""}
                         onBlur={(e) => {
-                          if (e.target.value === (vehicle.description || "")) return;
-                          onUpdateVehicle(vehicle.id, { description: e.target.value } as Partial<Property>);
+                          if (e.target.value === (property.description || "")) return;
+                          onUpdateProperty(property.id, { description: e.target.value } as Partial<Property>);
                         }}
                         rows={3}
                         className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5 resize-y"
@@ -684,11 +687,11 @@ Property details &amp; specs
             {activeTab === "inspection" && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 {/* Removed from here: a "TrueAI Vision Platform" that reported the
-                    same invented damage on every vehicle ("Rear Left Fender Wheel
+                    same invented damage on every property ("Rear Left Fender Wheel
                     Arch Scratch, Severity MEDIUM, Est. Repair R 2,200") and could
                     push it into the recon ledger as a real cost; and a "Studio
                     Backdrop Enhancer" that narrated silhouette masking and then
-                    swapped in a stock photo of a different car of the same make.
+                    swapped in a listing photo of a different home of the same make.
                     Damage assessment belongs to TruLens/TruInspect, working on
                     real photos. What is left is text generation — which is all
                     this ever genuinely did. */}
@@ -738,20 +741,20 @@ Property details &amp; specs
                           ) : (
                             <button
                               onClick={() => {
-                                // Built from the vehicle record, instantly. The
+                                // Built from the property record, instantly. The
                                 // spinner here only ever simulated thinking.
                                 setRemarketingCopy(
-                                    `🔥 JUST ARRIVED IN SHOWROOM! 🔥\n\n` +
-                                    `🌟 ${vehicle.year} ${vehicle.make.toUpperCase()} ${vehicle.model.toUpperCase()} (${vehicle.transmission})\n` +
-                                    `📍 Mileage: ${vehicle.mileage.toLocaleString()} km\n` +
-                                    `⛽ Fuel Type: ${vehicle.fuelType}\n` +
-                                    `💰 Price: ${formatZAR(vehicle.askingPrice)}\n\n` +
-                                    // Claims the dealer can stand behind. This previously asserted
+                                    `🔥 JUST LISTED! 🔥\n\n` +
+                                    `🌟 ${propertyTitle()}\n` +
+                                    `🛏 ${property.bedrooms || "?"} bed · ${property.bathrooms || "?"} bath · ${property.erfSize || "?"} erf\n` +
+                                    `📍 Floor size: ${property.floorSize || "—"} m²\n` +
+                                    `💰 Price: ${formatZAR(property.askingPrice)}\n\n` +
+                                    // Claims the agency can stand behind. This previously asserted
                                     // "NATIS Fully Checked & Cleared" and a "TrueAI quality
                                     // certificate" in copy meant for public adverts — neither had
-                                    // happened, and the dealer would have been the one publishing it.
-                                    `✨ Well looked after and ready to drive away.\n\n` +
-                                    `📞 Contact us now to secure or book a test-drive. Finance options available!`
+                                    // happened, and the agency would have been the one publishing it.
+                                    `✨ Well presented and ready to move into.\n\n` +
+                                    `📞 Contact us now to secure or book a viewing. Finance options available!`
                                 );
                               }}
                               className="w-full py-2 bg-[color:var(--cyan)] hover:bg-opacity-90 text-[13px] on-fill font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
@@ -772,8 +775,8 @@ Property details &amp; specs
                             </div>
                             <button
                               onClick={() => {
-                                alert("Generated Meta Title:\n" + `${vehicle.year} ${vehicle.make} ${vehicle.model} for Sale | Approved Dealer\n\n` + 
-                                      "Generated SEO Description:\n" + `Looking for a pristine ${vehicle.year} ${vehicle.make} ${vehicle.model}? This ${vehicle.bodyType || 'vehicle'} offers incredible value at ${formatZAR(vehicle.askingPrice)}. Fully inspected and approved.`);
+                                alert("Generated Meta Title:\n" + `${propertyTitle()} for Sale | Approved Agency\n\n` + 
+                                      "Generated SEO Description:\n" + `Looking for a ${property.propertyType || "property"} in ${property.suburb || "a great area"}? This home offers ${property.bedrooms || "?"} bedrooms and ${property.bathrooms || "?"} bathrooms at ${formatZAR(property.askingPrice)}. Fully inspected and approved.`);
                               }}
                               className="w-full py-2 bg-[color:var(--glass)] hover:bg-white/10 border border-white/10 text-[13px] text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2"
                             >
@@ -790,15 +793,15 @@ Property details &amp; specs
             {activeTab === "recon" && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 {(() => {
-                  const tasks = vehicle.maintenanceTasks || [];
+                  const tasks = property.maintenanceTasks || [];
                   const totalReconCost = tasks.reduce((sum, t) => sum + t.cost, 0);
-                  const adjustedCostBasis = vehicle.costPrice + totalReconCost;
-                  const profit = vehicle.askingPrice - adjustedCostBasis;
-                  const marginPercent = vehicle.askingPrice > 0 ? (profit / vehicle.askingPrice) * 100 : 0;
+                  const adjustedCostBasis = property.costPrice + totalReconCost;
+                  const profit = property.askingPrice - adjustedCostBasis;
+                  const marginPercent = property.askingPrice > 0 ? (profit / property.askingPrice) * 100 : 0;
                   const targetProfitThreshold = 25000; // R25,000 target
                   const targetMarginThreshold = 10; // 10% target
                   const isBelowTarget = profit < targetProfitThreshold || marginPercent < targetMarginThreshold;
-                  const suggestedHealthyPrice = Math.round((vehicle.costPrice + totalReconCost) * 1.15); // 15% margin markup
+                  const suggestedHealthyPrice = Math.round((property.costPrice + totalReconCost) * 1.15); // 15% margin markup
 
                   const handleAddTask = async (e: React.FormEvent) => {
                     e.preventDefault();
@@ -814,7 +817,7 @@ Property details &amp; specs
                     };
 
                     const updatedTasks = [...tasks, newTask];
-                    await onUpdateVehicle(vehicle.id, { maintenanceTasks: updatedTasks });
+                    await onUpdateProperty(property.id, { maintenanceTasks: updatedTasks });
                     setNewReconName("");
                     setNewReconCost("");
                   };
@@ -825,12 +828,12 @@ Property details &amp; specs
                         ? { ...t, status: (t.status === "Completed" ? "Pending" : "Completed") as any } 
                         : t
                     );
-                    await onUpdateVehicle(vehicle.id, { maintenanceTasks: updated });
+                    await onUpdateProperty(property.id, { maintenanceTasks: updated });
                   };
 
                   const handleDeleteTask = async (taskId: string) => {
                     const updated = tasks.filter(t => t.id !== taskId);
-                    await onUpdateVehicle(vehicle.id, { maintenanceTasks: updated });
+                    await onUpdateProperty(property.id, { maintenanceTasks: updated });
                   };
 
                   /** Typical recon costs by category — a table, not a model.
@@ -898,7 +901,7 @@ Property details &amp; specs
                           </div>
                           <button
                             onClick={async () => {
-                              await onUpdateVehicle(vehicle.id, { askingPrice: suggestedHealthyPrice });
+                              await onUpdateProperty(property.id, { askingPrice: suggestedHealthyPrice });
                               alert(`Asking price adjusted to R ${suggestedHealthyPrice.toLocaleString("en-ZA")}! Target margin secured.`);
                             }}
                             className="w-full py-2 bg-[color:var(--glass)] hover:bg-[color:var(--glass)] text-[color:var(--muted)] font-semibold text-[13px] rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 "
@@ -1017,8 +1020,8 @@ Property details &amp; specs
                             `maintenanceTasks[].photo` is not in VEHICLE_PHOTO_FIELDS,
                             so unlike every other upload in the app it never went
                             through putPhotos — the image stayed as base64 inside
-                            the vehicle row, adding roughly 4 MB per photo to the
-                            dealer's state file, which is exactly what moving
+                            the property row, adding roughly 4 MB per photo to the
+                            agency's state file, which is exactly what moving
                             photos into the media store was meant to stop.
                             Damage photos belong in the gallery above (or in
                             TruLens), where they are stored as files. */}
@@ -1047,7 +1050,7 @@ Property details &amp; specs
               ];
 
               // Load accounts on first render of this tab
-              if (!socialLoading && socialAccounts.length === 0 && dealershipId) {
+              if (!socialLoading && socialAccounts.length === 0 && agencyId) {
                 loadSocialAccounts();
               }
               if (!socialCaption) setSocialCaption(buildDefaultCaption());
@@ -1082,14 +1085,14 @@ Property details &amp; specs
                 const results: string[] = [];
 
                 // Publish to Zernio channels
-                if (zernioSelected.length && dealershipId) {
+                if (zernioSelected.length && agencyId) {
                   try {
                     const res = await authFetch("/api/social/publish", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        dealershipId,
-                        propertyId: vehicle.id,
+                        agencyId,
+                        propertyId: property.id,
                         caption: socialCaption,
                         accountIds: zernioSelected,
                       }),
@@ -1247,7 +1250,7 @@ Property details &amp; specs
                 {/* Marketplace (coming soon) */}
                 <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl p-4 flex flex-col gap-3 opacity-50">
                   <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Marketplace syndication</h4>
-                  <p className="text-[13px] text-[rgba(232,234,230,0.55)]">AutoTrader SA, Cars.co.za — coming soon</p>
+                  <p className="text-[13px] text-[rgba(232,234,230,0.55)]">Property24 SA, Private Property — coming soon</p>
                 </div>
               </div>
               );
@@ -1259,7 +1262,7 @@ Property details &amp; specs
           <div className="shrink-0 pt-3 mt-3 border-t border-white/10 flex flex-col gap-2">
             <label
               className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-[color:var(--glass)] border border-white/5 cursor-pointer select-none"
-              title={isPublished ? "On website — tap to unpublish" : "Publish this vehicle to the dealer website"}
+              title={isPublished ? "On website — tap to unpublish" : "Publish this property to the agency website"}
             >
               <span className="flex items-center gap-2 text-[13px] text-[color:var(--white)] font-semibold">
                 <Globe size={14} className={isPublished ? "text-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.55)]"} />
@@ -1286,7 +1289,7 @@ Property details &amp; specs
                 onChange={async () => {
                   setPublishing(true);
                   try {
-                    await onUpdateVehicle(vehicle.id, { showOnWebsite: !isPublished } as Partial<Property>);
+                    await onUpdateProperty(property.id, { showOnWebsite: !isPublished } as Partial<Property>);
                   } finally {
                     setPublishing(false);
                   }
@@ -1299,20 +1302,20 @@ Property details &amp; specs
               {hasLens && (
               <button
                 type="button"
-                onClick={() => openTruLens(vehicle.stockNumber)}
+                onClick={() => openTruLens(property.listingRef)}
                 className="tru-btn-ghost min-h-[44px] inline-flex items-center justify-center gap-2 text-[13px] cursor-pointer"
               >
                 <Camera size={14} /> Open in TruLens
               </button>
               )}
-              {onDeleteVehicle && (
+              {onDeleteProperty && (
                 <button
                   type="button"
-                  onClick={() => onDeleteVehicle(vehicle.id)}
-                  title="Remove this unit from stock"
+                  onClick={() => onDeleteProperty(property.id)}
+                  title="Remove this unit from listing"
                   className="min-h-[44px] inline-flex items-center justify-center gap-2 text-[13px] rounded-[10px] text-[rgba(184,106,106,0.85)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
                 >
-                  <Trash2 size={14} /> Remove from stock
+                  <Trash2 size={14} /> Remove from listing
                 </button>
               )}
             </div>
@@ -1324,7 +1327,7 @@ Property details &amp; specs
             TruLens is the primary floor action; WhatsApp is one-to-one to the
             customer in front of you (blurb + images via the Web Share API,
             falling back to wa.me); the sync opens the Publish tab (one-to-many
-            to connected channels) and only appears for TruSocial dealers. */}
+            to connected channels) and only appears for TruSocial agencies. */}
         <div
           className="md:hidden shrink-0 flex items-center gap-2 px-4 pt-3 border-t border-[color:var(--glass-line)] bg-[rgba(11,15,23,0.95)]"
           style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom,0px))" }}
@@ -1332,7 +1335,7 @@ Property details &amp; specs
           {hasLens && (
           <button
             type="button"
-            onClick={() => openTruLens(vehicle.stockNumber)}
+            onClick={() => openTruLens(property.listingRef)}
             className="btn btn-primary flex-1 min-h-[48px] inline-flex items-center justify-center gap-2"
           >
             <Camera size={16} /> Shoot in TruLens
@@ -1340,8 +1343,8 @@ Property details &amp; specs
           )}
           <button
             type="button"
-            onClick={() => { void openStockWhatsApp(vehicle as any); }}
-            aria-label="WhatsApp this vehicle to a customer"
+            onClick={() => { void openListingWhatsApp(property as any); }}
+            aria-label="WhatsApp this property to a customer"
             className="h-[56px] w-[56px] shrink-0 grid place-items-center rounded-xl text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
           >
             <MessageCircle size={18} />
@@ -1360,7 +1363,7 @@ Property details &amp; specs
       </div>
 
       {showInspection && (
-        <InspectionReport propertyId={vehicle.id} onClose={() => setShowInspection(false)} />
+        <InspectionReport propertyId={property.id} onClose={() => setShowInspection(false)} />
       )}
     </div>
   );

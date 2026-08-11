@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 /** Width at which DocHub's desktop-only surfaces appear. Matches the mobile
  *  breakpoint in ./pwa, but deliberately does not reuse `isMobileViewport()`:
- *  that also returns true for an INSTALLED app, so a TruFlow installed as a
+ *  that also returns true for an INSTALLED app, so a PropInspect installed as a
  *  desktop PWA reported itself as mobile and lost DocHub entirely on a 27"
  *  monitor. Screen size is the only thing that matters here. */
 const DESKTOP_MIN_WIDTH = 901;

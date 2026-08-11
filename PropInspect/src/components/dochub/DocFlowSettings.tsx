@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Check, Loader2, Upload, FileText } from "lucide-react";
-import type { Dealership, DocMode, DocStage } from "../../types";
+import type { Agency, DocMode, DocStage } from "../../types";
 import { DOC_STAGES, FIXED_STAGE_MODES } from "../../types";
 import { updateDocFlow } from "../../api";
 
 interface Props {
-  dealership: Dealership;
+  agency: Agency;
   isAdmin?: boolean;
-  onSaved?: (updated: Dealership) => void;
+  onSaved?: (updated: Agency) => void;
 }
 
 const STAGE_LABEL: Record<DocStage, string> = {
@@ -19,24 +19,24 @@ const STAGE_LABEL: Record<DocStage, string> = {
 };
 
 const STAGE_DESC: Record<DocStage, string> = {
-  offer: "Preliminary offer — VIN, price, validity window.",
+  offer: "Preliminary offer — erf ref, price, validity window.",
   transfer: "Offer to purchase. NCA disclosure if financed.",
-  compliance: "NATIS + roadworthy — government-issued, tick-box only.",
+  compliance: "Electrical COC + compliance — tick-box only.",
   invoice: "Tax invoice for the sale.",
-  occupation: "Warranty + NATIS-updated confirmation on release.",
+  occupation: "Occupation certificate + transfer confirmation on handover.",
 };
 
-/** Per-dealer DocHub configuration. Modes per stage:
- *  `generate` (TruFlow renders a PDF from a template — deferred in v1),
- *  `attach`   (dealer uploads their own signed doc),
+/** Per-agency DocHub configuration. Modes per stage:
+ *  `generate` (PropInspect renders a PDF from a template — deferred in v1),
+ *  `attach`   (agency uploads their own signed doc),
  *  `confirm`  (checkboxes only — fixed for compliance; NATIS/RWC are
- *              government paperwork and cannot be produced by the dealer). */
-export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props) {
+ *              government paperwork and cannot be produced by the agency). */
+export default function DocFlowSettings({ agency, isAdmin, onSaved }: Props) {
   const [flow, setFlow] = useState<Partial<Record<DocStage, DocMode>>>(() => {
     const initial: Partial<Record<DocStage, DocMode>> = {};
     for (const s of DOC_STAGES) {
       // Fixed stages ignore stored config — always render as the fixed mode.
-      initial[s] = FIXED_STAGE_MODES[s] || dealership.docFlow?.[s] || "attach";
+      initial[s] = FIXED_STAGE_MODES[s] || agency.docFlow?.[s] || "attach";
     }
     return initial;
   });
@@ -53,7 +53,7 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
     setSaving(true);
     setError(null);
     try {
-      const updated = await updateDocFlow(flow, isAdmin ? dealership.id : undefined);
+      const updated = await updateDocFlow(flow, isAdmin ? agency.id : undefined);
       onSaved?.(updated);
       setSaved(true);
     } catch (err) {
@@ -69,13 +69,13 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
         <FileText className="w-4 h-4" />
         <span>
           DocHub flow —{" "}
-          <span className="text-[color:var(--white)] font-semibold">{dealership.name}</span>
+          <span className="text-[color:var(--white)] font-semibold">{agency.name}</span>
         </span>
       </div>
 
       <p className="text-xs text-[rgba(232,234,230,0.55)] leading-relaxed">
         Choose how each stage's document is produced. <b>Attach</b> lets you upload your own
-        signed document; <b>Generate</b> renders one from a TruFlow template
+        signed document; <b>Generate</b> renders one from a PropInspect template
         (coming in the next release).
       </p>
 
@@ -96,7 +96,7 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
               <div className="shrink-0 flex items-center gap-2">
                 {FIXED_STAGE_MODES[stage] ? (
                   /* Not a choice. Compliance is NATIS and a roadworthy — both
-                     issued by government, so there is nothing for the dealer to
+                     issued by government, so there is nothing for the agency to
                      generate or attach. Rendering the buttons here let the row
                      be clicked into a mode DocHubPanel then ignored, so the
                      settings screen disagreed with the actual behaviour. */

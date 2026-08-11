@@ -3,7 +3,7 @@
  * Flow stores flat images[] from TruLens export — not full slot map —
  * so we score by count + status + sync, not full PHOTO_SLOTS.
  *
- * TruLens still enforces required slots + VIR ≥ 70 before publish.
+ * TruLens still enforces required slots + inspection score ≥ 70 before publish.
  */
 
 export type DmsReadinessLevel = "capture" | "partial" | "ready" | "listed";
@@ -19,7 +19,7 @@ export interface DmsGalleryReadiness {
 }
 
 /* Target gallery size when only DMS image arrays exist. Aligned to TruLens's
-   retail "core" set — the 8 exterior-lap panels + interior + odometer = 10 — so a
+   retail "core" set — the 8 exterior-lap panels + interior + detail shots = 10 — so a
    complete core capture reads as web-ready here instead of "almost ready". Was 12,
    which left a full 10-shot core stuck below target and showing "not ready". */
 export const WEB_GALLERY_TARGET = 10;
@@ -33,11 +33,11 @@ export function computeDmsGalleryReadiness(v: {
   showOnWebsite?: boolean;
 }): DmsGalleryReadiness {
   /* The gallery is images + extrasPhotos, which is exactly what the public feed
-     publishes (toPublicVehicle concatenates the two). This counted `images`
+     publishes (toPublicProperty concatenates the two). This counted `images`
      alone — and mapAutoLensPhotos only files the eight exterior slots there,
-     sending every interior, engine, detail and document shot to extrasPhotos.
+     sending every interior, kitchen, detail and document shot to extrasPhotos.
      So a full 22-photo capture scored 8 against a target of 12 and could never
-     reach web-ready no matter how much the dealer shot. */
+     reach web-ready no matter how much the agency shot. */
   const count = (a?: string[] | null) => (Array.isArray(a) ? a.filter(Boolean).length : 0);
   const photoCount = count(v.images) + count(v.extrasPhotos);
   const reasons: string[] = [];
@@ -85,7 +85,7 @@ export function computeDmsGalleryReadiness(v: {
       color: "#06b6d4",
       photoCount,
       webReady: false,
-      reasons: ["Unit sold — remove from active web stock"],
+      reasons: ["Unit sold — remove from active web listing"],
     };
   }
 

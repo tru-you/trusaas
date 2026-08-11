@@ -37,7 +37,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
     
     let totalRevenue = 0;
     let totalMargin = 0;
-    const items: { lead: Enquiry; vehicle: Property; margin: number; commission: number }[] = [];
+    const items: { lead: Enquiry; property: Property; margin: number; commission: number }[] = [];
 
     closedWonLeads.forEach(l => {
       const v = properties.find(veh => veh.id === l.propertyId);
@@ -47,7 +47,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
         totalRevenue += revenue;
         totalMargin += margin;
 
-        // Calculate commission for this specific vehicle based on selected model
+        // Calculate commission for this specific property based on selected model
         let commission = 0;
         if (model === 'flat') {
           commission = margin * (flatRate / 100);
@@ -59,7 +59,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
           if (volume >= 5) rate = 12;
           commission = margin * (rate / 100);
         } else if (model === 'marginTier') {
-          // Tiered commission by vehicle margin
+          // Tiered commission by property margin
           if (margin < 20000) {
             commission = 1500; // Flat fee
           } else if (margin >= 20000 && margin <= 50000) {
@@ -69,7 +69,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
           }
         }
 
-        items.push({ lead: l, vehicle: v, margin, commission });
+        items.push({ lead: l, property: v, margin, commission });
       }
     });
 
@@ -105,9 +105,9 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
     };
   });
 
-  const totalDealershipRevenue = repsData.reduce((sum, r) => sum + r.totalRevenue, 0);
-  const totalDealershipMargin = repsData.reduce((sum, r) => sum + r.totalMargin, 0);
-  const totalDealershipCommission = repsData.reduce((sum, r) => sum + r.commission, 0);
+  const totalAgencyRevenue = repsData.reduce((sum, r) => sum + r.totalRevenue, 0);
+  const totalAgencyMargin = repsData.reduce((sum, r) => sum + r.totalMargin, 0);
+  const totalAgencyCommission = repsData.reduce((sum, r) => sum + r.commission, 0);
   const totalUnitsSold = repsData.reduce((sum, r) => sum + r.closedWonLeads.length, 0);
 
   return (
@@ -229,7 +229,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
               <div>
                 <span className="font-semibold text-[13px] text-[color:var(--white)] block">High-Margin Performance Tiers</span>
                 <span className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed block">
-                  Protect dealership profits. Low-margin units receive a flat R1,500, while high-margin properties yield scaling percentages.
+                  Protect agency profits. Low-margin units receive a flat R1,500, while high-margin properties yield scaling percentages.
                 </span>
               </div>
             </div>
@@ -251,7 +251,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
         )}
       </div>
 
-      {/* Dealership Aggregate Summary Cards */}
+      {/* Agency Aggregate Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-[color:var(--ink)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
           <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal">Total Showroom Sales</span>
@@ -259,15 +259,15 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
         </div>
         <div className="bg-[color:var(--ink)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
           <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal">Gross Sales Revenue</span>
-          <span className="text-lg font-semibold text-[color:var(--white)]">{formatZAR(totalDealershipRevenue)}</span>
+          <span className="text-lg font-semibold text-[color:var(--white)]">{formatZAR(totalAgencyRevenue)}</span>
         </div>
         <div className="bg-[color:var(--ink)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
           <span className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)] tracking-normal">Gross Profit Margin</span>
-          <span className="text-lg font-semibold text-[color:var(--cyan)]">{formatZAR(totalDealershipMargin)}</span>
+          <span className="text-lg font-semibold text-[color:var(--cyan)]">{formatZAR(totalAgencyMargin)}</span>
         </div>
         <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-3 flex flex-col gap-1 shadow-lg shadow-[color:var(--cyan-faint)]">
           <span className="text-[13px] font-semibold text-[color:var(--cyan-bright)] tracking-normal">Estimated Comm. Pool</span>
-          <span className="text-lg font-semibold text-[color:var(--cyan)]">{formatZAR(totalDealershipCommission)}</span>
+          <span className="text-lg font-semibold text-[color:var(--cyan)]">{formatZAR(totalAgencyCommission)}</span>
         </div>
       </div>
 
@@ -328,7 +328,7 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                           <table className="w-full text-left text-[13px] border-collapse stack-mobile">
                             <thead>
                               <tr className="text-[rgba(232,234,230,0.72)] text-[13px] border-b border-white/5">
-                                <th className="py-2 px-3">Vehicle</th>
+                                <th className="py-2 px-3">Property</th>
                                 <th className="py-2 px-3 text-right">Retail Price</th>
                                 <th className="py-2 px-3 text-right">Cost Price</th>
                                 <th className="py-2 px-3 text-right">Gross profit</th>
@@ -338,12 +338,12 @@ export const CommissionEstimator: React.FC<CommissionEstimatorProps> = ({ users,
                             <tbody>
                               {items.map((item, idx) => (
                                 <tr key={idx} className="border-b border-white/3 last:border-0 hover:bg-[color:var(--glass)]">
-                                  <td data-label="Vehicle" className="py-3 px-3 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">
-                                    {item.vehicle.year} {item.vehicle.make} {item.vehicle.model}
-                                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono ml-2">({item.vehicle.stockNumber})</span>
+                                  <td data-label="Property" className="py-3 px-3 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">
+                                    {item.property.address || `${item.property.propertyType || "Property"} · ${item.property.suburb || ""}`}
+                                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono ml-2">({item.property.listingRef})</span>
                                   </td>
-                                  <td data-label="Retail" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(item.vehicle.askingPrice)}</td>
-                                  <td data-label="Cost" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(item.vehicle.costPrice)}</td>
+                                  <td data-label="Retail" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(item.property.askingPrice)}</td>
+                                  <td data-label="Cost" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(item.property.costPrice)}</td>
                                   <td data-label="Gross" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[color:var(--cyan)] font-semibold">{formatZAR(item.margin)}</td>
                                   <td data-label="Commission" className="py-3 px-3 text-[13px] md:text-[15px] text-right text-[color:var(--cyan-bright)] font-semibold">{formatZAR(item.commission)}</td>
                                 </tr>

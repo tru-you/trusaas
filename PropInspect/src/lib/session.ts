@@ -1,5 +1,5 @@
 /**
- * Session handling for TruFlow Premium.
+ * Session handling for PropInspect Premium.
  *
  * The old login compared a hardcoded password in the browser and set a boolean,
  * which meant the "gate" was decoration — every /api route answered without it.
@@ -12,13 +12,13 @@ const ACCOUNT_KEY = "truflow_session_account";
 
 export type Account = {
   label: string;
-  /** Mirrors AuthRole on the server. This said "dealer" | "admin", neither of
+  /** Mirrors AuthRole on the server. This said "agency" | "admin", neither of
    *  which the server has issued for some time — every real account is a
    *  principal. The effect was that TypeScript treated the role checks driving
    *  the owner/manager/salesperson view as impossible comparisons, so the one
    *  place that decides what a user can see had no type checking at all. */
   role: "admin" | "principal" | "manager" | "salesperson";
-  dealershipId?: string;
+  agencyId?: string;
 };
 
 /** Is there a usable session? Reads the token's own expiry so a stale one
@@ -61,7 +61,7 @@ export function clearSession() {
 }
 
 /** Enter the sandbox demo — no code. Lands in an isolated tenant seeded with
- *  sample stock and enquiries, so a prospect never sees a real dealership. */
+ *  sample listing and enquiries, so a prospect never sees a real agency. */
 export async function enterDemo(): Promise<Account> {
   const res = await fetch("/api/auth/demo", { method: "POST" });
   const data = await res.json().catch(() => ({}));

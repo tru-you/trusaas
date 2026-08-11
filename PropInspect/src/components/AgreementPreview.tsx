@@ -1,25 +1,25 @@
 import React, { useRef, useState } from "react";
-import { Agreement, Enquiry, Property, Dealership } from "../types";
+import { Agreement, Enquiry, Property, Agency } from "../types";
 import { Printer, Shield, FileSignature, RotateCcw, Check } from "lucide-react";
 
 interface AgreementPreviewProps {
   agreement: Agreement;
   lead?: Enquiry;
   property?: Property;
-  dealership?: Dealership;
+  agency?: Agency;
   onSignAgreement?: (id: string, signature: string) => Promise<void>;
 }
 
-export default function AgreementPreview({ agreement, lead, property, dealership, onSignAgreement }: AgreementPreviewProps) {
+export default function AgreementPreview({ agreement, lead, property, agency, onSignAgreement }: AgreementPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [signMode, setSignMode] = useState<"draw" | "type">("draw");
   const [typedName, setTypedName] = useState(lead ? `${lead.firstName} ${lead.lastName}` : "");
   const [submitting, setSubmitting] = useState(false);
 
-  const dealerName = dealership?.name || "Your Dealership";
-  const dealerReg = dealership?.registrationNumber || "";
-  const dealerAddress = dealership?.address || dealership?.location || "";
+  const dealerName = agency?.name || "Your Agency";
+  const dealerReg = agency?.registrationNumber || "";
+  const dealerAddress = agency?.address || agency?.location || "";
 
   const formatZAR = (num: number) => {
     return "R " + Math.round(num).toLocaleString("en-ZA");
@@ -157,7 +157,7 @@ export default function AgreementPreview({ agreement, lead, property, dealership
             <h1 className="text-center text-xl font-semibold tracking-tight">
               {agreement.type === "Offer to Purchase" ? "Offer to Purchase (OTP)" :
                agreement.type === "Finance Application" ? "Pre-Approval Credit Finance Application" :
-               agreement.type === "Trade-In Transfer" ? "Trade-In Exchange Agreement" :
+               agreement.type === "Home Sale" ? "Home Sale Exchange Agreement" :
                agreement.type === "Deposit Hold" ? "Secured Deposit Hold & Reserve Deed" :
                "Certified Binding Sales Agreement"}
             </h1>
@@ -165,7 +165,7 @@ export default function AgreementPreview({ agreement, lead, property, dealership
               Reference Index: {
                 agreement.type === "Offer to Purchase" ? "OTP-" :
                 agreement.type === "Finance Application" ? "FIN-" :
-                agreement.type === "Trade-In Transfer" ? "TRD-" :
+                agreement.type === "Home Sale" ? "HSE-" :
                 agreement.type === "Deposit Hold" ? "DEP-" : "SLS-"
               }{agreement.agreementNumber}
             </div>
@@ -173,7 +173,7 @@ export default function AgreementPreview({ agreement, lead, property, dealership
             {/* Party Grid */}
             <div className="grid grid-cols-2 gap-8 mb-6 text-[13px] text-[color:var(--tru-ink-700)] leading-relaxed border-b border-[color:var(--tru-ink-900)]/8 pb-6">
               <div>
-                <div className="font-semibold mb-2 text-[13px] tracking-wider text-[color:var(--tru-ink-300)]">PART A: DEALER MERCHANT</div>
+                <div className="font-semibold mb-2 text-[13px] tracking-wider text-[color:var(--tru-ink-300)]">PART A: AGENCY / SELLER</div>
                 <div className="font-semibold text-[color:var(--tru-ink-900)]">{dealerName}</div>
                 {dealerReg && <div>Registration No: {dealerReg}</div>}
                 {dealerAddress && dealerAddress.split("\n").map((line, i) => (
@@ -264,7 +264,7 @@ export default function AgreementPreview({ agreement, lead, property, dealership
             <div className="grid grid-cols-2 gap-12 mt-8 text-[13px] border-t border-[color:var(--tru-ink-900)]/8 pt-6">
               <div className="flex flex-col">
                 <div className="h-12 border-b border-[color:var(--tru-ink-500)]" />
-                <div className="font-semibold text-[color:var(--tru-ink-900)] mt-2">Signature of Dealer Representative</div>
+                <div className="font-semibold text-[color:var(--tru-ink-900)] mt-2">Signature of Agency Representative</div>
                 <div className="text-[color:var(--tru-ink-300)] text-[13px] mt-0.5">Date: {agreement.signedAt?.slice(0, 10) || new Date().toISOString().slice(0, 10)}</div>
               </div>
               <div className="flex flex-col">

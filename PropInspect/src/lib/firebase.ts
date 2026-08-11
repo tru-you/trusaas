@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBPNvNFJjX57vIIMb3pCVw3i-jvAa2bye8",
-  authDomain: "tru-cars.co.za",
+  authDomain: "tru-homes.co.za",
   projectId: "gen-lang-client-0151924955",
   storageBucket: "gen-lang-client-0151924955.firebasestorage.app",
   messagingSenderId: "174120974302",

@@ -7,7 +7,7 @@ import { readState } from "../services/stateStore";
 dotenv.config();
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUTH — per-dealer access codes, verified server-side.
+// AUTH — per-agency access codes, verified server-side.
 //
 // Replaces the old client-side `password === "2026"` check, which was cosmetic:
 // the code shipped in the browser bundle and every /api route was open anyway.
@@ -17,9 +17,9 @@ dotenv.config();
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Who a code belongs to.
- *  admin      — TruSaaS, every dealership
- *  principal  — the dealer who owns the account; manages their own staff
- *  manager    — full access to that dealership, no seat management
+ *  admin      — TruSaaS, every agency
+ *  principal  — the agency who owns the account; manages their own staff
+ *  manager    — full access to that agency, no seat management
  *  salesperson— same data, no seat management
  *  Seats are billable per active non-principal user. */
 export type AuthRole = "admin" | "principal" | "manager" | "salesperson";
@@ -27,8 +27,8 @@ export type AuthRole = "admin" | "principal" | "manager" | "salesperson";
 export type AuthAccount = {
   id: string;
   label: string;
-  /** Which dealership this code sees. Omitted for the master admin. */
-  dealershipId?: string;
+  /** Which agency this code sees. Omitted for the master admin. */
+  agencyId?: string;
   /** Links to a row in state.users for staff seats. Absent on the
    *  principal's own login and on the master admin. */
   userId?: string;
@@ -40,8 +40,8 @@ export type AuthAccount = {
 };
 
 export const MANAGES_USERS: AuthRole[] = ["admin", "principal"];
-/** Roles a dealer principal may hand out. Deliberately excludes admin — a
- *  dealer must never be able to mint a login that sees other dealerships. */
+/** Roles a agency principal may hand out. Deliberately excludes admin — a
+ *  agency must never be able to mint a login that sees other agencies. */
 export const ASSIGNABLE_ROLES: AuthRole[] = ["manager", "salesperson"];
 export type AuthStore = { secret: string; accounts: AuthAccount[] };
 
@@ -69,27 +69,27 @@ function generateCode(): string {
 /** A code you set yourself, if you'd rather not read a random one out of the
  *  service log. Read once at first boot from the environment:
  *    ADMIN_ACCESS_CODE       — master admin
- *    DEALER_CODE_D1 / _D2    — per dealership, id uppercased
+ *    DEALER_CODE_D1 / _D2    — per agency, id uppercased
  *  Unset means a random code is generated and printed instead. Changing the
  *  variable later does nothing; rotate the code through the API. */
-function codeFromEnv(role: AuthRole, dealershipId?: string): string {
+function codeFromEnv(role: AuthRole, agencyId?: string): string {
   const raw =
     role === "admin"
       ? process.env.ADMIN_ACCESS_CODE
-      : dealershipId && process.env[`DEALER_CODE_${dealershipId.toUpperCase()}`];
+      : agencyId && process.env[`DEALER_CODE_${agencyId.toUpperCase()}`];
   const code = String(raw || "").trim();
   // Too short to be worth having — fall back to a generated one rather than
   // quietly accepting something guessable.
   return code.length >= 6 ? code : "";
 }
 
-export function makeAccount(label: string, role: AuthRole, dealershipId?: string, preset?: string, userId?: string) {
+export function makeAccount(label: string, role: AuthRole, agencyId?: string, preset?: string, userId?: string) {
   const code = preset || generateCode();
   const salt = crypto.randomBytes(16).toString("hex");
   const account: AuthAccount = {
     id: "acc_" + crypto.randomBytes(6).toString("hex"),
     label,
-    dealershipId,
+    agencyId,
     userId,
     role,
     salt,
@@ -122,7 +122,7 @@ export function writeAuth(store: AuthStore) {
   fs.writeFileSync(AUTH_FILE, JSON.stringify(store, null, 2), "utf-8");
 }
 
-/** First boot on a fresh disk: mint a secret and one code per dealership.
+/** First boot on a fresh disk: mint a secret and one code per agency.
  *  Codes are printed to the service log exactly once — grab them from Render's
  *  log viewer. They cannot be read back afterwards, only rotated. */
 export function ensureAuthStore(): AuthStore {
@@ -140,8 +140,8 @@ export function ensureAuthStore(): AuthStore {
     store.accounts.push(account);
     issued.push(`  ${account.label.padEnd(32)} ${preset ? "*".repeat(code.length) : code} ${note(preset)}`);
   }
-  for (const d of readState().dealerships || []) {
-    if (store.accounts.some((a) => a.dealershipId === d.id)) continue;
+  for (const d of readState().agencies || []) {
+    if (store.accounts.some((a) => a.agencyId === d.id)) continue;
     const preset = codeFromEnv("principal", d.id);
     const { account, code } = makeAccount(d.name + " (owner)", "principal", d.id, preset);
     store.accounts.push(account);
@@ -164,7 +164,7 @@ export function signToken(account: AuthAccount, remember = false): string {
   const payload = Buffer.from(
     JSON.stringify({
       sub: account.id,
-      dealershipId: account.dealershipId,
+      agencyId: account.agencyId,
       userId: account.userId,
       role: account.role,
       label: account.label,
@@ -194,7 +194,7 @@ export function verifyToken(token: string): any | null {
 }
 
 /** Routes that must stay reachable without a token.
- *  The public feeds are what every dealer website reads — locking those would
+ *  The public feeds are what every agency website reads — locking those would
  *  take the showrooms offline. They expose published stock only, never enquiries. */
 export function isPublicPath(p: string): boolean {
   return (
@@ -213,7 +213,7 @@ export function isPublicPath(p: string): boolean {
 
 // TruLens pushes captures server-to-server and has no user session. Until a
 // shared key is configured on both services this stays open, so an unset key
-// can't silently break a dealer's photo export mid-capture.
+// can't silently break a agency's photo export mid-capture.
 export const SYNC_SERVICE_KEY = process.env.TRUFLOW_SYNC_KEY || "";
 export const TRULENS_URL = (process.env.TRULENS_URL || "https://lens.tru-saas.com").replace(/\/$/, "");
 
@@ -226,12 +226,12 @@ export function requireAuth(req: any, res: any, next: any) {
   }
 
   /* Product-to-product identity. The caller is TruLens or TruInspect asking
-     whether a dealer code is real and what it opens, so it carries the shared
+     whether a agency code is real and what it opens, so it carries the shared
      key rather than a session — there is no user logged in to this instance at
      that moment, which is the entire point of the call.
      Unlike push-photos there is no unset-key fallthrough: an unconfigured key
      must not turn code verification into an open endpoint anyone can test
-     dealer codes against. The handler refuses with 503 instead. */
+     agency codes against. The handler refuses with 503 instead. */
   if (req.path === "/api/auth/verify-code") {
     if (req.headers["x-tru-sync-key"] === SYNC_SERVICE_KEY && SYNC_SERVICE_KEY) return next();
     if (!SYNC_SERVICE_KEY) return next(); // handler returns 503 explaining why
@@ -263,13 +263,13 @@ export function requireAuth(req: any, res: any, next: any) {
  * rotated — and rotating is itself admin-only. The auth store lives on a
  * mounted disk, so redeploying does not re-seed it and ADMIN_ACCESS_CODE (which
  * only applies to an empty store) has no effect either. Lose the code and there
- * is no way back into the instance at all: no dealership admin, no code
- * reissue for a dealer who has lost theirs.
+ * is no way back into the instance at all: no agency admin, no code
+ * reissue for a agency who has lost theirs.
  *
  * So ADMIN_ACCESS_CODE now also repoints the existing master admin at boot.
  * The gate is Render dashboard access, which already implies full control of
  * the service — anyone who can set an env var here can deploy arbitrary code.
- * Dealer principals are deliberately untouched; this only restores the way in.
+ * Agency principals are deliberately untouched; this only restores the way in.
  */
 export function applyAdminRecovery(store: AuthStore): void {
   const preset = codeFromEnv("admin");

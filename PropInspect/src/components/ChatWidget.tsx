@@ -10,7 +10,7 @@ interface Message {
 }
 
 interface ChatWidgetProps {
-  /** Let a parent open the assistant (the dashboard's "Ask Dealer Assist"
+  /** Let a parent open the assistant (the dashboard's "Ask Agency Assist"
    *  button). Left undefined, the widget keeps owning its own state and
    *  behaves exactly as before. */
   open?: boolean;
@@ -41,7 +41,7 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
       setMessages([
         {
           id: "welcome",
-          text: "Hi — I'm Dealer Assist. I can see your stock, your enquiries and today's jobs. Ask me what to chase, what a unit should be priced at, or what's sitting too long.",
+          text: "Hi — I'm Agency Assist. I can see your listing, your enquiries and today's jobs. Ask me what to chase, what a unit should be priced at, or what's sitting too long.",
           sender: "bot",
           timestamp: new Date(),
         },
@@ -96,7 +96,7 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
           <div className="flex justify-between items-center px-4 py-3 border-b border-[rgba(138,162,184,0.1)] bg-[linear-gradient(90deg,rgba(20,102,224,0.1),rgba(21,199,192,0.05))]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[color:var(--cyan)] shadow-[var(--glow-cyan)]"></span>
-              <span className="font-semibold text-[16px] text-[color:var(--white)]">Dealer Assist</span>
+              <span className="font-semibold text-[16px] text-[color:var(--white)]">Agency Assist</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -142,7 +142,7 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Query stock, sales stats, hot prospects..."
+              placeholder="Query listing, sales stats, hot prospects..."
               className="flex-1 bg-[color:var(--glass)] border border-[rgba(138,162,184,0.1)] rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[color:var(--cyan)] focus:bg-[color:var(--cyan-faint)] transition-all"
             />
             <button aria-label="Send message"
@@ -156,7 +156,7 @@ export default function ChatWidget({ open, onOpenChange }: ChatWidgetProps = {})
         </div>
       )}
 
-      {/* No floating launcher. Dealer Assist opens from the top bar, so it sits
+      {/* No floating launcher. Agency Assist opens from the top bar, so it sits
           with the rest of the controls instead of covering the screen corner. */}
     </div>
   );

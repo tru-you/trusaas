@@ -8,7 +8,7 @@ import {
 interface DocumentsHubProps {
   documents: DealerDocument[];
   getLeadLabel?: (id: string) => string;
-  getVehicleLabel?: (id: string) => string;
+  getPropertyLabel?: (id: string) => string;
   onUpload: (file: {
     fileName: string;
     mimeType: string;
@@ -18,8 +18,8 @@ interface DocumentsHubProps {
   }) => Promise<void>;
   onSign: (id: string, signature: string, signedBy: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
-  /** Attach anything uploaded here to this vehicle and/or lead. Set when the
-   *  hub is embedded in a record, so a signed OTP files itself against the car
+  /** Attach anything uploaded here to this property and/or lead. Set when the
+   *  hub is embedded in a record, so a signed OTP files itself against the home
    *  and the buyer instead of landing in an undifferentiated pile. */
   propertyId?: string;
   leadId?: string;
@@ -45,7 +45,7 @@ function formatDate(iso?: string) {
   }
 }
 
-export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel, onUpload, onSign, onDelete, propertyId, leadId, embedded }: DocumentsHubProps) {
+export default function DocumentsHub({ documents, getLeadLabel, getPropertyLabel, onUpload, onSign, onDelete, propertyId, leadId, embedded }: DocumentsHubProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -191,7 +191,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
           <div>
             <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Documents</h1>
             <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
-              Upload any document your dealership needs — agreements, disclosures, RICA forms, your own templates —
+              Upload any document your agency needs — agreements, disclosures, RICA forms, your own templates —
               then capture a signature on it.
             </p>
           </div>
@@ -239,7 +239,7 @@ export default function DocumentsHub({ documents, getLeadLabel, getVehicleLabel,
                   const Icon = docIcon(doc.mimeType);
                   const linked = [
                     doc.leadId && getLeadLabel ? getLeadLabel(doc.leadId) : null,
-                    doc.propertyId && getVehicleLabel ? getVehicleLabel(doc.propertyId) : null,
+                    doc.propertyId && getPropertyLabel ? getPropertyLabel(doc.propertyId) : null,
                   ].filter(Boolean).join(" · ") || "—";
                   return (
                     <tr key={doc.id} className="border-b border-white/3 hover:bg-[color:var(--glass)]">

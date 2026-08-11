@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { createLead } from "../api";
 import { Send, CheckCircle, AlertTriangle } from "lucide-react";
+import { Property } from "../types";
 
 interface CustomerLeadFormProps {
-  dealershipId: string;
-  properties: { id: string; make: string; model: string; year: number }[];
+  agencyId: string;
+  properties: Pick<Property, "id" | "address" | "propertyType" | "suburb">[];
   onSuccess?: () => void;
 }
 
-export default function CustomerLeadForm({ dealershipId, properties, onSuccess }: CustomerLeadFormProps) {
+export default function CustomerLeadForm({ agencyId, properties, onSuccess }: CustomerLeadFormProps) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -29,7 +30,7 @@ export default function CustomerLeadForm({ dealershipId, properties, onSuccess }
         // status was passed as "New" here, but both createLead and the server's
         // POST /api/enquiries set it unconditionally — the value never reached
         // anything. Dropped rather than left looking load-bearing.
-        dealershipId,
+        agencyId,
         digitalScore: 50, // Default initial score
       });
       setStatus('success');
@@ -51,7 +52,7 @@ export default function CustomerLeadForm({ dealershipId, properties, onSuccess }
 
   return (
     <form onSubmit={handleSubmit} className="card p-6 flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-[color:var(--white)] mb-2">Dealership Enquiry</h2>
+      <h2 className="text-lg font-semibold text-[color:var(--white)] mb-2">Agency Enquiry</h2>
       
       <div className="grid grid-cols-2 gap-4">
         <input type="text" placeholder="First Name" required className="input-field" onChange={e => setFormData(p => ({...p, firstName: e.target.value}))} />
@@ -62,7 +63,7 @@ export default function CustomerLeadForm({ dealershipId, properties, onSuccess }
       
       <select className="input-field" onChange={e => setFormData(p => ({...p, propertyId: e.target.value}))} value={formData.propertyId}>
         {properties.map(v => (
-            <option key={v.id} value={v.id}>{v.year} {v.make} {v.model}</option>
+            <option key={v.id} value={v.id}>{v.address || `${v.propertyType || "Property"} · ${v.suburb || ""}`}</option>
         ))}
       </select>
       

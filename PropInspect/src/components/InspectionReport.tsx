@@ -30,7 +30,7 @@ interface InspectionPayload {
     string,
     { rating?: InspectionRating; works?: "yes" | "no" | "na"; comment?: string }
   >;
-  virReport?: { section: string; rating: InspectionRating; note?: string }[];
+  inspectionReport?: { section: string; rating: InspectionRating; note?: string }[];
   conditionDeclaration?: { noVisibleDamage?: boolean; declaredAt?: string };
 }
 

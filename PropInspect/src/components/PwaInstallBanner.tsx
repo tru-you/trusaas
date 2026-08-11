@@ -20,14 +20,14 @@ import {
  * something they've installed.
  */
 export default function PwaInstallBanner({
-  appName = 'TruFlow',
+  appName = 'PropInspect',
   blurb = 'Install on this device for one-tap access — no browser bar, works offline for the app shell.',
   accent = 'var(--blue)',
   dismissKey = 'truflow_pwa_install_dismissed',
 }: {
   appName?: string;
   blurb?: string;
-  /** Product accent — TruFlow blue, TruLens cyan. Keeps each app on its own colour. */
+  /** Product accent — PropInspect blue, TruLens cyan. Keeps each app on its own colour. */
   accent?: string;
   dismissKey?: string;
 }) {

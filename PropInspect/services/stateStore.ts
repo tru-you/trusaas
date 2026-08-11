@@ -1,11 +1,11 @@
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
-import type { DMSState, Dealership } from "../src/types";
+import type { DMSState, Agency } from "../src/types";
 
 dotenv.config();
 
-/** The dealership an untagged legacy row is understood to belong to.
+/** The agency an untagged legacy row is understood to belong to.
  *
  *  Declared here, near the top, rather than beside the public-feed helpers where
  *  it used to live: readState() references it, and readState() is called during
@@ -16,25 +16,25 @@ dotenv.config();
  *  compares against it as a fallback any more; see the backfill there. */
 const DEFAULT_DEALERSHIP_ID = "d1";
 
-/** The products a dealership can be entitled to.
+/** The products a agency can be entitled to.
  *
  *  Adding one here is the whole of the work for a new app: every product
- *  verifies codes against this instance, so a dealer gains access by having the
+ *  verifies codes against this instance, so a agency gains access by having the
  *  name ticked on their record rather than by someone editing an environment
  *  variable on that app's service and redeploying it.
  *
- *  Onboarding used to mean creating the dealership here, issuing a code, then
+ *  Onboarding used to mean creating the agency here, issuing a code, then
  *  hand-editing TRULENS_DEALER_CODES — a comma-separated "slug:CODE" string
- *  holding every dealer's code in plaintext on the Render dashboard — and
- *  restarting TruLens so it took effect. Once per product, per dealer, and
+ *  holding every agency's code in plaintext on the Render dashboard — and
+ *  restarting TruLens so it took effect. Once per product, per agency, and
  *  revoking access meant editing that string and redeploying again. */
 export const PRODUCTS = ["lens", "flow", "flow-lite", "inspect", "live", "value", "social"] as const;
 export type ProductName = (typeof PRODUCTS)[number];
 
-/** Collections whose rows belong to exactly one dealership.
+/** Collections whose rows belong to exactly one agency.
  *
  *  Anything listed here is scoped on read and stamped on load, so a new
- *  collection that holds dealer data has one place to be registered rather than
+ *  collection that holds agency data has one place to be registered rather than
  *  a scattering of filters to remember. */
 const TENANT_SCOPED_COLLECTIONS = [
   "properties",
@@ -52,13 +52,13 @@ const TENANT_SCOPED_COLLECTIONS = [
 type TenantKey = (typeof TENANT_SCOPED_COLLECTIONS)[number];
 
 interface SharedState {
-  dealerships: Dealership[];
+  agencies: Agency[];
   settings: DMSState["settings"];
   socialAccounts?: DMSState["socialAccounts"];
   migrations?: Record<string, boolean>;
 }
 
-type DealerData = { [K in TenantKey]: any[] };
+type AgencyData = { [K in TenantKey]: any[] };
 
 // Writable state lives under DATA_DIR so it can sit on a mounted Render disk
 // and survive deploys/restarts. Unset (local dev) = cwd, i.e. the old paths.
@@ -67,20 +67,20 @@ try { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const DATA_FILE = path.join(DATA_DIR, "data.json");
 // Repo-shipped seed. Used once, only when the disk is still empty — never
-// written back to, so a redeploy can't clobber the dealer's real stock.
+// written back to, so a redeploy can't clobber the agency's real stock.
 const SEED_FILE = path.join(process.cwd(), "data.json");
 
 const SHARED_FILE = path.join(DATA_DIR, "shared.json");
-const MIGRATED_FLAG = path.join(DATA_DIR, ".per-dealer-migrated");
+const MIGRATED_FLAG = path.join(DATA_DIR, ".per-agency-migrated");
 
-function dealerFile(id: string): string {
-  return path.join(DATA_DIR, `dealer-${id}.json`);
+function agencyFile(id: string): string {
+  return path.join(DATA_DIR, `agency-${id}.json`);
 }
 
 /* Every write is serialised before touching disk; if a file's content is
    identical to the last write, the tmp+rename is skipped entirely. writeState()
-   rewrites every dealer's file on ANY mutation, so an untouched dealership
-   otherwise pays for another dealership's keystroke on every save. The map is
+   rewrites every agency's file on ANY mutation, so an untouched agency
+   otherwise pays for another agency's keystroke on every save. The map is
    keyed by file path and only ever records what this process last wrote, so
    anything that changes the file externally (manual edit, restore of a backup)
    simply fails the compare and rewrites. */
@@ -99,7 +99,7 @@ function readShared(): SharedState {
     return JSON.parse(fs.readFileSync(SHARED_FILE, "utf-8"));
   }
   return {
-    dealerships: DEFAULT_MOCK_STATE.dealerships,
+    agencies: DEFAULT_MOCK_STATE.agencies,
     settings: DEFAULT_MOCK_STATE.settings,
     socialAccounts: [],
     migrations: {},
@@ -110,8 +110,8 @@ function writeShared(shared: SharedState): void {
   writeFileIfChanged(SHARED_FILE, JSON.stringify(shared, null, 2));
 }
 
-function readDealerData(id: string): DealerData {
-  const f = dealerFile(id);
+function readAgencyData(id: string): AgencyData {
+  const f = agencyFile(id);
   if (fs.existsSync(f)) {
     return JSON.parse(fs.readFileSync(f, "utf-8"));
   }
@@ -120,42 +120,42 @@ function readDealerData(id: string): DealerData {
   return empty;
 }
 
-function writeDealerData(id: string, data: DealerData): void {
-  writeFileIfChanged(dealerFile(id), JSON.stringify(data, null, 2));
+function writeAgencyData(id: string, data: AgencyData): void {
+  writeFileIfChanged(agencyFile(id), JSON.stringify(data, null, 2));
 }
 
-function allDealerIds(): string[] {
+function allAgencyIds(): string[] {
   const ids: string[] = [];
   for (const f of fs.readdirSync(DATA_DIR)) {
-    const m = f.match(/^dealer-(.+)\.json$/);
+    const m = f.match(/^agency-(.+)\.json$/);
     if (m) ids.push(m[1]);
   }
   return ids;
 }
 
-function isPerDealerMode(): boolean {
+function isPerAgencyMode(): boolean {
   return fs.existsSync(MIGRATED_FLAG);
 }
 
-function migrateToPerDealerFiles(): void {
+function migrateToPerAgencyFiles(): void {
   if (fs.existsSync(MIGRATED_FLAG)) return;
   if (!fs.existsSync(DATA_FILE)) return;
 
-  console.log("[migration] Splitting data.json into per-dealer files...");
+  console.log("[migration] Splitting data.json into per-agency files...");
   const raw = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
 
   const shared: SharedState = {
-    dealerships: raw.dealerships || [],
+    agencies: raw.agencies || [],
     settings: raw.settings || {},
     socialAccounts: raw.socialAccounts || [],
     migrations: raw.migrations || {},
   };
 
-  const buckets = new Map<string, DealerData>();
+  const buckets = new Map<string, AgencyData>();
   for (const key of TENANT_SCOPED_COLLECTIONS) {
     const rows: any[] = raw[key] || [];
     for (const row of rows) {
-      const did = row.dealershipId || "orphan";
+      const did = row.agencyId || "orphan";
       if (did === "orphan") {
         console.warn(`[migration] Orphan row in ${key}: ${row.id}`);
       }
@@ -170,9 +170,9 @@ function migrateToPerDealerFiles(): void {
 
   writeShared(shared);
   buckets.forEach((data, id) => {
-    writeDealerData(id, data);
+    writeAgencyData(id, data);
     const count = TENANT_SCOPED_COLLECTIONS.reduce((n, k) => n + (data[k] || []).length, 0);
-    console.log(`[migration] dealer-${id}.json — ${count} rows`);
+    console.log(`[migration] agency-${id}.json — ${count} rows`);
   });
 
   fs.writeFileSync(MIGRATED_FLAG, new Date().toISOString(), "utf-8");
@@ -180,9 +180,9 @@ function migrateToPerDealerFiles(): void {
 }
 
 // Clean initial state — no demo data, no seed vehicles or enquiries.
-// Dealerships are config (they map dealer slugs to websites) so they stay.
+// Agencies are config (they map agency slugs to websites) so they stay.
 const DEFAULT_MOCK_STATE: DMSState = {
-  dealerships: [
+  agencies: [
     { id: 'd1', name: 'MKR Properties', location: 'Johannesburg', slug: 'mkr-properties', websiteUrl: 'https://mkrproperties.co.za' },
     { id: 'd2', name: 'Caledon Estates', location: 'Kariega, Eastern Cape', slug: 'caledon-estates', websiteUrl: 'https://www.caledonestates.co.za' },
   ],
@@ -216,27 +216,27 @@ const DEFAULT_MOCK_STATE: DMSState = {
 function backfillShared(shared: SharedState): SharedState {
   shared.settings = { ...DEFAULT_MOCK_STATE.settings, ...(shared.settings || {}) };
 
-  if (!Array.isArray(shared.dealerships) || !shared.dealerships.length) {
-    shared.dealerships = DEFAULT_MOCK_STATE.dealerships;
+  if (!Array.isArray(shared.agencies) || !shared.agencies.length) {
+    shared.agencies = DEFAULT_MOCK_STATE.agencies;
   } else {
-    shared.dealerships = shared.dealerships.map((d: any) => {
-      const seed = DEFAULT_MOCK_STATE.dealerships.find((x: any) => x.id === d.id);
+    shared.agencies = shared.agencies.map((d: any) => {
+      const seed = DEFAULT_MOCK_STATE.agencies.find((x: any) => x.id === d.id);
       return seed ? { ...d, ...seed } : d;
     });
-    const existingIds = new Set(shared.dealerships.map((d: any) => d.id));
-    for (const seed of DEFAULT_MOCK_STATE.dealerships) {
-      if (!existingIds.has(seed.id)) shared.dealerships.push({ ...seed });
+    const existingIds = new Set(shared.agencies.map((d: any) => d.id));
+    for (const seed of DEFAULT_MOCK_STATE.agencies) {
+      if (!existingIds.has(seed.id)) shared.agencies.push({ ...seed });
     }
   }
 
   shared.migrations = shared.migrations || {};
-  if (!shared.migrations.prunedSeedDealers) {
+  if (!shared.migrations.prunedSeedAgencys) {
     const retired = new Set(["d3", "demo"]);
-    shared.dealerships = shared.dealerships.filter((d: any) => !retired.has(d.id));
-    shared.migrations.prunedSeedDealers = true;
+    shared.agencies = shared.agencies.filter((d: any) => !retired.has(d.id));
+    shared.migrations.prunedSeedAgencys = true;
   }
 
-  for (const d of shared.dealerships || []) {
+  for (const d of shared.agencies || []) {
     if (!Array.isArray((d as any).products) || !(d as any).products.length) {
       (d as any).products = [...PRODUCTS];
     }
@@ -262,7 +262,7 @@ function backfillVehicles(properties: any[]): void {
  *  `readState()` falls back to the seed when a data file cannot be read, and it
  *  used to hand back DEFAULT_MOCK_STATE itself. Every write handler then
  *  mutated that module-level object in place and `writeState` persisted it — so
- *  one unreadable dealer file turned the seed into the live data, and each
+ *  one unreadable agency file turned the seed into the live data, and each
  *  later request in the same process compounded the damage against it.
  *
  *  Returning a clone keeps the fallback read-only in practice: a request may do
@@ -273,7 +273,7 @@ function freshDefaultState(): DMSState {
 export { freshDefaultState };
 
 /* readState() is on 80+ request paths and reads, backfills and merges every
-   dealer file on every call. A short TTL keeps burst reads off the disk while
+   agency file on every call. A short TTL keeps burst reads off the disk while
    writeState() invalidates immediately so a write is never hidden. Callers
    mutate the returned state before handing it to writeState(), so cache hits
    are always served as a deep clone. */
@@ -285,7 +285,7 @@ export function readState(): DMSState {
     return structuredClone(stateCache.data);
   }
 
-  if (isPerDealerMode()) {
+  if (isPerAgencyMode()) {
     try {
       const shared = backfillShared(readShared());
       const merged: any = {
@@ -293,8 +293,8 @@ export function readState(): DMSState {
       };
       for (const key of TENANT_SCOPED_COLLECTIONS) merged[key] = [];
 
-      for (const id of allDealerIds()) {
-        const dd = readDealerData(id);
+      for (const id of allAgencyIds()) {
+        const dd = readAgencyData(id);
         for (const key of TENANT_SCOPED_COLLECTIONS) {
           merged[key].push(...(dd[key] || []));
         }
@@ -307,7 +307,7 @@ export function readState(): DMSState {
       stateCache = { data: structuredClone(merged), at: Date.now() };
       return merged;
     } catch (err) {
-      console.error("Error reading per-dealer state:", err);
+      console.error("Error reading per-agency state:", err);
       return freshDefaultState();
     }
   }
@@ -321,30 +321,30 @@ export function readState(): DMSState {
       parsed.settings = { ...DEFAULT_MOCK_STATE.settings, ...(parsed.settings || {}) };
       if (!parsed.documents) parsed.documents = [];
 
-      if (!Array.isArray(parsed.dealerships) || !parsed.dealerships.length) {
-        parsed.dealerships = DEFAULT_MOCK_STATE.dealerships;
+      if (!Array.isArray(parsed.agencies) || !parsed.agencies.length) {
+        parsed.agencies = DEFAULT_MOCK_STATE.agencies;
       } else {
-        parsed.dealerships = parsed.dealerships.map((d: any) => {
-          const seed = DEFAULT_MOCK_STATE.dealerships.find((x: any) => x.id === d.id);
+        parsed.agencies = parsed.agencies.map((d: any) => {
+          const seed = DEFAULT_MOCK_STATE.agencies.find((x: any) => x.id === d.id);
           return seed ? { ...d, ...seed } : d;
         });
-        const existingIds = new Set(parsed.dealerships.map((d: any) => d.id));
-        for (const seed of DEFAULT_MOCK_STATE.dealerships) {
-          if (!existingIds.has(seed.id)) parsed.dealerships.push({ ...seed });
+        const existingIds = new Set(parsed.agencies.map((d: any) => d.id));
+        for (const seed of DEFAULT_MOCK_STATE.agencies) {
+          if (!existingIds.has(seed.id)) parsed.agencies.push({ ...seed });
         }
       }
 
       parsed.migrations = parsed.migrations || {};
-      if (!parsed.migrations.prunedSeedDealers) {
+      if (!parsed.migrations.prunedSeedAgencys) {
         const retired = new Set(["d3", "demo"]);
-        parsed.dealerships = parsed.dealerships.filter((d: any) => !retired.has(d.id));
-        parsed.properties = (parsed.properties || []).filter((v: any) => !retired.has(v.dealershipId));
-        parsed.migrations.prunedSeedDealers = true;
+        parsed.agencies = parsed.agencies.filter((d: any) => !retired.has(d.id));
+        parsed.properties = (parsed.properties || []).filter((v: any) => !retired.has(v.agencyId));
+        parsed.migrations.prunedSeedAgencys = true;
       }
 
       backfillVehicles(parsed.properties || []);
 
-      for (const d of parsed.dealerships || []) {
+      for (const d of parsed.agencies || []) {
         if (!Array.isArray(d.products) || !d.products.length) {
           d.products = [...PRODUCTS];
         }
@@ -354,8 +354,8 @@ export function readState(): DMSState {
         const rows = (parsed as any)[key];
         if (!Array.isArray(rows)) continue;
         for (const row of rows) {
-          if (row && typeof row === "object" && !row.dealershipId) {
-            row.dealershipId = DEFAULT_DEALERSHIP_ID;
+          if (row && typeof row === "object" && !row.agencyId) {
+            row.agencyId = DEFAULT_DEALERSHIP_ID;
           }
         }
       }
@@ -370,20 +370,20 @@ export function readState(): DMSState {
 }
 
 export function writeState(state: any) {
-  if (isPerDealerMode()) {
+  if (isPerAgencyMode()) {
     try {
       const shared: SharedState = {
-        dealerships: state.dealerships || [],
+        agencies: state.agencies || [],
         settings: state.settings || {},
         socialAccounts: state.socialAccounts || [],
         migrations: state.migrations || {},
       };
       writeShared(shared);
 
-      const buckets = new Map<string, DealerData>();
+      const buckets = new Map<string, AgencyData>();
       for (const key of TENANT_SCOPED_COLLECTIONS) {
         for (const row of (state[key] || [])) {
-          const did = row.dealershipId || "orphan";
+          const did = row.agencyId || "orphan";
           if (!buckets.has(did)) {
             const empty: any = {};
             for (const k of TENANT_SCOPED_COLLECTIONS) empty[k] = [];
@@ -393,31 +393,31 @@ export function writeState(state: any) {
         }
       }
 
-      // Write each dealer file that has data in this state.
-      // Also write empty files for dealers that had data before but don't now
+      // Write each agency file that has data in this state.
+      // Also write empty files for agencies that had data before but don't now
       // (e.g. all vehicles deleted).
-      const existingIds = allDealerIds();
+      const existingIds = allAgencyIds();
       buckets.forEach((data, id) => {
-        writeDealerData(id, data);
+        writeAgencyData(id, data);
         const idx = existingIds.indexOf(id);
         if (idx !== -1) existingIds.splice(idx, 1);
       });
-      // Dealers with no rows left still get an empty file so they aren't lost
+      // Agencys with no rows left still get an empty file so they aren't lost
       for (const id of existingIds) {
         const empty: any = {};
         for (const k of TENANT_SCOPED_COLLECTIONS) empty[k] = [];
-        writeDealerData(id, empty);
+        writeAgencyData(id, empty);
       }
       stateCache = null;
     } catch (err) {
-      console.error("Error writing per-dealer state:", err);
+      console.error("Error writing per-agency state:", err);
     }
     return;
   }
 
   // Legacy monolithic path — a wholesale rewrite of the single state file, so
   // the per-file write cache is meaningless here and must not leak into later
-  // per-dealer comparisons.
+  // per-agency comparisons.
   try {
     lastSerialized.clear();
     fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), "utf-8");
@@ -427,17 +427,17 @@ export function writeState(state: any) {
   }
 }
 
-// Boot: migrate to per-dealer files if still on monolithic, then seed if needed
-if (!isPerDealerMode()) {
+// Boot: migrate to per-agency files if still on monolithic, then seed if needed
+if (!isPerAgencyMode()) {
   if (fs.existsSync(DATA_FILE)) {
-    migrateToPerDealerFiles();
+    migrateToPerAgencyFiles();
   } else if (fs.existsSync(SEED_FILE)) {
     // First boot: copy seed to data.json, then migrate
     fs.copyFileSync(SEED_FILE, DATA_FILE);
-    migrateToPerDealerFiles();
+    migrateToPerAgencyFiles();
   } else {
     // No data at all — write defaults and migrate
     fs.writeFileSync(DATA_FILE, JSON.stringify(DEFAULT_MOCK_STATE, null, 2), "utf-8");
-    migrateToPerDealerFiles();
+    migrateToPerAgencyFiles();
   }
 }

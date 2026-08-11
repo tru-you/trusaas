@@ -4,7 +4,7 @@ import { authFetch } from "../lib/session";
 
 interface SocialAccount {
   accountId: string;
-  dealershipId: string;
+  agencyId: string;
   platform: string;
   username?: string;
   connectedAt: string;
@@ -17,12 +17,12 @@ const PLATFORMS = [
 ];
 
 export default function TruSocialSettings({
-  dealershipId,
+  agencyId,
   dealerName,
   truSocialEnabled,
   onNotify,
 }: {
-  dealershipId: string;
+  agencyId: string;
   dealerName?: string;
   truSocialEnabled: boolean;
   onNotify: (title: string, message: string, type?: "info" | "warning" | "error") => void;
@@ -37,14 +37,14 @@ export default function TruSocialSettings({
   const loadAccounts = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await authFetch(`/api/social/accounts?dealershipId=${encodeURIComponent(dealershipId)}`);
+      const res = await authFetch(`/api/social/accounts?agencyId=${encodeURIComponent(agencyId)}`);
       if (res.ok) {
         const data = await res.json();
         setAccounts(data.accounts || []);
       }
     } catch { /* best-effort */ }
     setLoading(false);
-  }, [dealershipId]);
+  }, [agencyId]);
 
   useEffect(() => { loadAccounts(); }, [loadAccounts]);
 
@@ -54,7 +54,7 @@ export default function TruSocialSettings({
       const res = await authFetch("/api/social/toggle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dealershipId, enabled: !enabled }),
+        body: JSON.stringify({ agencyId, enabled: !enabled }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Server responded ${res.status}`);
@@ -69,7 +69,7 @@ export default function TruSocialSettings({
   const connectPlatform = async (platform: string) => {
     setConnecting(platform);
     try {
-      const res = await authFetch(`/api/social/connect/${encodeURIComponent(platform)}?dealershipId=${encodeURIComponent(dealershipId)}`);
+      const res = await authFetch(`/api/social/connect/${encodeURIComponent(platform)}?agencyId=${encodeURIComponent(agencyId)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Connect failed");
       if (data.authUrl) {
@@ -95,7 +95,7 @@ export default function TruSocialSettings({
       const res = await authFetch("/api/social/disconnect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dealershipId, accountId }),
+        body: JSON.stringify({ agencyId, accountId }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -133,7 +133,7 @@ export default function TruSocialSettings({
       {enabled && (
         <div className="card-body p-5 flex flex-col gap-4">
           <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
-            Connect your social accounts to auto-publish stock listings.
+            Connect your social accounts to auto-publish listing listings.
           </p>
 
           {/* Connected accounts */}

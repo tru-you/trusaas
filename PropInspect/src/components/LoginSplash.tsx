@@ -76,7 +76,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
               box. One line naming the job it does costs nothing and stops the
               screen reading like an internal tool someone left exposed. */}
           <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center leading-snug">
-            Dealer management — stock, enquiries, F&amp;I and reporting
+            Agency management — listing, enquiries, F&amp;I and reporting
           </p>
         </div>
 
@@ -86,7 +86,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
               had nothing to key off. autoComplete was "off", which actively
               fights the manager staff use to store the code they type daily. */}
           <label htmlFor="access-code" className="block text-[13px] text-[rgba(232,234,230,0.72)] mb-1.5">
-            Dealership access code
+            Agency access code
           </label>
           <div className="relative mb-3">
             <input
@@ -158,11 +158,11 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
           </button>
         </form>
 
-        {/* The demo button that used to sit here is gone. A dealer signing in on
+        {/* The demo button that used to sit here is gone. A agency signing in on
             their own DMS should not be offered a way into someone else's sample
             data, and it read as though the product were a sandbox. The ?demo=1
             route above still works, so the "Try it" links on tru-saas.com take a
-            prospect straight in — they just no longer land on a dealer's login
+            prospect straight in — they just no longer land on a agency's login
             screen as an option. */}
         {demoBusy && (
           <p className="mt-3 text-center text-[13px] text-[rgba(232,234,230,0.72)]">Opening demo…</p>
@@ -170,7 +170,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
 
         <div className="mt-6 pt-4 border-t border-white/10 text-center">
           <p className="text-[13px] text-[color:var(--faint)]">
-            <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[color:var(--cyan-bright)] hover:underline">TruDealer</a> — Future Automotive · V 1.2
+            <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[color:var(--cyan-bright)] hover:underline">PropInspect</a> — Future Automotive · V 1.2
           </p>
         </div>
       </div>

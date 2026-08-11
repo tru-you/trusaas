@@ -13,7 +13,7 @@ import {
  *
  * The banner only appears when the browser volunteers beforeinstallprompt, and
  * it is dismissible — once someone taps the X it is gone for the session, and
- * there was then no way to install at all. A dealer who dismissed it on Monday
+ * there was then no way to install at all. A agency who dismissed it on Monday
  * had no route to the app on Tuesday.
  *
  * Every branch says something true. The failure worth avoiding is a button that
@@ -21,7 +21,7 @@ import {
  * leaves the user assuming the app is broken.
  */
 export default function InstallAppButton({
-  appName = 'TruFlow',
+  appName = 'PropInspect',
   accent = 'var(--cyan-bright)',
 }: {
   appName?: string;

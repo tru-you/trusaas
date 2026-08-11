@@ -13,12 +13,12 @@ import {
 
 interface AccountingReconProps {
   state: DMSState;
-  onUpdateVehicle: (id: string, updates: Partial<Property>) => Promise<void>;
+  onUpdateProperty: (id: string, updates: Partial<Property>) => Promise<void>;
   onAddExpense: (expense: Partial<Expense>) => Promise<void>;
   onReconcileExpense: (id: string, reconciled: boolean) => Promise<void>;
 }
 
-export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, onReconcileExpense }: AccountingReconProps) {
+export default function AccountingRecon({ state, onUpdateProperty, onAddExpense, onReconcileExpense }: AccountingReconProps) {
   const [activeTab, setActiveTab] = useState<"pl" | "recon">("pl");
 
   const [expenseForm, setExpenseForm] = useState({
@@ -29,7 +29,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
     referenceId: "",
   });
 
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string>(
+  const [selectedPropertyId, setSelectedVehicleId] = useState<string>(
     state.properties.length > 0 ? state.properties[0].id : ""
   );
 
@@ -44,13 +44,13 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
   };
 
   // P&L calculations
-  const soldVehicles = state.properties.filter((v) => v.status === "SOLD");
+  const soldProperties = state.properties.filter((v) => v.status === "SOLD");
   const revenueFromSales = state.invoices
     .filter((inv) => inv.status === "Paid")
     .reduce((sum, inv) => sum + inv.amount, 0);
 
-  const costOfSoldUnits = soldVehicles.reduce((sum, v) => sum + v.costPrice, 0);
-  const reconOnSoldUnits = soldVehicles.reduce((sum, v) => {
+  const costOfSoldUnits = soldProperties.reduce((sum, v) => sum + v.costPrice, 0);
+  const reconOnSoldUnits = soldProperties.reduce((sum, v) => {
     const tasks = v.maintenanceTasks || [];
     return sum + tasks.filter((t) => t.status === "Completed").reduce((s, t) => s + t.cost, 0);
   }, 0);
@@ -104,10 +104,10 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
       return;
     }
 
-    const targetVehicle = state.properties.find((v) => v.id === selectedVehicleId);
-    if (!targetVehicle) return;
+    const targetProperty = state.properties.find((v) => v.id === selectedPropertyId);
+    if (!targetProperty) return;
 
-    const currentTasks = targetVehicle.maintenanceTasks || [];
+    const currentTasks = targetProperty.maintenanceTasks || [];
     const newTask = {
       id: "rc_" + Date.now(),
       name: reconForm.name,
@@ -116,7 +116,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
       dateAdded: new Date().toISOString().slice(0, 10)
     };
 
-    await onUpdateVehicle(selectedVehicleId, {
+    await onUpdateProperty(selectedPropertyId, {
       maintenanceTasks: [...currentTasks, newTask]
     });
 
@@ -131,11 +131,11 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
       t.id === taskId ? { ...t, status: newStatus } : t
     );
 
-    await onUpdateVehicle(propertyId, { maintenanceTasks: updatedTasks });
+    await onUpdateProperty(propertyId, { maintenanceTasks: updatedTasks });
   };
 
-  const selectedVehicle = state.properties.find((v) => v.id === selectedVehicleId);
-  const maintenanceTasks = selectedVehicle?.maintenanceTasks || [];
+  const selectedProperty = state.properties.find((v) => v.id === selectedPropertyId);
+  const maintenanceTasks = selectedProperty?.maintenanceTasks || [];
   const totalReconSpent = maintenanceTasks.reduce((sum, t) => sum + t.cost, 0);
 
   return (
@@ -144,10 +144,10 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-[color:var(--white)] flex items-center gap-2">
             <FileSpreadsheet className="text-[color:var(--cyan)]" size={20} />
-            Finance &amp; reconditioning
+            Finance &amp; maintenance
           </h2>
           <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-1">
-            Profit &amp; Loss ledger, expense tracking and vehicle reconditioning costs.
+            Profit &amp; Loss ledger, expense tracking and property prep costs.
           </p>
         </div>
 
@@ -168,7 +168,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             }`}
           >
             <Wrench size={13} />
-            Reconditioning
+            Prep &amp; Maintenance
           </button>
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
               <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Cost of Sales</span>
               <span className="text-lg font-mono text-[color:var(--muted)] font-semibold">{formatZAR(totalCostOfSales)}</span>
-              <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Units cost + recon</span>
+              <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Units cost + prep</span>
             </div>
 
             <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-2">
@@ -285,7 +285,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                 <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Description / Payee</label>
                 <input
                   type="text"
-                  placeholder="e.g. Randburg Car Polishers"
+                  placeholder="e.g. Randburg Garden Services"
                   value={expenseForm.description}
                   onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
                   className="w-full px-3 py-2 bg-[color:var(--ink-2)] border border-white/5 rounded-lg text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
@@ -316,7 +316,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     <option value="Utilities">Utilities</option>
                     <option value="Operations">Operations</option>
                     <option value="Salaries">Salaries &amp; Commissions</option>
-                    <option value="Reconditioning">Reconditioning</option>
+                    <option value="Reconditioning">Maintenance &amp; Prep</option>
                     <option value="Others">Others</option>
                   </select>
                 </div>
@@ -334,7 +334,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Stock ID (optional)</label>
+                  <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Listing ID (optional)</label>
                   <input
                     type="text"
                     placeholder="e.g. PE-1042"
@@ -361,14 +361,14 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
           <div className="card p-5 flex flex-col gap-4">
             <div>
-              <h3 className="font-semibold text-[16px] text-[color:var(--white)]">Select Vehicle</h3>
-              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Choose a vehicle to view or add recon tasks.</p>
+              <h3 className="font-semibold text-[16px] text-[color:var(--white)]">Select Property</h3>
+              <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Choose a property to view or add prep tasks.</p>
             </div>
 
             <div className="flex flex-col gap-2 max-h-[450px] overflow-y-auto">
               {state.properties.map((v) => {
                 const totalRecon = (v.maintenanceTasks || []).reduce((s, t) => s + t.cost, 0);
-                const isSelected = v.id === selectedVehicleId;
+                const isSelected = v.id === selectedPropertyId;
                 const completedTasks = (v.maintenanceTasks || []).filter(t => t.status === 'Completed').length;
                 const totalTasksCount = (v.maintenanceTasks || []).length;
 
@@ -383,9 +383,9 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     }`}
                   >
                     <div className="flex flex-col gap-1">
-                      <span className="text-[13px] font-semibold truncate">{v.year} {v.make} {v.model}</span>
+                      <span className="text-[13px] font-semibold truncate">{v.address || `${v.propertyType || "Property"} · ${v.suburb || ""}`}</span>
                       <div className="flex items-center gap-2 text-[13px]">
-                        <span className="font-mono text-[rgba(232,234,230,0.72)]">{v.stockNumber}</span>
+                        <span className="font-mono text-[rgba(232,234,230,0.72)]">{v.listingRef}</span>
                         {totalTasksCount > 0 && (
                           <span className="text-[color:var(--cyan)] font-semibold">
                             {completedTasks}/{totalTasksCount} done
@@ -395,7 +395,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                     </div>
                     <div className="text-right flex flex-col gap-0.5">
                       <span className="text-[13px] font-mono font-semibold text-[color:var(--white)]">{formatZAR(totalRecon)}</span>
-                      <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Recon cost</span>
+                      <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Prep cost</span>
                     </div>
                   </button>
                 );
@@ -404,19 +404,19 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           </div>
 
           <div className="lg:col-span-2 card p-5 flex flex-col gap-5">
-            {selectedVehicle ? (
+            {selectedProperty ? (
               <>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-white/5 pb-3">
                   <div>
                     <h3 className="font-semibold text-[16px] text-[color:var(--white)]">
-                      {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
+                      {selectedProperty.address || `${selectedProperty.propertyType || "Property"} · ${selectedProperty.suburb || ""}`}
                     </h3>
                     <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                      Stock: <span className="font-mono text-[color:var(--white)]">{selectedVehicle.stockNumber}</span> · Cost: <span className="text-[color:var(--cyan)]">{formatZAR(selectedVehicle.costPrice)}</span>
+                      Listing: <span className="font-mono text-[color:var(--white)]">{selectedProperty.listingRef}</span> · Cost: <span className="text-[color:var(--cyan)]">{formatZAR(selectedProperty.costPrice)}</span>
                     </p>
                   </div>
                   <div className="bg-[color:var(--ink-2)] border border-white/5 rounded-xl px-4 py-2 flex flex-col items-end">
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Total Recon</span>
+                    <span className="text-[13px] text-[rgba(232,234,230,0.72)] font-semibold tracking-wider">Total Prep</span>
                     <span className="text-[16px] font-mono font-semibold text-[color:var(--cyan)]">{formatZAR(totalReconSpent)}</span>
                   </div>
                 </div>
@@ -444,7 +444,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                             {(["Pending", "In Progress", "Completed"] as const).map((st) => (
                               <button
                                 key={st}
-                                onClick={() => toggleReconTaskStatus(selectedVehicle.id, task.id, st)}
+                                onClick={() => toggleReconTaskStatus(selectedProperty.id, task.id, st)}
                                 className={`px-2 py-1 text-[13px] font-semibold rounded-lg transition-all cursor-pointer ${
                                   task.status === st
                                     ? st === "Completed" || st === "In Progress"
@@ -463,8 +463,8 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                       {maintenanceTasks.length === 0 && (
                         <div className="flex flex-col items-center justify-center p-8 text-center text-[rgba(232,234,230,0.72)] bg-[color:var(--glass)] border border-dashed border-white/5 rounded-xl">
                           <Wrench size={24} className="mb-2 text-[rgba(232,234,230,0.72)]" />
-                          <p className="text-[13px] italic">No recon tasks for this unit.</p>
-                          <p className="text-[13px] mt-0.5">Use the form to log detailing, repairs or safety work.</p>
+                          <p className="text-[13px] italic">No prep tasks logged for this property.</p>
+                          <p className="text-[13px] mt-0.5">Use the form to log prep, repairs or compliance work.</p>
                         </div>
                       )}
                     </div>
@@ -473,7 +473,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
                   <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-3">
                     <div>
                       <h4 className="text-[13px] font-semibold text-[color:var(--white)] tracking-normal">Add Recon Task</h4>
-                      <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Adds to this vehicle's cost.</p>
+                      <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">Adds to this property's cost.</p>
                     </div>
 
                     <form onSubmit={handleAddReconSubmit} className="flex flex-col gap-3">
@@ -524,7 +524,7 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
               </>
             ) : (
               <div className="py-12 text-center text-[rgba(232,234,230,0.72)]">
-                No properties in inventory.
+                No properties in portfolio.
               </div>
             )}
           </div>
