@@ -447,7 +447,7 @@ export async function deleteDocument(id: string): Promise<void> {
  *   - 'attach'   — fileData required (agency's own signed doc)
  *   - 'generate' — fieldSnapshot captured (PDF rendering deferred)
  *   - 'confirm'  — no file, no snapshot; server verifies checklist flags on
- *                  finalize (used for compliance: NATIS + roadworthy) */
+ *                  finalize (used for compliance: Electrical CoC + beetle clearance) */
 export async function createStageDocument(input: {
   leadId: string;
   propertyId?: string;

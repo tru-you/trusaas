@@ -314,9 +314,13 @@ const SLOTS: TemplateSlot[] = [
   },
 ];
 
+/* The 10 shots that make a listing web-ready — the hero frontage and the main
+   rooms a buyer scrolls for. Garden, pool, sides, boundary, meters and
+   compliance are supporting shots, not part of the core minimum. */
 export const CORE_SLOT_IDS = new Set<string>([
-  'street_view', 'front_entrance', 'rear_garden',
-  'living_room', 'kitchen', 'main_bedroom', 'main_bathroom',
+  'street_view', 'front_entrance',
+  'living_room', 'kitchen', 'dining_room',
+  'main_bedroom', 'main_bathroom', 'bedroom_2', 'bedroom_3', 'bathroom_2',
 ]);
 const EXTRA_SLOT_IDS = new Set<string>([
   'bedroom_4', 'bathroom_3', 'hallway_entrance',

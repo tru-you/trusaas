@@ -42,6 +42,7 @@ const AUTOLENS_DB_ID = process.env.AUTOLENS_DB_ID || 'ai-studio-autolenspro-7d47
 // message instead of silently landing in the wrong system.
 const DEFAULT_PMS_URL =
   process.env.FLOWPMS_URL ||
+  process.env.TRUFLOW_DMS_URL ||
   process.env.PMS_URL ||
   (process.env.NODE_ENV === 'production'
     ? ''
@@ -64,7 +65,7 @@ const ACCESS_CODE = process.env.TRULENS_ACCESS_CODE || '';
 /** Shared secret for the FlowPMS photo push. Must match FLOWPMS_SYNC_KEY on
  *  the FlowPMS. Unset here and the header is simply omitted, which is what keeps
  *  this deployable ahead of the key being set on the other side. */
-const SYNC_KEY = process.env.FLOWPMS_SYNC_KEY || '';
+const SYNC_KEY = process.env.FLOWPMS_SYNC_KEY || process.env.TRUFLOW_SYNC_KEY || '';
 const TOKEN_SECRET =
   process.env.TRULENS_TOKEN_SECRET ||
   crypto.createHash('sha256').update(ACCESS_CODE || 'trulens-dev').digest('hex');

@@ -345,31 +345,31 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
 
 /* ── TruLens · Field-Capture sterile zones ──────────────────────────────────
    Zero saturation around every image for accurate white-balance judgment. */
-[data-app="trulens"] .capture-preview,
-[data-app="trulens"] .photo-review,
-[data-app="trulens"] .panel-thumb {
+[data-app="proplens"] .capture-preview,
+[data-app="proplens"] .photo-review,
+[data-app="proplens"] .panel-thumb {
   background: #EFEDE8;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-[data-app="trulens"] .photo-review :where(*) { --accent: transparent; }
-[data-app="trulens"] .photo-review--fullscreen { background: var(--photo-void); }
+[data-app="proplens"] .photo-review :where(*) { --accent: transparent; }
+[data-app="proplens"] .photo-review--fullscreen { background: var(--photo-void); }
 
 /* Proofing toggle */
-[data-app="trulens"] .photo-review[data-proof="void"]    { background: var(--photo-void); }
-[data-app="trulens"] .photo-review[data-proof="surround"] { background: var(--photo-surround); }
-[data-app="trulens"] .photo-review[data-proof="proof"]   { background: var(--photo-proof); }
+[data-app="proplens"] .photo-review[data-proof="void"]    { background: var(--photo-void); }
+[data-app="proplens"] .photo-review[data-proof="surround"] { background: var(--photo-surround); }
+[data-app="proplens"] .photo-review[data-proof="proof"]   { background: var(--photo-proof); }
 
 /* ── TruLens · Capture state indicators ────────────────────────────────────── */
-[data-app="trulens"] .slot-state {
+[data-app="proplens"] .slot-state {
   background: transparent;
   border: 1px solid rgba(10,20,32,0.10);
   color: rgba(10,20,32,0.55);
 }
-[data-app="trulens"] .slot-state--idle:hover { border-color: rgba(10,20,32,0.20); }
+[data-app="proplens"] .slot-state--idle:hover { border-color: rgba(10,20,32,0.20); }
 
 /* Active = teal */
-[data-app="trulens"] .slot-state--active {
+[data-app="proplens"] .slot-state--active {
   background: #0E9D98;
   border: none;
   color: #FFFFFF;
@@ -380,7 +380,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
 }
 
 /* Captured = subtle filled */
-[data-app="trulens"] .slot-state--captured {
+[data-app="proplens"] .slot-state--captured {
   background: #E8ECF0;
   border: none;
   color: #0A1420;
@@ -391,15 +391,15 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px
 }
 
 /* Amber for "next" / retake */
-[data-app="trulens"] .slot-state--next,
-[data-app="trulens"] .slot-state--retake {
+[data-app="proplens"] .slot-state--next,
+[data-app="proplens"] .slot-state--retake {
   border-color: #D97706;
   color: #B45309;
 }
-[data-app="trulens"] .slot-state--retake { border-width: 2px; }
+[data-app="proplens"] .slot-state--retake { border-width: 2px; }
 
 /* Red for errors */
-[data-app="trulens"] .slot-state--error {
+[data-app="proplens"] .slot-state--error {
   border-color: #DC2626;
   border-width: 2px;
   color: #DC2626;

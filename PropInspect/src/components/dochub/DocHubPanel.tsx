@@ -116,10 +116,11 @@ export default function DocHubPanel({ Enquiry, agency, onLeadRefresh }: Props) {
     }
   };
 
-  /** Compliance is government paperwork — NATIS from eNatis, roadworthy from
-   *  a testing station. There is nothing to generate and nothing to upload
-   *  that could be "signed", so this stage is confirmed by ticking the two
-   *  flags on the Enquiry's checklist and letting the server verify them. */
+  /** Compliance is government-adjacent paperwork — Electrical CoC from the
+   *  electrician, beetle/wood-borer clearance from the pest inspector. There is
+   *  nothing to generate and nothing to upload that could be "signed", so this
+   *  stage is confirmed by ticking the two flags on the Enquiry's checklist and
+   *  letting the server verify them. */
   const handleComplianceConfirm = async () => {
     setBusyStage("compliance");
     setFlashError(null);
@@ -157,9 +158,9 @@ export default function DocHubPanel({ Enquiry, agency, onLeadRefresh }: Props) {
     onLeadRefresh?.();
   };
 
-  const natis = !!Enquiry.dealChecklist?.natis;
-  const roadworthy = !!Enquiry.dealChecklist?.roadworthy;
-  const complianceReady = natis && roadworthy;
+  const electricalCoc = !!Enquiry.dealChecklist?.electricalCoc;
+  const beetleClearance = !!Enquiry.dealChecklist?.beetleClearance;
+  const complianceReady = electricalCoc && beetleClearance;
 
   return (
     <div className="flex flex-col gap-4">
@@ -280,26 +281,26 @@ export default function DocHubPanel({ Enquiry, agency, onLeadRefresh }: Props) {
                 </div>
               </div>
 
-              {/* Compliance-specific body: two ticks. NATIS + Roadworthy. */}
+              {/* Compliance-specific body: two ticks. Electrical CoC + Beetle clearance. */}
               {stage === "compliance" && mode === "confirm" && (!doc || doc.status !== "Signed") && (
                 <div className="flex flex-col gap-2 pl-8 pt-1 border-t border-white/5 mt-1">
                   <label className="flex items-center gap-2 text-xs text-[rgba(232,234,230,0.72)] cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={natis}
-                      onChange={(e) => void patchChecklist({ natis: e.target.checked })}
+                      checked={electricalCoc}
+                      onChange={(e) => void patchChecklist({ electricalCoc: e.target.checked })}
                       className="w-4 h-4 accent-[color:var(--cyan)]"
                     />
-                    NATIS in hand
+                    Electrical CoC in hand
                   </label>
                   <label className="flex items-center gap-2 text-xs text-[rgba(232,234,230,0.72)] cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={roadworthy}
-                      onChange={(e) => void patchChecklist({ roadworthy: e.target.checked })}
+                      checked={beetleClearance}
+                      onChange={(e) => void patchChecklist({ beetleClearance: e.target.checked })}
                       className="w-4 h-4 accent-[color:var(--cyan)]"
                     />
-                    Roadworthy certificate on file
+                    Beetle / wood-borer clearance on file
                   </label>
                   <button
                     type="button"

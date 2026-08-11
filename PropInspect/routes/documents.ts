@@ -356,8 +356,8 @@ export function documentRoutes(deps: DocumentRoutesDeps): express.Router {
       // the missing list without a special case.
       const missing: string[] = [];
       if (doc.stage === "compliance") {
-        if (!lead?.dealChecklist?.natis) missing.push("natis");
-        if (!lead?.dealChecklist?.roadworthy) missing.push("roadworthy");
+        if (!lead?.dealChecklist?.electricalCoc) missing.push("electricalCoc");
+        if (!lead?.dealChecklist?.beetleClearance) missing.push("beetleClearance");
       }
       if (missing.length > 0) {
         return res.status(422).json({ error: "Compliance not confirmed.", missing });

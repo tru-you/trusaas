@@ -1,16 +1,13 @@
 import logo from "../assets/images/propinspect-logo.svg";
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
-import { TRUESAAS_URL } from '../lib/ecosystem';
+import { Lock, AlertCircle, Loader2, Monitor, Eye, EyeOff } from 'lucide-react';
 import { login, enterDemo } from '../lib/session';
 
 export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [remember, setRemember] = useState(true);
-  const [demoBusy, setDemoBusy] = useState(false);
-  // Entering a code you cannot see, on a phone, standing on a forecourt, is
+  // Entering a code you cannot see, on a phone, standing on site, is
   // the single most common way to fail this screen twice in a row.
   const [reveal, setReveal] = useState(false);
   const [capsOn, setCapsOn] = useState(false);
@@ -20,11 +17,9 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
   React.useEffect(() => {
     if (!new URLSearchParams(window.location.search).has('demo')) return;
     let cancelled = false;
-    setDemoBusy(true);
     enterDemo()
       .then(() => { if (!cancelled) onLogin(); })
-      .catch((err: any) => { if (!cancelled) setError(err?.message || 'Demo is unavailable right now.'); })
-      .finally(() => { if (!cancelled) setDemoBusy(false); });
+      .catch((err: any) => { if (!cancelled) setError(err?.message || 'Demo is unavailable right now.'); });
     return () => { cancelled = true; };
   }, [onLogin]);
 
@@ -34,16 +29,15 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
     e.preventDefault();
     if (busy) return;
     // Say why, rather than greying the button out. A primary action that is
-    // dead on arrival gives no reason and reads as a broken screen — and this
-    // is the first thing a prospect sees in a demo.
+    // dead on arrival gives no reason and reads as a broken screen.
     if (!password.trim()) {
-      setError('Enter your access code.');
+      setError('Enter the access code for this agency.');
       return;
     }
     setBusy(true);
-    setError('');
+    setError(null);
     try {
-      await login(password, remember);
+      await login(password.trim(), true);
       onLogin();
     } catch (err: any) {
       setError(err?.message || 'Sign-in failed. Try again.');
@@ -55,124 +49,120 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div
-      className="flex items-center justify-center flex-1 min-h-full bg-[color:var(--ink)] text-[color:var(--white)] p-4 relative overflow-hidden"
       style={{
-        paddingTop: 'calc(1rem + var(--safe-t))',
-        paddingBottom: 'calc(1rem + var(--safe-b))',
+        paddingTop: 'calc(2.5rem + env(safe-area-inset-top, 0px))',
+        paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))',
       }}
+      className="h-full w-full overflow-y-auto bg-[#F3F0E7] flex flex-col items-center justify-center px-6 relative"
     >
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-80" />
-      <div
-        className="relative w-full max-w-sm p-8 rounded-2xl border border-[rgba(232,234,230,0.14)]"
-        style={{
-          background: 'var(--ink-2)',
-          boxShadow: '0 1px 0 rgba(232,234,230,0.06) inset, 0 40px 90px -40px rgba(0,0,0,0.95)',
-        }}
-      >
-        <div className="flex flex-col items-center justify-center mb-6 gap-2">
-          <img src={logo} alt="PropInspect" className="w-44 max-w-full object-contain mx-auto" />
-          {/* This screen is the first thing a prospect sees on a demo, and it
-              said nothing about what the product is — a logo and a password
-              box. One line naming the job it does costs nothing and stops the
-              screen reading like an internal tool someone left exposed. */}
-          <p className="mt-3 text-[12px] text-[rgba(232,234,230,0.55)] tracking-[0.08em]">
+      {/* Two soft pools of light rather than a flat field. Kept well under the
+          type so nothing sits on a gradient edge. */}
+      <div className="absolute top-[-12%] right-[-18%] w-72 h-72 bg-[#0B7C72]/[0.05] blur-[110px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-12%] left-[-18%] w-72 h-72 bg-[#0B7C72]/[0.05] blur-[110px] rounded-full pointer-events-none" />
+
+      <div className="w-full max-w-sm z-10 flex flex-col items-center">
+
+        <div className="text-center mb-10">
+          <img
+            src={logo}
+            alt="PropInspect"
+            className="w-44 max-w-full object-contain mx-auto"
+          />
+          <p className="mt-3 text-[12px] text-[rgba(20,20,31,0.55)] tracking-[0.08em]">
             Property inspections · reports
           </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          {/* The input had no label, no name and no id, so assistive tech
-              announced it as an unlabelled secure field and password managers
-              had nothing to key off. autoComplete was "off", which actively
-              fights the manager staff use to store the code they type daily. */}
-          <label htmlFor="access-code" className="block text-[13px] text-[rgba(232,234,230,0.72)] mb-1.5">
-            Agency access code
-          </label>
-          <div className="relative mb-3">
-            <input
-              id="access-code"
-              name="access-code"
-              type={reveal ? 'text' : 'password'}
-              placeholder="Enter your code"
-              autoFocus
-              disabled={busy}
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyUp={(e) => setCapsOn(e.getModifierState?.('CapsLock') ?? false)}
-              aria-invalid={!!error}
-              aria-describedby={error ? 'access-code-error' : undefined}
-              /* pr-12 keeps the typed code clear of the reveal button. 16px is
-                 deliberate: iOS zooms the whole page in on focus below that. */
-              className="w-full bg-[color:var(--ink)] border border-white/20 rounded-xl pl-4 pr-12 py-3 text-[16px] text-[color:var(--white)] focus:outline-none focus:border-[color:var(--cyan)] transition-colors"
-            />
-            {/* Replaces a decorative padlock that occupied the one spot on this
-                screen where a control is genuinely useful. */}
-            <button
-              type="button"
-              onClick={() => setReveal((v) => !v)}
-              aria-label={reveal ? 'Hide code' : 'Show code'}
-              aria-pressed={reveal}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 grid place-items-center rounded-lg text-[rgba(232,234,230,0.55)] hover:text-[color:var(--white)] transition-colors cursor-pointer"
-            >
-              {reveal ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+        <div className="text-center mb-7">
+          <h1 className="text-[20px] font-semibold text-[#14141F] tracking-[-0.01em]">
+            Sign in this phone
+          </h1>
+          <p className="mt-1.5 text-[13px] text-[rgba(20,20,31,0.55)]">
+            Signs in for 30 days · inspect → report → export
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="w-full space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="agency-code" className="block text-[12px] font-semibold text-[rgba(20,20,31,0.72)] ml-1">
+              Agency access code
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[rgba(20,20,31,0.42)] group-focus-within:text-[#0B7C72] transition-colors">
+                <Lock size={15} />
+              </div>
+              {/* 16px is not a style choice: below it, Safari zooms the whole
+                  page in when the field takes focus and the layout jumps. */}
+              {/* autoComplete is a password as far as a password manager is
+                  concerned — this is a per-agency code the phone keeps. */}
+              <input
+                id="agency-code"
+                type={reveal ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyUp={(e) => setCapsOn(e.getModifierState?.('CapsLock') ?? false)}
+                placeholder="Access code"
+                autoComplete="current-password"
+                aria-invalid={!!error}
+                className="block w-full pl-11 pr-14 h-[52px] bg-[rgba(255,255,255,0.85)] border border-[rgba(20,20,31,0.10)] rounded-xl shadow-[inset_0_2px_4px_rgba(20,20,31,0.06)] text-[16px] text-[#14141F] placeholder-[rgba(20,20,31,0.32)] focus:outline-none focus:border-[#0B7C72]/60 focus:bg-white transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setReveal((v) => !v)}
+                aria-label={reveal ? 'Hide code' : 'Show code'}
+                aria-pressed={reveal}
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 grid place-items-center rounded-lg text-[rgba(20,20,31,0.55)] hover:text-[#14141F] transition-colors"
+              >
+                {reveal ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {capsOn && (
+              <p className="text-[13px] text-[rgba(20,20,31,0.55)] ml-1">Caps Lock is on.</p>
+            )}
           </div>
 
-          {capsOn && (
-            <p className="text-[13px] text-[color:var(--muted)] mb-3">Caps Lock is on.</p>
-          )}
-
-          {/* The row is the target, not the 14px box — a checkbox that small is
-              a miss on a phone even before the label is considered. */}
-          <label className="flex items-center gap-3 mb-4 cursor-pointer select-none min-h-11 -my-1">
-            <input
-              type="checkbox"
-              checked={remember}
-              onChange={(e) => setRemember(e.target.checked)}
-              className="w-5 h-5 shrink-0 accent-[color:var(--cyan)]"
-            />
-            <span className="text-[13px] text-[rgba(232,234,230,0.72)]">Keep me signed in on this device</span>
-          </label>
-
-          {/* A failed sign-in was rendered in the same muted grey as the hint
-              text above it, so the screen simply cleared and looked idle. This
-              is what brand.css keeps the one dusty red for. role="alert" so it
-              is announced rather than silently swapped in. */}
           {error && (
-            <p
-              id="access-code-error"
-              role="alert"
-              className="text-[13px] text-[color:var(--danger)] mb-4"
-            >
-              {error}
-            </p>
+            <div className="bg-red-50 border border-red-200 p-3 rounded-xl flex items-start gap-2">
+              <AlertCircle size={14} className="text-red-700 shrink-0 mt-0.5" />
+              <p className="text-[13px] font-medium text-red-700 leading-snug">{error}</p>
+            </div>
           )}
 
           <button
             type="submit"
             disabled={busy}
-            className="w-full py-3 rounded-xl bg-[color:var(--cyan)] hover:bg-[color:var(--cyan-bright)] disabled:opacity-60 on-fill font-semibold text-[16px] cursor-pointer transition-colors"
+            className="btn-primary w-full flex items-center justify-center gap-2 min-h-[52px] rounded-xl text-[16px] font-semibold tracking-normal disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {busy ? 'Checking…' : 'Enter'}
+            {busy ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Checking code…
+              </>
+            ) : (
+              <>
+                <Monitor size={16} />
+                Use this device
+              </>
+            )}
           </button>
         </form>
 
-        {/* The demo button that used to sit here is gone. A agency signing in on
-            their own DMS should not be offered a way into someone else's sample
-            data, and it read as though the product were a sandbox. The ?demo=1
-            route above still works, so the "Try it" links on tru-saas.com take a
-            prospect straight in — they just no longer land on a agency's login
-            screen as an option. */}
-        {demoBusy && (
-          <p className="mt-3 text-center text-[13px] text-[rgba(232,234,230,0.72)]">Opening demo…</p>
-        )}
+        <p className="mt-6 text-[13px] text-[rgba(20,20,31,0.55)] text-center leading-relaxed">
+          Access is issued per agency. Ask your property manager for the code,
+          or contact TruProperty to set your site up — there is no self-signup.
+        </p>
 
-        <div className="mt-6 pt-4 border-t border-white/10 text-center">
-          <p className="text-[13px] text-[color:var(--faint)]">
-            <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[color:var(--cyan-bright)] hover:underline">PropInspect</a> — TruSaaS Property Suite
-          </p>
-        </div>
+        <p className="mt-10 text-center text-[12px] text-[rgba(20,20,31,0.55)]">
+          <a
+            href="https://tru-property.co.za"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[rgba(20,20,31,0.72)] hover:text-[#0B7C72] transition-colors"
+          >
+            PropInspect
+          </a>
+          {' — by TruProperty · V 1.0'}
+        </p>
       </div>
     </div>
   );

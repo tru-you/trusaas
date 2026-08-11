@@ -144,7 +144,7 @@ export interface Enquiry {
     depositReceived?: boolean;
     financeStatus?: 'N/A' | 'Submitted' | 'Approved' | 'Declined';
     occupation?: boolean;
-    natis?: boolean; roadworthy?: boolean; delivered?: boolean;
+    electricalCoc?: boolean; beetleClearance?: boolean; transferRegistered?: boolean;
   };
   statusBeforeClose?: EnquiryStatus;
   docStage?: DocStage | null;

@@ -750,7 +750,7 @@ Property details &amp; specs
                                     `📍 Floor size: ${property.floorSize || "—"} m²\n` +
                                     `💰 Price: ${formatZAR(property.askingPrice)}\n\n` +
                                     // Claims the agency can stand behind. This previously asserted
-                                    // "NATIS Fully Checked & Cleared" and a "TrueAI quality
+                                    // "Electrical CoC Fully Checked & Cleared" and a "TrueAI quality
                                     // certificate" in copy meant for public adverts — neither had
                                     // happened, and the agency would have been the one publishing it.
                                     `✨ Well presented and ready to move into.\n\n` +

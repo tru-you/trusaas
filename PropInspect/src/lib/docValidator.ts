@@ -17,10 +17,17 @@ import type { DocStage, Enquiry } from '../types';
    *  than a catch-all clause that would not hold. */
 const REQUIRED_FIELDS: Record<DocStage, readonly string[]> = {
   offer: ['erfRef', 'priceBreakdown', 'validityWindow'],
-  transfer: ['disclosedDefects', 'tradeInLine'], // ncaDisclosure added conditionally below
-  compliance: ['rwcRef', 'rwcDate', 'natisMatch'],
+  /* transfer is the binding Offer to Purchase — it needs the property's
+     identity and the disclosed defects; there is no vehicle trade-in line. */
+  transfer: ['disclosedDefects', 'erfRef'], // ncaDisclosure added conditionally below
+  /* Property compliance = the electrical CoC (ref + issue date) plus the
+     beetle / wood-borer clearance mortgage lenders ask for. No roadworthy
+     certificate or NATIS in a property sale. */
+  compliance: ['electricalCocRef', 'electricalCocDate', 'beetleClearance'],
   invoice: ['invoiceNo', 'vatBreakdown', 'erfRef'], // buyerAddress added conditionally below
-  occupation: ['warrantyDoc', 'natisUpdated'],
+  /* Handover = occupation certificate + confirmation the transfer registered
+     at the Deeds Office. No vehicle warranty or NATIS here. */
+  occupation: ['occupationCertificate', 'transferRegistered'],
 };
 
 export interface CanAdvanceResult {

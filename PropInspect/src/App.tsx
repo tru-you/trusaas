@@ -102,6 +102,7 @@ import AmortizationCalc from "./components/AmortizationCalc";
 import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
 import LoginSplash from "./components/LoginSplash";
+import MobileDevice from "./components/MobileDevice";
 import { hasValidSession, clearSession, getAccount, authFetch, SESSION_EXPIRED_EVENT } from "./lib/session";
 import { useIsDesktop } from "./lib/useIsDesktop";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
@@ -825,36 +826,41 @@ export default function App() {
     return (
       // setIsLoggedIn inline, not handleLogin — this early return runs before
       // handleLogin is initialised further down the component body.
-      <LoginSplash onLogin={() => setIsLoggedIn(true)} />
+      <MobileDevice>
+        <LoginSplash onLogin={() => setIsLoggedIn(true)} />
+      </MobileDevice>
     );
   }
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-[color:var(--white)] font-sans">
-        <div className="text-[color:var(--muted)] mb-4 font-mono text-[16px] border border-[color:var(--glass-line)] bg-[color:var(--glass)] p-4 rounded-lg">
-          Connection Error: {loadError}
+      <MobileDevice>
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-[color:var(--white)] font-sans">
+          <div className="text-[color:var(--muted)] mb-4 font-mono text-[16px] border border-[color:var(--glass-line)] bg-[color:var(--glass)] p-4 rounded-lg">
+            Connection Error: {loadError}
+          </div>
+          <button 
+            onClick={loadAllState}
+            className="px-4 py-2 bg-[color:var(--cyan)] on-fill rounded text-[13px] font-semibold hover:bg-opacity-80"
+          >
+            Retry Connection
+          </button>
         </div>
-        <button 
-          onClick={loadAllState}
-          className="px-4 py-2 bg-[color:var(--cyan)] on-fill rounded text-[13px] font-semibold hover:bg-opacity-80"
-        >
-          Retry Connection
-        </button>
-      </div>
+      </MobileDevice>
     );
   }
 
   if (!state) {
     return (
-      <div className="min-h-screen bg-[color:var(--ink)] flex flex-col items-center justify-center p-6 text-[color:var(--white)] font-sans gap-3">
-        <div className="w-12 h-12 rounded-full border-4 border-t-[color:var(--cyan)] border-[color:var(--cyan-faint)] animate-spin" />
-        <div className="font-semibold text-[16px] tracking-wide">Starting PropInspect…</div>
-        <div className="text-[13px] text-[rgba(232,234,230,0.72)] text-center max-w-xs">
-          Loading portfolio data from <span className="font-mono text-[color:var(--cyan)]">localhost:3001</span>.
-          If this hangs, restart the server (`npm run dev` in propinspect).
-        </div>
-        <button
+      <MobileDevice>
+        <div className="min-h-screen bg-[color:var(--ink)] flex flex-col items-center justify-center p-6 text-[color:var(--white)] font-sans gap-3">
+          <div className="w-12 h-12 rounded-full border-4 border-t-[color:var(--cyan)] border-[color:var(--cyan-faint)] animate-spin" />
+          <div className="font-semibold text-[16px] tracking-wide">Starting PropInspect…</div>
+          <div className="text-[13px] text-[rgba(232,234,230,0.72)] text-center max-w-xs">
+            Loading portfolio data from <span className="font-mono text-[color:var(--cyan)]">localhost:3001</span>.
+            If this hangs, restart the server (`npm run dev` in propinspect).
+          </div>
+          <button
           type="button"
           onClick={loadAllState}
           className="mt-2 px-4 py-2 rounded-lg bg-[color:var(--cyan)] on-fill text-[13px] font-semibold"
@@ -862,6 +868,7 @@ export default function App() {
           Retry load
         </button>
       </div>
+      </MobileDevice>
     );
   }
 
@@ -1392,7 +1399,8 @@ export default function App() {
   };
 
   return (
-    !isLoggedIn ? (
+    <MobileDevice>
+    {!isLoggedIn ? (
       <LoginSplash onLogin={handleLogin} />
     ) : (<>
       <div className="min-h-full flex-1 bg-[color:var(--ink)] text-[color:var(--white)] relative select-none perspective-scene">
@@ -3071,11 +3079,11 @@ export default function App() {
             hand a deal over, so no customer documents live on the server. */}
         {activeSection === "deal_readiness" && (() => {
           const CHECK_ITEMS = [
-            { key: "natis", label: "NATIS" },
-            { key: "roadworthy", label: "Roadworthy" },
+            { key: "electricalCoc", label: "Electrical COC" },
+            { key: "beetleClearance", label: "Beetle clearance" },
             { key: "invoiced", label: "Invoiced" },
             { key: "depositReceived", label: "Deposit" },
-            { key: "delivered", label: "Transferred" },
+            { key: "transferRegistered", label: "Transfer registered" },
           ] as const;
           const FINANCE_OPTS = ["N/A", "Submitted", "Approved", "Declined"] as const;
           /* Labels only — the ORDER comes from DOC_STAGES so this cannot drift
@@ -3217,10 +3225,10 @@ export default function App() {
                         (d) => d.leadId === Enquiry.id && d.stage === "invoice" && d.status === "Signed",
                       );
                       const enteredDocHub = !!Enquiry.docStage || !!Enquiry.docFlowCompletedAt;
-                      if (pastCompliance && !cl.natis)
-                        conflictByKey.natis = "Compliance is signed off, but NATIS is un-ticked.";
-                      if (pastCompliance && !cl.roadworthy)
-                        conflictByKey.roadworthy = "Compliance is signed off, but Roadworthy is un-ticked.";
+                      if (pastCompliance && !cl.electricalCoc)
+                        conflictByKey.electricalCoc = "Compliance is signed off, but Electrical COC is un-ticked.";
+                      if (pastCompliance && !cl.beetleClearance)
+                        conflictByKey.beetleClearance = "Compliance is signed off, but Beetle clearance is un-ticked.";
                       if (enteredDocHub && !!cl.invoiced !== invoiceFinalised)
                         conflictByKey.invoiced = cl.invoiced
                           ? "Checklist says invoiced, but the DocHub invoice stage is not finalised."
@@ -4554,6 +4562,7 @@ export default function App() {
       </div>
       <Assistant />
     </>
-  )
+    )}
+    </MobileDevice>
   );
 }

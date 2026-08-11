@@ -29,8 +29,9 @@ const STAGE_DESC: Record<DocStage, string> = {
 /** Per-agency DocHub configuration. Modes per stage:
  *  `generate` (PropInspect renders a PDF from a template — deferred in v1),
  *  `attach`   (agency uploads their own signed doc),
- *  `confirm`  (checkboxes only — fixed for compliance; NATIS/RWC are
- *              government paperwork and cannot be produced by the agency). */
+ *  `confirm`  (checkboxes only — fixed for compliance; Electrical CoC and
+ *              beetle clearance are issued by external certifiers, not produced
+ *              by the agency). */
 export default function DocFlowSettings({ agency, isAdmin, onSaved }: Props) {
   const [flow, setFlow] = useState<Partial<Record<DocStage, DocMode>>>(() => {
     const initial: Partial<Record<DocStage, DocMode>> = {};
@@ -95,9 +96,10 @@ export default function DocFlowSettings({ agency, isAdmin, onSaved }: Props) {
               </div>
               <div className="shrink-0 flex items-center gap-2">
                 {FIXED_STAGE_MODES[stage] ? (
-                  /* Not a choice. Compliance is NATIS and a roadworthy — both
-                     issued by government, so there is nothing for the agency to
-                     generate or attach. Rendering the buttons here let the row
+                  /* Not a choice. Compliance is the Electrical CoC and beetle
+                     clearance — both issued by external certifiers, so there is
+                     nothing for the agency to generate or attach. Rendering the
+                     buttons here let the row
                      be clicked into a mode DocHubPanel then ignored, so the
                      settings screen disagreed with the actual behaviour. */
                   <span

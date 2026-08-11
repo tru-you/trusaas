@@ -270,7 +270,7 @@ function mayTouch(row: { agencyId?: string } | undefined, auth: any): boolean {
  *  Returns the agency claims or null. Requires FLOWPMS_URL + FLOWPMS_SYNC_KEY. */
 async function verifyCodeWithFlowPMS(code: string): Promise<{ agencyId: string; agencySlug: string; agencyName: string } | null> {
   const syncKey = process.env.FLOWPMS_SYNC_KEY || process.env.TRUFLOW_SYNC_KEY || "";
-  const pmsUrl = process.env.FLOWPMS_URL || process.env.TRUFLOW_URL || process.env.TRUFLOW_PMS_URL || "";
+  const pmsUrl = process.env.FLOWPMS_URL || process.env.TRUFLOW_URL || process.env.TRUFLOW_PMS_URL || process.env.TRUFLOW_DMS_URL || "";
   if (!syncKey || !pmsUrl) return null;
   try {
     const res = await fetch(`${pmsUrl.replace(/\/$/, "")}/api/auth/verify-code`, {
@@ -2203,8 +2203,9 @@ app.get("/api/drift", (req: any, res) => {
     }));
 
   /* Compliance is verified only at the moment it is finalised. All three tick
-     surfaces can clear NATIS or roadworthy afterwards, leaving a deal that
-     claims compliance is done with the evidence flags false. */
+     surfaces can clear the Electrical CoC or beetle clearance afterwards,
+     leaving a deal that claims compliance is done with the evidence flags
+     false. */
   const complianceIdx = DOC_STAGES.indexOf("compliance");
   const compliancePastButUnticked = enquiries
     .filter((l) => {
@@ -2215,14 +2216,14 @@ app.get("/api/drift", (req: any, res) => {
         : false;
       if (!past) return false;
       const cl = l.dealChecklist || {};
-      return !cl.natis || !cl.roadworthy;
+      return !cl.electricalCoc || !cl.beetleClearance;
     })
     .map((l) => {
       const cl = l.dealChecklist || {};
       return {
         leadId: l.id,
         name: lName(l),
-        missing: [!cl.natis && "natis", !cl.roadworthy && "roadworthy"].filter(Boolean),
+        missing: [!cl.electricalCoc && "electricalCoc", !cl.beetleClearance && "beetleClearance"].filter(Boolean),
       };
     });
 
@@ -2249,11 +2250,11 @@ app.get("/api/drift", (req: any, res) => {
       rows: soldWithNoClosedDeal,
     },
     closedDealStillInStock: {
-      note: "Deal closed but the car is still in stock — it is still advertised as available.",
+      note: "Deal closed but the property is still in stock — it is still advertised as available.",
       rows: closedDealStillInStock,
     },
     compliancePastButUnticked: {
-      note: "Past the compliance stage with NATIS or roadworthy un-ticked since.",
+      note: "Past the compliance stage with Electrical COC or beetle clearance un-ticked since.",
       rows: compliancePastButUnticked,
     },
     invoicedFlagDisagrees: {

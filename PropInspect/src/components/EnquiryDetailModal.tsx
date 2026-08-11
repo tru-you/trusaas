@@ -1193,11 +1193,11 @@ export default function EnquiryDetailModal({
 
           {activeTab === "finance" && (() => {
             const CHECK_ITEMS = [
-              { key: "natis", label: "NATIS" },
-              { key: "roadworthy", label: "Roadworthy" },
+              { key: "electricalCoc", label: "Electrical COC" },
+              { key: "beetleClearance", label: "Beetle clearance" },
               { key: "invoiced", label: "Invoiced" },
               { key: "depositReceived", label: "Deposit" },
-              { key: "delivered", label: "Transferred" },
+              { key: "transferRegistered", label: "Transfer registered" },
             ] as const;
             const FINANCE_OPTS = ["N/A", "Submitted", "Approved", "Declined"] as const;
             const cl: any = lead.dealChecklist || {};

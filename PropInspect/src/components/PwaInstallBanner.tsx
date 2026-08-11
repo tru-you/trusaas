@@ -22,12 +22,12 @@ import {
 export default function PwaInstallBanner({
   appName = 'PropInspect',
   blurb = 'Install on this device for one-tap access — no browser bar, works offline for the app shell.',
-  accent = 'var(--blue)',
-  dismissKey = 'truflow_pwa_install_dismissed',
+  accent = '#0B7C72',
+  dismissKey = 'propinspect_pwa_install_dismissed',
 }: {
   appName?: string;
   blurb?: string;
-  /** Product accent — PropInspect blue, TruLens cyan. Keeps each app on its own colour. */
+  /** Product accent — readable on the light card. */
   accent?: string;
   dismissKey?: string;
 }) {
@@ -110,11 +110,8 @@ export default function PwaInstallBanner({
   };
 
   return (
-    <div className="fixed bottom-3 left-3 right-3 md:left-auto md:right-4 md:w-[360px] z-[300]">
-      <div
-        className="rounded-[18px] border bg-[color:var(--ink-2)] px-4 py-3 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]"
-        style={{ borderColor: `${accent}40` }}
-      >
+    <div className="absolute bottom-3 left-2 right-2 z-[100] pointer-events-auto">
+      <div className="rounded-2xl border border-[rgba(20,20,31,0.10)] bg-white/95 backdrop-blur-md shadow-2xl shadow-[rgba(20,20,31,0.12)] px-3 py-3">
         <div className="flex items-start gap-3">
           <div
             className="mt-0.5 p-2 rounded-xl shrink-0"
@@ -124,15 +121,15 @@ export default function PwaInstallBanner({
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-[color:var(--white)]">Install {appName}</p>
-            <p className="text-[13px] text-[rgba(232,234,230,0.55)] leading-snug mt-0.5">
+            <p className="text-[13px] font-semibold text-[#14141F] tracking-wide">Install {appName}</p>
+            <p className="text-[13px] text-[rgba(20,20,31,0.55)] leading-snug mt-0.5">
               {isIosSafari()
                 ? 'Add to your Home Screen to run it full-screen, without the browser bar.'
                 : blurb}
             </p>
 
             {iosHelp && (
-              <ol className="mt-2 text-[13px] text-[rgba(232,234,230,0.72)] space-y-1 list-decimal list-inside">
+              <ol className="mt-2 text-[13px] text-[#14141F] space-y-1 list-decimal list-inside">
                 <li>
                   Tap <Share size={10} className="inline" style={{ color: accent }} /> <b>Share</b>
                 </li>
@@ -145,21 +142,21 @@ export default function PwaInstallBanner({
               </ol>
             )}
 
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-2">
               <button
                 type="button"
                 onClick={handleInstall}
-                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-full text-[13px] font-semibold text-[color:var(--ink)] transition-opacity hover:opacity-90"
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ background: accent }}
               >
                 <Download size={12} />
-                {deferred ? 'Install' : isIosSafari() ? (iosHelp ? 'Got it' : 'How to install') : 'Install'}
+                {deferred ? 'Install app' : isIosSafari() ? (iosHelp ? 'Got it' : 'How to install') : 'Install'}
               </button>
               <button
                 type="button"
                 onClick={dismiss}
                 aria-label="Dismiss"
-                className="px-3 py-2 rounded-full border border-white/10 text-[rgba(232,234,230,0.55)] hover:text-[color:var(--white)] transition-colors"
+                className="px-3 py-2 rounded-xl border border-[rgba(20,20,31,0.10)] text-[rgba(20,20,31,0.55)] hover:text-[#14141F] text-[13px] font-bold transition-colors"
               >
                 <X size={14} />
               </button>
