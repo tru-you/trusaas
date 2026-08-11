@@ -548,40 +548,6 @@ export default function CameraGuide({ property, onBack, onComplete, onPhotoCaptu
     allSlots.find((s) => !photos[s.id])
   )?.id;
 
-  /** Local-only slot clear: strips the photo and its per-slot records (quality,
-      closeups, assessment) from the property and pushes the whole updated
-      property up through the same prop the bulk upload path uses — there is no
-      server photo-delete endpoint, so the cleared shot is gone from this
-      session until the slot is re-shot. */
-  const clearSlotPhoto = (slotId: string) => {
-    const nextPhotos = { ...photos };
-    delete nextPhotos[slotId];
-    const next: Property = {
-      ...property,
-      photos: nextPhotos,
-    };
-    if (property.quality) {
-      const nextQuality = { ...property.quality };
-      delete nextQuality[slotId];
-      next.quality = nextQuality;
-    }
-    if (property.closeups) {
-      const nextCloseups = { ...property.closeups };
-      delete nextCloseups[slotId];
-      next.closeups = nextCloseups;
-    }
-    if (property.slotAssessment) {
-      const nextAssessment = { ...property.slotAssessment };
-      delete nextAssessment[slotId];
-      next.slotAssessment = nextAssessment;
-    }
-    onBulkPhotosUploaded(next);
-    setSelectedSlotId(slotId);
-    const slotName = allSlots.find((s) => s.id === slotId)?.name || slotId;
-    setCaptureHint(`${slotName} cleared — re-shoot when ready`);
-    setTimeout(() => setCaptureHint(null), 2200);
-  };
-
   const renderChip = (slot: (typeof allSlots)[number]) => {
     const i = allSlots.indexOf(slot);
     const isTaken = !!photos[slot.id];
@@ -605,28 +571,7 @@ export default function CameraGuide({ property, onBack, onComplete, onPhotoCaptu
       >
         <span className="flex items-center justify-between w-full">
           <span className="text-[11px] font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
-          {isTaken && (
-            <span className="flex items-center gap-1">
-              <Check size={12} />
-              <span
-                role="button"
-                tabIndex={0}
-                aria-label={`Clear ${slot.name} photo`}
-                title="Clear this photo"
-                className="flex items-center justify-center h-4 w-4 rounded-full bg-[rgba(10,20,32,0.16)] text-[#0A1420] cursor-pointer hover:bg-red-200 hover:text-red-700 transition-colors"
-                onClick={(e) => { e.stopPropagation(); clearSlotPhoto(slot.id); }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    clearSlotPhoto(slot.id);
-                  }
-                }}
-              >
-                <X size={10} strokeWidth={3} />
-              </span>
-            </span>
-          )}
+          {isTaken && <Check size={12} />}
         </span>
         <span className="text-[12px] font-medium leading-tight line-clamp-2">{slot.name}</span>
       </button>
