@@ -13,8 +13,9 @@ import {
   LogOut,
   Home,
   Crown,
-  CalendarDays,
   Bell,
+  Menu,
+  X,
 } from 'lucide-react';
 import { apiGet } from '../lib/api';
 import { fmtDate, initials } from '../lib/format';
@@ -74,6 +75,7 @@ export function Shell({
 }) {
   const isMaster = agent?.role === 'admin' && !agent?.agencyId;
   const [notif, setNotif] = useState<{ open: boolean; items: NotificationItem[] }>({ open: false, items: [] });
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const loadNotifs = useCallback(async () => {
     try {
@@ -89,68 +91,108 @@ export function Shell({
     const t = setInterval(loadNotifs, 60000);
     return () => clearInterval(t);
   }, [loadNotifs]);
-  return (
-    <div className="min-h-screen flex">
-      <aside className="fixed inset-y-0 left-0 w-[236px] bg-card border-r border-line flex flex-col">
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-line/60">
-          <Logo />
-          <div className="leading-tight">
-            <p className="text-[15px] font-semibold tracking-tight text-ink">Flow Prop</p>
-            <p className="text-[10.5px] font-medium tracking-[0.12em] text-muted uppercase">
-              Property agency
-            </p>
-          </div>
+  const go = (k: string) => {
+    onNav(k);
+    setMenuOpen(false);
+  };
+
+  const sidebar = (
+    <>
+      <div className="flex items-center gap-3 px-5 h-16 border-b border-line/60">
+        <Logo />
+        <div className="leading-tight">
+          <p className="text-[15px] font-semibold tracking-tight text-ink">Flow Prop</p>
+          <p className="text-[10.5px] font-medium tracking-[0.12em] text-muted uppercase">
+            Property agency
+          </p>
         </div>
+      </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-          {NAV.map((item) => {
-            if (item.key === 'master' && !isMaster) return null;
-            const Icon = item.icon;
-            const isActive = active === item.key;
-            return (
-              <button
-                key={item.key}
-                onClick={() => onNav(item.key)}
-                className={`w-full flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium tracking-tight transition-colors ${
-                  isActive
-                    ? 'bg-accent-soft text-accent'
-                    : 'text-ink-dim hover:bg-slate-soft hover:text-ink'
-                }`}
-              >
-                <Icon size={17} strokeWidth={isActive ? 2.3 : 1.9} className="shrink-0" />
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="p-3 border-t border-line/60">
-          <div className="flex items-center gap-3 px-2 py-2 rounded-[10px]">
-            <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center text-[12px] font-semibold shrink-0">
-              {agent ? initials(agent.label.split(' ')[0], agent.label.split(' ')[1]) : '—'}
-            </div>
-            <div className="min-w-0 flex-1 leading-tight">
-              <p className="text-[13px] font-semibold text-ink truncate">{agent?.label || '…'}</p>
-              <p className="text-[11.5px] text-muted truncate capitalize">{agent?.role || ''}</p>
-            </div>
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+        {NAV.map((item) => {
+          if (item.key === 'master' && !isMaster) return null;
+          const Icon = item.icon;
+          const isActive = active === item.key;
+          return (
             <button
-              onClick={onSignOut}
-              title="Sign out"
-              aria-label="Sign out"
-              className="w-8 h-8 rounded-[8px] flex items-center justify-center text-muted hover:text-danger hover:bg-danger/10 transition-colors"
+              key={item.key}
+              onClick={() => go(item.key)}
+              className={`w-full flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium tracking-tight transition-colors ${
+                isActive
+                  ? 'bg-accent-soft text-accent'
+                  : 'text-ink-dim hover:bg-slate-soft hover:text-ink'
+              }`}
             >
-              <LogOut size={16} />
+              <Icon size={17} strokeWidth={isActive ? 2.3 : 1.9} className="shrink-0" />
+              {item.label}
             </button>
+          );
+        })}
+      </nav>
+
+      <div className="p-3 border-t border-line/60">
+        <div className="flex items-center gap-3 px-2 py-2 rounded-[10px]">
+          <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center text-[12px] font-semibold shrink-0">
+            {agent ? initials(agent.label.split(' ')[0], agent.label.split(' ')[1]) : '—'}
           </div>
+          <div className="min-w-0 flex-1 leading-tight">
+            <p className="text-[13px] font-semibold text-ink truncate">{agent?.label || '…'}</p>
+            <p className="text-[11.5px] text-muted truncate capitalize">{agent?.role || ''}</p>
+          </div>
+          <button
+            onClick={onSignOut}
+            title="Sign out"
+            aria-label="Sign out"
+            className="w-8 h-8 rounded-[8px] flex items-center justify-center text-muted hover:text-danger hover:bg-danger/10 transition-colors"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen">
+      {/* Desktop sidebar — always visible ≥ md */}
+      <aside className="hidden md:flex fixed inset-y-0 left-0 w-[236px] bg-card border-r border-line flex-col z-30">
+        {sidebar}
       </aside>
 
-      <main className="flex-1 ml-[236px] min-w-0">
-        <div className="sticky top-0 z-40 h-16 border-b border-line bg-paper/85 backdrop-blur-md flex items-center justify-between px-8">
+      {/* Mobile drawer — slide-in under md */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 w-[260px] bg-card border-r border-line flex flex-col shadow-3 animate-rise">
+            <div className="absolute top-3 right-3">
+              <button
+                onClick={() => setMenuOpen(false)}
+                title="Close menu"
+                aria-label="Close menu"
+                className="w-8 h-8 rounded-[8px] flex items-center justify-center text-muted hover:text-ink hover:bg-slate-soft transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            {sidebar}
+          </aside>
+        </div>
+      )}
+
+      <main className="ml-0 md:ml-[236px] min-w-0">
+        <div className="sticky top-0 z-20 h-16 border-b border-line bg-paper/85 backdrop-blur-md flex items-center gap-3 px-4 md:px-8">
+          <button
+            onClick={() => setMenuOpen(true)}
+            title="Open menu"
+            aria-label="Open menu"
+            className="md:hidden w-9 h-9 -ml-1 rounded-[10px] flex items-center justify-center text-muted hover:text-ink hover:bg-slate-soft transition-colors"
+          >
+            <Menu size={19} />
+          </button>
           <h1 className="text-[17px] font-semibold tracking-tight text-ink">
             {NAV.find((n) => n.key === active)?.label || ''}
           </h1>
-          <div className="flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-3">
             <div className="relative">
               <button
                 onClick={() => setNotif((n) => ({ ...n, open: !n.open }))}
@@ -171,7 +213,7 @@ export function Shell({
                     className="fixed inset-0 z-40"
                     onClick={() => setNotif((n) => ({ ...n, open: false }))}
                   />
-                  <div className="absolute right-0 top-full mt-2 z-50 w-[320px] bg-card rounded-[var(--r-card)] border border-line shadow-3 overflow-hidden animate-rise">
+                  <div className="absolute right-0 top-full mt-2 z-50 w-[320px] max-w-[calc(100vw-24px)] bg-card rounded-[var(--r-card)] border border-line shadow-3 overflow-hidden animate-rise">
                     <p className="px-4 pt-3.5 pb-2 text-[13px] font-semibold text-ink">Notifications</p>
                     <div className="max-h-[320px] overflow-y-auto">
                       {notif.items.length === 0 && (
@@ -189,10 +231,10 @@ export function Shell({
                 </>
               )}
             </div>
-            <p className="text-[12.5px] text-muted">{agent?.agencyName || ''}</p>
+            <p className="text-[12.5px] text-muted hidden sm:block">{agent?.agencyName || ''}</p>
           </div>
         </div>
-        <div className="px-8 py-6">{children}</div>
+        <div className="px-4 md:px-8 py-6">{children}</div>
       </main>
     </div>
   );
