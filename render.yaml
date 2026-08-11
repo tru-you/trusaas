@@ -307,35 +307,3 @@ services:
     buildCommand: npm install && npm run build
     startCommand: node dist/scrape-worker.cjs
     healthCheckPath: /api/health
-
-  # ── 6. PropInspect — property inspection reports & document generation ───────
-  - type: web
-    name: proplens-inspect
-    runtime: node
-    plan: starter
-    rootDir: PropInspect
-    buildCommand: npm install && npm run build
-    startCommand: node dist/server.cjs
-    healthCheckPath: /api/health
-    disk:
-      name: proplens-inspect-data
-      mountPath: /opt/render/project/data
-      sizeGB: 5
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATA_DIR
-        value: /opt/render/project/data
-      - key: ADMIN_ACCESS_CODE
-        sync: false
-      - key: DEEPSEEK_API_KEY
-        sync: false
-      # Pairing with FlowPMS, the master code authority: code verification
-      # (login) POSTs to FLOWPMS_URL, authenticated with FLOWPMS_SYNC_KEY.
-      # MUST equal FLOWPMS_SYNC_KEY on flowprop. TRUFLOW_SYNC_KEY is the legacy
-      # alias the code also accepts. FLOWPMS_URL defaults to the production
-      # host when unset, but keep it declared here for documentation.
-      - key: FLOWPMS_SYNC_KEY
-        sync: false
-      - key: FLOWPMS_URL
-        value: https://flowprop.tru-saas.com 
