@@ -271,7 +271,10 @@ function mayTouch(row: { agencyId?: string } | undefined, auth: any): boolean {
 async function verifyCodeWithFlowPMS(code: string): Promise<{ agencyId: string; agencySlug: string; agencyName: string } | null> {
   const syncKey = process.env.FLOWPMS_SYNC_KEY || process.env.TRUFLOW_SYNC_KEY || "";
   const pmsUrl = process.env.FLOWPMS_URL || process.env.TRUFLOW_URL || process.env.TRUFLOW_PMS_URL || process.env.TRUFLOW_DMS_URL || "";
-  if (!syncKey || !pmsUrl) return null;
+  if (!syncKey || !pmsUrl) {
+    console.warn("[auth] cannot verify codes with FlowPMS — set FLOWPMS_URL + FLOWPMS_SYNC_KEY (or TRUFLOW_DMS_URL + TRUFLOW_SYNC_KEY).");
+    return null;
+  }
   try {
     const res = await fetch(`${pmsUrl.replace(/\/$/, "")}/api/auth/verify-code`, {
       method: "POST",
@@ -279,7 +282,17 @@ async function verifyCodeWithFlowPMS(code: string): Promise<{ agencyId: string; 
       body: JSON.stringify({ code, product: "prop-inspect" }),
       signal: AbortSignal.timeout(6000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      let detail = `status ${res.status}`;
+      try {
+        const body = await res.json();
+        detail = body?.message || body?.error || detail;
+      } catch {
+        /* non-JSON body — keep the status */
+      }
+      console.warn(`[auth] FlowPMS refused a code (${res.status}): ${detail}`);
+      return null;
+    }
     const body = await res.json();
     if (!body?.ok || !body?.agency?.slug) return null;
     return {

@@ -64,6 +64,10 @@ app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
     product: 'flowprop',
+    /* Whether satellites can verify codes here — FLOWPMS_SYNC_KEY set. A
+       boolean, never the value. Satellites (PropLens/PropInspect) 401/503 on
+       login when this is false. */
+    syncKeyConfigured: !!process.env.FLOWPMS_SYNC_KEY,
     uptimeSec: Math.round(process.uptime()),
     ts: new Date().toISOString(),
   });

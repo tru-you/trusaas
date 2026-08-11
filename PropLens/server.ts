@@ -888,13 +888,19 @@ async function verifyCodeWithFlowPMS(
       signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) {
-      /* 403 is a real answer, not a failure: the code is valid but this
-         agency is not set up for TruLens. Logged so an onboarding mistake
-         is visible rather than looking like a wrong code. */
-      if (res.status === 403) {
-        const body = await res.json().catch(() => ({}));
-        console.warn(`[auth] FlowPMS refused a code for lens: ${body?.message || res.status}`);
+      /* Distinguish WHY the FlowPMS refused: 503 = FlowPMS has no
+         FLOWPMS_SYNC_KEY (so nobody can verify codes there), 403 = valid code
+         but this agency is not set up for prop-lens, 401 = bad code. Logged so
+         an onboarding/deploy mistake is visible instead of looking like a
+         wrong code. */
+      let detail = `status ${res.status}`;
+      try {
+        const body = await res.json();
+        detail = body?.message || body?.error || detail;
+      } catch {
+        /* non-JSON body — keep the status */
       }
+      console.warn(`[auth] FlowPMS refused a code (${res.status}): ${detail}`);
       return null;
     }
     const body = await res.json();
