@@ -170,7 +170,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
 
         <div className="mt-6 pt-4 border-t border-white/10 text-center">
           <p className="text-[13px] text-[color:var(--faint)]">
-            <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[color:var(--cyan-bright)] hover:underline">PropInspect</a> — Future Automotive · V 1.2
+            <a href={TRUESAAS_URL} target="_blank" rel="noopener noreferrer" className="text-[color:var(--cyan-bright)] hover:underline">PropInspect</a> — TruSaaS Property Suite
           </p>
         </div>
       </div>

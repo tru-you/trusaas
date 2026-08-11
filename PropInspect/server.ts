@@ -151,7 +151,7 @@ app.get("/api/version", (_req, res) => {
   const commit =
     process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null;
   res.json({
-    product: "truflow-premium",
+    product: "proplens-inspect",
     commit,
     shortCommit: commit ? String(commit).slice(0, 7) : null,
     branch: process.env.RENDER_GIT_BRANCH || null,
@@ -164,7 +164,7 @@ app.get("/api/health", (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.json({
     ok: true,
-    product: "truflow-premium",
+    product: "proplens-inspect",
     port: PORT,
     nodeEnv: process.env.NODE_ENV || "development",
     /* A boolean, never the value — the same field TruLens reports. Without it
@@ -270,7 +270,7 @@ function mayTouch(row: { agencyId?: string } | undefined, auth: any): boolean {
  *  Returns the agency claims or null. Requires FLOWPMS_URL + FLOWPMS_SYNC_KEY. */
 async function verifyCodeWithFlowPMS(code: string): Promise<{ agencyId: string; agencySlug: string; agencyName: string } | null> {
   const syncKey = process.env.FLOWPMS_SYNC_KEY || process.env.TRUFLOW_SYNC_KEY || "";
-  const pmsUrl = process.env.FLOWPMS_URL || "";
+  const pmsUrl = process.env.FLOWPMS_URL || process.env.TRUFLOW_URL || process.env.TRUFLOW_PMS_URL || "";
   if (!syncKey || !pmsUrl) return null;
   try {
     const res = await fetch(`${pmsUrl.replace(/\/$/, "")}/api/auth/verify-code`, {
