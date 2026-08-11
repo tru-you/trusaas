@@ -1,4 +1,4 @@
-import logo from "../assets/images/PI-AppIcon.svg";
+import logo from "../assets/images/propinspect-logo.svg";
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { TRUESAAS_URL } from '../lib/ecosystem';
@@ -70,13 +70,13 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
         }}
       >
         <div className="flex flex-col items-center justify-center mb-6 gap-2">
-          <img src={logo} alt="PropInspect" className="h-14 w-auto max-w-full object-contain logo-float" />
+          <img src={logo} alt="PropInspect" className="w-44 max-w-full object-contain mx-auto" />
           {/* This screen is the first thing a prospect sees on a demo, and it
               said nothing about what the product is — a logo and a password
               box. One line naming the job it does costs nothing and stops the
               screen reading like an internal tool someone left exposed. */}
-          <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center leading-snug">
-            Agency management — listing, enquiries, F&amp;I and reporting
+          <p className="mt-3 text-[12px] text-[rgba(232,234,230,0.55)] tracking-[0.08em]">
+            Property inspections · reports
           </p>
         </div>
 
