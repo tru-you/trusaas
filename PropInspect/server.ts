@@ -168,12 +168,20 @@ app.get("/api/health", (_req, res) => {
     port: PORT,
     nodeEnv: process.env.NODE_ENV || "development",
     /* A boolean, never the value — the same field TruLens reports. Without it
-       the only way to tell whether TRUFLOW_SYNC_KEY reached the process was to
-       POST a deliberately wrong key and read 401-vs-400 out of the status
+       the only way to tell whether the shared sync key reached the process was
+       to POST a deliberately wrong key and read 401-vs-400 out of the status
        code, which is not a check anyone will remember to run. An env var saved
        under a mistyped name restarts the service and looks identical to
-       success from outside; this is the field that tells them apart. */
+       success from outside; this is the field that tells them apart. Reads
+       FLOWPMS_SYNC_KEY, then the legacy TRUFLOW_SYNC_KEY, through the same
+       resolution SYNC_SERVICE_KEY uses (middleware/auth.ts). */
     syncKeyConfigured: !!SYNC_SERVICE_KEY,
+    pmsUrl:
+      process.env.FLOWPMS_URL ||
+      process.env.TRUFLOW_URL ||
+      process.env.TRUFLOW_PMS_URL ||
+      process.env.TRUFLOW_DMS_URL ||
+      (process.env.NODE_ENV === "production" ? "https://flowprop.tru-saas.com" : ""),
     uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
     ts: new Date().toISOString(),
   });
@@ -390,7 +398,7 @@ app.post("/api/auth/verify-code", (req: any, res) => {
   if (!SYNC_SERVICE_KEY) {
     return res.status(503).json({
       error: "Not configured",
-      message: "TRUFLOW_SYNC_KEY must be set before products can verify codes here.",
+      message: "FLOWPMS_SYNC_KEY (or legacy TRUFLOW_SYNC_KEY) must be set before products can verify codes here.",
     });
   }
   if (req.headers["x-tru-sync-key"] !== SYNC_SERVICE_KEY) {
@@ -943,8 +951,9 @@ try {
 applyAdminRecovery(ensureAuthStore());
 if (!SYNC_SERVICE_KEY) {
   console.warn(
-    "[auth] TRUFLOW_SYNC_KEY is not set — /api/sync/push-photos accepts " +
-    "unauthenticated pushes. Set the same value here and on TruLens to close it."
+    "[auth] FLOWPMS_SYNC_KEY (or legacy TRUFLOW_SYNC_KEY) is not set — " +
+    "/api/sync/push-photos accepts unauthenticated pushes. Set the same value " +
+    "here and on FlowPMS to close it."
   );
 }
 

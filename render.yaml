@@ -330,4 +330,12 @@ services:
         sync: false
       - key: DEEPSEEK_API_KEY
         sync: false
-      - key: 
+      # Pairing with FlowPMS, the master code authority: code verification
+      # (login) POSTs to FLOWPMS_URL, authenticated with FLOWPMS_SYNC_KEY.
+      # MUST equal FLOWPMS_SYNC_KEY on flowprop. TRUFLOW_SYNC_KEY is the legacy
+      # alias the code also accepts. FLOWPMS_URL defaults to the production
+      # host when unset, but keep it declared here for documentation.
+      - key: FLOWPMS_SYNC_KEY
+        sync: false
+      - key: FLOWPMS_URL
+        value: https://flowprop.tru-saas.com 

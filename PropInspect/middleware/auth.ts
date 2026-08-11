@@ -213,8 +213,10 @@ export function isPublicPath(p: string): boolean {
 
 // TruLens pushes captures server-to-server and has no user session. Until a
 // shared key is configured on both services this stays open, so an unset key
-// can't silently break a agency's photo export mid-capture.
-export const SYNC_SERVICE_KEY = process.env.TRUFLOW_SYNC_KEY || "";
+// can't silently break a agency's photo export mid-capture. FLOWPMS_SYNC_KEY is
+// the canonical name (FlowPMS is the shared master); TRUFLOW_SYNC_KEY is the
+// legacy alias — accept either so one value works everywhere on the suite.
+export const SYNC_SERVICE_KEY = process.env.FLOWPMS_SYNC_KEY || process.env.TRUFLOW_SYNC_KEY || "";
 export const TRULENS_URL = (process.env.TRULENS_URL || "https://lens.tru-saas.com").replace(/\/$/, "");
 
 export function requireAuth(req: any, res: any, next: any) {

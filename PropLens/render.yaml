@@ -19,8 +19,7 @@ services:
         sync: false
         value: ""
       - key: FLOWPMS_URL
-        sync: false
-        value: ""
+        value: https://flowprop.tru-saas.com
       - key: DEEPSEEK_API_KEY
         sync: false
         value: ""
