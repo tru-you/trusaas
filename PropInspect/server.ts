@@ -270,7 +270,7 @@ function mayTouch(row: { agencyId?: string } | undefined, auth: any): boolean {
  *  Returns the agency claims or null. Requires FLOWPMS_URL + FLOWPMS_SYNC_KEY. */
 async function verifyCodeWithFlowPMS(code: string): Promise<{ agencyId: string; agencySlug: string; agencyName: string } | null> {
   const syncKey = process.env.FLOWPMS_SYNC_KEY || process.env.TRUFLOW_SYNC_KEY || "";
-  const pmsUrl = process.env.FLOWPMS_URL || process.env.TRUFLOW_URL || process.env.TRUFLOW_PMS_URL || process.env.TRUFLOW_DMS_URL || "";
+  const pmsUrl = process.env.FLOWPMS_URL || process.env.TRUFLOW_URL || process.env.TRUFLOW_PMS_URL || process.env.TRUFLOW_DMS_URL || (process.env.NODE_ENV === "production" ? "https://flowprop.tru-saas.com" : "");
   if (!syncKey || !pmsUrl) {
     console.warn("[auth] cannot verify codes with FlowPMS — set FLOWPMS_URL + FLOWPMS_SYNC_KEY (or TRUFLOW_DMS_URL + TRUFLOW_SYNC_KEY).");
     return null;

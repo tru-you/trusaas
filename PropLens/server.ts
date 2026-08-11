@@ -45,7 +45,9 @@ const DEFAULT_PMS_URL =
   process.env.TRUFLOW_DMS_URL ||
   process.env.PMS_URL ||
   (process.env.NODE_ENV === 'production'
-    ? ''
+    // The property master, not premium.tru-saas.com (that's the auto TruFlow —
+    // a misconfigured satellite there gets "Unknown product" for prop-lens).
+    ? 'https://flowprop.tru-saas.com'
     : 'http://localhost:3001');
 // Legacy: agency captures made before agency tagging existed default to
 // mkr-autosales.
