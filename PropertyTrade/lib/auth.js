@@ -202,7 +202,7 @@ export function createAgency(dataDir, { name, slug, products = [], websiteUrl = 
   }
   const cleanProducts = Array.isArray(products)
     ? products.filter(p => PRODUCTS.includes(p))
-    : [];
+    : ['flowpms', 'prop-lens', 'prop-inspect'];
 
   const agency = {
     id: newId('agency'),
@@ -310,7 +310,7 @@ export function loginWithCode(code, dataDir) {
 
   let agencyName = '';
   if (match.agencyId) {
-    const agency = store.agencies.find(a => a.id === match.agencyId) || store.agency;
+    const agency = store.agencies.find(a => a.id === match.agencyId);
     agencyName = agency?.name || '';
   }
   return {
@@ -331,8 +331,10 @@ export function verifyCodeWithProduct(code, product, dataDir) {
   const match = findAgentByCode(store, String(code || '').trim());
   if (!match) return { refused: 'unknown' };
   if (!match.agencyId) return { refused: 'master' };
-  const agency = store.agencies.find(a => a.id === match.agencyId)
-    || store.agencies.find(a => a.id === store.agency?.id);
+  const agency = store.agencies.find(a => a.id === match.agencyId);
+  /* Fail closed: a code whose agency no longer exists must not fall through to
+     the legacy demo agency — that would scope a satellite into someone else's
+     portfolio. Mirrors the auto side, which refuses with 403. */
   if (!agency) return { refused: 'unknown' };
   const products = Array.isArray(agency.products) ? agency.products : [];
   if (!products.includes(product)) {

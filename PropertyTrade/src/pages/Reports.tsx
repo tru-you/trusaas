@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiGet, getToken } from '../lib/api';
 import { CommissionReport, RentRollReport, ArrearsReport, SalesPipeline } from '../lib/types';
 import { fmtDate, fmtZAR, titleCase } from '../lib/format';
-import { Badge, Button, Card, CardHeader, Empty, Input, Spinner } from '../components/ui';
+import { useIsDesktop } from '../lib/useIsDesktop';
+import { Badge, Button, Card, CardHeader, DesktopOnly, Empty, Input, Spinner } from '../components/ui';
 
 const currentMonth = () => new Date().toISOString().slice(0, 7);
 
 export default function Reports() {
+  const isDesktop = useIsDesktop();
   const [month, setMonth] = useState(currentMonth());
   const [rentRoll, setRentRoll] = useState<RentRollReport | null>(null);
   const [arrears, setArrears] = useState<ArrearsReport | null>(null);
@@ -41,6 +43,7 @@ export default function Reports() {
 
   const load = useCallback(async () => {
     setError('');
+    if (!isDesktop) return;
     try {
       const [r, a, p, c] = await Promise.all([
         apiGet<RentRollReport>(`/api/reports/rent-roll?month=${month}`),
@@ -55,14 +58,25 @@ export default function Reports() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load reports.');
     }
-  }, [month]);
+  }, [month, isDesktop]);
 
   useEffect(() => { load(); }, [load]);
 
-  if (error) return <Empty title="Could not load reports" hint={error} action={<Button onClick={load}>Retry</Button>} />;
-  if (!rentRoll || !pipeline || !commission) return <Spinner />;
+  if (!isDesktop) {
+    return (
+      <div className="space-y-5 animate-fade">
+        <DesktopOnly
+          title="Reports — desktop only"
+          hint="Reports aggregate the whole portfolio and read best on a large screen. Open Flow Prop on a computer to view them."
+        />
+      </div>
+    );
+  }
 
-  const rows = (r: RentRollRowLike[] | undefined) => r ?? [];
+  if (error) return <Empty title="Could not load reports" hint={error} action={<Button onClick={load}>Retry</Button>} />;
+  if (!rentRoll || !arrears || !pipeline || !commission) return <Spinner />;
+
+  const rows = <T,>(r: T[] | undefined) => r ?? [];
 
   return (
     <div className="space-y-5 animate-fade">
@@ -207,15 +221,4 @@ export default function Reports() {
       </div>
     </div>
   );
-}
-
-interface RentRollRowLike {
-  propertyId: string;
-  address: string;
-  tenantName: string;
-  monthlyRentZAR: number;
-  paidZAR?: number;
-  balanceZAR: number;
-  phone?: string;
-  leaseEnd?: string;
 }

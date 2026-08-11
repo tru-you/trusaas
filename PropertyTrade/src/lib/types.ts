@@ -1,6 +1,6 @@
 export interface AgentBrief {
   id: string;
-  role: 'admin' | 'manager' | 'agent';
+  role: 'admin' | 'principal' | 'manager' | 'agent';
   label: string;
   agencyId: string;
   agencyName: string;
@@ -264,6 +264,12 @@ export interface Maintenance {
   priority: string;
   status: string;
   description?: string;
+  reportedBy?: string;
+  reportedDate?: string;
+  assignedTo?: string;
+  assignedAgentId?: string;
+  estimatedCostZAR?: number;
+  actualCostZAR?: number;
   reportedAt?: string;
   createdAt?: string;
 }

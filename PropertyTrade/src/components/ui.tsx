@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
+import { Monitor, X } from 'lucide-react';
 
 /* ---------------------------------- Button --------------------------------- */
 
@@ -281,6 +281,24 @@ export function Spinner() {
   return (
     <div className="flex items-center justify-center py-16">
       <div className="w-7 h-7 rounded-full border-2 border-line border-t-accent animate-spin" />
+    </div>
+  );
+}
+
+export function DesktopOnly({
+  title,
+  hint,
+}: {
+  title: string;
+  hint: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-14 h-14 rounded-full bg-slate-soft flex items-center justify-center text-slate mb-4">
+        <Monitor size={24} />
+      </div>
+      <h3 className="text-[15px] font-semibold text-ink tracking-tight">{title}</h3>
+      <p className="mt-1 text-[13.5px] text-muted max-w-sm">{hint}</p>
     </div>
   );
 }

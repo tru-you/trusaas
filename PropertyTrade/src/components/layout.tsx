@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   SquareKanban,
   Building2,
+  CalendarDays,
   UserRound,
   KeyRound,
   Wallet,
@@ -16,6 +17,7 @@ import {
   Bell,
   Menu,
   X,
+  Monitor,
 } from 'lucide-react';
 import { apiGet } from '../lib/api';
 import { fmtDate, initials } from '../lib/format';
@@ -24,7 +26,8 @@ import { AgentBrief } from '../lib/types';
 export interface NavItem {
   key: string;
   label: string;
-  icon: React.ComponentType<{ size?: number | string; className?: string }>;
+  icon: React.ComponentType<{ size?: number | string; className?: string; strokeWidth?: number | string }>;
+  desktopOnly?: boolean;
 }
 
 export const NAV: NavItem[] = [
@@ -36,10 +39,10 @@ export const NAV: NavItem[] = [
   { key: 'leases', label: 'Leases', icon: KeyRound },
   { key: 'payments', label: 'Payments', icon: Wallet },
   { key: 'maintenance', label: 'Maintenance', icon: Wrench },
-  { key: 'reports', label: 'Reports', icon: BarChart3 },
+  { key: 'reports', label: 'Reports', icon: BarChart3, desktopOnly: true },
   { key: 'team', label: 'Team', icon: UserCog },
   { key: 'settings', label: 'Settings', icon: Settings },
-  { key: 'master', label: 'Master', icon: Crown },
+  { key: 'master', label: 'Master', icon: Crown, desktopOnly: true },
 ];
 
 export function Logo({ size = 38 }: { size?: number }) {
@@ -96,7 +99,7 @@ export function Shell({
     setMenuOpen(false);
   };
 
-  const sidebar = (
+  const sidebar = (desktop: boolean) => (
     <>
       <div className="flex items-center gap-3 px-5 h-16 border-b border-line/60">
         <Logo />
@@ -113,6 +116,7 @@ export function Shell({
           if (item.key === 'master' && !isMaster) return null;
           const Icon = item.icon;
           const isActive = active === item.key;
+          const gated = !!item.desktopOnly && !desktop;
           return (
             <button
               key={item.key}
@@ -120,11 +124,18 @@ export function Shell({
               className={`w-full flex items-center gap-3 px-3 h-10 rounded-[10px] text-[13.5px] font-medium tracking-tight transition-colors ${
                 isActive
                   ? 'bg-accent-soft text-accent'
-                  : 'text-ink-dim hover:bg-slate-soft hover:text-ink'
+                  : gated
+                    ? 'text-faint'
+                    : 'text-ink-dim hover:bg-slate-soft hover:text-ink'
               }`}
             >
               <Icon size={17} strokeWidth={isActive ? 2.3 : 1.9} className="shrink-0" />
-              {item.label}
+              <span className="flex-1 text-left truncate">{item.label}</span>
+              {gated && (
+                <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold tracking-tight bg-slate-soft text-slate-deep">
+                  <Monitor size={10} /> Desktop
+                </span>
+              )}
             </button>
           );
         })}
@@ -156,7 +167,7 @@ export function Shell({
     <div className="min-h-screen">
       {/* Desktop sidebar — always visible ≥ md */}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-[236px] bg-card border-r border-line flex-col z-30">
-        {sidebar}
+        {sidebar(true)}
       </aside>
 
       {/* Mobile drawer — slide-in under md */}
@@ -174,7 +185,7 @@ export function Shell({
                 <X size={16} />
               </button>
             </div>
-            {sidebar}
+            {sidebar(false)}
           </aside>
         </div>
       )}

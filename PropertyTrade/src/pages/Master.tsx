@@ -26,7 +26,7 @@ export default function Master({ agent }: { agent: AgentBrief | null }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [selProducts, setSelProducts] = useState<string[]>(['flowpms']);
+  const [selProducts, setSelProducts] = useState<string[]>(['flowpms', 'prop-lens', 'prop-inspect']);
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [formBusy, setFormBusy] = useState(false);
   const [formError, setFormError] = useState('');
@@ -68,7 +68,7 @@ export default function Master({ agent }: { agent: AgentBrief | null }) {
       setCreateOpen(false);
       setName('');
       setSlug('');
-      setSelProducts(['flowpms']);
+      setSelProducts(['flowpms', 'prop-lens', 'prop-inspect']);
       setWebsiteUrl('');
       setNewCode({ name: res.agency.name, code: res.code });
       load();

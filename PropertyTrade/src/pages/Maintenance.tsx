@@ -124,7 +124,7 @@ export default function MaintenancePage() {
                 <Badge tone={priorityTone(j.priority)}>{titleCase(j.priority)}</Badge>
               </div>
               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                <Badge tone="neutral">{titleCase(j.category)}</Badge>
+                <Badge tone="neutral">{titleCase(j.category ?? 'other')}</Badge>
                 <Badge tone={statusTone(j.status)}>{titleCase(j.status)}</Badge>
               </div>
               {j.description && (
@@ -136,7 +136,7 @@ export default function MaintenancePage() {
                   {j.assignedTo ? ` · ${j.assignedTo}` : ''}
                 </span>
                 <span className="mono font-semibold text-ink-dim">
-                  {j.actualCostZAR > 0 ? fmtZAR(j.actualCostZAR) : j.estimatedCostZAR > 0 ? `${fmtZAR(j.estimatedCostZAR)} est.` : ''}
+                  {(j.actualCostZAR ?? 0) > 0 ? fmtZAR(j.actualCostZAR) : (j.estimatedCostZAR ?? 0) > 0 ? `${fmtZAR(j.estimatedCostZAR)} est.` : ''}
                 </span>
               </div>
               {j.status !== 'resolved' && j.status !== 'closed' && (
