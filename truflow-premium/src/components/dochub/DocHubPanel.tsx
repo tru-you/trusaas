@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck, ExternalLink, SkipForward } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck, ExternalLink, SkipForward, RotateCcw, PenLine, X } from "lucide-react";
 import type { DealerDocument, Dealership, DocMode, DocStage, Lead } from "../../types";
 import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "../../types";
 import { authFetch } from "../../lib/session";
@@ -11,6 +11,8 @@ interface Props {
   onLeadRefresh?: () => void;
 }
 
+const MAX_FILE_BYTES = 15 * 1024 * 1024;
+
 const STAGE_LABEL: Record<DocStage, string> = {
   proforma: "Proforma",
   deed: "Offer to Purchase",
@@ -19,9 +21,6 @@ const STAGE_LABEL: Record<DocStage, string> = {
   handover: "Handover",
 };
 
-/** Lazy chunk root. All DocHub UI lives inside this file (or files it
- *  imports) so React.lazy() keeps the whole feature out of the mobile bundle.
- *  Nothing here is safe to import at the top of any always-loaded module. */
 export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) {
   const [docs, setDocs] = useState<DealerDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,19 +29,22 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
   const [loadError, setLoadError] = useState<string | null>(null);
   const [missing, setMissing] = useState<{ stage: DocStage; fields: string[] } | null>(null);
 
+  // Inline sign UI state
+  const [signStage, setSignStage] = useState<DocStage | null>(null);
+  const [signMode, setSignMode] = useState<"draw" | "type">("type");
+  const [signName, setSignName] = useState("");
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  // Inline skip UI state
+  const [skipStage, setSkipStage] = useState<DocStage | null>(null);
+  const [skipReason, setSkipReason] = useState("");
+
   const docFlow = dealership?.docFlow || {};
-  /* `docStage: null` means two opposite things — never started, or finished the
-     last stage with nothing left due. `docFlowCompletedAt` is what tells them
-     apart; reading docStage alone rendered a finished deal as if it were sitting
-     at Proforma. When complete, every stage is behind us. */
   const isComplete = !!lead.docFlowCompletedAt;
   const currentStage = lead.docStage ?? DOC_STAGES[0];
   const currentIdx = isComplete ? DOC_STAGES.length : DOC_STAGES.indexOf(currentStage);
 
-  /* A failed load must not look like an empty one. Swallowing the error left
-     `docs` at [] and the panel then offered an Upload button for every stage,
-     including stages that already had a signed document — inviting the dealer
-     to file a duplicate. Say so instead. */
   const reload = async () => {
     try {
       const res = await authFetch(`/api/deals/${lead.id}/documents`);
@@ -62,8 +64,10 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lead.id]);
 
-  const docForStage = (stage: DocStage): DealerDocument | undefined =>
-    docs.find((d) => d.stage === stage);
+  const docForStage = (stage: DocStage): DealerDocument | undefined => {
+    const candidates = docs.filter((d) => d.stage === stage);
+    return candidates.find((d) => d.status === "Signed") || candidates[0];
+  };
 
   const modeForStage = (stage: DocStage): DocMode =>
     FIXED_STAGE_MODES[stage] || docFlow[stage] || DEFAULT_DOC_FLOW[stage];
@@ -89,6 +93,10 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
   };
 
   const handleAttach = async (stage: DocStage, file: File) => {
+    if (file.size > MAX_FILE_BYTES) {
+      setFlashError(`"${file.name}" is ${(file.size / 1024 / 1024).toFixed(1)} MB — please upload files under 15 MB.`);
+      return;
+    }
     setBusyStage(stage);
     setFlashError(null);
     try {
@@ -110,24 +118,94 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
     }
   };
 
-  const handleSignAndFinalize = async (doc: DealerDocument) => {
-    if (!doc.stage) return;
-    setBusyStage(doc.stage);
+  // --- Inline sign flow ---------------------------------------------------
+
+  const openSignFlow = (stage: DocStage) => {
+    setSignStage(stage);
+    setSignMode("type");
+    setSignName("");
+    setFlashError(null);
+    setMissing(null);
+  };
+
+  const closeSignFlow = () => {
+    setSignStage(null);
+    setSignName("");
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#0a0e14";
+    const rect = canvas.getBoundingClientRect();
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setIsDrawing(true);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+    if ("touches" in e) e.preventDefault();
+  };
+
+  const stopDrawing = () => setIsDrawing(false);
+
+  const handleSignSubmit = async () => {
+    if (!signStage) return;
+    const doc = docForStage(signStage);
+    if (!doc) return;
+
+    let signatureData = "";
+    const who = signName.trim();
+
+    if (signMode === "draw") {
+      signatureData = canvasRef.current?.toDataURL() || "";
+      if (!signatureData || signatureData === "data:,") {
+        setFlashError("Please draw a signature before submitting.");
+        return;
+      }
+    } else {
+      if (!who) {
+        setFlashError("Please type a name to sign.");
+        return;
+      }
+      signatureData = `TYPED:${who}`;
+    }
+
+    setBusyStage(signStage);
     setFlashError(null);
     setMissing(null);
     try {
-      const who = (window.prompt("Signed by (type name to confirm):") || "").trim();
-      if (!who) return;
       if (doc.status !== "Signed") {
-        await signDocument(doc.id, `TYPED:${who}`, who);
+        await signDocument(doc.id, signatureData, who || "Signee");
       }
       await finalizeStageDocument(doc.id);
+      closeSignFlow();
       await reload();
       onLeadRefresh?.();
     } catch (err) {
       const e = err as Error & { missing?: string[] };
-      if (e.missing && doc.stage) {
-        setMissing({ stage: doc.stage, fields: e.missing });
+      if (e.missing && signStage) {
+        setMissing({ stage: signStage, fields: e.missing });
       } else {
         setFlashError(e.message || "Finalise failed");
       }
@@ -136,10 +214,39 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
     }
   };
 
-  /** Compliance is government paperwork — NATIS from eNatis, roadworthy from
-   *  a testing station. There is nothing to generate and nothing to upload
-   *  that could be "signed", so this stage is confirmed by ticking the two
-   *  flags on the lead's checklist and letting the server verify them. */
+  // --- Inline skip flow ---------------------------------------------------
+
+  const openSkipFlow = (stage: DocStage) => {
+    setSkipStage(stage);
+    setSkipReason("");
+    setFlashError(null);
+    setMissing(null);
+  };
+
+  const closeSkipFlow = () => {
+    setSkipStage(null);
+    setSkipReason("");
+  };
+
+  const handleSkipSubmit = async () => {
+    if (!skipStage) return;
+    setBusyStage(skipStage);
+    setFlashError(null);
+    setMissing(null);
+    try {
+      await skipDocStage(lead.id, skipStage, skipReason.trim() || undefined);
+      closeSkipFlow();
+      await reload();
+      onLeadRefresh?.();
+    } catch (err) {
+      setFlashError((err as Error).message || "Skip failed");
+    } finally {
+      setBusyStage(null);
+    }
+  };
+
+  // --- Compliance ---------------------------------------------------------
+
   const handleComplianceConfirm = async () => {
     setBusyStage("compliance");
     setFlashError(null);
@@ -170,24 +277,6 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
     }
   };
 
-  const handleSkipStage = async (stage: DocStage) => {
-    setBusyStage(stage);
-    setFlashError(null);
-    setMissing(null);
-    try {
-      const raw = window.prompt(`Reason for skipping "${STAGE_LABEL[stage]}" (optional):`);
-      if (raw === null) { setBusyStage(null); return; } // cancelled
-      const reason = raw.trim();
-      await skipDocStage(lead.id, stage, reason || undefined);
-      await reload();
-      onLeadRefresh?.();
-    } catch (err) {
-      setFlashError((err as Error).message || "Skip failed");
-    } finally {
-      setBusyStage(null);
-    }
-  };
-
   const patchChecklist = async (patch: Partial<NonNullable<Lead["dealChecklist"]>>) => {
     await updateLead(lead.id, {
       dealChecklist: { ...(lead.dealChecklist || {}), ...patch } as Lead["dealChecklist"],
@@ -198,6 +287,17 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
   const natis = !!lead.dealChecklist?.natis;
   const roadworthy = !!lead.dealChecklist?.roadworthy;
   const complianceReady = natis && roadworthy;
+
+  // --- Render -------------------------------------------------------------
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-10 text-sm text-[rgba(232,234,230,0.55)]">
+        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        Loading documents…
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -247,9 +347,10 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
         {DOC_STAGES.map((stage, idx) => {
           const mode = modeForStage(stage);
           const doc = docForStage(stage);
-          const done = idx < currentIdx || (doc?.status === "Signed" && idx <= currentIdx);
-          const current = idx === currentIdx;
-          const upcoming = idx > currentIdx;
+          const stageFinalised = doc?.status === "Signed";
+          const done = idx < currentIdx || (stageFinalised && isComplete);
+          const current = idx === currentIdx && !isComplete;
+          const upcoming = idx > currentIdx && !isComplete;
 
           return (
             <div
@@ -316,17 +417,18 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                         onChange={(e) => {
                           const f = e.target.files?.[0];
                           if (f) void handleAttach(stage, f);
+                          e.target.value = "";
                         }}
                         disabled={busyStage === stage}
                       />
                      </label>
                    )}
-                   {current && !done && (
+                   {!done && !stageFinalised && !(lead.docSkips as any)?.[stage] && (
                      <button
                        type="button"
-                       onClick={() => void handleSkipStage(stage)}
+                       onClick={() => openSkipFlow(stage)}
                        disabled={busyStage === stage}
-                       className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md border border-amber-500/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/10 disabled:opacity-50"
+                       className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md border border-amber-500/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/10 disabled:opacity-50 cursor-pointer"
                      >
                        {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SkipForward className="w-3.5 h-3.5" />}
                        Skip
@@ -335,11 +437,12 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                    {mode !== "confirm" && doc && doc.status !== "Signed" && (
                     <button
                       type="button"
-                      onClick={() => void handleSignAndFinalize(doc)}
+                      onClick={() => openSignFlow(stage)}
                       disabled={busyStage === stage}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-emerald-500 text-black text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-emerald-500 text-black text-xs font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer"
                     >
-                      {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Sign & finalise"}
+                      {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PenLine className="w-3.5 h-3.5" />}
+                      Sign & finalise
                     </button>
                   )}
                   {mode !== "confirm" && doc && doc.fileData && (
@@ -356,10 +459,175 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                   {doc && doc.status === "Signed" && (
                     <span className="text-xs text-emerald-300">✓ {mode === "confirm" ? "Confirmed" : "Signed"}</span>
                   )}
+                  {!stageFinalised && (lead.docSkips as any)?.[stage] && (
+                    <span className="text-xs text-amber-300/70">Skipped</span>
+                  )}
                 </div>
               </div>
 
-              {/* Compliance-specific body: two ticks. NATIS + Roadworthy. */}
+              {/* Inline sign panel */}
+              {signStage === stage && (
+                <div className="flex flex-col gap-3 pl-8 pt-2 pb-1 border-t border-white/5 mt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300">
+                      <PenLine className="w-3.5 h-3.5" />
+                      Sign & finalise — {STAGE_LABEL[stage]}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={closeSignFlow}
+                      className="p-1 rounded hover:bg-white/10 text-[rgba(232,234,230,0.55)] hover:text-[color:var(--white)]"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSignMode("type")}
+                      className={`flex-1 py-1.5 rounded-md text-xs font-semibold cursor-pointer transition-colors ${
+                        signMode === "type"
+                          ? "bg-[color:var(--cyan)] text-black"
+                          : "bg-white/5 text-[rgba(232,234,230,0.72)] hover:bg-white/10"
+                      }`}
+                    >
+                      Type name
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSignMode("draw")}
+                      className={`flex-1 py-1.5 rounded-md text-xs font-semibold cursor-pointer transition-colors ${
+                        signMode === "draw"
+                          ? "bg-[color:var(--cyan)] text-black"
+                          : "bg-white/5 text-[rgba(232,234,230,0.72)] hover:bg-white/10"
+                      }`}
+                    >
+                      Draw
+                    </button>
+                  </div>
+
+                  {signMode === "type" ? (
+                    <input
+                      type="text"
+                      value={signName}
+                      onChange={(e) => setSignName(e.target.value)}
+                      placeholder="Full name to sign"
+                      autoFocus
+                      className="px-3 py-2.5 rounded-md bg-white/5 border border-[rgba(138,162,184,0.15)] text-sm text-[color:var(--white)] placeholder-[rgba(232,234,230,0.35)] focus:border-[color:var(--cyan)] focus:outline-none"
+                      style={{ fontFamily: "cursive" }}
+                      onKeyDown={(e) => { if (e.key === "Enter") void handleSignSubmit(); }}
+                    />
+                  ) : (
+                    <>
+                      <div className="bg-white rounded-md overflow-hidden border border-[rgba(138,162,184,0.15)]">
+                        <canvas
+                          ref={canvasRef}
+                          width={400}
+                          height={120}
+                          className="w-full touch-none cursor-crosshair"
+                          onMouseDown={startDrawing}
+                          onMouseMove={draw}
+                          onMouseUp={stopDrawing}
+                          onMouseLeave={stopDrawing}
+                          onTouchStart={startDrawing}
+                          onTouchMove={draw}
+                          onTouchEnd={stopDrawing}
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={clearCanvas}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs text-[rgba(232,234,230,0.55)] hover:bg-white/10 hover:text-[color:var(--white)]"
+                        >
+                          <RotateCcw className="w-3 h-3" /> Clear
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={signName}
+                        onChange={(e) => setSignName(e.target.value)}
+                        placeholder="Signee's full name (for the record)"
+                        className="px-3 py-2 rounded-md bg-white/5 border border-[rgba(138,162,184,0.15)] text-xs text-[color:var(--white)] placeholder-[rgba(232,234,230,0.35)] focus:border-[color:var(--cyan)] focus:outline-none"
+                      />
+                    </>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void handleSignSubmit()}
+                      disabled={busyStage === stage}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[36px] rounded-md bg-emerald-500 text-black text-xs font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                    >
+                      {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PenLine className="w-3.5 h-3.5" />}
+                      Confirm & finalise
+                    </button>
+                    <button
+                      type="button"
+                      onClick={closeSignFlow}
+                      className="px-3 py-2 min-h-[36px] rounded-md text-xs font-semibold text-[rgba(232,234,230,0.55)] hover:bg-white/5 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Inline skip panel */}
+              {skipStage === stage && (
+                <div className="flex flex-col gap-3 pl-8 pt-2 pb-1 border-t border-white/5 mt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
+                      <SkipForward className="w-3.5 h-3.5" />
+                      Skip — {STAGE_LABEL[stage]}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={closeSkipFlow}
+                      className="p-1 rounded hover:bg-white/10 text-[rgba(232,234,230,0.55)] hover:text-[color:var(--white)]"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-[rgba(232,234,230,0.55)] leading-relaxed">
+                    Skipping records this stage as intentionally bypassed. This is logged in the audit trail.
+                  </p>
+
+                  <input
+                    type="text"
+                    value={skipReason}
+                    onChange={(e) => setSkipReason(e.target.value)}
+                    placeholder="Reason (optional)"
+                    autoFocus
+                    className="px-3 py-2 rounded-md bg-white/5 border border-[rgba(138,162,184,0.15)] text-xs text-[color:var(--white)] placeholder-[rgba(232,234,230,0.35)] focus:border-amber-500/50 focus:outline-none"
+                    onKeyDown={(e) => { if (e.key === "Enter") void handleSkipSubmit(); }}
+                  />
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void handleSkipSubmit()}
+                      disabled={busyStage === stage}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[36px] rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-300 text-xs font-semibold hover:bg-amber-500/20 disabled:opacity-50 cursor-pointer"
+                    >
+                      {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SkipForward className="w-3.5 h-3.5" />}
+                      Confirm skip
+                    </button>
+                    <button
+                      type="button"
+                      onClick={closeSkipFlow}
+                      className="px-3 py-2 min-h-[36px] rounded-md text-xs font-semibold text-[rgba(232,234,230,0.55)] hover:bg-white/5 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Compliance-specific body */}
               {stage === "compliance" && mode === "confirm" && (!doc || doc.status !== "Signed") && (
                 <div className="flex flex-col gap-2 pl-8 pt-1 border-t border-white/5 mt-1">
                   <label className="flex items-center gap-2 text-xs text-[rgba(232,234,230,0.72)] cursor-pointer">
@@ -384,7 +652,7 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                     type="button"
                     onClick={() => void handleComplianceConfirm()}
                     disabled={!complianceReady || busyStage === "compliance"}
-                    className="self-start inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-emerald-500 text-black text-xs font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="self-start inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-emerald-500 text-black text-xs font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {busyStage === "compliance" ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -399,13 +667,6 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
           );
         })}
       </div>
-
-      {loading && (
-        <div className="text-xs text-[rgba(232,234,230,0.5)] flex items-center gap-1">
-          <Loader2 className="w-3 h-3 animate-spin" />
-          Loading documents…
-        </div>
-      )}
     </div>
   );
 }
