@@ -448,7 +448,7 @@ export default function LeadDetailModal({
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
               }`}
             >
-              F&I, Docs & e-Sign Hub
+              Readiness
             </button>
             {docHubPanel && (
               <button
@@ -459,7 +459,7 @@ export default function LeadDetailModal({
                     : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
                 }`}
               >
-                DocHub
+                Compliance
                 {/* Completion is checked first: a finished deal has docStage
                     null, so testing docStage alone showed no badge at all on
                     the one deal that had gone furthest. */}
@@ -1281,7 +1281,7 @@ export default function LeadDetailModal({
 
           {activeTab === "dochub" && docHubPanel && (
             <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-              <Suspense fallback={<div className="text-sm text-[rgba(232,234,230,0.55)]">Loading DocHub…</div>}>
+              <Suspense fallback={<div className="text-sm text-[rgba(232,234,230,0.55)]">Loading Compliance Hub…</div>}>
                 {docHubPanel}
               </Suspense>
             </div>

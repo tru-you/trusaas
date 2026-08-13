@@ -142,7 +142,7 @@ export default function AccountingIntegrationsSettings({
       {enabled && (
         <div className="card-body p-5 flex flex-col gap-4">
           <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
-            Connect your accounting package so DocHub's Invoice stage pushes signed invoices
+            Connect your accounting package so the Compliance Hub's Invoice stage pushes signed invoices
             straight into your books instead of exporting a CSV to import by hand.
           </p>
 

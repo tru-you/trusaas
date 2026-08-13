@@ -70,7 +70,7 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
       <div className="flex items-center gap-2 text-sm text-[rgba(232,234,230,0.72)]">
         <FileText className="w-4 h-4" />
         <span>
-          DocHub flow —{" "}
+          Compliance flow —{" "}
           <span className="text-[color:var(--white)] font-semibold">{dealership.name}</span>
         </span>
       </div>

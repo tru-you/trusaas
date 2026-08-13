@@ -3258,7 +3258,7 @@ export default function App() {
             setLeadInitialTab("dochub");
             setLeadDetailId(leadId);
           };
-          /* DocHub flow settings target(s). Configured once, not read every
+          /* Compliance flow settings target(s). Configured once, not read every
              visit, so it now lives behind a header button + dialog rather than a
              full-width card at the top of the page. Desktop-only, same as before;
              the components behind it stay lazy-loaded. */
@@ -3288,12 +3288,12 @@ export default function App() {
                     className="tru-btn-secondary inline-flex items-center gap-2 px-3 min-h-[36px] rounded-[8px] text-[13px] font-semibold cursor-pointer shrink-0"
                   >
                     <SettingsIcon size={14} />
-                    DocHub flow settings
+                    Compliance flow settings
                   </button>
                 )}
               </div>
 
-              {/* DocHub flow settings dialog. Same isDesktop gate and Suspense
+              {/* Compliance flow settings dialog. Same isDesktop gate and Suspense
                   boundary as the card it replaces — the lazy chunks still never
                   load on a phone. */}
               {isDesktop && docFlowSettingsOpen && docFlowList.length > 0 && (
@@ -3310,7 +3310,7 @@ export default function App() {
                   >
                     <div className="card-header border-b border-white/5 px-5 py-3 flex items-center gap-2">
                       <FileText size={14} className="text-[color:var(--cyan-bright)]" />
-                      <h3 className="font-semibold text-[16px] text-[color:var(--white)]">DocHub flow settings</h3>
+                      <h3 className="font-semibold text-[16px] text-[color:var(--white)]">Compliance flow settings</h3>
                       <button
                         type="button"
                         onClick={() => setDocFlowSettingsOpen(false)}
@@ -3438,7 +3438,7 @@ export default function App() {
                                 onClick={() => openDocHub(lead.id)}
                                 className="shrink-0 px-3 min-h-[32px] rounded-[8px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)] text-[12px] font-semibold hover:bg-[color:var(--cyan)] hover:text-black transition-colors"
                               >
-                                Open DocHub
+                                Open Compliance Hub
                               </button>
                             </div>
                           );
@@ -3575,7 +3575,7 @@ export default function App() {
                         </div>
 
                         {/* DocHub stage rail — same five-dot language as Deal
-                            Readiness. The Open DocHub action stays desktop-only,
+                            Readiness. The Open Compliance Hub action stays desktop-only,
                             matching where the modal's DocHub tab is available. */}
                         <div className="flex items-center gap-3.5 pt-3 border-t border-white/5">
                           <div className="flex items-end gap-1.5 flex-1 min-w-0">
@@ -3601,7 +3601,7 @@ export default function App() {
                               onClick={openHub}
                               className="shrink-0 px-3 min-h-[32px] rounded-[8px] bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)] text-[12px] font-semibold hover:bg-[color:var(--cyan)] hover:text-black transition-colors"
                             >
-                              Open DocHub
+                              Open Compliance Hub
                             </button>
                           ) : (
                             <span className="shrink-0 inline-flex items-center gap-1 text-[12px] text-[color:var(--faint)]">

@@ -119,7 +119,7 @@ export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props
         </p>
         <p className="text-xs text-[rgba(232,234,230,0.4)] -mt-3">
           Looking for per-stage Attach/Generate/Connect modes instead? That's{" "}
-          <b className="text-[rgba(232,234,230,0.6)]">DocHub flow settings</b>, on the Deals page.
+          <b className="text-[rgba(232,234,230,0.6)]">Compliance flow settings</b>, on the Deals page.
         </p>
 
         {/* Logo */}
