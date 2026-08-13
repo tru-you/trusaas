@@ -413,7 +413,7 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                       className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-[color:var(--cyan)] text-black text-xs font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer"
                     >
                       {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-                      {stage === "invoice" ? "Send to accounting" : "Export CSV"}
+                      {stage === "invoice" && dealership?.accountingEnabled && dealership?.codatCompanyId ? "Send to accounting" : "Export CSV"}
                     </button>
                   )}
                   {mode === "attach" && !doc && !upcoming && (

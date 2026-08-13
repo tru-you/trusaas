@@ -464,11 +464,11 @@ export default function LeadDetailModal({
                     null, so testing docStage alone showed no badge at all on
                     the one deal that had gone furthest. */}
                 {lead?.docFlowCompletedAt ? (
-                  <span className="ml-1 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500 text-black font-mono">
+                  <span className="ml-1 text-[12px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500 text-black font-mono">
                     done
                   </span>
                 ) : lead?.docStage ? (
-                  <span className="ml-1 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[color:var(--cyan)] text-black font-mono">
+                  <span className="ml-1 text-[12px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[color:var(--cyan)] text-black font-mono">
                     {lead.docStage}
                   </span>
                 ) : null}

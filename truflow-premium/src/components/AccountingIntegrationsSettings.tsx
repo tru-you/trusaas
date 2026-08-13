@@ -49,6 +49,12 @@ export default function AccountingIntegrationsSettings({
 
   useEffect(() => { loadAccounts(); }, [loadAccounts]);
 
+  // The parent re-fetches dealer state independently of this component (e.g.
+  // after another admin tab toggles it, or a sibling settings panel saves),
+  // so `accountingEnabled` can change after mount — resync local state or
+  // this panel keeps showing a stale toggle.
+  useEffect(() => { setEnabled(accountingEnabled); }, [accountingEnabled]);
+
   const toggleAccounting = async () => {
     setToggling(true);
     try {

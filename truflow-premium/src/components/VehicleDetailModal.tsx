@@ -329,7 +329,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
             </div>
           </div>
           <div className="md:hidden absolute right-4 bottom-16 z-20">
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full text-[color:var(--white)]" style={{ background: "rgba(6,8,13,0.6)" }}>
+            <span className="text-[12px] font-mono px-2 py-0.5 rounded-full text-[color:var(--white)]" style={{ background: "rgba(6,8,13,0.6)" }}>
               {imagesList.length ? safeIndex + 1 : 0}/{imagesList.length}
             </span>
           </div>
@@ -403,7 +403,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               style={{ border: "1px dashed rgba(232,234,230,0.25)" }}
             >
               {uploading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-              <span className="text-[10px] leading-none">{uploading ? "…" : "Add"}</span>
+              <span className="text-[12px] leading-none">{uploading ? "…" : "Add"}</span>
             </button>
             {/* Hidden picker — accepts the phone camera on mobile browsers. */}
             <input

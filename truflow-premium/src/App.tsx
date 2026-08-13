@@ -1631,7 +1631,7 @@ export default function App() {
                     {navAttention[n.id] > 0 ? (
                       <span
                         aria-label={`${navAttention[n.id]} awaiting action`}
-                        className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[11px] font-semibold grid place-items-center leading-none tabular-nums"
+                        className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] text-[12px] font-semibold grid place-items-center leading-none tabular-nums"
                       >
                         {navAttention[n.id] > 99 ? "99+" : navAttention[n.id]}
                       </span>
@@ -3275,7 +3275,7 @@ export default function App() {
                                         className="h-[3px] rounded-full"
                                         style={{ background: filled ? "var(--cyan)" : "rgba(232,234,230,0.14)" }}
                                       />
-                                      <span className={`text-[11px] truncate ${current ? "text-[color:var(--white)] font-semibold" : "text-[color:var(--muted)]"}`}>
+                                      <span className={`text-[12px] truncate ${current ? "text-[color:var(--white)] font-semibold" : "text-[color:var(--muted)]"}`}>
                                         {DOCHUB_LABELS[stage]}
                                       </span>
                                     </div>
@@ -3437,7 +3437,7 @@ export default function App() {
                                     className="h-[3px] rounded-full"
                                     style={{ background: filled ? "var(--cyan)" : "rgba(232,234,230,0.14)" }}
                                   />
-                                  <span className={`text-[11px] truncate ${current ? "text-[color:var(--white)] font-semibold" : "text-[color:var(--muted)]"}`}>
+                                  <span className={`text-[12px] truncate ${current ? "text-[color:var(--white)] font-semibold" : "text-[color:var(--muted)]"}`}>
                                     {DOCHUB_LABELS[stage]}
                                   </span>
                                 </div>
@@ -4217,7 +4217,7 @@ export default function App() {
                             />
                           ) : null}
                         </span>
-                        <span className="text-[11px] font-medium">{t.label}</span>
+                        <span className="text-[12px] font-medium">{t.label}</span>
                       </button>
                     </li>
                   );

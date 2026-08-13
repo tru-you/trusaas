@@ -209,6 +209,7 @@ interface SharedState {
   dealerships: Dealership[];
   settings: DMSState["settings"];
   socialAccounts?: DMSState["socialAccounts"];
+  accountingAccounts?: DMSState["accountingAccounts"];
   migrations?: Record<string, boolean>;
 }
 
@@ -226,6 +227,7 @@ function readShared(): SharedState {
     dealerships: DEFAULT_MOCK_STATE.dealerships,
     settings: DEFAULT_MOCK_STATE.settings,
     socialAccounts: [],
+    accountingAccounts: [],
     migrations: {},
   };
 }
@@ -1190,6 +1192,7 @@ function writeState(state: any) {
         dealerships: state.dealerships || [],
         settings: state.settings || {},
         socialAccounts: state.socialAccounts || [],
+        accountingAccounts: state.accountingAccounts || [],
         migrations: state.migrations || {},
       };
       writeShared(shared);
@@ -3034,23 +3037,33 @@ app.post("/api/documents", async (req: any, res) => {
       connectMimeType = "text/csv";
       connectFileName = `${stageTyped}-${invNo}.csv`;
 
-      // Live push: only for the invoice stage, only when a connection exists.
-      if (stageTyped === "invoice" && (dealer as any)?.codatCompanyId) {
-        const connection = (state.accountingAccounts || []).find((a) => a.dealershipId === docDealershipId);
-        if (connection) {
-          const pushed = await pushInvoiceToAccounting((dealer as any).codatCompanyId, connection.connectionId, {
-            contact,
-            email,
-            invoiceNumber: String(invNo),
-            issuedDate: issued,
-            lines: invoiceLines,
-            currency: "ZAR",
-          });
-          if (pushed) {
-            accountingPush = { platform: connection.platform, externalInvoiceId: pushed.externalInvoiceId, pushedAt: new Date().toISOString() };
-            console.log(`[accounting] Pushed invoice ${invNo} to ${connection.platform} for dealer ${docDealershipId}`);
-          } else {
-            accountingPushError = `Could not reach ${connection.platform} — the CSV below is a fallback you can still import by hand.`;
+      // Live push: only for the invoice stage, only when the dealer has the
+      // integration enabled (not just provisioned — toggling it off must
+      // stop live pushes) and has exactly one connected platform. With more
+      // than one connection there's no signal for which one is "the" target,
+      // so we fall back to the CSV rather than guessing and pushing to the
+      // wrong package.
+      if (stageTyped === "invoice" && (dealer as any)?.codatCompanyId && (dealer as any)?.accountingEnabled) {
+        const dealerConnections = (state.accountingAccounts || []).filter((a) => a.dealershipId === docDealershipId);
+        if (dealerConnections.length > 1) {
+          accountingPushError = `${dealerConnections.length} accounting platforms are connected — disconnect all but one before invoices can push automatically. The CSV below is a fallback you can still import by hand.`;
+        } else {
+          const connection = dealerConnections[0];
+          if (connection) {
+            const pushed = await pushInvoiceToAccounting((dealer as any).codatCompanyId, connection.connectionId, {
+              contact,
+              email,
+              invoiceNumber: String(invNo),
+              issuedDate: issued,
+              lines: invoiceLines,
+              currency: "ZAR",
+            });
+            if (pushed) {
+              accountingPush = { platform: connection.platform, externalInvoiceId: pushed.externalInvoiceId, pushedAt: new Date().toISOString() };
+              console.log(`[accounting] Pushed invoice ${invNo} to ${connection.platform} for dealer ${docDealershipId}`);
+            } else {
+              accountingPushError = `Could not reach ${connection.platform} — the CSV below is a fallback you can still import by hand.`;
+            }
           }
         }
       }
@@ -3150,6 +3163,25 @@ app.post("/api/documents/:id/sign", (req: any, res) => {
     signedBy: signedBy || "Signee",
     signedAt: new Date().toISOString(),
   };
+
+  // Signing alone does not advance lead.docStage — only /finalize does, after
+  // its stage-order and mode-specific validation. But a stage-bearing doc
+  // that gets signed and never finalized would otherwise leave no audit trail
+  // at all of who signed it and when, so record that here regardless of
+  // whether finalize is ever called afterward.
+  if (state.documents[index].stage) {
+    if (!state.docEvents) state.docEvents = [];
+    state.docEvents.unshift({
+      id: newId("de_"),
+      docId: state.documents[index].id,
+      leadId: state.documents[index].leadId,
+      action: "signed",
+      userId: req.auth?.userId,
+      timestamp: new Date().toISOString(),
+      dealershipId: state.documents[index].dealershipId,
+    });
+  }
+
   writeState(state);
   res.json({ message: "Document signed.", document: state.documents[index] });
 });
@@ -5419,10 +5451,23 @@ function dealerByZernioProfile(state: DMSState, profileId: string): Dealership |
  *  Every request that references an accountId must pass through this check
  *  BEFORE acting on it. The frontend must never be trusted with raw accountIds
  *  without server-side verification against this map. */
+/** Shared by every aggregator integration (TruSocial, accounting, and
+ *  whatever's next) that stores a flat array of {dealershipId, <idField>}
+ *  records for connections the aggregator itself doesn't scope by dealer.
+ *  A single, hardened check here means a future fix (e.g. handling
+ *  revoked/expired connections) lands for every integration at once instead
+ *  of needing to be re-applied per copy-pasted variant. */
+function dealerOwnsExternalConnection<T extends Record<string, any>>(
+  records: T[] | undefined,
+  dealershipId: string,
+  idField: keyof T,
+  idValue: string,
+): boolean {
+  return (records || []).some((r) => r[idField] === idValue && r.dealershipId === dealershipId);
+}
+
 function dealerOwnsSocialAccount(state: DMSState, dealershipId: string, accountId: string): boolean {
-  return (state.socialAccounts || []).some(
-    (a) => a.accountId === accountId && a.dealershipId === dealershipId
-  );
+  return dealerOwnsExternalConnection(state.socialAccounts, dealershipId, "accountId", accountId);
 }
 
 // Toggle TruSocial ON/OFF + Zernio profile provisioning
@@ -5790,9 +5835,7 @@ function dealerByCodatCompany(state: DMSState, companyId: string): Dealership | 
  *  dealerOwnsSocialAccount: Codat does not scope by dealer, only by company,
  *  and a companyId alone is not proof of ownership from an untrusted request. */
 function dealerOwnsAccountingAccount(state: DMSState, dealershipId: string, connectionId: string): boolean {
-  return (state.accountingAccounts || []).some(
-    (a) => a.connectionId === connectionId && a.dealershipId === dealershipId
-  );
+  return dealerOwnsExternalConnection(state.accountingAccounts, dealershipId, "connectionId", connectionId);
 }
 
 // Toggle accounting integrations ON/OFF + Codat company provisioning
@@ -5847,6 +5890,9 @@ app.post("/api/accounting/toggle", async (req: any, res) => {
 app.get("/api/accounting/connect/:platform", async (req: any, res) => {
   const dealershipId = req.query.dealershipId as string;
   if (!dealershipId) return res.status(400).json({ error: "dealershipId query param required" });
+  if (req.auth?.role !== "admin" && req.auth?.dealershipId !== dealershipId) {
+    return res.status(403).json({ error: "Not your dealership" });
+  }
 
   const state = readState();
   const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
@@ -5899,6 +5945,9 @@ app.get("/api/accounting/callback", (_req, res) => {
 app.get("/api/accounting/accounts", async (req: any, res) => {
   const dealershipId = req.query.dealershipId as string;
   if (!dealershipId) return res.status(400).json({ error: "dealershipId required" });
+  if (req.auth?.role !== "admin" && req.auth?.dealershipId !== dealershipId) {
+    return res.status(403).json({ error: "Not your dealership" });
+  }
 
   const state = readState();
   const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
@@ -6031,7 +6080,14 @@ app.post("/api/integration/webhook-codat", (req, res) => {
 
   // Codat supports a shared-secret header configured on the webhook rule.
   // Set CODAT_WEBHOOK_SECRET=header-name:header-value and match it there.
-  if (CODAT_WEBHOOK_SECRET && CODAT_WEBHOOK_SECRET.includes(":")) {
+  // A secret that's set but malformed (no ':') must fail closed — silently
+  // skipping verification here would leave this endpoint fully open even
+  // though an operator believes they've configured auth.
+  if (CODAT_WEBHOOK_SECRET) {
+    if (!CODAT_WEBHOOK_SECRET.includes(":")) {
+      console.error("[accounting] CODAT_WEBHOOK_SECRET is set but malformed (expected 'header-name:header-value') — rejecting all webhook calls until fixed");
+      return res.status(500).json({ error: "Webhook auth misconfigured" });
+    }
     const [headerName, headerValue] = CODAT_WEBHOOK_SECRET.split(":", 2);
     if (req.headers[headerName.toLowerCase()] !== headerValue) {
       console.warn("[accounting] Webhook header mismatch — rejecting");
