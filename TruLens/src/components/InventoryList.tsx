@@ -271,6 +271,31 @@ export default function InventoryList({
   const [formCarTrust, setFormCarTrust] = React.useState<CarTrustResult | null>(null);
   const [formCarTrustLoading, setFormCarTrustLoading] = React.useState(false);
 
+  // Live market valuation at the pricing step. Typed locally on purpose — the
+  // scraper module is server-only (imports fs/path), so it must never be
+  // imported into this browser component.
+  const [valuation, setValuation] = React.useState<
+    { averageRetailPrice: number | null; listingsFound: number; mileageAdjusted?: boolean; sampleMedianKm?: number | null } | null
+  >(null);
+  const [valuationLoading, setValuationLoading] = React.useState(false);
+  const runValuation = React.useCallback(async () => {
+    if (!make.trim() || !model.trim() || !user) return;
+    setValuationLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ make: make.trim(), model: model.trim(), year, mileage, vin }),
+      });
+      setValuation(res.ok ? await res.json() : { averageRetailPrice: null, listingsFound: 0 });
+    } catch {
+      setValuation({ averageRetailPrice: null, listingsFound: 0 });
+    } finally {
+      setValuationLoading(false);
+    }
+  }, [make, model, year, mileage, vin, user]);
+
   const runCarTrustLookup = React.useCallback(async (vinValue: string, vehicleId?: string) => {
     const v = vinValue.trim().toUpperCase();
     if (v.length < 11 || !user) return;
@@ -688,6 +713,54 @@ export default function InventoryList({
                   className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                 />
               </div>
+            </div>
+
+            {/* Live market valuation — price the car against the real market
+                (scraped competitor stock + classifieds, km-adjusted). Manual
+                button so it only fires when the dealer wants it. */}
+            <div className="mt-1">
+              <button
+                type="button"
+                onClick={runValuation}
+                disabled={valuationLoading || !make.trim() || !model.trim()}
+                className="tru-btn-ghost w-full min-h-[44px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
+              >
+                {valuationLoading ? 'Checking the market…' : 'Get market value'}
+              </button>
+              {valuation && (
+                <div className="mt-2 rounded-[12px] border border-[rgba(79,227,220,0.3)] bg-[rgba(79,227,220,0.06)] p-3 text-[13px] text-[#E8EAE6]">
+                  {valuation.averageRetailPrice != null ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[rgba(232,234,230,0.72)]">Market average</span>
+                        <span className="font-mono font-semibold text-[#4FE3DC]">
+                          R {valuation.averageRetailPrice.toLocaleString('en-ZA')}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-[rgba(232,234,230,0.6)]">
+                        <span>
+                          {valuation.listingsFound} listing{valuation.listingsFound === 1 ? '' : 's'}
+                          {valuation.mileageAdjusted ? ' · km-adjusted' : ''}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setPrice(valuation.averageRetailPrice as number)}
+                          className="text-[#4FE3DC] underline cursor-pointer"
+                        >
+                          Use as price
+                        </button>
+                      </div>
+                      {valuation.sampleMedianKm != null && (
+                        <div className="mt-1 text-[rgba(232,234,230,0.5)]">
+                          Market median: {valuation.sampleMedianKm.toLocaleString('en-ZA')} km
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-[rgba(232,234,230,0.6)]">No market data yet — price manually.</span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Everything else behind one disclosure. Values live in component

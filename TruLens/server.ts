@@ -18,6 +18,7 @@ import {
   stats as photoStats,
 } from './photoStore';
 import { DEFAULT_TEMPLATE } from './src/templates';
+import { fetchValuation } from './src/lib/scraper';
 
 /* Every TruLens template slot is `required: false` (dealer's call what goes on
    their site — see src/template.ts), so there is no `required` subset to pull
@@ -2288,6 +2289,31 @@ app.post('/api/kredo/valuation', authenticate, async (req: any, res) => {
   } catch (err: any) {
     console.error(`[kredo] valuation failed for VIN=${vin}:`, err?.message || err);
     res.status(502).json({ error: 'CarValue lookup failed. Check your API key.' });
+  }
+});
+
+// Live market valuation — scrapes competitor dealer stock + classifieds
+// (AutoTrader / Cars.co.za), mileage-adjusted toward the subject car. This is
+// the same engine as TruInspect; unlike the Kredo stub above it needs no
+// third-party key and keys on make/model/year/mileage rather than VIN. Used at
+// the pricing step so a dealer sets a first price against the live market.
+app.post('/api/valuation', authenticate, async (req: any, res) => {
+  const { make, model, year, mileage, vin } = req.body || {};
+  if (!make || !model || !year) {
+    return res.status(400).json({ error: 'make, model, and year are required' });
+  }
+  const dealerSlug = req.user?.dealerSlug || 'default';
+  const km = Number(mileage);
+  try {
+    const data = await fetchValuation(String(make), String(model), String(year), {
+      vin: String(vin || '').trim().toUpperCase() || undefined,
+      dealerSlug,
+      mileage: Number.isFinite(km) && km > 0 ? Math.round(km) : undefined,
+    });
+    res.json(data);
+  } catch (err: any) {
+    console.error('[valuation] failed:', err?.message || err);
+    res.status(500).json({ error: err?.message || 'Valuation failed' });
   }
 });
 

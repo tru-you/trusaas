@@ -1234,6 +1234,24 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
 
   const dealerSlug = req.user?.dealerSlug || 'default';
 
+  // Subject car's mileage lives on its own record — feed it in so the price
+  // sample is normalised toward it (a low-km car isn't valued against high-km
+  // listings). An explicit body mileage wins; otherwise read the vehicle.
+  let subjectKm: number | undefined;
+  const explicitKm = Number(req.body?.mileage);
+  if (Number.isFinite(explicitKm) && explicitKm > 0) {
+    subjectKm = Math.round(explicitKm);
+  } else if (vehicleId) {
+    try {
+      const store = readLocalStore();
+      const v = store.vehicles.find((x: any) => x.id === vehicleId);
+      const m = Number(v?.mileage);
+      if (Number.isFinite(m) && m > 0) subjectKm = Math.round(m);
+    } catch {
+      /* mileage is optional — valuation just isn't km-adjusted without it */
+    }
+  }
+
   try {
     const data = await fetchValuation(
       String(make),
@@ -1242,6 +1260,7 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
       {
         vin: String(req.body?.vin || '').trim().toUpperCase() || undefined,
         dealerSlug,
+        mileage: subjectKm,
       },
     );
 
