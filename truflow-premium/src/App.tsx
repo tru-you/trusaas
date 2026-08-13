@@ -40,6 +40,7 @@ import {
   Download,
   MoreHorizontal,
   Monitor,
+  HelpCircle,
 } from "lucide-react";
 
 import {
@@ -78,6 +79,7 @@ import { DOC_STAGES } from "./types";
 
 import Counter from "./components/Counter";
 import ChatWidget from "./components/ChatWidget";
+import GuidePanel from "./components/GuidePanel";
 import DocumentsHub from "./components/DocumentsHub";
 import DealerDetailsSettings from "./components/DealerDetailsSettings";
 import DocSettingsPanel from "./components/DocSettingsPanel";
@@ -302,6 +304,10 @@ export default function App() {
   // Lifted out of ChatWidget so the dashboard can open the assistant directly —
   // the floating bubble is easy to miss on a desk monitor.
   const [assistOpen, setAssistOpen] = useState(false);
+  // In-app how-to guides. Opens from the top bar, and once — on a dealer's very
+  // first session — it auto-opens so the Lens → Flow → Website spine is the
+  // first thing they meet instead of a cold dashboard.
+  const [guideOpen, setGuideOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("u1");
   // Driven by the signed token, not a sessionStorage flag — a flag said "logged
   // in" while the token was gone or expired, and every API call 401'd behind a
@@ -313,6 +319,37 @@ export default function App() {
     if (!isLoggedIn) return;
     return initGlassMotion();
   }, [isLoggedIn]);
+
+  // First-run: show the guides once, then never auto-open again. A flag in
+  // localStorage, not the token, so it survives sign-out and is per-device —
+  // the guide is about learning this browser, not the account.
+  //
+  // The "seen" flag is written when the panel is DISMISSED (see
+  // handleGuideOpenChange), not here. Writing it at open-time raced React's
+  // double-invoked effects in dev — the flag landed on the first pass and the
+  // second, committed pass then saw it and never opened. Marking on dismiss is
+  // both race-free and more honest: seen means they actually closed it.
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    try {
+      if (!localStorage.getItem("truflow_guide_seen")) setGuideOpen(true);
+    } catch {
+      /* private browsing — skip the tour rather than nag every load */
+    }
+  }, [isLoggedIn]);
+
+  // Opening is a plain state set; closing also records that the first-run tour
+  // has been seen so it won't auto-open again on this device.
+  const handleGuideOpenChange = (open: boolean) => {
+    setGuideOpen(open);
+    if (!open) {
+      try {
+        localStorage.setItem("truflow_guide_seen", "1");
+      } catch {
+        /* private browsing — nothing to persist */
+      }
+    }
+  };
 
   useEffect(() => {
     // Calls the API directly rather than refreshSeats(): that is a const
@@ -1742,6 +1779,15 @@ export default function App() {
            <div className="flex items-center gap-2 shrink-0">
              <button
                type="button"
+               onClick={() => setGuideOpen(true)}
+               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] hover:text-[color:var(--white-dim)] transition-colors cursor-pointer text-[13px] font-semibold"
+               title="How-to guides"
+             >
+               <HelpCircle size={14} />
+               Guides
+             </button>
+             <button
+               type="button"
                onClick={() => setAssistOpen(true)}
                className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)] hover:text-[color:var(--ink)] transition-colors cursor-pointer text-[13px] font-semibold"
                title="Ask Dealer Assist"
@@ -1807,6 +1853,15 @@ export default function App() {
                   {meta.sub}
                 </span>
               </div>
+              <button
+                type="button"
+                onClick={() => setGuideOpen(true)}
+                aria-label="How-to guides"
+                title="How-to guides"
+                className="h-11 w-11 shrink-0 grid place-items-center rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] cursor-pointer"
+              >
+                <HelpCircle size={16} />
+              </button>
               <button
                 type="button"
                 onClick={() => setAssistOpen(true)}
@@ -2208,6 +2263,47 @@ export default function App() {
                   title="Reload inventory from server (shows photos exported from TruLens)"
                 >
                   <RefreshCw size={12} /> Refresh photos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const live = state.vehicles.filter((v: any) => !v.archivedAt && v.status === "INVENTORY");
+                    const rows = live.map((v: any) => {
+                      const days = stockAge(v);
+                      const r = computeDmsGalleryReadiness(v as any);
+                      return [
+                        v.stockNumber || "",
+                        v.year || "",
+                        v.make || "",
+                        v.model || "",
+                        v.trim || "",
+                        v.transmission || "",
+                        v.fuelType || "",
+                        v.colour || "",
+                        Number(v.mileage || 0).toLocaleString(),
+                        Number(v.retailPrice || 0).toLocaleString(),
+                        Number(v.costPrice || 0).toLocaleString(),
+                        days.toString(),
+                        r.label,
+                        (v.images?.length || 0).toString(),
+                        v.showOnWebsite !== false ? "Yes" : "No",
+                        v.dateAcquired || "",
+                      ].map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",");
+                    });
+                    const header = "Stock #,Year,Make,Model,Trim,Transmission,Fuel,Colour,Mileage (km),Retail Price,Cost Price,Days in Stock,Gallery Status,Photos,On Website,Date Acquired";
+                    const csv = [header, ...rows].join("\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `TruFlow_Stock_List_${new Date().toISOString().split("T")[0]}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                    addNotification("Stock List Exported", `${live.length} vehicles downloaded as CSV.`, "info");
+                  }}
+                  className="btn btn-secondary text-[13px] font-semibold px-3 py-2 flex items-center gap-2"
+                  title="Download current stock list as CSV"
+                >
+                  <Download size={12} /> Stock List
                 </button>
                 <div className="relative flex-1 md:flex-none">
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(232,234,230,0.72)]" />
@@ -4290,6 +4386,13 @@ export default function App() {
       {/* Dealer Assist. Opens from the top bar — no floating launcher. */}
       <PwaInstallBanner appName="TruFlow Premium" accent="var(--blue)" dismissKey="truflow_premium_pwa_dismissed" />
       <ChatWidget open={assistOpen} onOpenChange={setAssistOpen} />
+      <GuidePanel
+        open={guideOpen}
+        onOpenChange={handleGuideOpenChange}
+        currentSection={activeSection}
+        hasProduct={hasProduct}
+        onAskAssist={() => setAssistOpen(true)}
+      />
 
       {/* The public-facing website chatbot simulation used to float bottom-left
           of the dealer's own workstation, which put two different assistants on

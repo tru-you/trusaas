@@ -313,10 +313,10 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               <button
                 onClick={() => handleDeletePhoto(safeIndex)}
                 aria-label="Delete photo"
-                className="h-9 w-9 grid place-items-center rounded-full text-[color:var(--white)] cursor-pointer"
-                style={{ background: "rgba(6,8,13,0.6)", border: "1px solid rgba(255,255,255,0.12)" }}
+                className="h-7 w-7 grid place-items-center rounded-full text-white/50 cursor-pointer"
+                style={{ background: "rgba(6,8,13,0.45)", border: "1px solid rgba(255,255,255,0.08)" }}
               >
-                <Trash2 size={14} />
+                <Trash2 size={12} />
               </button>
             )}
           </div>
@@ -405,9 +405,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   onClick={(e) => { e.stopPropagation(); handleDeletePhoto(idx); }}
                   aria-label={`Delete photo ${idx + 1}`}
                   title="Delete this photo"
-                  className="absolute top-0.5 right-0.5 h-3.5 w-3.5 md:h-5 md:w-5 grid place-items-center rounded-full bg-black/70 text-white opacity-100 md:opacity-0 md:group-hover/thumb:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute -top-0.5 -right-0.5 h-3 w-3 md:h-5 md:w-5 grid place-items-center rounded-full bg-black/60 text-white/60 opacity-0 group-hover/thumb:opacity-100 md:opacity-0 md:group-hover/thumb:opacity-100 transition-opacity cursor-pointer"
                 >
-                  <X size={8} className="md:hidden" />
+                  <X size={6} className="md:hidden" />
                   <X size={10} className="hidden md:block" />
                 </button>
               </div>

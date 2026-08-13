@@ -13,6 +13,49 @@ interface Props {
 
 const MAX_FILE_BYTES = 15 * 1024 * 1024;
 
+/** Decode a `data:...;base64,...` URL into a Blob. */
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [head, b64 = ""] = dataUrl.split(",");
+  const mime = head.match(/data:(.*?);base64/)?.[1] || "application/pdf";
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
+/**
+ * Open a finished document for View / Print.
+ *
+ * The document's fileData is a `data:application/pdf;base64,…` URL. Browsers —
+ * and installed PWAs especially — BLOCK top-level navigation to a data: URL as
+ * an anti-phishing measure, which is why "View / Print" opened a blank page.
+ * Converting to a blob: URL first is allowed, so the PDF actually renders. Falls
+ * back to a download if a popup blocker stops the new tab.
+ */
+function openDocumentFile(fileData: string, filename = "document.pdf") {
+  try {
+    if (!fileData.startsWith("data:")) {
+      window.open(fileData, "_blank", "noopener,noreferrer");
+      return;
+    }
+    const url = URL.createObjectURL(dataUrlToBlob(fileData));
+    const win = window.open(url, "_blank", "noopener,noreferrer");
+    if (!win) {
+      // Popup blocked — hand it over as a download instead of failing silently.
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+    // Give the new tab time to load before releasing the blob.
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch {
+    /* nothing we can safely do; the caller's UI stays put */
+  }
+}
+
 const STAGE_LABEL: Record<DocStage, string> = {
   proforma: "Proforma",
   deed: "Offer to Purchase",
@@ -460,15 +503,14 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                     </button>
                   )}
                   {mode !== "confirm" && doc && doc.fileData && (
-                    <a
-                      href={doc.fileData}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md border border-white/15 text-xs font-semibold hover:bg-white/5"
+                    <button
+                      type="button"
+                      onClick={() => openDocumentFile(doc.fileData!, `${STAGE_LABEL[stage]}.pdf`)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md border border-white/15 text-xs font-semibold hover:bg-white/5 cursor-pointer"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       View / Print
-                    </a>
+                    </button>
                   )}
                   {doc && doc.status === "Signed" && (
                     <span className="text-xs text-emerald-300">✓ {mode === "confirm" ? "Confirmed" : "Signed"}</span>
