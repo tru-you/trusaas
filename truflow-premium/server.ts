@@ -86,6 +86,17 @@ const PORT = Number(process.env.PORT) || 3001;
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+// Security headers — conservative baseline (nosniff, referrer, HSTS-in-prod).
+// X-Frame-Options intentionally omitted: some services are embedded as widgets.
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  if (process.env.NODE_ENV === "production") {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  next();
+});
+
 // Custom lightweight CORS middleware for external website plugins & widget integrations
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
