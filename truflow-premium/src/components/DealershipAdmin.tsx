@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import {
   Building2,
   Check,
@@ -14,6 +14,14 @@ import {
 } from "lucide-react";
 import { authFetch } from "../lib/session";
 import { TRUFLOW_LITE_URL } from "../lib/ecosystem";
+import type { Dealership as FullDealership } from "../types";
+
+const DealerDetailsSettings = lazy(() => import("./DealerDetailsSettings"));
+const DocSettingsPanel = lazy(() => import("./DocSettingsPanel"));
+const AccountingIntegrationsSettings = lazy(() => import("./AccountingIntegrationsSettings"));
+const TruSocialSettings = lazy(() => import("./TruSocialSettings"));
+
+type SettingsTab = "details" | "documents" | "accounting" | "social";
 
 /**
  * Onboarding a dealership, as a screen rather than four curl commands.
@@ -84,9 +92,12 @@ function CopyButton({ value, label = "Copy" }: { value: string; label?: string }
 export default function DealershipAdmin({
   onNotify,
   scopedDealershipId,
+  onDealerSaved,
 }: {
   onNotify: (title: string, message: string, type?: "info" | "warning" | "error") => void;
   scopedDealershipId?: string | null;
+  /** Fires after per-dealer settings tabs save, so the parent can reload shared state. */
+  onDealerSaved?: () => void;
 }) {
   const [rows, setRows] = useState<Dealership[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,6 +121,7 @@ export default function DealershipAdmin({
   // Progressive disclosure: only one row expanded at a time, add-form collapsed by default.
   const [expandedRow, setExpandedRow] = useState<string | null>(scopedDealershipId ?? null);
   const [addFormOpen, setAddFormOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<Record<string, SettingsTab>>({});
 
   const deleteDealership = async (d: Dealership) => {
     if (confirmingDelete !== d.id) {
@@ -488,6 +500,85 @@ export default function DealershipAdmin({
                       </div>
                       <CopyButton value={`${FEED_ORIGIN}/api/public/stock?dealer=${d.slug}`} label="Copy feed URL" />
                     </div>
+
+                    {/* Per-dealer settings — folded in as tabs so the admin
+                        doesn't scroll through one stack per dealer.
+                        onSaved calls loadAllState in the parent, which will
+                        also refetch this component's list. */}
+                    {(() => {
+                      const tab: SettingsTab = settingsTab[d.id] ?? "details";
+                      const socialOn = (d.products || []).includes("social");
+                      const full = d as unknown as FullDealership;
+                      const setTab = (t: SettingsTab) =>
+                        setSettingsTab((prev) => ({ ...prev, [d.id]: t }));
+                      const tabBtn = (id: SettingsTab, label: string) => (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => setTab(id)}
+                          className={
+                            "px-3 py-1.5 rounded-lg border text-[13px] font-semibold transition-colors " +
+                            (tab === id
+                              ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border-[color:var(--cyan-soft)]"
+                              : "bg-[color:var(--glass)] text-[color:var(--muted)] border-[color:var(--glass-line)] hover:text-[color:var(--white)]")
+                          }
+                        >
+                          {label}
+                        </button>
+                      );
+                      return (
+                        <div className="rounded-xl border border-white/10 bg-[color:var(--ink)]/40 p-3 flex flex-col gap-3">
+                          <div className="flex flex-wrap gap-1.5">
+                            {tabBtn("details", "Details")}
+                            {tabBtn("documents", "Documents")}
+                            {tabBtn("accounting", "Accounting")}
+                            {socialOn && tabBtn("social", "Social")}
+                          </div>
+                          <Suspense
+                            fallback={
+                              <div className="p-4 text-[13px] text-[rgba(232,234,230,0.55)]">
+                                Loading…
+                              </div>
+                            }
+                          >
+                            {tab === "details" && (
+                              <DealerDetailsSettings
+                                dealership={full}
+                                isAdmin
+                                onSaved={() => {
+                                  load();
+                                  onDealerSaved?.();
+                                }}
+                              />
+                            )}
+                            {tab === "documents" && (
+                              <DocSettingsPanel
+                                dealership={full}
+                                isAdmin
+                                onSaved={() => {
+                                  load();
+                                  onDealerSaved?.();
+                                }}
+                              />
+                            )}
+                            {tab === "accounting" && (
+                              <AccountingIntegrationsSettings
+                                dealershipId={d.id}
+                                accountingEnabled={!!full.accountingEnabled}
+                                onNotify={onNotify}
+                              />
+                            )}
+                            {tab === "social" && socialOn && (
+                              <TruSocialSettings
+                                dealershipId={d.id}
+                                truSocialEnabled={!!full.truSocialEnabled}
+                                onNotify={onNotify}
+                              />
+                            )}
+                          </Suspense>
+                        </div>
+                      );
+                    })()}
 
                     {/* TruFlow Light */}
                     {(d.products || []).includes("flow-lite") && (

@@ -409,6 +409,14 @@ export default function App() {
   const [inventoryStatusFilter, setInventoryStatusFilter] = useState("ALL");
   const [inventoryPhotoFilter, setInventoryPhotoFilter] = useState<"ALL" | "NEEDS" | "PARTIAL" | "READY">("ALL");
   const [inventoryAgeFilter, setInventoryAgeFilter] = useState<"ALL" | "30" | "60" | "90">("ALL");
+  /** Inventory pagination — grid renders in pages of 24 so a 100+ car
+   *  floor doesn't mount every heavy card + image at once. Any filter
+   *  change resets to the first page. */
+  const INVENTORY_PAGE = 24;
+  const [inventoryVisibleCount, setInventoryVisibleCount] = useState(INVENTORY_PAGE);
+  useEffect(() => {
+    setInventoryVisibleCount(INVENTORY_PAGE);
+  }, [inventorySearch, inventoryStatusFilter, inventoryPhotoFilter, inventoryAgeFilter]);
   const [leadCrmTab, setLeadCRMTab] = useState<"kanban" | "list">("kanban");
   const [filterOverdueOnly, setFilterOverdueOnly] = useState(false);
   const [leadQuery, setLeadQuery] = useState("");
@@ -2244,9 +2252,9 @@ export default function App() {
               </div>
             </div>
 
-            {/* Grid list */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {state.vehicles
+            {/* Grid list — paginated so 100+ cars don't render at once */}
+            {(() => {
+              const filteredInventory = state.vehicles
                 .filter((v) => {
                   /* Archived units are off the floor: retired sold stock kept
                      only so the sale still counts in the money figures. Hidden
@@ -2274,8 +2282,12 @@ export default function App() {
                   const days = Number(v.daysInInventory) || 0;
                   const mAge = inventoryAgeFilter === "ALL" || days >= Number(inventoryAgeFilter);
                   return mSearch && mStatus && mPhoto && mAge;
-                })
-                .map((v) => {
+                });
+              const visibleInventory = filteredInventory.slice(0, inventoryVisibleCount);
+              return (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {visibleInventory.map((v) => {
                   const readiness = computeDmsGalleryReadiness(v as any);
                   const days = Number(v.daysInInventory) || 0;
                   const ageTone =
@@ -2464,7 +2476,50 @@ export default function App() {
                     </div>
                   );
                 })}
-            </div>
+                  </div>
+                  {filteredInventory.length > 0 && (
+                    <div className="flex items-center justify-between gap-3 flex-wrap pt-2 text-[13px] text-[rgba(232,234,230,0.55)]">
+                      <span>
+                        Showing {visibleInventory.length} of {filteredInventory.length}
+                        {filteredInventory.length !== state.vehicles.length &&
+                          ` · ${state.vehicles.length} total`}
+                      </span>
+                      {filteredInventory.length > inventoryVisibleCount && (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setInventoryVisibleCount((n) => n + INVENTORY_PAGE)
+                            }
+                            className="btn bg-[color:var(--glass)] text-[color:var(--white)] border border-[color:var(--glass-line)] text-[13px] font-semibold"
+                          >
+                            Show {Math.min(INVENTORY_PAGE, filteredInventory.length - inventoryVisibleCount)} more
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setInventoryVisibleCount(filteredInventory.length)}
+                            className="btn bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] text-[13px]"
+                          >
+                            Show all
+                          </button>
+                        </div>
+                      )}
+                      {filteredInventory.length > INVENTORY_PAGE &&
+                        inventoryVisibleCount > INVENTORY_PAGE &&
+                        filteredInventory.length <= inventoryVisibleCount && (
+                          <button
+                            type="button"
+                            onClick={() => setInventoryVisibleCount(INVENTORY_PAGE)}
+                            className="btn bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] text-[13px]"
+                          >
+                            Collapse
+                          </button>
+                        )}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -4012,14 +4067,19 @@ export default function App() {
                 so this gate only avoids rendering a form that would 403. */}
             {getAccount()?.role === "admin" && (
               <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
-                <DealershipAdmin onNotify={addNotification} scopedDealershipId={adminDealerScope} />
+                <DealershipAdmin
+                  onNotify={addNotification}
+                  scopedDealershipId={adminDealerScope}
+                  onDealerSaved={loadAllState}
+                />
               </Suspense>
             )}
 
             {/* TruSocial — connect and auto-publish to social channels.
-                For a dealer login, show their own panel. For master admin,
-                show one panel per dealer that has the "social" product. */}
-            {(() => {
+                For a dealer login, show their own panel. Master admin
+                accesses this per-dealer via DealershipAdmin's "Social" tab
+                instead of a stacked panel per dealer. */}
+            {!isMasterAdmin && (() => {
               const socialDealers = dealershipId
                 ? hasProduct("social") ? [currentDealership] : []
                 : (state?.dealerships || []).filter((d: any) => (d.products || []).includes("social"));
@@ -4036,13 +4096,12 @@ export default function App() {
             })()}
 
             {/* Dealer details — self-service editor for the identity fields
-                quoted on invoices, agreements and public listings. Admins
-                targeting another dealership pass isAdmin so the server
-                accepts the dealershipId. Loops for admins per the standing
-                per-dealer settings rule. Demo (no real dealer row in shared
-                state) still gets a stub so the form is testable — Save 404s
-                and the amber banner explains why. */}
-            {state?.dealerships && (() => {
+                quoted on invoices, agreements and public listings. Master
+                admin edits these per-dealer inside DealershipAdmin's tabs,
+                so this stack now only renders for dealer logins. Demo (no
+                real dealer row in shared state) still gets a stub so the
+                form is testable — Save 404s and the amber banner explains why. */}
+            {!isMasterAdmin && state?.dealerships && (() => {
               const target = dealershipId
                 ? state.dealerships.filter((d) => d.id === dealershipId)
                 : state.dealerships;

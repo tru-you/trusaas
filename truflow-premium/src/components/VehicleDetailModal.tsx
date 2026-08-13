@@ -385,15 +385,31 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               column with the "Media Sync Station" section. */}
           <div className="flex gap-2 overflow-x-auto py-2 border-t border-white/5 mt-2 scrollbar-none">
             {imagesList.map((img, idx) => (
-              <button
+              <div
                 key={idx}
-                onClick={() => setActiveImageIndex(idx)}
-                className={`w-16 h-12 rounded-[10px] overflow-hidden transition-all flex-shrink-0 cursor-pointer ${
+                className={`relative w-16 h-12 rounded-[10px] overflow-hidden flex-shrink-0 group/thumb transition-all ${
                   idx === safeIndex ? "ring-2 ring-[color:var(--cyan)]" : "opacity-60 hover:opacity-100"
                 }`}
               >
-                <img src={img} alt="Thumb" className="w-full h-full object-cover" />
-              </button>
+                <button
+                  onClick={() => setActiveImageIndex(idx)}
+                  className="w-full h-full block cursor-pointer"
+                  title={`Photo ${idx + 1}`}
+                >
+                  <img src={img} alt="Thumb" className="w-full h-full object-cover" />
+                </button>
+                {/* Per-thumbnail delete — always shown on mobile so it's tappable,
+                    fades in on hover on desktop. stopPropagation so it does not
+                    also switch to the photo it is removing. */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeletePhoto(idx); }}
+                  aria-label={`Delete photo ${idx + 1}`}
+                  title="Delete this photo"
+                  className="absolute top-0.5 right-0.5 h-5 w-5 grid place-items-center rounded-full bg-black/70 text-white opacity-100 md:opacity-0 md:group-hover/thumb:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <X size={10} />
+                </button>
+              </div>
             ))}
             <button
               onClick={() => fileInputRef.current?.click()}
