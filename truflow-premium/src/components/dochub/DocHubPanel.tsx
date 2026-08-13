@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck, ExternalLink, SkipForward, RotateCcw, PenLine, X } from "lucide-react";
-import type { DealerDocument, Dealership, DocMode, DocStage, Lead } from "../../types";
+import type { AccountingPlatform, DealerDocument, Dealership, DocMode, DocStage, Lead } from "../../types";
 import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "../../types";
 import { authFetch } from "../../lib/session";
 import { createStageDocument, finalizeStageDocument, signDocument, updateLead, skipDocStage } from "../../api";
@@ -19,6 +19,12 @@ const STAGE_LABEL: Record<DocStage, string> = {
   compliance: "Compliance",
   invoice: "Invoice",
   handover: "Handover",
+};
+
+const ACCOUNTING_LABEL: Record<AccountingPlatform, string> = {
+  xero: "Xero",
+  quickbooks: "QuickBooks",
+  zoho: "Zoho Books",
 };
 
 export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) {
@@ -378,6 +384,14 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                     {doc && ` · ${doc.status}`}
                     {doc?.fileName && mode !== "confirm" && ` · ${doc.fileName}`}
                   </div>
+                  {doc?.accountingPush && (
+                    <div className="text-xs text-emerald-300/80 mt-0.5">
+                      ✓ Sent to {ACCOUNTING_LABEL[doc.accountingPush.platform]}
+                    </div>
+                  )}
+                  {doc?.accountingPushError && (
+                    <div className="text-xs text-amber-300/80 mt-0.5">{doc.accountingPushError}</div>
+                  )}
                 </div>
                 <div className="shrink-0 flex items-center gap-2">
                   {mode === "generate" && !doc && !upcoming && (
@@ -399,7 +413,7 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                       className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md bg-[color:var(--cyan)] text-black text-xs font-semibold hover:opacity-90 disabled:opacity-50 cursor-pointer"
                     >
                       {busyStage === stage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-                      Export CSV
+                      {stage === "invoice" ? "Send to accounting" : "Export CSV"}
                     </button>
                   )}
                   {mode === "attach" && !doc && !upcoming && (

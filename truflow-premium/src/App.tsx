@@ -93,6 +93,7 @@ const AccountingRecon = lazy(() => import("./components/AccountingRecon"));
 const VehicleDetailModal = lazy(() => import("./components/VehicleDetailModal"));
 const DealershipAdmin = lazy(() => import("./components/DealershipAdmin"));
 const TruSocialSettings = lazy(() => import("./components/TruSocialSettings"));
+const AccountingIntegrationsSettings = lazy(() => import("./components/AccountingIntegrationsSettings"));
 /* DocHub — desktop-only, so the chunk (plus any future pdf-lib dep it
    pulls in) never reaches a phone. Gated on useIsDesktop() at the render site
    below, which is what actually keeps mobile from paying for it. */
@@ -4066,6 +4067,18 @@ export default function App() {
                     <React.Fragment key={d.id}>
                       <DealerDetailsSettings dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
                       <DocSettingsPanel dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
+                      {/* Accounting integrations (Xero/QuickBooks/Zoho via Codat) —
+                          feeds DocHub's 'connect' invoice mode. Same per-dealer loop
+                          as the two panels above since it's part of the same document
+                          settings surface, not gated behind a product flag. */}
+                      <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+                        <AccountingIntegrationsSettings
+                          dealershipId={d.id}
+                          dealerName={dealershipId ? undefined : d.name}
+                          accountingEnabled={!!(d as any).accountingEnabled}
+                          onNotify={addNotification}
+                        />
+                      </Suspense>
                     </React.Fragment>
                   ))}
                 </>
@@ -4452,7 +4465,13 @@ export default function App() {
             <DocumentsHub
               embedded
               leadId={leadDetailId}
-              documents={filteredDocuments.filter((d) => d.leadId === leadDetailId)}
+              /* DocHub-tracked documents (stage set) are excluded here — they have
+                 their own tab with proper sign/finalize/skip flows that advance
+                 lead.docStage and write the audit trail. Signing one through this
+                 generic hub's plain signDocument() would mark it Signed without
+                 ever calling finalizeStageDocument, leaving DocHub showing the
+                 stage as still outstanding while the document claims otherwise. */
+              documents={filteredDocuments.filter((d) => d.leadId === leadDetailId && !d.stage)}
               getLeadLabel={getLeadLabel}
               getVehicleLabel={getVehicleLabel}
               onUpload={handleUploadDocument}
@@ -4504,7 +4523,8 @@ export default function App() {
             <DocumentsHub
               embedded
               vehicleId={selectedDetailVehicle.id}
-              documents={filteredDocuments.filter((d) => d.vehicleId === selectedDetailVehicle.id)}
+              // Same DocHub exclusion as the lead-scoped instance above.
+              documents={filteredDocuments.filter((d) => d.vehicleId === selectedDetailVehicle.id && !d.stage)}
               getLeadLabel={getLeadLabel}
               getVehicleLabel={getVehicleLabel}
               onUpload={handleUploadDocument}

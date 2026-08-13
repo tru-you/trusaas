@@ -53,6 +53,13 @@ export interface Dealership {
   zernioProfileId?: string;
   /** Whether TruSocial is active (UI shown, publishes triggered). */
   truSocialEnabled?: boolean;
+  /** Codat company ID — provisioned when accounting integrations are enabled
+   *  for this dealer. One Codat company can hold multiple data connections
+   *  (Xero, QuickBooks, Zoho), so unlike zernioProfileId this is not per
+   *  platform. */
+  codatCompanyId?: string;
+  /** Whether the accounting-integrations UI is active for this dealer. */
+  accountingEnabled?: boolean;
   /** High-water marks for this dealer's issued document numbers.
    *
    *  SARS requires a tax invoice number to be sequential and non-repeating.
@@ -111,8 +118,11 @@ export type DocStage = 'proforma' | 'deed' | 'compliance' | 'invoice' | 'handove
  *  - 'confirm'  — no document; the stage is satisfied by ticking flags on
  *    the lead. Used for compliance, where NATIS and roadworthy are
  *    government-issued and cannot be produced by the dealer.
- *  - 'connect'  — generates an accounting-import CSV (Xero/QuickBooks/Zoho
- *    format). Available on any non-fixed stage. */
+ *  - 'connect'  — pushes the invoice straight into the dealer's connected
+ *    accounting package (Xero/QuickBooks/Zoho) via Codat when one is linked
+ *    in Accounting Integrations settings. Falls back to a downloadable
+ *    Xero-format import CSV when nothing is connected, or if the live push
+ *    fails. Available on any non-fixed stage. */
 export type DocMode = 'generate' | 'attach' | 'confirm' | 'connect';
 
 /** Default docFlow for new dealers — generate everywhere except compliance
@@ -152,6 +162,20 @@ export interface SocialAccount {
   dealershipId: string;
   platform: string;
   username?: string;
+  connectedAt: string;
+}
+
+/** Accounting platforms available through the Codat connection. */
+export type AccountingPlatform = 'xero' | 'quickbooks' | 'zoho';
+
+/** An accounting-package connection (Xero/QuickBooks/Zoho) linked via Codat,
+ *  mapped to exactly one dealer. Mirrors SocialAccount's shape — connectionId
+ *  is Codat's data-connection id, the thing every push/pull call is scoped to. */
+export interface AccountingAccount {
+  connectionId: string;
+  dealershipId: string;
+  platform: AccountingPlatform;
+  companyName?: string;
   connectedAt: string;
 }
 
@@ -391,6 +415,17 @@ export interface DealerDocument {
    *  mode === 'generate'. Preserves the exact data the PDF was built from
    *  even if the underlying deal record later changes. */
   fieldSnapshot?: Record<string, unknown>;
+  /** Set when mode === 'connect' and the invoice was pushed live into a
+   *  connected accounting package instead of (or alongside) the CSV. */
+  accountingPush?: {
+    platform: AccountingPlatform;
+    /** The invoice id Codat/the accounting package assigned, for reference. */
+    externalInvoiceId?: string;
+    pushedAt: string;
+  };
+  /** Set when a connect-mode push to the accounting package failed — the CSV
+   *  in fileData is the fallback the dealer can still import by hand. */
+  accountingPushError?: string;
 }
 
 export interface User {
@@ -466,6 +501,9 @@ export interface DMSState {
   settings?: PremiumSettings;
   /** Zernio social accounts mapped to dealers — the accountId→dealer lookup. */
   socialAccounts?: SocialAccount[];
+  /** Codat accounting connections mapped to dealers — the connectionId→dealer
+   *  lookup, mirroring socialAccounts. */
+  accountingAccounts?: AccountingAccount[];
 }
 
 export type PlanTier = 'lite' | 'standard' | 'premium';

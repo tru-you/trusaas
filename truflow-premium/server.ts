@@ -30,7 +30,7 @@ import { tidyStr, cleanModelName, normaliseExtras } from "./saNormalize";
  * `import type` is erased at compile time, so this adds no runtime dependency
  * on the client bundle.
  */
-import type { DMSState, Vehicle, Lead, User, DealerDocument, Dealership, DocEvent, DocStage, DocMode } from "./src/types";
+import type { DMSState, Vehicle, Lead, User, DealerDocument, Dealership, DocEvent, DocStage, DocMode, AccountingAccount, AccountingPlatform } from "./src/types";
 import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "./src/types";
 import { canAdvance } from "./src/lib/docValidator";
 import { renderProforma, renderOffer, renderTaxInvoice, renderHandover, VAT_RATE } from "./docPdf";
@@ -554,7 +554,9 @@ function isPublicPath(p: string): boolean {
     p.startsWith("/api/widget/") ||
     p === "/api/integration/webhook-lead" ||
     p === "/api/integration/webhook-zernio" ||
-    p === "/api/social/callback"
+    p === "/api/integration/webhook-codat" ||
+    p === "/api/social/callback" ||
+    p === "/api/accounting/callback"
   );
 }
 
@@ -2988,10 +2990,15 @@ app.post("/api/documents", async (req: any, res) => {
     const lead = (state.leads || []).find((l: any) => l.id === leadId);
     const resolvedVehicleId = vehicleId || lead?.vehicleId || undefined;
 
-    // Connect mode: generate an accounting-import CSV from the deal data.
+    // Connect mode: push straight into a connected accounting package when
+    // one exists for this dealer; always also build the CSV, either as the
+    // sole deliverable (nothing connected) or as an audit-trail fallback the
+    // dealer can still import by hand if the live push fails.
     let connectFileData = fileData || "";
     let connectMimeType = mimeType || "application/pdf";
     let connectFileName = fileName || `${stageTyped}-${new Date().toISOString().slice(0, 10)}`;
+    let accountingPush: DealerDocument["accountingPush"] | undefined;
+    let accountingPushError: string | undefined;
     if (mode === "connect") {
       const dealer = (state.dealerships || []).find((d: any) => d.id === docDealershipId);
       const vehicle = resolvedVehicleId ? state.vehicles.find((v: any) => v.id === resolvedVehicleId) : null;
@@ -3012,18 +3019,41 @@ app.post("/api/documents", async (req: any, res) => {
       ];
       const contact = [lead?.firstName, lead?.lastName].filter(Boolean).join(" ").trim() || "Customer";
       const email = lead?.email || "";
+      const invoiceLines = lines.length > 0
+        ? lines.map((line) => ({ description: line.label, quantity: 1, unitAmount: Math.round((line.amountIncl || 0) / (1 + vatRate)) }))
+        : [{ description: vehicle ? `${vehicle.year || ""} ${vehicle.make || ""} ${vehicle.model || ""} ${vehicle.trim || ""}`.trim() : "Vehicle sale", quantity: 1, unitAmount: totalExcl }];
       if (lines.length > 0) {
         for (const line of lines) {
           const unitExcl = Math.round((line.amountIncl || 0) / (1 + vatRate));
           csvRows.push([csvEsc(contact), csvEsc(email), csvEsc(invNo), issued, issued, csvEsc(line.label), "1", String(unitExcl), "200", "OUTPUT2", "ZAR"].join(","));
         }
       } else {
-        const desc = vehicle ? `${vehicle.year || ""} ${vehicle.make || ""} ${vehicle.model || ""} ${vehicle.trim || ""}`.trim() : "Vehicle sale";
-        csvRows.push([csvEsc(contact), csvEsc(email), csvEsc(invNo), issued, issued, csvEsc(desc), "1", String(totalExcl), "200", "OUTPUT2", "ZAR"].join(","));
+        csvRows.push([csvEsc(contact), csvEsc(email), csvEsc(invNo), issued, issued, csvEsc(invoiceLines[0].description), "1", String(totalExcl), "200", "OUTPUT2", "ZAR"].join(","));
       }
       connectFileData = "data:text/csv;base64," + Buffer.from(csvRows.join("\r\n"), "utf-8").toString("base64");
       connectMimeType = "text/csv";
       connectFileName = `${stageTyped}-${invNo}.csv`;
+
+      // Live push: only for the invoice stage, only when a connection exists.
+      if (stageTyped === "invoice" && (dealer as any)?.codatCompanyId) {
+        const connection = (state.accountingAccounts || []).find((a) => a.dealershipId === docDealershipId);
+        if (connection) {
+          const pushed = await pushInvoiceToAccounting((dealer as any).codatCompanyId, connection.connectionId, {
+            contact,
+            email,
+            invoiceNumber: String(invNo),
+            issuedDate: issued,
+            lines: invoiceLines,
+            currency: "ZAR",
+          });
+          if (pushed) {
+            accountingPush = { platform: connection.platform, externalInvoiceId: pushed.externalInvoiceId, pushedAt: new Date().toISOString() };
+            console.log(`[accounting] Pushed invoice ${invNo} to ${connection.platform} for dealer ${docDealershipId}`);
+          } else {
+            accountingPushError = `Could not reach ${connection.platform} — the CSV below is a fallback you can still import by hand.`;
+          }
+        }
+      }
     }
 
     // Generate mode: render the document from a template. No longer a stub —
@@ -3059,6 +3089,8 @@ app.post("/api/documents", async (req: any, res) => {
       stage: stageTyped,
       mode: mode as DocMode,
       fieldSnapshot: renderedSnapshot ?? ((mode === "generate" || mode === "connect") ? (fieldSnapshot || {}) : undefined),
+      accountingPush,
+      accountingPushError,
     };
     if (!state.documents) state.documents = [];
     state.documents.unshift(newDoc);
@@ -5715,6 +5747,334 @@ app.post("/api/integration/webhook-zernio", (req, res) => {
       }
     }
     console.log(`[trusocial] ${event}: ref=${vehicleRef || "none"}`);
+  }
+
+  res.json({ ok: true });
+});
+
+// --- DOCHUB ACCOUNTING — CODAT INTEGRATION ---
+//
+// Same shape as the TruSocial/Zernio block above: TruFlow never custodies
+// Xero/QuickBooks/Zoho OAuth tokens directly. A dealer gets one Codat
+// "company", and each accounting package they link becomes a data connection
+// under it. Codat holds the tokens; we only ever store connectionId,
+// platform and a display name, and every call that touches a connectionId is
+// checked against dealerOwnsAccountingAccount() first — Codat does not
+// enforce dealer isolation for us, same caveat as Zernio.
+//
+// NOTE: endpoint paths below follow Codat's public Accounting API shape as
+// documented at the time this was written (companies → connections →
+// data/push). Verify against the current Codat API reference before going
+// live — aggregator APIs do version their paths.
+
+const CODAT_API_KEY = process.env.CODAT_API_KEY || "";
+const CODAT_BASE = "https://api.codat.io";
+const CODAT_WEBHOOK_SECRET = process.env.CODAT_WEBHOOK_SECRET || "";
+
+const ACCOUNTING_PLATFORMS: { id: AccountingPlatform; codatKey: string }[] = [
+  { id: "xero", codatKey: "xero" },
+  { id: "quickbooks", codatKey: "qbo" },
+  { id: "zoho", codatKey: "zohobooks" },
+];
+
+function codatAuthHeader(): string {
+  // Codat uses HTTP Basic auth with the API key as the username, no password.
+  return "Basic " + Buffer.from(`${CODAT_API_KEY}:`).toString("base64");
+}
+
+function dealerByCodatCompany(state: DMSState, companyId: string): Dealership | undefined {
+  return state.dealerships.find((d: any) => d.codatCompanyId === companyId);
+}
+
+/** connectionId → dealer isolation check. CRITICAL, same reasoning as
+ *  dealerOwnsSocialAccount: Codat does not scope by dealer, only by company,
+ *  and a companyId alone is not proof of ownership from an untrusted request. */
+function dealerOwnsAccountingAccount(state: DMSState, dealershipId: string, connectionId: string): boolean {
+  return (state.accountingAccounts || []).some(
+    (a) => a.connectionId === connectionId && a.dealershipId === dealershipId
+  );
+}
+
+// Toggle accounting integrations ON/OFF + Codat company provisioning
+app.post("/api/accounting/toggle", async (req: any, res) => {
+  if (!req.auth?.role || !["admin", "manager", "principal"].includes(req.auth.role))
+    return res.status(403).json({ error: "Dealer login required" });
+
+  const { dealershipId, enabled } = req.body || {};
+  if (!dealershipId || typeof enabled !== "boolean")
+    return res.status(400).json({ error: "dealershipId and enabled (boolean) required" });
+
+  const state = readState();
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  if (!dealer) return res.status(404).json({ error: "Dealership not found" });
+
+  if (enabled && !(dealer as any).codatCompanyId) {
+    if (!CODAT_API_KEY) {
+      return res.status(503).json({
+        error: "Codat API key not configured — cannot enable accounting integrations",
+      });
+    }
+    try {
+      const cRes = await fetch(`${CODAT_BASE}/companies`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: codatAuthHeader(),
+        },
+        body: JSON.stringify({ name: dealer.id }),
+      });
+      const cBody = await cRes.json();
+      if (!cRes.ok) {
+        console.error(`[accounting] Codat company creation failed: ${cRes.status}`, cBody);
+        return res.status(502).json({ error: "Codat company creation failed", detail: cBody });
+      }
+      (dealer as any).codatCompanyId = cBody.id;
+      console.log(`[accounting] Provisioned Codat company ${(dealer as any).codatCompanyId} for ${dealer.id}`);
+    } catch (err: any) {
+      console.error(`[accounting] Codat API error:`, err?.message);
+      return res.status(502).json({ error: "Could not reach Codat API" });
+    }
+  }
+
+  (dealer as any).accountingEnabled = enabled;
+
+  writeState(state);
+  res.json({ dealer });
+});
+
+// Get the Codat Link URL for a platform (opened in a popup; the dealer signs
+// into Xero/QuickBooks/Zoho there and Codat redirects back to our callback).
+app.get("/api/accounting/connect/:platform", async (req: any, res) => {
+  const dealershipId = req.query.dealershipId as string;
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId query param required" });
+
+  const state = readState();
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  if (!dealer) return res.status(404).json({ error: "Dealership not found" });
+  if (!(dealer as any).codatCompanyId)
+    return res.status(400).json({ error: "Accounting integrations not provisioned for this dealer" });
+  if (!(dealer as any).accountingEnabled)
+    return res.status(400).json({ error: "Accounting integrations are disabled for this dealer" });
+
+  if (!CODAT_API_KEY)
+    return res.status(503).json({ error: "Codat API key not configured" });
+
+  const platformParam = String(req.params.platform || "");
+  const platform = ACCOUNTING_PLATFORMS.find((p) => p.id === platformParam);
+  if (!platform) return res.status(400).json({ error: `Unknown accounting platform '${platformParam}'` });
+
+  const proto = req.get("x-forwarded-proto") || req.protocol;
+  const redirectUrl = `${proto}://${req.get("host")}/api/accounting/callback`;
+
+  try {
+    // Codat's Link flow issues one URL per company; the platform is picked
+    // by the dealer inside the Link UI, but we pass platformKey as a hint so
+    // it opens straight to the right connector where Codat supports that.
+    const cRes = await fetch(
+      `${CODAT_BASE}/companies/${(dealer as any).codatCompanyId}/connections/link-url?platformKey=${encodeURIComponent(platform.codatKey)}&redirectUrl=${encodeURIComponent(redirectUrl)}`,
+      { headers: { Authorization: codatAuthHeader() } }
+    );
+    if (!cRes.ok) {
+      const body = await cRes.text();
+      return res.status(502).json({ error: "Codat connect failed", detail: body });
+    }
+    const data = await cRes.json();
+    res.json({ authUrl: data.linkUrl || data.url || data.authUrl });
+  } catch (err: any) {
+    res.status(502).json({ error: "Could not reach Codat API" });
+  }
+});
+
+// OAuth callback — redirect back to the dealer settings UI
+app.get("/api/accounting/callback", (_req, res) => {
+  // The actual connection linking happens via Codat's webhook
+  // (data-connection.status-changed → PendingAuth → Linked). This endpoint
+  // just returns the dealer to the settings page.
+  res.send(`<!DOCTYPE html><html><body><script>
+    window.opener ? window.close() : (window.location.href = "/#settings");
+  </script><p>Connected — you can close this tab.</p></body></html>`);
+});
+
+// List connected accounting accounts for a dealer — pulls live from Codat and syncs local store
+app.get("/api/accounting/accounts", async (req: any, res) => {
+  const dealershipId = req.query.dealershipId as string;
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId required" });
+
+  const state = readState();
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  const companyId = (dealer as any)?.codatCompanyId;
+
+  if (companyId && CODAT_API_KEY) {
+    try {
+      const cRes = await fetch(
+        `${CODAT_BASE}/companies/${companyId}/connections`,
+        { headers: { Authorization: codatAuthHeader() } }
+      );
+      if (cRes.ok) {
+        const cData = await cRes.json();
+        const connections = (cData.results || cData.connections || []).filter(
+          (c: any) => (c.status || "").toLowerCase() === "linked"
+        );
+        if (!state.accountingAccounts) state.accountingAccounts = [];
+
+        let changed = false;
+        for (const conn of connections) {
+          const platform = ACCOUNTING_PLATFORMS.find((p) => p.codatKey === conn.platformKey);
+          if (!platform) continue; // a connection type this UI doesn't offer
+          if (!state.accountingAccounts.some((a) => a.connectionId === conn.id)) {
+            state.accountingAccounts.push({
+              connectionId: conn.id,
+              dealershipId,
+              platform: platform.id,
+              companyName: conn.dataConnectionType || conn.sourceId || undefined,
+              connectedAt: conn.created || new Date().toISOString(),
+            });
+            changed = true;
+            console.log(`[accounting] Synced connection ${conn.id} (${platform.id}) → dealer ${dealershipId}`);
+          }
+        }
+
+        const liveIds = new Set(connections.map((c: any) => c.id));
+        const before = state.accountingAccounts.length;
+        state.accountingAccounts = state.accountingAccounts.filter(
+          (a) => a.dealershipId !== dealershipId || liveIds.has(a.connectionId)
+        );
+        if (state.accountingAccounts.length !== before) changed = true;
+
+        if (changed) writeState(state);
+      }
+    } catch (err: any) {
+      console.error(`[accounting] Failed to sync connections from Codat:`, err?.message);
+    }
+  }
+
+  const accounts = (state.accountingAccounts || []).filter((a) => a.dealershipId === dealershipId);
+  res.json({ accounts });
+});
+
+// Disconnect an accounting connection
+app.post("/api/accounting/disconnect", async (req: any, res) => {
+  const { dealershipId, connectionId } = req.body || {};
+  if (!dealershipId || !connectionId)
+    return res.status(400).json({ error: "dealershipId and connectionId required" });
+
+  const state = readState();
+  if (!dealerOwnsAccountingAccount(state, dealershipId, connectionId))
+    return res.status(403).json({ error: "Connection does not belong to this dealer" });
+
+  const dealer = state.dealerships.find((d: any) => d.id === dealershipId);
+  if (!dealer || !(dealer as any).codatCompanyId)
+    return res.status(400).json({ error: "Accounting integrations not provisioned" });
+
+  if (CODAT_API_KEY) {
+    try {
+      await fetch(`${CODAT_BASE}/companies/${(dealer as any).codatCompanyId}/connections/${connectionId}`, {
+        method: "DELETE",
+        headers: { Authorization: codatAuthHeader() },
+      });
+    } catch (err: any) {
+      console.error(`[accounting] Codat disconnect error:`, err?.message);
+    }
+  }
+
+  state.accountingAccounts = (state.accountingAccounts || []).filter((a) => a.connectionId !== connectionId);
+  writeState(state);
+  res.json({ ok: true });
+});
+
+/** Push one DocHub invoice-stage document straight into the dealer's
+ *  connected accounting package via Codat's push-data API, instead of only
+ *  producing a CSV. Called from the 'connect' branch of POST /api/documents.
+ *  Returns null (never throws) so the caller can fall back to the CSV on any
+ *  failure — an accounting outage must not block finalising a sale. */
+async function pushInvoiceToAccounting(
+  companyId: string,
+  connectionId: string,
+  invoice: { contact: string; email: string; invoiceNumber: string; issuedDate: string; lines: { description: string; quantity: number; unitAmount: number }[]; currency: string },
+): Promise<{ externalInvoiceId?: string } | null> {
+  if (!CODAT_API_KEY) return null;
+  try {
+    const pRes = await fetch(`${CODAT_BASE}/companies/${companyId}/connections/${connectionId}/push/invoices`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: codatAuthHeader() },
+      body: JSON.stringify({
+        invoiceNumber: invoice.invoiceNumber,
+        currency: invoice.currency,
+        issuedDate: invoice.issuedDate,
+        customerRef: { companyName: invoice.contact },
+        lineItems: invoice.lines.map((l) => ({
+          description: l.description,
+          quantity: l.quantity,
+          unitAmount: l.unitAmount,
+        })),
+      }),
+    });
+    if (!pRes.ok) {
+      const body = await pRes.text();
+      console.error(`[accounting] Codat push failed (${pRes.status}):`, body);
+      return null;
+    }
+    const data = await pRes.json();
+    return { externalInvoiceId: data.id || data.data?.id };
+  } catch (err: any) {
+    console.error(`[accounting] Codat push error:`, err?.message);
+    return null;
+  }
+}
+
+// Codat webhook receiver — data-connection status changes land here.
+app.post("/api/integration/webhook-codat", (req, res) => {
+  const payload = req.body;
+  if (!payload || typeof payload !== "object") {
+    return res.status(400).json({ error: "Invalid JSON" });
+  }
+
+  // Codat supports a shared-secret header configured on the webhook rule.
+  // Set CODAT_WEBHOOK_SECRET=header-name:header-value and match it there.
+  if (CODAT_WEBHOOK_SECRET && CODAT_WEBHOOK_SECRET.includes(":")) {
+    const [headerName, headerValue] = CODAT_WEBHOOK_SECRET.split(":", 2);
+    if (req.headers[headerName.toLowerCase()] !== headerValue) {
+      console.warn("[accounting] Webhook header mismatch — rejecting");
+      return res.status(401).json({ error: "Invalid webhook auth" });
+    }
+  }
+
+  const ruleType = payload.ruleType || payload.type;
+  console.log(`[accounting] Webhook received: ruleType=${ruleType || "unknown"}`);
+
+  const companyId = payload.companyId || payload.data?.companyId;
+  const state = readState();
+
+  if (ruleType === "Data connection status changed" || ruleType === "data-connection.status-changed") {
+    const conn = payload.data || payload.connection || {};
+    const status = (conn.status || "").toLowerCase();
+    const dealer = companyId ? dealerByCodatCompany(state, companyId) : undefined;
+    if (!dealer) {
+      console.warn(`[accounting] status-changed for unknown companyId=${companyId}`);
+      return res.json({ ok: true, ignored: true });
+    }
+    if (status === "linked") {
+      const platform = ACCOUNTING_PLATFORMS.find((p) => p.codatKey === conn.platformKey);
+      if (platform) {
+        if (!state.accountingAccounts) state.accountingAccounts = [];
+        const existing = state.accountingAccounts.find((a) => a.connectionId === conn.id);
+        if (!existing) {
+          state.accountingAccounts.push({
+            connectionId: conn.id,
+            dealershipId: dealer.id,
+            platform: platform.id,
+            companyName: conn.dataConnectionType || undefined,
+            connectedAt: new Date().toISOString(),
+          });
+          writeState(state);
+          console.log(`[accounting] connection linked: ${conn.id} (${platform.id}) → dealer ${dealer.id}`);
+        }
+      }
+    } else if (status === "deauthorized" || status === "deleted") {
+      state.accountingAccounts = (state.accountingAccounts || []).filter((a) => a.connectionId !== conn.id);
+      writeState(state);
+      console.log(`[accounting] connection removed: ${conn.id}`);
+    }
   }
 
   res.json({ ok: true });

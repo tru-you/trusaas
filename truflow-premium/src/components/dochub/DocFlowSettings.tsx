@@ -78,7 +78,13 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
       <p className="text-xs text-[rgba(232,234,230,0.55)] leading-relaxed">
         Choose how each stage's document is produced. <b>Attach</b> lets you upload your own
         signed document; <b>Generate</b> renders one from a TruFlow template;
-        <b>Connect</b> exports a CSV for Xero, QuickBooks or Zoho.
+        <b>Connect</b> pushes the invoice straight into Xero, QuickBooks or Zoho once you've
+        linked one in Accounting Integrations settings — otherwise it exports a CSV you can
+        import by hand.
+      </p>
+      <p className="text-xs text-[rgba(232,234,230,0.4)] -mt-2">
+        Logo, banking details and clause text for generated documents live in{" "}
+        <b className="text-[rgba(232,234,230,0.6)]">Document settings</b>, under Settings.
       </p>
 
       <div className="flex flex-col gap-2">
@@ -137,7 +143,7 @@ export default function DocFlowSettings({ dealership, isAdmin, onSaved }: Props)
                     <button
                       type="button"
                       onClick={() => handleChange(stage, "connect")}
-                      title="Export a CSV for Xero, QuickBooks or Zoho"
+                      title="Pushes live to a connected Xero, QuickBooks or Zoho account; exports a CSV otherwise"
                       className={`inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                         mode === "connect"
                           ? "bg-[color:var(--cyan)] text-black"
