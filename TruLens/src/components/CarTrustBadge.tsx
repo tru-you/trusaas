@@ -1,3 +1,4 @@
+// SHARED SOURCE — edit only in packages/tru-ui-src/src/. Synced into app trees on predev/prebuild.
 import React from 'react';
 import { Shield, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import type { CarTrustResult } from '../lib/kredo';
@@ -11,7 +12,7 @@ interface Props {
 export default function CarTrustBadge({ result, loading, compact }: Props) {
   if (loading) {
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] text-neutral-500">
+      <span className="inline-flex items-center gap-1 text-[12px] text-neutral-500">
         <Loader2 size={10} className="animate-spin" /> Checking…
       </span>
     );
@@ -23,11 +24,11 @@ export default function CarTrustBadge({ result, loading, compact }: Props) {
 
   if (compact) {
     return hasFlag ? (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/15 text-[11px] font-semibold text-red-300 border border-red-500/20" title="CarTrust flags found">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/15 text-[12px] font-semibold text-red-300 border border-red-500/20" title="CarTrust flags found">
         <AlertTriangle size={10} /> CarTrust
       </span>
     ) : (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-[11px] font-semibold text-emerald-400 border border-emerald-500/15" title="CarTrust clear">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-[12px] font-semibold text-emerald-400 border border-emerald-500/15" title="CarTrust clear">
         <Shield size={10} /> Clear
       </span>
     );
@@ -49,12 +50,12 @@ export default function CarTrustBadge({ result, loading, compact }: Props) {
           Kredo CarTrust
         </span>
       </div>
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px]">
         <Flag label="Stolen" flagged={result.stolen} />
         <Flag label="Written off" flagged={result.writtenOff} />
         <Flag label="Finance" flagged={result.financeEncumbered} />
       </div>
-      <div className="text-[10px] text-neutral-600">
+      <div className="text-[12px] text-neutral-600">
         Checked {new Date(result.checkedAt).toLocaleDateString('en-ZA')}
       </div>
     </div>

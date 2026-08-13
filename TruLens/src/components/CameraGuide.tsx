@@ -551,7 +551,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
         }`}
       >
         <span className="flex items-center justify-between w-full">
-          <span className="text-[11px] font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
+          <span className="text-[12px] font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
           {isTaken && <Check size={12} />}
         </span>
         <span className="text-[12px] font-medium leading-tight line-clamp-2">{slot.name}</span>
@@ -684,7 +684,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             shot count; the framing guide and the per-shot instructions were
             removed so the live view stays clean. */}
         <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none px-4 pt-10 pb-3 bg-gradient-to-t from-black/75 via-black/35 to-transparent">
-          <span className="text-[11px] font-mono text-[#4FE3DC]">Shot {activeSlotIndex + 1} / {allSlots.length}</span>
+          <span className="text-[12px] font-mono text-[#4FE3DC]">Shot {activeSlotIndex + 1} / {allSlots.length}</span>
           <p className="text-[17px] font-semibold text-[#E8EAE6] leading-tight mt-0.5">{activeSlot.name}</p>
         </div>
       </div>
@@ -779,7 +779,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           {!isCameraActive ? (
             <label className="tru-btn-secondary w-[52px] h-[52px] flex flex-col items-center justify-center gap-0.5 cursor-pointer" title="Take a photo with the device camera">
               <Camera size={18} />
-              <span className="text-[11px]">Import</span>
+              <span className="text-[12px]">Import</span>
               <input
                 type="file"
                 accept="image/*"
@@ -791,7 +791,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
           ) : (
             <label className="tru-btn-secondary w-[52px] h-[52px] flex flex-col items-center justify-center gap-0.5 cursor-pointer" title="Import a photo from a file">
               <Upload size={18} />
-              <span className="text-[11px]">Import</span>
+              <span className="text-[12px]">Import</span>
               <input
                 ref={singleUploadRef}
                 type="file"
@@ -830,7 +830,7 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
             title="Skip to the next slot"
           >
             <SkipForward size={18} />
-            <span className="text-[11px]">Skip</span>
+            <span className="text-[12px]">Skip</span>
           </button>
         </div>
         )}

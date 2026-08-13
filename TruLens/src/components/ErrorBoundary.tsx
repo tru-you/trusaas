@@ -1,3 +1,4 @@
+// SHARED SOURCE — edit only in packages/tru-ui-src/src/. Synced into app trees on predev/prebuild.
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { RefreshCw } from "lucide-react";
 

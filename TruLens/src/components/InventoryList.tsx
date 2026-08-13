@@ -520,7 +520,7 @@ export default function InventoryList({
         </div>
         {/* Three quiet ghosts — no borders, no boxes, no three-decisions read.
             Sync keeps its colour because that one is state, not decoration. */}
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => window.open(DMS_URL, '_blank')}
             className="flex items-center justify-center h-10 w-10 rounded-[10px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer"
@@ -832,7 +832,7 @@ export default function InventoryList({
                         ['Exterior', ['Alloy Wheels', 'LED / Xenon Headlights', 'Roof Rails', 'Tinted Windows']],
                       ] as [string, string[]][]).map(([group, items]) => (
                         <div key={group}>
-                          <p className="text-[11px] font-semibold text-[rgba(232,234,230,0.4)] uppercase tracking-wider px-1 mb-1">{group}</p>
+                          <p className="text-[12px] font-semibold text-[rgba(232,234,230,0.4)] uppercase tracking-wider px-1 mb-1">{group}</p>
                           {items.map((item) => {
                             const on = optionalExtras.includes(item);
                             return (
@@ -1097,11 +1097,11 @@ export default function InventoryList({
                               e.stopPropagation();
                               if (vehicle.stockNumber) copyStockNumber(vehicle.stockNumber, vehicle.id);
                             }}
-                            className="text-[12px] font-mono text-[rgba(232,234,230,0.42)] hover:text-[rgba(232,234,230,0.72)] flex items-center gap-1"
+                            className="text-[12px] font-mono text-[rgba(232,234,230,0.42)] hover:text-[rgba(232,234,230,0.72)] flex items-center gap-1 min-h-[32px] px-2 -mx-2"
                             title="Copy stock number"
                           >
                             {vehicle.stockNumber}
-                            {copiedStockId === vehicle.id ? <Check size={9} className="text-[#4FE3DC]" /> : <Copy size={9} />}
+                            {copiedStockId === vehicle.id ? <Check size={12} className="text-[#4FE3DC]" /> : <Copy size={12} />}
                           </button>
                           {/* The vehicle.status chip stood here. It is a field somebody
                               sets by hand, while the chip beside it is derived from the
@@ -1142,7 +1142,7 @@ export default function InventoryList({
                           startEditing(vehicle);
                           document.getElementById('inventory-scroll-container')?.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        className="flex items-center justify-center h-9 w-9 rounded-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-[rgba(232,234,230,0.06)] cursor-pointer transition-colors"
+                        className="flex items-center justify-center h-11 w-11 rounded-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-[rgba(232,234,230,0.06)] cursor-pointer transition-colors"
                         title="Edit vehicle details"
                       >
                         <Pencil size={16} />
@@ -1154,7 +1154,7 @@ export default function InventoryList({
                             onDeleteVehicle(vehicle.id);
                           }
                         }}
-                        className="flex items-center justify-center h-9 w-9 rounded-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
+                        className="flex items-center justify-center h-11 w-11 rounded-[12px] text-[rgba(232,234,230,0.55)] hover:text-[#C07676] hover:bg-[rgba(184,106,106,0.14)] cursor-pointer transition-colors"
                         title="Delete vehicle"
                       >
                         <Trash2 size={16} />
@@ -1578,7 +1578,7 @@ export default function InventoryList({
                   <select 
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-[13px] text-[#E8EAE6]"
+                    className="bg-neutral-900 border border-neutral-800 rounded min-h-[44px] px-3 text-[13px] text-[#E8EAE6]"
                   >
                     <option value="ZAR">South African Rand (R)</option>
                     <option value="USD">US Dollar ($)</option>

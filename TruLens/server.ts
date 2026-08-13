@@ -488,6 +488,17 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Security headers — conservative baseline (nosniff, referrer, HSTS-in-prod).
+// X-Frame-Options intentionally omitted: some services are embedded as widgets.
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
 /* Captured photos, served as files.
  *
  * Immutable for a year, which is safe because the filename is the SHA-256 of

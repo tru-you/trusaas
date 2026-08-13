@@ -1,3 +1,4 @@
+// SHARED SOURCE — edit only in packages/tru-ui-src/src/. Synced into app trees on predev/prebuild.
 import React, { useState, useEffect } from 'react';
 import { Shield, Unlink, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
