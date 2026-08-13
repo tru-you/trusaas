@@ -186,7 +186,7 @@ export default function SlotReview({ vehicle, slotId, imageSrc, onBack, onSave, 
                     className="shrink-0 w-[60px] rounded-lg overflow-hidden border border-[rgba(232,234,230,0.14)] hover:border-cyan-500/40 transition-colors"
                   >
                     <img src={vehicle.photos![s.id]} alt={s.name} className="w-full h-[44px] object-cover" referrerPolicy="no-referrer" />
-                    <p className="text-[10px] text-[rgba(232,234,230,0.55)] px-1 py-0.5 truncate text-center">{s.name}</p>
+                    <p className="text-[12px] text-[rgba(232,234,230,0.55)] px-1 py-0.5 truncate text-center">{s.name}</p>
                   </button>
                 ))}
               </div>

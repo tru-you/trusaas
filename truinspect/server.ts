@@ -338,6 +338,17 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Security headers — conservative baseline (nosniff, referrer, HSTS-in-prod).
+// X-Frame-Options intentionally omitted: some services are embedded as widgets.
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
 /* Inspection photos, served as files.
  *
  * Immutable for a year, which is safe because the filename is the SHA-256 of
@@ -1083,7 +1094,7 @@ app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
 
 // 5. AI Listing Description Writer (DeepSeek) — kept at /api/gemini/analyze for
 // frontend compatibility; no image is sent to the model.
-app.post('/api/gemini/analyze', async (req, res) => {
+app.post('/api/gemini/analyze', authenticate, async (req, res) => {
   const { base64Image, slotName, vehicleInfo } = req.body;
 
   if (!base64Image) {

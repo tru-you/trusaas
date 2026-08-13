@@ -233,19 +233,19 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
             {kredoValue && (
               <div className="grid grid-cols-3 gap-2">
                 <div className="text-center">
-                  <p className="text-[11px] text-neutral-500 font-semibold">Trade</p>
+                  <p className="text-[12px] text-neutral-500 font-semibold">Trade</p>
                   <p className="text-[14px] font-bold text-amber-300 font-mono">
                     {kredoValue.tradeValue !== null ? fmt(kredoValue.tradeValue) : '—'}
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[11px] text-neutral-500 font-semibold">Retail</p>
+                  <p className="text-[12px] text-neutral-500 font-semibold">Retail</p>
                   <p className="text-[14px] font-bold text-amber-300 font-mono">
                     {kredoValue.retailValue !== null ? fmt(kredoValue.retailValue) : '—'}
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[11px] text-neutral-500 font-semibold">Market</p>
+                  <p className="text-[12px] text-neutral-500 font-semibold">Market</p>
                   <p className="text-[14px] font-bold text-amber-300 font-mono">
                     {kredoValue.marketValue !== null ? fmt(kredoValue.marketValue) : '—'}
                   </p>
@@ -253,7 +253,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
               </div>
             )}
             {kredoValue && (
-              <p className="text-[11px] text-neutral-600">
+              <p className="text-[12px] text-neutral-600">
                 Checked {new Date(kredoValue.checkedAt).toLocaleDateString('en-ZA')} via Kredo
               </p>
             )}
@@ -341,7 +341,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                       {new Date(snap.scrapedAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: '2-digit' })}
                     </span>
                     <span className="text-[#E8EAE6] font-mono font-medium">{fmt(snap.price)}</span>
-                    <span className="text-neutral-600 text-[11px]">{snap.listingsFound} listings</span>
+                    <span className="text-neutral-600 text-[12px]">{snap.listingsFound} listings</span>
                   </div>
                 ))}
               </div>

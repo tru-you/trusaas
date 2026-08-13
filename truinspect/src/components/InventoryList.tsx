@@ -1346,7 +1346,7 @@ export default function InventoryList({
                   <select 
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-[13px] text-[#E8EAE6]"
+                    className="bg-neutral-900 border border-neutral-800 rounded min-h-[44px] px-3 text-[13px] text-[#E8EAE6]"
                   >
                     <option value="ZAR">South African Rand (R)</option>
                     <option value="USD">US Dollar ($)</option>
@@ -1402,7 +1402,7 @@ export default function InventoryList({
                   max={100}
                   defaultValue={Number(localStorage.getItem('trulens_margin_pct')) || 15}
                   onChange={(e) => localStorage.setItem('trulens_margin_pct', String(Math.max(0, Math.min(100, Number(e.target.value) || 15))))}
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-emerald-500/40"
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg min-h-[44px] px-3 text-[16px] text-[#E8EAE6] focus:outline-none focus:border-emerald-500/40"
                 />
                 <p className="text-[13px] text-neutral-500 leading-relaxed italic">
                   Applied to trade-in valuations. Hidden from customer-facing exports.
@@ -1438,7 +1438,7 @@ export default function InventoryList({
                   setTimeout(() => setExportToast(null), 2800);
                   setTimeout(() => setDmsUrlSaved(false), 1600);
                 }}
-                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-bold py-3 rounded-xl text-[13px] transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
+                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-bold py-3 rounded-xl text-[15px] transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
               >
                 Save Configuration
               </button>
