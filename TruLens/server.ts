@@ -1538,6 +1538,134 @@ app.delete('/api/sync/vehicle', (req, res) => {
   })();
 });
 
+// 4b-ii. Service-to-service photo removal — TruFlow calls this when a dealer
+//        removes individual photos from a capture inside the DMS, so the
+//        capture app's slots don't quietly re-export those photos on the next
+//        sync. Matches by sha256 hash: both services store photos as
+//        /media/<sha256>.<ext>, so the hash is a stable cross-service id
+//        without carrying URLs. Whole-vehicle deletes still route through
+//        DELETE /api/sync/vehicle above; this one only touches the photos map.
+app.delete('/api/sync/vehicle/photos', (req, res) => {
+  if (!SYNC_KEY) {
+    return res.status(503).json({ error: 'TRUFLOW_SYNC_KEY is not configured on this server.' });
+  }
+  if (req.headers['x-tru-sync-key'] !== SYNC_KEY) {
+    return res.status(401).json({ error: 'Invalid sync key.' });
+  }
+  const { stockNumber, dealerSlug, removedHashes } = req.body || {};
+  if (!stockNumber) {
+    return res.status(400).json({ error: 'stockNumber is required.' });
+  }
+  if (!Array.isArray(removedHashes) || removedHashes.length === 0) {
+    return res.status(400).json({ error: 'removedHashes must be a non-empty array.' });
+  }
+  const hashSet = new Set(
+    removedHashes.filter((h: any) => typeof h === 'string' && /^[a-f0-9]{64}$/.test(h)),
+  );
+  if (hashSet.size === 0) {
+    return res.status(400).json({ error: 'removedHashes contained no valid sha256 hashes.' });
+  }
+
+  /* Same dealer guard as the whole-vehicle delete: stock numbers collide
+     across yards, so a slug-less push is only honoured when there is exactly
+     one candidate. Removing a photo is less destructive than a whole vehicle
+     but the reasoning is identical — one dealer's cleanup must not touch
+     another dealer's capture. */
+  const matchesDealer = (v: any) =>
+    !dealerSlug || (v.dealerSlug || LENS_DEFAULT_DEALER_SLUG) === dealerSlug;
+
+  /* Extract the sha256 from a stored ref. Matches photoStore.ts's storage
+     shape; anything else (remote URLs, stale base64) is ignored, since we
+     can't tell whether it came from the same bytes. */
+  const hashOf = (ref: unknown): string | null => {
+    if (typeof ref !== 'string') return null;
+    const m = /^\/media\/([a-f0-9]{64})\./.exec(ref);
+    return m ? m[1] : null;
+  };
+
+  (async () => {
+    try {
+      let target: any | null = null;
+
+      if (LOCAL_MODE || !fdb) {
+        const store = readLocalStore();
+        const candidates = store.vehicles.filter(
+          (v: any) => v.stockNumber === stockNumber && matchesDealer(v),
+        );
+        if (candidates.length === 0) {
+          return res.json({ updated: false, removed: 0, reason: 'not_found' });
+        }
+        if (!dealerSlug && candidates.length > 1) {
+          return res.status(409).json({
+            updated: false,
+            removed: 0,
+            error:
+              `${candidates.length} vehicles share stock number ${stockNumber}. ` +
+              'Send dealerSlug to say which dealership this removal is for.',
+          });
+        }
+        target = candidates[0];
+      } else {
+        const snapshot = await fdb!.collection('vehicles')
+          .where('stockNumber', '==', stockNumber)
+          .get();
+        const docs = snapshot.docs.filter((d) => matchesDealer(d.data()));
+        if (docs.length === 0) {
+          return res.json({ updated: false, removed: 0, reason: 'not_found' });
+        }
+        if (!dealerSlug && docs.length > 1) {
+          return res.status(409).json({
+            updated: false,
+            removed: 0,
+            error:
+              `${docs.length} vehicles share stock number ${stockNumber}. ` +
+              'Send dealerSlug to say which dealership this removal is for.',
+          });
+        }
+        target = { id: docs[0].id, ...docs[0].data() };
+      }
+
+      const photos = { ...(target.photos || {}) };
+      const removedSlots: string[] = [];
+      for (const [slotId, value] of Object.entries(photos)) {
+        const h = hashOf(value);
+        if (h && hashSet.has(h)) {
+          delete photos[slotId];
+          removedSlots.push(slotId);
+        }
+      }
+
+      if (removedSlots.length === 0) {
+        return res.json({ updated: false, removed: 0, reason: 'no_match' });
+      }
+
+      /* quality/damageFindings/slotAssessment are keyed by slotId, so drop
+         their entries too — a captured slot's report shouldn't outlive the
+         photo it described. */
+      const stripBySlot = (map: any): any => {
+        if (!map || typeof map !== 'object') return map;
+        const out: Record<string, any> = { ...map };
+        for (const slotId of removedSlots) delete out[slotId];
+        return out;
+      };
+
+      await saveVehicle({
+        ...target,
+        photos,
+        quality: stripBySlot(target.quality),
+        damageFindings: stripBySlot(target.damageFindings),
+        slotAssessment: stripBySlot(target.slotAssessment),
+        updatedAt: new Date().toISOString(),
+      });
+
+      return res.json({ updated: true, removed: removedSlots.length, slots: removedSlots });
+    } catch (err: any) {
+      console.error('[sync] DELETE /api/sync/vehicle/photos failed:', err);
+      return res.status(500).json({ error: err?.message || 'Photo removal failed.' });
+    }
+  })();
+});
+
 // 4c. Service-to-service edit — TruFlow calls this when a dealer edits a
 //     Lens-originated vehicle in Premium or Light DMS. Non-media fields only;
 //     photos/damage/VIR stay Lens-owned. Per-field updatedAt decides winners so

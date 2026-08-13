@@ -1973,11 +1973,80 @@ function applyVehiclePatch(
   return changedForSync;
 }
 
+/** Hash from a stored photo ref like "/media/<sha256>.jpg". Returns null for
+ *  anything that isn't one of our stored refs — remote URLs, stale base64. */
+function hashFromRef(ref: unknown): string | null {
+  if (typeof ref !== "string") return null;
+  const m = /^\/media\/([a-f0-9]{64})\./.exec(ref);
+  return m ? m[1] : null;
+}
+
+/** Compare a vehicle's current photo arrays against the incoming ones and
+ *  collect the sha256 hashes of photos that were dropped. Both services key
+ *  their stored refs by sha256 of the bytes (photoStore.ts), so a hash is a
+ *  stable cross-service identifier for a photo. */
+function collectRemovedPhotoHashes(
+  prev: any,
+  incoming: Record<string, any>,
+): string[] {
+  const removed = new Set<string>();
+  for (const field of VEHICLE_PHOTO_FIELDS) {
+    if (!Array.isArray(incoming[field])) continue;
+    const before: string[] = Array.isArray(prev?.[field]) ? prev[field] : [];
+    const afterHashes = new Set<string>();
+    for (const p of incoming[field]) {
+      const h = hashFromRef(p);
+      if (h) afterHashes.add(h);
+    }
+    for (const p of before) {
+      const h = hashFromRef(p);
+      if (h && !afterHashes.has(h)) removed.add(h);
+    }
+  }
+  return Array.from(removed);
+}
+
+/** Tell TruLens to drop matching capture slots when the dealer removes photos
+ *  in the DMS. Fire-and-forget — the save must never block on Lens. Lens
+ *  keys its stored refs the same way we do (sha256 of the bytes), so hashes
+ *  are enough to identify what to remove without carrying URLs across
+ *  services. No-ops when the vehicle didn't originate in Lens, or when the
+ *  edit didn't touch photos. */
+function pushPhotoRemovalsToLens(
+  state: any,
+  vehicle: any,
+  removedHashes: string[],
+): void {
+  if (!vehicle || vehicle.source !== "trulens" || !vehicle.stockNumber) return;
+  if (removedHashes.length === 0) return;
+  const ownerSlug = (state.dealerships || []).find(
+    (d: any) => d.id === vehicle.dealershipId,
+  )?.slug;
+  fetch(`${TRULENS_URL}/api/sync/vehicle/photos`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...(SYNC_SERVICE_KEY ? { "x-tru-sync-key": SYNC_SERVICE_KEY } : {}),
+    },
+    body: JSON.stringify({
+      stockNumber: vehicle.stockNumber,
+      dealerSlug: ownerSlug,
+      removedHashes,
+    }),
+  }).catch((err) =>
+    console.warn("[sync] TruLens photo-removal push failed:", err?.message),
+  );
+}
+
 /** Push a vehicle edit back to TruLens for vehicles that originated there, so
  *  the capture app's copy stays in step with the DMS. Fire-and-forget — the
  *  dealer's save must never block on Lens. Photos/VIR/damage are excluded by
  *  the allow-list; Lens applies mergeWithMeta at its end, so a stale push
  *  loses the timestamp comparison instead of clobbering.
+ *
+ *  Photo REMOVALS travel via pushPhotoRemovalsToLens instead — the allow-list
+ *  keeps photo *values* out of the edit push, but a delete still needs to
+ *  propagate.
  *
  *  Call after writeState, so Lens is never told about an edit that failed to
  *  persist. */
@@ -2060,6 +2129,12 @@ app.put("/api/inventory/:id", (req: any, res) => {
      echoed back to every client that reads stock. */
   const closeLeadId: string | undefined = body.closeLeadId;
   delete body.closeLeadId;
+
+  /* Detect deleted photos BEFORE putPhotos, while the incoming body still
+     holds whatever the client sent — stored refs stay identical through
+     putPhotos, but doing the diff on the incoming array is what stays
+     honest if a client ever normalises differently. */
+  const removedPhotoHashes = collectRemovedPhotoHashes(state.vehicles[index], body);
 
   for (const field of VEHICLE_PHOTO_FIELDS) {
     if (Array.isArray(body[field])) body[field] = putPhotos(body[field]);
@@ -2156,6 +2231,7 @@ app.put("/api/inventory/:id", (req: any, res) => {
   writeState(state);
 
   pushVehicleToLens(state, state.vehicles[index], changedForSync, now);
+  pushPhotoRemovalsToLens(state, state.vehicles[index], removedPhotoHashes);
 
   res.json({
     message: "Vehicle updated successfully.",
