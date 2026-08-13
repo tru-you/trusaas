@@ -68,6 +68,8 @@ export interface Vehicle {
   closeups?: Record<string, string[]>;
   /** Trade-in appraisal: 28-step walk-around + valuation */
   tradeInData?: import('./types/inspection').TradeInData;
+  /** Per-dealer valuation history — keyed by dealerSlug */
+  valuationHistory?: Record<string, import('./types/inspection').ValuationSnapshot[]>;
 }
 
 /** TruInspect: one answered checklist question */

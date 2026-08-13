@@ -1,7 +1,7 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight, Zap, ExternalLink, Loader2, Shield } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Zap, ExternalLink, Loader2, Shield, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { Vehicle } from '../types';
-import { InspectionItem, ValuationState, computeTradeInValue } from '../types/inspection';
+import { InspectionItem, ValuationState, ValuationSnapshot, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
 import { kredoValuation, kredoStatus, type CarValueResult } from '../lib/kredo';
 import { urlMake } from '../lib/makeAliases';
@@ -38,17 +38,27 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
   const [kredoConnected, setKredoConnected] = React.useState(false);
   const [kredoValue, setKredoValue] = React.useState<CarValueResult | null>(null);
   const [kredoFetching, setKredoFetching] = React.useState(false);
+  const [history, setHistory] = React.useState<ValuationSnapshot[]>([]);
 
   React.useEffect(() => {
     if (!user) return;
     (async () => {
       try {
         const token = await user.getIdToken();
-        const s = await kredoStatus(token);
+        const [s, hRes] = await Promise.all([
+          kredoStatus(token),
+          fetch(`/api/valuation/history/${vehicle.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
         setKredoConnected(s.connected);
+        if (hRes.ok) {
+          const hData = await hRes.json();
+          if (Array.isArray(hData.history)) setHistory(hData.history);
+        }
       } catch { /* not connected — fine */ }
     })();
-  }, [user]);
+  }, [user, vehicle.id]);
 
   const handleKredoValuation = async () => {
     if (!user || !vehicle.vin) return;
@@ -89,6 +99,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           year: vehicle.year,
           variant: vehicle.trim,
           vin: vehicle.vin,
+          vehicleId: vehicle.id,
         }),
       });
       const data = await res.json();
@@ -96,6 +107,12 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
       if (data.averageRetailPrice != null) {
         setManualPrice(String(data.averageRetailPrice));
         recalc(data.averageRetailPrice, valuation.marginPercentage);
+        setHistory((prev) => [...prev, {
+          price: data.averageRetailPrice,
+          listingsFound: data.listingsFound,
+          sources: (data.sources || []).filter((s: any) => s.count > 0).map((s: any) => s.name),
+          scrapedAt: new Date().toISOString(),
+        }]);
       }
       setValuation((v) => ({
         ...v,
@@ -299,6 +316,38 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
             </p>
           )}
         </div>
+
+        {/* Valuation history */}
+        {history.length > 1 && (() => {
+          const latest = history[history.length - 1];
+          const prev = history[history.length - 2];
+          const delta = latest.price - prev.price;
+          const pct = prev.price > 0 ? ((delta / prev.price) * 100).toFixed(1) : '0';
+          const TrendIcon = delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
+          const trendColor = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-neutral-400';
+          return (
+            <div className="rounded-xl border border-neutral-800 bg-neutral-900/70 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[12px] text-[rgba(232,234,230,0.55)] font-semibold uppercase tracking-wider">Price History</p>
+                <div className={`flex items-center gap-1 text-[13px] font-bold ${trendColor}`}>
+                  <TrendIcon size={14} />
+                  <span>{delta > 0 ? '+' : ''}{pct}%</span>
+                </div>
+              </div>
+              <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
+                {[...history].reverse().map((snap, i) => (
+                  <div key={i} className="flex items-center justify-between text-[12px]">
+                    <span className="text-neutral-500">
+                      {new Date(snap.scrapedAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: '2-digit' })}
+                    </span>
+                    <span className="text-[#E8EAE6] font-mono font-medium">{fmt(snap.price)}</span>
+                    <span className="text-neutral-600 text-[11px]">{snap.listingsFound} listings</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Loading overlay while the live market is being assessed */}

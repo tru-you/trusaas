@@ -154,8 +154,8 @@ interface CacheEntry {
 
 const cache = new Map<string, CacheEntry>();
 
-function cacheKey(make: string, model: string, year: string, vin?: string): string {
-  return `${make.toLowerCase()}|${model.toLowerCase()}|${year}|${(vin || 'novin').toUpperCase()}`;
+function cacheKey(make: string, model: string, year: string, vin?: string, dealerSlug?: string): string {
+  return `${(dealerSlug || 'default').toLowerCase()}|${make.toLowerCase()}|${model.toLowerCase()}|${year}|${(vin || 'novin').toUpperCase()}`;
 }
 
 function cacheGet(key: string): ValuationResult | null {
@@ -214,6 +214,21 @@ function buildSources(): ScraperSource[] {
 
 // ==================== PRICE EXTRACTION ====================
 
+/** Regex fallback: scan raw text for R-prefixed prices when CSS selectors miss
+ *  (e.g. AutoTrader renames their class). */
+const PRICE_SCAN_RE = /R\s?(\d{1,3}(?:[ ,]\d{3})+|\d{5,7})/g;
+
+function extractPricesFromText(text: string): number[] {
+  const prices: number[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = PRICE_SCAN_RE.exec(text)) !== null) {
+    const val = parseInt(m[1].replace(/[^\d]/g, ''), 10);
+    if (val >= MIN_PRICE && val <= MAX_PRICE) prices.push(val);
+  }
+  PRICE_SCAN_RE.lastIndex = 0;
+  return prices;
+}
+
 function extractPrices(html: string, selectors: string[]): number[] {
   const $ = cheerio.load(html);
   const prices: number[] = [];
@@ -222,6 +237,9 @@ function extractPrices(html: string, selectors: string[]): number[] {
       const val = parseInt($(el).text().replace(/[^\d]/g, ''), 10);
       if (val >= MIN_PRICE && val <= MAX_PRICE) prices.push(val);
     });
+  }
+  if (prices.length === 0) {
+    return extractPricesFromText($.text());
   }
   return prices;
 }
@@ -253,13 +271,23 @@ async function fetchWithRetry(
 
 // ==================== HEADLESS RENDER LAYER ====================
 
+const CIRCUIT_BREAKER_THRESHOLD = 3;
+const CIRCUIT_BREAKER_COOLDOWN_MS = 5 * 60 * 1000;
+let workerFailCount = 0;
+let workerCircuitOpenUntil = 0;
+
 /** Render a page through a headless scraper worker (trusaas-crm-scraper /
  *  TruCRM's scrapeWebsite). Requests are round-robined across configured
- *  workers, retrying on the next worker when one errors. Returns the rendered
- *  HTML, or null when no worker is configured or none could render — never
- *  throws. */
+ *  workers, retrying on the next worker when one errors. A circuit breaker
+ *  skips renders for 5 min after repeated failures so requests don't wait
+ *  60s each on a dead worker. Returns the rendered HTML, or null when no
+ *  worker is configured or none could render — never throws. */
 async function renderViaWorker(url: string): Promise<string | null> {
   if (WORKER_URLS.length === 0) return null;
+  if (Date.now() < workerCircuitOpenUntil) {
+    console.warn('[scraper] headless circuit open — skipping render');
+    return null;
+  }
   for (let attempt = 0; attempt < WORKER_URLS.length; attempt++) {
     const worker = WORKER_URLS[workerIndex++ % WORKER_URLS.length];
     try {
@@ -271,10 +299,18 @@ async function renderViaWorker(url: string): Promise<string | null> {
       });
       if (!res.ok) continue;
       const body = await res.json();
-      if (body?.ok && typeof body.html === 'string') return body.html;
+      if (body?.ok && typeof body.html === 'string') {
+        workerFailCount = 0;
+        return body.html;
+      }
     } catch (err: any) {
       console.warn(`[scraper] headless render failed on ${worker} for ${url}:`, err?.message || err);
     }
+  }
+  workerFailCount++;
+  if (workerFailCount >= CIRCUIT_BREAKER_THRESHOLD) {
+    workerCircuitOpenUntil = Date.now() + CIRCUIT_BREAKER_COOLDOWN_MS;
+    console.warn(`[scraper] circuit breaker open — skipping headless for ${CIRCUIT_BREAKER_COOLDOWN_MS / 1000}s`);
   }
   return null;
 }
@@ -575,12 +611,24 @@ async function fetchJsonDealerPrices(
   return [...new Set(prices)];
 }
 
-/** Robust central value for market samples: median for small samples, a
- *  10%-trimmed mean for larger ones. A single outlier (one dealer's R487k
- *  Yaris beside 28 R171k classified ads) must not bend the answer. */
+/** Drop prices outside 1.5× IQR — a R487k listing among R170k cars is noise. */
+function iqrFilter(prices: number[]): number[] {
+  if (prices.length < 4) return prices;
+  const s = [...prices].sort((a, b) => a - b);
+  const q1 = s[Math.floor(s.length * 0.25)];
+  const q3 = s[Math.floor(s.length * 0.75)];
+  const iqr = q3 - q1;
+  const lo = q1 - 1.5 * iqr;
+  const hi = q3 + 1.5 * iqr;
+  const filtered = s.filter((v) => v >= lo && v <= hi);
+  return filtered.length >= 2 ? filtered : s;
+}
+
+/** Robust central value for market samples: IQR-filtered, then median for
+ *  small samples, 10%-trimmed mean for larger ones. */
 function robustAverage(prices: number[]): number | null {
   if (!prices.length) return null;
-  const s = [...prices].sort((a, b) => a - b);
+  const s = iqrFilter(prices);
   if (s.length <= 12) {
     const mid = Math.floor(s.length / 2);
     return Math.round(s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2);
@@ -610,7 +658,7 @@ export async function fetchValuation(
   // the same cache as a user typing just "Yaris". Listing-level matching runs
   // on the cleaned base too, so a padded entry still lands the right stock.
   const baseModel = modelCore(model);
-  const key = cacheKey(make, baseModel, year, opts.vin);
+  const key = cacheKey(make, baseModel, year, opts.vin, opts.dealerSlug);
   const cached = cacheGet(key);
   if (cached) return cached;
 

@@ -1216,10 +1216,12 @@ function buildDmsBreakdown(photos: Record<string, string>) {
 // ==================== TRADE-IN VALUATION SCRAPER ====================
 
 app.post('/api/valuation', authenticate, async (req: any, res) => {
-  const { make, model, year } = req.body || {};
+  const { make, model, year, vehicleId } = req.body || {};
   if (!make || !model || !year) {
     return res.status(400).json({ error: 'make, model, and year are required' });
   }
+
+  const dealerSlug = req.user?.dealerSlug || 'default';
 
   try {
     const data = await fetchValuation(
@@ -1228,9 +1230,34 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
       String(year),
       {
         vin: String(req.body?.vin || '').trim().toUpperCase() || undefined,
-        dealerSlug: req.user?.dealerSlug || 'default',
+        dealerSlug,
       },
     );
+
+    // Append to per-vehicle, per-dealer valuation history
+    if (vehicleId && data.averageRetailPrice !== null) {
+      try {
+        const store = readLocalStore();
+        const vehicle = store.vehicles.find((v: any) => v.id === vehicleId);
+        if (vehicle) {
+          if (!vehicle.valuationHistory) vehicle.valuationHistory = {};
+          if (!vehicle.valuationHistory[dealerSlug]) vehicle.valuationHistory[dealerSlug] = [];
+          const history = vehicle.valuationHistory[dealerSlug];
+          history.push({
+            price: data.averageRetailPrice,
+            listingsFound: data.listingsFound,
+            sources: data.sources.filter((s: any) => s.count > 0).map((s: any) => s.name),
+            scrapedAt: new Date().toISOString(),
+          });
+          // Keep last 20 snapshots per vehicle per dealer
+          if (history.length > 20) vehicle.valuationHistory[dealerSlug] = history.slice(-20);
+          writeLocalStore(store);
+        }
+      } catch (err: any) {
+        console.warn('[valuation] history save failed:', err?.message || err);
+      }
+    }
+
     return res.json(data);
   } catch (err: any) {
     console.error('[valuation] unexpected error:', err.message);
@@ -1241,6 +1268,15 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
       sources: [],
     });
   }
+});
+
+app.get('/api/valuation/history/:vehicleId', authenticate, (req: any, res) => {
+  const dealerSlug = req.user?.dealerSlug || 'default';
+  const store = readLocalStore();
+  const vehicle = store.vehicles.find((v: any) => v.id === req.params.vehicleId);
+  if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' });
+  const history = vehicle.valuationHistory?.[dealerSlug] || [];
+  return res.json({ history });
 });
 
 // ==================== DMS EXPORT ====================

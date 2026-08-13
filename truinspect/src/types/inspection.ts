@@ -22,6 +22,13 @@ export interface InspectionItem {
   isCompleted: boolean;
 }
 
+export interface ValuationSnapshot {
+  price: number;
+  listingsFound: number;
+  sources: string[];
+  scrapedAt: string;
+}
+
 export interface ValuationState {
   averageRetailPrice: number | null;
   totalReconCost: number;
@@ -29,6 +36,7 @@ export interface ValuationState {
   finalTradeInValue: number;
   fallbackRequired: boolean;
   searchUrl?: string;
+  history?: ValuationSnapshot[];
 }
 
 export interface TradeInVehicleDetails {
