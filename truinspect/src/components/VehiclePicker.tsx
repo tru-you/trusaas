@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import ReactDOM from "react-dom";
 import { ChevronDown, Search, X } from "lucide-react";
 
 /*  Cascading vehicle selector backed by the TransUnion M&M code catalogue.
@@ -58,7 +59,9 @@ function SearchSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
   useEffect(() => {
     if (!open) return;
@@ -69,7 +72,14 @@ function SearchSelect({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  useEffect(() => { if (open) { setQuery(""); inputRef.current?.focus(); } }, [open]);
+  useEffect(() => {
+    if (open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 4, left: r.left, width: r.width });
+      setQuery("");
+      inputRef.current?.focus();
+    }
+  }, [open]);
 
   const filtered = useMemo(() => {
     if (!query) return options;
@@ -91,6 +101,7 @@ function SearchSelect({
     <div ref={ref} className="relative flex flex-col">
       <label className={labelCls}>{label}</label>
       <button
+        ref={btnRef}
         type="button"
         disabled={disabled}
         onClick={() => setOpen(!open)}
@@ -100,8 +111,11 @@ function SearchSelect({
         <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
-      {open && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 rounded-xl border border-white/10 bg-[#1a1d21] shadow-2xl max-h-64 flex flex-col overflow-hidden">
+      {open && ReactDOM.createPortal(
+        <div
+          style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
+          className="rounded-xl border border-white/10 bg-[#1a1d21] shadow-2xl max-h-64 flex flex-col overflow-hidden"
+        >
           <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
             <Search size={14} className="text-white/40 shrink-0" />
             <input
@@ -133,7 +147,8 @@ function SearchSelect({
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -199,7 +214,7 @@ export default function VehiclePicker({ initial, onSelect, theme = "flow" }: Pro
   }
 
   return (
-    <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
       <SearchSelect theme={theme} label="Make" options={makes} value={make} onChange={handleMake} placeholder="Select make" />
       <SearchSelect theme={theme} label="Model" options={models} value={model} onChange={handleModel} placeholder="Select model" disabled={!make} />
       <SearchSelect theme={theme} label="Variant" options={variants} value={variant} onChange={handleVariant} placeholder="Select variant" disabled={!model} />
