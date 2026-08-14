@@ -209,6 +209,7 @@ const TENANT_SCOPED_COLLECTIONS = [
   "expenses",
   "communications",
   "users",
+  "clients",
 ] as const;
 
 const SHARED_FILE = path.join(DATA_DIR, "shared.json");
@@ -1038,6 +1039,7 @@ const DEFAULT_MOCK_STATE: DMSState = {
   agreements: [],
   documents: [] as any[],
   users: [],
+  clients: [],
   communications: [],
   expenses: [],
   settings: {
@@ -1576,6 +1578,7 @@ app.get("/api/state", (req: any, res) => {
     expenses: scopeToDealer(s.expenses || [], req.auth),
     communications: scopeToDealer(s.communications, req.auth),
     users: scopeToDealer(s.users, req.auth),
+    clients: scopeToDealer(s.clients || [], req.auth),
   });
 });
 
@@ -2204,6 +2207,39 @@ app.put("/api/inventory/:id", (req: any, res) => {
       // The deal now owns this sale, so only it may reverse it.
       vehicle.soldByLeadId = target.id;
       coupledLeads.push({ id: target.id, status: "Closed Won" });
+
+      // Trade-ins go into stock as new vehicles with the stand-in price as cost basis.
+      const tradeIns = (target as any).tradeIns as any[] | undefined;
+      if (tradeIns?.length) {
+        for (const ti of tradeIns) {
+          if (!ti.make) continue;
+          const tradeVehicle: any = {
+            id: newId("v_"),
+            make: ti.make,
+            model: ti.model,
+            year: ti.year || new Date().getFullYear(),
+            variant: ti.variant || "",
+            chassisNumber: ti.chassisNumber || "",
+            engineNumber: ti.engineNumber || "",
+            registrationNumber: ti.registrationNumber || "",
+            mileage: ti.mileage || 0,
+            purchasePrice: ti.standInPrice || ti.tradeInPrice || 0,
+            retailPrice: 0,
+            status: "INVENTORY",
+            stockNumber: `TI-${Date.now().toString(36).toUpperCase()}`,
+            newOrUsed: "Used",
+            condition: "Trade-In",
+            images: [],
+            costs: [],
+            dateAcquired: new Date().toISOString().slice(0, 10),
+            dealershipId: vehicle.dealershipId,
+            settlementAmount: ti.settlementAmount || 0,
+            tradeInSourceLeadId: target.id,
+          };
+          state.vehicles.unshift(tradeVehicle);
+          console.log(`[trade-in] Created stock ${tradeVehicle.stockNumber} from trade-in on deal ${target.id}: ${ti.year} ${ti.make} ${ti.model}`);
+        }
+      }
     }
   } else if (backInStock) {
     /* Car came back, so every deal that closed on it reopens — restoring the
@@ -3768,6 +3804,67 @@ app.post("/api/deals/:leadId/docs/skip", (req: any, res) => {
   });
 });
 
+// Clients Database API
+app.get("/api/clients", (req: any, res) => {
+  const state = readState();
+  res.json(scopeToDealer(state.clients || [], req.auth));
+});
+
+app.post("/api/clients", (req: any, res) => {
+  const state = readState();
+  const newClient = {
+    id: newId("cli_"),
+    code: req.body.code || "",
+    title: req.body.title || "",
+    firstName: req.body.firstName || "",
+    lastName: req.body.lastName || "",
+    company: req.body.company || "",
+    phone: req.body.phone || "",
+    phone2: req.body.phone2 || "",
+    email: req.body.email || "",
+    idNumber: req.body.idNumber || "",
+    vatNumber: req.body.vatNumber || "",
+    address: req.body.address || "",
+    address2: req.body.address2 || "",
+    address3: req.body.address3 || "",
+    suburb: req.body.suburb || "",
+    city: req.body.city || "",
+    province: req.body.province || "",
+    postalCode: req.body.postalCode || "",
+    dealershipId: ownerDealership(req),
+    createdAt: new Date().toISOString().slice(0, 10),
+  };
+
+  if (!state.clients) state.clients = [];
+  state.clients.unshift(newClient);
+  writeState(state);
+  res.status(201).json({ message: "Client created.", client: newClient });
+});
+
+app.put("/api/clients/:id", (req: any, res) => {
+  const state = readState();
+  if (!state.clients) state.clients = [];
+  const index = state.clients.findIndex((c: any) => c.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: "Client not found" });
+  if (!mayTouch(state.clients[index], req.auth)) return res.status(403).json({ error: "Not your client." });
+
+  state.clients[index] = { ...state.clients[index], ...req.body, id: req.params.id, updatedAt: new Date().toISOString().slice(0, 10) };
+  writeState(state);
+  res.json({ message: "Client updated.", client: state.clients[index] });
+});
+
+app.delete("/api/clients/:id", (req: any, res) => {
+  const state = readState();
+  if (!state.clients) state.clients = [];
+  const index = state.clients.findIndex((c: any) => c.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: "Client not found" });
+  if (!mayTouch(state.clients[index], req.auth)) return res.status(403).json({ error: "Not your client." });
+
+  state.clients.splice(index, 1);
+  writeState(state);
+  res.json({ message: "Client deleted." });
+});
+
 // Accounting Expenses API
 app.get("/api/expenses", (req: any, res) => {
   const state = readState();
@@ -3899,7 +3996,7 @@ app.post("/api/leads/auto-assign", async (req, res) => {
 
     if (aiConfigured) {
       const systemInstruction = `
-You are the Lead CRM AI Agent for TruFlow Light www.real-cars.co.za. Your task is to assign NEW leads to salespeople based on their current workload.
+You are the Lead CRM AI Agent for TruFlow www.real-cars.co.za. Your task is to assign NEW leads to salespeople based on their current workload.
 Current Salespeople Workloads:
 ${workloads.map(w => `- ${w.name} (ID: ${w.id}): ${w.activeLeadsCount} active leads`).join("\n")}
 
@@ -4009,7 +4106,7 @@ app.post("/api/chat", async (req: any, res) => {
     const totalRevenue = state.invoices.filter(i => i.status === "Paid").reduce((sum, i) => sum + i.amount, 0);
 
     const systemInstruction = `
-You are the TruFlow Light Co-Pilot, an elite, highly intelligent AI strategist for South African automotive dealerships associated with www.real-cars.co.za. Your purpose is to act as the primary advisor for the Dealer Principal and Sales Managers.
+You are the TruFlow Co-Pilot, an elite, highly intelligent AI strategist for South African automotive dealerships associated with www.real-cars.co.za. Your purpose is to act as the primary advisor for the Dealer Principal and Sales Managers.
 
 ### YOUR CAPABILITIES & SYSTEM KNOWLEDGE:
 1.  **DMS (Dealer Management System):**
@@ -4103,7 +4200,7 @@ function getSmartFallbackResponse(query: string, state: any): string {
     return `Financial Snapshot: We have delivered ${sold.length} units this period. Total cleared revenue stands at ${formatZAR(totalRev)}. Estimated gross profit on delivered units is approximately ${formatZAR(totalRev - totalCost)}.`;
   }
 
-  return "I am the TruFlow Light AI Co-Pilot. I am trained on 'showroom inventory', 'aging stock', 'hot CRM prospects', 'operational tasks', and 'financial snapshots' for TruFlow Light (www.real-cars.co.za). How can I help you move stock today?";
+  return "I am the TruFlow AI Co-Pilot. I am trained on 'showroom inventory', 'aging stock', 'hot CRM prospects', 'operational tasks', and 'financial snapshots' for TruFlow (www.real-cars.co.za). How can I help you move stock today?";
 }
 
 // --- AUTOLENS PHOTO SYNC ENDPOINTS ---
@@ -6225,8 +6322,17 @@ app.post("/api/integration/webhook-codat", (req, res) => {
 // ==================== IMAGIN8 / TRANSUNION ====================
 
 import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice } from "../packages/imagin8";
+import { fetchValuation } from "./src/lib/scraper";
 
 const IMAGIN8_PLATFORM_KEY = process.env.IMAGIN8_API_KEY || "";
+
+// The imagin8 routes below reference `authenticate` as per-route middleware and
+// `req.user` — both from a different codebase. The global middleware already
+// populates `req.auth`, so this shim just aliases it for compatibility.
+function authenticate(req: any, _res: any, next: any) {
+  req.user = req.auth;
+  next();
+}
 
 function dealerImagin8Key(state: any, dealershipId: string): string | null {
   const d = state.dealerships?.find((d: any) => d.id === dealershipId);
@@ -6274,6 +6380,29 @@ app.post("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
   }
 });
 
+app.post("/api/valuation", authenticate, async (req: any, res) => {
+  const { make, model, year, mileage } = req.body || {};
+  if (!make || !model || !year) {
+    return res.status(400).json({ error: "make, model, and year are required" });
+  }
+  try {
+    const subjectKm = Number(mileage);
+    const data = await fetchValuation(
+      String(make),
+      String(model),
+      String(year),
+      {
+        mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : undefined,
+      },
+    );
+    console.log(`[scraper] valuation for ${make} ${model} ${year}: avg=${data.averageRetailPrice} listings=${data.listingsFound}`);
+    res.json(data);
+  } catch (err: any) {
+    console.error("[scraper] valuation failed:", err?.message || err);
+    res.status(502).json({ error: err?.message || "Market valuation failed" });
+  }
+});
+
 app.post("/api/imagin8/avs", authenticate, async (req: any, res) => {
   const { bankAccount, branchCode, idNumber, initials, surname } = req.body || {};
   if (!bankAccount || !branchCode || !idNumber) {
@@ -6317,29 +6446,106 @@ app.post("/api/imagin8/invoice", authenticate, async (req: any, res) => {
   }
 });
 
+// ==================== SEND ENGINE (EMAIL / SMS) ====================
+
+let nodemailer: any = null;
+try { nodemailer = require("nodemailer"); } catch {}
+
+app.post("/api/send", authenticate, async (req: any, res) => {
+  const { channel, to, subject, body, from } = req.body || {};
+
+  if (!channel || !to || !body) {
+    return res.status(400).json({ error: "channel, to, and body are required" });
+  }
+
+  // --- EMAIL ---
+  if (channel === "email") {
+    const host = process.env.SMTP_HOST;
+    const port = Number(process.env.SMTP_PORT) || 587;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    const defaultFrom = process.env.SMTP_FROM;
+
+    if (!host || !user || !pass || !nodemailer) {
+      const reason = !nodemailer ? "nodemailer_not_installed" : "not_configured";
+      console.log("[send] email not configured — falling back to native handler", { to });
+      return res.json({
+        sent: false,
+        reason,
+        fallback: `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject || "")}&body=${encodeURIComponent(body)}`,
+      });
+    }
+
+    try {
+      const transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+      });
+      const info = await transporter.sendMail({
+        from: from || defaultFrom || user,
+        to,
+        subject: subject || "(no subject)",
+        text: body,
+      });
+      console.log("[send] email sent", { to, messageId: info.messageId });
+      return res.json({ sent: true, messageId: info.messageId });
+    } catch (err: any) {
+      console.error("[send] email failed:", err?.message || err);
+      return res.status(502).json({ error: err?.message || "Email send failed" });
+    }
+  }
+
+  // --- SMS ---
+  if (channel === "sms") {
+    const apiUrl = process.env.SMS_API_URL;
+    const apiKey = process.env.SMS_API_KEY;
+    const defaultFrom = process.env.SMS_FROM;
+
+    if (!apiUrl || !apiKey) {
+      console.log("[send] SMS not configured — falling back to native handler", { to });
+      return res.json({
+        sent: false,
+        reason: "not_configured",
+        fallback: `sms:${to}?body=${encodeURIComponent(body)}`,
+      });
+    }
+
+    try {
+      const smsRes = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ to, body, from: from || defaultFrom }),
+      });
+
+      if (!smsRes.ok) {
+        const errText = await smsRes.text();
+        console.error("[send] SMS gateway error:", smsRes.status, errText);
+        return res.status(502).json({ error: `SMS gateway returned ${smsRes.status}` });
+      }
+
+      const result = await smsRes.json();
+      console.log("[send] SMS sent", { to, messageId: result.messageId || result.id || "ok" });
+      return res.json({ sent: true, messageId: result.messageId || result.id || "ok" });
+    } catch (err: any) {
+      console.error("[send] SMS failed:", err?.message || err);
+      return res.status(502).json({ error: err?.message || "SMS send failed" });
+    }
+  }
+
+  return res.status(400).json({ error: `Unsupported channel: ${channel}` });
+});
+
 // --- VITE DEV SERVER / PRODUCTION ROUTER ---
 
 async function startServer() {
-  // TruFlow Light — standalone dealer console served at /light
-  // TruFlow Light is an installable PWA served here. Static assets (sw.js,
-  // manifest, icons) come from express.static with a no-cache header on sw.js +
-  // the manifest so a new deploy actually reaches installed apps. The app HTML
-  // is served for both /light and /light/ (Express non-strict routing matches
-  // both) — no redirect, because a /light redirect ALSO matches /light/ and
-  // loops. index:false so express.static doesn't answer the directory itself.
-  // The PWA's start_url/scope is /light/, which the manifest points at.
-  const lightDir = path.join(process.cwd(), "public", "light");
-  app.use("/light", express.static(lightDir, {
-    index: false,
-    redirect: false,
-    setHeaders(res, fp) {
-      if (fp.endsWith("sw.js")) res.setHeader("Cache-Control", "no-cache");
-      if (fp.endsWith(".webmanifest")) res.setHeader("Content-Type", "application/manifest+json");
-    },
-  }));
-  app.get("/light", (_req, res) => {
-    res.setHeader("Cache-Control", "no-cache");
-    res.sendFile(path.join(lightDir, "index.html"));
+  // TruFlow Light retired — redirect to TruFlow Mobile (standalone app)
+  app.get("/light*", (_req, res) => {
+    res.redirect(301, "https://app.tru-saas.com");
   });
 
   // Embed widget + static public assets (dealer websites load /embed/stock-widget.js)

@@ -1,4 +1,3 @@
-import logo from "./assets/truflow-logo.png";
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import {
   Home,
@@ -18,14 +17,11 @@ import {
   RefreshCw,
   Search,
   AlertTriangle,
-  Menu,
-  ChevronRight,
   Shield,
   Trash2,
   Check,
   X,
   FileSpreadsheet,
-  Sparkles,
   ShoppingCart,
   LogOut,
   Zap,
@@ -38,9 +34,11 @@ import {
   MessageSquare,
   CalendarClock,
   Download,
-  MoreHorizontal,
   Monitor,
   HelpCircle,
+  ChevronDown,
+  Contact,
+  Globe2,
 } from "lucide-react";
 
 import {
@@ -71,10 +69,13 @@ import {
   type Seat,
   uploadDocument,
   signDocument,
-  deleteDocument
+  deleteDocument,
+  createClient,
+  updateClient,
+  deleteClient,
 } from "./api";
 
-import { Vehicle, Lead, Task, Invoice, Agreement, User, Communication, Expense, DMSState, Dealership, DocStage } from "./types";
+import { Vehicle, Lead, Task, Invoice, Agreement, User, Communication, Expense, Client, DMSState, Dealership, DocStage } from "./types";
 import { DOC_STAGES } from "./types";
 
 import Counter from "./components/Counter";
@@ -83,8 +84,6 @@ import GuidePanel from "./components/GuidePanel";
 import DocumentsHub from "./components/DocumentsHub";
 import DealerDetailsSettings from "./components/DealerDetailsSettings";
 import DocSettingsPanel from "./components/DocSettingsPanel";
-import PwaInstallBanner from "./components/PwaInstallBanner";
-import InstallAppButton from "./components/InstallAppButton";
 
 /* Split out of the initial bundle — none of these is needed to paint the
    dashboard, and together they were roughly a third of a 540KB single chunk
@@ -105,6 +104,9 @@ import AmortizationCalc from "./components/AmortizationCalc";
 import CustomerLeadForm from "./components/CustomerLeadForm";
 import { CommissionEstimator } from "./components/CommissionEstimator";
 import LoginSplash from "./components/LoginSplash";
+import WebManagementGrid from "./components/WebManagementGrid";
+import BulkImport from "./components/BulkImport";
+import TestDriveCalendar from "./components/TestDriveCalendar";
 import { hasValidSession, clearSession, getAccount, authFetch, SESSION_EXPIRED_EVENT } from "./lib/session";
 import { useIsDesktop } from "./lib/useIsDesktop";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
@@ -120,7 +122,7 @@ import {
   copyStockBlurb,
 } from "./lib/salesShare";
 import { initGlassMotion } from "./lib/glassMotion";
-import { TRUFLOW_LITE_URL } from "./lib/ecosystem";
+import { TRUFLOW_MOBILE_URL } from "./lib/ecosystem";
 
 /** Which dealership a newly-added vehicle belongs to — loaded from the
  *  server so every onboarded dealer appears automatically.
@@ -200,8 +202,10 @@ function costBasis(v: any): number {
 function grossMargin(v: any): { rand: number; pct: number } {
   const retail = Number(v.retailPrice) || 0;
   const basis = costBasis(v);
-  const rand = retail - basis;
-  return { rand, pct: retail > 0 ? (rand / retail) * 100 : 0 };
+  const supp = ((v.supplementaryIncome || []) as any[]).reduce((s: number, i: any) => s + (Number(i.amount) || 0), 0);
+  const rand = retail - basis + supp;
+  const totalRev = retail + supp;
+  return { rand, pct: totalRev > 0 ? (rand / totalRev) * 100 : 0 };
 }
 
 /** Days a car has been in stock. Prefers the acquisition date over the stored
@@ -408,27 +412,11 @@ export default function App() {
   const filteredCommunications = !state ? [] : showAll ? state.communications : state.communications.filter(c => mine(c.dealershipId));
   const filteredExpenses = !state ? [] : showAll ? state.expenses : state.expenses.filter(e => mine(e.dealershipId));
   const [selectedDetailVehicle, setSelectedDetailVehicle] = useState<Vehicle | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leadDetailId, setLeadDetailId] = useState<string | null>(null);
   const [leadInitialTab, setLeadInitialTab] = useState<"overview" | "dochub" | undefined>(undefined);
+  const [clientSearchState, setClientSearchState] = useState("");
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
-  // The mobile drawer had no way out except picking a nav item: no scrim, no
-  // Escape, and the page kept scrolling underneath it (2 800px of dashboard
-  // sliding about behind a menu that looked modal). Escape closes it, and the
-  // body is pinned while it is open so the drawer is the only thing that moves.
-  useEffect(() => {
-    if (!sidebarOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSidebarOpen(false); };
-    // Preserve whatever overflow the body already had rather than assuming
-    // it was the default — a modal opened over the drawer sets it too.
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [sidebarOpen]);
   // The view follows the logged-in account. This was a "simulated role
   // selector" pill that let anyone flip to Dealer Owner regardless of their
   // real login — a permissions hole now that seats are live. principal/admin
@@ -856,13 +844,16 @@ export default function App() {
         { id: "dashboard", label: "Overview", icon: Home },
         { id: "inventory", label: "All Vehicles", icon: Car },
         { id: "upload", label: "Add vehicle", icon: Upload },
+        { id: "bulk_import", label: "Bulk Import", icon: FileSpreadsheet },
       ]
     },
     {
       category: "Operations & CRM",
       items: [
         { id: "leads", label: "Lead CRM", icon: Users },
+        { id: "clients", label: "Clients", icon: Contact },
         { id: "tasks", label: "Tasks", icon: CheckSquare },
+        { id: "test_drives", label: "Showroom Diary", icon: CalendarClock },
         { id: "stock_health", label: "Stock health", icon: TrendingUp },
         { id: "accounting_recon", label: "Finance & Recon", icon: Receipt },
       ]
@@ -882,7 +873,7 @@ export default function App() {
     {
       category: "Media & Web",
       items: [
-        { id: "media_web", label: "Stock media", icon: Image },
+        { id: "web_management", label: "Web Management", icon: Globe2 },
       ]
     },
     {
@@ -899,12 +890,12 @@ export default function App() {
     let items = group.items;
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'leads', 'tasks', 'accounting_recon', 'media_web',
+        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'web_management',
          'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'leads', 'tasks', 'accounting_recon', 'manager', 'settings',
+        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'stock_health', 'web_management', 'manager', 'settings',
          'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     }
@@ -916,17 +907,6 @@ export default function App() {
      item only has to be added to groupedNavigation and to one bucket here.
      Unmapped items fall back to the "other" profile bucket below so nothing
      silently disappears from a phone. */
-  const MORE_BUCKETS: Record<string, "floor" | "desktop" | "account"> = {
-    upload: "floor",
-    media_web: "floor",
-    stock_health: "floor",
-    payment: "floor",
-    deal_readiness: "desktop",
-    accounting_recon: "desktop",
-    documents: "desktop",
-    manager: "account",
-    settings: "account",
-  };
 
   // Callback action handlers
   const handleSignAgreement = async (id: string, signature: string) => {
@@ -945,6 +925,21 @@ export default function App() {
 
   const handleReconcileExpense = async (id: string, reconciled: boolean) => {
     await reconcileExpense(id, reconciled);
+    loadAllState();
+  };
+
+  const handleCreateClient = async (client: Omit<Client, "id" | "createdAt">) => {
+    await createClient(client);
+    loadAllState();
+  };
+
+  const handleUpdateClient = async (id: string, updates: Partial<Client>) => {
+    await updateClient(id, updates);
+    loadAllState();
+  };
+
+  const handleDeleteClient = async (id: string) => {
+    await deleteClient(id);
     loadAllState();
   };
 
@@ -1221,7 +1216,6 @@ export default function App() {
    *  sitting in storage for the next person on a shared yard device. */
   const handleLogout = () => {
     clearSession();
-    setSidebarOpen(false);
     setActiveSection("dashboard");
     setIsLoggedIn(false);
   };
@@ -1254,8 +1248,8 @@ export default function App() {
         phone,
         email,
         vehicleId: "", // unassigned initial
-        source: "Website AI Bot",
-        notes: "Captured via Live Receptionist AI bot."
+        source: "Website Chat",
+        notes: "Captured via Live Receptionist chat widget."
       });
       loadAllState();
     } catch (e) {
@@ -1396,7 +1390,6 @@ export default function App() {
   // Nav routing without tier restrictions
   const navigateTo = (secId: string) => {
     setActiveSection(secId);
-    setSidebarOpen(false);
   };
 
   return (
@@ -1410,197 +1403,53 @@ export default function App() {
       {/* Grid Pattern overlays */}
       <div className="bg-grid" />
 
-      {/* Scrim. The drawer is a fixed panel over the page, so without something
-          behind it the dashboard stayed lit, tappable and scrolling — and the
-          only way to dismiss the menu was to navigate somewhere. Tapping off it
-          is the gesture everyone tries first. md:hidden because from 768px the
-          sidebar is permanent and has nothing to dismiss. */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-[170] bg-black/60 backdrop-blur-[2px] md:hidden animate-in fade-in duration-200"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Mobile More sheet. Three fixed buckets instead of the sidebar's five
-          nav categories: what a salesperson can do standing next to a car, what
-          only works on a desktop (shown greyed and inert, not hidden, so the
-          product reads the same on both), and account. Role filtering carries
-          over — a bucket only shows the items the current role can reach. */}
-      {(() => {
-        /* Buckets now derive from groupedNavigation (see MORE_BUCKETS), so any
-           nav item added in one place automatically lands on a phone too. */
-        const allItems = filteredNavigation.flatMap((g) => g.items) as { id: string; label: string; icon: typeof Home }[];
-        const category = (id: string): "floor" | "desktop" | "account" | "other" =>
-          MORE_BUCKETS[id] || "other";
-        const floorItems = allItems.filter((i) => category(i.id) === "floor");
-        const desktopItems = allItems.filter((i) => category(i.id) === "desktop");
-        const accountItems = allItems.filter(
-          (i) => category(i.id) === "account" || category(i.id) === "other"
-        );
-        return (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-hidden={!sidebarOpen}
-            /* Clear the fixed bottom tab bar (≈74px + safe-area, z-190) that
-               renders on top of this sheet — otherwise the last item in the
-               scroll area, Log out, sits behind it and can't be tapped. */
-            style={{ paddingBottom: "calc(88px + var(--safe-b))" }}
-            className={`md:hidden fixed left-0 right-0 bottom-0 max-h-[80vh] z-[180] rounded-t-3xl bg-[color:var(--ink-2)] border-t border-[color:var(--glass-line)] shadow-[0_-18px_40px_-12px_rgba(0,0,0,0.6)] transition-transform duration-300 ${
-              sidebarOpen ? "translate-y-0" : "translate-y-full"
-            } flex flex-col`}
-          >
-            <div className="pt-3 pb-1 flex justify-center shrink-0">
-              <span className="block h-1 w-10 rounded-full bg-[color:var(--glass-line)]" aria-hidden="true" />
-            </div>
-            <div className="flex items-center gap-3 px-5 pb-2 shrink-0">
-              <img src={logo} alt="TruFlow" className="h-9 w-auto max-w-[130px] object-contain shrink-0" />
-              <span className="text-[length:var(--t-lead)] font-semibold text-[color:var(--white)] flex-1">More</span>
-              <button
-                type="button"
-                onClick={() => setSidebarOpen(false)}
-                aria-label="Close menu"
-                className="h-9 w-9 grid place-items-center rounded-lg text-[color:var(--white-dim)] hover:bg-white/5 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto px-4 pb-2 flex flex-col gap-4">
-              {/* On the floor */}
-              {floorItems.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <span className="font-mono text-[length:var(--t-micro)] text-[color:var(--muted)] tracking-wide font-semibold px-1">
-                    On the floor
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {floorItems.map((n) => {
-                      const Icon = n.icon;
-                      const active = activeSection === n.id;
-                      return (
-                        <button
-                          key={n.id}
-                          type="button"
-                          onClick={() => navigateTo(n.id)}
-                          className={`flex items-center gap-2 px-3 py-3 min-h-11 text-[13px] font-semibold rounded-xl text-left border cursor-pointer ${
-                            active
-                              ? "bg-[color:var(--cyan-faint)] text-[color:var(--white)] border-[color:var(--cyan-soft)]"
-                              : "bg-[color:var(--glass)] text-[color:var(--white-dim)] border-[color:var(--glass-line)]"
-                          }`}
-                        >
-                          <Icon size={15} className={active ? "text-[color:var(--cyan)]" : "text-[color:var(--blue)]"} />
-                          <span className="truncate">{n.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Needs a desktop — visible but greyed and inert. Tapping does
-                  nothing on purpose: the one line under the group explains why,
-                  and a toast that only ever says "not here" is noise. */}
-              {desktopItems.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <span className="font-mono text-[length:var(--t-micro)] text-[color:var(--muted)] tracking-wide font-semibold px-1 flex items-center gap-1.5">
-                    Needs a desktop
-                    <Monitor size={13} className="text-[color:var(--faint)]" />
-                  </span>
-                  <div className="grid grid-cols-2 gap-2 opacity-[0.35] select-none pointer-events-none">
-                    {desktopItems.map((n) => {
-                      const Icon = n.icon;
-                      return (
-                        <div
-                          key={n.id}
-                          aria-disabled="true"
-                          className="flex items-center gap-2 px-3 py-3 min-h-11 text-[13px] font-semibold rounded-xl text-left border bg-[color:var(--glass)] text-[color:var(--white-dim)] border-[color:var(--glass-line)]"
-                        >
-                          <Icon size={15} className="text-[color:var(--muted)]" />
-                          <span className="truncate">{n.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <span className="text-[12px] text-[color:var(--faint)] px-1">
-                    Sign in on a computer to work these.
-                  </span>
-                </div>
-              )}
-
-              {/* Account */}
-              {accountItems.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <span className="font-mono text-[length:var(--t-micro)] text-[color:var(--muted)] tracking-wide font-semibold px-1">
-                    Account
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {accountItems.map((n) => {
-                      const Icon = n.icon;
-                      const active = activeSection === n.id;
-                      return (
-                        <button
-                          key={n.id}
-                          type="button"
-                          onClick={() => navigateTo(n.id)}
-                          className={`flex items-center gap-2 px-3 py-3 min-h-11 text-[13px] font-semibold rounded-xl text-left border cursor-pointer ${
-                            active
-                              ? "bg-[color:var(--cyan-faint)] text-[color:var(--white)] border-[color:var(--cyan-soft)]"
-                              : "bg-[color:var(--glass)] text-[color:var(--white-dim)] border-[color:var(--glass-line)]"
-                          }`}
-                        >
-                          <Icon size={15} className={active ? "text-[color:var(--cyan)]" : "text-[color:var(--blue)]"} />
-                          <span className="truncate">{n.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Support is the wide target; Log out shrinks to an icon square. */}
-              <div className="mt-1 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    openSupportWhatsApp(
-                      `TruFlow ${PRODUCT_TIER} support · ${dealershipLabel}\nSection: ${activeSection}\n\n`
-                    )
-                  }
-                  className="flex-1 min-h-[48px] flex items-center justify-center gap-2 px-3 rounded-xl text-[13px] font-semibold text-[color:var(--white)] bg-[rgba(37,211,102,0.10)] border border-[rgba(37,211,102,0.28)] cursor-pointer"
-                >
-                  <MessageCircle size={16} className="text-[#25D366]" />
-                  Support
-                </button>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  aria-label="Log out"
-                  title="Log out"
-                  className="h-[56px] w-[56px] shrink-0 grid place-items-center rounded-xl text-[color:var(--white-dim)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] cursor-pointer"
-                >
-                  <LogOut size={18} />
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Sidebar - Desktop only. Below md the drawer becomes a bottom sheet
-          rendered separately below, so a phone never carries an off-canvas
-          navigation model. */}
       <aside
         style={{
-          paddingTop: "calc(1.25rem + var(--safe-t))",
-          paddingBottom: "calc(1.25rem + var(--safe-b))",
-          paddingLeft: "calc(1.25rem + var(--safe-l))",
+          paddingTop: "1.25rem",
+          paddingBottom: "1.25rem",
+          paddingLeft: "1.25rem",
         }}
-        className="glass-sidebar hidden md:flex fixed left-0 top-0 bottom-0 w-[240px] pr-5 flex-col z-[180]"
+        className="glass-sidebar flex fixed left-0 top-0 bottom-0 w-[240px] pr-5 flex-col z-[180]"
       >
         <div className="mb-6 flex flex-col items-center">
           <div className="w-full flex items-center justify-center px-1">
-            <img src={logo} alt="TruFlow Premium" className="h-12 w-auto max-w-full object-contain logo-float" />
+            <svg viewBox="0 0 512 512" className="h-20 w-20" aria-label="TruFlow">
+              <defs>
+                <radialGradient id="chassisBase" cx="50%" cy="30%" r="70%">
+                  <stop offset="0%" stopColor="#0E182A"/><stop offset="60%" stopColor="#04070D"/><stop offset="100%" stopColor="#000000"/>
+                </radialGradient>
+                <linearGradient id="cyanGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#FFFFFF"/><stop offset="18%" stopColor="#E0F2FE"/><stop offset="42%" stopColor="#38BDF8"/><stop offset="70%" stopColor="#00F2FE"/><stop offset="90%" stopColor="#0D9488"/><stop offset="100%" stopColor="#022C2A"/>
+                </linearGradient>
+                <linearGradient id="machinedTitanium" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#FFFFFF"/><stop offset="15%" stopColor="#CBD5E1"/><stop offset="40%" stopColor="#64748B"/><stop offset="75%" stopColor="#1E293B"/><stop offset="100%" stopColor="#0A0E17"/>
+                </linearGradient>
+                <linearGradient id="specularWhite" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#FFFFFF"/><stop offset="50%" stopColor="#A5F3FC"/><stop offset="100%" stopColor="rgba(255,255,255,0.2)"/>
+                </linearGradient>
+                <filter id="neonBloom" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="16" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
+              </defs>
+              <circle cx="256" cy="256" r="246" fill="url(#chassisBase)" stroke="rgba(255,255,255,0.12)" strokeWidth="2"/>
+              <circle cx="256" cy="240" r="130" fill="url(#cyanGlass)" opacity="0.25" filter="url(#neonBloom)"/>
+              <g transform="translate(256, 256) rotate(-30)">
+                <ellipse cx="0" cy="0" rx="212" ry="68" fill="none" stroke="url(#cyanGlass)" strokeWidth="7" filter="url(#neonBloom)" opacity="0.8"/>
+                <ellipse cx="0" cy="0" rx="212" ry="68" fill="none" stroke="#00F2FE" strokeWidth="2.5" opacity="0.95"/>
+                <circle cx="190" cy="-28" r="8" fill="#FFFFFF" filter="url(#neonBloom)"/>
+              </g>
+              <g transform="translate(256, 245) scale(1.18)">
+                <path d="M-88 -65 L0 -128 L0 -25 L-48 38 L-88 -10 Z" fill="url(#machinedTitanium)" stroke="#090D16" strokeWidth="1.5"/>
+                <path d="M-48 38 L0 -25 L0 98 L-48 38 Z" fill="url(#machinedTitanium)" opacity="0.9"/>
+                <path d="M88 -65 L0 -128 L0 -25 L48 38 L88 -10 Z" fill="url(#cyanGlass)" filter="url(#neonBloom)" opacity="0.95"/>
+                <path d="M88 -65 L0 -128 L0 -25 L48 38 L88 -10 Z" fill="url(#cyanGlass)"/>
+                <path d="M48 38 L0 -25 L0 98 L48 38 Z" fill="url(#cyanGlass)"/>
+                <polygon points="0,-128 34,-92 0,-56 -34,-92" fill="url(#specularWhite)" opacity="0.95" filter="url(#neonBloom)"/>
+                <polygon points="0,-128 34,-92 0,-56 -34,-92" fill="#FFFFFF"/>
+                <line x1="0" y1="-128" x2="0" y2="98" stroke="#FFFFFF" strokeWidth="3" opacity="0.95"/>
+                <path d="M-88 -65 L0 -128 L88 -65" fill="none" stroke="url(#specularWhite)" strokeWidth="2.5" opacity="0.9"/>
+              </g>
+            </svg>
           </div>
           {/* Admin dealer context switcher — pick a dealer to see their world. */}
           {isMasterAdmin && state?.dealerships && state.dealerships.length > 0 && (
@@ -1637,9 +1486,9 @@ export default function App() {
                     Your showroom
                   </a>
                   {hasProduct("flow-lite") && (
-                    <a href={TRUFLOW_LITE_URL} target="_blank" rel="noopener noreferrer"
+                    <a href={TRUFLOW_MOBILE_URL} target="_blank" rel="noopener noreferrer"
                        className="text-[13px] px-3 py-1 rounded-full bg-[rgba(0,136,255,0.08)] text-[#38BDF8] border border-[rgba(0,136,255,0.2)] hover:bg-[rgba(0,136,255,0.12)] transition-colors">
-                      TruFlow Light
+                      TruFlow Mobile
                     </a>
                   )}
                 </div>
@@ -1680,11 +1529,6 @@ export default function App() {
                       >
                         {navAttention[n.id] > 99 ? "99+" : navAttention[n.id]}
                       </span>
-                    ) : (n.id === "deal_readiness" || n.id === "accounting_recon" || n.id === "documents") ? (
-                      /* Desktop-only surface. A hint, not a disable — it exists so
-                         the sidebar and the phone's More sheet describe the same
-                         product. Dropped when a count badge takes the ml-auto slot. */
-                      <Monitor size={13} className="ml-auto text-[color:var(--faint)]" aria-label="Desktop only" />
                     ) : null}
                   </button>
                 );
@@ -1735,45 +1579,15 @@ export default function App() {
             Inset rather than full-bleed on purpose: negative margins to reach
             the page edge would push past main's max-width and introduce a
             horizontal scrollbar at wide viewports. */}
-        <div className="hidden md:flex justify-between items-center gap-4 sticky top-3 z-[60] rounded-xl px-4 py-2.5 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]">
+        <div className="flex justify-between items-center gap-4 sticky top-3 z-[60] rounded-xl px-4 py-2.5 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]">
            {/* Morning strip — the floor at a glance, on every screen. Only the
                unanswered-lead figure is allowed to go red; if everything shouts,
                nothing does. */}
-           <div className="flex items-center gap-2 flex-wrap">
-             <button
-               type="button"
-               onClick={() => navigateTo("leads")}
-               className={`flex items-center gap-2 h-9 px-3 rounded-full border transition-colors cursor-pointer text-[13px] ${
-                 replyIsLate
-                   ? "bg-[color:var(--glass)] text-[color:var(--muted)] border-[color:var(--glass-line)] hover:bg-[color:var(--glass)]"
-                   : "bg-[color:var(--glass)] text-[rgba(232,234,230,0.72)] border-[color:var(--glass-line)] hover:text-[color:var(--white)]"
-               }`}
-               title="Leads that have never been replied to"
-             >
-               <MessageSquare size={14} />
-               <span className="font-semibold">{awaitingReply.length}</span>
-               <span>waiting</span>
-               {awaitingReply.length > 0 && (
-                 <span className="opacity-70">· {formatWait(oldestWaitMs)}</span>
-               )}
-             </button>
-
-             <button
-               type="button"
-               onClick={() => navigateTo("tasks")}
-               className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] border border-[color:var(--glass-line)] text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] transition-colors cursor-pointer text-[13px]"
-               title="Promised for today, and anything already past its date"
-             >
-               <CalendarClock size={14} />
-               <span className="font-semibold">{dueTodayCount}</span>
-               <span>due today</span>
-               {overdueCount > 0 && (
-                 <span className="text-[color:var(--muted)] font-semibold">
-                   · {overdueCount} late
-                 </span>
-               )}
-             </button>
-
+           <div className="flex items-center gap-2 min-w-0">
+             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[length:var(--t-micro)] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]">
+               <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--cyan)] animate-pulse" />
+               {dealershipLabel} · live · {new Date().toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
+             </span>
            </div>
 
            <div className="flex items-center gap-2 shrink-0">
@@ -1786,14 +1600,25 @@ export default function App() {
                <HelpCircle size={14} />
                Guides
              </button>
+             {(selectedRole === 'manager' || selectedRole === 'owner') && (
+               <button
+                 type="button"
+                 onClick={() => setShowEODReport(true)}
+                 className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] hover:text-[color:var(--white-dim)] transition-colors cursor-pointer text-[13px] font-semibold"
+                 title="End of day summary"
+               >
+                 <TrendingUp size={14} />
+                 EOD
+               </button>
+             )}
              <button
                type="button"
                onClick={() => setAssistOpen(true)}
                className="flex items-center gap-2 h-9 px-3 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)] hover:text-[color:var(--ink)] transition-colors cursor-pointer text-[13px] font-semibold"
                title="Ask Dealer Assist"
              >
-               <Sparkles size={14} />
-               Dealer Assist
+               <MessageCircle size={14} />
+               Assist
              </button>
              {/* Who is signed in now lives under the sidebar logo — it was
                  repeated three times across the top bar. */}
@@ -1809,72 +1634,6 @@ export default function App() {
            </div>
         </div>
 
-        {/* Mobile Header — the section a dealer is on, plus one number worth
-            reading, plus Assist. Navigation itself moved to the bottom tab bar
-            and the More sheet; the hamburger, logo and counter strip are gone.
-            top offset clears the notch on an installed PWA. */}
-        {(() => {
-          const navMatch = groupedNavigation
-            .flatMap((g) => g.items)
-            .find((n) => n.id === activeSection);
-          const metaMap: Record<string, { title: string; sub: string }> = {
-            dashboard: {
-              title: "Today",
-              sub: `${dealershipLabel} · ${todayLabel}`,
-            },
-            leads: {
-              title: "Leads",
-              sub: `${awaitingReply.length} waiting · ${negotiatingCount} negotiating`,
-            },
-            inventory: {
-              title: "Stock",
-              sub: `${state.vehicles.length} vehicles`,
-            },
-            tasks: {
-              title: "Tasks",
-              sub: `${dueTodayCount} due today${overdueCount > 0 ? ` · ${overdueCount} late` : ""}`,
-            },
-          };
-          const meta = metaMap[activeSection] || {
-            title: navMatch?.label || "TruFlow",
-            sub: dealershipLabel,
-          };
-          return (
-            <div
-              style={{ top: "calc(0.5rem + var(--safe-t))" }}
-              className="flex items-center gap-3 md:hidden sticky z-[60] rounded-xl px-3 py-2 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]"
-            >
-              <img src="/favicon.svg" alt="TruFlow" className="h-9 w-9 shrink-0 rounded-lg" />
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-[length:var(--t-lead)] font-semibold text-[color:var(--white)] leading-tight truncate">
-                  {meta.title}
-                </span>
-                <span className="text-[length:var(--t-micro)] text-[color:var(--muted)] truncate">
-                  {meta.sub}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setGuideOpen(true)}
-                aria-label="How-to guides"
-                title="How-to guides"
-                className="h-11 w-11 shrink-0 grid place-items-center rounded-full bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] cursor-pointer"
-              >
-                <HelpCircle size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setAssistOpen(true)}
-                aria-label="Ask Dealer Assist"
-                title="Ask Dealer Assist"
-                className="h-11 w-11 shrink-0 grid place-items-center rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] cursor-pointer"
-              >
-                <Sparkles size={16} />
-              </button>
-            </div>
-          );
-        })()}
-
         {/* OVERVIEW SECTION */}
         {activeSection === "dashboard" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
@@ -1883,20 +1642,12 @@ export default function App() {
                 that it is live, and have the assistant one click away. */}
             {/* Framed header — desktop only. On a phone the sticky mobile header
                 already names the dealership and date, so this card is redundant
-                there (hidden md:flex). The date folds into the live pill; the
+                there (flex). The date folds into the live pill; the
                 page-title heading and the strapline prose are gone. */}
-            <div className="card py-5 px-6 hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[length:var(--t-micro)] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--cyan)] animate-pulse" />
-                    {dealershipLabel} · live · {new Date().toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
-                  </span>
-                </div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">
-                  Dealership overview
-                </h1>
-              </div>
+            <div className="card py-4 px-6 flex items-center justify-between gap-4">
+              <h1 className="font-sans text-xl font-semibold tracking-tight text-[color:var(--white)]">
+                Dealership overview
+              </h1>
 
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={() => navigateTo("upload")} className="btn btn-primary">
@@ -1909,271 +1660,72 @@ export default function App() {
                 number that is actionable the moment the app opens leads
                 full-width with a chevron into leads; the rest fold down into a
                 pair and a strip. The 5-tile desktop grid is below (hidden md). */}
-            <div className="md:hidden flex flex-col gap-3">
-              <button
-                onClick={() => navigateTo("leads")}
-                className="stat-card p-4 flex items-center justify-between gap-3 text-left cursor-pointer border-[color:var(--cyan-soft)]"
-              >
-                <div className="min-w-0">
-                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Needs a reply</div>
-                  <div className={`text-[38px] leading-none font-semibold tracking-[-0.022em] mt-1 ${replyIsLate ? "text-[color:var(--white)]" : "text-[color:var(--muted)]"}`}>
-                    <Counter value={awaitingReply.length} />
-                  </div>
-                  <div className={`text-[13px] font-normal mt-1 ${replyIsLate ? "text-[color:var(--white-dim)]" : "text-[color:var(--muted)]"}`}>
-                    {awaitingReply.length === 0
-                      ? `All ${unresolvedLeadsCount} open leads answered`
-                      : `Oldest waiting ${formatWait(oldestWaitMs)} · ${unresolvedLeadsCount} open`}
-                  </div>
-                </div>
-                <ChevronRight size={20} className="text-[color:var(--muted)] shrink-0" />
-              </button>
-              <div className="grid grid-cols-2 gap-3">
-                <button onClick={() => navigateTo("tasks")} className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)]">
-                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Due today</div>
-                  <div className="text-[28px] leading-none font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={dueTodayCount} /></div>
-                  <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                    {overdueCount > 0 ? `${overdueCount} already late` : "Nothing overdue"}
-                  </div>
-                </button>
-                <button onClick={() => navigateTo("inventory")} className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)]">
-                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cars in stock</div>
-                  <div className="text-[28px] leading-none font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
-                  <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                    {agedStockCount > 0 ? `${agedStockCount} over ${AGED_DAYS} days` : `None over ${AGED_DAYS} days`}
-                  </div>
-                </button>
-              </div>
-              <div className="stat-card flex items-center justify-between px-4 py-3.5 border-[color:var(--glass-line)]">
-                <div>
-                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Units sold</div>
-                  <div className="text-[20px] leading-none font-semibold text-[color:var(--white)] mt-1"><Counter value={soldUnitsCount} /></div>
-                </div>
-                <span className="w-px h-8 bg-[color:var(--glass-line)] shrink-0" />
-                <div className="text-right">
-                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Gross after recon</div>
-                  <div className="text-[20px] leading-none font-semibold text-[color:var(--cyan-bright)] mt-1"><Counter value={grossAfterRecon} prefix="R " /></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Stats — desktop grid. Only the unanswered-lead card carries the
-                cyan hairline; the other four sit on var(--glass-line). */}
-            <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-4">
-              <button
-                onClick={() => navigateTo("leads")}
-                className="stat-card p-4 text-left cursor-pointer border-[color:var(--cyan-soft)] transition-colors"
-              >
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Needs a reply</div>
-                <div
-                  className={`text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] mt-1 ${
-                    replyIsLate ? "text-[color:var(--white)]" : "text-[color:var(--muted)]"
-                  }`}
-                >
-                  <Counter value={awaitingReply.length} />
-                </div>
-                <div
-                  className={`text-[13px] font-normal mt-1 ${
-                    replyIsLate ? "text-[color:var(--white-dim)]" : "text-[color:var(--muted)]"
-                  }`}
-                >
-                  {awaitingReply.length === 0
-                    ? `All ${unresolvedLeadsCount} open leads answered`
-                    : `Oldest waiting ${formatWait(oldestWaitMs)} · ${unresolvedLeadsCount} open`}
-                </div>
-              </button>
-              <button
-                onClick={() => navigateTo("tasks")}
-                className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)] transition-colors"
-              >
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Due today</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={dueTodayCount} /></div>
-                <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                  {overdueCount > 0
-                    ? `${overdueCount} already late`
-                    : "Nothing overdue"}
-                </div>
-              </button>
-              <button
-                onClick={() => navigateTo("inventory")}
-                className="stat-card p-4 text-left cursor-pointer border-[color:var(--glass-line)] transition-colors"
-              >
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Cars in stock</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={activeVehiclesCount} /></div>
-                <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                  {agedStockCount > 0
-                    ? `${agedStockCount} over ${AGED_DAYS} days`
-                    : `None over ${AGED_DAYS} days`}
-                </div>
-              </button>
-              <div className="stat-card p-4 border-[color:var(--glass-line)]">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Units sold</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--white)] mt-1"><Counter value={soldUnitsCount} /></div>
-                <div className="text-[13px] text-[rgba(232,234,230,0.55)] font-semibold mt-1">
-                  {activeVehiclesCount + soldUnitsCount > 0
-                    ? `${Math.round((soldUnitsCount / (activeVehiclesCount + soldUnitsCount)) * 100)}% of the floor moved`
-                    : "No stock loaded yet"}
-                </div>
-              </div>
-              <div className="stat-card p-4 border-[color:var(--glass-line)]">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">Gross after recon</div>
-                <div className="text-[length:var(--t-h2)] font-semibold tracking-[-0.015em] text-[color:var(--cyan-bright)] mt-1"><Counter value={grossAfterRecon} prefix="R " /></div>
-                <div className="text-[13px] font-normal mt-1 text-[rgba(232,234,230,0.55)]">
-                  {soldVehicles.length > 0
-                    ? `${soldVehicles.length} sold · deal value less recon`
-                    : "No units sold yet"}
-                </div>
-              </div>
-            </div>
-
-            {/* End of day summary — a manager's desk job, so desktop only
-                (hidden on mobile) and reduced to a single convenience row: not
-                the loudest control on the page, so the cyan fill and cyan
-                primary button are dropped for a neutral surface + secondary. */}
-            {(selectedRole === 'manager' || selectedRole === 'owner') && (
-              <div className="card hidden md:flex items-center justify-between gap-4 px-5 py-3.5 bg-[color:var(--ink-2)] border border-[color:var(--glass-line)] rounded-[var(--r-card)]">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <TrendingUp size={16} className="text-[color:var(--cyan)] shrink-0" />
-                  <span className="text-[15px] font-semibold text-[color:var(--white)]">End of day summary</span>
-                  <span className="text-[13px] text-[color:var(--muted)]">last 24 hours</span>
-                </div>
-                <button
-                  onClick={() => setShowEODReport(true)}
-                  className="tru-btn-secondary inline-flex items-center gap-2 px-3 min-h-[32px] rounded-[8px] text-[13px] font-semibold cursor-pointer shrink-0"
-                >
-                  <Sparkles size={14} />
-                  Compile
-                </button>
-              </div>
-            )}
-
-            {/* Stock that can't sell yet — see the notOnline note above. */}
-            <div className="card p-4 md:p-6">
-              <div className="flex items-center justify-between mb-4 gap-2">
-                <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono">
-                  Not online yet
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigateTo("media_web")}
-                  className="btn btn-secondary btn-sm shrink-0"
-                >
-                  Stock media
-                </button>
-              </div>
-
-              {notOnline.blocked === 0 ? (
-                /* An all-clear is worth stating plainly — a card that vanishes
-                   when there is nothing wrong just reads as broken. */
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)]">
-                  {notOnline.inStock > 0 ? (
-                    <>
-                      All <span className="text-[color:var(--cyan)] font-semibold">{notOnline.inStock}</span>{" "}
-                      {notOnline.inStock === 1 ? "car" : "cars"} in stock {notOnline.inStock === 1 ? "has" : "have"} a
-                      web-ready gallery.
-                    </>
-                  ) : (
-                    "No cars in stock."
-                  )}
-                </p>
-              ) : (
+            {(() => {
+              const todayStr = new Date().toISOString().slice(0, 10);
+              const allDrives = state.leads.flatMap(l => (l as any).testDrives || []);
+              const todayDrives = allDrives.filter((d: any) => d.scheduledAt?.slice(0, 10) === todayStr);
+              const todayTestDrives = todayDrives.filter((d: any) => d.type === 'test_drive').length;
+              const todayVisits = todayDrives.filter((d: any) => d.type === 'viewing').length;
+              const todayTradeIns = todayDrives.filter((d: any) => d.type === 'trade_in').length;
+              const todayLeads = state.leads.filter(l => l.createdAt?.slice(0, 10) === todayStr).length;
+              return (
                 <>
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
-                    <span className="text-[38px] leading-none font-semibold tracking-[-0.022em] text-[color:var(--white)]">
-                      {notOnline.blocked}
-                    </span>
-                    <span className="text-[13px] text-[rgba(232,234,230,0.72)]">
-                      of {notOnline.inStock} in stock can&apos;t be shopped yet
-                    </span>
+                  <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
+                    <button onClick={() => navigateTo("leads")} className="stat-card px-3 py-3 text-center cursor-pointer border-[color:var(--cyan-soft)] transition-colors">
+                      <div className="text-[11px] font-mono text-[color:var(--muted)]">Needs reply</div>
+                      <div className={`text-[24px] font-semibold leading-none mt-1.5 ${replyIsLate ? "text-[color:var(--white)]" : "text-[color:var(--muted)]"}`}><Counter value={awaitingReply.length} /></div>
+                      <div className="text-[11px] text-[rgba(232,234,230,0.45)] mt-1">{awaitingReply.length > 0 ? `oldest ${formatWait(oldestWaitMs)}` : "all clear"}</div>
+                    </button>
+                    <button onClick={() => navigateTo("tasks")} className="stat-card px-3 py-3 text-center cursor-pointer border-[color:var(--glass-line)] transition-colors">
+                      <div className="text-[11px] font-mono text-[color:var(--muted)]">Due today</div>
+                      <div className="text-[24px] font-semibold leading-none text-[color:var(--white)] mt-1.5"><Counter value={dueTodayCount} /></div>
+                      <div className="text-[11px] text-[rgba(232,234,230,0.45)] mt-1">{overdueCount > 0 ? `${overdueCount} late` : "on track"}</div>
+                    </button>
+                    <button onClick={() => navigateTo("inventory")} className="stat-card px-3 py-3 text-center cursor-pointer border-[color:var(--glass-line)] transition-colors">
+                      <div className="text-[11px] font-mono text-[color:var(--muted)]">In stock</div>
+                      <div className="text-[24px] font-semibold leading-none text-[color:var(--white)] mt-1.5"><Counter value={activeVehiclesCount} /></div>
+                      <div className="text-[11px] text-[rgba(232,234,230,0.45)] mt-1">{agedStockCount > 0 ? `${agedStockCount} aged` : "fresh"}</div>
+                    </button>
+                    <div className="stat-card px-3 py-3 text-center border-[color:var(--glass-line)]">
+                      <div className="text-[11px] font-mono text-[color:var(--muted)]">Sold</div>
+                      <div className="text-[24px] font-semibold leading-none text-[color:var(--white)] mt-1.5"><Counter value={soldUnitsCount} /></div>
+                      <div className="text-[11px] text-[rgba(232,234,230,0.45)] mt-1">{activeVehiclesCount + soldUnitsCount > 0 ? `${Math.round((soldUnitsCount / (activeVehiclesCount + soldUnitsCount)) * 100)}% moved` : ""}</div>
+                    </div>
+                    <div className="stat-card px-3 py-3 text-center border-[color:var(--glass-line)]">
+                      <div className="text-[11px] font-mono text-[color:var(--muted)]">Gross after recon</div>
+                      <div className="text-[24px] font-semibold leading-none text-[color:var(--cyan-bright)] mt-1.5"><Counter value={grossAfterRecon} prefix="R " /></div>
+                      <div className="text-[11px] text-[rgba(232,234,230,0.45)] mt-1">{soldVehicles.length > 0 ? `${soldVehicles.length} deals` : ""}</div>
+                    </div>
                   </div>
-
-                  {/* One inline row, not two stacked cards — the counts read
-                      left-to-right with hairline dividers, and the web-ready
-                      figure moves in here (it no longer trails the sentence). */}
-                  <div className="flex items-center gap-5 mb-3 bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-[10px] px-3.5 py-2.5 flex-wrap">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-[18px] font-semibold text-[color:var(--white)]">{notOnline.noPhotos}</span>
-                      <span className="text-[13px] text-[color:var(--white-dim)]">no photos</span>
-                    </div>
-                    <span className="w-px h-[18px] bg-[color:var(--glass-line)]" />
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-[18px] font-semibold text-[color:var(--white)]">{notOnline.incomplete}</span>
-                      <span className="text-[13px] text-[color:var(--white-dim)]">gallery short</span>
-                    </div>
-                    <span className="w-px h-[18px] bg-[color:var(--glass-line)]" />
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-[18px] font-semibold text-[color:var(--cyan-bright)]">{notOnline.ready}</span>
-                      <span className="text-[13px] text-[color:var(--white-dim)]">web-ready</span>
-                    </div>
+                  <div>
+                  <div className="text-[11px] font-mono font-medium text-[color:var(--muted)] mb-1">Today's activity</div>
+                  <div className="flex items-center justify-center gap-4 flex-wrap bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-[10px] px-4 py-2.5">
+                    <button onClick={() => navigateTo("test_drives")} className="flex items-baseline gap-1 px-2 py-0.5 rounded hover:bg-white/5 cursor-pointer transition-colors">
+                      <span className="text-[18px] font-semibold text-[color:var(--white)]">{todayTestDrives}</span>
+                      <span className="text-[11px] text-[color:var(--muted)]">test drives</span>
+                    </button>
+                    <span className="w-px h-[14px] bg-[color:var(--glass-line)]" />
+                    <button onClick={() => navigateTo("test_drives")} className="flex items-baseline gap-1 px-2 py-0.5 rounded hover:bg-white/5 cursor-pointer transition-colors">
+                      <span className="text-[18px] font-semibold text-[color:var(--white)]">{todayVisits}</span>
+                      <span className="text-[11px] text-[color:var(--muted)]">visits</span>
+                    </button>
+                    <span className="w-px h-[14px] bg-[color:var(--glass-line)]" />
+                    <button onClick={() => navigateTo("test_drives")} className="flex items-baseline gap-1 px-2 py-0.5 rounded hover:bg-white/5 cursor-pointer transition-colors">
+                      <span className="text-[18px] font-semibold text-[color:var(--white)]">{todayTradeIns}</span>
+                      <span className="text-[11px] text-[color:var(--muted)]">trade-ins</span>
+                    </button>
+                    <span className="w-px h-[14px] bg-[color:var(--glass-line)]" />
+                    <button onClick={() => navigateTo("leads")} className="flex items-baseline gap-1 px-2 py-0.5 rounded hover:bg-white/5 cursor-pointer transition-colors">
+                      <span className="text-[18px] font-semibold text-[color:var(--cyan-bright)]">{todayLeads}</span>
+                      <span className="text-[11px] text-[color:var(--muted)]">new leads</span>
+                    </button>
                   </div>
-
-                  {notOnline.oldest && (
-                    <p className="text-[13px] text-[color:var(--muted)]">
-                      Longest waiting:{" "}
-                      <span className="text-[color:var(--white-dim)]">
-                        {notOnline.oldest.v.year} {notOnline.oldest.v.make} {notOnline.oldest.v.model}
-                      </span>
-                      {typeof notOnline.oldest.v.daysInInventory === "number" && (
-                        <> — {notOnline.oldest.v.daysInInventory} days in stock</>
-                      )}
-                    </p>
-                  )}
+                  </div>
                 </>
-              )}
+              );
+            })()}
 
-              {/* Shooting stock is the one desk-adjacent task that belongs on the
-                  floor, so this card keeps its primary action on the phone.
-                  Mobile only — TruLens captures with the phone camera, so a
-                  "shoot" button on a desktop would point at a dead end. Desktop
-                  keeps the "Stock media" link in the header instead. */}
-              {hasProduct("lens") && (
-                <button
-                  type="button"
-                  onClick={() => openTruLens()}
-                  className="btn btn-primary mt-4 w-full md:hidden inline-flex items-center justify-center gap-2"
-                >
-                  <Camera size={15} />
-                  Shoot in TruLens
-                </button>
-              )}
-            </div>
-
-            {/* Featured Catalog list */}
-            <div className="card">
-              <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
-                <h3 className="font-semibold text-[16px]">Recent Showroom Inventory</h3>
-                <button
-                  onClick={() => navigateTo("inventory")}
-                  className="btn btn-secondary btn-sm"
-                >
-                  View Database
-                </button>
-              </div>
-              <div className="card-body p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {state.vehicles.filter((v) => v.status === "INVENTORY").slice(0, 4).map((v) => (
-                  <div
-                    key={v.id}
-                    onClick={() => setSelectedDetailVehicle(v)}
-                    className="v-card p-3 cursor-pointer group hover:-translate-y-0.5 transition-transform duration-200"
-                  >
-                    <div className="aspect-[4/3] rounded-lg bg-[color:var(--ink-2)] flex items-center justify-center overflow-hidden mb-3 shadow-md shadow-black/40">
-                      {v.images && v.images.length > 0 ? (
-                        <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      ) : (
-                        <div className="w-full h-full bg-[color:var(--ink-2)] border border-white/5 flex items-center justify-center text-[rgba(232,234,230,0.45)] font-semibold text-lg">
-                          {v.make.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <h4 className="font-semibold text-[13px] text-[color:var(--white)] truncate">{v.year} {v.make} {v.model}</h4>
-                    <p className="text-[13px] text-[rgba(232,234,230,0.72)] truncate mt-0.5">{v.transmission} / {v.fuelType}</p>
-                    <div className="text-[16px] font-semibold text-[color:var(--cyan-bright)] mt-2">{formatZAR(v.retailPrice)}</div>
-                    <div className="text-[13px] text-[rgba(232,234,230,0.72)] mt-2 font-mono">Stock Ref: {v.stockNumber}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recent Leads list */}
+            {/* Leads — highest priority, what needs attention now */}
             <div className="card">
               <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
                 <h3 className="font-semibold text-[16px]">Leads</h3>
@@ -2229,26 +1781,131 @@ export default function App() {
                 </table>
               </div>
             </div>
+
+            {/* Showroom Inventory */}
+            <div className="card">
+              <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
+                <h3 className="font-semibold text-[16px]">Recent Showroom Inventory</h3>
+                <button
+                  onClick={() => navigateTo("inventory")}
+                  className="btn btn-secondary btn-sm"
+                >
+                  View Database
+                </button>
+              </div>
+              <div className="card-body p-0 overflow-x-auto">
+                <table className="w-full text-[13px] text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)] bg-[color:var(--glass)]">
+                      <th className="py-2.5 px-4 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Vehicle</th>
+                      <th className="py-2.5 px-3 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)]">Stock #</th>
+                      <th className="py-2.5 px-3 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right">Retail</th>
+                      <th className="py-2.5 px-3 font-medium text-[length:var(--t-micro)] text-[color:var(--muted)] text-right">Age</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.vehicles.filter((v) => v.status === "INVENTORY").slice(0, 6).map((v) => {
+                      const days = Number(v.daysInInventory) || 0;
+                      return (
+                        <tr key={v.id} onClick={() => setSelectedDetailVehicle(v)} className="border-b border-white/5 cursor-pointer hover:bg-white/[0.03] transition-colors">
+                          <td className="py-2.5 px-4 font-semibold text-[color:var(--white)]">{v.year} {v.make} {v.model}
+                            <span className="block text-[11px] font-normal text-[rgba(232,234,230,0.55)]">{v.transmission} · {v.fuelType}</span>
+                          </td>
+                          <td className="py-2.5 px-3 font-mono text-[color:var(--muted)]">{v.stockNumber}</td>
+                          <td className="py-2.5 px-3 text-right font-mono font-semibold text-[color:var(--cyan-bright)]">{formatZAR(v.retailPrice)}</td>
+                          <td className={`py-2.5 px-3 text-right font-mono ${days >= 60 ? "text-amber-400" : "text-[rgba(232,234,230,0.72)]"}`}>{days}d</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-[11px] font-mono font-medium text-[color:var(--muted)]">Web readiness</div>
+              <button onClick={() => navigateTo("web_management")} className="text-[11px] font-semibold text-[color:var(--cyan)] hover:underline cursor-pointer">Manage</button>
+            </div>
+            <div className="flex items-center justify-center gap-4 flex-wrap bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-[10px] px-4 py-2.5">
+              {notOnline.blocked === 0 ? (
+                <span className="text-[11px] text-[rgba(232,234,230,0.72)]">
+                  All {notOnline.inStock} {notOnline.inStock === 1 ? "car" : "cars"} have galleries
+                </span>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-1.5 px-2">
+                    <span className="text-[18px] font-semibold text-amber-400">{notOnline.blocked}</span>
+                    <span className="text-[11px] text-[color:var(--muted)]">not online</span>
+                  </div>
+                  <span className="w-px h-[14px] bg-[color:var(--glass-line)]" />
+                  <div className="flex items-baseline gap-1.5 px-2">
+                    <span className="text-[18px] font-semibold text-[color:var(--white)]">{notOnline.noPhotos}</span>
+                    <span className="text-[11px] text-[color:var(--muted)]">no photos</span>
+                  </div>
+                  <span className="w-px h-[14px] bg-[color:var(--glass-line)]" />
+                  <div className="flex items-baseline gap-1.5 px-2">
+                    <span className="text-[18px] font-semibold text-[color:var(--white)]">{notOnline.incomplete}</span>
+                    <span className="text-[11px] text-[color:var(--muted)]">short</span>
+                  </div>
+                  <span className="w-px h-[14px] bg-[color:var(--glass-line)]" />
+                  <div className="flex items-baseline gap-1.5 px-2">
+                    <span className="text-[18px] font-semibold text-[color:var(--cyan-bright)]">{notOnline.ready}</span>
+                    <span className="text-[11px] text-[color:var(--muted)]">ready</span>
+                  </div>
+                </>
+              )}
+            </div>
+            </div>
           </div>
         )}
 
         {/* ALL VEHICLES SECTION */}
         {activeSection === "inventory" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Stock</h1>
-                <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                  Manage live pre-owned floor assets and pricing
-                  {state.vehicles.some((v: any) => (v.images?.length || 0) > 0) && (
-                    <span className="text-[color:var(--cyan)] ml-2">
-                      · {state.vehicles.filter((v: any) => (v.images?.length || 0) > 0).length} with TruLens photos
-                    </span>
-                  )}
-                </p>
+            {/* Search + filters — single compact bar */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="relative flex-1 min-w-[180px] max-w-[280px]">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(232,234,230,0.72)]" />
+                <input
+                  type="text"
+                  value={inventorySearch}
+                  onChange={(e) => setInventorySearch(e.target.value)}
+                  placeholder="Search stock..."
+                  className="w-full bg-[color:var(--glass)] border border-white/5 rounded-lg pl-9 pr-3 py-1.5 text-[13px] text-[color:var(--white)] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[color:var(--cyan)]"
+                />
               </div>
-
-              <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+              <Segmented
+                value={inventoryStatusFilter}
+                onChange={setInventoryStatusFilter}
+                options={[
+                  { value: "ALL", label: "All" },
+                  { value: "INVENTORY", label: "In stock" },
+                  { value: "SOLD", label: "Sold" },
+                  { value: "ARCHIVED", label: "Archived" },
+                ]}
+              />
+              <Segmented
+                value={inventoryPhotoFilter}
+                onChange={setInventoryPhotoFilter}
+                options={[
+                  { value: "ALL", label: "All" },
+                  { value: "NEEDS", label: "Needs shoot" },
+                  { value: "PARTIAL", label: "Partial" },
+                  { value: "READY", label: "Web-ready" },
+                ]}
+              />
+              <Segmented
+                value={inventoryAgeFilter}
+                onChange={setInventoryAgeFilter}
+                options={[
+                  { value: "ALL", label: "Any" },
+                  { value: "30", label: "30+" },
+                  { value: "60", label: "60+" },
+                  { value: "90", label: "90+" },
+                ]}
+              />
+              <div className="ml-auto flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => {
@@ -2259,10 +1916,10 @@ export default function App() {
                       })
                       .catch((err) => alert(err.message || "Refresh failed"));
                   }}
-                  className="btn btn-secondary text-[13px] font-semibold px-3 py-2 flex items-center gap-2"
-                  title="Reload inventory from server (shows photos exported from TruLens)"
+                  className="p-1.5 rounded-lg bg-[color:var(--glass)] border border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] transition-colors"
+                  title="Refresh photos from TruLens"
                 >
-                  <RefreshCw size={12} /> Refresh photos
+                  <RefreshCw size={14} />
                 </button>
                 <button
                   type="button"
@@ -2300,51 +1957,11 @@ export default function App() {
                     URL.revokeObjectURL(a.href);
                     addNotification("Stock List Exported", `${live.length} vehicles downloaded as CSV.`, "info");
                   }}
-                  className="btn btn-secondary text-[13px] font-semibold px-3 py-2 flex items-center gap-2"
-                  title="Download current stock list as CSV"
+                  className="p-1.5 rounded-lg bg-[color:var(--glass)] border border-white/5 text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] transition-colors"
+                  title="Export stock list CSV"
                 >
-                  <Download size={12} /> Stock List
+                  <Download size={14} />
                 </button>
-                <div className="relative flex-1 md:flex-none">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(232,234,230,0.72)]" />
-                  <input
-                    type="text"
-                    value={inventorySearch}
-                    onChange={(e) => setInventorySearch(e.target.value)}
-                    placeholder="Search model, make, VIN..."
-                    className="w-full md:w-56 bg-[color:var(--glass)] border border-white/5 rounded-lg pl-9 pr-3 py-2 text-[13px] md:text-[15px] text-[color:var(--white)] placeholder-[rgba(232,234,230,0.45)] outline-none focus:border-[color:var(--cyan)]"
-                  />
-                </div>
-                <Segmented
-                  value={inventoryStatusFilter}
-                  onChange={setInventoryStatusFilter}
-                  options={[
-                    { value: "ALL", label: "All" },
-                    { value: "INVENTORY", label: "In stock" },
-                    { value: "SOLD", label: "Sold" },
-                    { value: "ARCHIVED", label: "Archived" },
-                  ]}
-                />
-                <Segmented
-                  value={inventoryPhotoFilter}
-                  onChange={setInventoryPhotoFilter}
-                  options={[
-                    { value: "ALL", label: "All photos" },
-                    { value: "NEEDS", label: "Needs shoot" },
-                    { value: "PARTIAL", label: "Partial" },
-                    { value: "READY", label: "Web-ready" },
-                  ]}
-                />
-                <Segmented
-                  value={inventoryAgeFilter}
-                  onChange={setInventoryAgeFilter}
-                  options={[
-                    { value: "ALL", label: "Any age" },
-                    { value: "30", label: "30+" },
-                    { value: "60", label: "60+" },
-                    { value: "90", label: "90+" },
-                  ]}
-                />
               </div>
             </div>
 
@@ -2379,208 +1996,109 @@ export default function App() {
                   const mAge = inventoryAgeFilter === "ALL" || days >= Number(inventoryAgeFilter);
                   return mSearch && mStatus && mPhoto && mAge;
                 });
-              const visibleInventory = filteredInventory.slice(0, inventoryVisibleCount);
+              const liveInventory = filteredInventory.filter((v) => v.status !== "SOLD");
+              const soldInventory = filteredInventory.filter((v) => v.status === "SOLD");
+              const visibleInventory = liveInventory.slice(0, inventoryVisibleCount);
               return (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {visibleInventory.map((v) => {
-                  const readiness = computeDmsGalleryReadiness(v as any);
-                  const days = Number(v.daysInInventory) || 0;
-                  const ageTone =
-                    days >= 90 ? "text-[color:var(--muted)]" : days >= 60 ? "text-[color:var(--warning)]" : days >= 30 ? "text-[color:var(--cyan-bright)]" : "text-[color:var(--white)]";
-                  return (
-                    <div
-                      key={v.id}
-                      onClick={() => setSelectedDetailVehicle(v)}
-                      className="v-card flex flex-col h-full group hover:-translate-y-1 transition-all duration-200 cursor-pointer"
-                    >
-                      {/* Card Image area */}
-                      <div className="aspect-[16/10] bg-[color:var(--ink-2)] flex items-center justify-center relative border-b border-white/5 overflow-hidden select-none">
-                        {v.images && v.images.length > 0 ? (
-                          <img src={v.images[0]} alt={`${v.make}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                        ) : (
-                          <div className="w-14 h-14 bg-[color:var(--cyan)] rounded-xl flex items-center justify-center text-[color:var(--ink)] font-semibold text-xl shadow-lg">
-                            {(v.make || "??").slice(0, 2).toUpperCase()}
-                          </div>
-                        )}
-                        <span className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[13px] font-semibold font-mono tracking-wider  ${
-                          v.archivedAt ? "bg-[color:var(--glass)] text-[color:var(--muted)]" : v.status === "INVENTORY" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-[color:var(--glass)] text-[color:var(--muted)]"
-                        }`}>
-                          {v.archivedAt ? "Archived" : v.status === "INVENTORY" ? "Showroom Floor" : "Delivered"}
-                        </span>
-                        <span
-                          className="absolute top-3 left-3 px-2 py-0.5 rounded text-[13px] font-semibold border max-w-[70%] truncate"
-                          style={{ color: readiness.color, borderColor: readiness.color + "55", background: readiness.color + "22" }}
-                          title={(readiness.reasons || []).join(" · ")}
-                        >
-                          {readiness.label}
-                        </span>
-                      </div>
-
-                      {/* Info Area */}
-                      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-                        <div>
-                          <h4 className="font-semibold text-[16px] text-[color:var(--white)] truncate">{v.year || ""} {v.make || "Vehicle"} {v.model || ""}</h4>
-                          <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                            {v.trim || "Standard Specs"} · <span className="font-mono">{v.stockNumber}</span>
-                            {v.category === "select" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">Select</span>}
-                            {v.category === "performance" && <span className="ml-2 px-1.5 py-0.5 rounded text-[length:var(--t-micro)] font-semibold bg-red-500/15 text-red-400 border border-red-500/30">Performance</span>}
-                          </p>
-                          <div className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] flex flex-wrap gap-x-2 gap-y-1 mt-2">
-                            <span>{Number(v.mileage || 0).toLocaleString()} km</span>
-                            <span>•</span>
-                            <span>{v.transmission || "—"}</span>
-                            <span>•</span>
-                            <span>{v.fuelType || "—"}</span>
-                            {readiness.photoCount > 0 && (
-                              <>
-                                <span>•</span>
-                                <span className="text-[color:var(--cyan)]">{readiness.photoCount} photos</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="border-t border-white/5 pt-3 mt-1 flex justify-between items-center">
-                          <div>
-                            <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Retail Valuation</div>
-                            <div className="text-base font-semibold text-[color:var(--cyan-bright)] font-mono mt-0.5">{formatZAR(Number(v.retailPrice) || 0)}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">Days in stock</div>
-                            <div className={`text-[13px] font-semibold mt-0.5 ${ageTone}`}>{days} Days{days >= 60 ? " · age" : ""}</div>
-                          </div>
-                        </div>
-
-                        {/* Web + sold at a glance — Light-style, one tap each.
-                            Kept out of the modal so a dealer can publish or mark
-                            sold from the list without clicking through. */}
-                        <div
-                          className="flex items-center justify-between gap-2 pt-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <label
-                            className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] cursor-pointer select-none"
-                            title={v.showOnWebsite !== false ? "On website — tap to unpublish" : "Publish this vehicle to the dealer website"}
-                          >
-                            <span
-                              className={
-                                "relative inline-flex h-[20px] w-[36px] items-center rounded-full transition-colors " +
-                                (v.showOnWebsite !== false ? "bg-[color:var(--cyan)]" : "bg-white/15")
-                              }
+                  <div className="overflow-x-auto card">
+                    <table className="w-full text-[13px]">
+                      <thead>
+                        <tr className="text-[rgba(232,234,230,0.55)] border-b border-white/10">
+                          <th className="text-left font-medium px-4 py-2.5">Vehicle</th>
+                          <th className="text-left font-medium px-3 py-2.5">Stock #</th>
+                          <th className="text-right font-medium px-3 py-2.5">Mileage</th>
+                          <th className="text-left font-medium px-3 py-2.5">Trans</th>
+                          <th className="text-left font-medium px-3 py-2.5">Fuel</th>
+                          <th className="text-right font-medium px-3 py-2.5">Retail</th>
+                          {selectedRole !== 'salesperson' && <th className="text-right font-medium px-3 py-2.5">Cost</th>}
+                          <th className="text-right font-medium px-3 py-2.5">Age</th>
+                          <th className="text-center font-medium px-3 py-2.5">Photos</th>
+                          <th className="text-center font-medium px-3 py-2.5">Web</th>
+                          <th className="text-center font-medium px-3 py-2.5">Status</th>
+                          <th className="text-right font-medium px-4 py-2.5">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visibleInventory.map((v) => {
+                          const readiness = computeDmsGalleryReadiness(v as any);
+                          const days = Number(v.daysInInventory) || 0;
+                          const ageTone =
+                            days >= 90 ? "text-red-400" : days >= 60 ? "text-amber-400" : days >= 30 ? "text-yellow-400" : "text-[rgba(232,234,230,0.72)]";
+                          return (
+                            <tr
+                              key={v.id}
+                              onClick={() => setSelectedDetailVehicle(v)}
+                              className="border-t border-white/5 cursor-pointer hover:bg-white/[0.03] transition-colors"
                             >
-                              <span
-                                className={
-                                  "inline-block h-[16px] w-[16px] rounded-full bg-white transition-transform " +
-                                  (v.showOnWebsite !== false ? "translate-x-[18px]" : "translate-x-[2px]")
-                                }
-                              />
-                            </span>
-                            <input
-                              type="checkbox"
-                              className="sr-only"
-                              checked={v.showOnWebsite !== false}
-                              onChange={() =>
-                                handleUpdateVehicle(v.id, { showOnWebsite: v.showOnWebsite === false } as Partial<Vehicle>)
-                              }
-                            />
-                            <span>Web</span>
-                          </label>
-                          {/* Both go through the coupling helpers, not a bare
-                              status write. "Unsell" used to flip the car and
-                              leave its deal sitting at Closed Won — the same
-                              action as "Return to stock" in the detail modal,
-                              but only that one reopened the deal. */}
-                          {v.archivedAt ? (
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                try {
-                                  await updateVehicle(v.id, { archivedAt: null });
-                                  loadAllState();
-                                  addNotification("Restored", `${v.year} ${v.make} ${v.model} is back on the floor.`, "info");
-                                } catch (err: any) {
-                                  addNotification("Could not restore vehicle", err?.message || "Something went wrong.", "warning");
-                                }
-                              }}
-                              title="Bring this unit back onto the floor"
-                              className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
-                            >
-                              Restore
-                            </button>
-                          ) : v.status !== "SOLD" ? (
-                            <button
-                              type="button"
-                              onClick={() => handleMarkSold(v)}
-                              title="Mark this car sold — closes its deal and unpublishes from the website"
-                              className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
-                            >
-                              Mark sold
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleReturnToStock(v)}
-                              title="Return this car to inventory and reopen its deal"
-                              className="px-2.5 py-1 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
-                            >
-                              Unsell
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Actions — stopPropagation so card click still opens detail */}
-                        <div
-                          className="flex gap-2 pt-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {hasProduct("lens") && (
-                            <button
-                              type="button"
-                              className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-soft)]"
-                              onClick={() => openTruLens(v.stockNumber)}
-                              title="Guided shoot in TruLens"
-                            >
-                              <Camera size={11} /> Shoot
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[13px] font-semibold tracking-normal bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25"
-                            onClick={() => openStockWhatsApp(v)}
-                            title="WhatsApp stock blurb"
-                          >
-                            <MessageCircle size={11} /> WhatsApp
-                          </button>
-                          <button
-                            type="button"
-                            className="px-2 py-2 rounded-lg text-[13px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]"
-                            onClick={async () => {
-                              try {
-                                await copyStockBlurb(v);
-                                addNotification("Copied", `Share text for ${v.stockNumber}`, "info");
-                              } catch {
-                                addNotification("Copy failed", "Could not access clipboard", "error");
-                              }
-                            }}
-                            title="Copy share text"
-                          >
-                            <Copy size={11} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                              <td className="px-4 py-2.5">
+                                <div className="flex items-center gap-3">
+                                  {v.images?.[0] ? (
+                                    <img src={v.images[0]} alt="" className="w-10 h-7 rounded object-cover shrink-0 border border-white/5" />
+                                  ) : (
+                                    <div className="w-10 h-7 rounded bg-[color:var(--ink-2)] border border-white/5 flex items-center justify-center text-[10px] font-semibold text-[color:var(--muted)] shrink-0">
+                                      {(v.make || "?").slice(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <span className="text-[color:var(--white)] font-semibold">{v.year} {v.make} {v.model}</span>
+                                    {v.trim && <span className="block text-[11px] text-[rgba(232,234,230,0.55)]">{v.trim}</span>}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2.5 font-mono text-[color:var(--muted)]">{v.stockNumber}</td>
+                              <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)] font-mono">{Number(v.mileage || 0).toLocaleString()}</td>
+                              <td className="px-3 py-2.5 text-[rgba(232,234,230,0.72)]">{v.transmission || "—"}</td>
+                              <td className="px-3 py-2.5 text-[rgba(232,234,230,0.72)]">{v.fuelType || "—"}</td>
+                              <td className="px-3 py-2.5 text-right text-[color:var(--cyan-bright)] font-mono font-semibold">{formatZAR(Number(v.retailPrice) || 0)}</td>
+                              {selectedRole !== 'salesperson' && <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)] font-mono">{formatZAR(v.costPrice || 0)}</td>}
+                              <td className={`px-3 py-2.5 text-right font-mono ${ageTone}`}>{days}d</td>
+                              <td className="px-3 py-2.5 text-center">
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: readiness.color, background: readiness.color + "22" }}>
+                                  {readiness.photoCount > 0 ? readiness.photoCount : "—"}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2.5 text-center" onClick={(e) => e.stopPropagation()}>
+                                <label className="cursor-pointer">
+                                  <span className={"relative inline-flex h-[18px] w-[32px] items-center rounded-full transition-colors " + (v.showOnWebsite !== false ? "bg-[color:var(--cyan)]" : "bg-white/15")}>
+                                    <span className={"inline-block h-[14px] w-[14px] rounded-full bg-white transition-transform " + (v.showOnWebsite !== false ? "translate-x-[16px]" : "translate-x-[2px]")} />
+                                  </span>
+                                  <input type="checkbox" className="sr-only" checked={v.showOnWebsite !== false} onChange={() => handleUpdateVehicle(v.id, { showOnWebsite: v.showOnWebsite === false } as Partial<Vehicle>)} />
+                                </label>
+                              </td>
+                              <td className="px-3 py-2.5 text-center">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold font-mono ${v.archivedAt ? "bg-white/5 text-[color:var(--muted)]" : v.status === "INVENTORY" ? "bg-[color:var(--cyan-faint)] text-[color:var(--cyan)]" : "bg-white/5 text-[color:var(--muted)]"}`}>
+                                  {v.archivedAt ? "Archived" : v.status === "INVENTORY" ? "In Stock" : "Sold"}
+                                </span>
+                              </td>
+                              <td className="px-4 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center justify-end gap-1">
+                                  {v.archivedAt ? (
+                                    <button type="button" onClick={async () => { try { await updateVehicle(v.id, { archivedAt: null }); loadAllState(); addNotification("Restored", `${v.year} ${v.make} ${v.model} is back on the floor.`, "info"); } catch (err: any) { addNotification("Could not restore vehicle", err?.message || "Something went wrong.", "warning"); } }} className="px-2 py-1 rounded text-[11px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]">Restore</button>
+                                  ) : v.status !== "SOLD" ? (
+                                    <button type="button" onClick={() => handleMarkSold(v)} className="px-2 py-1 rounded text-[11px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]">Sold</button>
+                                  ) : (
+                                    <button type="button" onClick={() => handleReturnToStock(v)} className="px-2 py-1 rounded text-[11px] font-semibold bg-white/5 text-[rgba(232,234,230,0.72)] border border-white/10 hover:text-[color:var(--white)]">Unsell</button>
+                                  )}
+                                  {hasProduct("lens") && v.status === "INVENTORY" && !v.archivedAt && (
+                                    <button type="button" onClick={() => openTruLens(v.stockNumber)} className="px-2 py-1 rounded text-[11px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)]"><Camera size={10} /></button>
+                                  )}
+                                  <button type="button" onClick={() => openStockWhatsApp(v)} className="px-2 py-1 rounded text-[11px] font-semibold bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"><MessageCircle size={10} /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
-                  {filteredInventory.length > 0 && (
+                  {liveInventory.length > 0 && (
                     <div className="flex items-center justify-between gap-3 flex-wrap pt-2 text-[13px] text-[rgba(232,234,230,0.55)]">
                       <span>
-                        Showing {visibleInventory.length} of {filteredInventory.length}
-                        {filteredInventory.length !== state.vehicles.length &&
-                          ` · ${state.vehicles.length} total`}
+                        Showing {visibleInventory.length} of {liveInventory.length} in stock
+                        {soldInventory.length > 0 && ` · ${soldInventory.length} sold`}
                       </span>
-                      {filteredInventory.length > inventoryVisibleCount && (
+                      {liveInventory.length > inventoryVisibleCount && (
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -2589,20 +2107,20 @@ export default function App() {
                             }
                             className="btn bg-[color:var(--glass)] text-[color:var(--white)] border border-[color:var(--glass-line)] text-[13px] font-semibold"
                           >
-                            Show {Math.min(INVENTORY_PAGE, filteredInventory.length - inventoryVisibleCount)} more
+                            Show {Math.min(INVENTORY_PAGE, liveInventory.length - inventoryVisibleCount)} more
                           </button>
                           <button
                             type="button"
-                            onClick={() => setInventoryVisibleCount(filteredInventory.length)}
+                            onClick={() => setInventoryVisibleCount(liveInventory.length)}
                             className="btn bg-[color:var(--glass)] text-[color:var(--muted)] border border-[color:var(--glass-line)] text-[13px]"
                           >
                             Show all
                           </button>
                         </div>
                       )}
-                      {filteredInventory.length > INVENTORY_PAGE &&
+                      {liveInventory.length > INVENTORY_PAGE &&
                         inventoryVisibleCount > INVENTORY_PAGE &&
-                        filteredInventory.length <= inventoryVisibleCount && (
+                        liveInventory.length <= inventoryVisibleCount && (
                           <button
                             type="button"
                             onClick={() => setInventoryVisibleCount(INVENTORY_PAGE)}
@@ -2612,6 +2130,86 @@ export default function App() {
                           </button>
                         )}
                     </div>
+                  )}
+
+                  {/* ── SOLD VEHICLES — collapsible table with deal details ── */}
+                  {soldInventory.length > 0 && (
+                    <details className="card overflow-hidden mt-2">
+                      <summary className="cursor-pointer px-4 py-3 text-[13px] font-semibold text-[color:var(--white)] select-none flex items-center gap-2 [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
+                        <ChevronDown size={14} className="text-[color:var(--muted)] transition-transform [[open]>&]:rotate-180" />
+                        Sold Stock · {soldInventory.length} vehicle{soldInventory.length === 1 ? "" : "s"}
+                        <span className="text-[color:var(--muted)] font-normal ml-auto">
+                          {formatZAR(soldInventory.reduce((s, v) => s + (v.retailPrice || 0), 0))} revenue
+                        </span>
+                      </summary>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-[13px]">
+                          <thead>
+                            <tr className="text-[rgba(232,234,230,0.55)] border-t border-white/5">
+                              <th className="text-left font-medium px-4 py-2">Vehicle</th>
+                              <th className="text-left font-medium px-3 py-2">Stock #</th>
+                              <th className="text-right font-medium px-3 py-2">Cost</th>
+                              <th className="text-right font-medium px-3 py-2">Sold Price</th>
+                              <th className="text-right font-medium px-3 py-2">Profit</th>
+                              <th className="text-right font-medium px-3 py-2">Margin</th>
+                              <th className="text-right font-medium px-4 py-2">Days held</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {soldInventory.map((v) => {
+                              const m = grossMargin(v);
+                              const days = stockAge(v);
+                              return (
+                                <tr
+                                  key={v.id}
+                                  onClick={() => setSelectedDetailVehicle(v)}
+                                  className="border-t border-white/5 cursor-pointer hover:bg-white/[0.03] transition-colors"
+                                >
+                                  <td className="px-4 py-2.5">
+                                    <div className="flex items-center gap-3">
+                                      {v.images?.[0] ? (
+                                        <img src={v.images[0]} alt="" className="w-10 h-7 rounded object-cover shrink-0 border border-white/5" />
+                                      ) : (
+                                        <div className="w-10 h-7 rounded bg-[color:var(--ink-2)] border border-white/5 flex items-center justify-center text-[10px] font-semibold text-[color:var(--muted)] shrink-0">
+                                          {(v.make || "?").slice(0, 2).toUpperCase()}
+                                        </div>
+                                      )}
+                                      <span className="text-[color:var(--white)]">{v.year} {v.make} {v.model}</span>
+                                    </div>
+                                  </td>
+                                  <td className="px-3 py-2.5 font-mono text-[color:var(--muted)]">{v.stockNumber}</td>
+                                  <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)] font-mono">{formatZAR(v.costPrice || 0)}</td>
+                                  <td className="px-3 py-2.5 text-right text-[color:var(--white)] font-mono font-semibold">{formatZAR(v.retailPrice || 0)}</td>
+                                  <td className={`px-3 py-2.5 text-right font-mono font-semibold ${m.rand >= 0 ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"}`}>
+                                    {formatZAR(m.rand)}
+                                  </td>
+                                  <td className={`px-3 py-2.5 text-right font-mono ${m.pct >= 10 ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"}`}>
+                                    {m.pct.toFixed(1)}%
+                                  </td>
+                                  <td className="px-4 py-2.5 text-right text-[rgba(232,234,230,0.72)]">{days}d</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                          <tfoot>
+                            <tr className="border-t border-white/10 font-semibold">
+                              <td className="px-4 py-2.5 text-[color:var(--white)]" colSpan={2}>Totals</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-[rgba(232,234,230,0.72)]">{formatZAR(soldInventory.reduce((s, v) => s + (v.costPrice || 0), 0))}</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-[color:var(--white)]">{formatZAR(soldInventory.reduce((s, v) => s + (v.retailPrice || 0), 0))}</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-[color:var(--cyan)]">{formatZAR(soldInventory.reduce((s, v) => s + grossMargin(v).rand, 0))}</td>
+                              <td className="px-3 py-2.5 text-right font-mono text-[color:var(--cyan)]">
+                                {(() => {
+                                  const rev = soldInventory.reduce((s, v) => s + (v.retailPrice || 0), 0);
+                                  const prof = soldInventory.reduce((s, v) => s + grossMargin(v).rand, 0);
+                                  return rev > 0 ? ((prof / rev) * 100).toFixed(1) + "%" : "—";
+                                })()}
+                              </td>
+                              <td className="px-4 py-2.5"></td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </details>
                   )}
                 </>
               );
@@ -2845,6 +2443,38 @@ export default function App() {
           </div>
         )}
 
+        {/* BULK IMPORT */}
+        {activeSection === "bulk_import" && (
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
+            <BulkImport
+              existingStockNumbers={state.vehicles.map(v => v.stockNumber)}
+              onImportVehicles={async (vehicles) => {
+                for (const v of vehicles) {
+                  await createVehicle({
+                    ...v,
+                    images: [],
+                    damagePhotos: [],
+                    vinPhotos: [],
+                    serviceBookPhotos: [],
+                    extrasPhotos: [],
+                  });
+                }
+              }}
+            />
+          </div>
+        )}
+
+        {/* TEST DRIVES & VIEWINGS CALENDAR */}
+        {activeSection === "test_drives" && (
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
+            <TestDriveCalendar
+              leads={state.leads}
+              vehicles={state.vehicles}
+              onUpdateLead={(id, updates) => updateLead(id, updates)}
+            />
+          </div>
+        )}
+
         {/* LEAD CRM SECTION */}
         {/* STOCK HEALTH — ageing and margin, the two numbers that decide whether
             a yard makes money. Everything shown was already in the data. */}
@@ -2923,7 +2553,7 @@ export default function App() {
                 {byAge.length === 0 ? (
                   <p className="px-4 py-6 text-[13px] text-[rgba(232,234,230,0.55)]">No cars in stock yet.</p>
                 ) : (
-                  <table className="w-full text-[13px] stack-mobile">
+                  <table className="w-full text-[13px]">
                     <thead>
                       <tr className="text-[13px] text-[rgba(232,234,230,0.55)]">
                         <th className="text-left font-medium px-4 py-2">Vehicle</th>
@@ -3016,7 +2646,7 @@ export default function App() {
                   disabled={isAutoAssigning || (state?.leads.filter(l => l.status === "New").length === 0)}
                   className="tru-btn-ghost px-3 min-h-[36px] text-[13px] flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Sparkles size={14} className={isAutoAssigning ? "animate-spin" : ""} />
+                  <RefreshCw size={14} className={isAutoAssigning ? "animate-spin" : ""} />
                   {isAutoAssigning ? "Assigning…" : `Auto-assign ${state?.leads.filter(l => l.status === "New").length ?? 0} new`}
                 </button>
                 <button onClick={() => setIsLeadModalOpen(true)} className="btn btn-primary">
@@ -3627,11 +3257,177 @@ export default function App() {
               onAddExpense={handleCreateExpense}
               onReconcileExpense={handleReconcileExpense}
               onUpdateVehicle={handleUpdateVehicle}
+              role={selectedRole}
             />
             </Suspense>
           </div>
         )}
 
+
+        {/* CLIENTS DATABASE SECTION */}
+        {activeSection === "clients" && (() => {
+          const clients = (state.clients || []) as Client[];
+          const [clientSearch, setClientSearch] = [clientSearchState, setClientSearchState];
+          const filtered = clients.filter(c => {
+            if (!clientSearch) return true;
+            const q = clientSearch.toLowerCase();
+            return `${c.firstName} ${c.lastName} ${c.company || ''} ${c.phone} ${c.email} ${c.code}`.toLowerCase().includes(q);
+          });
+
+          return (
+            <div className="flex flex-col gap-6 animate-in fade-in duration-200 max-w-7xl mx-auto w-full">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Client Database</h1>
+                  <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">{clients.length} client{clients.length !== 1 ? 's' : ''} on file</p>
+                </div>
+                <button
+                  onClick={() => setEditingClient({} as any)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[rgba(29,185,84,0.15)] text-[rgb(29,185,84)] border border-[rgba(29,185,84,0.3)] hover:bg-[rgba(29,185,84,0.25)] transition-colors"
+                >
+                  <Contact className="w-4 h-4" /> Add Client
+                </button>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[rgba(232,234,230,0.4)]" />
+                <input
+                  type="text"
+                  value={clientSearch}
+                  onChange={e => setClientSearchState(e.target.value)}
+                  placeholder="Search by name, company, phone, email…"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-sm text-[color:var(--white)] placeholder:text-[rgba(232,234,230,0.35)] focus:outline-none focus:border-[rgba(29,185,84,0.5)]"
+                />
+              </div>
+
+              {filtered.length === 0 ? (
+                <div className="text-center py-16 text-[rgba(232,234,230,0.45)] text-sm">
+                  {clients.length === 0 ? "No clients yet. Add your first client to build your database." : "No clients match your search."}
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.06)]">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] bg-[rgba(255,255,255,0.02)]">
+                        <th className="px-4 py-3 font-medium">Code</th>
+                        <th className="px-4 py-3 font-medium">Name</th>
+                        <th className="px-4 py-3 font-medium">Company</th>
+                        <th className="px-4 py-3 font-medium">Phone</th>
+                        <th className="px-4 py-3 font-medium">Email</th>
+                        <th className="px-4 py-3 font-medium">ID Number</th>
+                        <th className="px-4 py-3 font-medium">City</th>
+                        <th className="px-4 py-3 font-medium">Added</th>
+                        <th className="px-4 py-3 font-medium w-20"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map(c => (
+                        <tr
+                          key={c.id}
+                          className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.03)] cursor-pointer transition-colors"
+                          onClick={() => setEditingClient(c)}
+                        >
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)] font-mono text-xs">{c.code || '—'}</td>
+                          <td className="px-4 py-3 text-[color:var(--white)] font-medium">{c.title ? `${c.title} ` : ''}{c.firstName} {c.lastName}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.company || '—'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.phone || '—'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.email || '—'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)] font-mono text-xs">{c.idNumber || '—'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)]">{c.city || '—'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.45)] text-xs">{c.createdAt}</td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={e => { e.stopPropagation(); if (confirm(`Delete ${c.firstName} ${c.lastName}?`)) handleDeleteClient(c.id); }}
+                              className="p-1.5 rounded hover:bg-[rgba(255,60,60,0.1)] text-[rgba(232,234,230,0.35)] hover:text-[rgb(255,80,80)] transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {editingClient && (
+                <div className="fixed inset-0 bg-black/60 z-[300] flex items-center justify-center p-6" onClick={() => setEditingClient(null)}>
+                  <div className="bg-[rgb(24,24,24)] rounded-2xl border border-[rgba(255,255,255,0.08)] w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-between p-6 border-b border-[rgba(255,255,255,0.06)]">
+                      <h2 className="text-lg font-semibold text-[color:var(--white)]">{editingClient.id ? 'Edit Client' : 'New Client'}</h2>
+                      <button onClick={() => setEditingClient(null)} className="p-1.5 rounded-lg hover:bg-[rgba(255,255,255,0.06)] text-[rgba(232,234,230,0.55)]"><X className="w-5 h-5" /></button>
+                    </div>
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        const fd = new FormData(e.currentTarget);
+                        const data: any = {};
+                        fd.forEach((v, k) => { if (v) data[k] = v; });
+                        if (editingClient.id) {
+                          await handleUpdateClient(editingClient.id, data);
+                        } else {
+                          await handleCreateClient(data);
+                        }
+                        setEditingClient(null);
+                      }}
+                      className="p-6 grid grid-cols-2 gap-4"
+                    >
+                      {[
+                        { name: 'code', label: 'Client Code', placeholder: 'e.g. CMA001' },
+                        { name: 'title', label: 'Title', placeholder: 'Mr / Mrs / Ms' },
+                        { name: 'firstName', label: 'First Name *', placeholder: 'First name', required: true },
+                        { name: 'lastName', label: 'Last Name *', placeholder: 'Last name', required: true },
+                        { name: 'company', label: 'Company', placeholder: 'Company name' },
+                        { name: 'phone', label: 'Phone *', placeholder: '082 000 0000', required: true },
+                        { name: 'phone2', label: 'Phone 2', placeholder: 'Alt phone' },
+                        { name: 'email', label: 'Email *', placeholder: 'email@example.com', required: true },
+                        { name: 'idNumber', label: 'ID / Reg Number', placeholder: 'SA ID number' },
+                        { name: 'vatNumber', label: 'VAT Number', placeholder: 'VAT number' },
+                        { name: 'address', label: 'Address Line 1', placeholder: 'Street address' },
+                        { name: 'address2', label: 'Address Line 2', placeholder: 'Address line 2' },
+                        { name: 'suburb', label: 'Suburb', placeholder: 'Suburb' },
+                        { name: 'city', label: 'City', placeholder: 'City' },
+                        { name: 'province', label: 'Province', placeholder: 'Province' },
+                        { name: 'postalCode', label: 'Postal Code', placeholder: 'Postal code' },
+                      ].map(f => (
+                        <label key={f.name} className="flex flex-col gap-1">
+                          <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] font-medium">{f.label}</span>
+                          {f.name === 'province' ? (
+                            <select
+                              name={f.name}
+                              defaultValue={(editingClient as any)[f.name] || ''}
+                              className="px-3 py-2 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-sm text-[color:var(--white)] focus:outline-none focus:border-[rgba(29,185,84,0.5)]"
+                            >
+                              <option value="">Select province</option>
+                              {['Eastern Cape','Free State','Gauteng','KwaZulu-Natal','Limpopo','Mpumalanga','North West','Northern Cape','Western Cape'].map(p => (
+                                <option key={p} value={p}>{p}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              name={f.name}
+                              type="text"
+                              defaultValue={(editingClient as any)[f.name] || ''}
+                              placeholder={f.placeholder}
+                              required={(f as any).required}
+                              className="px-3 py-2 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-sm text-[color:var(--white)] placeholder:text-[rgba(232,234,230,0.25)] focus:outline-none focus:border-[rgba(29,185,84,0.5)]"
+                            />
+                          )}
+                        </label>
+                      ))}
+                      <div className="col-span-2 flex justify-end gap-3 mt-4">
+                        <button type="button" onClick={() => setEditingClient(null)} className="px-4 py-2 rounded-lg text-sm text-[rgba(232,234,230,0.55)] hover:bg-[rgba(255,255,255,0.06)] transition-colors">Cancel</button>
+                        <button type="submit" className="px-6 py-2 rounded-lg text-sm font-medium bg-[rgb(29,185,84)] text-white hover:bg-[rgb(25,160,72)] transition-colors">
+                          {editingClient.id ? 'Save Changes' : 'Add Client'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* CUSTOMER FORM SECTION */}
         {activeSection === "customer_form" && (
@@ -3893,6 +3689,17 @@ export default function App() {
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">Model lease structures & monthly amortization schedules</p>
             </div>
             <AmortizationCalc initialPrice={state.vehicles[0]?.retailPrice || 485000} />
+          </div>
+        )}
+
+        {/* WEB MANAGEMENT — inline-editable stock grid */}
+        {activeSection === "web_management" && (
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
+            <WebManagementGrid
+              vehicles={state.vehicles}
+              onUpdateVehicle={(id, updates) => handleUpdateVehicle(id, updates)}
+              role={selectedRole}
+            />
           </div>
         )}
 
@@ -4240,19 +4047,6 @@ export default function App() {
               );
             })()}
 
-            {/* Install as an app. The banner is dismissible and only appears
-                when the browser volunteers the prompt, so without this there
-                was no way back to installing once it had been closed. */}
-            <div className="card border-[color:var(--cyan-soft)]">
-              <div className="card-header border-b border-white/5 px-5 py-3">
-                <h3 className="font-semibold text-[16px] text-[color:var(--white)] flex items-center gap-2">
-                  <Download size={14} className="text-[color:var(--cyan-bright)]" /> Install TruFlow as an app
-                </h3>
-              </div>
-              <div className="card-body p-5">
-                <InstallAppButton appName="TruFlow" />
-              </div>
-            </div>
 
             <div className="card">
               <div className="card-header border-b border-white/5 px-4 py-3">
@@ -4282,109 +4076,9 @@ export default function App() {
           </div>
         )}
 
-        {/* Mobile bottom tab bar. Five destinations: the four things a dealer
-            touches hourly, plus a More opener for everything else. Above md the
-            permanent sidebar is the navigation and this stays hidden. */}
-        {(() => {
-          const AVAILABLE = new Set(
-            filteredNavigation.flatMap((g) => g.items.map((i) => i.id))
-          );
-          const tabs: Array<{
-            id: string;
-            label: string;
-            icon: typeof Home;
-            action: () => void;
-            active: boolean;
-            dot?: boolean;
-          }> = [];
-          if (AVAILABLE.has("dashboard")) {
-            tabs.push({
-              id: "dashboard",
-              label: "Today",
-              icon: Home,
-              action: () => navigateTo("dashboard"),
-              active: activeSection === "dashboard",
-            });
-          }
-          if (AVAILABLE.has("leads")) {
-            tabs.push({
-              id: "leads",
-              label: "Leads",
-              icon: Users,
-              action: () => navigateTo("leads"),
-              active: activeSection === "leads",
-              dot: navAttention.leads > 0,
-            });
-          }
-          if (AVAILABLE.has("inventory")) {
-            tabs.push({
-              id: "inventory",
-              label: "Stock",
-              icon: Car,
-              action: () => navigateTo("inventory"),
-              active: activeSection === "inventory",
-              dot: navAttention.inventory > 0,
-            });
-          }
-          if (AVAILABLE.has("tasks")) {
-            tabs.push({
-              id: "tasks",
-              label: "Tasks",
-              icon: CheckSquare,
-              action: () => navigateTo("tasks"),
-              active: activeSection === "tasks",
-              dot: navAttention.tasks > 0,
-            });
-          }
-          tabs.push({
-            id: "more",
-            label: "More",
-            icon: MoreHorizontal,
-            action: () => setSidebarOpen(true),
-            active: sidebarOpen,
-          });
-          return (
-            <nav
-              aria-label="Primary"
-              style={{ paddingBottom: "calc(14px + var(--safe-b))" }}
-              className="md:hidden fixed left-0 right-0 bottom-0 z-[190] bg-[color:var(--ink-2)]/95 backdrop-blur-md border-t border-[color:var(--glass-line)] pt-2 px-1"
-            >
-              <ul className="flex items-stretch justify-around">
-                {tabs.map((t) => {
-                  const Icon = t.icon;
-                  return (
-                    <li key={t.id} className="flex-1">
-                      <button
-                        type="button"
-                        onClick={t.action}
-                        aria-current={t.active ? "page" : undefined}
-                        aria-label={t.label}
-                        className={`w-full min-h-[52px] flex flex-col items-center justify-center gap-0.5 rounded-lg cursor-pointer relative ${
-                          t.active ? "text-[color:var(--cyan)]" : "text-[color:var(--muted)]"
-                        }`}
-                      >
-                        <span className="relative">
-                          <Icon size={20} />
-                          {t.dot ? (
-                            <span
-                              aria-label="Needs attention"
-                              className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[color:var(--cyan)] ring-2 ring-[color:var(--ink-2)]"
-                            />
-                          ) : null}
-                        </span>
-                        <span className="text-[12px] font-medium">{t.label}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
-          );
-        })()}
       </main>
 
       {/* Dealer Assist. Opens from the top bar — no floating launcher. */}
-      <PwaInstallBanner appName="TruFlow Premium" accent="var(--blue)" dismissKey="truflow_premium_pwa_dismissed" />
       <ChatWidget open={assistOpen} onOpenChange={setAssistOpen} />
       <GuidePanel
         open={guideOpen}
@@ -4620,6 +4314,8 @@ export default function App() {
           users={state.users}
           allCommunications={state.communications}
           allTasks={state.tasks}
+          dealership={state.dealerships.find(d => d.id === dealershipId) || state.dealerships[0]}
+          clients={state.clients || []}
           onClose={() => { setLeadDetailId(null); setLeadInitialTab(undefined); }}
           onRefresh={loadAllState}
           initialTab={leadInitialTab}
@@ -4672,6 +4368,7 @@ export default function App() {
           settings={state.settings}
           dealershipId={dealershipId || selectedDetailVehicle?.dealershipId}
           hasLens={hasProduct("lens")}
+          dealership={state.dealerships.find(d => d.id === dealershipId) || state.dealerships[0]}
           truSocialEnabled={(() => {
             // Publish tab shows only for a dealer that both carries the "social"
             // product and has TruSocial switched on — the publish targets are

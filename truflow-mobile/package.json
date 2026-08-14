@@ -1,0 +1,16 @@
+{
+  "name": "truflow-mobile",
+  "version": "1.0.0",
+  "description": "TruFlow Premium mobile companion — PWA for dealership floor staff",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "http-proxy-middleware": "^3.0.7"
+  }
+}

@@ -7,6 +7,7 @@
 #   trusaas-premium.onrender.com  → TruFlow          (truflow-premium)
 #                                   → flow.tru-saas.com     (canonical)
 #                                   → premium.tru-saas.com  (alias, legacy embeds)
+#   trusaas-mobile.onrender.com   → TruFlow Mobile   (truflow-mobile) → app.tru-saas.com
 #   trusaas-live.onrender.com     → TruLive          (trulive)  → live.tru-saas.com
 #   trusaas-trade.onrender.com    → TruTrade + TruValue  (trutrade) → trade.tru-saas.com
 #                                   (renamed from trusaas-value 2026-07-31; old service discontinued, domain repointed)
@@ -115,27 +116,30 @@ services:
       - key: SCRAPER_SERVICE_URLS
         value: https://trusaas-crm-scraper.onrender.com
 
-  # ── 2. TruFlow Light — lightweight dealer console (NOT a separate service) ──
+  # ── 2. TruFlow Mobile — standalone Premium companion app ────────────────────
   #
-  # Served by trusaas-premium at flow.tru-saas.com/light (server.ts mounts
-  # express.static on public/light). It has no service block and no disk of its
-  # own — it is a thin client that signs into the Premium API with a dealer
-  # code. Deploy source is truflow-premium/public/light/index.html; the
-  # maintained source of truth is truflow-light/index.html (one self-contained
-  # file — edit there, then copy to public/light). Rebranded to the cyan suite
-  # identity 2026-08-02, so it no longer ships the old blue "LITE" mark.
-  # truflow-light/ is therefore NOT pending deletion.
+  # RETIRED: TruFlow Light (the /light PWA on Premium) was replaced by TruFlow
+  # Mobile on 2026-08-14. Mobile runs as its own service at app.tru-saas.com
+  # and proxies API calls to trusaas-premium. Premium's /light route now 301s
+  # to app.tru-saas.com so existing bookmarks migrate automatically.
   #
-  # Do NOT confuse this with the old TruFlow *Lite* — a second full codebase
-  # whose "login" was `password === '2026'` in client JS and which had no disk
-  # (its seed cars kept reappearing). That tier was RETIRED 2026-07-25 and
-  # removed outright rather than left commented, so a Blueprint sync cannot
-  # resurrect it. There is one DMS product, TruFlow; Light is only its console.
-  #
-  # flow.tru-saas.com is a custom domain on trusaas-premium, so every dealer
-  # embed already pointing at flow. keeps working. premium.tru-saas.com is kept
-  # as an alias. flow. is the canonical hostname — use it in links, docs and
-  # dealer training; logins are per-origin, so mixing the two logs people out.
+  # Entry-level dealers can run entirely on the mobile app — it has leads,
+  # inventory, docs, and add-vehicle. Premium dealers use both desktop + mobile.
+  - type: web
+    name: trusaas-mobile
+    runtime: node
+    plan: starter
+    rootDir: truflow-mobile
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_TARGET
+        value: https://flow.tru-saas.com
+      - key: PORT
+        value: "3002"
 
   # ── 2b. TruView — live guided vehicle walkthrough (WebRTC, no app for buyer) ─
   - type: web
