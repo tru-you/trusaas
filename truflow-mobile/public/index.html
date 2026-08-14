@@ -288,6 +288,39 @@ button,input,textarea{font-family:inherit;}
 }
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.08s!important;}}
 
+/* Pull-to-refresh */
+.ptr{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:center;justify-content:center;height:0;overflow:hidden;transition:height .28s var(--ease);pointer-events:none;}
+.ptr .ptr-spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;opacity:0;transition:opacity .2s,transform .3s var(--ease);}
+.ptr.pulling .ptr-spinner{opacity:1;}
+.ptr.refreshing .ptr-spinner{opacity:1;animation:spin .6s linear infinite;}
+
+/* Offline banner */
+.offline-bar{position:absolute;top:calc(var(--top-h) + env(safe-area-inset-top));left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 16px;
+  background:var(--danger-faint);border-bottom:1px solid var(--danger);font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--danger);
+  transform:translateY(-100%);transition:transform .3s var(--ease);pointer-events:none;}
+.offline-bar.show{transform:translateY(0);pointer-events:auto;}
+.offline-bar::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--danger);}
+
+/* Skeleton shimmer */
+.skel{background:var(--ink-2);border-radius:var(--r-card);overflow:hidden;position:relative;}
+.skel::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 30%,rgba(232,234,230,.04) 50%,transparent 70%);animation:shimmer 1.4s ease-in-out infinite;}
+@keyframes shimmer{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+.skel-lead{height:72px;border:1px solid var(--glass-line2);}
+.skel-veh{height:260px;border:1px solid var(--glass-line2);}
+.skel-kpi{height:92px;border:1px solid var(--glass-line2);}
+
+/* Retry button */
+.retry{text-align:center;padding:30px 20px;}
+.retry .t{font-weight:600;font-size:15px;color:var(--dim);margin-bottom:4px;}
+.retry .s{font-size:13px;color:var(--muted);margin-bottom:14px;}
+.retry button{height:42px;padding:0 24px;font-size:14px;}
+
+/* Sort selector */
+.sort-row{display:flex;align-items:center;gap:6px;margin-top:8px;}
+.sort-row .sort-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);flex-shrink:0;}
+.sort-row select{background:var(--ink-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 28px 6px 10px;color:var(--dim);font-family:var(--mono);font-size:11px;outline:none;-webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236E7681' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:12px;}
+
 /* Stock: the no-photo placeholder gets the fix, not the diagnosis. */
 .veh .noph{position:relative;}
 .veh .noph .tr{position:absolute;top:11px;right:11px;}
@@ -346,7 +379,9 @@ button,input,textarea{font-family:inherit;}
     <div class="avatar" id="avatarBtn">TF</div>
   </header>
 
+  <div class="offline-bar" id="offlineBar">Offline — showing cached data</div>
   <main class="scroll" id="scroll">
+    <div class="ptr" id="ptr"><div class="ptr-spinner"></div></div>
     <section class="screen on" id="s-home">
       <div class="h-hi" id="homeDealer">Dealer</div>
       <div class="h-sub">Your floor at a glance.</div>
@@ -358,19 +393,20 @@ button,input,textarea{font-family:inherit;}
     </section>
 
     <section class="screen" id="s-leads">
-      <div class="toolbar"><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="leadSearch" placeholder="Search leads" autocomplete="off"></div><div class="chips" id="leadChips"></div></div>
+      <div class="toolbar"><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="leadSearch" placeholder="Search leads" autocomplete="off"></div><div style="display:flex;align-items:center;gap:8px;margin-top:10px"><div class="chips" id="leadChips" style="flex:1;margin-top:0"></div><button class="btn-primary" id="addLeadBtn" style="height:34px;padding:0 14px;font-size:12px;flex-shrink:0;display:flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:14px;height:14px"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>Walk-in</button></div><div class="sort-row"><span class="sort-label">Sort</span><select id="leadSortSel"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name">Name A–Z</option></select></div></div>
       <div class="stack" id="leadList" style="margin-top:12px"></div>
     </section>
 
     <section class="screen" id="s-stock">
-      <div class="toolbar"><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="stockSearch" placeholder="Search make, model, stock #" autocomplete="off"></div><div class="chips" id="stockChips"></div></div>
+      <div class="toolbar"><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="stockSearch" placeholder="Search make, model, stock #" autocomplete="off"></div><div class="chips" id="stockChips"></div><div class="sort-row"><span class="sort-label">Sort</span><select id="stockSortSel"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="price-high">Price high–low</option><option value="price-low">Price low–high</option><option value="km">Lowest km</option></select></div></div>
       <div class="stack" id="stockList" style="margin-top:12px"></div>
     </section>
 
-    <section class="screen" id="s-docs">
-      <div class="h-hi">Documents</div>
-      <p style="margin:4px 2px 14px;color:var(--muted);font-size:13px;line-height:1.5">Work through every deal's paperwork: generate a proforma, invoice or handover doc, tick to skip a stage, or sign &amp; finalise. Selling is never blocked by the doc flow.</p>
-      <div id="docsList" class="stack"></div>
+
+    <section class="screen" id="s-activity">
+      <div class="h-hi">Activity</div>
+      <div class="h-sub">What's happening across your dealership.</div>
+      <div class="stack" id="actList" style="margin-top:16px"></div>
       <div style="height:14px"></div>
     </section>
 
@@ -405,7 +441,7 @@ button,input,textarea{font-family:inherit;}
     <div class="tab on" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h14V9"/></svg><span>Home</span></div>
     <div class="tab" data-tab="leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg><span>Leads</span></div>
     <div class="tab" data-tab="stock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14l-1.5-5H6.5L5 17Z"/><path d="M8 12l1-4h6l1 4"/><circle cx="7.5" cy="17.4" r="1.3"/><circle cx="16.5" cy="17.4" r="1.3"/></svg><span>Stock</span></div>
-    <div class="tab" data-tab="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span>Docs</span></div>
+    <div class="tab" data-tab="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Activity</span></div>
     <div class="tab" data-tab="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Add</span></div>
     <div class="tab" data-tab="acct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Account</span></div>
   </nav>
@@ -507,22 +543,67 @@ button,input,textarea{font-family:inherit;}
   }
 
   /* ── Data ── */
-  var polling=false;
+  var polling=false, loadFailed=false, isOffline=!navigator.onLine;
+  function updateOnline(online){isOffline=!online;var bar=$("#offlineBar");if(bar)bar.classList.toggle("show",isOffline);if(online&&TOKEN)loadAll();}
+  window.addEventListener("online",function(){updateOnline(true);});
+  window.addEventListener("offline",function(){updateOnline(false);});
+
+  function skelHTML(cls,n){var h="";for(var i=0;i<(n||3);i++)h+='<div class="skel '+cls+'"></div>';return h;}
+  function retryHTML(msg){return '<div class="retry"><div class="t">'+(msg||"Couldn't load")+'</div><div class="s">Check your connection</div><button class="btn-primary" onclick="loadAll()">Tap to retry</button></div>';}
+
   function loadAll(){
-    if(polling)return;polling=true;
-    Promise.all([loadLeads(),loadInventory()]).finally(function(){polling=false;});
+    if(polling)return;polling=true;loadFailed=false;
+    if(!cachedLeads.length)$("#homeLeads").innerHTML=skelHTML("skel-lead",2);
+    if(!cachedStock.length)$("#homeStock").innerHTML=skelHTML("skel-veh",2);
+    if(!cachedLeads.length&&!cachedStock.length)$("#kpis").innerHTML=skelHTML("skel-kpi",4);
+    Promise.all([loadLeads(),loadInventory()]).finally(function(){polling=false;endPTR();});
   }
   function loadLeads(){
     return api("GET","/api/leads").then(function(x){cachedLeads=Array.isArray(x)?x:[];
       cachedLeads.sort(function(a,b){return new Date(b.createdAt||0)-new Date(a.createdAt||0);});
-      renderHome();renderLeads();renderDocs();
-    }).catch(function(){cachedLeads=[];renderHome();renderLeads();renderDocs();});
+      renderHome();renderLeads();
+    }).catch(function(){
+      loadFailed=true;
+      if(!cachedLeads.length){$("#homeLeads").innerHTML=retryHTML("Leads failed to load");$("#leadList").innerHTML=retryHTML("Leads failed to load");}
+      renderHome();renderLeads();
+    });
   }
   function loadInventory(){
     return api("GET","/api/all-vehicles").then(function(x){cachedStock=Array.isArray(x)?x:[];renderHome();renderStock();
-    }).catch(function(){cachedStock=[];renderHome();renderStock();});
+    }).catch(function(){
+      loadFailed=true;
+      if(!cachedStock.length){$("#homeStock").innerHTML=retryHTML("Stock failed to load");$("#stockList").innerHTML=retryHTML("Stock failed to load");}
+      renderHome();renderStock();
+    });
   }
-  setInterval(function(){if(TOKEN&&!sheetOpen())loadAll();},30000);
+  setInterval(function(){if(TOKEN&&!sheetOpen()&&!isOffline)loadAll();},30000);
+
+  /* ── Pull-to-refresh ── */
+  var ptrEl=$("#ptr"), ptrStartY=0, ptrDist=0, ptrActive=false;
+  var scrollEl=$("#scroll");
+  scrollEl.addEventListener("touchstart",function(e){
+    if(scrollEl.scrollTop>5||sheetOpen())return;
+    ptrStartY=e.touches[0].clientY;ptrActive=true;ptrDist=0;
+  },{passive:true});
+  scrollEl.addEventListener("touchmove",function(e){
+    if(!ptrActive)return;
+    var d=e.touches[0].clientY-ptrStartY;
+    if(d<0){ptrDist=0;ptrEl.style.height="0";return;}
+    ptrDist=Math.min(d*.45,70);
+    ptrEl.style.height=ptrDist+"px";
+    ptrEl.classList.toggle("pulling",ptrDist>20);
+    ptrEl.querySelector(".ptr-spinner").style.transform="rotate("+ptrDist*3+"deg)";
+  },{passive:true});
+  scrollEl.addEventListener("touchend",function(){
+    if(!ptrActive)return;ptrActive=false;
+    if(ptrDist>=55&&TOKEN){ptrEl.classList.add("refreshing");ptrEl.style.height="50px";loadAll();}
+    else endPTR();
+  });
+  function endPTR(){ptrEl.classList.remove("pulling","refreshing");ptrEl.style.height="0";}
+
+  /* ── Search debounce ── */
+  var debounceT={};
+  function debounce(key,fn,ms){clearTimeout(debounceT[key]);debounceT[key]=setTimeout(fn,ms||180);}
 
   /* ── Vehicle helpers ── */
   function vName(v){return [v.year,v.make,v.model].filter(Boolean).join(" ").replace(/\s+/g," ").trim();}
@@ -594,7 +675,7 @@ button,input,textarea{font-family:inherit;}
     var hs=$("#homeStock");hs.innerHTML="";
     active().slice(0,3).forEach(function(v){hs.appendChild(vehCard(v));});
   }
-  var leadFilter="All";
+  var leadFilter="All", leadSort="newest";
   function renderLeads(){
     var q=($("#leadSearch").value||"").toLowerCase().trim(), box=$("#leadList");box.innerHTML="";
     var arr=cachedLeads.filter(function(l){
@@ -602,10 +683,12 @@ button,input,textarea{font-family:inherit;}
       if(!q)return true;
       return (((l.firstName||"")+" "+(l.lastName||"")+" "+(l.source||"")+" "+(l.phone||"")+" "+(l.notes||"")).toLowerCase().indexOf(q)>=0);
     });
+    if(leadSort==="oldest")arr=arr.slice().reverse();
+    else if(leadSort==="name")arr=arr.slice().sort(function(a,b){var an=((a.firstName||"")+" "+(a.lastName||"")).trim(),bn=((b.firstName||"")+" "+(b.lastName||"")).trim();return an.localeCompare(bn);});
     if(!arr.length){box.appendChild(emptyState("No leads match"));return;}
     arr.forEach(function(l){var w=el("div","card");w.appendChild(leadRow(l));box.appendChild(w);});
   }
-  var stockFilter="All";
+  var stockFilter="All", stockSort="newest";
   function renderStock(){
     var q=($("#stockSearch").value||"").toLowerCase().trim(), box=$("#stockList");box.innerHTML="";
     var arr=cachedStock.filter(function(v){
@@ -615,6 +698,10 @@ button,input,textarea{font-family:inherit;}
       if(!q)return true;
       return ((vName(v)+" "+(v.trim||"")+" "+(v.stockNumber||"")).toLowerCase().indexOf(q)>=0);
     });
+    if(stockSort==="price-low")arr=arr.slice().sort(function(a,b){return vPrice(a)-vPrice(b);});
+    else if(stockSort==="price-high")arr=arr.slice().sort(function(a,b){return vPrice(b)-vPrice(a);});
+    else if(stockSort==="km")arr=arr.slice().sort(function(a,b){return (a.mileage||0)-(b.mileage||0);});
+    else if(stockSort==="oldest")arr=arr.slice().reverse();
     if(!arr.length){box.appendChild(emptyState("Nothing here"));return;}
     arr.forEach(function(v){box.appendChild(vehCard(v));});
   }
@@ -637,6 +724,7 @@ button,input,textarea{font-family:inherit;}
     Array.prototype.forEach.call(document.querySelectorAll(".screen"),function(s){s.classList.toggle("on",s.id==="s-"+tab);});
     Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){t.classList.toggle("on",t.getAttribute("data-tab")===tab);});
     $("#scroll").scrollTop=0;
+    if(tab==="activity")renderActivity();
   }
   Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){t.addEventListener("click",function(){go(t.getAttribute("data-tab"));});});
   Array.prototype.forEach.call(document.querySelectorAll("[data-go]"),function(g){g.addEventListener("click",function(){go(g.getAttribute("data-go"));});});
@@ -817,144 +905,69 @@ button,input,textarea{font-family:inherit;}
     }).catch(function(){toast("Couldn't save — check connection",true);if(btn){btn.disabled=false;btn.textContent="Log note";}});
   }
 
-  /* ── Documents (per-deal doc flow: generate / skip / sign+finalise) ── */
-  var DOC_STAGES=["proforma","deed","compliance","invoice","handover"];
-  var DOC_LAB={"proforma":"Proforma","deed":"Deed / OTP","compliance":"Compliance","invoice":"Invoice","handover":"Handover"};
-  var DOC_MODE={proforma:"generate",deed:"generate",compliance:"confirm",invoice:"generate",handover:"generate"};
-  var DOC_ACT={"proforma":{"label":"Generates","sub":"Draft, no PDF yet"},"deed":{"label":"Generates","sub":"Draft, no PDF yet"},"compliance":{"label":"Confirm","sub":"Natis · roadworthy"},"invoice":{"label":"Generates","sub":"Draft, no PDF yet"},"handover":{"label":"Generates","sub":"Draft, no PDF yet"}};
-  function skipsOf(l){return (l&&l.docSkips)||{};}
-  function docDoneFor(l,st,docs){var s=skipsOf(l)[st];if(s)return {k:"skip",at:s.at,by:s.by,reason:s.reason};var d=(docs||[]).filter(function(x){return x.stage===st&&x.status==="Signed";})[0];if(d)return {k:"signed",doc:d};var dr=(docs||[]).filter(function(x){return x.stage===st&&x.status!=="Void";})[0];if(dr&&dr.status==="Draft")return {k:"draft",doc:dr};return {k:"none"};}
-  function renderDocs(){
-    var box=$("#docsList");box.innerHTML="";
-    var arr=cachedLeads.filter(function(l){return (l.status||"New")!=="Closed Lost";});
-    if(!arr.length){box.appendChild(emptyState("No deals yet","Open a lead, then work its paperwork here."));return;}
-    // In-progress first (no completion stamp), then completed flows.
-    arr.sort(function(a,b){return ((b.docFlowCompletedAt?1:0)-(a.docFlowCompletedAt?1:0))||(new Date(b.createdAt||0)-new Date(a.createdAt||0));});
-    var pending=arr.filter(function(l){return !l.docFlowCompletedAt;});
-    var doneArr=arr.filter(function(l){return !!l.docFlowCompletedAt;});
-    if(pending.length){box.appendChild(el("div","grp","IN PROGRESS"));pending.forEach(function(l){box.appendChild(docCard(l,false));});}
-    if(doneArr.length){box.appendChild(el("div","grp","DONE"));doneArr.forEach(function(l){box.appendChild(docCard(l,true));});}
-  }
-  function docCard(l,done){
-    var nm=((l.firstName||"")+" "+(l.lastName||"")).trim()||"New enquiry";
-    var veh=l.vehicleId?vehById(l.vehicleId):null;
-    var vehTxt=veh?(vName(veh)+(vPrice(veh)?" · "+money(vPrice(veh)):"")):"No vehicle yet";
-    var due=l.docStage?DOC_LAB[l.docStage]:null;
-    // minimap of the 5 stages
-    var dots=DOC_STAGES.map(function(st){
-      var idx=DOC_STAGES.indexOf(st),di=l.docStage?DOC_STAGES.indexOf(l.docStage):-1;
-      var pre=idx<di, skip=!!skipsOf(l)[st];
-      var cls=skip?"skip":(di>=0&&idx===di?"due":(pre?"on":"off"));
-      return '<span class="dchip '+cls+'" title="'+esc(DOC_LAB[st])+'">'+(skip?"✕":(pre?"✓":"·"))+'</span>';
-    }).join("");
-    var st=l.status||"New",cls=LEAD_PILL[st]||"neutral",lbl=LEAD_LBL[st]||st;
-    var c=el("div","card dcard");
-    c.innerHTML='<div class="dc-head"><div class="lav" style="background:'+colr(nm)+'">'+esc(initials(nm))+'</div><div class="dc-main"><div class="dc-nm">'+esc(nm)+'</div><div class="dc-veh">'+esc(vehTxt)+'</div></div><div class="dc-side"><span class="pill '+(done?"cyan dot":"glass")+'">'+(done?"Done":(due?"Next: "+esc(due):"To do"))+'</span></div></div>'+
-      '<div class="dc-dots">'+dots+'</div>';
-    c.addEventListener("click",function(){openDocs(l.id);});
-    return c;
-  }
-  function openDocs(id){
-    curLeadId=id;
-    var l=findLead(id);if(!l){closeSheet();return;}
-    var nm=((l.firstName||"")+" "+(l.lastName||"")).trim()||"New enquiry";
-    var veh=l.vehicleId?vehById(l.vehicleId):null;
-    $("#sheetFoot").style.display="none";
-    $("#sheetBody").innerHTML=
-      '<div class="ld-head"><div class="lav" style="background:'+colr(nm)+'">'+esc(initials(nm))+'</div><div class="nm"><div class="n">'+esc(nm)+'</div><div class="s">'+esc(veh?(vName(veh)+(vPrice(veh)?" · "+money(vPrice(veh)):"")):"No vehicle yet")+'</div></div><button class="ld-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>'+
-      '<div class="lbl">Doc flow</div><div id="docRows" class="docrows"></div><div style="height:8px"></div>';
-    $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
-    loadDocRows(id);
-    openSheet();
-  }
-  function loadDocRows(id){
-    var rows=$("#docRows");if(!rows)return;
-    rows.innerHTML='<div class="docloading">Loading paperwork…</div>';
-    api("GET","/api/deals/"+id+"/documents").then(function(docs){
-      docs=Array.isArray(docs)?docs:[];
-      var l=findLead(id);if(!l)return;
-      rows.innerHTML=DOC_STAGES.map(function(st){return docRow(l,st,docs);}).join("");
-      Array.prototype.forEach.call(rows.querySelectorAll("[data-act]"),function(b){
-        b.addEventListener("click",function(){docAction(b.getAttribute("data-act"),b.getAttribute("data-stage"),b.getAttribute("data-doc"),id);});
+  /* ── Activity feed ── */
+  var cachedActivity=[];
+  function buildLocalActivity(){
+    var items=[];
+    cachedLeads.forEach(function(l){
+      var nm=((l.firstName||"")+" "+(l.lastName||"")).trim()||"New enquiry";
+      if(l.createdAt)items.push({t:l.createdAt,icon:"lead",action:"New lead",detail:nm,sub:l.source||"Website"});
+      (l.journey||[]).forEach(function(j){
+        var ts=j.time||l.createdAt;
+        if(j.action==="Stage")items.push({t:ts,icon:"stage",action:j.detail||"Stage change",detail:nm});
+        else items.push({t:ts,icon:"note",action:"Note on "+nm,detail:j.detail||""});
       });
-    }).catch(function(){rows.innerHTML='<div class="docloading" style="color:var(--danger)">Couldn\'t load paperwork — check connection.</div>';});
+    });
+    cachedStock.forEach(function(v){
+      var nm=vName(v);
+      if(v.createdAt)items.push({t:v.createdAt,icon:"car",action:"Vehicle added",detail:nm,sub:money(vPrice(v))});
+      if(v.status==="SOLD"&&v.soldAt)items.push({t:v.soldAt,icon:"sold",action:"Sold",detail:nm,sub:money(vPrice(v))});
+    });
+    items.sort(function(a,b){return new Date(b.t||0)-new Date(a.t||0);});
+    return items.slice(0,50);
   }
-  function docRow(l,st,docs){
-    var state=docDoneFor(l,st,docs),mode=DOC_MODE[st],acc=DOC_ACT[st];
-    var pill="",acts="",fields="";
-    if(state.k==="signed"){pill='<span class="pill cyan dot">Signed</span>';if(state.doc&&state.doc.fileData)acts+='<button class="tru-btn-ghost" data-act="view" data-doc="'+state.doc.id+'">View / Print</button>';}
-    else if(state.k==="skip"){pill='<span class="pill mute dot">Skipped</span>';}
-    else if(state.k==="draft"){pill='<span class="pill glass">Draft</span>';if(state.doc&&state.doc.fileData)acts+='<button class="tru-btn-ghost" data-act="view" data-doc="'+state.doc.id+'">View / Print</button>';acts+='<button class="tru-btn-ghost" data-act="finalise" data-stage="'+st+'" data-doc="'+state.doc.id+'">Sign &amp; finalise</button><button class="tru-btn-ghost danger" data-act="skip" data-stage="'+st+'">Skip</button>';}
-    else{pill='<span class="pill glass">'+(mode==="confirm"?"Confirm":"Due")+'</span>';if(mode!=="confirm")acts='<button class="tru-btn-ghost" data-act="generate" data-stage="'+st+'">Generate</button>';acts+='<button class="tru-btn-ghost danger" data-act="skip" data-stage="'+st+'" style="border-color:var(--danger)">Skip tick</button>';}
-    var sub=state.k==="skip"?(state.reason?("Skipped: "+esc(state.reason)):((state.by||"You")+" skipped")):(state.k==="signed"?"Signed · PDF rendered":((state.k==="draft"?"PDF rendered · awaiting signature":(acc.label+(acc.sub?" · "+acc.sub:"")))));
-    var due=(l.docStage===st)?' <span class="pill cyan dot">Next</span>':'';
-    // show captured fields from the generated doc
-    if(state.doc&&state.doc.fieldSnapshot){
-      var s=state.doc.fieldSnapshot;
-      var flds=[];
-      if(s.vin)flds.push(['VIN',esc(String(s.vin))]);
-      if(s.total&&typeof s.total==='number')flds.push(['Total',money(s.total)]);
-      if(s.priceBreakdown&&Array.isArray(s.priceBreakdown)){var prices=s.priceBreakdown.map(function(x){return esc(x.label)+' — '+money(x.amountIncl);}).join(', ');flds.push(['Lines',prices]);}
-      if(s.validityWindow)flds.push(['Valid until',esc(String(s.validityWindow))]);
-      if(s.docNumber)flds.push(['Doc #',esc(String(s.docNumber))]);
-      if(s.invoiceNo)flds.push(['Invoice #',esc(String(s.invoiceNo))]);
-      if(s.tradeInLine)flds.push(['Trade-in',esc(String(s.tradeInLine))]);
-      if(s.natisUpdated!==undefined)flds.push(['NATIS updated',s.natisUpdated?'Yes':'No']);
-      if(flds.length)fields='<details class="dfields"><summary>'+flds.length+' field'+(flds.length>1?'s':'')+' captured</summary><div class="df-inner">'+flds.map(function(f){return '<div class="df-row"><span class="df-k">'+f[0]+'</span><span class="df-v">'+f[1]+'</span></div>';}).join("")+'</div></details>';
+  var ACT_ICONS={
+    lead:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+    stage:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+    note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14l-1.5-5H6.5L5 17Z"/><path d="M8 12l1-4h6l1 4"/><circle cx="7.5" cy="17.4" r="1.3"/><circle cx="16.5" cy="17.4" r="1.3"/></svg>',
+    sold:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>'
+  };
+  function renderActivity(){
+    var box=$("#actList");if(!box)return;
+    box.innerHTML="";
+    var isPremium=!!(AUTH&&AUTH.plan&&AUTH.plan!=="entry");
+    if(isPremium){
+      box.innerHTML=skelHTML("skel-lead",3);
+      api("GET","/api/activity").then(function(res){
+        cachedActivity=Array.isArray(res)?res:(res&&res.items?res.items:[]);
+        if(!cachedActivity.length)cachedActivity=buildLocalActivity();
+        drawActivity(box);
+      }).catch(function(){
+        cachedActivity=buildLocalActivity();
+        drawActivity(box);
+      });
+    } else {
+      cachedActivity=buildLocalActivity();
+      drawActivity(box);
     }
-    return '<div class="drow"><div class="drow-l">'+esc(DOC_LAB[st])+due+'</div><div class="drow-m">'+pill+'</div><div class="drow-s">'+esc(sub)+'</div>'+fields+'<div class="drow-a">'+acts+'</div></div>';
   }
-  function docAction(act,stage,docId,leadId){
-    var l=findLead(leadId);
-    if(act==="view"){
-      var d=null;
-      api("GET","/api/deals/"+leadId+"/documents").then(function(docs){
-        var arr=Array.isArray(docs)?docs:[];
-        for(var i=0;i<arr.length;i++){if(arr[i].id===docId){d=arr[i];break;}}
-        if(d&&d.fileData){window.open(d.fileData,"_blank");}
-        else toast("No file to view yet",true);
-      }).catch(function(){toast("Couldn't load document — check connection",true);});
-      return;
-    }
-    if(act==="generate"){
-      var sn=(new Date().toISOString().slice(0,10));
-      api("POST","/api/documents",{leadId:leadId,vehicleId:l&&l.vehicleId,stage:stage,mode:"generate",fileName:stage+"-"+sn,mimeType:"application/pdf"}).then(function(res){
-        if(res&&res.error){toast(res.error,true);return;}
-        toast(DOC_LAB[stage]+" draft created");loadDocRows(leadId);
-      }).catch(function(){toast("Couldn't create — check connection",true);});
-      return;
-    }
-    if(act==="skip"){
-      showModal({title:"Skip "+DOC_LAB[stage],message:"Why are you skipping this stage? (optional)",input:true,placeholder:"e.g. Dealer handles offline",confirmLabel:"Skip"}).then(function(reason){
-        if(reason===null)return;
-        api("POST","/api/deals/"+leadId+"/docs/skip",{stage:stage,reason:reason}).then(function(res){
-          if(res&&res.error){toast(res.error,true);return;}
-          if(res&&res.lead){var ll=findLead(leadId);if(ll)for(var k in res.lead){ll[k]=res.lead[k];}}
-          renderDocs();renderHome();renderLeads();loadDocRows(leadId);toast(DOC_LAB[stage]+" skipped");
-        }).catch(function(){toast("Couldn't skip — check connection",true);});
-      });
-      return;
-    }
-    if(act==="finalise"){
-      if(!docId)return;
-      showModal({title:"Sign & finalise",message:"Enter the buyer's full name for the signature.",input:true,placeholder:"e.g. John Smith",confirmLabel:"Sign"}).then(function(name){
-      if(!name)return;
-      api("POST","/api/documents/"+docId+"/sign",{signature:"TYPED:"+name,signedBy:name}).then(function(r1){
-        if(r1&&r1.error){toast(r1.error,true);return;}
-        return api("POST","/api/documents/"+docId+"/finalize").then(function(res2){
-          if(res2&&res2.error){
-            var miss=(res2.missing&&res2.missing.length)?("Needs: "+res2.missing.join(", ")):null;
-            if(miss)toast(DOC_LAB[stage]+" blocked — "+miss+". Skip it instead.",true);
-            else toast(res2.error,true);
-            loadDocRows(leadId);
-            return;
-          }
-          if(res2&&res2.lead){var ll=findLead(leadId);if(ll)for(var k in res2.lead){ll[k]=res2.lead[k];}}
-          renderDocs();renderHome();renderLeads();loadDocRows(leadId);toast(DOC_LAB[stage]+" signed & finalised");
-        });
-      }).catch(function(){toast("Couldn't finalise — check connection",true);loadDocRows(leadId);});
-      });
-    }
+  function drawActivity(box){
+    box.innerHTML="";
+    if(!cachedActivity.length){box.appendChild(emptyState("No activity yet"));return;}
+    var today=new Date().toISOString().slice(0,10), yesterday=new Date(Date.now()-864e5).toISOString().slice(0,10);
+    var lastGroup="";
+    cachedActivity.forEach(function(a){
+      var d=(a.t||"").slice(0,10);
+      var grp=d===today?"Today":d===yesterday?"Yesterday":d;
+      if(grp!==lastGroup){lastGroup=grp;box.appendChild(el("div","grp",grp));}
+      var iconKey=a.icon||"note";
+      var ic=ACT_ICONS[iconKey]||ACT_ICONS.note;
+      var isCyan=iconKey==="lead"||iconKey==="sold";
+      var row=el("div","card");
+      row.innerHTML='<div class="lead" style="cursor:default"><div class="lav" style="background:'+(isCyan?"var(--cyan-faint)":"var(--glass)")+';color:'+(isCyan?"var(--cyan)":"var(--dim)")+'">'+ic+'</div><div class="lb"><div class="lnm">'+esc(a.action||"Activity")+'</div><div class="li">'+esc(a.detail||"")+'</div>'+(a.sub?'<div class="lm"><span>'+esc(a.sub)+'</span><span>·</span><span>'+timeAgo(a.t)+'</span></div>':'<div class="lm"><span>'+timeAgo(a.t)+'</span></div>')+'</div></div>';
+      box.appendChild(row);
+    });
   }
 
   /* ── Add vehicle (POST /api/inventory) ── */
@@ -1010,6 +1023,17 @@ button,input,textarea{font-family:inherit;}
     });
   }
 
+  /* ── Walk-in lead (quick add from the floor) ── */
+  $("#addLeadBtn").addEventListener("click",function(){
+    showModal({title:"Walk-in lead",message:"Add a customer who just walked in.",input:true,placeholder:"Customer name",confirmLabel:"Add"}).then(function(name){
+      if(!name)return;
+      var parts=name.trim().split(/\s+/), first=parts[0]||"Walk-in", last=parts.slice(1).join(" ")||"";
+      api("POST","/api/leads",{firstName:first,lastName:last,source:"Walk-in",status:"New",notes:"Added from the floor"}).then(function(res){
+        toast(first+" added as a lead");loadLeads();
+      }).catch(function(){toast("Couldn't add — check connection",true);});
+    });
+  });
+
   /* ── Boot ── */
   $("#gateEnter").addEventListener("click",doLogin);
   $("#gateCode").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
@@ -1032,8 +1056,10 @@ button,input,textarea{font-family:inherit;}
   if(lpEmail)lpEmail.addEventListener("click",function(){
     window.location.href="mailto:?subject="+encodeURIComponent("TruFlow")+"&body="+encodeURIComponent("Open TruFlow on your phone:\n"+lightUrl);
   });
-  $("#leadSearch").addEventListener("input",renderLeads);
-  $("#stockSearch").addEventListener("input",renderStock);
+  $("#leadSearch").addEventListener("input",function(){debounce("leads",renderLeads);});
+  $("#stockSearch").addEventListener("input",function(){debounce("stock",renderStock);});
+  $("#leadSortSel").addEventListener("change",function(){leadSort=this.value;renderLeads();});
+  $("#stockSortSel").addEventListener("change",function(){stockSort=this.value;renderStock();});
   chips($("#leadChips"),["All","New","Contacted","Negotiating","Closed Won"],function(v){leadFilter=v;renderLeads();});
   chips($("#stockChips"),["All","In stock","Live","Sold"],function(v){stockFilter=v;renderStock();});
 
@@ -1052,6 +1078,7 @@ button,input,textarea{font-family:inherit;}
   })();
 
   // PWA — install + offline shell. Failures are non-fatal; the app runs without it.
+  updateOnline(navigator.onLine);
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(function(){});});
   }
