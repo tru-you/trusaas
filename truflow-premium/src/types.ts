@@ -60,6 +60,10 @@ export interface Dealership {
   codatCompanyId?: string;
   /** Whether the accounting-integrations UI is active for this dealer. */
   accountingEnabled?: boolean;
+  /** Dealer's own Imagin8 API key for per-call endpoints (valuations, reg
+   *  checks). M&M lookups use the platform key — this is only needed when a
+   *  dealer wants official TransUnion valuations or vehicle history checks. */
+  imagin8ApiKey?: string;
   /** High-water marks for this dealer's issued document numbers.
    *
    *  SARS requires a tax invoice number to be sequential and non-repeating.

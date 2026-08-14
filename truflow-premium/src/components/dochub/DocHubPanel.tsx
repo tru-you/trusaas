@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck, ExternalLink, SkipForward, RotateCcw, PenLine, X } from "lucide-react";
+import { CheckCircle2, Circle, FileText, Loader2, AlertTriangle, Upload, ShieldCheck, ExternalLink, SkipForward, RotateCcw, PenLine, X, Banknote } from "lucide-react";
 import type { AccountingPlatform, DealerDocument, Dealership, DocMode, DocStage, Lead } from "../../types";
 import { DOC_STAGES, FIXED_STAGE_MODES, DEFAULT_DOC_FLOW } from "../../types";
 import { authFetch } from "../../lib/session";
@@ -84,6 +84,36 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
   const [signName, setSignName] = useState("");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+
+  // Imagin8 invoice
+  const [imagin8Busy, setImagin8Busy] = useState(false);
+  const handleImagin8Invoice = async () => {
+    setImagin8Busy(true);
+    setFlashError(null);
+    try {
+      const vehicle = (lead as any).vehicleId ? undefined : undefined;
+      const res = await authFetch("/api/imagin8/invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: [lead.firstName, lead.lastName].filter(Boolean).join(" ") || "Customer",
+          customerEmail: lead.email,
+          customerPhone: lead.phone,
+          reference: `Deal ${lead.id?.slice(0, 8)}`,
+          lineItems: [{ description: `Vehicle sale — ${lead.vehicleInterest || "vehicle"}`, quantity: 1, unitPrice: 0 }],
+          notes: "Issued via TruFlow",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setFlashError(null);
+      alert(`Imagin8 invoice created: ${data.invoiceNumber || data.invoiceId || "OK"}`);
+    } catch (err: any) {
+      setFlashError(err?.message || "Imagin8 invoice failed");
+    } finally {
+      setImagin8Busy(false);
+    }
+  };
 
   // Inline skip UI state
   const [skipStage, setSkipStage] = useState<DocStage | null>(null);
@@ -479,6 +509,17 @@ export default function DocHubPanel({ lead, dealership, onLeadRefresh }: Props) 
                         disabled={busyStage === stage}
                       />
                      </label>
+                   )}
+                   {stage === "invoice" && !done && !upcoming && (
+                     <button
+                       type="button"
+                       onClick={handleImagin8Invoice}
+                       disabled={imagin8Busy}
+                       className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[36px] rounded-md border border-amber-500/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/10 disabled:opacity-50 cursor-pointer"
+                     >
+                       {imagin8Busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Banknote className="w-3.5 h-3.5" />}
+                       Issue via Imagin8
+                     </button>
                    )}
                    {!done && !stageFinalised && !(lead.docSkips as any)?.[stage] && (
                      <button

@@ -6222,6 +6222,101 @@ app.post("/api/integration/webhook-codat", (req, res) => {
   res.json({ ok: true });
 });
 
+// ==================== IMAGIN8 / TRANSUNION ====================
+
+import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice } from "../packages/imagin8";
+
+const IMAGIN8_PLATFORM_KEY = process.env.IMAGIN8_API_KEY || "";
+
+function dealerImagin8Key(state: any, dealershipId: string): string | null {
+  const d = state.dealerships?.find((d: any) => d.id === dealershipId);
+  return d?.imagin8ApiKey || null;
+}
+
+app.post("/api/imagin8/valuation", authenticate, async (req: any, res) => {
+  const { mmCode, year, mileage } = req.body || {};
+  if (!mmCode || !year) {
+    return res.status(400).json({ error: "mmCode and year are required" });
+  }
+  const state = readState();
+  const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ error: "Imagin8 API key not configured — set IMAGIN8_API_KEY or add a key in dealer settings." });
+  }
+  try {
+    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey });
+    console.log(`[imagin8] valuation for ${mmCode}/${year}: trade=${result.tradePrice} retail=${result.retailPrice}`);
+    res.json(result);
+  } catch (err: any) {
+    console.error("[imagin8] valuation failed:", err?.message || err);
+    res.status(502).json({ error: err?.message || "Imagin8 valuation failed" });
+  }
+});
+
+app.post("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
+  const { identifier, type } = req.body || {};
+  if (!identifier) {
+    return res.status(400).json({ error: "identifier (VIN, reg number, or engine number) is required" });
+  }
+  const lookupType = (type === "reg" || type === "engine") ? type : "vin";
+  const state = readState();
+  const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ error: "Imagin8 API key not configured." });
+  }
+  try {
+    const result = await imagin8RegCheck(identifier, lookupType, { apiKey });
+    console.log(`[imagin8] reg check ${lookupType}=${identifier}: stolen=${result.stolen} finance=${result.financePending}`);
+    res.json(result);
+  } catch (err: any) {
+    console.error("[imagin8] reg check failed:", err?.message || err);
+    res.status(502).json({ error: err?.message || "Imagin8 reg check failed" });
+  }
+});
+
+app.post("/api/imagin8/avs", authenticate, async (req: any, res) => {
+  const { bankAccount, branchCode, idNumber, initials, surname } = req.body || {};
+  if (!bankAccount || !branchCode || !idNumber) {
+    return res.status(400).json({ error: "bankAccount, branchCode, and idNumber are required" });
+  }
+  const state = readState();
+  const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ error: "Imagin8 API key not configured." });
+  }
+  try {
+    const result = await imagin8BankAvs(bankAccount, branchCode, idNumber, initials || "", surname || "", { apiKey });
+    console.log(`[imagin8] AVS for account ending ${bankAccount.slice(-4)}: valid=${result.valid} idMatch=${result.idMatch}`);
+    res.json(result);
+  } catch (err: any) {
+    console.error("[imagin8] AVS failed:", err?.message || err);
+    res.status(502).json({ error: err?.message || "Bank AVS failed" });
+  }
+});
+
+app.post("/api/imagin8/invoice", authenticate, async (req: any, res) => {
+  const { customerName, customerEmail, customerPhone, customerAddress, customerVatNumber, lineItems, reference, notes, dueDate, paymentMethod } = req.body || {};
+  if (!customerName || !Array.isArray(lineItems) || !lineItems.length) {
+    return res.status(400).json({ error: "customerName and at least one lineItem are required" });
+  }
+  const state = readState();
+  const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ error: "Imagin8 API key not configured." });
+  }
+  try {
+    const result = await imagin8CreateInvoice(
+      { customerName, customerEmail, customerPhone, customerAddress, customerVatNumber, lineItems, reference, notes, dueDate, paymentMethod },
+      { apiKey },
+    );
+    console.log(`[imagin8] invoice created: ${result.invoiceNumber} total=${result.total}`);
+    res.json(result);
+  } catch (err: any) {
+    console.error("[imagin8] invoice creation failed:", err?.message || err);
+    res.status(502).json({ error: err?.message || "Invoice creation failed" });
+  }
+});
+
 // --- VITE DEV SERVER / PRODUCTION ROUTER ---
 
 async function startServer() {

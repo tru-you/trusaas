@@ -2192,6 +2192,38 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
   }
 });
 
+// ==================== IMAGIN8 / TRANSUNION ====================
+
+import { getValues as imagin8GetValues, regCheck as imagin8RegCheck } from "../packages/imagin8";
+
+const IMAGIN8_API_KEY = process.env.IMAGIN8_API_KEY || "";
+
+app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
+  const { mmCode, year, mileage } = req.body || {};
+  if (!mmCode || !year) return res.status(400).json({ error: 'mmCode and year are required' });
+  if (!IMAGIN8_API_KEY) return res.status(503).json({ error: 'IMAGIN8_API_KEY not configured' });
+  try {
+    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey: IMAGIN8_API_KEY });
+    res.json(result);
+  } catch (err: any) {
+    console.error('[imagin8] valuation failed:', err?.message || err);
+    res.status(502).json({ error: err?.message || 'Valuation failed' });
+  }
+});
+
+app.post('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
+  const { identifier, type } = req.body || {};
+  if (!identifier) return res.status(400).json({ error: 'identifier is required' });
+  if (!IMAGIN8_API_KEY) return res.status(503).json({ error: 'IMAGIN8_API_KEY not configured' });
+  try {
+    const result = await imagin8RegCheck(identifier, (type === 'reg' || type === 'engine') ? type : 'vin', { apiKey: IMAGIN8_API_KEY });
+    res.json(result);
+  } catch (err: any) {
+    console.error('[imagin8] reg check failed:', err?.message || err);
+    res.status(502).json({ error: err?.message || 'Reg check failed' });
+  }
+});
+
 // ==================== VITE & STATIC FILES ====================
 
 async function startServer() {

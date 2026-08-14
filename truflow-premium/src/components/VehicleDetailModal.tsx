@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { Vehicle } from "../types";
 import { openTruLens } from "../lib/productConfig";
 import { openStockWhatsApp } from "../lib/salesShare";
+import VehiclePicker, { VehiclePickerValue } from "./VehiclePicker";
 import {
   X,
   Camera,
@@ -93,6 +94,54 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
   // TrueAI Image Studio States
   const [selectedEnhanceImg, setSelectedEnhanceImg] = useState<string>("");
+
+  // Imagin8 / TransUnion
+  const [tuValuation, setTuValuation] = useState<any>(null);
+  const [tuValLoading, setTuValLoading] = useState(false);
+  const [regCheckResult, setRegCheckResult] = useState<any>(null);
+  const [regCheckLoading, setRegCheckLoading] = useState(false);
+
+  const handleTuValuation = useCallback(async () => {
+    if (!vehicle.mmCode) { alert("Select make/model/variant first to get an M&M code."); return; }
+    setTuValLoading(true);
+    setTuValuation(null);
+    try {
+      const res = await fetch("/api/imagin8/valuation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mmCode: vehicle.mmCode, year: vehicle.year, mileage: vehicle.mileage }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Valuation failed");
+      setTuValuation(data);
+    } catch (err: any) {
+      alert(err?.message || "Valuation failed");
+    } finally {
+      setTuValLoading(false);
+    }
+  }, [vehicle.mmCode, vehicle.year, vehicle.mileage]);
+
+  const handleRegCheck = useCallback(async () => {
+    const id = vehicle.vin || (vehicle as any).registrationNumber;
+    if (!id) { alert("Enter a VIN or registration number first."); return; }
+    setRegCheckLoading(true);
+    setRegCheckResult(null);
+    try {
+      const type = vehicle.vin ? "vin" : "reg";
+      const res = await fetch("/api/imagin8/regcheck", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: id, type }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Reg check failed");
+      setRegCheckResult(data);
+    } catch (err: any) {
+      alert(err?.message || "Reg check failed");
+    } finally {
+      setRegCheckLoading(false);
+    }
+  }, [vehicle.vin, (vehicle as any).registrationNumber]);
 
   if (!isOpen) return null;
 
@@ -578,11 +627,22 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     Make, model, VIN &amp; specs
                   </summary>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-3 px-4 pb-4 pt-1">
+                    <div className="col-span-2">
+                      <VehiclePicker
+                        theme="flow"
+                        initial={{ make: vehicle.make, model: vehicle.model, year: vehicle.year, variant: vehicle.trim }}
+                        onSelect={(v: VehiclePickerValue) => {
+                          onUpdateVehicle(vehicle.id, {
+                            make: v.make,
+                            model: v.model,
+                            year: v.year,
+                            trim: v.variant,
+                            mmCode: v.mmCode,
+                          } as Partial<Vehicle>);
+                        }}
+                      />
+                    </div>
                     {[
-                      { key: "year",    label: "Year",         type: "number" },
-                      { key: "make",    label: "Make",         type: "text"   },
-                      { key: "model",   label: "Model",        type: "text"   },
-                      { key: "trim",    label: "Trim",         type: "text"   },
                       { key: "vin",               label: "VIN",              type: "text"   },
                       { key: "engineNumber",      label: "Engine no.",       type: "text"   },
                       { key: "registrationNumber", label: "Reg. plate",      type: "text"   },
@@ -646,6 +706,91 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     </div>
                   </div>
                 </details>
+
+                {/* ── TransUnion / Imagin8 actions ── */}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={handleTuValuation}
+                    disabled={tuValLoading || !vehicle.mmCode}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-[color:var(--cyan)]/15 text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/25 disabled:opacity-40 transition"
+                  >
+                    <Zap size={14} />
+                    {tuValLoading ? "Loading..." : "TU Valuation"}
+                  </button>
+                  <button
+                    onClick={handleRegCheck}
+                    disabled={regCheckLoading || (!vehicle.vin && !(vehicle as any).registrationNumber)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 disabled:opacity-40 transition"
+                  >
+                    <Shield size={14} />
+                    {regCheckLoading ? "Checking..." : "Reg Check"}
+                  </button>
+                </div>
+
+                {/* TU Valuation result */}
+                {tuValuation && (
+                  <div className="bg-[color:var(--glass)] border border-[color:var(--cyan)]/20 rounded-xl p-4 space-y-2 mt-2">
+                    <div className="text-[11px] font-mono text-[color:var(--cyan)] uppercase tracking-wider">TransUnion Valuation</div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { label: "Trade", value: tuValuation.tradePrice },
+                        { label: "Retail", value: tuValuation.retailPrice },
+                        { label: "New", value: tuValuation.newPrice },
+                      ].map((v) => (
+                        <div key={v.label}>
+                          <div className="text-[11px] text-[color:var(--muted)]">{v.label}</div>
+                          <div className="text-[18px] font-semibold text-[color:var(--white)] font-mono">
+                            {v.value != null ? `R ${Math.round(v.value).toLocaleString("en-ZA")}` : "—"}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {tuValuation.variant && (
+                      <div className="text-[11px] text-[color:var(--muted)] mt-1">{tuValuation.make} {tuValuation.model} {tuValuation.variant}</div>
+                    )}
+                  </div>
+                )}
+
+                {/* Reg Check result */}
+                {regCheckResult && (
+                  <div className={`border rounded-xl p-4 space-y-2 mt-2 ${
+                    regCheckResult.stolen || regCheckResult.financePending
+                      ? "bg-red-500/10 border-red-500/30"
+                      : "bg-emerald-500/10 border-emerald-500/20"
+                  }`}>
+                    <div className={`text-[11px] font-mono uppercase tracking-wider ${
+                      regCheckResult.stolen || regCheckResult.financePending ? "text-red-400" : "text-emerald-400"
+                    }`}>
+                      Vehicle Background Check
+                    </div>
+                    {regCheckResult.alerts?.length > 0 ? (
+                      <div className="space-y-1">
+                        {regCheckResult.alerts.map((a: string, i: number) => (
+                          <div key={i} className="flex items-center gap-2 text-red-400 text-[13px] font-semibold">
+                            <AlertCircle size={14} /> {a}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-emerald-400 text-[13px] font-semibold">
+                        <CheckCircle2 size={14} /> Clear — no stolen flag, no outstanding finance
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[12px] mt-2">
+                      {[
+                        ["VIN", regCheckResult.vin],
+                        ["Engine", regCheckResult.engineNumber],
+                        ["Colour", regCheckResult.colour],
+                        ["Reg", regCheckResult.registrationNumber],
+                      ].filter(([, v]) => v).map(([label, value]) => (
+                        <div key={label as string}>
+                          <span className="text-[color:var(--muted)]">{label}: </span>
+                          <span className="text-[color:var(--white)]">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

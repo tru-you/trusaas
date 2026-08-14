@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { Lead, Vehicle, User, Communication, Task, Agreement } from "../types";
 import { getAccount } from "../lib/session";
 import { fetchState, updateLead, updateLeadStatus, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
-import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature } from "lucide-react";
+import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature, Shield, CheckCircle2, AlertCircle, Banknote } from "lucide-react";
 import AgreementPreview from "./AgreementPreview";
 
 interface LeadDetailModalProps {
@@ -98,6 +98,31 @@ export default function LeadDetailModal({
   // Custom Live WhatsApp Simulation States
   const [whatsappHistory, setWhatsappHistory] = useState<{ sender: "agent" | "customer"; text: string; time: string }[]>([]);
   const [aiGeneratingReply, setAiGeneratingReply] = useState(false);
+
+  // Bank AVS (Imagin8)
+  const [avsResult, setAvsResult] = useState<any>(null);
+  const [avsLoading, setAvsLoading] = useState(false);
+  const [avsForm, setAvsForm] = useState({ bankAccount: "", branchCode: "", idNumber: "", initials: "", surname: "" });
+
+  const handleAvs = async () => {
+    if (!avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber) return;
+    setAvsLoading(true);
+    setAvsResult(null);
+    try {
+      const res = await fetch("/api/imagin8/avs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(avsForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setAvsResult(data);
+    } catch (err: any) {
+      alert(err?.message || "AVS failed");
+    } finally {
+      setAvsLoading(false);
+    }
+  };
 
   // Contact action log
   type ContactEntry = { leadId: string; channel: "call" | "whatsapp" | "email"; outcome?: string; note?: string; timestamp: string };
@@ -1273,6 +1298,75 @@ export default function LeadDetailModal({
                       </div>
                     </div>
                     <p className="text-[13px] text-[rgba(232,234,230,0.55)]">*Rough guide only. Use the Repayment calculator for deposit, rate, balloon and term.</p>
+                  </div>
+                </div>
+
+                {/* Bank Account Verification (AVS) via Imagin8 / TransUnion */}
+                <div className="card !bg-[color:var(--glass)]">
+                  <div className="card-body p-4 flex flex-col gap-3">
+                    <div className="text-[13px] font-semibold text-amber-400 tracking-normal font-mono border-b border-white/5 pb-2 flex items-center gap-2">
+                      <Banknote size={14} /> Bank Account Verification (AVS)
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        placeholder="Account number"
+                        value={avsForm.bankAccount}
+                        onChange={(e) => setAvsForm((f) => ({ ...f, bankAccount: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-amber-400/50"
+                      />
+                      <input
+                        placeholder="Branch code"
+                        value={avsForm.branchCode}
+                        onChange={(e) => setAvsForm((f) => ({ ...f, branchCode: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-amber-400/50"
+                      />
+                      <input
+                        placeholder="ID number"
+                        value={avsForm.idNumber}
+                        onChange={(e) => setAvsForm((f) => ({ ...f, idNumber: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-amber-400/50"
+                      />
+                      <input
+                        placeholder="Surname"
+                        value={avsForm.surname}
+                        onChange={(e) => setAvsForm((f) => ({ ...f, surname: e.target.value }))}
+                        className="px-3 py-2 rounded-lg text-[13px] bg-[color:var(--ink)] border border-white/15 text-[color:var(--white)] outline-none focus:border-amber-400/50"
+                      />
+                    </div>
+                    <button
+                      onClick={handleAvs}
+                      disabled={avsLoading || !avsForm.bankAccount || !avsForm.branchCode || !avsForm.idNumber}
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-semibold bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 disabled:opacity-40 transition"
+                    >
+                      <Shield size={14} />
+                      {avsLoading ? "Verifying..." : "Verify Bank Account"}
+                    </button>
+                    {avsResult && (
+                      <div className={`rounded-xl border p-3 ${
+                        avsResult.valid && avsResult.accountOpen && avsResult.idMatch
+                          ? "border-emerald-500/20 bg-emerald-500/10"
+                          : "border-red-500/30 bg-red-500/10"
+                      }`}>
+                        <div className="grid grid-cols-2 gap-y-1 text-[12px]">
+                          {[
+                            ["Account exists", avsResult.accountExists],
+                            ["Account open", avsResult.accountOpen],
+                            ["ID matches", avsResult.idMatch],
+                            ["Name matches", avsResult.nameMatch],
+                          ].map(([label, val]) => (
+                            <div key={label as string} className="flex items-center gap-1.5">
+                              {val
+                                ? <CheckCircle2 size={12} className="text-emerald-400" />
+                                : <AlertCircle size={12} className="text-red-400" />}
+                              <span className={val ? "text-emerald-400" : "text-red-400"}>{label as string}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {avsResult.accountType && (
+                          <div className="text-[11px] text-[rgba(232,234,230,0.55)] mt-1">Account type: {avsResult.accountType}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
