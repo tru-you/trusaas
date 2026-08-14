@@ -44,6 +44,11 @@ app.use("/api", (req, res) => {
     upstream.pipe(res, { end: true });
   });
 
+  proxy.setTimeout(30000, () => {
+    proxy.destroy();
+    if (!res.headersSent) res.status(504).json({ error: "Backend timeout" });
+  });
+
   proxy.on("error", (err) => {
     console.error("Proxy error:", err.message);
     if (!res.headersSent) res.status(502).json({ error: "Backend unreachable" });
