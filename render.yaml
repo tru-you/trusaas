@@ -265,49 +265,7 @@ services:
       - key: SALES_WHATSAPP
         value: "27620502091"
 
-  # ── 5. TruCRM — personal CRM & business ops ───────────────────────────────
-  - type: web
-    name: trusaas-crm
-    runtime: node
-    plan: starter
-    rootDir: TruCRM
-    # Headless scraping uses @sparticuz/chromium — a statically-linked Chromium
-    # shipped inside the npm package — so no apt-get is needed (Render build and
-    # pre-deploy phases cannot install system packages: non-root / read-only fs).
-    buildCommand: npm install && npm run build
-    startCommand: node dist/server.cjs
-    healthCheckPath: /api/health
-    disk:
-      name: trucrm-data
-      mountPath: /opt/render/project/data
-      sizeGB: 5
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATA_DIR
-        value: /opt/render/project/data
-      - key: TRUCRM_ACCESS_CODE
-        sync: false
-      - key: DEEPSEEK_API_KEY
-        sync: false
-      # Where to find the headless renderer worker (trusaas-crm-scraper below).
-      # Chromium + Node together exceed a 512 MB instance, so the browser runs
-      # in its own service and the CRM calls POST /scrape on it. The CRM now
-      # never launches Chromium in-process (ENABLE_HEADLESS removed 2026-08-10).
-      - key: SCRAPER_SERVICE_URL
-        value: https://trusaas-crm-scraper.onrender.com
-
-  # ── 5b. TruCRM Scraper — dedicated headless Chromium renderer ──────────────
-  # Own instance so a browser launch/render can never take down the CRM.
-  # The CRM calls POST /scrape { url } → { ok, html, url }.
-  # Free plan: serialized renders + idle browser recycle keep it inside 512 MB;
-  # expect a cold start after ~15 min idle and cover it with a keep-alive ping
-  # to /api/health (or upgrade to starter for always-on).
-  - type: web
-    name: trusaas-crm-scraper
-    runtime: node
-    plan: free
-    rootDir: TruCRM
-    buildCommand: npm install && npm run build
-    startCommand: node dist/scrape-worker.cjs
-    healthCheckPath: /api/health
+  # ── 5. TruCRM + Scraper — deployed from separate repo (TruCRM) ─────────────
+  # Removed from this Blueprint — TruCRM lives in its own repository and is
+  # deployed as its own Render service. Services: trusaas-crm, trusaas-crm-scraper.
+  # Create them manually on Render pointing at the TruCRM repo.
