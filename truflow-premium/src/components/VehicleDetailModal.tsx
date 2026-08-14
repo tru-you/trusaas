@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from "react";
-import { Vehicle } from "../types";
+import { Vehicle, Dealership } from "../types";
 import { openTruLens } from "../lib/productConfig";
 import { openStockWhatsApp } from "../lib/salesShare";
 import VehiclePicker, { VehiclePickerValue } from "./VehiclePicker";
@@ -31,9 +31,36 @@ import {
   Loader2,
   MessageCircle,
   Linkedin,
-  Instagram
+  Instagram,
+  Printer,
 } from "lucide-react";
 import { authFetch } from "../lib/session";
+import { VEHICLE_EXTRAS } from "../lib/vehicleExtras";
+
+function numberToWords(n: number): string {
+  if (n === 0) return "Zero";
+  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  const scales = ["", "Thousand", "Million", "Billion"];
+  const chunk = (x: number): string => {
+    let s = "";
+    if (x >= 100) { s += ones[Math.floor(x / 100)] + " Hundred"; x %= 100; if (x) s += " and "; }
+    if (x >= 20) { s += tens[Math.floor(x / 10)]; x %= 10; if (x) s += "-" + ones[x]; }
+    else if (x > 0) s += ones[x];
+    return s;
+  };
+  const parts: string[] = [];
+  let i = 0;
+  let num = Math.floor(Math.abs(n));
+  while (num > 0) {
+    const c = num % 1000;
+    if (c) parts.unshift(chunk(c) + (scales[i] ? " " + scales[i] : ""));
+    num = Math.floor(num / 1000);
+    i++;
+  }
+  return parts.join(", ");
+}
 
 interface SocialAccount {
   accountId: string;
@@ -65,13 +92,16 @@ interface VehicleDetailModalProps {
    *  fail — the tab is omitted entirely instead. */
   truSocialEnabled?: boolean;
   hasLens?: boolean;
+  dealership?: Dealership;
 }
 
-export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled, hasLens = true}: VehicleDetailModalProps) {
+export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateVehicle, onDeleteVehicle, onReturnToStock, settings, documentsPanel, dealershipId, truSocialEnabled, hasLens = true, dealership}: VehicleDetailModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [showOutrightOtp, setShowOutrightOtp] = useState(false);
 
   // Social publish states
   const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
@@ -82,7 +112,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [socialResult, setSocialResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   // Elite DMS States
-  const [activeTab, setActiveTab] = useState<"specs" | "recon" | "publish" | "docs">("specs");
+  const [activeTab, setActiveTab] = useState<"specs" | "recon" | "publish" | "docs" | "extras">("specs");
   const [newReconName, setNewReconName] = useState("");
   const [newReconCost, setNewReconCost] = useState("");
 
@@ -100,6 +130,18 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const [tuValLoading, setTuValLoading] = useState(false);
   const [regCheckResult, setRegCheckResult] = useState<any>(null);
   const [regCheckLoading, setRegCheckLoading] = useState(false);
+
+  // Market scraper
+  const [marketValuation, setMarketValuation] = useState<any>(null);
+  const [marketValLoading, setMarketValLoading] = useState(false);
+
+  // Extras tab
+  const [extrasCategory, setExtrasCategory] = useState<string>("Basic");
+
+  // Supplementary income
+  const [suppType, setSuppType] = useState("Warranty");
+  const [suppAmount, setSuppAmount] = useState("");
+  const [suppRef, setSuppRef] = useState("");
 
   const handleTuValuation = useCallback(async () => {
     if (!vehicle.mmCode) { alert("Select make/model/variant first to get an M&M code."); return; }
@@ -142,6 +184,26 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       setRegCheckLoading(false);
     }
   }, [vehicle.vin, (vehicle as any).registrationNumber]);
+
+  const handleMarketValue = useCallback(async () => {
+    if (!vehicle.make || !vehicle.model) { alert("Please fill in Make and Model first."); return; }
+    setMarketValLoading(true);
+    setMarketValuation(null);
+    try {
+      const res = await fetch("/api/valuation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ make: vehicle.make, model: vehicle.model, year: vehicle.year, mileage: vehicle.mileage }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Market valuation failed");
+      setMarketValuation(data);
+    } catch (err: any) {
+      alert(err?.message || "Market valuation failed");
+    } finally {
+      setMarketValLoading(false);
+    }
+  }, [vehicle.make, vehicle.model, vehicle.year, vehicle.mileage]);
 
   if (!isOpen) return null;
 
@@ -519,6 +581,14 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               >
                 <Wrench size={11} /> Recon
               </button>
+              <button
+                onClick={() => setActiveTab("extras")}
+                className={`px-3 py-2 flex items-center justify-center gap-1 border-b-2 -mb-px whitespace-nowrap transition-colors cursor-pointer ${
+                  activeTab === "extras" ? "text-[color:var(--white)] border-[color:var(--cyan)]" : "text-[rgba(232,234,230,0.72)] border-transparent hover:text-[color:var(--white)]"
+                }`}
+              >
+                <Layers size={11} /> Extras
+              </button>
               {truSocialEnabled && (
                 <button
                   onClick={() => setActiveTab("publish")}
@@ -531,143 +601,256 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
               )}
             </div>
 
-            {/* TAB 1: SHOWROOM SPECIFICATIONS */}
+            {/* TAB 1: FULL VEHICLE OVERVIEW */}
             {activeTab === "specs" && (
               <div className="space-y-5 animate-in fade-in duration-200">
-                {/* Pricing — no card container: retail leads at display size,
-                    TruPrice reads as one line, and the editor is a ghost chip. */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-start gap-3">
-                    <div className="min-w-0">
-                      <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] tracking-wider">Retail</span>
-                      <div className="text-[38px] leading-none font-semibold tracking-[-0.022em] text-[color:var(--white)] font-mono mt-1">{formatZAR(vehicle.retailPrice)}</div>
-                      {vehicle.truPrice ? (
-                        <div className="text-[13px] mt-2 text-[color:var(--white-dim)]">
-                          TruPrice <span className="font-semibold text-[color:var(--cyan)]">{formatZAR(vehicle.truPrice)}</span>
-                          {vehicle.truPrice > vehicle.retailPrice
-                            ? ` · ${formatZAR(vehicle.truPrice - vehicle.retailPrice)} below market`
-                            : " · at or above market"}
-                        </div>
-                      ) : (
-                        <div className="text-[13px] text-[color:var(--muted)] mt-1">No TruPrice benchmark set</div>
-                      )}
-                    </div>
+
+                {/* ── Imagin8 / TransUnion — auto-populate or manual ── */}
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] font-mono text-[color:var(--cyan)] uppercase tracking-wider">Imagin8 · Auto-fill from TransUnion</div>
+                    <span className="text-[11px] text-[color:var(--muted)]">or fill manually below</span>
+                  </div>
+                  <div className="flex gap-2">
                     <button
-                      onClick={() => { setTruPriceInput(String(vehicle.truPrice || vehicle.retailPrice || "")); setEditingTruPrice(true); }}
-                      className="px-3 min-h-[32px] text-[13px] font-semibold rounded-[8px] text-[color:var(--white-dim)] hover:text-[color:var(--white)] cursor-pointer shrink-0"
-                      style={{ background: "rgba(232,234,230,0.06)" }}
+                      onClick={async () => {
+                        await handleTuValuation();
+                      }}
+                      disabled={tuValLoading}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-[color:var(--cyan)]/15 text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/25 disabled:opacity-40 transition cursor-pointer"
                     >
-                      {vehicle.truPrice ? "Edit" : "Set"}
+                      <Zap size={14} />
+                      {tuValLoading ? "Loading..." : "TU Valuation"}
+                    </button>
+                    <button
+                      onClick={handleRegCheck}
+                      disabled={regCheckLoading}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 disabled:opacity-40 transition cursor-pointer"
+                    >
+                      <Shield size={14} />
+                      {regCheckLoading ? "Checking..." : "Reg Check"}
+                    </button>
+                    <button
+                      onClick={handleMarketValue}
+                      disabled={marketValLoading}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 disabled:opacity-40 transition cursor-pointer"
+                    >
+                      <Globe size={14} />
+                      {marketValLoading ? "Scraping..." : "Market Value"}
                     </button>
                   </div>
 
-                  {editingTruPrice && (
-                    <div className="bg-black/30 border border-white/10 rounded-lg p-3 space-y-2">
-                      <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold tracking-wider block">
-                        TruPrice benchmark
-                      </label>
-                      <p className="text-[12px] text-[color:var(--muted)]">
-                        Open-market value, from your own book
-                      </p>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        autoFocus
-                        value={truPriceInput}
-                        onChange={(e) => setTruPriceInput(e.target.value)}
-                        placeholder="e.g. 389000"
-                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[16px] text-[color:var(--white)] font-mono outline-none focus:border-[color:var(--cyan)]"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleSaveTruPrice}
-                          disabled={savingTruPrice}
-                          className="tru-btn-secondary flex-1 py-2 text-[13px] cursor-pointer disabled:opacity-60"
-                        >
-                          {savingTruPrice ? "Saving…" : "Save benchmark"}
-                        </button>
-                        <button
-                          onClick={() => setEditingTruPrice(false)}
-                          className="tru-btn-ghost px-3 py-2 text-[13px] cursor-pointer"
-                        >
-                          Cancel
-                        </button>
+                  {/* Market Value result */}
+                  {marketValuation && (
+                    <div className="border border-emerald-500/20 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Market Scraper · AutoTrader &amp; Cars.co.za</div>
+                        <div className="text-[11px] text-[color:var(--muted)]">{marketValuation.listingsFound} listings</div>
                       </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-[11px] text-[color:var(--muted)]">Avg Retail</div>
+                          <div className="text-[16px] font-semibold text-emerald-400 font-mono">
+                            {marketValuation.averageRetailPrice != null ? `R ${Math.round(marketValuation.averageRetailPrice).toLocaleString("en-ZA")}` : "—"}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[11px] text-[color:var(--muted)]">Mileage Adjusted</div>
+                          <div className="text-[13px] text-[color:var(--white)]">{marketValuation.mileageAdjusted ? `Yes (median ${marketValuation.sampleMedianKm?.toLocaleString()} km)` : "No"}</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => onUpdateVehicle(vehicle.id, { truPrice: Math.round(marketValuation.averageRetailPrice) })}
+                        className="w-full py-1.5 text-[12px] font-semibold rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition cursor-pointer"
+                      >
+                        <CheckCircle2 size={11} className="inline mr-1 -mt-px" /> Apply as TruPrice
+                      </button>
+                    </div>
+                  )}
+
+                  {/* TU Valuation result with auto-fill */}
+                  {tuValuation && (
+                    <div className="border border-[color:var(--cyan)]/20 rounded-lg p-3 space-y-2">
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          { label: "Trade", value: tuValuation.tradePrice },
+                          { label: "Retail", value: tuValuation.retailPrice },
+                          { label: "New", value: tuValuation.newPrice },
+                        ].map((v) => (
+                          <div key={v.label}>
+                            <div className="text-[11px] text-[color:var(--muted)]">{v.label}</div>
+                            <div className="text-[16px] font-semibold text-[color:var(--white)] font-mono">
+                              {v.value != null ? `R ${Math.round(v.value).toLocaleString("en-ZA")}` : "—"}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => {
+                          const updates: Partial<Vehicle> = {};
+                          if (tuValuation.tradePrice != null) updates.mmTrade = tuValuation.tradePrice;
+                          if (tuValuation.retailPrice != null) updates.mmRetail = tuValuation.retailPrice;
+                          onUpdateVehicle(vehicle.id, updates);
+                        }}
+                        className="w-full py-1.5 text-[12px] font-semibold rounded-lg bg-[color:var(--cyan)]/10 text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/20 transition cursor-pointer"
+                      >
+                        <Zap size={11} className="inline mr-1 -mt-px" /> Apply MM Trade &amp; Retail values
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Reg Check result with auto-fill */}
+                  {regCheckResult && (
+                    <div className={`border rounded-lg p-3 space-y-2 ${
+                      regCheckResult.stolen || regCheckResult.financePending
+                        ? "bg-red-500/10 border-red-500/30"
+                        : "bg-emerald-500/10 border-emerald-500/20"
+                    }`}>
+                      <div className={`text-[11px] font-mono uppercase tracking-wider ${
+                        regCheckResult.stolen || regCheckResult.financePending ? "text-red-400" : "text-emerald-400"
+                      }`}>
+                        Background Check
+                      </div>
+                      {regCheckResult.alerts?.length > 0 ? (
+                        <div className="space-y-1">
+                          {regCheckResult.alerts.map((a: string, i: number) => (
+                            <div key={i} className="flex items-center gap-2 text-red-400 text-[13px] font-semibold">
+                              <AlertCircle size={14} /> {a}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-emerald-400 text-[13px] font-semibold">
+                          <CheckCircle2 size={14} /> Clear — no stolen flag, no outstanding finance
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          const updates: Partial<Vehicle> = {};
+                          if (regCheckResult.vin) updates.vin = regCheckResult.vin;
+                          if (regCheckResult.engineNumber) updates.engineNumber = regCheckResult.engineNumber;
+                          if (regCheckResult.colour) updates.color = regCheckResult.colour;
+                          if (regCheckResult.registrationNumber) updates.registrationNumber = regCheckResult.registrationNumber;
+                          onUpdateVehicle(vehicle.id, updates);
+                        }}
+                        className="w-full py-1.5 text-[12px] font-semibold rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition cursor-pointer"
+                      >
+                        <Zap size={11} className="inline mr-1 -mt-px" /> Apply VIN, engine, colour &amp; reg to vehicle
+                      </button>
                     </div>
                   )}
                 </div>
 
-                {/* Showroom category — a field row between hairlines, not a card. */}
-                <div className="flex items-center justify-between gap-3 py-3 border-y border-white/[0.07]">
-                  <span className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Showroom category</span>
-                  <select
-                    value={vehicle.category || ""}
-                    onChange={(e) => {
-                      const val = e.target.value as Vehicle["category"] | "";
-                      onUpdateVehicle(vehicle.id, { category: val || undefined } as Partial<Vehicle>);
-                    }}
-                    className="min-w-[180px] bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]"
-                  >
-                    <option value="">Used (default)</option>
-                    <option value="used">Premium Used</option>
-                    <option value="select">Premium Select</option>
-                    <option value="performance">Premium Performance</option>
-                  </select>
-                </div>
-
-                {/* Vehicle details — collapsed by default so the modal stays
-                    scannable. Dealer identity fields are rare-touch (usually
-                    only once, to correct a typo the disc scanner missed), so
-                    they live one tap deeper. Every input saves on blur; the
-                    server stamps a per-field updatedAt and pushes back to
-                    TruLens for Lens-sourced vehicles. */}
-                <details className="bg-[color:var(--glass)] border border-white/5 rounded-xl">
-                  <summary className="cursor-pointer px-4 py-3 text-[13px] font-semibold text-[color:var(--white)] tracking-normal select-none flex items-center gap-2 [&::-webkit-details-marker]:hidden">
-                    <ChevronDown size={14} className="text-[color:var(--muted)]" />
-                    Make, model, VIN &amp; specs
-                  </summary>
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-3 px-4 pb-4 pt-1">
-                    <div className="col-span-2">
-                      <VehiclePicker
-                        theme="flow"
-                        initial={{ make: vehicle.make, model: vehicle.model, year: vehicle.year, variant: vehicle.trim }}
-                        onSelect={(v: VehiclePickerValue) => {
-                          onUpdateVehicle(vehicle.id, {
-                            make: v.make,
-                            model: v.model,
-                            year: v.year,
-                            trim: v.variant,
-                            mmCode: v.mmCode,
-                          } as Partial<Vehicle>);
-                        }}
-                      />
-                    </div>
+                {/* ── PRICING & PROFIT ── */}
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">
+                  <div className="text-[11px] font-mono text-[color:var(--muted)] uppercase tracking-wider">Pricing &amp; Profit</div>
+                  <div className="grid grid-cols-2 gap-3">
                     {[
-                      { key: "vin",               label: "VIN",              type: "text"   },
-                      { key: "engineNumber",      label: "Engine no.",       type: "text"   },
-                      { key: "registrationNumber", label: "Reg. plate",      type: "text"   },
-                      { key: "mmCode",            label: "MM code",         type: "text"   },
-                      { key: "color",             label: "Colour",          type: "text"   },
-                      { key: "mileage",           label: "Mileage (km)",    type: "number" },
-                      { key: "bodyType",          label: "Body style",      type: "text"   },
-                      { key: "engine",            label: "Engine",          type: "text"   },
-                    ].map((f: any) => (
-                      <div key={f.key} className={"flex flex-col" + (f.colSpan === 2 ? " col-span-2" : "")}>
+                      { key: "retailPrice",   label: "Selling Price",   type: "number" },
+                      { key: "costPrice",      label: "Purchase Price",  type: "number" },
+                      { key: "minimumPrice",   label: "Minimum Price",   type: "number" },
+                      { key: "truPrice",       label: "TruPrice",        type: "number" },
+                      { key: "mmTrade",        label: "MM Trade",        type: "number" },
+                      { key: "mmRetail",       label: "MM Retail",       type: "number" },
+                    ].map((f) => (
+                      <div key={f.key} className="flex flex-col">
                         <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>
                         <input
-                          type={f.type}
+                          type="number"
                           defaultValue={(vehicle as any)[f.key] ?? ""}
                           onBlur={(e) => {
                             const raw = e.target.value;
                             const cur = (vehicle as any)[f.key];
-                            const next = f.type === "number" ? (raw === "" ? 0 : Number(raw)) : raw;
+                            const next = raw === "" ? 0 : Number(raw);
                             if (next === cur) return;
                             onUpdateVehicle(vehicle.id, { [f.key]: next } as Partial<Vehicle>);
                           }}
-                          className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                          className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] font-mono outline-none focus:border-[color:var(--cyan)] mt-0.5"
                         />
                       </div>
                     ))}
+                  </div>
+                  {/* Live profit calc */}
+                  {(() => {
+                    const reconTotal = (vehicle.reconTasks || []).reduce((s, t) => s + t.cost, 0);
+                    const suppTotal = (vehicle.supplementaryIncome || []).reduce((s, i) => s + i.amount, 0);
+                    const totalCost = vehicle.costPrice + reconTotal;
+                    const grossProfit = vehicle.retailPrice - totalCost;
+                    const fullProfit = grossProfit + suppTotal;
+                    const totalRevenue = vehicle.retailPrice + suppTotal;
+                    const margin = totalRevenue > 0 ? (fullProfit / totalRevenue) * 100 : 0;
+                    return (
+                      <div className="grid grid-cols-4 gap-2 pt-2 border-t border-white/5 text-[13px] font-mono">
+                        <div>
+                          <div className="text-[color:var(--muted)] text-[11px]">Total Cost</div>
+                          <div className="text-[color:var(--white)] font-semibold">{formatZAR(totalCost)}</div>
+                        </div>
+                        <div>
+                          <div className="text-[color:var(--muted)] text-[11px]">Gross Profit</div>
+                          <div className={`font-semibold ${grossProfit >= 0 ? "text-[color:var(--cyan)]" : "text-red-400"}`}>{formatZAR(grossProfit)}</div>
+                        </div>
+                        <div>
+                          <div className="text-[color:var(--muted)] text-[11px]">Supp. Income</div>
+                          <div className="text-emerald-400 font-semibold">{suppTotal > 0 ? formatZAR(suppTotal) : "—"}</div>
+                        </div>
+                        <div>
+                          <div className="text-[color:var(--muted)] text-[11px]">Full Profit</div>
+                          <div className={`font-semibold ${fullProfit >= 0 ? "text-[color:var(--cyan)]" : "text-red-400"}`}>
+                            {formatZAR(fullProfit)} <span className={`text-[11px] ${margin >= 10 ? "text-[color:var(--cyan)]" : "text-amber-400"}`}>{margin.toFixed(1)}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* ── MAIN DETAILS ── */}
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">
+                  <div className="text-[11px] font-mono text-[color:var(--muted)] uppercase tracking-wider">Main Details</div>
+                  <VehiclePicker
+                    theme="flow"
+                    initial={{ make: vehicle.make, model: vehicle.model, year: vehicle.year, variant: vehicle.trim }}
+                    onSelect={(v: VehiclePickerValue) => {
+                      onUpdateVehicle(vehicle.id, {
+                        make: v.make, model: v.model, year: v.year, trim: v.variant, mmCode: v.mmCode,
+                      } as Partial<Vehicle>);
+                    }}
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">New / Used</label>
+                      <select
+                        defaultValue={vehicle.newOrUsed || "Used"}
+                        onChange={(e) => onUpdateVehicle(vehicle.id, { newOrUsed: e.target.value as 'New' | 'Used' })}
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      >
+                        <option>New</option>
+                        <option>Used</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Body Type</label>
+                      <select
+                        defaultValue={vehicle.bodyType || ""}
+                        onChange={(e) => onUpdateVehicle(vehicle.id, { bodyType: e.target.value } as Partial<Vehicle>)}
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      >
+                        <option value="">Select...</option>
+                        <option>Sedan</option>
+                        <option>Hatchback</option>
+                        <option>SUV</option>
+                        <option>Bakkie (Single Cab)</option>
+                        <option>Bakkie (Double Cab)</option>
+                        <option>Bakkie (Extended Cab)</option>
+                        <option>Coupe</option>
+                        <option>Convertible</option>
+                        <option>Station Wagon</option>
+                        <option>MPV / Minivan</option>
+                        <option>Crossover</option>
+                        <option>Panel Van</option>
+                        <option>Bus / Minibus</option>
+                      </select>
+                    </div>
                     <div className="flex flex-col">
                       <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Transmission</label>
                       <select
@@ -692,102 +875,366 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         <option>Electric</option>
                       </select>
                     </div>
-                    <div className="flex flex-col col-span-2">
-                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Dealer comments</label>
-                      <textarea
-                        defaultValue={vehicle.description || ""}
-                        onBlur={(e) => {
-                          if (e.target.value === (vehicle.description || "")) return;
-                          onUpdateVehicle(vehicle.id, { description: e.target.value } as Partial<Vehicle>);
+                    {[
+                      { key: "color",     label: "Colour",    type: "text" },
+                      { key: "condition", label: "Condition", type: "text" },
+                      { key: "location",  label: "Location",  type: "text" },
+                      { key: "mileage",   label: "KM In",     type: "number" },
+                    ].map((f) => (
+                      <div key={f.key} className="flex flex-col">
+                        <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>
+                        <input
+                          type={f.type}
+                          defaultValue={(vehicle as any)[f.key] ?? ""}
+                          onBlur={(e) => {
+                            const raw = e.target.value;
+                            const cur = (vehicle as any)[f.key];
+                            const next = f.type === "number" ? (raw === "" ? 0 : Number(raw)) : raw;
+                            if (next === cur) return;
+                            onUpdateVehicle(vehicle.id, { [f.key]: next } as Partial<Vehicle>);
+                          }}
+                          className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                        />
+                      </div>
+                    ))}
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Showroom Category</label>
+                      <select
+                        value={vehicle.category || ""}
+                        onChange={(e) => {
+                          const val = e.target.value as Vehicle["category"] | "";
+                          onUpdateVehicle(vehicle.id, { category: val || undefined } as Partial<Vehicle>);
                         }}
-                        rows={3}
-                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5 resize-y"
-                      />
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      >
+                        <option value="">Used (default)</option>
+                        <option value="used">Premium Used</option>
+                        <option value="select">Premium Select</option>
+                        <option value="performance">Premium Performance</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Service History</label>
+                      <select
+                        defaultValue={vehicle.serviceHistory || ""}
+                        onChange={(e) => onUpdateVehicle(vehicle.id, { serviceHistory: e.target.value } as Partial<Vehicle>)}
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      >
+                        <option value="">Select...</option>
+                        <option>Full Service History</option>
+                        <option>Partial Service History</option>
+                        <option>No Service History</option>
+                        <option>Service Plan Active</option>
+                      </select>
                     </div>
                   </div>
-                </details>
+                </div>
 
-                {/* ── TransUnion / Imagin8 actions ── */}
-                <div className="flex gap-2 mt-2">
+                {/* ── VEHICLE IDENTITY ── */}
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">
+                  <div className="text-[11px] font-mono text-[color:var(--muted)] uppercase tracking-wider">Vehicle Identity</div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { key: "stockNumber",        label: "Stock Code",        type: "text" },
+                      { key: "vin",                label: "VIN / Chassis",     type: "text" },
+                      { key: "engineNumber",       label: "Engine Number",     type: "text" },
+                      { key: "registrationNumber", label: "Registration Plate", type: "text" },
+                      { key: "mmCode",             label: "M&M Code",         type: "text" },
+                      { key: "licenseNumber",      label: "License Number",    type: "text" },
+                      { key: "keyNumber",          label: "Key Number",        type: "text" },
+                      { key: "engine",             label: "Engine Spec",       type: "text" },
+                    ].map((f) => (
+                      <div key={f.key} className="flex flex-col">
+                        <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>
+                        <input
+                          type={f.type}
+                          defaultValue={(vehicle as any)[f.key] ?? ""}
+                          onBlur={(e) => {
+                            const raw = e.target.value;
+                            const cur = (vehicle as any)[f.key];
+                            if (raw === (cur ?? "").toString()) return;
+                            onUpdateVehicle(vehicle.id, { [f.key]: raw } as Partial<Vehicle>);
+                          }}
+                          className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                        />
+                      </div>
+                    ))}
+                    {[
+                      { key: "firstRegDate",  label: "1st Registration Date" },
+                      { key: "licenseExpiry", label: "License Expiry" },
+                      { key: "dateAcquired",  label: "Date Acquired" },
+                    ].map((f) => (
+                      <div key={f.key} className="flex flex-col">
+                        <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>
+                        <input
+                          type="date"
+                          defaultValue={(vehicle as any)[f.key] ?? ""}
+                          onBlur={(e) => {
+                            const raw = e.target.value;
+                            const cur = (vehicle as any)[f.key];
+                            if (raw === (cur ?? "")) return;
+                            onUpdateVehicle(vehicle.id, { [f.key]: raw } as Partial<Vehicle>);
+                          }}
+                          className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                        />
+                      </div>
+                    ))}
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Province</label>
+                      <select
+                        defaultValue={vehicle.province || ""}
+                        onChange={(e) => onUpdateVehicle(vehicle.id, { province: e.target.value } as Partial<Vehicle>)}
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      >
+                        <option value="">Select...</option>
+                        <option>Gauteng</option>
+                        <option>Western Cape</option>
+                        <option>KwaZulu-Natal</option>
+                        <option>Eastern Cape</option>
+                        <option>Free State</option>
+                        <option>Mpumalanga</option>
+                        <option>Limpopo</option>
+                        <option>North West</option>
+                        <option>Northern Cape</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-3 col-span-2 pt-1">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={vehicle.enatisDocs ?? false}
+                          onChange={(e) => onUpdateVehicle(vehicle.id, { enatisDocs: e.target.checked } as Partial<Vehicle>)}
+                          className="w-4 h-4 rounded border border-white/20 bg-[color:var(--ink)] accent-[color:var(--cyan)]"
+                        />
+                        <span className="text-[13px] text-[color:var(--white)]">eNaTIS docs received</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── PURCHASE DETAILS ── */}
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">
+                  <div className="text-[11px] font-mono text-[color:var(--muted)] uppercase tracking-wider">Purchase Details</div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { key: "supplier",          label: "Supplier",           type: "text" },
+                      { key: "supplierInvNumber", label: "Supplier Invoice Nr", type: "text" },
+                      { key: "paymentType",       label: "Payment Type",        type: "text" },
+                      { key: "paymentRef",        label: "Payment Ref",         type: "text" },
+                      { key: "purchasedBy",       label: "Purchased By",        type: "text" },
+                      { key: "settlementAmount",  label: "Settlement Amt",      type: "number" },
+                    ].map((f) => (
+                      <div key={f.key} className="flex flex-col">
+                        <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">{f.label}</label>
+                        <input
+                          type={f.type}
+                          defaultValue={(vehicle as any)[f.key] ?? ""}
+                          onBlur={(e) => {
+                            const raw = e.target.value;
+                            const cur = (vehicle as any)[f.key];
+                            const next = f.type === "number" ? (raw === "" ? 0 : Number(raw)) : raw;
+                            if (next === cur) return;
+                            onUpdateVehicle(vehicle.id, { [f.key]: next } as Partial<Vehicle>);
+                          }}
+                          className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[15px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                        />
+                      </div>
+                    ))}
+                  </div>
                   <button
-                    onClick={handleTuValuation}
-                    disabled={tuValLoading || !vehicle.mmCode}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-[color:var(--cyan)]/15 text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/25 disabled:opacity-40 transition"
+                    type="button"
+                    onClick={() => setShowOutrightOtp(true)}
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-[rgba(29,185,84,0.15)] text-[rgb(29,185,84)] border border-[rgba(29,185,84,0.3)] hover:bg-[rgba(29,185,84,0.25)] transition-colors"
                   >
-                    <Zap size={14} />
-                    {tuValLoading ? "Loading..." : "TU Valuation"}
-                  </button>
-                  <button
-                    onClick={handleRegCheck}
-                    disabled={regCheckLoading || (!vehicle.vin && !(vehicle as any).registrationNumber)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 disabled:opacity-40 transition"
-                  >
-                    <Shield size={14} />
-                    {regCheckLoading ? "Checking..." : "Reg Check"}
+                    <Printer size={14} /> Generate OTP (Outright Purchase)
                   </button>
                 </div>
 
-                {/* TU Valuation result */}
-                {tuValuation && (
-                  <div className="bg-[color:var(--glass)] border border-[color:var(--cyan)]/20 rounded-xl p-4 space-y-2 mt-2">
-                    <div className="text-[11px] font-mono text-[color:var(--cyan)] uppercase tracking-wider">TransUnion Valuation</div>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { label: "Trade", value: tuValuation.tradePrice },
-                        { label: "Retail", value: tuValuation.retailPrice },
-                        { label: "New", value: tuValuation.newPrice },
-                      ].map((v) => (
-                        <div key={v.label}>
-                          <div className="text-[11px] text-[color:var(--muted)]">{v.label}</div>
-                          <div className="text-[18px] font-semibold text-[color:var(--white)] font-mono">
-                            {v.value != null ? `R ${Math.round(v.value).toLocaleString("en-ZA")}` : "—"}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {tuValuation.variant && (
-                      <div className="text-[11px] text-[color:var(--muted)] mt-1">{tuValuation.make} {tuValuation.model} {tuValuation.variant}</div>
+                {/* ── SUPPLEMENTARY INCOME ── */}
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] font-mono text-[color:var(--muted)] uppercase tracking-wider">Supplementary Income</div>
+                    {(vehicle.supplementaryIncome?.length || 0) > 0 && (
+                      <span className="text-[13px] font-semibold font-mono text-[color:var(--cyan)]">
+                        {formatZAR((vehicle.supplementaryIncome || []).reduce((s, i) => s + i.amount, 0))}
+                      </span>
                     )}
                   </div>
-                )}
 
-                {/* Reg Check result */}
-                {regCheckResult && (
-                  <div className={`border rounded-xl p-4 space-y-2 mt-2 ${
-                    regCheckResult.stolen || regCheckResult.financePending
-                      ? "bg-red-500/10 border-red-500/30"
-                      : "bg-emerald-500/10 border-emerald-500/20"
-                  }`}>
-                    <div className={`text-[11px] font-mono uppercase tracking-wider ${
-                      regCheckResult.stolen || regCheckResult.financePending ? "text-red-400" : "text-emerald-400"
-                    }`}>
-                      Vehicle Background Check
-                    </div>
-                    {regCheckResult.alerts?.length > 0 ? (
-                      <div className="space-y-1">
-                        {regCheckResult.alerts.map((a: string, i: number) => (
-                          <div key={i} className="flex items-center gap-2 text-red-400 text-[13px] font-semibold">
-                            <AlertCircle size={14} /> {a}
+                  {/* Existing items */}
+                  {(vehicle.supplementaryIncome || []).length > 0 && (
+                    <div className="space-y-1.5">
+                      {(vehicle.supplementaryIncome || []).map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-2 bg-black/20 rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-[12px] px-1.5 py-0.5 rounded bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] font-semibold shrink-0">{item.type}</span>
+                            <span className="text-[13px] text-[color:var(--white)] truncate">{item.description || item.type}</span>
+                            {item.reference && <span className="text-[11px] text-[color:var(--muted)] font-mono shrink-0">{item.reference}</span>}
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-emerald-400 text-[13px] font-semibold">
-                        <CheckCircle2 size={14} /> Clear — no stolen flag, no outstanding finance
-                      </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[12px] mt-2">
-                      {[
-                        ["VIN", regCheckResult.vin],
-                        ["Engine", regCheckResult.engineNumber],
-                        ["Colour", regCheckResult.colour],
-                        ["Reg", regCheckResult.registrationNumber],
-                      ].filter(([, v]) => v).map(([label, value]) => (
-                        <div key={label as string}>
-                          <span className="text-[color:var(--muted)]">{label}: </span>
-                          <span className="text-[color:var(--white)]">{value}</span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-[13px] font-semibold font-mono text-[color:var(--white)]">{formatZAR(item.amount)}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = (vehicle.supplementaryIncome || []).filter((i) => i.id !== item.id);
+                                onUpdateVehicle(vehicle.id, { supplementaryIncome: updated } as Partial<Vehicle>);
+                              }}
+                              className="p-1 hover:bg-white/5 text-[rgba(232,234,230,0.45)] hover:text-[color:var(--muted)] rounded cursor-pointer transition-colors"
+                            >
+                              <X size={11} />
+                            </button>
+                          </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Add new income item */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const amt = parseFloat(suppAmount);
+                      if (!amt) return;
+                      const newItem = {
+                        id: "supp_" + Date.now(),
+                        type: suppType,
+                        amount: amt,
+                        reference: suppRef || undefined,
+                        date: new Date().toISOString().slice(0, 10),
+                      };
+                      const existing = vehicle.supplementaryIncome || [];
+                      onUpdateVehicle(vehicle.id, { supplementaryIncome: [...existing, newItem] } as Partial<Vehicle>);
+                      setSuppAmount("");
+                      setSuppRef("");
+                    }}
+                    className="grid grid-cols-[1fr_auto_auto_auto] gap-2 items-end"
+                  >
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Type</label>
+                      <select
+                        value={suppType}
+                        onChange={(e) => setSuppType(e.target.value)}
+                        className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      >
+                        <option>Warranty</option>
+                        <option>Service Plan</option>
+                        <option>Insurance</option>
+                        <option>Dent & Scratch</option>
+                        <option>Paint Protection</option>
+                        <option>Tyre & Rim</option>
+                        <option>Credit Life</option>
+                        <option>GAP Cover</option>
+                        <option>Tracking Installation</option>
+                        <option>Licence & Reg</option>
+                        <option>Other</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Amount</label>
+                      <input
+                        type="number"
+                        value={suppAmount}
+                        onChange={(e) => setSuppAmount(e.target.value)}
+                        placeholder="R"
+                        className="w-[110px] bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] font-mono outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)]">Ref</label>
+                      <input
+                        type="text"
+                        value={suppRef}
+                        onChange={(e) => setSuppRef(e.target.value)}
+                        placeholder="optional"
+                        className="w-[100px] bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] mt-0.5"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={!suppAmount}
+                      className="px-3 py-2 rounded-lg text-[13px] font-semibold bg-[color:var(--cyan)]/15 text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/25 disabled:opacity-40 transition cursor-pointer mt-0.5"
+                    >
+                      <Plus size={13} className="inline -mt-px" /> Add
+                    </button>
+                  </form>
+                </div>
+
+                {/* ── DESCRIPTION ── */}
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-2">
+                  <div className="text-[11px] font-mono text-[color:var(--muted)] uppercase tracking-wider">Description &amp; Notes</div>
+                  <textarea
+                    defaultValue={vehicle.description || ""}
+                    onBlur={(e) => {
+                      if (e.target.value === (vehicle.description || "")) return;
+                      onUpdateVehicle(vehicle.id, { description: e.target.value } as Partial<Vehicle>);
+                    }}
+                    rows={4}
+                    placeholder="Website description, internal notes..."
+                    className="w-full bg-[color:var(--ink)] border border-white/15 rounded-lg px-3 py-2 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] resize-y"
+                  />
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB: EXTRAS */}
+            {activeTab === "extras" && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] font-mono uppercase tracking-wider text-[color:var(--cyan)]">Optional Extras</div>
+                    <div className="text-[12px] text-[color:var(--muted)]">{(vehicle.optionalExtras || []).length} selected</div>
+                  </div>
+                  <div className="flex gap-1 border-b border-white/10 pb-2">
+                    {Object.keys(VEHICLE_EXTRAS).map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setExtrasCategory(cat)}
+                        className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition cursor-pointer ${
+                          extrasCategory === cat
+                            ? "bg-[color:var(--cyan)]/15 text-[color:var(--cyan)]"
+                            : "text-[rgba(232,234,230,0.55)] hover:text-[color:var(--white)]"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 max-h-[360px] overflow-y-auto pr-1">
+                    {(VEHICLE_EXTRAS[extrasCategory] || []).map(extra => {
+                      const checked = (vehicle.optionalExtras || []).includes(extra);
+                      return (
+                        <label key={extra} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-white/[0.02] rounded px-1 transition">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              const current = vehicle.optionalExtras || [];
+                              const updated = checked ? current.filter(e => e !== extra) : [...current, extra];
+                              onUpdateVehicle(vehicle.id, { optionalExtras: updated });
+                            }}
+                            className="accent-[color:var(--cyan)] w-4 h-4 cursor-pointer"
+                          />
+                          <span className={`text-[13px] ${checked ? "text-[color:var(--white)]" : "text-[rgba(232,234,230,0.55)]"}`}>{extra}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {(vehicle.optionalExtras || []).length > 0 && (
+                  <div className="bg-[color:var(--glass)] border border-white/5 rounded-xl p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-[11px] font-mono uppercase tracking-wider text-[color:var(--muted)]">Extras String</div>
+                      <button
+                        onClick={() => navigator.clipboard.writeText((vehicle.optionalExtras || []).join(", "))}
+                        className="text-[11px] text-[color:var(--cyan)] hover:underline cursor-pointer"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <div className="text-[12px] text-[rgba(232,234,230,0.72)] leading-relaxed bg-black/20 rounded-lg p-3 font-mono">
+                      {(vehicle.optionalExtras || []).join(", ")}
                     </div>
                   </div>
                 )}
@@ -1325,6 +1772,131 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
           )}
         </div>
       </div>
+
+      {/* Outright Purchase OTP Modal */}
+      {showOutrightOtp && (() => {
+        const ds = dealership?.docSettings;
+        const terms = ds?.otpOutrightTerms?.length ? ds.otpOutrightTerms : (ds?.saleTerms?.length ? ds.saleTerms : [
+          "This offer is valid for 7 (seven) calendar days from date of issue.",
+          "The vehicle is purchased voetstoots (as-is) unless otherwise specified.",
+          "Payment will be made by electronic funds transfer within 3 business days of acceptance.",
+          "Transfer of ownership is subject to receipt of all required documentation.",
+        ]);
+        const offerAmount = vehicle.costPrice || vehicle.retailPrice || 0;
+        const today = new Date().toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
+
+        return (
+          <div className="fixed inset-0 bg-black/70 z-[350] flex items-center justify-center p-6" onClick={() => setShowOutrightOtp(false)}>
+            <div className="bg-white rounded-xl w-full max-w-[800px] max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="p-8 text-black" id="otp-outright-print">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    {ds?.logo && <img src={ds.logo} alt="" className="h-12 object-contain mb-2" />}
+                    <h2 className="text-xl font-bold">{dealership?.name || "Dealership"}</h2>
+                    {dealership?.tradingAs && <p className="text-sm text-gray-500">t/a {dealership.tradingAs}</p>}
+                    {dealership?.address && <p className="text-xs text-gray-400 mt-1">{dealership.address}</p>}
+                  </div>
+                  <div className="text-right">
+                    <h3 className="text-lg font-bold text-gray-800">OFFER TO PURCHASE</h3>
+                    <p className="text-sm text-gray-500">Outright Vehicle Purchase</p>
+                    <p className="text-sm text-gray-400 mt-1">{today}</p>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 pt-4 mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2">SELLER DETAILS</h4>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Name:</span><span className="border-b border-gray-300 flex-1 min-h-[20px]">{(vehicle as any).supplier || ""}</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">ID / Reg Nr:</span><span className="border-b border-gray-300 flex-1 min-h-[20px]"></span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Phone:</span><span className="border-b border-gray-300 flex-1 min-h-[20px]"></span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Address:</span><span className="border-b border-gray-300 flex-1 min-h-[20px]"></span></div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 pt-4 mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2">VEHICLE DETAILS</h4>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Make:</span><span>{vehicle.make}</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Model:</span><span>{vehicle.model}</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Year:</span><span>{vehicle.year}</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Variant:</span><span>{(vehicle as any).variant || ""}</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">VIN / Chassis:</span><span>{(vehicle as any).chassisNumber || ""}</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Engine Nr:</span><span>{(vehicle as any).engineNumber || ""}</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Registration:</span><span>{(vehicle as any).registrationNumber || ""}</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Mileage:</span><span>{vehicle.mileage?.toLocaleString() || "0"} km</span></div>
+                    <div className="flex gap-2"><span className="text-gray-400 w-24 shrink-0">Colour:</span><span>{(vehicle as any).colour || (vehicle as any).color || ""}</span></div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 pt-4 mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2">OFFER</h4>
+                  <p className="text-sm">
+                    The Buyer hereby offers to purchase the above-described vehicle for the amount of:
+                  </p>
+                  <p className="text-2xl font-bold mt-2 mb-1">
+                    R {offerAmount.toLocaleString("en-ZA", { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    ({numberToWords(offerAmount)} Rand)
+                  </p>
+                  {(vehicle as any).settlementAmount > 0 && (
+                    <p className="text-sm text-gray-600 mt-2">
+                      Settlement amount of R {(vehicle as any).settlementAmount.toLocaleString("en-ZA", { minimumFractionDigits: 2 })} to be deducted,
+                      net payable to seller: R {(offerAmount - (vehicle as any).settlementAmount).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}
+                    </p>
+                  )}
+                </div>
+
+                <div className="border-t border-gray-200 pt-4 mb-6">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2">TERMS & CONDITIONS</h4>
+                  <ol className="list-decimal list-inside text-sm space-y-1.5 text-gray-600">
+                    {terms.map((t, i) => <li key={i}>{t}</li>)}
+                  </ol>
+                </div>
+
+                <div className="border-t border-gray-200 pt-6 grid grid-cols-2 gap-8">
+                  <div>
+                    <p className="text-xs text-gray-400 mb-8">BUYER (Dealer)</p>
+                    <div className="border-b border-gray-400 mb-1"></div>
+                    <p className="text-xs text-gray-500">Signature & Date</p>
+                    <p className="text-sm font-medium mt-1">{dealership?.name || ""}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-8">SELLER</p>
+                    <div className="border-b border-gray-400 mb-1"></div>
+                    <p className="text-xs text-gray-500">Signature & Date</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                <button
+                  type="button"
+                  onClick={() => setShowOutrightOtp(false)}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("otp-outright-print");
+                    if (!el) return;
+                    const w = window.open("", "_blank");
+                    if (!w) return;
+                    w.document.write(`<html><head><title>OTP - ${vehicle.year} ${vehicle.make} ${vehicle.model}</title><style>body{font-family:Arial,sans-serif;padding:40px;color:#111}@media print{button{display:none}}</style></head><body>${el.innerHTML}</body></html>`);
+                    w.document.close();
+                    w.print();
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700"
+                >
+                  <Printer size={14} /> Print OTP
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

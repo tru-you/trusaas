@@ -24,6 +24,12 @@ export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props
   const [ownershipClause, setOwnershipClause] = useState(ds.ownershipClause || "");
   const [footerNote, setFooterNote] = useState(ds.footerNote || "");
   const [warrantyTerms, setWarrantyTerms] = useState(ds.warrantyTerms || "");
+  const [invoiceExtrasDefaults, setInvoiceExtrasDefaults] = useState<{ description: string; amount: number; secondGross?: boolean }[]>(
+    ds.invoiceExtrasDefaults?.length ? ds.invoiceExtrasDefaults : []
+  );
+  const [otpOutrightTerms, setOtpOutrightTerms] = useState<string[]>(ds.otpOutrightTerms?.length ? ds.otpOutrightTerms : []);
+  const [invoicePrefix, setInvoicePrefix] = useState(ds.invoicePrefix || "INV");
+  const [nextInvoiceNumber, setNextInvoiceNumber] = useState(ds.nextInvoiceNumber || 1);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +75,10 @@ export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props
         ownershipClause,
         footerNote,
         warrantyTerms,
+        invoiceExtrasDefaults: invoiceExtrasDefaults.filter((e) => e.description.trim()),
+        otpOutrightTerms: otpOutrightTerms.filter((t) => t.trim()),
+        invoicePrefix: invoicePrefix.trim() || "INV",
+        nextInvoiceNumber: nextInvoiceNumber || 1,
       };
       const updated = await updateDealershipSelf(
         { docSettings },
@@ -239,6 +249,141 @@ export default function DocSettingsPanel({ dealership, isAdmin, onSaved }: Props
               <Plus size={12} /> Add term
             </button>
           </div>
+        </div>
+
+        {/* Invoice extras defaults */}
+        <div>
+          <div className={sectionCls}>Invoice extras defaults</div>
+          <p className="text-xs text-[rgba(232,234,230,0.55)] mb-2">
+            Standard extras added to every deal (licence &amp; registration, admin fee, etc).
+            Loaded via "Load Defaults" on the Deal Sheet. The 2nd Gross checkbox marks items
+            that count toward second gross profit.
+          </p>
+          <div className="flex flex-col gap-2">
+            {invoiceExtrasDefaults.map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-xs text-[rgba(232,234,230,0.4)] w-5 text-right shrink-0">{i + 1}.</span>
+                <input
+                  className={inputCls + " flex-1"}
+                  value={item.description}
+                  onChange={(e) => {
+                    setInvoiceExtrasDefaults((d) => d.map((x, idx) => idx === i ? { ...x, description: e.target.value } : x));
+                    dirty();
+                  }}
+                  placeholder="e.g. Licence & Registration"
+                />
+                <input
+                  type="number"
+                  className={inputCls + " w-28"}
+                  value={item.amount || ""}
+                  onChange={(e) => {
+                    setInvoiceExtrasDefaults((d) => d.map((x, idx) => idx === i ? { ...x, amount: Number(e.target.value) || 0 } : x));
+                    dirty();
+                  }}
+                  placeholder="Amount"
+                />
+                <label className="flex items-center gap-1 text-xs text-[rgba(232,234,230,0.55)] shrink-0 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!item.secondGross}
+                    onChange={(e) => {
+                      setInvoiceExtrasDefaults((d) => d.map((x, idx) => idx === i ? { ...x, secondGross: e.target.checked } : x));
+                      dirty();
+                    }}
+                    className="accent-[color:var(--cyan)]"
+                  />
+                  2nd Gr.
+                </label>
+                <button
+                  type="button"
+                  onClick={() => { setInvoiceExtrasDefaults((d) => d.filter((_, idx) => idx !== i)); dirty(); }}
+                  className="p-1 rounded hover:bg-white/10 text-[rgba(232,234,230,0.4)] hover:text-red-300"
+                  title="Remove"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => { setInvoiceExtrasDefaults((d) => [...d, { description: "", amount: 0 }]); dirty(); }}
+              className="inline-flex items-center gap-1 text-xs text-[color:var(--cyan-bright)] hover:underline self-start mt-1"
+            >
+              <Plus size={12} /> Add default extra
+            </button>
+          </div>
+        </div>
+
+        {/* OTP outright purchase terms */}
+        <div>
+          <div className={sectionCls}>OTP terms (outright purchase)</div>
+          <p className="text-xs text-[rgba(232,234,230,0.55)] mb-2">
+            Terms &amp; conditions pre-filled on Offer to Purchase documents for outright
+            vehicle purchases (buying from a customer, not a trade-in). Editable per OTP.
+          </p>
+          <div className="flex flex-col gap-2">
+            {otpOutrightTerms.map((term, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="text-xs text-[rgba(232,234,230,0.4)] mt-3 w-5 text-right shrink-0">{i + 1}.</span>
+                <textarea
+                  className={inputCls + " flex-1 min-h-[60px] resize-y"}
+                  value={term}
+                  onChange={(e) => {
+                    setOtpOutrightTerms((t) => t.map((c, idx) => idx === i ? e.target.value : c));
+                    dirty();
+                  }}
+                  placeholder="e.g. This offer is valid for 7 calendar days from date of issue."
+                />
+                {otpOutrightTerms.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => { setOtpOutrightTerms((t) => t.filter((_, idx) => idx !== i)); dirty(); }}
+                    className="mt-2 p-1 rounded hover:bg-white/10 text-[rgba(232,234,230,0.4)] hover:text-red-300"
+                    title="Remove"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => { setOtpOutrightTerms((t) => [...t, ""]); dirty(); }}
+              className="inline-flex items-center gap-1 text-xs text-[color:var(--cyan-bright)] hover:underline self-start mt-1"
+            >
+              <Plus size={12} /> Add term
+            </button>
+          </div>
+        </div>
+
+        {/* Invoice numbering */}
+        <div>
+          <div className={sectionCls}>Invoice numbering</div>
+          <p className="text-xs text-[rgba(232,234,230,0.55)] mb-2">
+            Auto-generated invoice numbers use this prefix and counter. E.g. INV-0001, INV-0002.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[rgba(232,234,230,0.55)]">Prefix</label>
+              <input
+                className={inputCls}
+                value={invoicePrefix}
+                onChange={(e) => { setInvoicePrefix(e.target.value); dirty(); }}
+                placeholder="INV"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[rgba(232,234,230,0.55)]">Next number</label>
+              <input
+                type="number"
+                className={inputCls}
+                value={nextInvoiceNumber}
+                onChange={(e) => { setNextInvoiceNumber(Number(e.target.value) || 1); dirty(); }}
+                min={1}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-[rgba(232,234,230,0.35)] mt-1">Preview: {invoicePrefix}-{String(nextInvoiceNumber).padStart(4, '0')}</p>
         </div>
 
         {/* Ownership clause */}

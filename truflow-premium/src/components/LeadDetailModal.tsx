@@ -1,8 +1,8 @@
 import React, { useState, useEffect, Suspense } from "react";
-import { Lead, Vehicle, User, Communication, Task, Agreement } from "../types";
+import { Lead, Vehicle, User, Communication, Task, Agreement, TradeIn, InvoiceExtra, Dealership, Client } from "../types";
 import { getAccount } from "../lib/session";
-import { fetchState, updateLead, updateLeadStatus, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement } from "../api";
-import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature, Shield, CheckCircle2, AlertCircle, Banknote } from "lucide-react";
+import { fetchState, updateLead, updateLeadStatus, deleteLead, createCommunication, createTask, updateTask, createInvoice, createAgreement, updateAgreement, createVehicle } from "../api";
+import { X, Calendar, Phone, Mail, Award, MessageSquare, Plus, Clock, FileText, Send, CheckCircle, Wand2, Eye, ShoppingCart, Sparkles, AlertTriangle, TrendingUp, Smartphone, FileSignature, Shield, CheckCircle2, AlertCircle, Banknote, Trash2, Printer, ChevronDown, ChevronUp, Car } from "lucide-react";
 import AgreementPreview from "./AgreementPreview";
 
 interface LeadDetailModalProps {
@@ -11,6 +11,7 @@ interface LeadDetailModalProps {
   users: User[];
   allCommunications: Communication[];
   allTasks: Task[];
+  dealership?: Dealership;
   onClose: () => void;
   onRefresh: () => void;
   /** Documents filed against this lead — the buyer's side of the paperwork. */
@@ -21,7 +22,8 @@ interface LeadDetailModalProps {
   docHubPanel?: React.ReactNode;
   /** Tab to open on first mount. Lets Deal Readiness deep-link straight into
    *  DocHub instead of forcing a second click through Overview. */
-  initialTab?: "overview" | "journey" | "comm" | "history" | "tasks" | "finance" | "dochub";
+  initialTab?: "overview" | "journey" | "comm" | "history" | "tasks" | "finance" | "deal" | "dochub";
+  clients?: Client[];
 }
 
 export default function LeadDetailModal({
@@ -30,11 +32,13 @@ export default function LeadDetailModal({
   users,
   allCommunications,
   allTasks,
+  dealership,
   onClose,
   onRefresh,
   documentsPanel,
   docHubPanel,
   initialTab,
+  clients,
 }: LeadDetailModalProps) {
   const [lead, setLead] = useState<Lead | null>(null);
   // Who is logged in — communications used to be stamped "Marc van der Merwe"
@@ -65,7 +69,9 @@ export default function LeadDetailModal({
       `Hi ${lead.firstName} 👋 The ${vehicle ? `${vehicle.make} ${vehicle.model}` : "vehicle"} ` +
       `you enquired about is still available. Happy to send more photos or book you a viewing — what works for you?`,
   };
-  const [activeTab, setActiveTab] = useState<"overview" | "journey" | "comm" | "history" | "tasks" | "finance" | "dochub">(initialTab || "overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "journey" | "comm" | "history" | "tasks" | "finance" | "deal" | "dochub">(initialTab || "overview");
+  const [activeTradeSlot, setActiveTradeSlot] = useState<0 | 1>(0);
+  const [showOtpPreview, setShowOtpPreview] = useState<number | null>(null);
   const tasks = allTasks.filter((t) => t.leadId === leadId);
 
   // Communication Form State
@@ -288,16 +294,45 @@ export default function LeadDetailModal({
 
     try {
       // A call is logged after the fact — there's nothing to hand off.
+      // WhatsApp always uses the wa.me deep link (no server-side send).
       if (commChannel !== "call") {
-        let handoff = "";
-        if (commChannel === "whatsapp") {
-          handoff = `https://wa.me/${digits}?text=${encodeURIComponent(content)}`;
-        } else if (commChannel === "email") {
-          handoff = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(content)}`;
-        } else {
-          handoff = `sms:${lead.phone}?body=${encodeURIComponent(content)}`;
+        let useNativeHandler = true;
+
+        // For email and SMS, attempt server-side send first.
+        if (commChannel === "email" || commChannel === "sms") {
+          try {
+            const token = localStorage.getItem("token");
+            const sendRes = await fetch("/api/send", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({
+                channel: commChannel,
+                to: commChannel === "email" ? lead.email : digits,
+                subject: commChannel === "email" ? subject : undefined,
+                body: content,
+              }),
+            });
+            const sendResult = await sendRes.json();
+            if (sendResult.sent) {
+              useNativeHandler = false;
+            }
+            // If not sent (not_configured), fall through to native handler
+          } catch {
+            // Server unreachable — fall through to native handler
+          }
         }
-        window.open(handoff, "_blank");
+
+        if (useNativeHandler) {
+          let handoff = "";
+          if (commChannel === "whatsapp") {
+            handoff = `https://wa.me/${digits}?text=${encodeURIComponent(content)}`;
+          } else if (commChannel === "email") {
+            handoff = `mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(content)}`;
+          } else {
+            handoff = `sms:${lead.phone}?body=${encodeURIComponent(content)}`;
+          }
+          window.open(handoff, "_blank");
+        }
       }
 
       if (commChannel === "whatsapp") {
@@ -453,7 +488,7 @@ export default function LeadDetailModal({
                   : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
               }`}
             >
-              System History logs
+              Comms Timeline
             </button>
             <button
               onClick={() => setActiveTab("tasks")}
@@ -464,6 +499,21 @@ export default function LeadDetailModal({
               }`}
             >
               Tasks & Follow-up
+            </button>
+            <button
+              onClick={() => setActiveTab("deal")}
+              className={`px-3 py-2 min-h-[44px] text-[13px] font-semibold rounded-t-lg transition-all cursor-pointer shrink-0 whitespace-nowrap flex items-center gap-1 ${
+                activeTab === "deal"
+                  ? "text-[color:var(--white)] bg-[color:var(--cyan-faint)] border-b-2 border-[color:var(--cyan)]"
+                  : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] hover:bg-white/5"
+              }`}
+            >
+              Deal Sheet
+              {(lead.tradeIns?.length || 0) > 0 && (
+                <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] font-mono">
+                  {lead.tradeIns!.length}T
+                </span>
+              )}
             </button>
              <button
               onClick={() => setActiveTab("finance")}
@@ -1076,40 +1126,114 @@ export default function LeadDetailModal({
           )}
 
           {activeTab === "history" && (
-            <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-              <div className="card !bg-[color:var(--glass)]">
-                <div className="card-body p-4">
-                  <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-2">DMS Lifecycle events</div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-[13px] text-[rgba(232,234,230,0.72)] border-collapse stack-mobile">
-                      <thead>
-                        <tr className="border-b border-white/10 text-[rgba(232,234,230,0.72)]">
-                          <th className="py-2 font-semibold tracking-normal text-[13px]">Date</th>
-                          <th className="py-2 font-semibold tracking-normal text-[13px]">Who</th>
-                          <th className="py-2 font-semibold tracking-normal text-[13px]">Action</th>
-                          <th className="py-2 font-semibold tracking-normal text-[13px]">Outcome</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td data-label="Date" className="py-3 text-[13px] md:text-[15px]">{lead.createdAt}</td>
-                          <td data-label="Who" className="py-3 text-[13px] md:text-[15px] font-mono">DMS CENTRAL</td>
-                          <td data-label="Action" className="py-3 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">Lead Registered</td>
-                          <td data-label="Outcome" className="py-3 text-[13px] md:text-[15px]">Logged from {lead.source} source</td>
-                        </tr>
-                        {lead.lastContactedAt && (
-                          <tr>
-                            <td data-label="Date" className="py-3 text-[13px] md:text-[15px]">{lead.lastContactedAt}</td>
-                            <td data-label="Who" className="py-3 text-[13px] md:text-[15px] font-mono">MARC_VAN_DER_MERWE</td>
-                            <td data-label="Action" className="py-3 text-[13px] md:text-[15px] font-semibold text-[color:var(--white)]">Contact Completed</td>
-                            <td data-label="Outcome" className="py-3 text-[13px] md:text-[15px]">Sent</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+            <div className="flex flex-col gap-2 animate-in fade-in duration-150">
+              <div className="text-[length:var(--t-micro)] font-medium text-[color:var(--muted)] tracking-normal font-mono mb-1">Full interaction timeline</div>
+              {(() => {
+                type TimelineEntry = { date: string; icon: any; color: string; title: string; detail: string; who: string; badge?: string };
+                const entries: TimelineEntry[] = [];
+
+                // Add comms
+                communications.forEach(c => {
+                  const iconMap: Record<string, any> = { email: Mail, sms: Smartphone, whatsapp: MessageSquare, call: Phone };
+                  const colorMap: Record<string, string> = { email: '#60a5fa', sms: '#34d399', whatsapp: '#25D366', call: '#fbbf24' };
+                  entries.push({
+                    date: c.sentAt,
+                    icon: iconMap[c.type] || Mail,
+                    color: colorMap[c.type] || '#60a5fa',
+                    title: `${c.type.charAt(0).toUpperCase() + c.type.slice(1)} — ${c.subject}`,
+                    detail: c.content,
+                    who: c.sentBy,
+                    badge: c.type.toUpperCase(),
+                  });
+                });
+
+                // Add lifecycle: lead created
+                if (lead.createdAt) {
+                  entries.push({
+                    date: lead.createdAt,
+                    icon: Clock,
+                    color: 'var(--cyan)',
+                    title: 'Lead Registered',
+                    detail: `Logged from ${lead.source} source`,
+                    who: 'SYSTEM',
+                    badge: 'LIFECYCLE',
+                  });
+                }
+
+                // Add lifecycle: last contacted
+                if (lead.lastContactedAt) {
+                  entries.push({
+                    date: lead.lastContactedAt,
+                    icon: CheckCircle,
+                    color: 'var(--cyan)',
+                    title: 'Contact Completed',
+                    detail: 'Outbound contact made',
+                    who: currentUserName || 'Agent',
+                    badge: 'LIFECYCLE',
+                  });
+                }
+
+                // Add test drives
+                ((lead as any).testDrives || []).forEach((td: any) => {
+                  const typeLabel = td.type === 'test_drive' ? 'Test Drive' : td.type === 'viewing' ? 'Viewing' : 'Trade-In Appraisal';
+                  entries.push({
+                    date: td.scheduledAt,
+                    icon: Car,
+                    color: '#a78bfa',
+                    title: `${typeLabel} ${td.outcome ? `— ${td.outcome}` : '— Scheduled'}`,
+                    detail: td.notes || td.feedback || '',
+                    who: '',
+                    badge: td.type.toUpperCase().replace('_', ' '),
+                  });
+                });
+
+                // Sort newest first
+                entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+                if (entries.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-[rgba(232,234,230,0.72)] italic text-[13px]">
+                      No interactions recorded yet.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="relative pl-6">
+                    {/* Vertical line */}
+                    <div className="absolute left-[11px] top-2 bottom-2 w-px bg-white/10" />
+                    {entries.map((entry, i) => {
+                      const Icon = entry.icon;
+                      return (
+                        <div key={i} className="relative flex gap-3 pb-4">
+                          {/* Dot */}
+                          <div className="absolute -left-6 top-1 w-[22px] h-[22px] rounded-full flex items-center justify-center border border-white/10" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                            <Icon size={11} style={{ color: entry.color }} />
+                          </div>
+                          {/* Content */}
+                          <div className="flex-1 bg-black/30 border border-white/5 rounded-lg px-3 py-2.5">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="text-[13px] font-semibold text-[color:var(--white)]">{entry.title}</span>
+                              {entry.badge && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold tracking-wide" style={{ color: entry.color, backgroundColor: `color-mix(in srgb, ${entry.color} 15%, transparent)` }}>
+                                  {entry.badge}
+                                </span>
+                              )}
+                            </div>
+                            {entry.detail && (
+                              <p className="text-[13px] text-[rgba(232,234,230,0.72)] line-clamp-2">{entry.detail}</p>
+                            )}
+                            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-[color:var(--muted)]">
+                              <span>{new Date(entry.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })} · {new Date(entry.date).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}</span>
+                              {entry.who && <span className="font-mono">{entry.who}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
-              </div>
+                );
+              })()}
             </div>
           )}
           {activeTab === "tasks" && (
@@ -1212,6 +1336,841 @@ export default function LeadDetailModal({
               </div>
             </div>
           )}
+
+          {activeTab === "deal" && (() => {
+            const tradeIns: TradeIn[] = lead.tradeIns || [];
+            const extras: InvoiceExtra[] = lead.invoiceExtras || [];
+            const sellingPrice = lead.sellingPrice || (vehicle?.retailPrice || 0);
+            const extrasTotal = extras.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+            const tradeAllowanceTotal = tradeIns.reduce((s, t) => s + (Number(t.allowance) || 0), 0);
+            const depositAmount = Number(lead.depositAmount) || 0;
+            const customerOwes = sellingPrice + extrasTotal - tradeAllowanceTotal - depositAmount;
+            const docSettings = dealership?.docSettings;
+            const defaultTerms = docSettings?.saleTerms || [
+              "This offer is valid for 7 (seven) calendar days from date of issue.",
+              "The vehicle is purchased voetstoots (as-is) unless otherwise specified.",
+              "Settlement of existing finance (if applicable) is the responsibility of the seller and will be deducted from the purchase price.",
+              "Transfer of ownership is subject to receipt of all required documentation (ID, proof of address, registration papers, settlement letter).",
+            ];
+
+            const emptyTradeIn = (): TradeIn => ({
+              id: 'ti_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+              make: '', model: '', year: new Date().getFullYear(),
+              tradeInPrice: 0, allowance: 0,
+            });
+
+            const updateTradeIn = async (slotIdx: number, patch: Partial<TradeIn>) => {
+              const updated = [...tradeIns];
+              if (!updated[slotIdx]) updated[slotIdx] = emptyTradeIn();
+              updated[slotIdx] = { ...updated[slotIdx], ...patch };
+              await updateLead(lead.id, { tradeIns: updated } as any);
+              loadLocalLead();
+              onRefresh();
+            };
+
+            const removeTradeIn = async (slotIdx: number) => {
+              const updated = tradeIns.filter((_, i) => i !== slotIdx);
+              await updateLead(lead.id, { tradeIns: updated } as any);
+              loadLocalLead();
+              onRefresh();
+              if (activeTradeSlot >= updated.length && updated.length > 0) setActiveTradeSlot(0);
+            };
+
+            const addExtra = async (desc: string, amount: number, secondGross?: boolean) => {
+              const updated = [...extras, { id: 'ie_' + Date.now(), description: desc, amount, secondGross }];
+              await updateLead(lead.id, { invoiceExtras: updated } as any);
+              loadLocalLead();
+              onRefresh();
+            };
+
+            const removeExtra = async (idx: number) => {
+              const updated = extras.filter((_, i) => i !== idx);
+              await updateLead(lead.id, { invoiceExtras: updated } as any);
+              loadLocalLead();
+              onRefresh();
+            };
+
+            const loadExtrasDefaults = async () => {
+              const defaults = docSettings?.invoiceExtrasDefaults || [
+                { description: 'License & Registration', amount: 0, secondGross: false },
+                { description: 'Admin Fee', amount: 0, secondGross: false },
+                { description: 'On-the-road Fee', amount: 0, secondGross: false },
+              ];
+              const newExtras = defaults.map((d, i) => ({ ...d, id: 'ie_' + Date.now() + '_' + i }));
+              await updateLead(lead.id, { invoiceExtras: [...extras, ...newExtras] } as any);
+              loadLocalLead();
+              onRefresh();
+            };
+
+            const patchDeal = async (patch: Partial<Lead>) => {
+              await updateLead(lead.id, patch);
+              loadLocalLead();
+              onRefresh();
+            };
+
+            const ti = tradeIns[activeTradeSlot];
+            const fmt = (n: number) => `R ${n.toLocaleString('en-ZA', { minimumFractionDigits: 0 })}`;
+
+            const renderField = (label: string, value: any, onChange: (v: string) => void, opts?: { type?: string; placeholder?: string; mono?: boolean }) => (
+              <label className="flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] font-medium">{label}</span>
+                <input
+                  type={opts?.type || 'text'}
+                  value={value ?? ''}
+                  onChange={e => onChange(e.target.value)}
+                  onBlur={e => onChange(e.target.value)}
+                  placeholder={opts?.placeholder}
+                  className={`px-3 py-2 rounded-lg bg-[color:var(--ink)] border border-white/10 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]/50 ${opts?.mono ? 'font-mono' : ''}`}
+                />
+              </label>
+            );
+
+            const linkedClient = clients?.find(c => c.id === lead.clientId);
+
+            const linkClient = async (clientId: string | null) => {
+              if (!clientId) {
+                await updateLead(lead.id, { clientId: undefined, idOrBrn: undefined, address: undefined, buyerVatNumber: undefined } as any);
+              } else {
+                const c = clients?.find(cl => cl.id === clientId);
+                if (!c) return;
+                const fullAddress = [c.address, c.address2, c.address3, c.suburb, c.city, c.province, c.postalCode].filter(Boolean).join(', ');
+                await updateLead(lead.id, {
+                  clientId: c.id,
+                  firstName: c.firstName,
+                  lastName: c.lastName,
+                  phone: c.phone,
+                  email: c.email,
+                  idOrBrn: c.idNumber || '',
+                  address: fullAddress,
+                  buyerVatNumber: c.vatNumber || '',
+                } as any);
+              }
+              loadLocalLead();
+              onRefresh();
+            };
+
+            return (
+              <div className="flex flex-col gap-5 animate-in fade-in duration-150">
+
+                {/* ─── CLIENT LINK ─── */}
+                {clients && clients.length > 0 && (
+                  <div className="card !bg-[color:var(--glass)]">
+                    <div className="card-body p-4 flex flex-col gap-3">
+                      <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono border-b border-white/5 pb-2">Link Client</div>
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={lead.clientId || ''}
+                          onChange={e => linkClient(e.target.value || null)}
+                          className="flex-1 px-3 py-2 rounded-lg bg-[color:var(--ink)] border border-white/10 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]/50"
+                        >
+                          <option value="">— Select a client —</option>
+                          {clients.map(c => (
+                            <option key={c.id} value={c.id}>{c.code} — {c.title ? `${c.title} ` : ''}{c.firstName} {c.lastName}{c.company ? ` (${c.company})` : ''}</option>
+                          ))}
+                        </select>
+                        {linkedClient && (
+                          <button onClick={() => linkClient(null)} className="text-[11px] text-red-400 hover:text-red-300 font-medium">Unlink</button>
+                        )}
+                      </div>
+                      {linkedClient && (
+                        <div className="text-[12px] text-[rgba(232,234,230,0.55)] grid grid-cols-3 gap-2 mt-1">
+                          <span>ID: {linkedClient.idNumber || '—'}</span>
+                          <span>VAT: {linkedClient.vatNumber || '—'}</span>
+                          <span>Phone: {linkedClient.phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── SELLING DETAILS ─── */}
+                <div className="card !bg-[color:var(--glass)]">
+                  <div className="card-body p-4 flex flex-col gap-3">
+                    <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono border-b border-white/5 pb-2">Selling Details</div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {renderField('Selling Price', sellingPrice || '', v => patchDeal({ sellingPrice: Number(v) || 0 }), { type: 'number', mono: true })}
+                      {renderField('Deposit Amount', lead.depositAmount || '', v => patchDeal({ depositAmount: Number(v) || 0 }), { type: 'number', mono: true })}
+                      {renderField('Deposit Date', lead.depositDate || '', v => patchDeal({ depositDate: v }), { type: 'date' })}
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {renderField('Sales Person', lead.salesPerson || '', v => patchDeal({ salesPerson: v }))}
+                      {renderField('Sales Source', lead.salesSource || '', v => patchDeal({ salesSource: v }))}
+                      {renderField('Bank / Branch', lead.bankBranch || '', v => patchDeal({ bankBranch: v }), { placeholder: 'For financed deals' })}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {renderField('Finance Institution', lead.financeInstitution || '', v => patchDeal({ financeInstitution: v }), { placeholder: 'e.g. WesBank, Absa, Standard Bank' })}
+                      {renderField('Invoice Number', lead.invoiceNumber || '', v => patchDeal({ invoiceNumber: v }), { mono: true, placeholder: 'Auto-assigned on invoice' })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ─── TRADE-INS ─── */}
+                <div className="card !bg-[color:var(--glass)]">
+                  <div className="card-body p-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                      <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono flex items-center gap-2">
+                        <Car size={14} /> Trade-Ins ({tradeIns.length}/2)
+                      </div>
+                      {tradeIns.length < 2 && (
+                        <button
+                          onClick={() => {
+                            const slot = tradeIns.length;
+                            updateTradeIn(slot, emptyTradeIn());
+                            setActiveTradeSlot(slot as 0 | 1);
+                          }}
+                          className="flex items-center gap-1 text-[12px] font-semibold text-[color:var(--cyan)] hover:text-white transition-colors"
+                        >
+                          <Plus size={13} /> Add Trade-In
+                        </button>
+                      )}
+                    </div>
+
+                    {tradeIns.length === 0 ? (
+                      <p className="text-[13px] text-[rgba(232,234,230,0.45)] py-4 text-center">No trade-ins on this deal. Click "Add Trade-In" to capture one.</p>
+                    ) : (
+                      <>
+                        {tradeIns.length > 1 && (
+                          <div className="flex gap-2">
+                            {tradeIns.map((t, i) => (
+                              <button
+                                key={t.id}
+                                onClick={() => setActiveTradeSlot(i as 0 | 1)}
+                                className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${
+                                  activeTradeSlot === i
+                                    ? 'bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]'
+                                    : 'text-[rgba(232,234,230,0.55)] border border-white/8 hover:border-white/20'
+                                }`}
+                              >
+                                Trade-In {i + 1}{t.make ? `: ${t.year} ${t.make} ${t.model}` : ''}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {ti && (
+                          <div className="flex flex-col gap-3">
+                            <div className="grid grid-cols-4 gap-3">
+                              {renderField('Make', ti.make, v => updateTradeIn(activeTradeSlot, { make: v }), { placeholder: 'e.g. Toyota' })}
+                              {renderField('Model', ti.model, v => updateTradeIn(activeTradeSlot, { model: v }), { placeholder: 'e.g. Hilux' })}
+                              {renderField('Year', ti.year, v => updateTradeIn(activeTradeSlot, { year: Number(v) || 0 }), { type: 'number' })}
+                              {renderField('Variant', ti.variant || '', v => updateTradeIn(activeTradeSlot, { variant: v }), { placeholder: '2.8 GD-6' })}
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                              {renderField('VIN / Chassis Nr', ti.chassisNumber || '', v => updateTradeIn(activeTradeSlot, { chassisNumber: v }))}
+                              {renderField('Engine Nr', ti.engineNumber || '', v => updateTradeIn(activeTradeSlot, { engineNumber: v }))}
+                              {renderField('Registration', ti.registrationNumber || '', v => updateTradeIn(activeTradeSlot, { registrationNumber: v }))}
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              {renderField('Mileage (km)', ti.mileage || '', v => updateTradeIn(activeTradeSlot, { mileage: Number(v) || 0 }), { type: 'number', mono: true })}
+                              {renderField('Trade-In Price', ti.tradeInPrice, v => updateTradeIn(activeTradeSlot, { tradeInPrice: Number(v) || 0 }), { type: 'number', mono: true })}
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              {renderField('Allowance (credited to deal)', ti.allowance, v => updateTradeIn(activeTradeSlot, { allowance: Number(v) || 0 }), { type: 'number', mono: true })}
+                              {renderField('Stand-In Price (dealer cost basis)', ti.standInPrice || '', v => updateTradeIn(activeTradeSlot, { standInPrice: Number(v) || 0 }), { type: 'number', mono: true })}
+                            </div>
+
+                            {/* Settlement */}
+                            <div className="bg-black/20 border border-white/5 rounded-xl p-3 flex flex-col gap-2">
+                              <div className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] font-medium">Settlement (if finance is owed on trade-in)</div>
+                              <div className="grid grid-cols-2 gap-3">
+                                {renderField('Settlement Amount', ti.settlementAmount || '', v => updateTradeIn(activeTradeSlot, { settlementAmount: Number(v) || 0 }), { type: 'number', mono: true })}
+                                {renderField('Settlement Bank', ti.settlementBank || '', v => updateTradeIn(activeTradeSlot, { settlementBank: v }), { placeholder: 'e.g. WesBank' })}
+                              </div>
+                            </div>
+
+                            {renderField('Cash Back (if trade exceeds purchase)', ti.cashBack || '', v => updateTradeIn(activeTradeSlot, { cashBack: Number(v) || 0 }), { type: 'number', mono: true })}
+
+                            <div className="flex items-center gap-2 pt-1">
+                              <button
+                                onClick={() => setShowOtpPreview(activeTradeSlot)}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan)]/20 transition-colors"
+                              >
+                                <Printer size={13} /> Generate OTP
+                              </button>
+                              <button
+                                onClick={() => { if (confirm(`Remove Trade-In ${activeTradeSlot + 1}?`)) removeTradeIn(activeTradeSlot); }}
+                                className="flex items-center gap-1 px-3 py-2 rounded-lg text-[12px] font-semibold text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              >
+                                <Trash2 size={13} /> Remove
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* ─── INVOICE EXTRAS ─── */}
+                <div className="card !bg-[color:var(--glass)]">
+                  <div className="card-body p-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                      <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono">Invoice Extras</div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={loadExtrasDefaults}
+                          className="text-[11px] font-semibold text-[rgba(232,234,230,0.55)] hover:text-[color:var(--cyan)] transition-colors"
+                        >
+                          Load Defaults
+                        </button>
+                      </div>
+                    </div>
+
+                    {extras.length > 0 && (
+                      <div className="flex flex-col gap-1">
+                        <div className="grid grid-cols-[1fr_120px_60px_32px] gap-2 text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.35)] font-medium px-1">
+                          <span>Description</span>
+                          <span>Amount</span>
+                          <span>2nd Gr.</span>
+                          <span></span>
+                        </div>
+                        {extras.map((ex, i) => (
+                          <div key={ex.id} className="grid grid-cols-[1fr_120px_60px_32px] gap-2 items-center">
+                            <input
+                              value={ex.description}
+                              onChange={e => {
+                                const updated = [...extras];
+                                updated[i] = { ...ex, description: e.target.value };
+                                updateLead(lead.id, { invoiceExtras: updated } as any).then(() => { loadLocalLead(); onRefresh(); });
+                              }}
+                              className="px-2 py-1.5 rounded bg-[color:var(--ink)] border border-white/8 text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)]/50"
+                            />
+                            <input
+                              type="number"
+                              value={ex.amount || ''}
+                              onChange={e => {
+                                const updated = [...extras];
+                                updated[i] = { ...ex, amount: Number(e.target.value) || 0 };
+                                updateLead(lead.id, { invoiceExtras: updated } as any).then(() => { loadLocalLead(); onRefresh(); });
+                              }}
+                              className="px-2 py-1.5 rounded bg-[color:var(--ink)] border border-white/8 text-[13px] text-[color:var(--white)] font-mono outline-none focus:border-[color:var(--cyan)]/50"
+                            />
+                            <div className="flex justify-center">
+                              <input
+                                type="checkbox"
+                                checked={!!ex.secondGross}
+                                onChange={e => {
+                                  const updated = [...extras];
+                                  updated[i] = { ...ex, secondGross: e.target.checked };
+                                  updateLead(lead.id, { invoiceExtras: updated } as any).then(() => { loadLocalLead(); onRefresh(); });
+                                }}
+                                className="w-4 h-4 rounded accent-[color:var(--cyan)]"
+                              />
+                            </div>
+                            <button
+                              onClick={() => removeExtra(i)}
+                              className="p-1 rounded hover:bg-red-500/10 text-[rgba(232,234,230,0.35)] hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <form
+                      onSubmit={e => {
+                        e.preventDefault();
+                        const fd = new FormData(e.currentTarget);
+                        const desc = fd.get('desc') as string;
+                        const amt = Number(fd.get('amt')) || 0;
+                        if (desc) { addExtra(desc, amt); (e.target as HTMLFormElement).reset(); }
+                      }}
+                      className="grid grid-cols-[1fr_120px_auto] gap-2 items-end"
+                    >
+                      <input name="desc" placeholder="Description" className="px-2 py-1.5 rounded bg-[color:var(--ink)] border border-white/8 text-[13px] text-[color:var(--white)] placeholder:text-[rgba(232,234,230,0.25)] outline-none focus:border-[color:var(--cyan)]/50" />
+                      <input name="amt" type="number" placeholder="Amount" className="px-2 py-1.5 rounded bg-[color:var(--ink)] border border-white/8 text-[13px] text-[color:var(--white)] font-mono placeholder:text-[rgba(232,234,230,0.25)] outline-none focus:border-[color:var(--cyan)]/50" />
+                      <button type="submit" className="px-3 py-1.5 rounded-lg text-[12px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/20 transition-colors">
+                        <Plus size={13} />
+                      </button>
+                    </form>
+
+                    {extrasTotal > 0 && (
+                      <div className="text-right text-[13px] font-mono font-semibold text-[color:var(--cyan)] pt-1 border-t border-white/5">
+                        Extras total: {fmt(extrasTotal)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ─── DEAL SUMMARY ─── */}
+                <div className="card !bg-[color:var(--glass)]">
+                  <div className="card-body p-4 flex flex-col gap-2">
+                    <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono border-b border-white/5 pb-2">Deal Summary</div>
+                    <div className="grid grid-cols-2 gap-2 text-[13px]">
+                      <span className="text-[rgba(232,234,230,0.72)]">Selling Price</span>
+                      <span className="text-right font-mono text-[color:var(--white)]">{fmt(sellingPrice)}</span>
+
+                      {extrasTotal > 0 && <>
+                        <span className="text-[rgba(232,234,230,0.72)]">+ Invoice Extras</span>
+                        <span className="text-right font-mono text-[rgba(232,234,230,0.72)]">{fmt(extrasTotal)}</span>
+                      </>}
+
+                      {tradeIns.map((t, i) => t.allowance > 0 && (
+                        <React.Fragment key={t.id}>
+                          <span className="text-[rgba(232,234,230,0.72)]">− Trade-In {i + 1} Allowance{t.make ? ` (${t.make} ${t.model})` : ''}</span>
+                          <span className="text-right font-mono text-emerald-400">−{fmt(t.allowance)}</span>
+                        </React.Fragment>
+                      ))}
+
+                      {depositAmount > 0 && <>
+                        <span className="text-[rgba(232,234,230,0.72)]">− Deposit</span>
+                        <span className="text-right font-mono text-emerald-400">−{fmt(depositAmount)}</span>
+                      </>}
+
+                      <span className="text-[color:var(--white)] font-semibold pt-2 border-t border-white/10">Customer Owes</span>
+                      <span className={`text-right font-mono font-semibold pt-2 border-t border-white/10 ${customerOwes < 0 ? 'text-emerald-400' : 'text-[color:var(--white)]'}`}>
+                        {customerOwes < 0 ? `−${fmt(Math.abs(customerOwes))} (cash back)` : fmt(customerOwes)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ─── GROSS PROFIT ─── */}
+                {vehicle && (vehicle.costPrice > 0 || sellingPrice > 0) && (() => {
+                  const cost = vehicle.costPrice || 0;
+                  const firstGross = sellingPrice - cost;
+                  const secondGrossExtras = extras.filter(e => e.secondGross).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+                  const totalGross = firstGross + secondGrossExtras;
+                  const margin = sellingPrice > 0 ? ((firstGross / sellingPrice) * 100) : 0;
+                  return (
+                    <div className="card !bg-[color:var(--glass)]">
+                      <div className="card-body p-4 flex flex-col gap-2">
+                        <div className="text-[13px] font-semibold text-emerald-400 tracking-normal font-mono border-b border-white/5 pb-2">Gross Profit</div>
+                        <div className="grid grid-cols-2 gap-2 text-[13px]">
+                          <span className="text-[rgba(232,234,230,0.72)]">Cost Price</span>
+                          <span className="text-right font-mono text-[color:var(--white)]">{fmt(cost)}</span>
+                          <span className="text-[rgba(232,234,230,0.72)]">Selling Price</span>
+                          <span className="text-right font-mono text-[color:var(--white)]">{fmt(sellingPrice)}</span>
+                          <span className="text-[color:var(--white)] font-semibold">1st Gross</span>
+                          <span className={`text-right font-mono font-semibold ${firstGross >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {firstGross < 0 ? '−' : ''}{fmt(Math.abs(firstGross))} <span className="text-[11px] text-[rgba(232,234,230,0.45)]">({margin.toFixed(1)}%)</span>
+                          </span>
+                          {secondGrossExtras > 0 && <>
+                            <span className="text-[rgba(232,234,230,0.72)]">2nd Gross (extras)</span>
+                            <span className="text-right font-mono text-emerald-400">{fmt(secondGrossExtras)}</span>
+                          </>}
+                          <span className="text-[color:var(--white)] font-semibold pt-2 border-t border-white/10">Total Gross</span>
+                          <span className={`text-right font-mono font-bold pt-2 border-t border-white/10 ${totalGross >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {totalGross < 0 ? '−' : ''}{fmt(Math.abs(totalGross))}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* ─── ON HOLD ─── */}
+                <label className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={!!lead.onHold}
+                    onChange={e => patchDeal({ onHold: e.target.checked })}
+                    className="w-4 h-4 rounded accent-amber-500"
+                  />
+                  <span className="font-semibold">On Hold</span>
+                  <span className="text-[rgba(232,234,230,0.45)]">— reserve this vehicle, pause the deal</span>
+                </label>
+
+                {/* ─── GENERATE TAX INVOICE ─── */}
+                <div className="flex gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.createElement('div');
+                      const bd = docSettings?.bankingDetails || {};
+                      const prefix = docSettings?.invoicePrefix || 'INV';
+                      const seqNum = docSettings?.nextInvoiceNumber || 1;
+                      const invNr = lead.invoiceNumber || `${prefix}-${String(seqNum).padStart(4, '0')}`;
+                      if (!lead.invoiceNumber) {
+                        patchDeal({ invoiceNumber: invNr } as any);
+                        if (dealership?.id) {
+                          updateLead(lead.id, { invoiceNumber: invNr } as any);
+                        }
+                      }
+                      const today = new Date().toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
+                      const vatRate = 0.15;
+                      const totalExVat = Math.round(customerOwes / (1 + vatRate));
+                      const vatAmount = customerOwes - totalExVat;
+                      el.innerHTML = `
+                        <div style="font-family:Arial,sans-serif;padding:40px;color:#111;max-width:800px;margin:auto">
+                          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+                            <div>
+                              ${docSettings?.logo ? `<img src="${docSettings.logo}" style="height:48px;object-fit:contain;margin-bottom:8px" />` : ''}
+                              <h2 style="margin:0;font-size:18px">${dealership?.name || 'Dealership'}</h2>
+                              ${dealership?.tradingAs ? `<p style="margin:2px 0;font-size:12px;color:#666">t/a ${dealership.tradingAs}</p>` : ''}
+                              ${dealership?.address ? `<p style="margin:2px 0;font-size:11px;color:#999">${dealership.address}</p>` : ''}
+                              ${dealership?.vatNumber ? `<p style="margin:2px 0;font-size:11px;color:#999">VAT: ${dealership.vatNumber}</p>` : ''}
+                            </div>
+                            <div style="text-align:right">
+                              <h3 style="margin:0;font-size:16px;color:#333">TAX INVOICE</h3>
+                              <p style="margin:4px 0;font-size:12px;color:#666">Invoice: ${invNr}</p>
+                              <p style="margin:2px 0;font-size:12px;color:#666">Date: ${today}</p>
+                            </div>
+                          </div>
+                          <div style="border-top:1px solid #ddd;padding-top:16px;margin-bottom:16px">
+                            <h4 style="font-size:12px;color:#666;margin:0 0 8px">CUSTOMER</h4>
+                            <p style="margin:2px 0;font-size:13px"><strong>${lead.firstName || ''} ${lead.lastName || ''}</strong></p>
+                            ${(lead as any).idOrBrn ? `<p style="margin:2px 0;font-size:12px;color:#666">ID: ${(lead as any).idOrBrn}</p>` : ''}
+                            ${(lead as any).address ? `<p style="margin:2px 0;font-size:12px;color:#666">${(lead as any).address}</p>` : ''}
+                            ${(lead as any).buyerVatNumber ? `<p style="margin:2px 0;font-size:12px;color:#666">VAT: ${(lead as any).buyerVatNumber}</p>` : ''}
+                          </div>
+                          <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+                            <thead>
+                              <tr style="background:#f5f5f5;text-align:left">
+                                <th style="padding:8px;border-bottom:1px solid #ddd">Description</th>
+                                <th style="padding:8px;border-bottom:1px solid #ddd;text-align:right;width:120px">Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td style="padding:8px;border-bottom:1px solid #eee">${vehicle?.year || ''} ${vehicle?.make || ''} ${vehicle?.model || ''} ${(vehicle as any)?.variant || ''}<br/><span style="font-size:11px;color:#999">Stock: ${vehicle?.stockNumber || '—'} | VIN: ${(vehicle as any)?.chassisNumber || '—'}</span></td>
+                                <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">R ${sellingPrice.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td>
+                              </tr>
+                              ${extras.map(e => `<tr><td style="padding:8px;border-bottom:1px solid #eee">${e.description}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">R ${Number(e.amount).toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>`).join('')}
+                              ${tradeAllowanceTotal > 0 ? tradeIns.filter(t => t.allowance).map(t => `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Less: Trade-in allowance — ${t.year || ''} ${t.make} ${t.model}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;color:#c00">- R ${Number(t.allowance).toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>`).join('') : ''}
+                              ${depositAmount > 0 ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Less: Deposit received</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;color:#c00">- R ${depositAmount.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>` : ''}
+                            </tbody>
+                            <tfoot>
+                              <tr><td style="padding:8px;text-align:right;font-size:12px;color:#666">Excl. VAT</td><td style="padding:8px;text-align:right;font-size:12px">R ${totalExVat.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
+                              <tr><td style="padding:8px;text-align:right;font-size:12px;color:#666">VAT (15%)</td><td style="padding:8px;text-align:right;font-size:12px">R ${vatAmount.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
+                              <tr style="font-weight:bold;font-size:15px"><td style="padding:8px;text-align:right;border-top:2px solid #333">Total Due</td><td style="padding:8px;text-align:right;border-top:2px solid #333">R ${customerOwes.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
+                            </tfoot>
+                          </table>
+                          ${bd.bankName ? `<div style="border-top:1px solid #ddd;padding-top:12px;margin-bottom:16px"><h4 style="font-size:12px;color:#666;margin:0 0 6px">BANKING DETAILS</h4><p style="margin:2px 0;font-size:12px">Bank: ${bd.bankName} | Branch: ${bd.branchCode || '—'}</p><p style="margin:2px 0;font-size:12px">Account: ${bd.accountNumber || '—'} | Type: ${bd.accountType || '—'}</p></div>` : ''}
+                          ${docSettings?.ownershipClause ? `<p style="font-size:11px;color:#666;margin-top:16px">${docSettings.ownershipClause}</p>` : ''}
+                          ${docSettings?.footerNote ? `<p style="font-size:11px;color:#999;margin-top:12px;text-align:center">${docSettings.footerNote}</p>` : ''}
+                        </div>
+                      `;
+                      const w = window.open('', '_blank');
+                      if (!w) return;
+                      w.document.write(`<html><head><title>Invoice - ${lead.customerName || lead.name}</title><style>@media print{button{display:none}}</style></head><body>${el.innerHTML}</body></html>`);
+                      w.document.close();
+                      w.print();
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-[rgba(59,130,246,0.15)] text-[rgb(96,165,250)] border border-[rgba(59,130,246,0.3)] hover:bg-[rgba(59,130,246,0.25)] transition-colors"
+                  >
+                    <Printer size={14} /> Generate Tax Invoice
+                  </button>
+                  {tradeIns.length > 0 && tradeIns.some(t => t.tradeInPrice > 0) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const today = new Date().toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
+                        const dealerName = dealership?.name || 'Dealership';
+                        const dealerAddr = dealership?.address || '';
+                        const dealerVat = dealership?.vatNumber || '';
+                        const rows = tradeIns.filter(t => t.tradeInPrice > 0).map(t => {
+                          const desc = `${t.year || ''} ${t.make} ${t.model}`.trim();
+                          const vin = (t as any).vinNumber || (t as any).chassisNumber || '';
+                          const reg = (t as any).regNumber || '';
+                          const price = Number(t.tradeInPrice) || 0;
+                          return { desc, vin, reg, price };
+                        });
+                        const total = rows.reduce((s, r) => s + r.price, 0);
+                        const notionalInput = Math.round(total * 15 / 115);
+                        const sellerName = `${lead.firstName || ''} ${lead.lastName || ''}`.trim() || lead.customerName || lead.name || '';
+                        const sellerId = (lead as any).idOrBrn || '';
+                        const sellerAddr = (lead as any).address || '';
+                        const html = `
+                          <div style="font-family:Arial,sans-serif;padding:40px;color:#111;max-width:800px;margin:auto">
+                            <h2 style="text-align:center;margin:0 0 4px;font-size:18px">VAT 264</h2>
+                            <p style="text-align:center;margin:0 0 24px;font-size:13px;color:#666">Declaration by vendor — acquisition of second-hand goods under section 20(8) of the Value-Added Tax Act, 1991</p>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                              <div style="border:1px solid #ddd;padding:12px;border-radius:4px">
+                                <h4 style="font-size:11px;color:#666;margin:0 0 6px;text-transform:uppercase">Vendor (Purchaser)</h4>
+                                <p style="margin:2px 0;font-size:13px;font-weight:bold">${dealerName}</p>
+                                <p style="margin:2px 0;font-size:12px">${dealerAddr}</p>
+                                <p style="margin:2px 0;font-size:12px">VAT No: ${dealerVat}</p>
+                              </div>
+                              <div style="border:1px solid #ddd;padding:12px;border-radius:4px">
+                                <h4 style="font-size:11px;color:#666;margin:0 0 6px;text-transform:uppercase">Seller (Non-Vendor)</h4>
+                                <p style="margin:2px 0;font-size:13px;font-weight:bold">${sellerName}</p>
+                                <p style="margin:2px 0;font-size:12px">ID/BRN: ${sellerId}</p>
+                                <p style="margin:2px 0;font-size:12px">${sellerAddr}</p>
+                              </div>
+                            </div>
+                            <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+                              <thead>
+                                <tr style="background:#f5f5f5;text-align:left">
+                                  <th style="padding:8px;border:1px solid #ddd">Description of goods</th>
+                                  <th style="padding:8px;border:1px solid #ddd">VIN / Chassis</th>
+                                  <th style="padding:8px;border:1px solid #ddd">Reg No.</th>
+                                  <th style="padding:8px;border:1px solid #ddd;text-align:right">Price (R)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                ${rows.map(r => `<tr><td style="padding:8px;border:1px solid #ddd">${r.desc}</td><td style="padding:8px;border:1px solid #ddd">${r.vin}</td><td style="padding:8px;border:1px solid #ddd">${r.reg}</td><td style="padding:8px;border:1px solid #ddd;text-align:right">${r.price.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>`).join('')}
+                              </tbody>
+                              <tfoot>
+                                <tr style="font-weight:bold"><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right">Total consideration</td><td style="padding:8px;border:1px solid #ddd;text-align:right">R ${total.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
+                                <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-size:12px;color:#666">Notional input tax (15/115)</td><td style="padding:8px;border:1px solid #ddd;text-align:right;font-size:12px">R ${notionalInput.toLocaleString('en-ZA', {minimumFractionDigits:2})}</td></tr>
+                              </tfoot>
+                            </table>
+                            <div style="margin-top:24px;border-top:1px solid #ddd;padding-top:16px">
+                              <p style="font-size:12px;margin:0 0 8px"><strong>Declaration by the seller:</strong></p>
+                              <p style="font-size:11px;color:#444;line-height:1.6;margin:0 0 24px">I, the undersigned, hereby declare that I am the owner of the above goods and that I am not a vendor registered for VAT purposes. I further declare that the above goods are sold to the vendor named above for the consideration stated.</p>
+                              <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:32px">
+                                <div>
+                                  <div style="border-bottom:1px solid #333;height:40px"></div>
+                                  <p style="font-size:11px;color:#666;margin:4px 0 0">Signature of Seller</p>
+                                </div>
+                                <div>
+                                  <div style="border-bottom:1px solid #333;height:40px"></div>
+                                  <p style="font-size:11px;color:#666;margin:4px 0 0">Date: ${today}</p>
+                                </div>
+                              </div>
+                              <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:24px">
+                                <div>
+                                  <div style="border-bottom:1px solid #333;height:40px"></div>
+                                  <p style="font-size:11px;color:#666;margin:4px 0 0">Signature of Vendor (Purchaser)</p>
+                                </div>
+                                <div>
+                                  <div style="border-bottom:1px solid #333;height:40px"></div>
+                                  <p style="font-size:11px;color:#666;margin:4px 0 0">Date</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        `;
+                        const w = window.open('', '_blank');
+                        if (!w) return;
+                        w.document.write(`<html><head><title>VAT 264 - ${sellerName}</title><style>@media print{button{display:none}}</style></head><body>${html}</body></html>`);
+                        w.document.close();
+                        w.print();
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-[rgba(168,85,247,0.15)] text-[rgb(192,132,252)] border border-[rgba(168,85,247,0.3)] hover:bg-[rgba(168,85,247,0.25)] transition-colors"
+                    >
+                      <FileSignature size={14} /> VAT 264 Declaration
+                    </button>
+                  )}
+                </div>
+
+                {/* ─── FINANCE TRACKING ─── */}
+                {lead.financeInstitution && (
+                  <div className="card !bg-[color:var(--glass)]">
+                    <div className="card-body p-4 flex flex-col gap-3">
+                      <div className="text-[13px] font-semibold text-[color:var(--cyan)] tracking-normal font-mono border-b border-white/5 pb-2">Finance Application</div>
+                      <div className="grid grid-cols-3 gap-3">
+                        {renderField('Approved Amount', lead.financeApprovalAmount || '', v => patchDeal({ financeApprovalAmount: Number(v) || 0 } as any), { type: 'number', mono: true })}
+                        {renderField('Interest Rate %', lead.financeRate || '', v => patchDeal({ financeRate: Number(v) || 0 } as any), { type: 'number', mono: true })}
+                        {renderField('Term (months)', lead.financeTerm || '', v => patchDeal({ financeTerm: Number(v) || 0 } as any), { type: 'number', mono: true })}
+                      </div>
+                      <div className="flex gap-2">
+                        {(['pending', 'submitted', 'approved', 'declined'] as const).map(s => (
+                          <button
+                            key={s}
+                            onClick={() => patchDeal({ financeStatus: s } as any)}
+                            className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors ${
+                              (lead as any).financeStatus === s
+                                ? s === 'approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                : s === 'declined' ? 'bg-red-500/20 text-red-400 border border-red-500/40'
+                                : 'bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]'
+                                : 'bg-white/5 text-[rgba(232,234,230,0.55)] border border-white/10 hover:bg-white/10'
+                            }`}
+                          >
+                            {s.charAt(0).toUpperCase() + s.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── VEHICLE FLAGS ─── */}
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!(lead as any).isAccidentDamaged}
+                      onChange={e => patchDeal({ isAccidentDamaged: e.target.checked } as any)}
+                      className="w-4 h-4 rounded accent-amber-500"
+                    />
+                    <span className="font-semibold text-amber-400">Accident Damaged</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!(lead as any).isCode3}
+                      onChange={e => patchDeal({ isCode3: e.target.checked } as any)}
+                      className="w-4 h-4 rounded accent-red-500"
+                    />
+                    <span className="font-semibold text-red-400">Code 3 (Rebuilt)</span>
+                  </label>
+                </div>
+
+                {/* ─── DELIVERY CHECKLIST ─── */}
+                <div className="card !bg-[color:var(--glass)]">
+                  <div className="card-body p-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                      <div className="text-[13px] font-semibold text-emerald-400 tracking-normal font-mono">Delivery Checklist</div>
+                      {(lead as any).deliveredAt && (
+                        <span className="text-[11px] text-emerald-400 font-mono">Delivered {new Date((lead as any).deliveredAt).toLocaleDateString('en-ZA')}</span>
+                      )}
+                    </div>
+                    {(() => {
+                      const cl = (lead as any).deliveryChecklist || {};
+                      const items: { key: string; label: string }[] = [
+                        { key: 'pdiDone', label: 'PDI (Pre-Delivery Inspection) completed' },
+                        { key: 'fuelLevel', label: 'Fuel level checked' },
+                        { key: 'spareKey', label: 'Spare key handed over' },
+                        { key: 'ownerManual', label: "Owner's manual provided" },
+                        { key: 'serviceBook', label: 'Service book provided' },
+                        { key: 'licenseDisc', label: 'License disc in place' },
+                        { key: 'natisDone', label: 'NaTIS transfer completed' },
+                        { key: 'cpaSigned', label: 'CPA disclosure signed' },
+                        { key: 'warrantyExplained', label: 'Warranty terms explained' },
+                        { key: 'customerSignoff', label: 'Customer sign-off received' },
+                      ];
+                      const checked = items.filter(it => cl[it.key]).length;
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                              <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${(checked / items.length) * 100}%` }} />
+                            </div>
+                            <span className="text-[11px] font-mono text-[rgba(232,234,230,0.55)]">{checked}/{items.length}</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                            {items.map(it => (
+                              <label key={it.key} className="flex items-center gap-2 text-[13px] text-[rgba(232,234,230,0.72)] cursor-pointer select-none py-1">
+                                <input
+                                  type="checkbox"
+                                  checked={!!cl[it.key]}
+                                  onChange={e => {
+                                    const updated = { ...cl, [it.key]: e.target.checked };
+                                    const allDone = items.every(i => updated[i.key]);
+                                    patchDeal({
+                                      deliveryChecklist: updated,
+                                      ...(allDone && !lead.deliveredAt ? { deliveredAt: new Date().toISOString() } : {}),
+                                    } as any);
+                                  }}
+                                  className="w-4 h-4 rounded accent-emerald-500"
+                                />
+                                <span className={cl[it.key] ? 'line-through text-[rgba(232,234,230,0.35)]' : ''}>{it.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* ─── OTP PREVIEW MODAL ─── */}
+                {showOtpPreview !== null && tradeIns[showOtpPreview] && (() => {
+                  const ot = tradeIns[showOtpPreview];
+                  const dealerName = dealership?.name || 'Dealership';
+                  return (
+                    <div className="fixed inset-0 bg-black/70 z-[400] flex items-center justify-center p-6" onClick={() => setShowOtpPreview(null)}>
+                      <div className="bg-white rounded-xl w-full max-w-[700px] max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+                        {/* Printable OTP Document */}
+                        <div id="otp-print-area" className="p-8 text-black text-[13px] leading-relaxed">
+                          {/* Header */}
+                          <div className="text-center border-b-2 border-black pb-4 mb-6">
+                            <h1 className="text-xl font-bold tracking-tight">{dealerName}</h1>
+                            <h2 className="text-base font-semibold mt-1">OFFER TO PURCHASE — TRADE-IN VEHICLE</h2>
+                            <p className="text-[11px] text-gray-500 mt-1">Date: {new Date().toLocaleDateString('en-ZA')}</p>
+                          </div>
+
+                          {/* Buyer (Dealer) */}
+                          <div className="mb-4">
+                            <div className="font-semibold text-[11px] uppercase tracking-wider text-gray-500 mb-1">Purchaser (Dealer)</div>
+                            <div className="font-semibold">{dealerName}</div>
+                          </div>
+
+                          {/* Seller (Customer) */}
+                          <div className="mb-4">
+                            <div className="font-semibold text-[11px] uppercase tracking-wider text-gray-500 mb-1">Seller</div>
+                            <div className="font-semibold">{lead.firstName} {lead.lastName}</div>
+                            <div className="text-gray-600">{lead.phone} · {lead.email}</div>
+                            {lead.idOrBrn && <div className="text-gray-600">ID/Reg: {lead.idOrBrn}</div>}
+                            {lead.address && <div className="text-gray-600">{lead.address}</div>}
+                          </div>
+
+                          {/* Vehicle Details */}
+                          <div className="border border-gray-300 rounded-lg p-4 mb-4">
+                            <div className="font-semibold text-[11px] uppercase tracking-wider text-gray-500 mb-2">Vehicle Being Purchased</div>
+                            <div className="grid grid-cols-2 gap-y-1 text-[12px]">
+                              <span className="text-gray-500">Make / Model:</span>
+                              <span className="font-semibold">{ot.year} {ot.make} {ot.model}{ot.variant ? ` ${ot.variant}` : ''}</span>
+                              {ot.chassisNumber && <><span className="text-gray-500">VIN / Chassis:</span><span className="font-mono">{ot.chassisNumber}</span></>}
+                              {ot.engineNumber && <><span className="text-gray-500">Engine Nr:</span><span className="font-mono">{ot.engineNumber}</span></>}
+                              {ot.registrationNumber && <><span className="text-gray-500">Registration:</span><span className="font-mono">{ot.registrationNumber}</span></>}
+                              {ot.mileage && <><span className="text-gray-500">Mileage:</span><span>{ot.mileage.toLocaleString()} km</span></>}
+                            </div>
+                          </div>
+
+                          {/* Offer Amount */}
+                          <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 mb-4">
+                            <div className="font-semibold text-[11px] uppercase tracking-wider text-gray-500 mb-2">Offer</div>
+                            <div className="grid grid-cols-2 gap-y-1 text-[13px]">
+                              <span className="text-gray-600">Trade-In Price Offered:</span>
+                              <span className="font-mono font-bold text-right">{fmt(ot.tradeInPrice)}</span>
+                              {(ot.settlementAmount || 0) > 0 && <>
+                                <span className="text-gray-600">Less: Settlement ({ot.settlementBank || 'Bank'})</span>
+                                <span className="font-mono text-right text-red-600">−{fmt(ot.settlementAmount!)}</span>
+                                <span className="text-gray-600 font-semibold pt-1 border-t border-gray-200">Net Amount to Seller:</span>
+                                <span className="font-mono font-bold text-right pt-1 border-t border-gray-200">{fmt(ot.tradeInPrice - (ot.settlementAmount || 0))}</span>
+                              </>}
+                            </div>
+                          </div>
+
+                          {/* Terms & Conditions */}
+                          <div className="mb-6">
+                            <div className="font-semibold text-[11px] uppercase tracking-wider text-gray-500 mb-2">Terms & Conditions</div>
+                            <ol className="list-decimal list-inside text-[12px] text-gray-700 space-y-1">
+                              {defaultTerms.map((term, i) => (
+                                <li key={i}>{term}</li>
+                              ))}
+                            </ol>
+                          </div>
+
+                          {/* Signatures */}
+                          <div className="grid grid-cols-2 gap-12 pt-4 border-t border-gray-300">
+                            <div>
+                              <div className="h-16 border-b border-gray-400 mb-1" />
+                              <div className="font-semibold text-[11px]">Signature of Purchaser (Dealer)</div>
+                              <div className="text-[11px] text-gray-500">Date: ____________________</div>
+                            </div>
+                            <div>
+                              <div className="h-16 border-b border-gray-400 mb-1" />
+                              <div className="font-semibold text-[11px]">Signature of Seller</div>
+                              <div className="text-[11px] text-gray-500">Date: ____________________</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Print / Close buttons */}
+                        <div className="flex justify-end gap-3 p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                          <button
+                            onClick={() => setShowOtpPreview(null)}
+                            className="px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+                          >
+                            Close
+                          </button>
+                          <button
+                            onClick={() => {
+                              const area = document.getElementById('otp-print-area');
+                              if (!area) return;
+                              const w = window.open('', '_blank');
+                              if (!w) return;
+                              w.document.write(`<!DOCTYPE html><html><head><title>OTP - ${ot.year} ${ot.make} ${ot.model}</title><style>body{font-family:system-ui,sans-serif;margin:0;padding:20px;color:#000}@media print{button{display:none}}</style></head><body>${area.innerHTML}</body></html>`);
+                              w.document.close();
+                              w.print();
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                          >
+                            <Printer size={14} /> Print OTP
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            );
+          })()}
 
           {activeTab === "finance" && (() => {
             const CHECK_ITEMS = [

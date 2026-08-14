@@ -110,6 +110,14 @@ export interface DocSettings {
   footerNote?: string;
   /** Warranty description included on the handover document. */
   warrantyTerms?: string;
+  /** Default invoice extras loaded via "Load Defaults" on OTP and invoices.
+   *  Each entry is a description + amount template the dealer re-uses. */
+  invoiceExtrasDefaults?: { description: string; amount: number; secondGross?: boolean }[];
+  /** Default OTP terms for outright vehicle purchases (not trade-in).
+   *  Pre-filled on every outright-purchase OTP, editable per document. */
+  otpOutrightTerms?: string[];
+  invoicePrefix?: string;
+  nextInvoiceNumber?: number;
 }
 
 /** DocHub stages, in the order a deal progresses through them. */
@@ -271,6 +279,102 @@ export interface Vehicle {
   }[];
   slotAssessment?: Record<string, { rating?: 'ok' | 'note' | 'damage'; works?: 'yes' | 'no' | 'na'; comment?: string }>;
   optionalExtras?: string[];
+
+  newOrUsed?: 'New' | 'Used';
+  condition?: string;
+  location?: string;
+  province?: string;
+  serviceHistory?: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
+  firstRegDate?: string;
+  keyNumber?: string;
+  enatisDocs?: boolean;
+  supplier?: string;
+  supplierInvNumber?: string;
+  paymentType?: string;
+  paymentRef?: string;
+  purchasedBy?: string;
+  settlementAmount?: number;
+  minimumPrice?: number;
+  mmTrade?: number;
+  mmRetail?: number;
+  code3?: boolean;
+  accidentHistory?: string;
+  previousOwners?: number;
+  motorPlan?: { km?: number; expiry?: string };
+  servicePlan?: { km?: number; expiry?: string };
+  warranty?: { km?: number; expiry?: string };
+  nextService?: { km?: number; date?: string };
+  consignment?: boolean;
+  floorPlan?: boolean;
+  companyCar?: boolean;
+  hasTracking?: boolean;
+  mobileStock?: boolean;
+  hasMicrodot?: boolean;
+  spareKey?: boolean;
+  hasServiceBook?: boolean;
+
+  supplementaryIncome?: {
+    id: string;
+    type: string;
+    description?: string;
+    amount: number;
+    date?: string;
+    reference?: string;
+  }[];
+}
+
+/** Persistent client record — survives across deals. A lead is a deal on a
+ *  specific car; a client is the person behind potentially many deals. VMG
+ *  keeps 2,216+ records and auto-fills them into OTPs/invoices. */
+export interface Client {
+  id: string;
+  code: string;
+  title?: string;
+  firstName: string;
+  lastName: string;
+  company?: string;
+  phone: string;
+  phone2?: string;
+  email: string;
+  idNumber?: string;
+  vatNumber?: string;
+  address?: string;
+  address2?: string;
+  address3?: string;
+  suburb?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  dealershipId?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface TradeIn {
+  id: string;
+  make: string;
+  model: string;
+  year: number;
+  variant?: string;
+  chassisNumber?: string;
+  engineNumber?: string;
+  registrationNumber?: string;
+  mileage?: number;
+  tradeInPrice: number;
+  allowance: number;
+  settlementAmount?: number;
+  settlementBank?: string;
+  cashBack?: number;
+  standInPrice?: number;
+}
+
+export interface InvoiceExtra {
+  id: string;
+  description: string;
+  amount: number;
+  secondGross?: boolean;
 }
 
 export type LeadStatus = 'New' | 'Contacted' | 'Test Drive Scheduled' | 'Negotiating' | 'Closed Won' | 'Closed Lost';
@@ -346,6 +450,51 @@ export interface Lead {
    *  absent, and so `finalize`'s ordering gate can treat a skipped stage as
    *  satisfied. Advancing `docStage` treats these as complete — never forced. */
   docSkips?: Partial<Record<DocStage, { at: string; by?: string; reason?: string }>>;
+
+  testDrives?: {
+    id: string;
+    type: 'test_drive' | 'viewing' | 'trade_in';
+    scheduledAt: string;
+    duration?: number;
+    notes?: string;
+    outcome?: 'completed' | 'no_show' | 'cancelled' | 'rescheduled';
+    completedAt?: string;
+    feedback?: string;
+  }[];
+  clientId?: string;
+  onHold?: boolean;
+  tradeIns?: TradeIn[];
+  invoiceExtras?: InvoiceExtra[];
+  sellingPrice?: number;
+  depositAmount?: number;
+  depositDate?: string;
+  soldDate?: string;
+  soldPrice?: number;
+  kmOut?: number;
+  salesPerson?: string;
+  salesSource?: string;
+  bankBranch?: string;
+  invoiceNumber?: string;
+  deliveredAt?: string;
+  financeInstitution?: string;
+  deliveryChecklist?: {
+    pdiDone?: boolean;
+    fuelLevel?: string;
+    spareKey?: boolean;
+    ownerManual?: boolean;
+    serviceBook?: boolean;
+    licenseDisc?: boolean;
+    natisDone?: boolean;
+    cpaSigned?: boolean;
+    warrantyExplained?: boolean;
+    customerSignoff?: boolean;
+  };
+  financeApprovalAmount?: number;
+  financeRate?: number;
+  financeTerm?: number;
+  financeStatus?: 'pending' | 'submitted' | 'approved' | 'declined';
+  isAccidentDamaged?: boolean;
+  isCode3?: boolean;
 }
 
 export interface Task {
@@ -487,6 +636,7 @@ export interface DMSState {
   invoices: Invoice[];
   agreements: Agreement[];
   documents: DealerDocument[];
+  clients?: Client[];
   /** DocHub audit trail — one row per document action. Per-dealer, so
    *  scoped alongside documents in TENANT_SCOPED_COLLECTIONS. Optional so
    *  older dealer files without the array parse cleanly. */

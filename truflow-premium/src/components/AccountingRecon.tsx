@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   Briefcase,
   FileSpreadsheet,
+  Banknote,
 } from "lucide-react";
 
 interface AccountingReconProps {
@@ -16,10 +17,12 @@ interface AccountingReconProps {
   onUpdateVehicle: (id: string, updates: Partial<Vehicle>) => Promise<void>;
   onAddExpense: (expense: Partial<Expense>) => Promise<void>;
   onReconcileExpense: (id: string, reconciled: boolean) => Promise<void>;
+  role?: 'salesperson' | 'manager' | 'owner';
 }
 
-export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, onReconcileExpense }: AccountingReconProps) {
-  const [activeTab, setActiveTab] = useState<"pl" | "recon">("pl");
+export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, onReconcileExpense, role }: AccountingReconProps) {
+  const [activeTab, setActiveTab] = useState<"pl" | "deals" | "aging" | "recon" | "floor">("pl");
+  const [floorPlanRate, setFloorPlanRate] = useState(13.75);
 
   const [expenseForm, setExpenseForm] = useState({
     description: "",
@@ -162,6 +165,24 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
             Profit &amp; Loss
           </button>
           <button
+            onClick={() => setActiveTab("deals")}
+            className={`px-4 py-2 text-[13px] font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === "deals" ? "bg-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+            }`}
+          >
+            <Briefcase size={13} />
+            Deal Profit
+          </button>
+          <button
+            onClick={() => setActiveTab("aging")}
+            className={`px-4 py-2 text-[13px] font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === "aging" ? "bg-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+            }`}
+          >
+            <AlertCircle size={13} />
+            Stock Aging
+          </button>
+          <button
             onClick={() => setActiveTab("recon")}
             className={`px-4 py-2 text-[13px] font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "recon" ? "bg-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
@@ -169,6 +190,15 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           >
             <Wrench size={13} />
             Reconditioning
+          </button>
+          <button
+            onClick={() => setActiveTab("floor")}
+            className={`px-4 py-2 text-[13px] font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === "floor" ? "bg-[color:var(--cyan)] text-[color:var(--ink)]" : "text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)]"
+            }`}
+          >
+            <Banknote size={13} />
+            Floor Plan
           </button>
         </div>
       </div>
@@ -356,6 +386,188 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
         </div>
       )}
 
+      {/* DEAL PROFIT REPORT */}
+      {activeTab === "deals" && (() => {
+        const leads = (state as any).leads || [];
+        const dealLeads = leads.filter((l: any) => l.status === 'Closed Won' || l.soldDate || l.soldPrice);
+        const dealRows = dealLeads.map((l: any) => {
+          const v = state.vehicles.find((vv: any) => vv.id === l.vehicleId);
+          const cost = v?.costPrice || 0;
+          const recon = (v?.reconTasks || []).filter((t: any) => t.status === 'Completed').reduce((s: number, t: any) => s + t.cost, 0);
+          const selling = l.sellingPrice || l.soldPrice || v?.retailPrice || 0;
+          const extras = (l.invoiceExtras || []).reduce((s: number, e: any) => s + (Number(e.amount) || 0), 0);
+          const secondGross = (l.invoiceExtras || []).filter((e: any) => e.secondGross).reduce((s: number, e: any) => s + (Number(e.amount) || 0), 0);
+          const firstGross = selling - cost - recon;
+          const totalGross = firstGross + secondGross;
+          return { lead: l, vehicle: v, cost, recon, selling, extras, firstGross, secondGross, totalGross };
+        });
+        const totalFirstGross = dealRows.reduce((s: number, r: any) => s + r.firstGross, 0);
+        const totalSecondGross = dealRows.reduce((s: number, r: any) => s + r.secondGross, 0);
+        const totalAllGross = dealRows.reduce((s: number, r: any) => s + r.totalGross, 0);
+
+        return (
+          <div className="flex flex-col gap-4 animate-fadeIn">
+            <div className={`grid ${role === 'salesperson' ? 'grid-cols-1' : 'grid-cols-3'} gap-4`}>
+              <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Deals Closed</span>
+                <span className="text-2xl font-mono font-semibold text-[color:var(--white)]">{dealRows.length}</span>
+              </div>
+              {role !== 'salesperson' && (
+              <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Total 1st Gross</span>
+                <span className={`text-2xl font-mono font-semibold ${totalFirstGross >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatZAR(totalFirstGross)}</span>
+              </div>
+              )}
+              {role !== 'salesperson' && (
+              <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-4 flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[color:var(--cyan)]">Total Gross (1st + 2nd)</span>
+                <span className={`text-2xl font-mono font-semibold ${totalAllGross >= 0 ? 'text-[color:var(--cyan)]' : 'text-red-400'}`}>{formatZAR(totalAllGross)}</span>
+              </div>
+              )}
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-white/5">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] bg-[rgba(255,255,255,0.02)]">
+                    <th className="px-4 py-3">Vehicle</th>
+                    <th className="px-4 py-3">Customer</th>
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">Cost</th>}
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">Recon</th>}
+                    <th className="px-4 py-3 text-right">Selling</th>
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">1st Gross</th>}
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">2nd Gross</th>}
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right font-bold">Total</th>}
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">Margin</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {dealRows.length === 0 ? (
+                    <tr><td colSpan={role === 'salesperson' ? 3 : 9} className="px-4 py-8 text-center text-[rgba(232,234,230,0.45)]">No closed deals yet.</td></tr>
+                  ) : dealRows.map((r: any) => {
+                    const margin = r.selling > 0 ? ((r.firstGross / r.selling) * 100) : 0;
+                    return (
+                      <tr key={r.lead.id} className="hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                        <td className="px-4 py-3 text-[color:var(--white)] font-medium">{r.vehicle ? `${r.vehicle.year} ${r.vehicle.make} ${r.vehicle.model}` : '—'}</td>
+                        <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{r.lead.firstName || ''} {r.lead.lastName || ''}</td>
+                        {role !== 'salesperson' && <td className="px-4 py-3 text-right font-mono text-[rgba(232,234,230,0.55)]">{formatZAR(r.cost)}</td>}
+                        {role !== 'salesperson' && <td className="px-4 py-3 text-right font-mono text-[rgba(232,234,230,0.55)]">{r.recon > 0 ? formatZAR(r.recon) : '—'}</td>}
+                        <td className="px-4 py-3 text-right font-mono text-[color:var(--white)]">{formatZAR(r.selling)}</td>
+                        {role !== 'salesperson' && <td className={`px-4 py-3 text-right font-mono font-semibold ${r.firstGross >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatZAR(r.firstGross)}</td>}
+                        {role !== 'salesperson' && <td className="px-4 py-3 text-right font-mono text-[rgba(232,234,230,0.55)]">{r.secondGross > 0 ? formatZAR(r.secondGross) : '—'}</td>}
+                        {role !== 'salesperson' && <td className={`px-4 py-3 text-right font-mono font-bold ${r.totalGross >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatZAR(r.totalGross)}</td>}
+                        {role !== 'salesperson' && <td className={`px-4 py-3 text-right font-mono text-[12px] ${margin >= 15 ? 'text-emerald-400' : margin >= 5 ? 'text-amber-400' : 'text-red-400'}`}>{margin.toFixed(1)}%</td>}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                {dealRows.length > 0 && role !== 'salesperson' && (
+                  <tfoot>
+                    <tr className="border-t-2 border-white/10 bg-[rgba(255,255,255,0.02)]">
+                      <td colSpan={5} className="px-4 py-3 text-right text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] font-semibold">Totals</td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-emerald-400">{formatZAR(totalFirstGross)}</td>
+                      <td className="px-4 py-3 text-right font-mono font-semibold text-[rgba(232,234,230,0.55)]">{totalSecondGross > 0 ? formatZAR(totalSecondGross) : '—'}</td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-[color:var(--cyan)]">{formatZAR(totalAllGross)}</td>
+                      <td className="px-4 py-3 text-right font-mono text-[12px] text-[rgba(232,234,230,0.45)]">
+                        {dealRows.reduce((s: number, r: any) => s + r.selling, 0) > 0
+                          ? ((totalFirstGross / dealRows.reduce((s: number, r: any) => s + r.selling, 0)) * 100).toFixed(1) + '%'
+                          : '—'}
+                      </td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* STOCK AGING */}
+      {activeTab === "aging" && (() => {
+        const inStock = state.vehicles.filter(v => v.status !== 'SOLD');
+        const now = Date.now();
+        const withAge = inStock.map(v => {
+          const created = v.createdAt ? new Date(v.createdAt).getTime() : now;
+          const days = Math.floor((now - created) / (1000 * 60 * 60 * 24));
+          const recon = (v.reconTasks || []).filter((t: any) => t.status === 'Completed').reduce((s: number, t: any) => s + t.cost, 0);
+          const totalInvested = v.costPrice + recon;
+          return { ...v, days, recon, totalInvested };
+        }).sort((a, b) => b.days - a.days);
+
+        const avgDays = withAge.length > 0 ? Math.round(withAge.reduce((s, v) => s + v.days, 0) / withAge.length) : 0;
+        const totalFloorValue = withAge.reduce((s, v) => s + v.totalInvested, 0);
+        const over60 = withAge.filter(v => v.days > 60).length;
+        const over90 = withAge.filter(v => v.days > 90).length;
+
+        const ageBadge = (days: number) => {
+          if (days > 90) return 'bg-red-500/15 text-red-400 border-red-500/30';
+          if (days > 60) return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+          if (days > 30) return 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30';
+          return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+        };
+
+        return (
+          <div className="flex flex-col gap-4 animate-fadeIn">
+            <div className={`grid ${role === 'salesperson' ? 'grid-cols-3' : 'grid-cols-4'} gap-4`}>
+              <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Units in Stock</span>
+                <span className="text-2xl font-mono font-semibold text-[color:var(--white)]">{withAge.length}</span>
+              </div>
+              <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Avg Days in Stock</span>
+                <span className={`text-2xl font-mono font-semibold ${avgDays > 60 ? 'text-amber-400' : 'text-[color:var(--white)]'}`}>{avgDays}</span>
+              </div>
+              {role !== 'salesperson' && (
+              <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Floor Value</span>
+                <span className="text-2xl font-mono font-semibold text-[color:var(--white)]">{formatZAR(totalFloorValue)}</span>
+              </div>
+              )}
+              <div className={`rounded-xl p-4 flex flex-col gap-1 border ${over90 > 0 ? 'bg-red-500/10 border-red-500/20' : over60 > 0 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Over 60 Days</span>
+                <span className={`text-2xl font-mono font-semibold ${over60 > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>{over60}</span>
+                {over90 > 0 && <span className="text-[11px] text-red-400 font-semibold">{over90} over 90 days</span>}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-white/5">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] bg-[rgba(255,255,255,0.02)]">
+                    <th className="px-4 py-3">Stock #</th>
+                    <th className="px-4 py-3">Vehicle</th>
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">Cost</th>}
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">Recon</th>}
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">Total Invested</th>}
+                    <th className="px-4 py-3 text-right">Retail Price</th>
+                    <th className="px-4 py-3 text-center">Days</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {withAge.length === 0 ? (
+                    <tr><td colSpan={role === 'salesperson' ? 4 : 7} className="px-4 py-8 text-center text-[rgba(232,234,230,0.45)]">No vehicles in stock.</td></tr>
+                  ) : withAge.map(v => (
+                    <tr key={v.id} className="hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                      <td className="px-4 py-3 font-mono text-[rgba(232,234,230,0.55)]">{v.stockNumber}</td>
+                      <td className="px-4 py-3 text-[color:var(--white)] font-medium">{v.year} {v.make} {v.model}</td>
+                      {role !== 'salesperson' && <td className="px-4 py-3 text-right font-mono text-[rgba(232,234,230,0.55)]">{formatZAR(v.costPrice)}</td>}
+                      {role !== 'salesperson' && <td className="px-4 py-3 text-right font-mono text-[rgba(232,234,230,0.55)]">{v.recon > 0 ? formatZAR(v.recon) : '—'}</td>}
+                      {role !== 'salesperson' && <td className="px-4 py-3 text-right font-mono text-[color:var(--white)] font-semibold">{formatZAR(v.totalInvested)}</td>}
+                      <td className="px-4 py-3 text-right font-mono text-[color:var(--cyan)]">{formatZAR(v.retailPrice)}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[12px] font-mono font-semibold border ${ageBadge(v.days)}`}>
+                          {v.days}d
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* RECONDITIONING */}
       {activeTab === "recon" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
@@ -530,6 +742,132 @@ export default function AccountingRecon({ state, onUpdateVehicle, onAddExpense, 
           </div>
         </div>
       )}
+
+      {/* FLOOR PLAN */}
+      {activeTab === "floor" && (() => {
+        const inStock = state.vehicles.filter(v => v.status !== 'SOLD');
+        const now = Date.now();
+        const rateDecimal = floorPlanRate / 100;
+
+        const floorRows = inStock.map(v => {
+          const created = v.createdAt ? new Date(v.createdAt).getTime() : now;
+          const days = Math.max(0, Math.floor((now - created) / (1000 * 60 * 60 * 24)));
+          const interestAccrued = v.costPrice * rateDecimal * days / 365;
+          return { ...v, days, interestAccrued };
+        }).sort((a, b) => b.days - a.days);
+
+        const totalExposure = floorRows.reduce((s, v) => s + v.costPrice, 0);
+        const monthlyInterest = totalExposure * rateDecimal / 12;
+        const unitsOnFloor = floorRows.length;
+        const avgDays = unitsOnFloor > 0 ? Math.round(floorRows.reduce((s, v) => s + v.days, 0) / unitsOnFloor) : 0;
+        const totalInterestAccrued = floorRows.reduce((s, v) => s + v.interestAccrued, 0);
+
+        const ageBadge = (days: number) => {
+          if (days > 90) return 'bg-red-500/15 text-red-400 border-red-500/30';
+          if (days > 60) return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+          if (days > 30) return 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30';
+          return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+        };
+
+        return (
+          <div className="flex flex-col gap-4 animate-fadeIn">
+            {/* Rate input */}
+            <div className="flex items-center gap-3">
+              <label className="text-[13px] font-semibold text-[rgba(232,234,230,0.72)]">Annual interest rate (%)</label>
+              <input
+                type="number"
+                step="0.25"
+                min="0"
+                max="50"
+                value={floorPlanRate}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  if (!isNaN(val)) setFloorPlanRate(val);
+                }}
+                className="w-24 px-3 py-1.5 bg-[color:var(--ink-2)] border border-white/5 rounded-lg text-[13px] text-[color:var(--white)] outline-none focus:border-[color:var(--cyan)] font-mono text-center"
+              />
+              <span className="text-[13px] text-[rgba(232,234,230,0.45)]">SA prime (11.75%) + 2% = 13.75%</span>
+            </div>
+
+            {/* Summary cards */}
+            <div className={`grid ${role === 'salesperson' ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'} gap-4`}>
+              {role !== 'salesperson' && (
+                <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                  <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Total Floor Plan Exposure</span>
+                  <span className="text-2xl font-mono font-semibold text-[color:var(--cyan)]">{formatZAR(totalExposure)}</span>
+                </div>
+              )}
+              {role !== 'salesperson' && (
+                <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                  <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Monthly Interest Est.</span>
+                  <span className="text-2xl font-mono font-semibold text-[color:var(--cyan)]">{formatZAR(monthlyInterest)}</span>
+                </div>
+              )}
+              <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Units on Floor Plan</span>
+                <span className="text-2xl font-mono font-semibold text-[color:var(--white)]">{unitsOnFloor}</span>
+              </div>
+              <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-4 flex flex-col gap-1">
+                <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Avg Days on Floor</span>
+                <span className={`text-2xl font-mono font-semibold ${avgDays > 60 ? 'text-amber-400' : 'text-[color:var(--white)]'}`}>{avgDays}</span>
+              </div>
+            </div>
+
+            {/* Total interest accrued callout */}
+            {role !== 'salesperson' && (
+              <div className="bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-faint)] rounded-xl p-4 flex items-center justify-between">
+                <span className="text-[13px] font-semibold text-[color:var(--cyan)]">Total Interest Accrued (all units)</span>
+                <span className="text-xl font-mono font-semibold text-[color:var(--cyan)]">{formatZAR(totalInterestAccrued)}</span>
+              </div>
+            )}
+
+            {/* Per-vehicle table */}
+            <div className="overflow-x-auto rounded-xl border border-white/5">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] bg-[rgba(255,255,255,0.02)]">
+                    <th className="px-4 py-3">Vehicle</th>
+                    <th className="px-4 py-3">Stock #</th>
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">Cost Price</th>}
+                    <th className="px-4 py-3 text-center">Days in Stock</th>
+                    {role !== 'salesperson' && <th className="px-4 py-3 text-right">Est. Interest Accrued</th>}
+                    <th className="px-4 py-3 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {floorRows.length === 0 ? (
+                    <tr><td colSpan={role === 'salesperson' ? 4 : 6} className="px-4 py-8 text-center text-[rgba(232,234,230,0.45)]">No vehicles on floor plan.</td></tr>
+                  ) : floorRows.map(v => (
+                    <tr key={v.id} className="hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                      <td className="px-4 py-3 text-[color:var(--white)] font-medium">{v.year} {v.make} {v.model}</td>
+                      <td className="px-4 py-3 font-mono text-[rgba(232,234,230,0.55)]">{v.stockNumber}</td>
+                      {role !== 'salesperson' && <td className="px-4 py-3 text-right font-mono text-[rgba(232,234,230,0.55)]">{formatZAR(v.costPrice)}</td>}
+                      <td className="px-4 py-3 text-center font-mono text-[color:var(--white)]">{v.days}</td>
+                      {role !== 'salesperson' && <td className={`px-4 py-3 text-right font-mono font-semibold ${v.interestAccrued > v.costPrice * 0.05 ? 'text-red-400' : 'text-[rgba(232,234,230,0.72)]'}`}>{formatZAR(v.interestAccrued)}</td>}
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[12px] font-mono font-semibold border ${ageBadge(v.days)}`}>
+                          {v.days <= 30 ? 'Fresh' : v.days <= 60 ? 'Aging' : v.days <= 90 ? 'Stale' : 'Critical'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                {floorRows.length > 0 && role !== 'salesperson' && (
+                  <tfoot>
+                    <tr className="border-t-2 border-white/10 bg-[rgba(255,255,255,0.02)]">
+                      <td colSpan={2} className="px-4 py-3 text-right text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] font-semibold">Totals</td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-[color:var(--white)]">{formatZAR(totalExposure)}</td>
+                      <td className="px-4 py-3 text-center font-mono text-[rgba(232,234,230,0.45)]">{avgDays} avg</td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-[color:var(--cyan)]">{formatZAR(totalInterestAccrued)}</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

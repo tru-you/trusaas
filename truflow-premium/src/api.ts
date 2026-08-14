@@ -1,5 +1,5 @@
 import { authFetch } from "./lib/session";
-import { Vehicle, Lead, Task, Invoice, Agreement, DealerDocument, User, Communication, Expense, DMSState, DocStage, DocMode, Dealership } from "./types";
+import { Vehicle, Lead, Task, Invoice, Agreement, DealerDocument, User, Communication, Expense, Client, DMSState, DocStage, DocMode, Dealership } from "./types";
 
 /**
  * An EMPTY state, not a populated one.
@@ -827,4 +827,62 @@ export async function payInvoice(id: string): Promise<Invoice> {
     }
   });
   return updated as Invoice;
+}
+
+export async function createClient(client: Omit<Client, "id" | "createdAt">): Promise<Client> {
+  try {
+    const res = await authFetch("/api/clients", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(client),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.client) return body.client as Client;
+    }
+  } catch (err) {
+    console.warn("createClient server failed, local fallback", err);
+  }
+  const newC = { ...client, id: 'cli_' + Date.now(), createdAt: new Date().toISOString().slice(0, 10) } as Client;
+  await updateState(s => { if (!s.clients) s.clients = []; s.clients.unshift(newC); });
+  return newC;
+}
+
+export async function updateClient(id: string, updates: Partial<Client>): Promise<Client> {
+  try {
+    const res = await authFetch(`/api/clients/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    if (res.ok) {
+      const body = await res.json();
+      if (body.client) return body.client as Client;
+    }
+  } catch (err) {
+    console.warn("updateClient server failed, local fallback", err);
+  }
+  let updated;
+  await updateState(s => {
+    if (!s.clients) s.clients = [];
+    const idx = s.clients.findIndex(c => c.id === id);
+    if (idx !== -1) {
+      s.clients[idx] = { ...s.clients[idx], ...updates, updatedAt: new Date().toISOString().slice(0, 10) };
+      updated = s.clients[idx];
+    }
+  });
+  return updated as Client;
+}
+
+export async function deleteClient(id: string): Promise<void> {
+  try {
+    const res = await authFetch(`/api/clients/${id}`, { method: "DELETE" });
+    if (res.ok) return;
+  } catch (err) {
+    console.warn("deleteClient server failed, local fallback", err);
+  }
+  await updateState(s => {
+    if (!s.clients) s.clients = [];
+    s.clients = s.clients.filter(c => c.id !== id);
+  });
 }

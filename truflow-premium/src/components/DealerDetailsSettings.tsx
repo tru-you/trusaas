@@ -23,6 +23,7 @@ export default function DealerDetailsSettings({ dealership, isAdmin, onSaved }: 
     contactEmail: dealership.contactEmail || "",
     address: dealership.address || "",
     websiteUrl: dealership.websiteUrl || "",
+    imagin8ApiKey: (dealership as any).imagin8ApiKey || "",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -82,6 +83,15 @@ export default function DealerDetailsSettings({ dealership, isAdmin, onSaved }: 
           {field("Website", "websiteUrl", "https://example.co.za", "url")}
         </div>
         {field("Address", "address", "12 Main Rd, Kariega, 6229")}
+        <div className="border-t border-white/5 pt-3 mt-1">
+          <div className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] mb-2">API Integrations</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {field("Imagin8 / TransUnion API Key", "imagin8ApiKey", "Your eValue8 API key")}
+          </div>
+          <p className="text-[11px] text-[rgba(232,234,230,0.45)] mt-1.5">
+            Powers TU Valuations, Reg Checks, Bank AVS and M&M code lookups. Get your key from <b className="text-[rgba(232,234,230,0.65)]">evalue8.imagin8.co.za</b>
+          </p>
+        </div>
         {error && (
           <div className="text-sm text-red-300 border border-red-500/30 bg-red-500/10 rounded-md px-3 py-2">
             {error}
