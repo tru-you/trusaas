@@ -151,7 +151,7 @@ const MIN_PRICE = 10_000;
 const MAX_PRICE = 50_000_000;
 
 /** Below this many dealer listings the market average is too thin to trust on
- *  its own — the pipeline then falls back and blends in Kredo + classifieds. */
+ *  its own — the pipeline then falls back and blends in classifieds. */
 const MIN_DEALER_LISTINGS = 3;
 
 // ==================== CACHE ====================
@@ -605,51 +605,6 @@ function extractDealerPrices(
   return prices;
 }
 
-// ==================== KREDO CARVALUE LAYER ====================
-
-const KREDO_CONFIG_PATH = path.join(process.cwd(), 'data', 'kredo-config.json');
-
-interface KredoDealerConfig {
-  sandboxKey?: string;
-  productionKey?: string;
-  connectedAt?: string;
-}
-
-function readKredoConfig(): Record<string, KredoDealerConfig> {
-  try {
-    if (!fs.existsSync(KREDO_CONFIG_PATH)) return {};
-    return JSON.parse(fs.readFileSync(KREDO_CONFIG_PATH, 'utf-8').replace(/^\uFEFF/, ''));
-  } catch (err: any) {
-    console.warn('[scraper] could not read kredo config:', err?.message || err);
-    return {};
-  }
-}
-
-export interface KredoValue {
-  tradeValue: number | null;
-  retailValue: number | null;
-  marketValue: number | null;
-}
-
-/** Layer 2 of the valuation pipeline: Kredo CarValue (VIN-based market data).
- *  Returns null when the dealer isn't connected, no VIN is supplied, or the
- *  lookup has no value — the pipeline then falls through to the classifieds
- *  fallback layer. */
-export async function kredoCarValue(
-  vin: string | undefined,
-  dealerSlug: string,
-): Promise<KredoValue | null> {
-  if (!vin || vin.length < 11) return null;
-  const entry = readKredoConfig()[dealerSlug];
-  if (!entry?.sandboxKey && !entry?.productionKey) return null;
-
-  // TODO(kredo-docs): Replace with the real Kredo CarValue API call using
-  // entry.productionKey (or entry.sandboxKey while testing). Until the API is
-  // documented this layer deliberately reports no value, so the pipeline falls
-  // through to the classifieds fallback exactly as before.
-  console.warn('[scraper] kredo CarValue: real API not wired yet — falling through');
-  return null;
-}
 
 // ==================== DEALER JSON API LAYER ====================
 
@@ -770,9 +725,9 @@ function robustAverage(prices: number[]): number | null {
 // ==================== MAIN EXPORTED FUNCTION ====================
 
 export interface FetchValuationOptions {
-  /** VIN of the vehicle being valued — required by the Kredo CarValue layer. */
+  /** VIN of the vehicle being valued — used for cache-key scoping. */
   vin?: string;
-  /** The dealer running the valuation — picks their Kredo keys. */
+  /** The dealer running the valuation — used for cache-key scoping. */
   dealerSlug?: string;
   /** Subject car's mileage (km). When supplied, the price sample is normalised
    *  toward it so a low-km car isn't valued against high-km listings. */
@@ -880,12 +835,8 @@ export async function fetchValuation(
     return data;
   }
 
-  // Too thin or empty — Layer 2: Kredo CarValue, paid VIN-based market data.
-  const kredo = await kredoCarValue(opts.vin, opts.dealerSlug || 'default');
-  const kredoPrice = kredo ? kredo.retailValue ?? kredo.marketValue ?? kredo.tradeValue : null;
-
-  // Layer 3: classifieds — always fetched as part of the fallback. Plain HTTP
-  // first (AutoTrader serves its listing cards server-side, and the render
+  // Too thin or empty — Layer 3: classifieds, always fetched as part of the
+  // fallback. Plain HTTP first (AutoTrader serves its listing cards server-side, and the render
   // worker may be asleep on a free instance); only when the plain page yields
   // no listings is the worker render tried.
   const sources = buildSources();
@@ -935,13 +886,9 @@ export async function fetchValuation(
   }
 
   // Blend everything: whatever the dealer market gave us (1–2 listings is too
-  // thin to trust alone) plus Kredo and the classifieds fallback.
-  const extraListings: Listing[] = kredoPrice !== null ? [{ price: kredoPrice }] : [];
-  const extraSources: SourceResult[] =
-    kredoPrice !== null ? [{ name: 'Kredo CarValue', count: 1, avg: kredoPrice }] : [];
-
-  const allListings = [...dealerListings, ...extraListings, ...classifiedListings];
-  const finalSources = [...dealerSources, ...extraSources, ...sourcesOutput];
+  // thin to trust alone) plus the classifieds fallback.
+  const allListings = [...dealerListings, ...classifiedListings];
+  const finalSources = [...dealerSources, ...sourcesOutput];
 
   if (allListings.length === 0) {
     const data: ValuationResult = {

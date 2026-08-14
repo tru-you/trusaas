@@ -2016,6 +2016,7 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
         model: vehicle.model,
         year: vehicle.year,
         trim: vehicle.trim,
+        mmCode: (vehicle as any).mmCode || undefined,
         vin: vehicle.vin,
         stockNumber: vehicle.stockNumber,
         color: vehicle.color,
@@ -2166,137 +2167,11 @@ app.get('/api/export/dms/config', authenticate, async (_req: any, res) => {
   });
 });
 
-// ==================== KREDO CARTRUST ====================
-
-const KREDO_CONFIG_PATH = path.join(process.cwd(), 'data', 'kredo-config.json');
-
-function readKredoConfig(): Record<string, { sandboxKey?: string; productionKey?: string; connectedAt?: string }> {
-  try {
-    return JSON.parse(fs.readFileSync(KREDO_CONFIG_PATH, 'utf-8'));
-  } catch { return {}; }
-}
-
-function writeKredoConfig(cfg: Record<string, any>) {
-  const dir = path.dirname(KREDO_CONFIG_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(KREDO_CONFIG_PATH, JSON.stringify(cfg, null, 2));
-}
-
-app.get('/api/kredo/status', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
-  const cfg = readKredoConfig();
-  const entry = cfg[slug];
-  res.json({
-    connected: !!(entry?.sandboxKey || entry?.productionKey),
-    dealerSlug: slug,
-    hasSandboxKey: !!entry?.sandboxKey,
-    hasProductionKey: !!entry?.productionKey,
-    lastCheckedAt: entry?.connectedAt || null,
-  });
-});
-
-app.post('/api/kredo/connect', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
-  const { sandboxKey, productionKey } = req.body || {};
-  if (!sandboxKey && !productionKey) {
-    return res.status(400).json({ ok: false, error: 'Provide at least one API key.' });
-  }
-  // TODO(kredo-docs): validate the key against Kredo's test endpoint before storing
-  const cfg = readKredoConfig();
-  cfg[slug] = {
-    ...(sandboxKey ? { sandboxKey } : {}),
-    ...(productionKey ? { productionKey } : {}),
-    connectedAt: new Date().toISOString(),
-  };
-  writeKredoConfig(cfg);
-  console.log(`[kredo] dealer ${slug} connected CarTrust`);
-  res.json({ ok: true });
-});
-
-app.post('/api/kredo/disconnect', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
-  const cfg = readKredoConfig();
-  delete cfg[slug];
-  writeKredoConfig(cfg);
-  console.log(`[kredo] dealer ${slug} disconnected CarTrust`);
-  res.json({ ok: true });
-});
-
-app.post('/api/kredo/lookup', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
-  const vin = String(req.body?.vin || '').trim().toUpperCase();
-  if (!vin || vin.length < 11) {
-    return res.status(400).json({ error: 'Invalid VIN' });
-  }
-  const cfg = readKredoConfig();
-  const entry = cfg[slug];
-  if (!entry?.sandboxKey && !entry?.productionKey) {
-    return res.status(503).json({ error: 'Kredo not connected for this dealer.' });
-  }
-  const apiKey = entry.productionKey || entry.sandboxKey;
-
-  // TODO(kredo-docs): Replace this stub with the real Kredo CarTrust API call.
-  // Expected shape (based on marketplace positioning):
-  //   POST https://api.kredo.co.za/v1/cartrust/vin-lookup   (or similar)
-  //   Header: Authorization: Bearer <apiKey>  OR  x-api-key: <apiKey>
-  //   Body: { vin }
-  //   Response: { stolen: bool, writtenOff: bool, financeEncumbered: bool, ... }
-  //
-  // For now, return a stubbed "all-clear" so the UI wires up end-to-end.
-  // When real docs arrive, swap this block for a fetch() call.
-  try {
-    console.log(`[kredo] CarTrust lookup for VIN=${vin} dealer=${slug} (STUB — real API not yet wired)`);
-    const stubResult = {
-      vin,
-      stolen: false,
-      writtenOff: false,
-      financeEncumbered: false,
-      checkedAt: new Date().toISOString(),
-      raw: { stub: true, note: 'Replace with real Kredo API response when docs are available' },
-    };
-    res.json(stubResult);
-  } catch (err: any) {
-    console.error(`[kredo] lookup failed for VIN=${vin}:`, err?.message || err);
-    res.status(502).json({ error: 'CarTrust lookup failed. Check your API key.' });
-  }
-});
-
-app.post('/api/kredo/valuation', authenticate, async (req: any, res) => {
-  const slug = req.user?.dealerSlug || 'default';
-  const vin = String(req.body?.vin || '').trim().toUpperCase();
-  if (!vin || vin.length < 11) {
-    return res.status(400).json({ error: 'Invalid VIN' });
-  }
-  const cfg = readKredoConfig();
-  const entry = cfg[slug];
-  if (!entry?.sandboxKey && !entry?.productionKey) {
-    return res.status(503).json({ error: 'Kredo not connected for this dealer.' });
-  }
-
-  // TODO(kredo-docs): Replace with real Kredo CarValue API call.
-  // Expected: POST to Kredo's valuation endpoint with VIN, returns trade/retail/market values.
-  try {
-    console.log(`[kredo] CarValue lookup for VIN=${vin} dealer=${slug} (STUB)`);
-    const stubResult = {
-      vin,
-      tradeValue: null,
-      retailValue: null,
-      marketValue: null,
-      checkedAt: new Date().toISOString(),
-      raw: { stub: true, note: 'Replace with real Kredo CarValue response when docs are available' },
-    };
-    res.json(stubResult);
-  } catch (err: any) {
-    console.error(`[kredo] valuation failed for VIN=${vin}:`, err?.message || err);
-    res.status(502).json({ error: 'CarValue lookup failed. Check your API key.' });
-  }
-});
-
 // Live market valuation — scrapes competitor dealer stock + classifieds
 // (AutoTrader / Cars.co.za), mileage-adjusted toward the subject car. This is
-// the same engine as TruInspect; unlike the Kredo stub above it needs no
-// third-party key and keys on make/model/year/mileage rather than VIN. Used at
-// the pricing step so a dealer sets a first price against the live market.
+// the same engine as TruInspect, and keys on make/model/year/mileage rather
+// than VIN. Used at the pricing step so a dealer sets a first price against
+// the live market.
 app.post('/api/valuation', authenticate, async (req: any, res) => {
   const { make, model, year, mileage, vin } = req.body || {};
   if (!make || !model || !year) {

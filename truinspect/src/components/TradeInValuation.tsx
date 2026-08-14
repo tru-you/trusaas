@@ -1,9 +1,8 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight, Zap, ExternalLink, Loader2, Shield, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Zap, ExternalLink, Loader2, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { Vehicle } from '../types';
 import { InspectionItem, ValuationState, ValuationSnapshot, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
-import { kredoValuation, kredoStatus, type CarValueResult } from '../lib/kredo';
 import { urlMake } from '../lib/makeAliases';
 
 interface TradeInValuationProps {
@@ -35,9 +34,6 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
   );
   const [carsUrl, setCarsUrl] = React.useState<string | null>(null);
 
-  const [kredoConnected, setKredoConnected] = React.useState(false);
-  const [kredoValue, setKredoValue] = React.useState<CarValueResult | null>(null);
-  const [kredoFetching, setKredoFetching] = React.useState(false);
   const [history, setHistory] = React.useState<ValuationSnapshot[]>([]);
 
   React.useEffect(() => {
@@ -45,13 +41,9 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
     (async () => {
       try {
         const token = await user.getIdToken();
-        const [s, hRes] = await Promise.all([
-          kredoStatus(token),
-          fetch(`/api/valuation/history/${vehicle.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-        setKredoConnected(s.connected);
+        const hRes = await fetch(`/api/valuation/history/${vehicle.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (hRes.ok) {
           const hData = await hRes.json();
           if (Array.isArray(hData.history)) setHistory(hData.history);
@@ -59,17 +51,6 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
       } catch { /* not connected — fine */ }
     })();
   }, [user, vehicle.id]);
-
-  const handleKredoValuation = async () => {
-    if (!user || !vehicle.vin) return;
-    setKredoFetching(true);
-    try {
-      const token = await user.getIdToken();
-      const result = await kredoValuation(token, vehicle.vin);
-      if (result) setKredoValue(result);
-    } catch { /* non-blocking */ }
-    setKredoFetching(false);
-  };
 
   const recalc = (price: number | null, margin: number) => {
     const final = computeTradeInValue(price, totalRecon, margin);
@@ -207,61 +188,6 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
                 </a>
               )}
             </div>
-          </div>
-        )}
-
-        {/* Kredo CarValue — second data source, only when connected + vehicle has VIN */}
-        {kredoConnected && vehicle.vin && (
-          <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield size={14} className="text-amber-400" />
-                <span className="text-[13px] font-bold text-amber-300">Kredo CarValue</span>
-              </div>
-              {!kredoValue && (
-                <button
-                  type="button"
-                  onClick={handleKredoValuation}
-                  disabled={kredoFetching}
-                  className="px-3 py-1.5 rounded-lg bg-amber-600/60 hover:bg-amber-600 text-[12px] font-bold text-white transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
-                >
-                  {kredoFetching ? <Loader2 size={11} className="animate-spin" /> : <Zap size={11} />}
-                  {kredoFetching ? 'Fetching…' : 'Get Kredo Value'}
-                </button>
-              )}
-            </div>
-            {kredoValue && (
-              <div className="grid grid-cols-3 gap-2">
-                <div className="text-center">
-                  <p className="text-[12px] text-neutral-500 font-semibold">Trade</p>
-                  <p className="text-[14px] font-bold text-amber-300 font-mono">
-                    {kredoValue.tradeValue !== null ? fmt(kredoValue.tradeValue) : '—'}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[12px] text-neutral-500 font-semibold">Retail</p>
-                  <p className="text-[14px] font-bold text-amber-300 font-mono">
-                    {kredoValue.retailValue !== null ? fmt(kredoValue.retailValue) : '—'}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[12px] text-neutral-500 font-semibold">Market</p>
-                  <p className="text-[14px] font-bold text-amber-300 font-mono">
-                    {kredoValue.marketValue !== null ? fmt(kredoValue.marketValue) : '—'}
-                  </p>
-                </div>
-              </div>
-            )}
-            {kredoValue && (
-              <p className="text-[12px] text-neutral-600">
-                Checked {new Date(kredoValue.checkedAt).toLocaleDateString('en-ZA')} via Kredo
-              </p>
-            )}
-            {!kredoValue && !kredoFetching && (
-              <p className="text-[12px] text-neutral-500">
-                VIN-based valuation from Kredo's SA dealer market data.
-              </p>
-            )}
           </div>
         )}
 

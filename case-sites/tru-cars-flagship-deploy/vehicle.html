@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vehicle — Truecars</title>
+<meta name="description" content="Photographed, scored and priced on the TruDealer platform.">
+<!-- Per-car OG tags are injected server-side by netlify/edge-functions/vehicle-og.js. -->
+<meta property="og:title" content="Vehicle — Truecars">
+<meta property="og:description" content="Inspected stock with a 360° walkaround and instant finance figures.">
+<meta property="og:image" content="https://www.true-cars.co.za/og-card.jpg">
+<link rel="icon" type="image/svg+xml" href="/assets/brand/favicon.svg">
+<link rel="stylesheet" href="/assets/css/showroom.css?v=11">
+</head>
+<body>
+
+<main class="section">
+  <div class="wrap">
+    <div id="crumb" class="eyebrow" style="margin-bottom:32px"></div>
+    <div id="content"></div>
+  </div>
+</main>
+
+<script src="/assets/js/catalog.js?v=1"></script>
+<script src="/assets/js/showroom-data.js?v=1"></script>
+<script src="/assets/js/showroom.js?v=11"></script>
+
+<script src="/tru-concierge.js?v=1"></script>
+
+<script src="/tru-loader.js?v=3"
+        data-dealer="Truecars"
+        data-slug="true-cars"
+        data-flow="https://premium.tru-saas.com"
+        data-wa="27620502091"
+        data-accent="#07879A"
+        data-brand="TruDealer"
+        data-theme="light"
+        data-widgets="form,chat,share,book"
+        data-form-mode="float"
+        data-share-site="https://www.true-cars.co.za"
+        data-share-vehicle-path="/vehicle/"></script>
+
+<script>
+(function () {
+  var TRU = window.TruShowroom;
+  var e = TRU.esc;
+
+  function notFound() {
+    document.getElementById("content").innerHTML =
+      '<div class="empty"><h3>That car is no longer on the floor.</h3>' +
+      '<a class="link" href="/stock.html" style="margin-top:16px">Back to the showroom</a></div>';
+  }
+
+  function specRows(v) {
+    var rows = [
+      ["Stock number",  v.stockNumber],
+      ["Year",          v.year],
+      ["Mileage",       v.mileage ? TRU.km(v.mileage) : null],
+      ["Transmission",  v.transmission],
+      ["Fuel",          v.fuelType],
+      ["Body",          v.bodyType],
+      ["Colour",        v.color],
+      ["VIN",           v.vin],
+    ];
+    return rows
+      .filter(function (r) { return r[1] != null && r[1] !== ""; })
+      .map(function (r) { return "<tr><td>" + e(r[0]) + "</td><td>" + e(r[1]) + "</td></tr>"; })
+      .join("");
+  }
+
+  function virPanel(v) {
+    if (!v.vir) return "";
+    var advisories = (v.damage || []).length
+      ? '<ul class="advisories">' +
+          v.damage.map(function (d) {
+            return "<li><span class=\"dot\"></span><div><b>" + e(d.area) +
+              "</b>" + e(d.note) + "</div></li>";
+          }).join("") +
+        "</ul>"
+      : '<p style="margin:0;font-size:14px;color:var(--ink-mute)">No advisories were raised on this inspection.</p>';
+
+    return (
+      '<div class="panel">' +
+        '<h4 style="margin-bottom:16px">Inspection · TruLens</h4>' +
+        '<div class="vir-head">' +
+          '<div class="vir-score">' + v.vir + "</div>" +
+          '<div class="vir-meta"><b>' + e(v.conditionLabel || "Inspected") + "</b>" +
+            "<span>Scored on the published rubric</span></div>" +
+        "</div>" +
+        advisories +
+        (v.virReport
+          ? '<a class="link" style="margin-top:20px" href="' + e(v.virReport) + '">Read the full inspection report</a>'
+          : "") +
+      "</div>"
+    );
+  }
+
+  function render() {
+    var v = TRU.get(TRU.params().stock);
+    if (!v) return notFound();
+
+    document.title = TRU.title(v) + " — Truecars";
+    document.getElementById("crumb").innerHTML =
+      '<a href="/stock.html" style="color:var(--ink-quiet)">The showroom</a>' +
+      '<span style="margin:0 12px;color:var(--rule)">/</span>' +
+      '<span style="color:var(--ink)">' + e(TRU.title(v)) + "</span>";
+
+    var price = v.truPrice && v.truPrice < v.price ? v.truPrice : v.price;
+    var hasOrbit = !!(v.web3d && v.web3d.frames && v.web3d.frames.length);
+
+    /* The 360° walkaround is the hero of this page: it is the one thing a
+       photo set cannot do, and it is the product's headline feature. Photos
+       sit below it as supporting evidence. Cars with no captured frames
+       (TC-108, TC-113 at time of writing) fall back to a photo hero. */
+    var frames = hasOrbit ? v.web3d.frames : [];
+
+    /* Jump chips, derived from each frame's azimuth rather than hardcoded, so
+       an 8-frame and a 10-frame capture both land on the right angles. */
+    var chips = frames.map(function (f, i) {
+      var az = typeof f.azimuth === "number" ? f.azimuth : i / frames.length;
+      return { i: i, az: ((az % 1) + 1) % 1, name: f.name };
+    });
+    function nearest(target) {
+      var best = chips[0];
+      chips.forEach(function (c) {
+        var d = Math.min(Math.abs(c.az - target), 1 - Math.abs(c.az - target));
+        var bd = Math.min(Math.abs(best.az - target), 1 - Math.abs(best.az - target));
+        if (d < bd) best = c;
+      });
+      return best;
+    }
+    var jumps = hasOrbit
+      ? [["Front", 0], ["Side", 0.25], ["Rear", 0.5], ["Other side", 0.75]]
+          .map(function (p) { var c = nearest(p[1]); return { label: p[0], i: c.i }; })
+      : [];
+
+    var orbit = hasOrbit
+      ? '<figure class="orbit-hero">' +
+          '<div class="orbit-head">' +
+            '<span class="eyebrow">360° walkaround</span>' +
+            '<span class="orbit-count">' + frames.length + " angles captured</span>" +
+          "</div>" +
+          '<div class="orbit" id="orbit" tabindex="0" role="group" ' +
+            'aria-label="360 degree walkaround — drag, or use arrow keys, to rotate">' +
+            frames.map(function (f, i) {
+              return '<img src="' + e(f.image) + '" alt="' + e(f.name) + '"' +
+                (i === 0 ? ' class="is-active"' : "") +
+                (i === 0 ? "" : ' loading="lazy"') + ">";
+            }).join("") +
+            '<div class="orbit-label" id="orbitLabel">' + e(frames[0].name) + "</div>" +
+            '<button class="orbit-reset" id="orbitReset" type="button" aria-label="Reset to front">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+              'stroke-linecap="round"><path d="M1 4v6h6"/>' +
+              '<path d="M3.5 20A9 9 0 1 0 4 10l-3 0"/></svg>' +
+            "</button>" +
+            '<div class="orbit-hint" id="orbitHint">' +
+              "Drag to spin · <b id=\"orbitDeg\">0°</b>" +
+            "</div>" +
+          "</div>" +
+          '<div class="orbit-chips" id="orbitChips">' +
+            jumps.map(function (j, k) {
+              return '<button type="button" data-i="' + j.i + '"' +
+                (k === 0 ? ' class="is-on"' : "") + ">" + e(j.label) + "</button>";
+            }).join("") +
+          "</div>" +
+        "</figure>"
+      : "";
+
+    document.getElementById("content").innerHTML =
+      '<div class="vdp">' +
+        "<div>" +
+          orbit +
+          '<div class="gallery' + (hasOrbit ? " is-secondary" : "") + '">' +
+            (hasOrbit
+              ? '<div class="orbit-head"><span class="eyebrow">Photographs</span>' +
+                '<span class="orbit-count">' + v.images.length + " images</span></div>"
+              : "") +
+            '<div class="gallery-main" id="galleryMain">' +
+              '<img id="mainImg" src="' + e(v.images[0]) + '" alt="' + e(TRU.title(v)) + '">' +
+              (v.images.length > 1
+                ? '<button class="gallery-nav prev" id="prev" aria-label="Previous photo">‹</button>' +
+                  '<button class="gallery-nav next" id="next" aria-label="Next photo">›</button>'
+                : "") +
+            "</div>" +
+            '<div class="gallery-thumbs" id="thumbs">' +
+              v.images.map(function (src, i) {
+                return '<img src="' + e(src) + '" alt="" loading="lazy" data-i="' + i + '"' +
+                  (i === 0 ? ' class="is-active"' : "") + ">";
+              }).join("") +
+            "</div>" +
+          "</div>" +
+
+          '<div style="margin-top:48px">' +
+            '<h4 style="margin-bottom:18px">The car</h4>' +
+            '<p style="font-family:var(--serif);font-size:19px;line-height:1.5;letter-spacing:-0.01em;max-width:60ch;color:var(--ink-quiet)">' +
+              e(v.description) + "</p>" +
+          "</div>" +
+
+          '<div style="margin-top:48px">' +
+            '<h4 style="margin-bottom:18px">Specification</h4>' +
+            '<table class="spec-table">' + specRows(v) + "</table>" +
+          "</div>" +
+        "</div>" +
+
+        '<aside class="vdp-rail">' +
+          "<div>" +
+            '<div class="vdp-meta">' + v.year + " · " + e(String(v.make).toUpperCase()) + " · " + e(v.stockNumber) + "</div>" +
+            '<h1 class="vdp-title">' + e(v.model) + "</h1>" +
+            (v.trim ? '<div class="vdp-trim">' + e(v.trim) + "</div>" : "") +
+            '<div class="vdp-price">' +
+              '<span class="price-now">' + TRU.money(price) + "</span>" +
+              (price < v.price
+                ? '<span class="price-was" style="font-size:15px">was ' + TRU.money(v.price) + "</span>"
+                : "") +
+            "</div>" +
+            '<div class="vdp-pm">From <b>' + TRU.money(TRU.monthly(price)) + " / mo</b> — 72 mo, 10% dep.</div>" +
+            '<div class="cta-stack" style="margin-top:32px">' +
+              '<button class="btn btn-primary btn-block" id="ctaApply">Get pre-approved</button>' +
+              '<button class="btn btn-outline btn-block" id="ctaAfford">Check affordability</button>' +
+              '<button class="btn btn-outline btn-block" id="ctaBook">Book a test drive</button>' +
+              '<button class="btn btn-outline btn-block" data-share="' + e(v.stockNumber) + '">Share this car</button>' +
+              '<a class="btn btn-jewel btn-block" href="https://wa.me/27620502091?text=' +
+                encodeURIComponent("Hi, I'm interested in the " + TRU.title(v) + " (" + v.stockNumber + ")") +
+                '">WhatsApp the dealer</a>' +
+            "</div>" +
+          "</div>" +
+
+          virPanel(v) +
+
+          '<div class="panel">' +
+            '<h4 style="margin-bottom:12px">Live walkaround</h4>' +
+            '<p style="font-family:var(--serif);font-size:17px;line-height:1.45;letter-spacing:-0.012em;color:var(--ink-quiet);margin:0 0 20px">' +
+              "A salesperson walks the car on video, in real time. No app — the link opens in your browser." +
+            "</p>" +
+            '<a class="link" href="https://wa.me/27620502091?text=' +
+              encodeURIComponent("Please send me a TruLive video walkaround of " + v.stockNumber) +
+              '">Request a live walkaround</a>' +
+          "</div>" +
+        "</aside>" +
+      "</div>";
+
+    wireGallery(v);
+    if (hasOrbit) wireOrbit(v);
+    wireCtas(v);
+  }
+
+  /* ---- lightbox ---- */
+  var lb = null;
+  var lbImg = null;
+  var lbCounter = null;
+  var lbIdx = 0;
+  var lbImages = [];
+
+  function initLightbox() {
+    if (lb) return;
+    lb = document.createElement("div");
+    lb.className = "lightbox";
+    lb.innerHTML =
+      '<img alt="">' +
+      '<button class="lightbox-close" aria-label="Close">×</button>' +
+      '<button class="lightbox-nav prev" aria-label="Previous">‹</button>' +
+      '<button class="lightbox-nav next" aria-label="Next">›</button>' +
+      '<div class="lightbox-counter"></div>';
+    document.body.appendChild(lb);
+    lbImg = lb.querySelector("img");
+    lbCounter = lb.querySelector(".lightbox-counter");
+
+    lb.querySelector(".lightbox-close").addEventListener("click", closeLightbox);
+    lb.querySelector(".lightbox-nav.prev").addEventListener("click", function () { lbShow(lbIdx - 1); });
+    lb.querySelector(".lightbox-nav.next").addEventListener("click", function () { lbShow(lbIdx + 1); });
+    lb.addEventListener("click", function (ev) { if (ev.target === lb) closeLightbox(); });
+    document.addEventListener("keydown", function (ev) {
+      if (!lb.classList.contains("is-open")) return;
+      if (ev.key === "Escape") closeLightbox();
+      if (ev.key === "ArrowLeft") lbShow(lbIdx - 1);
+      if (ev.key === "ArrowRight") lbShow(lbIdx + 1);
+    });
+  }
+
+  function lbShow(n) {
+    lbIdx = ((n % lbImages.length) + lbImages.length) % lbImages.length;
+    lbImg.src = lbImages[lbIdx];
+    lbCounter.textContent = (lbIdx + 1) + " / " + lbImages.length;
+  }
+
+  function openLightbox(images, startIdx) {
+    initLightbox();
+    lbImages = images;
+    lbShow(startIdx || 0);
+    lb.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeLightbox() {
+    if (!lb) return;
+    lb.classList.remove("is-open");
+    document.body.style.overflow = "";
+  }
+
+  /* ---- gallery ---- */
+  function wireGallery(v) {
+    var main = document.getElementById("mainImg");
+    var thumbs = document.getElementById("thumbs");
+    var i = 0;
+
+    function show(n) {
+      i = (n + v.images.length) % v.images.length;
+      main.src = v.images[i];
+      thumbs.querySelectorAll("img").forEach(function (t, k) { t.classList.toggle("is-active", k === i); });
+      thumbs.children[i].scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+
+    main.addEventListener("click", function () { openLightbox(v.images, i); });
+
+    thumbs.addEventListener("click", function (ev) {
+      var t = ev.target.closest("img[data-i]");
+      if (t) show(Number(t.dataset.i));
+    });
+    var prev = document.getElementById("prev");
+    var next = document.getElementById("next");
+    if (prev) prev.addEventListener("click", function (ev) { ev.stopPropagation(); show(i - 1); });
+    if (next) next.addEventListener("click", function (ev) { ev.stopPropagation(); show(i + 1); });
+    document.addEventListener("keydown", function (ev) {
+      if (lb && lb.classList.contains("is-open")) return;
+      if (ev.key === "ArrowLeft") show(i - 1);
+      if (ev.key === "ArrowRight") show(i + 1);
+    });
+
+    var x0 = null;
+    var stage = document.getElementById("galleryMain");
+    stage.addEventListener("touchstart", function (ev) { x0 = ev.touches[0].clientX; }, { passive: true });
+    stage.addEventListener("touchend", function (ev) {
+      if (x0 == null) return;
+      var dx = ev.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) show(dx < 0 ? i + 1 : i - 1);
+      x0 = null;
+    });
+  }
+
+  /* ---- TruOrbit — the 360° walkaround hero ---- */
+  function wireOrbit(v) {
+    var orbit  = document.getElementById("orbit");
+    var label  = document.getElementById("orbitLabel");
+    var hint   = document.getElementById("orbitHint");
+    var deg    = document.getElementById("orbitDeg");
+    var chips  = document.getElementById("orbitChips");
+    var reset  = document.getElementById("orbitReset");
+    var imgs   = orbit.querySelectorAll("img");
+    var data   = v.web3d.frames;
+    var n      = imgs.length;
+    var idx    = 0;
+
+    function show(k) {
+      idx = ((k % n) + n) % n;
+      for (var j = 0; j < n; j++) imgs[j].classList.toggle("is-active", j === idx);
+      label.textContent = data[idx].name;
+      /* Prefer the captured azimuth; fall back to even spacing so the readout
+         is still truthful for captures that predate the azimuth field. */
+      var az = typeof data[idx].azimuth === "number" ? data[idx].azimuth : idx / n;
+      deg.textContent = Math.round((((az % 1) + 1) % 1) * 360) + "°";
+      if (chips) {
+        var btns = chips.querySelectorAll("button");
+        for (var b = 0; b < btns.length; b++) {
+          btns[b].classList.toggle("is-on", +btns[b].dataset.i === idx);
+        }
+      }
+    }
+
+    /* drag to spin */
+    var dragging = false, startX = 0, startIdx = 0, moved = false;
+    function stepWidth() { return Math.max(24, orbit.clientWidth / (n * 1.6)); }
+    function down(x, id) {
+      dragging = true; moved = false; startX = x; startIdx = idx;
+      orbit.classList.add("is-dragging");
+      if (id != null && orbit.setPointerCapture) orbit.setPointerCapture(id);
+    }
+    function move(x) {
+      if (!dragging) return;
+      var delta = Math.round((x - startX) / stepWidth());
+      if (delta !== 0 && !moved) { moved = true; orbit.classList.add("has-moved"); }
+      show(startIdx + delta);
+    }
+    function up() { dragging = false; orbit.classList.remove("is-dragging"); }
+
+    orbit.addEventListener("pointerdown", function (ev) { ev.preventDefault(); down(ev.clientX, ev.pointerId); });
+    orbit.addEventListener("pointermove", function (ev) { move(ev.clientX); });
+    orbit.addEventListener("pointerup", up);
+    orbit.addEventListener("pointercancel", up);
+
+    /* keyboard — the drag surface is focusable, so it must be operable */
+    orbit.addEventListener("keydown", function (ev) {
+      if (ev.key === "ArrowRight") { show(idx + 1); orbit.classList.add("has-moved"); ev.preventDefault(); }
+      else if (ev.key === "ArrowLeft") { show(idx - 1); orbit.classList.add("has-moved"); ev.preventDefault(); }
+      else if (ev.key === "Home") { show(0); ev.preventDefault(); }
+    });
+
+    if (chips) {
+      chips.addEventListener("click", function (ev) {
+        var b = ev.target.closest("button");
+        if (!b) return;
+        show(+b.dataset.i);
+        orbit.classList.add("has-moved");
+      });
+    }
+    if (reset) {
+      reset.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        show(0);
+        orbit.classList.remove("has-moved");
+      });
+    }
+
+    show(0);
+  }
+
+  /* ---- widget CTAs ---- */
+  function wireCtas(v) {
+    var payload = {
+      vehicle: TRU.title(v) + (v.trim ? " " + v.trim : ""),
+      vehicleId: v.stockNumber,
+      price: v.truPrice || v.price,
+      source: "vdp",
+    };
+
+    document.getElementById("ctaApply").addEventListener("click", function () {
+      if (window.TruForm && window.TruForm.open) {
+        window.TruForm.open({
+          vehicle: payload.vehicle, vehicleId: payload.vehicleId,
+          interest: "Finance pre-approval", finance: true, source: "vdp-preapproval",
+        });
+      } else {
+        location.href = "/finance.html?stock=" + encodeURIComponent(v.stockNumber);
+      }
+    });
+
+    document.getElementById("ctaBook").addEventListener("click", function () {
+      /* Mobile gets the concierge sheet — a lighter, personal-feeling entry
+         point (agent card, three quick slots, WhatsApp/Call fallbacks).
+         Confirm then opens the full TruBook drawer with the slot pre-set. */
+      if (window.matchMedia && window.matchMedia("(max-width: 640px)").matches
+          && window.TruConcierge) {
+        window.TruConcierge.open(v, payload);
+        return;
+      }
+      if (window.TruBook && window.TruBook.open) {
+        window.TruBook.open({ mode: "live", car: payload.vehicle });
+      } else if (window.TruForm && window.TruForm.open) {
+        window.TruForm.open({
+          vehicle: payload.vehicle, vehicleId: payload.vehicleId,
+          interest: "Test drive", source: "vdp-testdrive",
+        });
+      } else {
+        location.href = "https://wa.me/27620502091?text=" +
+          encodeURIComponent("I'd like to book a test drive: " + payload.vehicle + " (" + v.stockNumber + ")");
+      }
+    });
+
+    // Affordability opens TruForm with the car's price prefilled — TruAfford
+    // has no way to suppress its FAB, so we don't load it. TruForm covers the
+    // same qualifier journey and reaches the same webhook.
+    document.getElementById("ctaAfford").addEventListener("click", function () {
+      if (window.TruForm && window.TruForm.open) {
+        window.TruForm.open({
+          vehicle: payload.vehicle, vehicleId: payload.vehicleId,
+          interest: "Affordability check",
+          finance: true, source: "vdp-affordability",
+        });
+      } else {
+        location.href = "/finance.html?stock=" + encodeURIComponent(v.stockNumber);
+      }
+    });
+  }
+
+  render();
+  window.addEventListener("tru:stock", render);
+})();
+</script>
+</body>
+</html>

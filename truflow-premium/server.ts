@@ -4944,7 +4944,6 @@ function toPublicVehicle(v: any, source: string = "premium", origin: string = ""
     })(),
     conditionDeclaration: (v as any).conditionDeclaration || undefined,
     optionalExtras: Array.isArray(v.optionalExtras) && v.optionalExtras.length ? v.optionalExtras : undefined,
-    daysInStock: v.daysInInventory ?? null,
     source: v.source || source,
     updatedAt: v.lastPhotoSync || v.updatedAt || null,
   };

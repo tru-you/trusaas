@@ -12,9 +12,7 @@ import {
 import { Vehicle, DmsExportResult } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import DiscScanner from './DiscScanner';
-import KredoSettings from './KredoSettings';
-import CarTrustBadge from './CarTrustBadge';
-import { kredoLookup, type CarTrustResult } from '../lib/kredo';
+import VehiclePicker, { VehiclePickerValue } from './VehiclePicker';
 import type { DiscScan } from '../lib/saDisc';
 import InstallAppButton from './InstallAppButton';
 import { computeInspectionReadiness } from '../lib/readiness';
@@ -220,6 +218,7 @@ export default function InventoryList({
   const [model, setModel] = React.useState('');
   const [year, setYear] = React.useState(new Date().getFullYear());
   const [trim, setTrim] = React.useState('');
+  const [mmCode, setMmCode] = React.useState('');
   const [vin, setVin] = React.useState('');
   const [stockNumber, setStockNumber] = React.useState('');
   const [color, setColor] = React.useState('');
@@ -236,31 +235,6 @@ export default function InventoryList({
      inspection, and a wrong VIN is on the report for good. */
   const [scanningDisc, setScanningDisc] = React.useState(false);
   const [scanNote, setScanNote] = React.useState<string | null>(null);
-  const [carTrustCache, setCarTrustCache] = React.useState<Record<string, CarTrustResult>>({});
-  const [carTrustLoading, setCarTrustLoading] = React.useState<string | null>(null);
-  const [formCarTrust, setFormCarTrust] = React.useState<CarTrustResult | null>(null);
-  const [formCarTrustLoading, setFormCarTrustLoading] = React.useState(false);
-
-  const runCarTrustLookup = React.useCallback(async (vinValue: string, vehicleId?: string) => {
-    const v = vinValue.trim().toUpperCase();
-    if (v.length < 11 || !user) return;
-    if (vehicleId) {
-      if (carTrustCache[v]) return;
-      setCarTrustLoading(vehicleId);
-    } else {
-      setFormCarTrustLoading(true);
-    }
-    try {
-      const token = await user.getIdToken();
-      const result = await kredoLookup(token, v);
-      if (result) {
-        setCarTrustCache(prev => ({ ...prev, [v]: result }));
-        if (!vehicleId) setFormCarTrust(result);
-      }
-    } catch { /* non-blocking */ }
-    if (vehicleId) setCarTrustLoading(null);
-    else setFormCarTrustLoading(false);
-  }, [user, carTrustCache]);
 
   const applyDiscScan = (d: DiscScan) => {
     setScanningDisc(false);
@@ -320,6 +294,7 @@ export default function InventoryList({
         model,
         year: Number(year),
         trim,
+        mmCode: mmCode || undefined,
         vin: vin.trim(),
         stockNumber: stockNumber.trim(),
         color: color.trim(),
@@ -336,6 +311,7 @@ export default function InventoryList({
         model,
         year: Number(year),
         trim,
+        mmCode: mmCode || undefined,
         vin: vin || 'VIN-PENDING-' + Math.floor(1000 + Math.random() * 9000),
         stockNumber: stockNumber || 'STK-' + Math.floor(10000 + Math.random() * 90000),
         color: color || 'Black',
@@ -354,6 +330,7 @@ export default function InventoryList({
     setModel('');
     setYear(new Date().getFullYear());
     setTrim('');
+    setMmCode('');
     setVin('');
     setStockNumber('');
     setColor('');
@@ -363,7 +340,7 @@ export default function InventoryList({
     setTransmission('Manual');
     setFuelType('Petrol');
     setStatus('In-Progress');
-    setFormCarTrust(null);
+
     setShowAddForm(false);
   };
 
@@ -589,33 +566,18 @@ export default function InventoryList({
               <div className="flex-1 h-px bg-neutral-800" />
             </div>
 
-            {/* The fields someone actually types at the car. Make and model stay
-                separate. Everything is 48px, 12px radius, recessed, 16px text. */}
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Make</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g., Ford"
-                    value={make}
-                    onChange={(e) => setMake(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Model</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g., Mustang"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
-                  />
-                </div>
-              </div>
+              <VehiclePicker
+                theme="inspect"
+                initial={editingVehicle ? { make: editingVehicle.make, model: editingVehicle.model, year: editingVehicle.year, variant: editingVehicle.trim } : undefined}
+                onSelect={(v: VehiclePickerValue) => {
+                  setMake(v.make);
+                  setModel(v.model);
+                  setYear(v.year);
+                  setTrim(v.variant);
+                  setMmCode(v.mmCode);
+                }}
+              />
               <div>
                 <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Mileage (km)</label>
                 <input
@@ -647,32 +609,12 @@ export default function InventoryList({
               onClick={() => setShowAllFields((v) => !v)}
               className="tru-btn-ghost w-full min-h-[44px] flex items-center justify-between px-3 text-[13px] cursor-pointer"
             >
-              <span>{showAllFields ? 'Fewer details' : 'Year, trim, colour, VIN, stock # — more details'}</span>
+              <span>{showAllFields ? 'Fewer details' : 'Colour, VIN, stock # — more details'}</span>
               <ChevronDown size={16} className={`transition-transform ${showAllFields ? 'rotate-180' : ''}`} />
             </button>
 
             {showAllFields && (
               <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-150">
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Year</label>
-                  <input
-                    type="number"
-                    placeholder="2024"
-                    value={year}
-                    onChange={(e) => setYear(Number(e.target.value))}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Trim</label>
-                  <input
-                    type="text"
-                    placeholder="GT Premium"
-                    value={trim}
-                    onChange={(e) => setTrim(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
-                  />
-                </div>
                 <div>
                   <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Stock #</label>
                   <input
@@ -751,10 +693,8 @@ export default function InventoryList({
                     placeholder="17 characters"
                     value={vin}
                     onChange={(e) => setVin(e.target.value.toUpperCase())}
-                    onBlur={() => { if (vin.trim().length >= 11) runCarTrustLookup(vin); }}
                     className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                   />
-                  <CarTrustBadge result={formCarTrust} loading={formCarTrustLoading} compact />
                 </div>
               </div>
             )}
@@ -984,13 +924,6 @@ export default function InventoryList({
                           >
                             {readiness.label}
                           </span>
-                          {vehicle.vin && (
-                            <CarTrustBadge
-                              result={carTrustCache[vehicle.vin.toUpperCase()]}
-                              loading={carTrustLoading === vehicle.id}
-                              compact
-                            />
-                          )}
                         </div>
                       </div>
                     </div>
@@ -1410,8 +1343,6 @@ export default function InventoryList({
               </div>
             </div>
 
-            {/* Kredo CarTrust */}
-            <KredoSettings />
 
             {/* Data Management */}
             <div className="pt-2 space-y-2">
