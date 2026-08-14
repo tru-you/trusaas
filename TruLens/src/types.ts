@@ -26,6 +26,7 @@ export interface Vehicle {
   model: string;
   year: number;
   trim: string;
+  mmCode?: string;
   vin: string;
   stockNumber: string;
   color: string;

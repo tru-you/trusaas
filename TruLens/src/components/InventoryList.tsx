@@ -13,6 +13,7 @@ import { DEFAULT_TEMPLATE } from '../templates';
 import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 import DiscScanner from './DiscScanner';
+import VehiclePicker, { VehiclePickerValue } from './VehiclePicker';
 import KredoSettings from './KredoSettings';
 import CarTrustBadge from './CarTrustBadge';
 import { kredoLookup, type CarTrustResult } from '../lib/kredo';
@@ -251,6 +252,7 @@ export default function InventoryList({
   const [model, setModel] = React.useState('');
   const [year, setYear] = React.useState(new Date().getFullYear());
   const [trim, setTrim] = React.useState('');
+  const [mmCode, setMmCode] = React.useState('');
   const [vin, setVin] = React.useState('');
   const [stockNumber, setStockNumber] = React.useState('');
   const [color, setColor] = React.useState('');
@@ -371,6 +373,7 @@ export default function InventoryList({
         model,
         year: Number(year),
         trim,
+        mmCode: mmCode || undefined,
         vin: vin.trim(),
         stockNumber: stockNumber.trim(),
         color: color.trim(),
@@ -388,6 +391,7 @@ export default function InventoryList({
         model,
         year: Number(year),
         trim,
+        mmCode: mmCode || undefined,
         vin: vin.trim(),
         stockNumber: stockNumber.trim(),
         color: color.trim(),
@@ -407,6 +411,7 @@ export default function InventoryList({
     setModel('');
     setYear(new Date().getFullYear());
     setTrim('');
+    setMmCode('');
     setVin('');
     setStockNumber('');
     setColor('');
@@ -664,33 +669,18 @@ export default function InventoryList({
               <div className="flex-1 h-px bg-neutral-800" />
             </div>
 
-            {/* The fields someone actually types at the car. Make and model stay
-                separate. Everything is 48px, 12px radius, recessed, 16px text. */}
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Make</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g., Ford"
-                    value={make}
-                    onChange={(e) => setMake(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Model</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g., Mustang"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
-                  />
-                </div>
-              </div>
+              <VehiclePicker
+                theme="lens"
+                initial={editingVehicle ? { make: editingVehicle.make, model: editingVehicle.model, year: editingVehicle.year, variant: editingVehicle.trim } : undefined}
+                onSelect={(v: VehiclePickerValue) => {
+                  setMake(v.make);
+                  setModel(v.model);
+                  setYear(v.year);
+                  setTrim(v.variant);
+                  setMmCode(v.mmCode);
+                }}
+              />
               <div>
                 <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Mileage (km)</label>
                 <input
@@ -771,32 +761,12 @@ export default function InventoryList({
               onClick={() => setShowAllFields((v) => !v)}
               className="tru-btn-ghost w-full min-h-[44px] flex items-center justify-between px-3 text-[13px] cursor-pointer"
             >
-              <span>{showAllFields ? 'Fewer details' : 'Year, trim, colour, VIN, stock # — more details'}</span>
+              <span>{showAllFields ? 'Fewer details' : 'Colour, VIN, stock # — more details'}</span>
               <ChevronDown size={16} className={`transition-transform ${showAllFields ? 'rotate-180' : ''}`} />
             </button>
 
             {showAllFields && (
               <div className="grid grid-cols-2 gap-2 animate-in fade-in duration-150">
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Year</label>
-                  <input
-                    type="number"
-                    placeholder="2024"
-                    value={year}
-                    onChange={(e) => setYear(Number(e.target.value))}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Trim</label>
-                  <input
-                    type="text"
-                    placeholder="GT Premium"
-                    value={trim}
-                    onChange={(e) => setTrim(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
-                  />
-                </div>
                 <div>
                   <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Stock #</label>
                   <input
