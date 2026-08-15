@@ -28,8 +28,10 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", service: "truflow-mobile" });
 });
 
-// Proxy /api/* to the Premium backend using raw http
-app.use("/api", (req, res) => {
+// Proxy /api/* and /media/* to the Premium backend using raw http.
+// Vehicle photos are stored as relative "/media/<hash>.jpg" refs, so without
+// the /media proxy every image resolves against app.tru-saas.com and 404s.
+app.use(["/api", "/media"], (req, res) => {
   const opts = {
     hostname: target.hostname,
     port: target.port,
