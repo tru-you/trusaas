@@ -136,7 +136,7 @@ function SearchSelect({
         onClick={() => setOpen(!open)}
         className={inputCls + " mt-0.5 flex items-center justify-between gap-2 text-left cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"}
       >
-        <span className={"truncate min-w-0 " + (value ? "" : "opacity-40")}>{value || placeholder}</span>
+        <span title={value || undefined} className={"truncate min-w-0 " + (value ? "" : "opacity-40")}>{value || placeholder}</span>
         <ChevronDown size={14} className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -172,7 +172,7 @@ function SearchSelect({
                 type="button"
                 title={opt}
                 onClick={() => { onChange(opt); setOpen(false); }}
-                className={`w-full px-3 py-2 text-left text-[14px] truncate cursor-pointer hover:bg-white/5 transition-colors ${opt === value ? "text-[#4FE3DC] bg-white/5" : "text-white/80"}`}
+                className={`w-full px-3 py-2 text-left text-[14px] leading-snug whitespace-normal break-words cursor-pointer hover:bg-white/5 transition-colors ${opt === value ? "text-[#4FE3DC] bg-white/5" : "text-white/80"}`}
               >
                 {opt}
               </button>
@@ -248,7 +248,7 @@ export default function VehiclePicker({ initial, onSelect, theme = "flow" }: Pro
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
       <SearchSelect theme={theme} label="Make" options={makes} value={make} onChange={handleMake} placeholder="Select make" />
       <SearchSelect theme={theme} label="Model" options={models} value={model} onChange={handleModel} placeholder="Select model" disabled={!make} />
-      <SearchSelect theme={theme} label="Variant" options={variants} value={variant} onChange={handleVariant} placeholder="Select variant" disabled={!model} />
+      <div className="sm:col-span-2"><SearchSelect theme={theme} label="Variant" options={variants} value={variant} onChange={handleVariant} placeholder="Select variant" disabled={!model} /></div>
       <SearchSelect theme={theme} label="Year" options={years.map(String)} value={year ? String(year) : ""} onChange={handleYear} placeholder="Year" disabled={!variant} />
     </div>
   );
