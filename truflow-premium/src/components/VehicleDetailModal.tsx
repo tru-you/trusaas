@@ -356,11 +356,11 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   const safeIndex = Math.min(activeImageIndex, Math.max(0, imagesList.length - 1));
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-0 md:p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[250] p-0 md:p-3 overflow-y-auto">
       {/* Full-bleed on mobile (edge-to-edge, full height) so the sheet uses the
           whole screen instead of a narrow card inside a scrim; a framed card
           from md up. */}
-      <div className="bg-[color:var(--ink)] border-0 md:border border-white/10 rounded-none md:rounded-2xl w-full max-w-none md:max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[100dvh] md:h-auto max-h-[100dvh] md:max-h-[90vh]">
+      <div className="bg-[color:var(--ink)] border-0 md:border border-white/10 rounded-none md:rounded-2xl w-full max-w-none md:max-w-[1600px] shadow-2xl overflow-hidden flex flex-col h-[100dvh] md:h-auto max-h-[100dvh] md:max-h-[94vh]">
         {/* Title bar — desktop only. On mobile the name/back/pill/counter are
             overlaid on the photo header below (hidden md:flex). */}
         <div className="hidden md:flex items-center justify-between gap-3 px-5 py-3.5 border-b border-white/10 bg-[color:var(--ink)] shrink-0">
@@ -399,7 +399,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
 
         <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
         {/* LEFT COLUMN: ACTIVE IMAGE VIEWER & GALLERY */}
-        <div className="md:w-3/5 bg-black flex flex-col justify-between relative p-0 md:p-4 group">
+        <div className="md:w-1/2 bg-black flex flex-col justify-between relative p-0 md:p-4 group">
           {/* Mobile photo header — the image fills a 230px band and the chrome
               (back, pill+counter, title) is overlaid on a gradient. Desktop
               keeps the contained viewer below. */}
@@ -547,7 +547,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
         </div>
 
         {/* RIGHT COLUMN: DETAIL SPECS, INSPECTION & RECON TABS */}
-        <div className="md:w-2/5 max-md:flex-1 max-md:min-h-0 p-5 md:p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
+        <div className="md:w-1/2 max-md:flex-1 max-md:min-h-0 p-5 md:p-6 flex flex-col justify-between overflow-y-auto border-t md:border-t-0 md:border-l border-white/10">
           <div>
             {/* Header (car name, trim, stock, close, return-to-stock) moved to
                 the modal's top title bar so the detail panel opens straight on
@@ -617,7 +617,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         await handleTuValuation();
                       }}
                       disabled={tuValLoading}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-[color:var(--cyan)]/15 text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/25 disabled:opacity-40 transition cursor-pointer"
+                      className="tru-btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] font-semibold text-[color:var(--cyan)] disabled:opacity-40 cursor-pointer"
                     >
                       <Zap size={14} />
                       {tuValLoading ? "Loading..." : "TU Valuation"}
@@ -625,7 +625,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       onClick={handleRegCheck}
                       disabled={regCheckLoading}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 disabled:opacity-40 transition cursor-pointer"
+                      className="tru-btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] font-semibold text-amber-400 disabled:opacity-40 cursor-pointer"
                     >
                       <Shield size={14} />
                       {regCheckLoading ? "Checking..." : "Reg Check"}
@@ -633,7 +633,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       onClick={handleMarketValue}
                       disabled={marketValLoading}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 disabled:opacity-40 transition cursor-pointer"
+                      className="tru-btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] font-semibold text-emerald-400 disabled:opacity-40 cursor-pointer"
                     >
                       <Globe size={14} />
                       {marketValLoading ? "Scraping..." : "Market Value"}
@@ -661,7 +661,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       </div>
                       <button
                         onClick={() => onUpdateVehicle(vehicle.id, { truPrice: Math.round(marketValuation.averageRetailPrice) })}
-                        className="w-full py-1.5 text-[12px] font-semibold rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition cursor-pointer"
+                        className="tru-btn-secondary w-full py-1.5 text-[12px] font-semibold text-emerald-400 cursor-pointer"
                       >
                         <CheckCircle2 size={11} className="inline mr-1 -mt-px" /> Apply as TruPrice
                       </button>
@@ -692,7 +692,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           if (tuValuation.retailPrice != null) updates.mmRetail = tuValuation.retailPrice;
                           onUpdateVehicle(vehicle.id, updates);
                         }}
-                        className="w-full py-1.5 text-[12px] font-semibold rounded-lg bg-[color:var(--cyan)]/10 text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/20 transition cursor-pointer"
+                        className="tru-btn-secondary w-full py-1.5 text-[12px] font-semibold text-[color:var(--cyan)] cursor-pointer"
                       >
                         <Zap size={11} className="inline mr-1 -mt-px" /> Apply MM Trade &amp; Retail values
                       </button>
@@ -733,7 +733,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           if (regCheckResult.registrationNumber) updates.registrationNumber = regCheckResult.registrationNumber;
                           onUpdateVehicle(vehicle.id, updates);
                         }}
-                        className="w-full py-1.5 text-[12px] font-semibold rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition cursor-pointer"
+                        className="tru-btn-secondary w-full py-1.5 text-[12px] font-semibold text-emerald-400 cursor-pointer"
                       >
                         <Zap size={11} className="inline mr-1 -mt-px" /> Apply VIN, engine, colour &amp; reg to vehicle
                       </button>
@@ -1044,7 +1044,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   <button
                     type="button"
                     onClick={() => setShowOutrightOtp(true)}
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-[rgba(29,185,84,0.15)] text-[rgb(29,185,84)] border border-[rgba(29,185,84,0.3)] hover:bg-[rgba(29,185,84,0.25)] transition-colors"
+                    className="mt-3 tru-btn-secondary inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-[rgb(29,185,84)] cursor-pointer"
                   >
                     <Printer size={14} /> Generate OTP (Outright Purchase)
                   </button>
@@ -1152,7 +1152,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       type="submit"
                       disabled={!suppAmount}
-                      className="px-3 py-2 rounded-lg text-[13px] font-semibold bg-[color:var(--cyan)]/15 text-[color:var(--cyan)] hover:bg-[color:var(--cyan)]/25 disabled:opacity-40 transition cursor-pointer mt-0.5"
+                      className="tru-btn-secondary px-3 py-2 text-[13px] font-semibold text-[color:var(--cyan)] disabled:opacity-40 cursor-pointer mt-0.5"
                     >
                       <Plus size={13} className="inline -mt-px" /> Add
                     </button>

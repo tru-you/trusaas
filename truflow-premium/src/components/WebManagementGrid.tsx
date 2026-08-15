@@ -160,19 +160,19 @@ export default function WebManagementGrid({ vehicles, onUpdateVehicle, role }: P
       </div>
 
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
+        <div className="bg-[color:var(--glass)] border border-white/10 rounded-xl p-3 flex flex-col gap-1">
           <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Total Stock</span>
           <span className="text-xl font-mono font-semibold text-[color:var(--white)]">{vehicles.length}</span>
         </div>
-        <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
+        <div className="bg-[color:var(--glass)] border border-white/10 rounded-xl p-3 flex flex-col gap-1">
           <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Online</span>
           <span className="text-xl font-mono font-semibold text-emerald-400">{onlineCount}</span>
         </div>
-        <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
+        <div className="bg-[color:var(--glass)] border border-white/10 rounded-xl p-3 flex flex-col gap-1">
           <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Offline</span>
           <span className="text-xl font-mono font-semibold text-amber-400">{vehicles.length - onlineCount}</span>
         </div>
-        <div className="bg-[color:var(--glass-line)] border border-white/5 rounded-xl p-3 flex flex-col gap-1">
+        <div className="bg-[color:var(--glass)] border border-white/10 rounded-xl p-3 flex flex-col gap-1">
           <span className="text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.55)]">Floor Value</span>
           <span className="text-xl font-mono font-semibold text-[color:var(--white)]">{formatZAR(totalFloor)}</span>
         </div>
@@ -209,13 +209,13 @@ export default function WebManagementGrid({ vehicles, onUpdateVehicle, role }: P
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-white/5">
-        <table className="w-full text-[12px]">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.45)] bg-[rgba(255,255,255,0.02)]">
+            <tr className="text-left text-[11px] uppercase tracking-wider text-[rgba(232,234,230,0.72)]">
               {columns.map(col => (
                 <th
                   key={col.key}
-                  className={`px-3 py-2.5 ${col.width} ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : ""} ${col.sortable ? "cursor-pointer hover:text-[color:var(--white)] select-none" : ""}`}
+                  className={`sticky top-0 z-10 bg-[color:var(--ink-2)] border-b border-white/10 px-3 py-2.5 ${col.width} ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : ""} ${col.sortable ? "cursor-pointer hover:text-[color:var(--white)] select-none" : ""}`}
                   onClick={() => col.sortable && toggleSort(col.sortable)}
                 >
                   <span className="inline-flex items-center gap-1">
@@ -229,8 +229,8 @@ export default function WebManagementGrid({ vehicles, onUpdateVehicle, role }: P
           <tbody className="divide-y divide-white/5">
             {filtered.length === 0 ? (
               <tr><td colSpan={columns.length} className="px-4 py-8 text-center text-[rgba(232,234,230,0.45)]">No vehicles match your filters.</td></tr>
-            ) : filtered.map(v => (
-              <tr key={v.id} className="hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+            ) : filtered.map((v, i) => (
+              <tr key={v.id} className={`${i % 2 ? "bg-[rgba(255,255,255,0.02)]" : ""} hover:bg-[rgba(255,255,255,0.06)] transition-colors`}>
                 {columns.map(col => (
                   <td
                     key={col.key}
