@@ -617,7 +617,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         await handleTuValuation();
                       }}
                       disabled={tuValLoading}
-                      className="tru-btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] font-semibold text-[color:var(--cyan)] disabled:opacity-40 cursor-pointer"
+                      className="tru-btn-secondary flex items-center justify-center gap-2 px-3.5 py-2.5 text-[13px] font-semibold text-[color:var(--cyan)] disabled:opacity-40 cursor-pointer"
                     >
                       <Zap size={14} />
                       {tuValLoading ? "Loading..." : "TU Valuation"}
@@ -625,7 +625,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       onClick={handleRegCheck}
                       disabled={regCheckLoading}
-                      className="tru-btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] font-semibold text-amber-400 disabled:opacity-40 cursor-pointer"
+                      className="tru-btn-secondary flex items-center justify-center gap-2 px-3.5 py-2.5 text-[13px] font-semibold text-amber-400 disabled:opacity-40 cursor-pointer"
                     >
                       <Shield size={14} />
                       {regCheckLoading ? "Checking..." : "Reg Check"}
@@ -633,7 +633,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       onClick={handleMarketValue}
                       disabled={marketValLoading}
-                      className="tru-btn-secondary flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] font-semibold text-emerald-400 disabled:opacity-40 cursor-pointer"
+                      className="tru-btn-secondary flex items-center justify-center gap-2 px-3.5 py-2.5 text-[13px] font-semibold text-emerald-400 disabled:opacity-40 cursor-pointer"
                     >
                       <Globe size={14} />
                       {marketValLoading ? "Scraping..." : "Market Value"}
@@ -661,9 +661,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       </div>
                       <button
                         onClick={() => onUpdateVehicle(vehicle.id, { truPrice: Math.round(marketValuation.averageRetailPrice) })}
-                        className="tru-btn-secondary w-full py-1.5 text-[12px] font-semibold text-emerald-400 cursor-pointer"
+                        className="tru-btn-secondary w-full flex items-center justify-center gap-1.5 py-2 text-[13px] font-semibold text-emerald-400 cursor-pointer"
                       >
-                        <CheckCircle2 size={11} className="inline mr-1 -mt-px" /> Apply as TruPrice
+                        <CheckCircle2 size={14} /> Apply as TruPrice
                       </button>
                     </div>
                   )}
@@ -692,9 +692,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           if (tuValuation.retailPrice != null) updates.mmRetail = tuValuation.retailPrice;
                           onUpdateVehicle(vehicle.id, updates);
                         }}
-                        className="tru-btn-secondary w-full py-1.5 text-[12px] font-semibold text-[color:var(--cyan)] cursor-pointer"
+                        className="tru-btn-secondary w-full flex items-center justify-center gap-1.5 py-2 text-[13px] font-semibold text-[color:var(--cyan)] cursor-pointer"
                       >
-                        <Zap size={11} className="inline mr-1 -mt-px" /> Apply MM Trade &amp; Retail values
+                        <Zap size={14} /> Apply MM Trade &amp; Retail values
                       </button>
                     </div>
                   )}
@@ -733,9 +733,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                           if (regCheckResult.registrationNumber) updates.registrationNumber = regCheckResult.registrationNumber;
                           onUpdateVehicle(vehicle.id, updates);
                         }}
-                        className="tru-btn-secondary w-full py-1.5 text-[12px] font-semibold text-emerald-400 cursor-pointer"
+                        className="tru-btn-secondary w-full flex items-center justify-center gap-1.5 py-2 text-[13px] font-semibold text-emerald-400 cursor-pointer"
                       >
-                        <Zap size={11} className="inline mr-1 -mt-px" /> Apply VIN, engine, colour &amp; reg to vehicle
+                        <Zap size={14} /> Apply VIN, engine, colour &amp; reg to vehicle
                       </button>
                     </div>
                   )}
@@ -1152,9 +1152,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       type="submit"
                       disabled={!suppAmount}
-                      className="tru-btn-secondary px-3 py-2 text-[13px] font-semibold text-[color:var(--cyan)] disabled:opacity-40 cursor-pointer mt-0.5"
+                      className="tru-btn-secondary flex items-center justify-center gap-2 px-3.5 py-2.5 text-[13px] font-semibold text-[color:var(--cyan)] disabled:opacity-40 cursor-pointer mt-0.5"
                     >
-                      <Plus size={13} className="inline -mt-px" /> Add
+                      <Plus size={14} /> Add
                     </button>
                   </form>
                 </div>
@@ -1550,9 +1550,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <button
                       type="button"
                       onClick={() => setSocialCaption(buildDefaultCaption())}
-                      className="px-3 py-1.5 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg transition-colors cursor-pointer"
+                      className="tru-btn-secondary inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] cursor-pointer"
                     >
-                      <RefreshCw size={11} className="inline mr-1.5 -mt-px" />Reset
+                      <RefreshCw size={14} />Reset
                     </button>
                     <button
                       type="button"
@@ -1560,9 +1560,9 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                         navigator.clipboard.writeText(socialCaption || buildDefaultCaption());
                         setSocialResult({ ok: true, message: "Caption copied" });
                       }}
-                      className="px-3 py-1.5 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--glass-line)] rounded-lg transition-colors cursor-pointer"
+                      className="tru-btn-secondary inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[13px] text-[color:var(--muted)] hover:text-[color:var(--white)] cursor-pointer"
                     >
-                      <FileText size={11} className="inline mr-1.5 -mt-px" />Copy
+                      <FileText size={14} />Copy
                     </button>
                   </div>
                 </div>
