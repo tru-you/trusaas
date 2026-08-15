@@ -62,7 +62,7 @@ function SearchSelect({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number }>({ left: 0, width: 0, maxHeight: 0 });
 
   useEffect(() => {
     if (!open) return;
@@ -74,13 +74,40 @@ function SearchSelect({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  // Measure the trigger and place the menu so it always stays on-screen:
+  // flip up when it would run past the bottom, and clamp height + left/right
+  // to the viewport so it can never be clipped by an ancestor or pushed off.
   useEffect(() => {
-    if (open && btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect();
-      setPos({ top: r.bottom + 4, left: r.left, width: r.width });
-      setQuery("");
-      inputRef.current?.focus();
-    }
+    if (!open || !btnRef.current) return;
+    const r = btnRef.current.getBoundingClientRect();
+    const GAP = 4, MARGIN = 8, MAX = 288, MIN_W = 200;
+    const below = window.innerHeight - r.bottom - GAP - MARGIN;
+    const above = r.top - GAP - MARGIN;
+    const flip = below < 200 && above > below;
+    const width = Math.min(Math.max(r.width, MIN_W), window.innerWidth - MARGIN * 2);
+    const left = Math.max(MARGIN, Math.min(r.left, window.innerWidth - width - MARGIN));
+    setPos({
+      top: flip ? undefined : r.bottom + GAP,
+      bottom: flip ? window.innerHeight - r.top + GAP : undefined,
+      left,
+      width,
+      maxHeight: Math.max(120, Math.min(MAX, flip ? above : below)),
+    });
+    setQuery("");
+    inputRef.current?.focus();
+  }, [open]);
+
+  // A fixed-position menu goes stale the moment the page scrolls or resizes;
+  // closing it is simpler and less jarring than chasing the trigger.
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
   }, [open]);
 
   const filtered = useMemo(() => {
@@ -109,15 +136,15 @@ function SearchSelect({
         onClick={() => setOpen(!open)}
         className={inputCls + " mt-0.5 flex items-center justify-between gap-2 text-left cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"}
       >
-        <span className={value ? "" : "opacity-40"}>{value || placeholder}</span>
-        <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className={"truncate min-w-0 " + (value ? "" : "opacity-40")}>{value || placeholder}</span>
+        <ChevronDown size={14} className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && ReactDOM.createPortal(
         <div
           ref={dropdownRef}
-          style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
-          className="rounded-xl border border-white/10 bg-[#1a1d21] shadow-2xl max-h-64 flex flex-col overflow-hidden"
+          style={{ position: "fixed", top: pos.top, bottom: pos.bottom, left: pos.left, width: pos.width, maxHeight: pos.maxHeight, zIndex: 9999 }}
+          className="rounded-xl border border-white/10 bg-[#1a1d21] shadow-2xl flex flex-col overflow-hidden"
         >
           <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
             <Search size={14} className="text-white/40 shrink-0" />
@@ -143,8 +170,9 @@ function SearchSelect({
               <button
                 key={opt}
                 type="button"
+                title={opt}
                 onClick={() => { onChange(opt); setOpen(false); }}
-                className={`w-full px-3 py-2 text-left text-[14px] cursor-pointer hover:bg-white/5 transition-colors ${opt === value ? "text-[#4FE3DC] bg-white/5" : "text-white/80"}`}
+                className={`w-full px-3 py-2 text-left text-[14px] truncate cursor-pointer hover:bg-white/5 transition-colors ${opt === value ? "text-[#4FE3DC] bg-white/5" : "text-white/80"}`}
               >
                 {opt}
               </button>
