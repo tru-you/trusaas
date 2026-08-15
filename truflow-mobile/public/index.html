@@ -344,6 +344,36 @@ button,input,textarea{font-family:inherit;}
 .ld-more[open]>summary .chev{transform:rotate(180deg);}
 .ld-more .ld-meta{margin:0;border:none;border-top:1px solid var(--glass-line);border-radius:0;}
 
+/* ── Chat helper ── */
+.chat-fab{position:fixed;bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom,0px));right:14px;z-index:60;
+  width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--cyan-500);color:var(--ink);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px -4px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.28);
+  transition:transform .15s var(--ease), opacity .15s var(--ease);}
+.chat-fab svg{width:24px;height:24px;}
+.chat-fab.hide{transform:scale(0);opacity:0;pointer-events:none;}
+.chat-panel{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:var(--ink);
+  transform:translateY(100%);transition:transform .3s var(--ease);pointer-events:none;}
+.chat-panel.open{transform:translateY(0);pointer-events:auto;}
+.chat-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--glass-line);flex-shrink:0;}
+.chat-head .ch-title{flex:1;font-weight:600;font-size:16px;}
+.chat-head .ch-close{background:none;border:none;color:var(--dim);cursor:pointer;padding:4px;}
+.chat-head .ch-close svg{width:20px;height:20px;}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.chat-msgs .cmsg{max-width:82%;padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.5;word-break:break-word;}
+.chat-msgs .cmsg.bot{align-self:flex-start;background:var(--ink-3);border:1px solid var(--glass-line);color:var(--dim);}
+.chat-msgs .cmsg.usr{align-self:flex-end;background:var(--cyan-faint);border:1px solid var(--cyan-soft);color:var(--paper);}
+.chat-msgs .cmsg.typing{color:var(--muted);font-style:italic;}
+.chat-sug{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;flex-shrink:0;}
+.chat-sug button{white-space:nowrap;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r-pill);
+  padding:7px 14px;font-size:12px;color:var(--dim);cursor:pointer;flex-shrink:0;}
+.chat-bar{display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--glass-line);flex-shrink:0;}
+.chat-bar input{flex:1;background:var(--ink-3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;color:var(--paper);font-size:15px;outline:none;}
+.chat-bar input:focus{border-color:var(--cyan-500);}
+.chat-bar button{background:var(--cyan-500);color:var(--ink);border:none;border-radius:var(--r);width:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.chat-bar button:disabled{opacity:.35;}
+.chat-bar button svg{width:20px;height:20px;}
+
 /* Laptop screen — shown instead of the app/gate above 900px (see below). */
 .laptop{display:none;}
 @media(min-width:1200px){
@@ -445,6 +475,19 @@ button,input,textarea{font-family:inherit;}
     <div class="tab" data-tab="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Add</span></div>
     <div class="tab" data-tab="acct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Account</span></div>
   </nav>
+
+  <!-- Chat helper -->
+  <button class="chat-fab" id="chatFab" aria-label="Ask TruFlow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" style="width:22px;height:22px;flex-shrink:0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="ch-title">Dealer Assist</span>
+      <button class="ch-close" id="chatClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs"><div class="cmsg bot">Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.</div></div>
+    <div class="chat-sug" id="chatSug"><button>What's my best seller?</button><button>How many leads this week?</button><button>Stock over 60 days</button></div>
+    <div class="chat-bar"><input type="text" id="chatInput" placeholder="Ask anything…" autocomplete="off"><button id="chatSend" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></button></div>
+  </div>
 
   <div class="scrim" id="scrim"></div>
   <div class="sheet" id="sheet"><div class="grab" id="grab"></div><div class="sheet-scroll" id="sheetBody"></div><div class="sheet-foot" id="sheetFoot"></div></div>
@@ -1033,6 +1076,56 @@ button,input,textarea{font-family:inherit;}
       }).catch(function(){toast("Couldn't add — check connection",true);});
     });
   });
+
+  /* ── Chat helper (Dealer Assist via TruChat API) ── */
+  var CHAT_API="https://trusaas-chat.onrender.com";
+  var chatHistory=[{role:"assistant",content:"Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor."}];
+  var chatBusy=false;
+  var chatPanel=$("#chatPanel"), chatFab=$("#chatFab"), chatMsgs=$("#chatMsgs"), chatInp=$("#chatInput"), chatSendBtn=$("#chatSend");
+
+  chatFab.addEventListener("click",function(){chatPanel.classList.add("open");chatFab.classList.add("hide");chatInp.focus();});
+  $("#chatClose").addEventListener("click",function(){chatPanel.classList.remove("open");chatFab.classList.remove("hide");});
+  chatInp.addEventListener("input",function(){chatSendBtn.disabled=!chatInp.value.trim();});
+  chatInp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
+  chatSendBtn.addEventListener("click",sendChat);
+  Array.prototype.forEach.call($("#chatSug").children,function(b){b.addEventListener("click",function(){chatInp.value=b.textContent;chatSendBtn.disabled=false;sendChat();});});
+
+  function appendChat(role,text){
+    var d=el("div","cmsg "+(role==="user"?"usr":"bot"),esc(text));
+    chatMsgs.appendChild(d);chatMsgs.scrollTop=chatMsgs.scrollHeight;return d;
+  }
+  function sendChat(){
+    if(chatBusy)return;
+    var text=(chatInp.value||"").trim();if(!text)return;
+    chatInp.value="";chatSendBtn.disabled=true;
+    $("#chatSug").style.display="none";
+    appendChat("user",text);
+    chatHistory.push({role:"user",content:text});
+    var typing=el("div","cmsg bot typing","Thinking…");chatMsgs.appendChild(typing);chatMsgs.scrollTop=chatMsgs.scrollHeight;
+    chatBusy=true;
+
+    var catalog=cachedStock.slice(0,25).map(function(v){return {name:vName(v),price:vPrice(v),mileage:v.mileage||0,status:v.status,published:isPub(v)};});
+    var session={name:(AUTH&&AUTH.label)||"Dealer"};
+
+    fetch(CHAT_API+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({messages:chatHistory.slice(-10),session:session,catalog:catalog})
+    }).then(function(r){return r.json();}).then(function(res){
+      chatMsgs.removeChild(typing);
+      var reply=res.reply||"Sorry, I couldn't process that.";
+      appendChat("assistant",reply);
+      chatHistory.push({role:"assistant",content:reply});
+      if(res.suggestions&&res.suggestions.length){
+        var sug=$("#chatSug");sug.innerHTML="";sug.style.display="";
+        res.suggestions.forEach(function(s){
+          var b=el("button","",s);b.addEventListener("click",function(){chatInp.value=s;chatSendBtn.disabled=false;sendChat();});
+          sug.appendChild(b);
+        });
+      }
+    }).catch(function(){
+      chatMsgs.removeChild(typing);
+      appendChat("assistant","Couldn't reach the assistant — check your connection and try again.");
+    }).finally(function(){chatBusy=false;});
+  }
 
   /* ── Boot ── */
   $("#gateEnter").addEventListener("click",doLogin);

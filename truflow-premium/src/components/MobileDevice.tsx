@@ -1,15 +1,27 @@
 import React from 'react';
 import { isMobileViewport, isStandaloneDisplay } from '../lib/pwa';
+import { TRUFLOW_MOBILE_URL } from '../lib/ecosystem';
 import PwaInstallBanner from './PwaInstallBanner';
 
 interface MobileDeviceProps {
   children: React.ReactNode;
 }
 
+function isMobilePhone(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  if (/iPad/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/i.test(ua))) return false;
+  return /Android.*Mobile|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+}
+
 export default function MobileDevice({ children }: MobileDeviceProps) {
   const [nativeMode, setNativeMode] = React.useState(() => isStandaloneDisplay() || isMobileViewport());
 
   React.useEffect(() => {
+    if (isMobilePhone() && !window.location.search.includes('force=desktop')) {
+      window.location.replace(TRUFLOW_MOBILE_URL);
+      return;
+    }
     const update = () => setNativeMode(isStandaloneDisplay() || isMobileViewport());
     update();
     window.addEventListener('resize', update);

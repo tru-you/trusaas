@@ -323,6 +323,8 @@ export interface Vehicle {
     date?: string;
     reference?: string;
   }[];
+  createdAt?: string;
+  soldAt?: string;
 }
 
 /** Persistent client record — survives across deals. A lead is a deal on a
@@ -495,6 +497,9 @@ export interface Lead {
   financeStatus?: 'pending' | 'submitted' | 'approved' | 'declined';
   isAccidentDamaged?: boolean;
   isCode3?: boolean;
+  vehicleInterest?: string;
+  customerName?: string;
+  name?: string;
 }
 
 export interface Task {

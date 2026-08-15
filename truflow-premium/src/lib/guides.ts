@@ -465,6 +465,114 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    id: "mobile-app",
+    title: "Use TruFlow on your phone",
+    goal: "Manage leads, stock and deals from the showroom floor.",
+    blurb: "Your Premium companion — on your phone.",
+    section: "settings",
+    steps: [
+      {
+        app: "flow",
+        title: "Open the mobile app",
+        detail:
+          "Go to app.tru-saas.com on your phone. Sign in with your dealer code — the same one you use on desktop.",
+      },
+      {
+        app: "flow",
+        title: "Add it to your home screen",
+        detail:
+          "Tap Share → Add to Home Screen (iOS) or the install banner (Android). It opens full-screen like a native app, no browser chrome.",
+      },
+      {
+        app: "flow",
+        title: "Work the floor",
+        detail:
+          "Leads, stock, walk-in adds, activity — it all syncs with your desktop Premium. Changes you make on mobile show up on desktop and vice versa.",
+      },
+    ],
+  },
+  {
+    id: "api-stock-feed",
+    title: "Feed your stock to other platforms",
+    goal: "Your website or third-party tools pull live stock data from TruFlow's API.",
+    blurb: "The public stock API — your inventory, anywhere.",
+    section: "inventory",
+    steps: [
+      {
+        app: "flow",
+        title: "Find your public stock URL",
+        detail:
+          "Your stock feed lives at /api/public/stock?dealer=your-slug. Open Stock media and tap 'Public stock feed link' to see it and copy the URL.",
+      },
+      {
+        app: "website",
+        title: "Plug it into your website",
+        detail:
+          "Your dealer website already fetches this feed. Third-party sites, aggregators or your own tools can call the same URL — it returns JSON with every published vehicle, photos included.",
+      },
+      {
+        app: "flow",
+        title: "Keep it current",
+        detail:
+          "The feed is live — publish or unpublish a car and the API reflects it immediately. No export step, no sync delay.",
+      },
+    ],
+  },
+  {
+    id: "dealer-assist",
+    title: "Ask the Dealer Assist AI",
+    goal: "Get instant answers about your stock, leads and deals without leaving TruFlow.",
+    blurb: "Your AI assistant — built into the top bar.",
+    section: "dashboard",
+    steps: [
+      {
+        app: "flow",
+        title: "Open Dealer Assist",
+        detail:
+          "Tap the chat icon in the top bar (desktop) or the floating button (mobile). It knows your inventory and lead data.",
+      },
+      {
+        app: "flow",
+        title: "Ask a question",
+        detail:
+          "Try things like 'What stock is over 60 days?', 'How many new leads this week?', or 'Best seller this month'. It searches your data and gives a straight answer.",
+      },
+      {
+        app: "flow",
+        title: "Use suggestions",
+        detail:
+          "After each reply, tap a suggested follow-up or type your own. The assistant remembers the conversation context.",
+      },
+    ],
+  },
+  {
+    id: "inspect-vehicle",
+    title: "Run an inspection report",
+    goal: "A vehicle has a professional condition report with AI damage detection.",
+    blurb: "AI-powered inspection in TruInspect.",
+    section: "inventory",
+    steps: [
+      {
+        app: "inspect",
+        title: "Open TruInspect",
+        detail:
+          "Go to inspect.tru-saas.com and sign in. Start a new inspection for the vehicle.",
+      },
+      {
+        app: "inspect",
+        title: "Capture the panels",
+        detail:
+          "Follow the guided walk-around. The AI detects dents, scratches and paint work as you shoot — damage is flagged on-screen in real time.",
+      },
+      {
+        app: "inspect",
+        title: "Generate the PDF",
+        detail:
+          "Once complete, tap Generate Report. A branded PDF inspection report downloads with photos, damage markers, and a condition score.",
+      },
+    ],
+  },
 ];
 
 /** Guides relevant to a given section, spine first — used for contextual help. */
