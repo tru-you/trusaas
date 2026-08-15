@@ -586,10 +586,14 @@ button,input,textarea{font-family:inherit;}
   }
 
   /* ── Data ── */
-  var polling=false, loadFailed=false, isOffline=!navigator.onLine;
-  function updateOnline(online){isOffline=!online;var bar=$("#offlineBar");if(bar)bar.classList.toggle("show",isOffline);if(online&&TOKEN)loadAll();}
-  window.addEventListener("online",function(){updateOnline(true);});
-  window.addEventListener("offline",function(){updateOnline(false);});
+  var polling=false, loadFailed=false, isOffline=false;
+  // The offline banner tracks whether real requests succeed — NOT navigator.onLine.
+  // Android WebViews/PWAs report onLine=false while the device is actually
+  // connected, which flashed "OFFLINE — SHOWING CACHED DATA" over live data.
+  // A hard offline event still shows it immediately; a successful load clears it.
+  function setOffline(off){isOffline=off;var bar=$("#offlineBar");if(bar)bar.classList.toggle("show",off);}
+  window.addEventListener("online",function(){if(TOKEN)loadAll();});
+  window.addEventListener("offline",function(){setOffline(true);});
 
   function skelHTML(cls,n){var h="";for(var i=0;i<(n||3);i++)h+='<div class="skel '+cls+'"></div>';return h;}
   function retryHTML(msg){return '<div class="retry"><div class="t">'+(msg||"Couldn't load")+'</div><div class="s">Check your connection</div><button class="btn-primary" onclick="loadAll()">Tap to retry</button></div>';}
@@ -599,7 +603,7 @@ button,input,textarea{font-family:inherit;}
     if(!cachedLeads.length)$("#homeLeads").innerHTML=skelHTML("skel-lead",2);
     if(!cachedStock.length)$("#homeStock").innerHTML=skelHTML("skel-veh",2);
     if(!cachedLeads.length&&!cachedStock.length)$("#kpis").innerHTML=skelHTML("skel-kpi",4);
-    Promise.all([loadLeads(),loadInventory()]).finally(function(){polling=false;endPTR();});
+    Promise.all([loadLeads(),loadInventory()]).finally(function(){polling=false;endPTR();setOffline(loadFailed);});
   }
   function loadLeads(){
     return api("GET","/api/leads").then(function(x){cachedLeads=Array.isArray(x)?x:[];
@@ -619,7 +623,7 @@ button,input,textarea{font-family:inherit;}
       renderHome();renderStock();
     });
   }
-  setInterval(function(){if(TOKEN&&!sheetOpen()&&!isOffline)loadAll();},30000);
+  setInterval(function(){if(TOKEN&&!sheetOpen())loadAll();},30000);
 
   /* ── Pull-to-refresh ── */
   var ptrEl=$("#ptr"), ptrStartY=0, ptrDist=0, ptrActive=false;
@@ -1171,7 +1175,7 @@ button,input,textarea{font-family:inherit;}
   })();
 
   // PWA — install + offline shell. Failures are non-fatal; the app runs without it.
-  updateOnline(navigator.onLine);
+  if(TOKEN)loadAll();
   if("serviceWorker" in navigator){
     window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(function(){});});
   }
