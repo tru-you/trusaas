@@ -181,7 +181,7 @@ export default function GuidePanel({ open, onOpenChange, currentSection }: Guide
         {/* Footer */}
         <div className="p-3 border-t border-[rgba(232,234,230,0.14)]">
           <a
-            href="https://wa.me/27620502091"
+            href="https://wa.me/447476995694"
             target="_blank"
             rel="noopener"
             className="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-[rgba(79,227,220,0.08)] text-[#4FE3DC] border border-[rgba(79,227,220,0.25)] hover:bg-[rgba(79,227,220,0.18)] transition-colors text-[13px] font-semibold"

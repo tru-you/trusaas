@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, Sliders,
-  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil, X, ChevronDown
+  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil, X, ChevronDown, HelpCircle
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -30,6 +30,7 @@ interface InventoryListProps {
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
+  onOpenGuide?: () => void;
 }
 
 const DMS_PRESETS = {
@@ -51,7 +52,8 @@ export default function InventoryList({
   onViewTradeInReport,
   onUpdateVehicle,
   syncStatus,
-  onForceSync
+  onForceSync,
+  onOpenGuide
 }: InventoryListProps) {
   const { signOut, user } = useAuth();
   const [loggingOut, setLoggingOut] = React.useState(false);
@@ -473,16 +475,28 @@ export default function InventoryList({
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={loggingOut}
-          className="flex items-center justify-center h-10 w-10 rounded-[10px] shrink-0 text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer disabled:opacity-50"
-          aria-label={user?.email ? `Sign out (${user.email})` : 'Sign out'}
-          title={user?.email ? `Sign out (${user.email})` : 'Sign out'}
-        >
-          {loggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={18} />}
-        </button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {onOpenGuide && (
+            <button
+              onClick={onOpenGuide}
+              className="flex items-center justify-center h-10 w-10 rounded-[10px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer"
+              aria-label="How do I…?"
+              title="How do I…?"
+            >
+              <HelpCircle size={18} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex items-center justify-center h-10 w-10 rounded-[10px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer disabled:opacity-50"
+            aria-label={user?.email ? `Sign out (${user.email})` : 'Sign out'}
+            title={user?.email ? `Sign out (${user.email})` : 'Sign out'}
+          >
+            {loggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={18} />}
+          </button>
+        </div>
       </div>
 
       {/* The tab switcher used to sit here and the three-up stat grid under it.
