@@ -27,6 +27,11 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <script>
+      if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)&&window.innerWidth<900){
+        window.location.replace("https://app.tru-saas.com"+window.location.search);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
