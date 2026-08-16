@@ -55,7 +55,7 @@ export function setDealerSlug(slug: string) {
  *  set the real TruSaaS support line in Settings (stored per-device) and the
  *  button starts opening WhatsApp; until then it copies the message instead. */
 export const SUPPORT_WA_KEY = "truflow_support_wa";
-export const DEFAULT_SUPPORT_WA = "27620502091"; // TruSaaS support: +27 62 050 2091
+export const DEFAULT_SUPPORT_WA = "447476995694"; // TruSaaS support: +44 7476 995 694
 
 export function getSupportWaNumber(): string {
   try {
