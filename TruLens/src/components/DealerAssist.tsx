@@ -15,7 +15,7 @@ interface Props {
 export default function DealerAssist({ userName }: Props) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([
-    { role: "assistant", content: "Hey! I'm your TruLens assistant. Ask me anything — shooting tips, quality scores, damage reports, DMS export, or any TruSaaS question." },
+    { role: "assistant", content: "Hey! Ask me anything about shooting tips, quality scores, damage reports, DMS export, or the platform." },
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
