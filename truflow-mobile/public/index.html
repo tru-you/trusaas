@@ -339,24 +339,7 @@ button,input,textarea{font-family:inherit;}
 .ld-more .ld-meta{margin:0;border:none;border-top:1px solid var(--glass-line);border-radius:0;}
 
 /* ── Chat helper ── */
-.chat-fab{position:fixed;bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom,0px));right:14px;z-index:60;
-  width:54px;height:54px;border-radius:50%;border:1px solid rgba(255,255,255,.18);cursor:pointer;
-  background:rgba(79,227,220,.15);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
-  color:var(--cyan);display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 20px -4px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12);
-  transition:transform .15s var(--ease), opacity .15s var(--ease);
-  animation:fab-pulse 3s ease infinite;overflow:hidden;}
-.chat-fab::before{content:"";position:absolute;inset:0;border-radius:50%;
-  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.18) 45%,rgba(255,255,255,.22) 50%,transparent 55%);
-  background-size:250% 100%;animation:fab-shimmer 3.5s ease infinite;}
-.chat-fab::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--cyan);opacity:0;
-  animation:fab-ring 3s ease infinite;}
-.chat-fab svg{width:24px;height:24px;position:relative;z-index:1;}
-.chat-fab.hide{transform:scale(0);opacity:0;pointer-events:none;animation:none;}
-.chat-fab.hide::before,.chat-fab.hide::after{animation:none;}
-@keyframes fab-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
-@keyframes fab-shimmer{0%{background-position:200% 0;}100%{background-position:-50% 0;}}
-@keyframes fab-ring{0%{opacity:.5;transform:scale(.9);}60%{opacity:0;transform:scale(1.4);}100%{opacity:0;transform:scale(1.4);}}
+/* FAB removed — Dealer Assist opens from header #assistBtn */
 .chat-panel{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:var(--ink);
   transform:translateY(100%);transition:transform .3s var(--ease);pointer-events:none;}
 .chat-panel.open{transform:translateY(0);pointer-events:auto;}
@@ -453,6 +436,7 @@ button,input,textarea{font-family:inherit;}
     </div>
     <div class="sp"></div>
     <button class="guide-hdr-btn" id="guideBtn" aria-label="How do I…?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+    <button class="guide-hdr-btn" id="assistBtn" aria-label="Dealer Assist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button>
     <div class="avatar" id="avatarBtn">TF</div>
   </header>
 
@@ -522,8 +506,7 @@ button,input,textarea{font-family:inherit;}
     <div class="tab" data-tab="acct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Account</span></div>
   </nav>
 
-  <!-- Chat helper -->
-  <button class="chat-fab" id="chatFab" aria-label="Ask TruFlow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg></button>
+  <!-- Chat helper (opened from header Assist button) -->
   <div class="chat-panel" id="chatPanel">
     <div class="chat-head">
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" style="width:22px;height:22px;flex-shrink:0"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>
@@ -1223,10 +1206,10 @@ button,input,textarea{font-family:inherit;}
   var CHAT_API="https://trusaas-chat.onrender.com";
   var chatHistory=[{role:"assistant",content:"Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor."}];
   var chatBusy=false;
-  var chatPanel=$("#chatPanel"), chatFab=$("#chatFab"), chatMsgs=$("#chatMsgs"), chatInp=$("#chatInput"), chatSendBtn=$("#chatSend");
+  var chatPanel=$("#chatPanel"), chatMsgs=$("#chatMsgs"), chatInp=$("#chatInput"), chatSendBtn=$("#chatSend");
 
-  chatFab.addEventListener("click",function(){chatPanel.classList.add("open");chatFab.classList.add("hide");chatInp.focus();});
-  $("#chatClose").addEventListener("click",function(){chatPanel.classList.remove("open");chatFab.classList.remove("hide");});
+  $("#assistBtn").addEventListener("click",function(){chatPanel.classList.add("open");chatInp.focus();});
+  $("#chatClose").addEventListener("click",function(){chatPanel.classList.remove("open");});
   chatInp.addEventListener("input",function(){chatSendBtn.disabled=!chatInp.value.trim();});
   chatInp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
   chatSendBtn.addEventListener("click",sendChat);
