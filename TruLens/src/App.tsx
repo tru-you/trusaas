@@ -11,6 +11,7 @@ import { Vehicle, QualityReport, PointResult, DmsExportResult } from './types';
 import { buildWeb3DPackage } from './lib/web3dPackage';
 import { useAuth } from './contexts/AuthContext';
 import DealerSelect from './components/DealerSelect';
+import GuidePanel from './components/GuidePanel';
 
 /** Keep client state crash-safe even if API returns partial records. */
 function normalizeVehicle(raw: any): Vehicle {
@@ -115,6 +116,16 @@ export default function App() {
   const [damageInitialSlot, setDamageInitialSlot] = React.useState<string | undefined>(undefined);
   
   // Sync status state
+  const [guideOpen, setGuideOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!user || !dealerConfirmed) return;
+    if (!localStorage.getItem('trulens_guide_seen')) {
+      setGuideOpen(true);
+      localStorage.setItem('trulens_guide_seen', '1');
+    }
+  }, [user, dealerConfirmed]);
+
   const [syncStatus, setSyncStatus] = React.useState<'synced' | 'syncing' | 'error'>('synced');
   /* Why the last save failed, in words. syncStatus alone only ever said "error"
      somewhere in the chrome, which is not enough to act on when the shot you
@@ -544,6 +555,7 @@ export default function App() {
                 onUpdateVehicle={handleUpdateVehicle}
                 syncStatus={syncStatus}
                 onForceSync={fetchInventory}
+                onOpenGuide={() => setGuideOpen(true)}
               />
             </>
           )}
@@ -610,6 +622,7 @@ export default function App() {
               onComplete={() => setActiveView('publish-gate')}
               onPhotoCaptured={handlePhotoCaptured}
               onEditRequested={handleEditSlot}
+              onOpenGuide={() => setGuideOpen(true)}
               onBulkPhotosUploaded={(updatedVehicle) => {
                 setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
               }}
@@ -631,6 +644,12 @@ export default function App() {
               onSave={handleSaveProcessedImage}
             />
           )}
+
+          <GuidePanel
+            open={guideOpen}
+            onOpenChange={setGuideOpen}
+            currentSection={activeView}
+          />
         </>
       )}
     </MobileDevice>

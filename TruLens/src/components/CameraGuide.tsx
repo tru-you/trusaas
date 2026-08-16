@@ -14,9 +14,10 @@ interface CameraGuideProps {
   onPhotoCaptured: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
   onEditRequested?: (slotId: string, base64Image: string, qualityReport: QualityReport) => void;
   onBulkPhotosUploaded: (updatedVehicle: Vehicle) => void;
+  onOpenGuide?: () => void;
 }
 
-export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptured, onEditRequested, onBulkPhotosUploaded }: CameraGuideProps) {
+export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptured, onEditRequested, onBulkPhotosUploaded, onOpenGuide }: CameraGuideProps) {
   // A just-taken shot awaiting Redo / Keep. This is the whole point: shoot,
   // glance, keep or redo — no forced save-and-edit between every angle.
   const [pendingShot, setPendingShot] = React.useState<{ slotId: string; base64: string; report: QualityReport; kind: 'photo' | 'video' } | null>(null);
@@ -594,7 +595,9 @@ export default function CameraGuide({ vehicle, onBack, onComplete, onPhotoCaptur
                   : `Core ${coreDone}/${coreSlots.length} · ${completedSlots.length}/${allSlots.length} shots`}
               </p>
             </div>
-            <HelpCircle size={16} className="pointer-events-auto text-neutral-300 shrink-0" />
+            <button onClick={onOpenGuide} className="pointer-events-auto cursor-pointer" aria-label="How do I…?">
+              <HelpCircle size={16} className="text-neutral-300" />
+            </button>
           </div>
           {/* Was a 19-segment tick strip — three indicators counting the same
               thing. One 3px bar now. */}

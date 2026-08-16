@@ -1,0 +1,105 @@
+export interface GuideStep {
+  title: string;
+  detail: string;
+}
+
+export interface Guide {
+  id: string;
+  title: string;
+  goal: string;
+  blurb: string;
+  section?: string;
+  spine?: boolean;
+  steps: GuideStep[];
+}
+
+const GUIDES: Guide[] = [
+  {
+    id: "full-inspection",
+    title: "Run a full inspection",
+    goal: "Walk around a vehicle, photograph every angle, complete the checklist, and produce a signed-off inspection report.",
+    blurb: "Select vehicle, shoot, checklist, damage, report.",
+    section: "inventory",
+    spine: true,
+    steps: [
+      { title: "Select a vehicle", detail: "Tap any vehicle card in the catalogue. Unsigned vehicles show how many photos and checklist items are outstanding." },
+      { title: "Follow the camera guide", detail: "The camera opens on the first empty slot. Frame the car to match the overlay and tap the shutter." },
+      { title: "Complete the checklist", detail: "After photos, the checklist covers tyres, lights, fluids, bodywork and interior. Mark each item Pass, Fail, or N/A." },
+      { title: "Tag any damage", detail: "Tap the damage icon to mark scratches, dents, or chips on the photo. The AI highlights anything it detects automatically." },
+      { title: "Review and sign off", detail: "Once every core slot and checklist item is filled, the completion screen shows a summary. Submit to generate the report." },
+      { title: "Share the report", detail: "The signed-off report is available as a PDF. Download it or share directly from the app." },
+    ],
+  },
+  {
+    id: "checklist",
+    title: "Work through the checklist",
+    goal: "Understand the inspection checklist categories and how each item affects the final report.",
+    blurb: "Categories, pass/fail/N/A, report impact.",
+    section: "checklist",
+    steps: [
+      { title: "Open the checklist", detail: "From the camera guide, tap the checklist icon. Items are grouped by category: exterior, interior, mechanical, tyres, lights." },
+      { title: "Mark each item", detail: "Tap Pass, Fail, or N/A for every line. Failed items are flagged in the report with a reason field." },
+      { title: "Add notes where needed", detail: "Each item has an optional notes field. Use it for anything the pass/fail alone does not capture." },
+      { title: "Check your progress", detail: "The header shows how many items are done. All items must be marked before the inspection can be signed off." },
+    ],
+  },
+  {
+    id: "damage",
+    title: "Log and review damage",
+    goal: "Use AI detection and manual markers to record damage on inspection photos.",
+    blurb: "AI detection, manual markers, severity levels.",
+    section: "damage",
+    steps: [
+      { title: "Open damage view", detail: "From the camera guide, tap the damage icon. AI-detected issues are highlighted automatically." },
+      { title: "Confirm or dismiss AI flags", detail: "Each AI flag shows what was detected. Confirm real damage; dismiss false positives like shadows or reflections." },
+      { title: "Add manual markers", detail: "Tap anywhere on the photo to place a marker where the AI missed something. Choose the damage type and severity." },
+      { title: "Review the damage log", detail: "All confirmed damage — AI and manual — is listed below the photo and appears in the final inspection report." },
+    ],
+  },
+  {
+    id: "trade-in",
+    title: "Do a trade-in valuation",
+    goal: "Run the trade-in flow to assess a vehicle's condition and produce a valuation summary.",
+    blurb: "Start flow, complete items, valuation output.",
+    section: "trade-in",
+    steps: [
+      { title: "Start a trade-in", detail: "From the vehicle card, tap the trade-in button. This opens the condition assessment form." },
+      { title: "Complete all items", detail: "Work through each inspection point. Every item contributes to the overall condition score." },
+      { title: "Review the valuation", detail: "Once complete, the app calculates a valuation based on condition, mileage, and market data." },
+      { title: "Save or share the summary", detail: "The trade-in summary can be saved to the vehicle record or shared as a PDF." },
+    ],
+  },
+  {
+    id: "report",
+    title: "Generate and share the report",
+    goal: "Produce the final inspection PDF and send it where it needs to go.",
+    blurb: "What the PDF contains, generate, share.",
+    section: "report",
+    steps: [
+      { title: "Sign off the inspection", detail: "The report generates once every core photo and checklist item is completed. Tap Submit on the completion screen." },
+      { title: "Review the PDF", detail: "The report shows all photos, checklist results, damage markers, and the overall condition summary." },
+      { title: "Download or share", detail: "Tap Download to save the PDF, or Share to send it via WhatsApp, email, or any other app on your phone." },
+    ],
+  },
+  {
+    id: "signoff",
+    title: "Understand sign-off status",
+    goal: "Know at a glance which vehicles are fully inspected and which still need work.",
+    blurb: "Signed-off vs unsigned, completeness badges.",
+    section: "inventory",
+    steps: [
+      { title: "Check the catalogue", detail: "Each vehicle card shows its inspection status: signed-off (complete) or unsigned (work remaining)." },
+      { title: "Signed-off vehicles", detail: "A signed-off vehicle has all core photos, a completed checklist, and a generated report. No further action needed." },
+      { title: "Unsigned vehicles", detail: "These still need photos, checklist items, or both. The card shows what is missing." },
+      { title: "Re-inspect if needed", detail: "You can reopen a signed-off vehicle to update photos or checklist items. The report regenerates automatically." },
+    ],
+  },
+];
+
+export function guidesForSection(section: string): Guide[] {
+  return GUIDES.filter((g) => g.section === section);
+}
+
+export function allGuides(): Guide[] {
+  return GUIDES;
+}

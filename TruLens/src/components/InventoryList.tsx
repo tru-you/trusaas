@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
-  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown} from 'lucide-react';
+  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle} from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -26,6 +26,7 @@ interface InventoryListProps {
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
+  onOpenGuide?: () => void;
 }
 
 // The DMS target is fixed for every device and controlled server-side
@@ -46,7 +47,8 @@ export default function InventoryList({
   onExportToDms,
   onUpdateVehicle,
   syncStatus,
-  onForceSync
+  onForceSync,
+  onOpenGuide
 }: InventoryListProps) {
   const { signOut, user, isDemo } = useAuth();
   const [loggingOut, setLoggingOut] = React.useState(false);
@@ -524,6 +526,16 @@ export default function InventoryList({
         {/* Three quiet ghosts — no borders, no boxes, no three-decisions read.
             Sync keeps its colour because that one is state, not decoration. */}
         <div className="flex items-center gap-1.5 shrink-0">
+          {onOpenGuide && (
+            <button
+              onClick={onOpenGuide}
+              className="flex items-center justify-center h-10 w-10 rounded-[10px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer"
+              aria-label="How do I…?"
+              title="How do I…?"
+            >
+              <HelpCircle size={18} />
+            </button>
+          )}
           <button
             onClick={() => window.open(DMS_URL, '_blank')}
             className="flex items-center justify-center h-10 w-10 rounded-[10px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer"

@@ -389,6 +389,44 @@ button,input,textarea{font-family:inherit;}
   .laptop .lp-qr{width:260px;height:260px;border-radius:var(--r-card);background:var(--paper);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;box-shadow:var(--shadow-lift);}
   .laptop .lp-qr .qr{width:200px;height:200px;color:var(--ink);}
 }
+
+/* ── Guide panel — full-screen overlay, same pattern as chat ── */
+.guide-panel{position:fixed;inset:0;z-index:95;display:flex;flex-direction:column;background:var(--ink);
+  transform:translateY(100%);transition:transform .3s var(--ease);pointer-events:none;}
+.guide-panel.open{transform:translateY(0);pointer-events:auto;}
+.guide-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--glass-line);flex-shrink:0;
+  background:linear-gradient(90deg,rgba(20,102,224,.1),rgba(21,199,192,.05));}
+.guide-head .gh-icon{width:18px;height:18px;flex-shrink:0;color:var(--cyan);}
+.guide-head .gh-title{flex:1;font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.guide-head .gh-back,.guide-head .gh-close{background:none;border:none;color:var(--dim);cursor:pointer;padding:4px;}
+.guide-head .gh-back svg,.guide-head .gh-close svg{width:20px;height:20px;}
+.guide-body{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch;}
+.guide-row{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:8px;border-radius:var(--r);
+  background:rgba(232,234,230,.04);border:1px solid rgba(232,234,230,.14);cursor:pointer;transition:border-color .15s,background .15s;}
+.guide-row:active{background:rgba(79,227,220,.06);border-color:rgba(79,227,220,.25);}
+.guide-row .gr-txt{flex:1;min-width:0;}
+.guide-row .gr-title{font-weight:600;font-size:15px;color:var(--paper);}
+.guide-row .gr-blurb{font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.guide-row .gr-chev{width:16px;height:16px;color:var(--muted);flex-shrink:0;}
+.guide-row .gr-spine{font-size:12px;font-weight:600;color:var(--cyan);background:var(--cyan-faint);border:1px solid var(--cyan-soft);
+  border-radius:var(--r-pill);padding:1px 8px;flex-shrink:0;}
+.guide-detail-goal{font-size:13px;color:var(--dim);line-height:1.5;margin-bottom:16px;}
+.guide-step{display:flex;gap:12px;margin-bottom:0;}
+.guide-step .gs-rail{display:flex;flex-direction:column;align-items:center;}
+.guide-step .gs-num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;
+  color:var(--cyan);background:rgba(79,227,220,.15);border:1px solid rgba(79,227,220,.4);flex-shrink:0;}
+.guide-step .gs-line{width:1px;flex:1;margin:4px 0;background:rgba(232,234,230,.14);}
+.guide-step .gs-body{flex:1;min-width:0;padding-bottom:20px;}
+.guide-step:last-child .gs-line{display:none;}
+.guide-step:last-child .gs-body{padding-bottom:0;}
+.guide-step .gs-title{font-weight:600;font-size:15px;color:var(--paper);}
+.guide-step .gs-detail{font-size:13px;color:var(--dim);line-height:1.5;margin-top:4px;}
+.guide-foot{padding:12px 16px;border-top:1px solid var(--glass-line);flex-shrink:0;}
+.guide-foot a{display:flex;align-items:center;justify-content:center;gap:8px;height:40px;border-radius:var(--r);
+  background:var(--cyan-faint);color:var(--cyan);border:1px solid var(--cyan-soft);font-size:13px;font-weight:600;text-decoration:none;transition:background .15s;}
+.guide-foot a:active{background:rgba(79,227,220,.18);}
+.guide-hdr-btn{background:none;border:none;cursor:pointer;padding:6px;color:var(--muted);display:flex;align-items:center;justify-content:center;}
+.guide-hdr-btn svg{width:20px;height:20px;}
 </style>
 </head>
 <body>
@@ -400,6 +438,7 @@ button,input,textarea{font-family:inherit;}
       <div class="who"><span class="stat"><span class="dot"></span>Live</span></div>
     </div>
     <div class="sp"></div>
+    <button class="guide-hdr-btn" id="guideBtn" aria-label="How do I…?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
     <div class="avatar" id="avatarBtn">TF</div>
   </header>
 
@@ -480,6 +519,17 @@ button,input,textarea{font-family:inherit;}
     <div class="chat-msgs" id="chatMsgs"><div class="cmsg bot">Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.</div></div>
     <div class="chat-sug" id="chatSug"><button>What's my best seller?</button><button>How many leads this week?</button><button>Stock over 60 days</button></div>
     <div class="chat-bar"><input type="text" id="chatInput" placeholder="Ask anything…" autocomplete="off"><button id="chatSend" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg></button></div>
+  </div>
+
+  <div class="guide-panel" id="guidePanel">
+    <div class="guide-head">
+      <button class="gh-back" id="guideBack" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <svg class="gh-icon" id="guideIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg>
+      <span class="gh-title" id="guideTitle">How do I…?</span>
+      <button class="gh-close" id="guideClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div class="guide-body" id="guideBody"></div>
+    <div class="guide-foot"><a href="https://wa.me/27620502091" target="_blank" rel="noopener">Still stuck? Ask Dealer Assist</a></div>
   </div>
 
   <div class="scrim" id="scrim"></div>
@@ -576,6 +626,10 @@ button,input,textarea{font-family:inherit;}
     $("#avatarBtn").textContent=initials(label);$("#acctInit").textContent=initials(label);
     var codeEl=$("#acctCode");if(codeEl)codeEl.textContent=(AUTH&&(AUTH.code||AUTH.dealerCode))||"";
     loadAll();
+    if(!localStorage.getItem("truflow_mobile_guide_seen")){
+      renderGuideList();guidePanel.classList.add("open");
+      localStorage.setItem("truflow_mobile_guide_seen","1");
+    }
   }
 
   /* ── Data ── */
@@ -1073,6 +1127,83 @@ button,input,textarea{font-family:inherit;}
       }).catch(function(){toast("Couldn't add — check connection",true);});
     });
   });
+
+  /* ── Guide panel ("How do I…?") ── */
+  var GUIDES=[
+    {id:"navigate",title:"Get around the app",goal:"Learn what each tab does and where to find your key numbers.",blurb:"Dashboard, leads, stock, activity, account.",section:"home",spine:true,steps:[
+      {title:"Home tab",detail:"Your dashboard — KPIs at a glance, recent leads to follow up, and latest stock."},
+      {title:"Leads tab",detail:"Search, filter, and sort your leads. Tap a lead to see their detail, log a call, send a WhatsApp, or add a note."},
+      {title:"Stock tab",detail:"Browse your inventory with search and filter chips. Tap a vehicle for full detail, pricing, and listing controls."},
+      {title:"Activity tab",detail:"A timeline of everything that happened — new leads, vehicles published, deals closed — grouped by day."},
+      {title:"Account tab",detail:"Your profile, dealer code, WhatsApp support link, and sign-out."}
+    ]},
+    {id:"follow-up",title:"Follow up on a lead",goal:"Find a lead, review their enquiry, and log your follow-up action.",blurb:"Search, open detail, call or WhatsApp, add notes.",section:"leads",steps:[
+      {title:"Find the lead",detail:"Use the search bar or filter chips (All / New / Contacted / Negotiating / Won) to narrow the list."},
+      {title:"Open the detail",detail:"Tap the lead card. The bottom sheet shows their enquiry, vehicle of interest, and full history."},
+      {title:"Call or WhatsApp",detail:"Tap the Call or WhatsApp button in the quick actions bar. The call is logged automatically."},
+      {title:"Add a note",detail:"Scroll to the notes section and type what was discussed. Tap Save to record it on the timeline."},
+      {title:"Update the status",detail:"Use the status stepper to move the lead forward: New → Contacted → Negotiating → Won."}
+    ]},
+    {id:"add-vehicle",title:"Add a walk-in vehicle",goal:"Capture a new vehicle from the floor and save it to your inventory.",blurb:"Fill the form, set the price, saved unpublished.",section:"stock",steps:[
+      {title:"Tap + Walk-in or Add vehicle",detail:"From the stock tab, tap the add button. The form opens with fields for the car details."},
+      {title:"Fill in the details",detail:"Enter year, make, model, variant, body, fuel, transmission, and mileage."},
+      {title:"Set the price",detail:"Enter the asking price. TruPrice (if available) shows alongside for reference."},
+      {title:"Save",detail:"Tap Add to inventory. The vehicle is saved as unpublished — shoot it in TruLens to go live on your website."}
+    ]},
+    {id:"check-stock",title:"Check your stock",goal:"Find a vehicle in your inventory and see its listing status.",blurb:"Search, filter, sort, tap for detail.",section:"stock",steps:[
+      {title:"Search",detail:"Type a make, model, stock number, or VIN in the search bar."},
+      {title:"Filter",detail:"Use the chips to show All, In stock, Live (on your website), or Sold."},
+      {title:"Open a vehicle",detail:"Tap the card. The detail sheet shows photos, specs, pricing, and listing controls."},
+      {title:"Toggle listing",detail:"Flip the Website switch to put the vehicle on or take it off your site. Change status to Sold when it leaves."}
+    ]},
+    {id:"dealer-assist",title:"Use Dealer Assist",goal:"Chat with your AI assistant for quick answers about stock, leads, and deals.",blurb:"Open the chat, ask a question, get an answer.",section:"home",steps:[
+      {title:"Open the chat",detail:"Tap the chat bubble in the bottom-right corner. Dealer Assist opens full-screen."},
+      {title:"Ask a question",detail:"Type anything — 'What's my best seller?', 'How many leads this week?', 'Stock over 60 days'. Or tap a suggestion chip."},
+      {title:"Get your answer",detail:"Dealer Assist pulls live data from your dealership and replies in plain language."},
+      {title:"Keep going",detail:"The conversation continues — ask follow-ups, get reports, or just check a number on the fly."}
+    ]}
+  ];
+  var guidePanel=$("#guidePanel"),guideBody=$("#guideBody"),guideTitle=$("#guideTitle"),guideBack=$("#guideBack"),guideIcon=$("#guideIcon");
+  var guideSelected=null;
+
+  function renderGuideList(){
+    guideSelected=null;
+    guideTitle.textContent="How do I…?";
+    guideBack.style.display="none";
+    guideIcon.style.display="";
+    var html="";
+    GUIDES.forEach(function(g){
+      html+='<div class="guide-row" data-gid="'+g.id+'">'
+        +'<div class="gr-txt"><div style="display:flex;align-items:center;gap:8px"><span class="gr-title">'+esc(g.title)+'</span>'
+        +(g.spine?'<span class="gr-spine">Start here</span>':'')
+        +'</div><div class="gr-blurb">'+esc(g.blurb)+'</div></div>'
+        +'<svg class="gr-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></div>';
+    });
+    guideBody.innerHTML=html;
+    Array.prototype.forEach.call(guideBody.querySelectorAll(".guide-row"),function(row){
+      row.addEventListener("click",function(){renderGuideDetail(row.getAttribute("data-gid"));});
+    });
+  }
+
+  function renderGuideDetail(id){
+    var g=GUIDES.filter(function(x){return x.id===id;})[0];
+    if(!g)return;
+    guideSelected=g;
+    guideTitle.textContent=g.title;
+    guideBack.style.display="";
+    guideIcon.style.display="none";
+    var html='<p class="guide-detail-goal">'+esc(g.goal)+'</p>';
+    g.steps.forEach(function(s,i){
+      html+='<div class="guide-step"><div class="gs-rail"><span class="gs-num">'+(i+1)+'</span><span class="gs-line"></span></div>'
+        +'<div class="gs-body"><div class="gs-title">'+esc(s.title)+'</div><p class="gs-detail">'+esc(s.detail)+'</p></div></div>';
+    });
+    guideBody.innerHTML=html;
+    guideBody.scrollTop=0;
+  }
+
+  $("#guideBtn").addEventListener("click",function(){renderGuideList();guidePanel.classList.add("open");});
+  $("#guideClose").addEventListener("click",function(){guidePanel.classList.remove("open");});
+  guideBack.addEventListener("click",function(){renderGuideList();});
 
   /* ── Chat helper (Dealer Assist via TruChat API) ── */
   var CHAT_API="https://trusaas-chat.onrender.com";
