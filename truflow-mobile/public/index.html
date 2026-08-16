@@ -493,7 +493,7 @@ button,input,textarea{font-family:inherit;}
         <div class="rowlink" id="support"><svg viewBox="0 0 24 24" fill="currentColor" style="color:#25D366"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>Support<span style="margin-left:auto;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted)">WhatsApp</span></div>
         <div class="rowlink danger" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Sign out</div>
       </div>
-      <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-top:22px">TruFlow · Powered by TruSaaS</p>
+      <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-top:22px">Version 1.2 · Powered by TruDealer</p>
     </section>
 
     <section class="screen" id="s-add">
@@ -558,7 +558,7 @@ button,input,textarea{font-family:inherit;}
   <input id="gateCode" type="password" inputmode="text" placeholder="Dealer code" autocomplete="off" autocapitalize="off" style="margin-top:26px">
   <button class="enter btn-primary" id="gateEnter">Sign in</button>
   <div class="err-msg" id="gateErr"></div>
-  <div class="foot">Powered by TruSaaS</div>
+  <div class="foot">Powered by TruDealer</div>
 </div>
 
 <!-- Laptop screen — shown instead of the app/gate above 900px. Light is a phone
@@ -965,7 +965,7 @@ button,input,textarea{font-family:inherit;}
     var moreRows=[];
     if(vehLabel)moreRows.push(["Vehicle",esc(vehLabel)+((veh&&vPrice(veh))?" · "+money(vPrice(veh)):"")]);
     moreRows.push(["Last contact",esc(l.lastContactedAt||"Not yet")]);
-    var moreHtml='<details class="ld-more"><summary>Contact &amp; vehicle<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary><div class="ld-meta">'+
+    var moreHtml='<details class="ld-more"><summary>Contact &amp; vehicle<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary><div class="ld-meta">'+
       moreRows.map(function(m){return '<div class="ld-mrow"><span class="ld-mk">'+m[0]+'</span><span class="ld-mv">'+m[1]+'</span></div>';}).join("")+'</div></details>';
 
     var spills='<div class="lbl">Stage</div><div class="spills" id="ldSpills">';
