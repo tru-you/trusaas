@@ -12,6 +12,7 @@ import { buildWeb3DPackage } from './lib/web3dPackage';
 import { useAuth } from './contexts/AuthContext';
 import DealerSelect from './components/DealerSelect';
 import GuidePanel from './components/GuidePanel';
+import DealerAssist from './components/DealerAssist';
 
 /** Keep client state crash-safe even if API returns partial records. */
 function normalizeVehicle(raw: any): Vehicle {
@@ -650,6 +651,7 @@ export default function App() {
             onOpenChange={setGuideOpen}
             currentSection={activeView}
           />
+          <DealerAssist userName={user?.displayName || undefined} />
         </>
       )}
     </MobileDevice>

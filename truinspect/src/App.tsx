@@ -15,6 +15,8 @@ import { Vehicle, QualityReport, DmsExportResult, PointResult } from './types';
 import type { InspectionItem, ValuationState, TradeInData } from './types/inspection';
 import { createDefaultItems } from './types/inspection';
 import { useAuth } from './contexts/AuthContext';
+import GuidePanel from './components/GuidePanel';
+import DealerAssist from './components/DealerAssist';
 
 /** Convert a blob: URL to a data: URL so it survives navigation / reload. */
 async function blobUrlToDataUrl(url: string): Promise<string> {
@@ -103,6 +105,16 @@ export default function App() {
   
   // Sync status state
   const [syncStatus, setSyncStatus] = React.useState<'synced' | 'syncing' | 'error'>('synced');
+
+  const [guideOpen, setGuideOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!user) return;
+    if (!localStorage.getItem('truinspect_guide_seen')) {
+      setGuideOpen(true);
+      localStorage.setItem('truinspect_guide_seen', '1');
+    }
+  }, [user]);
 
   // Load inventory from server
   const fetchInventory = async () => {
@@ -585,6 +597,7 @@ export default function App() {
                 onUpdateVehicle={handleUpdateVehicle}
                 syncStatus={syncStatus}
                 onForceSync={fetchInventory}
+                onOpenGuide={() => setGuideOpen(true)}
               />
             </>
           )}
@@ -743,6 +756,13 @@ export default function App() {
               }}
             />
           )}
+
+          <GuidePanel
+            open={guideOpen}
+            onOpenChange={setGuideOpen}
+            currentSection={activeView}
+          />
+          <DealerAssist userName={user?.displayName || undefined} />
         </>
       )}
     </MobileDevice>

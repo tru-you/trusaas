@@ -1,44 +1,152 @@
 /**
- * TruChat API — hosted Claude tool-use chat brain (zero-dependency Node).
+ * TruChat API — multi-app DeepSeek chat brain (zero-dependency Node).
  *
- * Ported from the WordPress plugin (truchat/wordpress-plugin/truchat/includes/chat.php)
- * so static sites — the TruSaaS marketing bot and any HTML dealer embed — get the
- * same brain the WordPress dealers have, without WordPress.
+ * Serves different personas depending on the calling app:
+ *   app:"website"   → customer-facing sales bot (stock search, lead capture, WhatsApp handoff)
+ *   app:"mobile"    → dealer staff assistant (stock insights, lead tips, platform help)
+ *   app:"trulens"   → TruLens assistant (photo capture, quality scores, damage, DMS export)
+ *   app:"truinspect" → TruInspect assistant (inspections, checklists, trade-ins, reports)
  *
- * POST /api/chat  { messages, session, catalog } -> { reply, actions, session, suggestions, source }
+ * POST /api/chat  { app?, messages, session, catalog } -> { reply, actions, session, suggestions, source }
  * GET  /api/health
- *
- * The ANTHROPIC_API_KEY never leaves the server. If it is missing or Claude errors,
- * the bot degrades to a knowledge/WhatsApp fallback rather than breaking.
  */
 
 import http from 'node:http';
 
-/* ---- Config (env-driven, safe defaults for the True-Cars demo) ---------- */
+/* ---- Config ------------------------------------------------------------- */
 const CFG = {
   port:          parseInt(process.env.PORT, 10) || 10000,
-  apiKey:        process.env.ANTHROPIC_API_KEY || '',
-  model:         process.env.TRUCHAT_MODEL || 'claude-haiku-4-5',
+  apiKey:        process.env.DEEPSEEK_API_KEY || '',
+  model:         process.env.TRUCHAT_MODEL || 'deepseek-chat',
   assistantName: process.env.ASSISTANT_NAME || 'True',
   dealerName:    process.env.DEALER_NAME || 'TruSaaS',
-  salesWhatsApp: (process.env.SALES_WHATSAPP || '27620502091').replace(/\D/g, ''),
+  salesWhatsApp: (process.env.SALES_WHATSAPP || '447476995694').replace(/\D/g, ''),
   stockApi:      process.env.STOCK_API || 'https://premium.tru-saas.com/api/public/stock?dealer=true-cars',
   stockApiFallback: process.env.STOCK_API_FALLBACK || 'https://premium.tru-saas.com/api/public/stock?dealer=demo',
-  // Market/locale — SA is the launch market, but every market-specific string is
-  // env-driven so one deployment serves anywhere. Override per region, don't hard-code.
-  locale:        process.env.TRUCHAT_LOCALE || 'en-ZA',       // number/price formatting
-  currency:      process.env.TRUCHAT_CURRENCY || 'ZAR',        // ISO 4217; drives the symbol
-  market:        process.env.TRUCHAT_MARKET || 'South Africa', // named in the system prompt
+  locale:        process.env.TRUCHAT_LOCALE || 'en-ZA',
+  currency:      process.env.TRUCHAT_CURRENCY || 'ZAR',
+  market:        process.env.TRUCHAT_MARKET || 'South Africa',
   maxTurns:      6,
 };
 
-// Price formatter for the active market (e.g. R 619,000 / £24,995 / $18,500).
 const priceFmt = (() => {
   try { return new Intl.NumberFormat(CFG.locale, { style: 'currency', currency: CFG.currency, maximumFractionDigits: 0 }); }
   catch { return { format: n => `${CFG.currency} ${Number(n).toLocaleString()}` }; }
 })();
 
-/* ---- Knowledge-first FAQ layer (answers common questions with NO API call) */
+/* ---- TruSaaS platform knowledge (shared across dealer-staff apps) ------- */
+const PLATFORM_KNOWLEDGE = `
+**TruSaaS platform** — the operating system for independent dealers:
+- **TruLens** — guided 27-slot photo capture with AI quality scoring. Shoots: front ¾, rear ¾, sides, interior, engine, tyres, dashboard, odometer, extras. Each photo gets a quality score (sharpness, exposure, framing). Damage tagger with AI detection. One-tap export to DMS.
+- **TruInspect** — condition inspection app. 27-point walk-around camera, inspection checklist (pass/fail/N/A per category), damage tagger with severity levels, trade-in appraisal with market valuation, PDF condition report generation and sharing.
+- **TruFlow Premium** — full DMS: stock management, leads/pipeline CRM, deal tracker, finance applications, web publishing, dealer settings. The desktop command centre.
+- **TruFlow Mobile** — mobile companion to Premium. Dashboard KPIs, leads with call/WhatsApp/note actions, stock browser, vehicle detail with pricing and status.
+- **TruShowroom** — dealer website with live stock from TruFlow, TruOrbit 360° views, pricing badges, TruAfford finance calculator, TruChat AI widget.
+- **TruChat** — 24/7 AI assistant (that's me). Customer-facing on websites, dealer-facing inside the apps.
+- **TruOrbit** — 360° vehicle spin viewer generated from TruLens photos.
+- **TruLive** — live video walkthrough for remote buyers.
+- **TruAfford** — affordability calculator widget (soft credit check, no bureau hit).
+
+All apps share the same vehicle database. Photos taken in TruLens appear in TruInspect and TruFlow. Stock published in TruFlow appears on the website.
+`.trim();
+
+/* ---- App-specific system prompts ---------------------------------------- */
+function websitePrompt(stockText) {
+  return [
+    `You are ${CFG.assistantName}, the AI assistant on the ${CFG.dealerName} website — a live demonstration of TruChat, the 24/7 AI module in the TruSaaS dealer platform. The dealership serves the ${CFG.market} market.`,
+    `Be warm and concise, and mirror the customer's language and local tone for the ${CFG.market} market. Short paragraphs. Quote prices in the local currency as shown in the stock list. Never quote guaranteed finance rates or approvals — finance is always subject to lender assessment.`,
+    ``,
+    `You can:`,
+    `- Show live vehicles from the demo dealership using the search_stock tool.`,
+    `- Explain how TruSaaS works for an independent dealer.`,
+    `- Capture a lead (name, mobile, email) with capture_lead when someone wants a walkthrough, finance or a callback.`,
+    `- Hand off to a human on WhatsApp with request_whatsapp_handoff once the person is qualified or asks for a person.`,
+    ``,
+    `Ask for name, mobile and email before capturing a lead. Use the tools rather than inventing stock or contact details.`,
+    stockText ? `\nCurrent demo stock (a sample):\n${stockText}` : `\nLive stock is briefly unavailable — offer a walkthrough or WhatsApp handoff instead of inventing vehicles.`,
+  ].join('\n');
+}
+
+function mobilePrompt(stockText) {
+  return [
+    `You are **Dealer Assist**, the AI helper inside **TruFlow Mobile** — the mobile companion to TruFlow Premium. You're talking to a dealer staff member (salesperson, manager, or principal), NOT a customer.`,
+    ``,
+    `Be direct, helpful, and knowledgeable. Short answers. You know the TruSaaS platform inside out.`,
+    ``,
+    PLATFORM_KNOWLEDGE,
+    ``,
+    `You can help with:`,
+    `- **Stock questions** — use search_stock to find vehicles, check pricing, days-in-stock, what's selling.`,
+    `- **Lead advice** — how to follow up, what to say, prioritisation tips.`,
+    `- **Platform how-tos** — how any TruSaaS feature works, where to find settings, how apps connect.`,
+    `- **Sales coaching** — objection handling, closing tips, finance explainers for customers.`,
+    `- **Market knowledge** — general ${CFG.market} used-car market awareness.`,
+    ``,
+    `If they need hands-on help beyond what you can do, offer to connect them to TruSaaS support on WhatsApp.`,
+    stockText ? `\nDealership stock:\n${stockText}` : '',
+  ].join('\n');
+}
+
+function trulensPrompt() {
+  return [
+    `You are **Dealer Assist**, the AI helper inside **TruLens** — the TruSaaS photo-capture app. You're talking to a dealer staff member who is photographing vehicles.`,
+    ``,
+    `Be direct and helpful. Short answers. You're the expert on vehicle photography and TruLens features.`,
+    ``,
+    PLATFORM_KNOWLEDGE,
+    ``,
+    `**TruLens deep knowledge:**`,
+    `- **27-slot walk-around**: front ¾ left, front ¾ right, front straight, rear ¾ left, rear ¾ right, rear straight, left side, right side, left front wheel, right front wheel, left rear wheel, right rear wheel, dashboard, steering wheel, front seats, rear seats, centre console, infotainment, odometer, engine bay, boot/trunk, roof, sunroof, key fob, and 3 extras.`,
+    `- **Quality scores**: each photo is scored for sharpness, exposure, and framing. Green = good, amber = acceptable, red = reshoot. The overall vehicle readiness badge shows when enough quality photos are captured.`,
+    `- **Damage tagger**: AI-assisted damage detection. Tap a photo to tag dents, scratches, chips, cracks, rust, or missing parts. Severity: minor, moderate, severe. These feed into the TruInspect condition report.`,
+    `- **Photo editor**: crop, rotate, brightness, contrast adjustments before saving.`,
+    `- **Bulk upload**: drag-and-drop multiple photos at once, then assign to slots.`,
+    `- **DMS export**: one tap sends all photos + quality data + damage tags to TruFlow Premium. The vehicle becomes "listing ready" in TruFlow once enough slots are filled.`,
+    `- **Close-up photos**: each slot supports additional close-up shots for detail (damage evidence, feature highlights).`,
+    ``,
+    `**Photography tips you should share when asked:**`,
+    `- Shoot in daylight or under bright showroom lights — avoid harsh shadows.`,
+    `- Keep the vehicle centred in frame with some background margin.`,
+    `- For ¾ angles: stand at the corner, step back 3-4 metres, camera at bumper height.`,
+    `- Clean the vehicle before shooting — fingerprints on paint show in photos.`,
+    `- For interiors: open all doors for light, shoot from the passenger side to show dashboard + steering wheel.`,
+    `- Odometer: turn ignition to ON so the display lights up.`,
+    `- Engine bay: prop the bonnet, shoot straight down from above.`,
+    ``,
+    `If they need help beyond TruLens, offer to connect them to TruSaaS support on WhatsApp.`,
+  ].join('\n');
+}
+
+function truinspectPrompt() {
+  return [
+    `You are **Dealer Assist**, the AI helper inside **TruInspect** — the TruSaaS vehicle inspection and condition-report app. You're talking to a dealer staff member doing vehicle inspections or trade-in appraisals.`,
+    ``,
+    `Be direct and helpful. Short answers. You're the expert on vehicle inspections and TruInspect features.`,
+    ``,
+    PLATFORM_KNOWLEDGE,
+    ``,
+    `**TruInspect deep knowledge:**`,
+    `- **Walk-around capture**: same 27-slot guided camera as TruLens — photos are shared between apps. A photo taken in TruLens appears in TruInspect and vice versa.`,
+    `- **Inspection checklist**: categorised check items — exterior, interior, mechanical, electrical, tyres, glass, lights. Each item: pass ✅, fail ❌, or N/A. Failed items get notes and photos.`,
+    `- **Damage tagger**: AI-assisted. Tag damage type (dent, scratch, chip, crack, rust, missing), set severity (minor/moderate/severe), attach evidence photos. Damage findings appear in the condition report.`,
+    `- **Trade-in appraisal**: structured walk-around for trade-in vehicles. Capture condition at each point, then enter market valuation (retail, trade, auction values). Generates a trade-in summary with photos + valuation.`,
+    `- **Condition report (PDF)**: generated from inspection data — all photos, checklist results, damage findings, trade-in valuation if applicable. Can be shared/downloaded as PDF.`,
+    `- **Sign-off status**: vehicles are "unsigned" until inspection is complete and a manager signs off. Signed-off vehicles show a green badge in the inventory list.`,
+    `- **Completion review**: before finishing, review all slots — which have photos, which need attention, overall completeness percentage.`,
+    ``,
+    `**Inspection tips you should share when asked:**`,
+    `- Start with the exterior walk-around (photos), then checklist, then damage tagging — this order builds the report naturally.`,
+    `- For trade-ins: photograph everything, even minor damage — it protects the dealer if the customer disputes later.`,
+    `- Check tyre tread depth, not just tyre condition — a "good condition" tyre can still be below legal limit.`,
+    `- Test all electrical: windows, mirrors, locks, infotainment, climate control, heated seats.`,
+    `- Always photograph the VIN plate and service book for verification.`,
+    `- For engine bay: look for leaks, check fluid levels, note any aftermarket modifications.`,
+    ``,
+    `If they need help beyond TruInspect, offer to connect them to TruSaaS support on WhatsApp.`,
+  ].join('\n');
+}
+
+/* ---- Knowledge-first FAQ layer (website mode only) ---------------------- */
 function faqIntents() {
   return [
     { keys: ['hi','hello','hey','howzit','hallo','good morning','good afternoon','good day'],
@@ -60,10 +168,10 @@ function faqIntents() {
 function faqMatch(text) {
   const t = String(text || '').toLowerCase().trim();
   if (!t) return null;
-  if (/\d{7,}/.test(t)) return null;          // looks like a phone number → let LLM drive
-  if (t.includes('@')) return null;            // an email → LLM
+  if (/\d{7,}/.test(t)) return null;
+  if (t.includes('@')) return null;
   if (/\b(book|test drive|come see|come in|apply for)\b/.test(t) && /\d/.test(t)) return null;
-  if (t.split(/\s+/).length > 16) return null; // long/complex → LLM
+  if (t.split(/\s+/).length > 16) return null;
 
   let best = null, bestScore = 0;
   for (const intent of faqIntents()) {
@@ -75,23 +183,41 @@ function faqMatch(text) {
   return { reply: best.reply, actions: best.actions || [], suggestions: best.suggestions || [] };
 }
 
-/* ---- Tool definitions --------------------------------------------------- */
-function tools() {
+/* ---- Tool definitions (OpenAI function-calling format) ------------------ */
+function websiteTools() {
   return [
-    { name: 'search_stock',
+    { type: 'function', function: {
+      name: 'search_stock',
       description: 'Search current dealership stock by make, model, body type, fuel or budget. Returns matching vehicles which the customer will see as cards.',
-      input_schema: { type: 'object', properties: {
+      parameters: { type: 'object', properties: {
         query: { type: 'string', description: "What the customer is after, e.g. 'Ford Ranger diesel', 'bakkie under 300k', 'automatic hatchback'" },
-      }, required: ['query'] } },
-    { name: 'capture_lead',
+      }, required: ['query'] },
+    }},
+    { type: 'function', function: {
+      name: 'capture_lead',
       description: 'Log an interested lead (wants a walkthrough, finance, or a callback). Call once you have name, mobile and email.',
-      input_schema: { type: 'object', properties: {
+      parameters: { type: 'object', properties: {
         name: { type: 'string' }, phone: { type: 'string' }, email: { type: 'string' },
         interest: { type: 'string' }, finance: { type: 'boolean' },
-      }, required: ['name','phone','email'] } },
-    { name: 'request_whatsapp_handoff',
+      }, required: ['name','phone','email'] },
+    }},
+    { type: 'function', function: {
+      name: 'request_whatsapp_handoff',
       description: 'Signal that the customer is qualified and wants a real person on WhatsApp. The client opens WhatsApp with a full ticket.',
-      input_schema: { type: 'object', properties: {}, required: [] } },
+      parameters: { type: 'object', properties: {}, required: [] },
+    }},
+  ];
+}
+
+function mobileTools() {
+  return [
+    { type: 'function', function: {
+      name: 'search_stock',
+      description: 'Search the dealer stock by make, model, body type, fuel, price range, or days in stock.',
+      parameters: { type: 'object', properties: {
+        query: { type: 'string', description: "e.g. 'Ford Ranger', 'SUV under 400k', 'diesel bakkie', 'oldest stock'" },
+      }, required: ['query'] },
+    }},
   ];
 }
 
@@ -146,42 +272,27 @@ function matchStock(list, query) {
   return scored.slice(0, 6).map(s => s.v);
 }
 
-/* ---- System prompt ------------------------------------------------------ */
-function systemPrompt(stockText) {
-  return [
-    `You are ${CFG.assistantName}, the AI assistant on the ${CFG.dealerName} website — a live demonstration of TruChat, the 24/7 AI module in the TruSaaS dealer platform. The dealership serves the ${CFG.market} market.`,
-    `Be warm and concise, and mirror the customer's language and local tone for the ${CFG.market} market. Short paragraphs. Quote prices in the local currency as shown in the stock list. Never quote guaranteed finance rates or approvals — finance is always subject to lender assessment.`,
-    ``,
-    `You can:`,
-    `- Show live vehicles from the demo dealership using the search_stock tool.`,
-    `- Explain how TruSaaS works for an independent dealer (capture, condition reports, DMS/pipeline, website, AI, live video).`,
-    `- Capture a lead (name, mobile, email) with capture_lead when someone wants a walkthrough, finance or a callback.`,
-    `- Hand off to a human on WhatsApp with request_whatsapp_handoff once the person is qualified or asks for a person.`,
-    ``,
-    `Ask for name, mobile and email before capturing a lead. Use the tools rather than inventing stock or contact details.`,
-    stockText ? `\nCurrent demo stock (a sample):\n${stockText}` : `\nLive stock is briefly unavailable — offer a walkthrough or WhatsApp handoff instead of inventing vehicles.`,
-  ].join('\n');
-}
-
-/* ---- Anthropic call ----------------------------------------------------- */
-async function anthropic(messages, system, toolDefs) {
+/* ---- DeepSeek call (OpenAI-compatible) ---------------------------------- */
+async function deepseek(messages, system, tools) {
   if (!CFG.apiKey) return { error: 'no_key' };
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const apiMessages = [
+      { role: 'system', content: system },
+      ...messages,
+    ];
+    const body = {
+      model: CFG.model,
+      max_tokens: 1024,
+      messages: apiMessages,
+    };
+    if (tools && tools.length) body.tools = tools;
+    const res = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': CFG.apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Authorization': `Bearer ${CFG.apiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: CFG.model,
-        max_tokens: 1024,
-        // Cache the system prompt so repeat turns read it at ~10% cost.
-        system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
-        tools: toolDefs,
-        messages,
-      }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     if (!res.ok) return { error: data?.error?.message || `HTTP ${res.status}` };
@@ -191,7 +302,7 @@ async function anthropic(messages, system, toolDefs) {
   }
 }
 
-/* ---- WhatsApp handoff (free tap-to-chat) -------------------------------- */
+/* ---- WhatsApp handoff --------------------------------------------------- */
 function whatsappText(s) {
   const name = String(s.name || '').trim();
   const greet = name ? `Hi, I'm ${name}.` : 'Hi there!';
@@ -215,6 +326,7 @@ function finalize(reply, actions, session, extra = {}) {
 
 /* ---- Main handler ------------------------------------------------------- */
 async function handleChat(body) {
+  const app = String(body?.app || 'website').toLowerCase();
   const session = Object.assign({
     name: '', phone: '', email: '', vehicleInterest: '',
     financeInterest: false, qualified: false,
@@ -222,13 +334,31 @@ async function handleChat(body) {
 
   const actions = [];
 
-  let stock = await loadStock();
-  if (stock === null) stock = Array.isArray(body?.catalog) ? body.catalog : [];
+  // Stock: load for website and mobile modes; not needed for trulens/truinspect
+  let stock = [];
+  const needsStock = app === 'website' || app === 'mobile';
+  if (needsStock) {
+    stock = await loadStock();
+    if (stock === null) stock = Array.isArray(body?.catalog) ? body.catalog : [];
+  }
 
-  const system = systemPrompt(stockSummary(stock));
-  const toolDefs = tools();
+  // Build app-specific system prompt and tools
+  let system, tools;
+  if (app === 'trulens') {
+    system = trulensPrompt();
+    tools = null;
+  } else if (app === 'truinspect') {
+    system = truinspectPrompt();
+    tools = null;
+  } else if (app === 'mobile') {
+    system = mobilePrompt(stockSummary(stock));
+    tools = mobileTools();
+  } else {
+    system = websitePrompt(stockSummary(stock));
+    tools = websiteTools();
+  }
 
-  // Normalise history; Anthropic requires the first message to be role "user".
+  // Normalise history
   let messages = [];
   for (const m of (body?.messages || [])) {
     if (!m || !m.role || m.content == null) continue;
@@ -238,50 +368,56 @@ async function handleChat(body) {
   while (messages.length && messages[0].role !== 'user') messages.shift();
   if (!messages.length) return { reply: '', actions: [], session };
 
-  // Knowledge-first: try to answer the last user message for free.
-  let lastUser = '';
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role === 'user' && typeof messages[i].content === 'string') { lastUser = messages[i].content; break; }
+  // Knowledge-first FAQ (website mode only — staff apps always go to LLM)
+  if (app === 'website') {
+    let lastUser = '';
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user' && typeof messages[i].content === 'string') { lastUser = messages[i].content; break; }
+    }
+    const faq = faqMatch(lastUser);
+    if (faq) return finalize(faq.reply, faq.actions, session, { suggestions: faq.suggestions, source: 'knowledge' });
   }
-  const faq = faqMatch(lastUser);
-  if (faq) return finalize(faq.reply, faq.actions, session, { suggestions: faq.suggestions, source: 'knowledge' });
 
   let finalText = '';
 
   for (let turn = 0; turn < CFG.maxTurns; turn++) {
-    const { data, error } = await anthropic(messages, system, toolDefs);
+    const { data, error } = await deepseek(messages, system, tools);
     if (error) {
       console.error('[TruChat]', error);
-      // Graceful degrade — keep the conversation alive via WhatsApp.
-      return finalize(
-        "I can't reach my brain this second — tap below to carry on with a human on WhatsApp, or try again in a moment.",
-        [{ type: 'whatsapp' }], session, { source: 'fallback' }
-      );
+      if (app === 'website') {
+        return finalize(
+          "I can't reach my brain this second — tap below to carry on with a human on WhatsApp, or try again in a moment.",
+          [{ type: 'whatsapp' }], session, { source: 'fallback' }
+        );
+      }
+      return finalize("Sorry, I couldn't process that — the AI service is temporarily unavailable. Try again in a moment.", [], session, { source: 'fallback' });
     }
 
-    const content = data.content || [];
-    const texts = content.filter(b => b.type === 'text').map(b => b.text);
-    if (texts.length) finalText = texts.join('\n').trim();
+    const choice = data.choices?.[0];
+    if (!choice) break;
 
-    if (data.stop_reason !== 'tool_use') break;
+    const msg = choice.message;
+    if (msg.content) finalText = msg.content.trim();
 
-    messages.push({ role: 'assistant', content });
+    if (choice.finish_reason !== 'tool_calls' || !msg.tool_calls?.length) break;
 
-    const toolResults = [];
-    for (const b of content) {
-      if (b.type !== 'tool_use') continue;
-      const input = b.input || {};
+    messages.push({ role: 'assistant', content: msg.content || null, tool_calls: msg.tool_calls });
+
+    for (const tc of msg.tool_calls) {
+      const fnName = tc.function.name;
+      let input = {};
+      try { input = JSON.parse(tc.function.arguments || '{}'); } catch {}
       let resultText = 'done';
 
-      if (b.name === 'search_stock') {
+      if (fnName === 'search_stock') {
         const matches = matchStock(stock, input.query || '');
         actions.push({ type: 'stock', vehicles: matches });
         if (matches.length && !session.vehicleInterest) session.vehicleInterest = `${matches[0].brand} ${matches[0].model}`;
         resultText = matches.length
-          ? `Showing ${matches.length} vehicle(s) to the customer.`
-          : 'No matching stock. Suggest alternatives or invite them to browse the website.';
+          ? `Showing ${matches.length} vehicle(s).`
+          : 'No matching stock found.';
 
-      } else if (b.name === 'capture_lead') {
+      } else if (fnName === 'capture_lead') {
         session.name  = input.name  || session.name;
         session.phone = input.phone || session.phone;
         session.email = input.email || session.email;
@@ -293,15 +429,14 @@ async function handleChat(body) {
         actions.push({ type: 'whatsapp' });
         resultText = 'Lead logged. Confirm warmly and offer the WhatsApp handoff.';
 
-      } else if (b.name === 'request_whatsapp_handoff') {
+      } else if (fnName === 'request_whatsapp_handoff') {
         session.qualified = true;
         actions.push({ type: 'whatsapp' });
         resultText = 'WhatsApp handoff shown to the customer.';
       }
 
-      toolResults.push({ type: 'tool_result', tool_use_id: b.id, content: resultText });
+      messages.push({ role: 'tool', tool_call_id: tc.id, content: resultText });
     }
-    messages.push({ role: 'user', content: toolResults });
   }
 
   return finalize(finalText || 'Sorry — could you say that again?', actions, session);

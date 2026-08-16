@@ -1250,7 +1250,7 @@ button,input,textarea{font-family:inherit;}
     var session={name:(AUTH&&AUTH.label)||"Dealer"};
 
     fetch(CHAT_API+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({messages:chatHistory.slice(-10),session:session,catalog:catalog})
+      body:JSON.stringify({app:"mobile",messages:chatHistory.slice(-10),session:session,catalog:catalog})
     }).then(function(r){return r.json();}).then(function(res){
       chatMsgs.removeChild(typing);
       var reply=res.reply||"Sorry, I couldn't process that.";
