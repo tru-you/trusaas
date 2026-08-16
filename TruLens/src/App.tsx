@@ -118,14 +118,8 @@ export default function App() {
   
   // Sync status state
   const [guideOpen, setGuideOpen] = React.useState(false);
+  const [assistOpen, setAssistOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    if (!user || !dealerConfirmed) return;
-    if (!localStorage.getItem('trulens_guide_seen')) {
-      setGuideOpen(true);
-      localStorage.setItem('trulens_guide_seen', '1');
-    }
-  }, [user, dealerConfirmed]);
 
   const [syncStatus, setSyncStatus] = React.useState<'synced' | 'syncing' | 'error'>('synced');
   /* Why the last save failed, in words. syncStatus alone only ever said "error"
@@ -557,6 +551,7 @@ export default function App() {
                 syncStatus={syncStatus}
                 onForceSync={fetchInventory}
                 onOpenGuide={() => setGuideOpen(true)}
+                onOpenDealerAssist={() => setAssistOpen(true)}
               />
             </>
           )}
@@ -651,7 +646,7 @@ export default function App() {
             onOpenChange={setGuideOpen}
             currentSection={activeView}
           />
-          <DealerAssist userName={user?.displayName || undefined} />
+          <DealerAssist userName={user?.displayName || undefined} open={assistOpen} onOpenChange={setAssistOpen} />
         </>
       )}
     </MobileDevice>

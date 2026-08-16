@@ -107,14 +107,8 @@ export default function App() {
   const [syncStatus, setSyncStatus] = React.useState<'synced' | 'syncing' | 'error'>('synced');
 
   const [guideOpen, setGuideOpen] = React.useState(false);
+  const [assistOpen, setAssistOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    if (!user) return;
-    if (!localStorage.getItem('truinspect_guide_seen')) {
-      setGuideOpen(true);
-      localStorage.setItem('truinspect_guide_seen', '1');
-    }
-  }, [user]);
 
   // Load inventory from server
   const fetchInventory = async () => {
@@ -598,6 +592,7 @@ export default function App() {
                 syncStatus={syncStatus}
                 onForceSync={fetchInventory}
                 onOpenGuide={() => setGuideOpen(true)}
+                onOpenDealerAssist={() => setAssistOpen(true)}
               />
             </>
           )}
@@ -762,7 +757,7 @@ export default function App() {
             onOpenChange={setGuideOpen}
             currentSection={activeView}
           />
-          <DealerAssist userName={user?.displayName || undefined} />
+          <DealerAssist userName={user?.displayName || undefined} open={assistOpen} onOpenChange={setAssistOpen} />
         </>
       )}
     </MobileDevice>

@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, Sliders,
-  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil, X, ChevronDown, HelpCircle
+  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil, X, ChevronDown, HelpCircle, MessageCircle
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -31,6 +31,7 @@ interface InventoryListProps {
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
   onOpenGuide?: () => void;
+  onOpenDealerAssist?: () => void;
 }
 
 const DMS_PRESETS = {
@@ -53,10 +54,12 @@ export default function InventoryList({
   onUpdateVehicle,
   syncStatus,
   onForceSync,
-  onOpenGuide
+  onOpenGuide,
+  onOpenDealerAssist
 }: InventoryListProps) {
   const { signOut, user } = useAuth();
   const [loggingOut, setLoggingOut] = React.useState(false);
+  const [guideSeen, setGuideSeen] = React.useState(() => !!localStorage.getItem('truinspect_guide_seen'));
   const [searchTerm, setSearchTerm] = React.useState('');
   /** Stock # from Flow deep-link (?stock=) — highlight + search */
   const [highlightStock, setHighlightStock] = React.useState<string | null>(null);
@@ -476,14 +479,25 @@ export default function InventoryList({
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          {onOpenDealerAssist && (
+            <button
+              onClick={onOpenDealerAssist}
+              className="flex items-center justify-center h-10 w-10 rounded-[10px] text-[#4FE3DC]/60 hover:text-[#4FE3DC] hover:bg-[rgba(79,227,220,0.06)] transition-colors cursor-pointer"
+              aria-label="Dealer Assist"
+              title="Dealer Assist"
+            >
+              <MessageCircle size={18} />
+            </button>
+          )}
           {onOpenGuide && (
             <button
-              onClick={onOpenGuide}
-              className="flex items-center justify-center h-10 w-10 rounded-[10px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer"
+              onClick={() => { onOpenGuide(); if (!guideSeen) { setGuideSeen(true); localStorage.setItem('truinspect_guide_seen', '1'); } }}
+              className="relative flex items-center justify-center h-10 w-10 rounded-[10px] text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] hover:bg-white/[0.06] transition-colors cursor-pointer"
               aria-label="How do I…?"
               title="How do I…?"
             >
               <HelpCircle size={18} />
+              {!guideSeen && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#4FE3DC]" />}
             </button>
           )}
           <button

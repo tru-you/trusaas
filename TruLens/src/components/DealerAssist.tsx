@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Send, MessageCircle } from "lucide-react";
+import { X, Send } from "lucide-react";
 
 const CHAT_API = "https://trusaas-chat.onrender.com";
 
@@ -10,16 +10,16 @@ interface ChatMsg {
 
 interface Props {
   userName?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export default function DealerAssist({ userName }: Props) {
-  const [open, setOpen] = useState(false);
+export default function DealerAssist({ userName, open, onOpenChange }: Props) {
   const [messages, setMessages] = useState<ChatMsg[]>([
     { role: "assistant", content: "Hey! Ask me anything about shooting tips, quality scores, damage reports, DMS export, or the platform." },
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [hint, setHint] = useState(() => !localStorage.getItem("trulens_assist_seen"));
   const msgsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -63,33 +63,20 @@ export default function DealerAssist({ userName }: Props) {
     ? ["How do I shoot a car?", "What are quality scores?", "How to export to DMS"]
     : null;
 
+  if (!open) return null;
+
   return (
     <>
-      <button
-        onClick={() => { setOpen(true); setHint(false); localStorage.setItem("trulens_assist_seen", "1"); }}
-        className={`fixed bottom-5 right-5 z-[1000] w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border border-[rgba(79,227,220,0.3)] transition-transform ${open ? "scale-0 pointer-events-none" : "scale-100"}`}
-        style={{
-          background: "rgba(11,15,23,0.65)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-        }}
-        aria-label="Open Dealer Assist"
-      >
-        <MessageCircle size={24} className="text-[#4FE3DC]" />
-        {hint && <span className="absolute inset-0 rounded-full animate-ping border-2 border-[#4FE3DC] opacity-40 pointer-events-none" />}
-      </button>
-
-      {open && (
         <div className="fixed inset-0 z-[1100] flex flex-col font-sans">
           <button
             aria-label="Close"
-            onClick={() => setOpen(false)}
+            onClick={() => onOpenChange(false)}
             className="absolute inset-0 bg-black/50 backdrop-blur-[2px] cursor-pointer"
           />
           <div className="absolute inset-0 flex flex-col bg-[color:var(--ink-2,#0B0F17)] border-l border-[rgba(232,234,230,0.14)] shadow-2xl">
             <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(232,234,230,0.14)] bg-[linear-gradient(90deg,rgba(20,102,224,0.1),rgba(21,199,192,0.05))]">
               <span className="font-semibold text-[16px] text-[#E8EAE6]">Dealer Assist</span>
-              <button onClick={() => setOpen(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] p-1 rounded-lg hover:bg-white/5 cursor-pointer">
+              <button onClick={() => onOpenChange(false)} className="text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] p-1 rounded-lg hover:bg-white/5 cursor-pointer">
                 <X size={16} />
               </button>
             </div>
@@ -147,7 +134,6 @@ export default function DealerAssist({ userName }: Props) {
             </div>
           </div>
         </div>
-      )}
     </>
   );
 }
