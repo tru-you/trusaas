@@ -126,8 +126,14 @@ Sections covered: ${(d.sections || []).join(', ')}
 Buyer-flagged concerns: ${(d.flags || []).map(f => `${f.section}: ${f.note}`).join('; ') || 'none'}
 
 Write exactly 2 short parts: (1) a one-line overall impression, then (2) a short paragraph on the condition covered, weaving in any flagged concerns as prose.
-Do NOT output a "Points to follow up" list or any bulleted list — the report already renders the flagged concerns as its own separate section, so a list here would duplicate it.
-Keep it factual and neutral. No markdown headers, plain text.`;
+
+FORMATTING RULES (follow strictly):
+- NEVER use markdown headers (# ## ### ####). Plain text only.
+- NEVER use bulleted or numbered lists. Write in prose.
+- NEVER use multiple exclamation marks (!! or !!!). Prefer full stops.
+- Refer to the vehicle by its name (e.g. "the 2019 Golf 7 R"), not "the vehicle" generically.
+- Refer to the buyer by name if known, not "the buyer".
+Keep it factual and neutral.`;
 
   const r = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
