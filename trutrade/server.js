@@ -128,9 +128,16 @@ Sections inspected: ${(d.sections || []).join(', ') || 'none'}
 Defects noted by the dealer: ${(d.defects || []).map(f => `${f.section}: ${f.note}`).join('; ') || 'none noted'}
 Customer's answers: ${(d.answers || []).map(a => `${a.q} — ${a.a}`).join('; ') || 'none recorded'}
 
-Write 2 short parts, plain text, no markdown headers, no bulleted list:
+Write 2 short parts, plain text only:
 (1) one line on overall presented condition,
 (2) a short paragraph covering what was seen on camera and what the customer disclosed, naming the defects noted.
+
+FORMATTING RULES (follow strictly):
+- NEVER use markdown headers (# ## ### ####). Plain text only.
+- NEVER use bulleted or numbered lists. Write in prose.
+- NEVER use multiple exclamation marks (!! or !!!). Prefer full stops.
+- Refer to the vehicle by its name (e.g. "the 2019 Golf 7 R"), not "the vehicle" generically.
+- Refer to the customer by name if known, not "the customer".
 
 CRITICAL: do NOT suggest, estimate or imply any monetary value, trade price or valuation. The dealer sets the price separately. Do not use words like "worth", "value", "estimate" or any figure in Rand. Describe condition only. Note explicitly that the assessment is based on a video call and is subject to physical viewing.`;
 
