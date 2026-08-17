@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TruDealer Widgets — Configurator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base:#06080D; --bg-raised:#0D1117; --bg-overlay:#161B22; --border:#30363D;
+      --text:#F4F6F8; --text-2:#B1BAC4; --muted:#6E7681;
+      --accent:#4FE3DC; --accent-2:#06B6D4;
+      --accent-surface:rgba(79,227,220,.10); --accent-border:rgba(79,227,220,.35);
+      --glass-bg:rgba(255,255,255,.04); --glass-border:rgba(255,255,255,.08);
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; color:var(--text);
+      font-family:"Plus Jakarta Sans",system-ui,sans-serif;
+      background:radial-gradient(1000px 600px at 85% -10%,rgba(79,227,220,.09),transparent 60%),var(--bg-base);
+      -webkit-font-smoothing:antialiased;
+    }
+    .top { display:flex; align-items:center; gap:10px; padding:18px 24px; border-bottom:1px solid var(--glass-border); position:sticky; top:0; background:rgba(6,8,13,.85); backdrop-filter:blur(12px); z-index:10; }
+    .mark { width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); display:grid; place-items:center; color:#06080D; font-weight:800; box-shadow:0 0 20px rgba(79,227,220,.4); }
+    .top b { font-weight:800; letter-spacing:-.02em; }
+    .top b span { color:var(--accent); }
+    .top .tag { margin-left:auto; color:var(--muted); font-size:13px; }
+    .layout { display:grid; grid-template-columns:minmax(340px,440px) 1fr; gap:24px; padding:24px; max-width:1440px; margin:0 auto; }
+    @media(max-width:960px){ .layout{ grid-template-columns:1fr; } }
+    .stack { display:flex; flex-direction:column; gap:16px; }
+    .card { background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:16px; padding:18px; backdrop-filter:blur(20px) saturate(140%); }
+    .card > h2 { margin:0 0 4px; font-size:14px; letter-spacing:.02em; text-transform:uppercase; color:var(--accent); }
+    .card .desc { margin:0 0 14px; font-size:12.5px; color:var(--muted); }
+    details.wsec { background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:14px; padding:0; overflow:hidden; }
+    details.wsec > summary { list-style:none; cursor:pointer; padding:14px 16px; display:flex; align-items:center; gap:10px; font-weight:700; font-size:14.5px; }
+    details.wsec > summary::-webkit-details-marker { display:none; }
+    details.wsec > summary .chev { margin-left:auto; color:var(--muted); transition:transform .2s; }
+    details.wsec[open] > summary .chev { transform:rotate(90deg); }
+    details.wsec > summary .badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--accent-surface); color:var(--accent); border:1px solid var(--accent-border); }
+    details.wsec .body { padding:4px 16px 16px; }
+    .field { margin-bottom:12px; }
+    .field:last-child { margin-bottom:0; }
+    label { display:block; font-size:12px; font-weight:600; color:var(--text-2); margin-bottom:5px; }
+    label .hint { font-weight:400; color:var(--muted); }
+    input[type=text], input[type=url], input[type=number], select {
+      width:100%; padding:9px 11px; border-radius:9px; background:var(--bg-raised);
+      border:1px solid var(--border); color:var(--text); font:inherit; font-size:13.5px;
+    }
+    input:focus, select:focus { outline:none; border-color:var(--accent-border); box-shadow:0 0 0 3px var(--accent-surface); }
+    input[type=color] { width:44px; height:36px; padding:2px; border:1px solid var(--border); border-radius:9px; background:var(--bg-raised); cursor:pointer; vertical-align:middle; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .widgets { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .wtoggle { display:flex; align-items:center; gap:8px; padding:9px 11px; border:1px solid var(--border); border-radius:9px; background:var(--bg-raised); cursor:pointer; font-size:13.5px; font-weight:600; }
+    .wtoggle input { accent-color:var(--accent); width:15px; height:15px; }
+    .seg { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .seg button { padding:7px 14px; background:var(--bg-raised); border:none; color:var(--text-2); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; }
+    .seg button.on { background:var(--accent); color:#06080D; }
+    .note { font-size:11.5px; color:var(--muted); line-height:1.55; background:rgba(255,255,255,.03); border:1px solid var(--glass-border); border-radius:9px; padding:9px 11px; margin-top:8px; }
+    .snippet { position:relative; }
+    pre { margin:0; padding:16px; border-radius:12px; background:#04060A; border:1px solid var(--border); overflow-x:auto; font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; line-height:1.6; color:#cbd5e1; white-space:pre; }
+    pre .attr { color:var(--accent); } pre .val { color:#a5e6a5; }
+    .copy { position:absolute; top:12px; right:12px; padding:7px 14px; border-radius:9px; background:var(--accent); color:#06080D; border:none; font:inherit; font-weight:700; font-size:13px; cursor:pointer; }
+    .copy:active { transform:scale(.96); }
+    .preview-wrap { border:1px solid var(--glass-border); border-radius:16px; overflow:hidden; background:var(--bg-raised); position:sticky; top:80px; }
+    .preview-bar { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--glass-border); font-size:13px; color:var(--muted); }
+    .preview-bar .dot { width:10px; height:10px; border-radius:50%; }
+    .preview-bar .seg { margin-left:auto; }
+    iframe { width:100%; height:520px; border:none; display:block; background:#06080D; transition:max-width .2s; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="mark">T</div>
+    <b>Tru<span>Dealer</span> Widgets</b>
+    <span class="tag">Standalone configurator — everything settable</span>
+  </div>
+
+  <div class="layout">
+    <div class="stack" id="controls">
+      <div class="card">
+        <h2>Brand &amp; global</h2>
+        <p class="desc">Applies across every widget.</p>
+        <div id="globalFields"></div>
+      </div>
+
+      <div class="card">
+        <h2>Widgets</h2>
+        <p class="desc">Choose what loads. Each enabled widget gets its own settings below.</p>
+        <div class="widgets" id="widgets"></div>
+      </div>
+
+      <div class="card">
+        <h2>Lead delivery</h2>
+        <p class="desc">Every configured channel fires — nothing is lost.</p>
+        <div id="leadFields"></div>
+        <div class="note"><strong>CallMeBot</strong> pings a WhatsApp number instantly but sends customer details through a third-party relay in the URL — use it alongside a webhook, not as the system of record.</div>
+      </div>
+
+      <div class="card">
+        <h2>Hosting</h2>
+        <p class="desc">Where the widget files live. Swap for your CDN before shipping.</p>
+        <div id="hostFields"></div>
+      </div>
+
+      <div id="widgetSections" class="stack"></div>
+    </div>
+
+    <div class="stack">
+      <div class="preview-wrap">
+        <div class="preview-bar">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          Live preview
+          <span class="seg" id="viewport">
+            <button data-vw="desktop" class="on">Desktop</button>
+            <button data-vw="mobile">Mobile</button>
+          </span>
+        </div>
+        <iframe id="preview" title="Widget preview"></iframe>
+      </div>
+      <div class="card snippet">
+        <h2>Embed snippet</h2>
+        <p class="desc">Paste once, before <code>&lt;/body&gt;</code>, on the dealer's site.</p>
+        <button class="copy" id="copy">Copy</button>
+        <pre id="code"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+    var $ = function(id){ return document.getElementById(id); };
+    var esc = function(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); };
+
+    /* ---- schema: every settable option lives here ---- */
+    var GLOBAL = [
+      { attr:"data-dealer", label:"Dealer name", type:"text", def:"Demo Motors" },
+      { attr:"data-accent", label:"Accent colour", type:"color", def:"#4FE3DC" },
+      { attr:"data-accent-2", label:"Accent 2 (gradient end)", type:"color", def:"", optional:true },
+      { attr:"data-wa", label:"WhatsApp number", type:"text", def:"27618759389", digits:true },
+      { attr:"data-brand", label:"Footer attribution", type:"text", def:"", placeholder:"Powered by TruDealer" },
+      { attr:"data-theme", label:"Theme", type:"select", options:["dark","light"], def:"dark" },
+      { attr:"data-text", label:"Text colour", type:"colorOpt", def:"", optional:true },
+      { attr:"data-scale", label:"Widget size", type:"range", min:"0.8", max:"1.3", step:"0.05", def:"1", unit:"×", optional:true },
+      { attr:"data-position", label:"Default side", type:"select", options:["right","left"], def:"right", hint:"per-widget can override" }
+    ];
+    var LEAD = [
+      { attr:"data-webhook", label:"Webhook URL (Zapier / CRM)", type:"url", placeholder:"https://hooks.zapier.com/…" },
+      { attr:"data-callmebot-key", label:"CallMeBot key", type:"text", placeholder:"123456" },
+      { attr:"data-callmebot-phone", label:"CallMeBot phone", type:"text", placeholder:"defaults to WhatsApp", digits:true }
+    ];
+    var HOST = [
+      { attr:"__base", label:"Script base URL", type:"text" },
+      { attr:"data-layout", label:"File layout", type:"select", options:["nested","flat"], def:"nested", optional:true, optDefault:"nested" }
+    ];
+    // Per-widget option sets. Emitted as data-<key>-<attr>. side widgets carry position.
+    var WIDGETS = {
+      afford: { label:"TruAfford", sub:"Affordability", side:"left", fields:[
+        { attr:"position", label:"Side", type:"seg", options:["left","right"], def:"left" },
+        { attr:"bottom", label:"Bottom offset", type:"text", placeholder:"116px" },
+        { attr:"rate", label:"Interest rate %", type:"number", placeholder:"11.5" }
+      ]},
+      repay: { label:"TruRepay", sub:"Finance calc", side:"left", fields:[
+        { attr:"position", label:"Side", type:"seg", options:["left","right"], def:"left" },
+        { attr:"mode", label:"Mode", type:"select", options:["float","inline"], def:"float" },
+        { attr:"target", label:"Inline target selector", type:"text", placeholder:"#finance-calc", showIf:{ mode:"inline" } },
+        { attr:"collapsible", label:"Collapsible (inline)", type:"select", options:["0","1"], def:"0", showIf:{ mode:"inline" } },
+        { attr:"bottom", label:"Bottom offset", type:"text", placeholder:"24px" },
+        { attr:"heading", label:"Heading", type:"text", placeholder:"Finance Calculator" },
+        { attr:"subheading", label:"Subheading", type:"text" },
+        { attr:"price", label:"Vehicle price", type:"number", placeholder:"459900" },
+        { attr:"vehicle", label:"Vehicle title", type:"text", placeholder:"2023 Toyota Fortuner" },
+        { attr:"rate", label:"Interest rate %", type:"number", placeholder:"11.5" },
+        { attr:"deposit", label:"Deposit %", type:"number", placeholder:"10" },
+        { attr:"term", label:"Term (months)", type:"number", placeholder:"72" },
+        { attr:"balloon", label:"Balloon %", type:"number", placeholder:"0" },
+        { attr:"init-fee", label:"Initiation fee", type:"number", placeholder:"1207" },
+        { attr:"admin-fee", label:"Admin fee", type:"number", placeholder:"69" },
+        { attr:"currency", label:"Currency symbol", type:"text", placeholder:"R" }
+      ]},
+      form: { label:"TruForm", sub:"Enquiry", side:"right", fields:[
+        { attr:"position", label:"Side", type:"seg", options:["left","right"], def:"right" },
+        { attr:"mode", label:"Mode", type:"select", options:["float","inline"], def:"float" },
+        { attr:"target", label:"Inline target selector", type:"text", placeholder:"#contact-form", showIf:{ mode:"inline" } },
+        { attr:"bottom", label:"Bottom offset", type:"text", placeholder:"24px" },
+        { attr:"fields", label:"Fields (comma-sep)", type:"text", placeholder:"vehicle,tradein,finance,location" },
+        { attr:"heading", label:"Heading", type:"text" },
+        { attr:"subheading", label:"Subheading", type:"text" }
+      ]},
+      book: { label:"TruBook", sub:"Test-drive · modal", side:null, fields:[
+        { attr:"address", label:"Dealership address", type:"text", placeholder:"12 Main Rd, Cape Town" }
+      ]},
+      share: { label:"TruShare", sub:"Share · bottom sheet", side:null, fields:[
+        { attr:"site", label:"Site origin", type:"text", placeholder:"https://dealer.co.za" },
+        { attr:"vehicle-path", label:"Vehicle path prefix", type:"text", placeholder:"/vehicle/" },
+        { attr:"fb-page", label:"Facebook page", type:"text" },
+        { attr:"ig-handle", label:"Instagram handle", type:"text" },
+        { attr:"gbp", label:"Google Business URL", type:"text" }
+      ]}
+    };
+    var ENABLED = { afford:true, repay:true, form:true, book:true, share:true };
+    var state = {}; // attr -> value
+
+    /* ---- field renderers ---- */
+    function renderField(f, prefix) {
+      var id = "f_" + (prefix||"") + f.attr;
+      var key = prefix ? prefix + "|" + f.attr : f.attr;
+      if (!(key in state)) state[key] = f.def || "";
+      var val = state[key];
+      var hint = f.hint ? ' <span class="hint">('+f.hint+')</span>' : "";
+      var wrap = document.createElement("div");
+      wrap.className = "field";
+      wrap.setAttribute("data-key", key);
+      var html = '<label for="'+id+'">'+f.label+hint+'</label>';
+      if (f.type === "select") {
+        html += '<select id="'+id+'">'+f.options.map(function(o){ return '<option value="'+o+'"'+(o===val?' selected':'')+'>'+o+'</option>'; }).join("")+'</select>';
+      } else if (f.type === "seg") {
+        html += '<span class="seg">'+f.options.map(function(o){ return '<button type="button" data-v="'+o+'"'+(o===val?' class="on"':'')+'>'+o+'</button>'; }).join("")+'</span>';
+      } else if (f.type === "color") {
+        html += '<input type="color" id="'+id+'" value="'+(val||"#4FE3DC")+'">';
+      } else if (f.type === "colorOpt") {
+        // Optional colour: checkbox enables a swatch; unchecked = not emitted.
+        html += '<span style="display:flex;gap:10px;align-items:center">'+
+          '<input type="checkbox" class="cbx" style="width:16px;height:16px;accent-color:var(--accent)"'+(val?' checked':'')+'>'+
+          '<input type="color" class="clr" value="'+(val||"#ffffff")+'"'+(val?'':' disabled')+'>'+
+          '<span class="hint" style="font-size:12px">'+(val?val:"theme default")+'</span></span>';
+      } else if (f.type === "range") {
+        html += '<span style="display:flex;gap:10px;align-items:center">'+
+          '<input type="range" class="rng" min="'+f.min+'" max="'+f.max+'" step="'+f.step+'" value="'+(val||f.def)+'" style="flex:1;accent-color:var(--accent)">'+
+          '<span class="rngval" style="min-width:42px;text-align:right;font-weight:700;color:var(--accent)">'+(val||f.def)+(f.unit||"")+'</span></span>';
+      } else {
+        html += '<input type="'+(f.type==="number"?"text":f.type)+'" id="'+id+'" value="'+esc(val)+'"'+(f.placeholder?' placeholder="'+esc(f.placeholder)+'"':'')+'>';
+      }
+      wrap.innerHTML = html;
+      // wire
+      if (f.type === "seg") {
+        wrap.querySelectorAll(".seg button").forEach(function(b){
+          b.addEventListener("click", function(){
+            wrap.querySelectorAll(".seg button").forEach(function(x){ x.classList.remove("on"); });
+            b.classList.add("on"); state[key] = b.getAttribute("data-v"); update();
+          });
+        });
+      } else if (f.type === "colorOpt") {
+        var cbx = wrap.querySelector(".cbx"), clr = wrap.querySelector(".clr"), lab = wrap.querySelector(".hint");
+        function sync(){ state[key] = cbx.checked ? clr.value : ""; clr.disabled = !cbx.checked; lab.textContent = cbx.checked ? clr.value : "theme default"; update(); }
+        cbx.addEventListener("change", sync); clr.addEventListener("input", sync);
+      } else if (f.type === "range") {
+        var rng = wrap.querySelector(".rng"), rv = wrap.querySelector(".rngval");
+        rng.addEventListener("input", function(){ state[key] = rng.value; rv.textContent = rng.value + (f.unit||""); update(); });
+      } else {
+        var inp = wrap.querySelector("input,select");
+        inp.addEventListener("input", function(){ state[key] = inp.value; update(); });
+        inp.addEventListener("change", function(){ state[key] = inp.value; update(); });
+      }
+      return wrap;
+    }
+
+    function renderList(host, list, prefix) {
+      host.innerHTML = "";
+      list.forEach(function(f){ host.appendChild(renderField(f, prefix)); });
+    }
+
+    /* ---- widget toggles + per-widget sections ---- */
+    function renderWidgets() {
+      var host = $("widgets"); host.innerHTML = "";
+      Object.keys(WIDGETS).forEach(function(k){
+        var lab = document.createElement("label"); lab.className="wtoggle";
+        lab.innerHTML = '<input type="checkbox"'+(ENABLED[k]?' checked':'')+'> '+WIDGETS[k].label;
+        lab.querySelector("input").addEventListener("change", function(e){ ENABLED[k]=e.target.checked; renderSections(); update(); });
+        host.appendChild(lab);
+      });
+    }
+    function renderSections() {
+      var host = $("widgetSections"); host.innerHTML = "";
+      Object.keys(WIDGETS).forEach(function(k){
+        if (!ENABLED[k]) return;
+        var w = WIDGETS[k];
+        var d = document.createElement("details"); d.className="wsec"; d.open = (k==="repay");
+        d.innerHTML = '<summary>'+w.label+' <span class="badge">'+w.sub+'</span><span class="chev">▸</span></summary><div class="body"></div>';
+        var body = d.querySelector(".body");
+        w.fields.forEach(function(f){
+          var fld = renderField(f, k);
+          // showIf: hide unless a sibling field matches
+          if (f.showIf) { fld.setAttribute("data-showif", JSON.stringify(f.showIf)); fld.setAttribute("data-prefix", k); }
+          body.appendChild(fld);
+        });
+        host.appendChild(d);
+      });
+      applyShowIf();
+    }
+    function applyShowIf() {
+      document.querySelectorAll("[data-showif]").forEach(function(el){
+        var cond = JSON.parse(el.getAttribute("data-showif"));
+        var pfx = el.getAttribute("data-prefix");
+        var show = Object.keys(cond).every(function(a){ return state[pfx+"|"+a] === cond[a]; });
+        el.classList.toggle("hidden", !show);
+      });
+    }
+
+    /* ---- build snippet ---- */
+    function baseUrl(){ return (state["__base"]||"").replace(/\/$/, ""); }
+    function buildAttrs() {
+      var a = [];
+      a.push(["src", baseUrl() + "/tru-loader/tru-loader.js"]);
+      // globals
+      GLOBAL.forEach(function(f){
+        var v = state[f.attr]; if (v == null) v = "";
+        if (f.digits) v = v.replace(/\D/g,"");
+        if (f.type === "range" && v === f.def) return; // default size — no need to emit
+        if (f.optional && !v) return;
+        if (v === "" ) { if (f.attr==="data-dealer"||f.attr==="data-accent") a.push([f.attr, v]); return; }
+        a.push([f.attr, v]);
+      });
+      // widgets list
+      var enabled = Object.keys(WIDGETS).filter(function(k){ return ENABLED[k]; });
+      a.push(["data-widgets", enabled.join(",")]);
+      // layout
+      if (state["data-layout"] && state["data-layout"] !== "nested") a.push(["data-layout", state["data-layout"]]);
+      // lead
+      LEAD.forEach(function(f){ var v=state[f.attr]; if(v){ a.push([f.attr, f.digits?v.replace(/\D/g,""):v]); } });
+      // per-widget prefixed
+      enabled.forEach(function(k){
+        WIDGETS[k].fields.forEach(function(f){
+          var v = state[k+"|"+f.attr]; if (v==null || v==="") return;
+          // hide inline-only fields when not applicable
+          if (f.showIf) { var ok=Object.keys(f.showIf).every(function(x){return state[k+"|"+x]===f.showIf[x];}); if(!ok) return; }
+          a.push(["data-"+k+"-"+f.attr, v]);
+        });
+      });
+      return a;
+    }
+
+    function snippetHTML(attrs){
+      return "&lt;script " + attrs.map(function(kv,i){ return (i===0?"":"        ")+'<span class="attr">'+kv[0]+'</span>="<span class="val">'+esc(kv[1])+'</span>"'; }).join("\n") + "&gt;&lt;/script&gt;";
+    }
+    function snippetText(attrs){
+      return "<script " + attrs.map(function(kv,i){ return (i===0?"":"        ")+kv[0]+'="'+kv[1]+'"'; }).join("\n") + "><\/script>";
+    }
+    function previewDoc(attrs){
+      var light = state["data-theme"] === "light";
+      return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
+        '<style>body{margin:0;min-height:100vh;font-family:system-ui,sans-serif;background:'+(light?"#f8fafc;color:#0f172a":"#06080D;color:#B1BAC4")+
+        '}.c{padding:36px 26px;max-width:520px}.c h3{margin:0 0 8px;font-size:21px;color:'+(light?"#0f172a":"#F4F6F8")+'}#finance-calc,#contact-form{margin-top:18px}</style></head><body>'+
+        '<div class="c"><h3>Dealer site preview</h3><p>Launchers mount in the corners — tap to open. Inline widgets render below.</p><div id="finance-calc"></div><div id="contact-form"></div></div>'+
+        snippetText(attrs)+'</body></html>';
+    }
+
+    var curText="";
+    function update() {
+      applyShowIf();
+      var attrs = buildAttrs();
+      $("code").innerHTML = snippetHTML(attrs);
+      curText = snippetText(attrs);
+      $("preview").srcdoc = previewDoc(attrs);
+    }
+
+    /* ---- init ---- */
+    state["__base"] = new URL("tru-loader/tru-loader.js", location.href).href.replace(/tru-loader\/tru-loader\.js$/, "");
+    renderList($("globalFields"), GLOBAL, "");
+    renderList($("leadFields"), LEAD, "");
+    renderList($("hostFields"), HOST, "");
+    renderWidgets();
+    renderSections();
+
+    $("copy").addEventListener("click", function(){
+      navigator.clipboard.writeText(curText).then(function(){ $("copy").textContent="Copied!"; setTimeout(function(){ $("copy").textContent="Copy"; },1400); });
+    });
+    $("viewport").addEventListener("click", function(e){
+      var b=e.target.closest("button"); if(!b) return;
+      $("viewport").querySelectorAll("button").forEach(function(x){x.classList.remove("on");}); b.classList.add("on");
+      var mob = b.getAttribute("data-vw")==="mobile";
+      $("preview").style.maxWidth = mob?"390px":"none";
+      $("preview").style.margin = mob?"0 auto":"0";
+    });
+
+    update();
+  </script>
+</body>
+</html>

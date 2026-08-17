@@ -47,6 +47,9 @@
     dealer: getAttr("data-dealer", "this dealership"),
     slug: getAttr("data-slug", ""),
     flow: getAttr("data-flow", ""),
+    webhook: getAttr("data-webhook", ""),
+    cmbKey: getAttr("data-callmebot-key", ""),
+    cmbPhone: getAttr("data-callmebot-phone", ""),
     wa: (getAttr("data-wa", "") || "").replace(/\D/g, ""),
     accent: getAttr("data-accent", "#1466E0"),
     accent2: getAttr("data-accent-2", ""),
@@ -56,7 +59,13 @@
     scale: getAttr("data-scale", ""),
     position: getAttr("data-position", "right"),
     baseBottom: parseInt(getAttr("data-bottom", "24"), 10) || 24,
-    widgets: (getAttr("data-widgets", "afford,repay,form,chat") || "")
+    // "nested" (default) resolves each widget as <name>/<name>.js — the folder
+    // layout of this package. "flat" resolves <name>.js — for dealers who upload
+    // every file into one directory. Set via data-layout.
+    layout: (getAttr("data-layout", "nested") || "nested").toLowerCase(),
+    // Chat is NOT in the standalone default: it needs an AI backend a
+    // non-ecosystem dealer does not have. Opt in explicitly with data-widgets.
+    widgets: (getAttr("data-widgets", "afford,repay,form,share") || "")
       .split(",")
       .map(function (s) {
         return s.trim().toLowerCase();
@@ -81,21 +90,43 @@
     document.head.appendChild(s);
   }
 
+  // Forward every data-<prefix>-<attr> on the loader tag to a widget tag as
+  // data-<attr>. This makes ANY widget option settable from the single loader
+  // tag (e.g. data-repay-rate → data-rate) without maintaining a per-attribute
+  // allow-list. Runs after the shared globals so an explicit per-widget value
+  // wins. data-<prefix>-position/mode/target/bottom/etc. all map correctly.
+  function applyPrefixed(tag, prefix) {
+    if (!script || !script.attributes) return;
+    var pre = "data-" + prefix + "-";
+    for (var i = 0; i < script.attributes.length; i++) {
+      var at = script.attributes[i];
+      if (at.name.indexOf(pre) === 0 && at.name.length > pre.length) {
+        tag.setAttribute("data-" + at.name.slice(pre.length), at.value);
+      }
+    }
+  }
+
   // Shared appearance globals every widget understands: text colour + size.
   function applyGlobalStyle(tag) {
     if (globalCfg.text) tag.setAttribute("data-text", globalCfg.text);
     if (globalCfg.scale) tag.setAttribute("data-scale", globalCfg.scale);
   }
 
-/* DEPLOY-ADAPTED COPY — do NOT blind-copy canonical over this file.
-   Widgets sit FLAT in this site root, not in packages/<name>/.
-   Canonical resolves "tru-form/tru-form.js"; here that 404s and every
-   widget silently fails to mount. Port canonical changes by hand. */
+  // Resolve a path relative to the standalone package root (the folder that
+  // contains tru-loader/). baseUrl is the loader's own directory, e.g.
+  // ".../standalone/tru-loader/" — strip the trailing "tru-loader/" to get root.
   function getScriptUrl(relPath) {
-    if (baseUrl.includes("tru-loader")) {
-      return baseUrl.replace(/tru-loader.*$/, relPath);
-    }
-    return baseUrl + relPath;
+    var rootUrl = baseUrl.replace(/tru-loader\/?$/, "");
+    return rootUrl + relPath;
+  }
+
+  // Resolve a widget's entry script. Honours data-layout:
+  //   nested (default): <root>/<name>/<name>.js  (this package's folder layout)
+  //   flat:             <root>/<name>.js         (all files in one directory)
+  function widgetUrl(name) {
+    return globalCfg.layout === "flat"
+      ? getScriptUrl(name + ".js")
+      : getScriptUrl(name + "/" + name + ".js");
   }
 
   // Helper to load chat stack in order
@@ -134,32 +165,42 @@
 
     // 1. TruAfford
     if (wanted.indexOf("afford") !== -1 || wanted.indexOf("tru-afford") !== -1) {
-      var affordSrc = getScriptUrl("tru-afford.js");
+      var affordSrc = widgetUrl("tru-afford");
       var tag = document.createElement("script");
       tag.src = affordSrc;
       tag.setAttribute("data-dealer", globalCfg.dealer);
       tag.setAttribute("data-wa", globalCfg.wa);
       tag.setAttribute("data-accent", globalCfg.accent);
       tag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) tag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) tag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) tag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
       tag.setAttribute("data-slug", globalCfg.slug);
-      tag.setAttribute("data-position", globalCfg.position);
-      tag.setAttribute("data-bottom", "92px");
+      tag.setAttribute("data-position", getAttr("data-afford-position", globalCfg.position));
+      // Sits above TruRepay's launcher (base 24px + ~76px pill + 16px gap) when
+      // both stack on the same side. Override with data-afford-bottom.
+      tag.setAttribute("data-bottom", getAttr("data-afford-bottom", "116px"));
       tag.setAttribute("data-theme", globalCfg.theme);
       applyGlobalStyle(tag);
+      applyPrefixed(tag, "afford");
       document.head.appendChild(tag);
     }
 
     // 2. TruRepay
     if (wanted.indexOf("repay") !== -1 || wanted.indexOf("tru-repay") !== -1) {
-      var repaySrc = getScriptUrl("tru-repay.js");
+      var repaySrc = widgetUrl("tru-repay");
       var rTag = document.createElement("script");
       rTag.src = repaySrc;
       rTag.setAttribute("data-dealer", globalCfg.dealer);
       rTag.setAttribute("data-slug", globalCfg.slug);
       rTag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) rTag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) rTag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) rTag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
       rTag.setAttribute("data-wa", globalCfg.wa);
       rTag.setAttribute("data-accent", globalCfg.accent);
       rTag.setAttribute("data-mode", getAttr("data-repay-mode", "inline"));
+      rTag.setAttribute("data-position", getAttr("data-repay-position", globalCfg.position));
       rTag.setAttribute("data-target", getAttr("data-repay-target", "#finance-calc"));
       rTag.setAttribute("data-price", getAttr("data-repay-price", "0"));
       rTag.setAttribute("data-vehicle", getAttr("data-repay-vehicle", ""));
@@ -168,17 +209,21 @@
       rTag.setAttribute("data-theme", globalCfg.theme);
       rTag.setAttribute("data-collapsible", getAttr("data-repay-collapsible", "0"));
       applyGlobalStyle(rTag);
+      applyPrefixed(rTag, "repay");
       document.head.appendChild(rTag);
     }
 
     // 3. TruForm
     if (wanted.indexOf("form") !== -1 || wanted.indexOf("tru-form") !== -1) {
-      var formSrc = getScriptUrl("tru-form.js");
+      var formSrc = widgetUrl("tru-form");
       var fTag = document.createElement("script");
       fTag.src = formSrc;
       fTag.setAttribute("data-dealer", globalCfg.dealer);
       fTag.setAttribute("data-slug", globalCfg.slug);
       fTag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) fTag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) fTag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) fTag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
       fTag.setAttribute("data-wa", globalCfg.wa);
       fTag.setAttribute("data-accent", globalCfg.accent);
       fTag.setAttribute("data-mode", getAttr("data-form-mode", "float"));
@@ -189,27 +234,41 @@
       fTag.setAttribute("data-position", getAttr("data-form-position", globalCfg.position));
       fTag.setAttribute("data-bottom", getAttr("data-form-bottom", "24px"));
       applyGlobalStyle(fTag);
+      applyPrefixed(fTag, "form");
       document.head.appendChild(fTag);
     }
 
-    // 4. TruChat
+    // 4. TruChat — requires an AI backend (data-flow). Standalone dealers
+    //    without one should leave chat out; warn rather than 404 silently.
     if (wanted.indexOf("chat") !== -1 || wanted.indexOf("tru-chat") !== -1) {
-      loadChatStack();
+      if (!globalCfg.flow) {
+        console.warn(
+          "[TruLoader] 'chat' requested but no data-flow backend is set — " +
+          "TruChat needs an AI endpoint. Skipping. Remove 'chat' from " +
+          "data-widgets, or provide data-flow."
+        );
+      } else {
+        loadChatStack();
+      }
     }
 
     // 5. TruBook
     if (wanted.indexOf("book") !== -1 || wanted.indexOf("tru-book") !== -1) {
-      var bookSrc = getScriptUrl("tru-book.js");
+      var bookSrc = widgetUrl("tru-book");
       var bTag = document.createElement("script");
       bTag.src = bookSrc;
       bTag.setAttribute("data-dealer", globalCfg.dealer);
       bTag.setAttribute("data-slug", globalCfg.slug);
       bTag.setAttribute("data-flow", globalCfg.flow);
+      if (globalCfg.webhook) bTag.setAttribute("data-webhook", globalCfg.webhook);
+      if (globalCfg.cmbKey) bTag.setAttribute("data-callmebot-key", globalCfg.cmbKey);
+      if (globalCfg.cmbPhone) bTag.setAttribute("data-callmebot-phone", globalCfg.cmbPhone);
       bTag.setAttribute("data-wa", globalCfg.wa);
       bTag.setAttribute("data-accent", globalCfg.accent);
       bTag.setAttribute("data-brand", globalCfg.brand);
       bTag.setAttribute("data-theme", globalCfg.theme);
       applyGlobalStyle(bTag);
+      applyPrefixed(bTag, "book");
       document.head.appendChild(bTag);
     }
 
@@ -219,7 +278,7 @@
     //    the dealer's behalf to connected accounts and is a paid DMS module.
     //    A site can run both: this is the floor, that one automates.
     if (wanted.indexOf("share") !== -1 || wanted.indexOf("tru-share") !== -1) {
-      var shareSrc = getScriptUrl("tru-share.js");
+      var shareSrc = widgetUrl("tru-share");
       var sTag = document.createElement("script");
       sTag.src = shareSrc;
       sTag.setAttribute("data-dealer", globalCfg.dealer);
@@ -231,6 +290,7 @@
       sTag.setAttribute("data-ig-handle", getAttr("data-share-ig-handle", ""));
       sTag.setAttribute("data-gbp", getAttr("data-share-gbp", ""));
       applyGlobalStyle(sTag);
+      applyPrefixed(sTag, "share");
       document.head.appendChild(sTag);
     }
   }

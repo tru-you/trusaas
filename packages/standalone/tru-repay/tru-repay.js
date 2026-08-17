@@ -61,12 +61,28 @@
 
   var scr = document.currentScript || document.querySelector("script[src*='tru-repay']");
   function attr(name, fallback) { return (scr && scr.getAttribute(name)) || fallback; }
+  /* CallMeBot: fire-and-forget WhatsApp ping to the dealer. Opt-in via
+     data-callmebot-key. Customer PII rides in the URL to callmebot.com, so
+     this is an instant-notification floor, not a system of record — pair it
+     with data-webhook for a durable CRM record. */
+  function cmbNotify(cfg, source, text) {
+    if (!cfg || !cfg.cmbKey || !cfg.cmbPhone) return;
+    try {
+      new Image().src =
+        "https://api.callmebot.com/whatsapp.php?phone=" + cfg.cmbPhone +
+        "&apikey=" + encodeURIComponent(cfg.cmbKey) +
+        "&text=" + encodeURIComponent("New " + source + " lead — " + (cfg.dealer || "") + "\n" + (text || ""));
+    } catch (e) {}
+  }
   function num(v, d) { var n = parseFloat(v); return isFinite(n) ? n : d; }
 
   var cfg = {
     dealer: attr("data-dealer", "this dealership"),
     slug: attr("data-slug", ""),
     flowUrl: attr("data-flow", ""),
+    webhook: attr("data-webhook", ""),
+    cmbKey: attr("data-callmebot-key", ""),
+    cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),
     wa: (attr("data-wa", "") || "").replace(/\D/g, ""),
     accent: attr("data-accent", "#1466E0"),
     accent2: attr("data-accent-2", ""),
@@ -167,6 +183,7 @@
 
     /* launcher (float) */
     ".tr-launcher{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:10px 16px 10px 12px;",
+      "width:250px;min-height:80px;text-align:left;",
       "border-radius:100px;background:linear-gradient(145deg,rgba(20,22,30,.78),rgba(14,16,22,.82));",
     "border:1px solid rgb(var(--tr-signal-rgb)/.28);color:#fff;",
     "box-shadow:0 12px 36px -10px rgba(0,0,0,.55),0 0 24px -8px rgb(var(--tr-signal-rgb)/.35);",
@@ -305,7 +322,7 @@
     ".tr-foot{padding:8px 14px 10px;border-top:1px solid var(--tr-hair);flex-shrink:0;font-size:9.5px;color:var(--tr-muted);text-align:center}",
     ".tr-foot b{color:var(--tr-signal-bright);font-weight:700}",
 
-    isInline ? "" : "@media(max-width:460px){:host{right:10px;left:10px;bottom:12px;max-width:none}.tr-panel{width:100%}}",
+    isInline ? "" : "@media(max-width:480px){.tr-launcher{width:58px;min-height:58px;height:58px;padding:8px;border-radius:50%;justify-content:center;gap:0}.tr-launcher>div:last-child{display:none}#tr{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}.tr-panel{width:100%}}",
     "@media(prefers-reduced-motion:reduce){#tr *{animation:none!important;transition-duration:.01ms!important}}",
     "#tr button:focus-visible,#tr input:focus-visible{outline:2px solid var(--tr-signal-bright);outline-offset:2px}",
     /* data-text: override primary text colour. */
@@ -594,10 +611,12 @@
       return L.join("\n");
     }
     function postLead(source) {
-      if (!(cfg.slug && cfg.flowUrl)) return Promise.resolve(false);
+      cmbNotify(cfg, source || "TruRepay", notes());
+      if (!(cfg.webhook || (cfg.slug && cfg.flowUrl))) return Promise.resolve(false);
+      var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
       var ctrl = ("AbortController" in window) ? new AbortController() : null;
       var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
-      return fetch(cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead", {
+      return fetch(leadUrl, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload(source)), mode: "cors", signal: ctrl ? ctrl.signal : undefined
       }).then(function (res) { if (timer) clearTimeout(timer); return !!(res && res.ok); })

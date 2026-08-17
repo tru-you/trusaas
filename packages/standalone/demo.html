@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TruDealer Standalone Widgets — Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* TruDealer / TruSaaS brand tokens (packages/tokens/tru-tokens.css) */
+      --bg-base: #06080D;
+      --bg-raised: #0D1117;
+      --bg-overlay: #161B22;
+      --border-subtle: #30363D;
+      --text-primary: #F4F6F8;
+      --text-secondary: #B1BAC4;
+      --text-muted: #6E7681;
+      --accent: #4FE3DC;
+      --accent-hover: #3ECFC8;
+      --accent-surface: rgba(79,227,220,.10);
+      --accent-border: rgba(79,227,220,.35);
+      --glass-bg: rgba(255,255,255,.04);
+      --glass-border: rgba(255,255,255,.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; padding: 0 0 160px;
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(1000px 600px at 80% -10%, rgba(79,227,220,.10), transparent 60%),
+        radial-gradient(800px 500px at -10% 20%, rgba(6,182,212,.08), transparent 55%),
+        var(--bg-base);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 24px; }
+    header { padding: 48px 0 28px; border-bottom: 1px solid var(--glass-border); }
+    .brand { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+    .brand-mark {
+      width:30px; height:30px; border-radius:9px;
+      background: linear-gradient(135deg, var(--accent), #06B6D4);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800; color:#06080D; font-size:16px; letter-spacing:-.03em;
+      box-shadow: 0 0 24px rgba(79,227,220,.4);
+    }
+    .brand-name { font-weight:800; font-size:16px; letter-spacing:-.02em; }
+    .brand-name span { color: var(--accent); }
+    .pill {
+      display:inline-block; background: var(--accent-surface); color: var(--accent);
+      border:1px solid var(--accent-border); border-radius:999px; padding:4px 12px;
+      font-size:12px; font-weight:600; margin-bottom:18px; letter-spacing:.01em;
+    }
+    h1 { font-size: 34px; margin: 0 0 12px; letter-spacing:-.03em; line-height:1.1; }
+    h1 em { font-style: normal; color: var(--accent); }
+    .sub { color: var(--text-secondary); font-size: 16px; line-height: 1.65; margin: 0; max-width: 660px; }
+    section { margin: 36px 0; }
+    h2 { font-size: 19px; margin: 0 0 6px; letter-spacing:-.01em; }
+    .lead { color: var(--text-muted); font-size:14px; margin: 0 0 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 12px; }
+    button.api {
+      background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary);
+      border-radius: 14px; padding: 18px; font-size: 15px; font-weight: 700; font-family: inherit;
+      cursor: pointer; text-align: left; transition: border-color .2s, transform .12s, background .2s;
+      backdrop-filter: blur(20px) saturate(140%);
+    }
+    button.api:hover { border-color: var(--accent-border); background: var(--accent-surface); transform: translateY(-2px); }
+    button.api small { display:block; color: var(--text-muted); font-weight: 500; margin-top: 5px; font-size: 12.5px; }
+    .note {
+      background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 14px;
+      padding: 18px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.65;
+      backdrop-filter: blur(20px) saturate(140%);
+    }
+    code { background: rgba(79,227,220,.10); color: var(--accent); padding: 1px 7px; border-radius: 6px; font-size: 12.5px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="brand-mark">T</div>
+        <div class="brand-name">Tru<span>Dealer</span></div>
+      </div>
+      <span class="pill">STANDALONE · no ecosystem required</span>
+      <h1>Dealer widgets that work <em>anywhere</em>.</h1>
+      <p class="sub">
+        One loader tag drops affordability, repayment, enquiry, booking and share
+        widgets onto any dealer site. Leads route to whatever the dealer has — a
+        <code>data-webhook</code> (Zapier/CRM), a CallMeBot WhatsApp ping, or a
+        plain WhatsApp/email handoff. Open the console to watch delivery.
+      </p>
+    </header>
+
+    <section>
+      <h2>Launchers</h2>
+      <p class="lead">Every widget mounts its own launcher (bottom-right). Trigger them from anywhere via the JS API.</p>
+      <div class="grid">
+        <button class="api" onclick="TruDealer.open('afford')">TruAfford<small>Soft affordability estimate</small></button>
+        <button class="api" onclick="TruDealer.open('repay', { price: 459900, vehicle: '2023 Toyota Fortuner 2.8 GD-6' })">TruRepay<small>Finance repayment calculator</small></button>
+        <button class="api" onclick="TruDealer.open('form')">TruForm<small>Enquiry capture</small></button>
+        <button class="api" onclick="TruDealer.open('book')">TruBook<small>Test-drive booking</small></button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Lead delivery in this demo</h2>
+      <p class="note">
+        This page points <code>data-webhook</code> at a <strong>webhook.site</strong>
+        test URL — swap it for your own to watch payloads arrive. CallMeBot is
+        <strong>off</strong> here (it sends customer PII to a third-party relay, so
+        it is strictly opt-in). To try it, add
+        <code>data-callmebot-key="YOUR_KEY"</code> and
+        <code>data-callmebot-phone="27XXXXXXXXX"</code> to the loader tag.
+      </p>
+    </section>
+  </div>
+
+  <!-- ============================================================
+       ONE TAG loads everything. This is exactly what a dealer pastes.
+       Widgets resolve as <name>/<name>.js (nested layout = this folder).
+       All five use the floating popup launcher — including TruRepay
+       (data-repay-mode="float").
+       ============================================================ -->
+  <script src="tru-loader/tru-loader.js"
+          data-dealer="TruDealer"
+          data-brand="Powered by TruDealer"
+          data-accent="#4FE3DC"
+          data-accent-2="#06B6D4"
+          data-theme="dark"
+          data-wa="27618759389"
+          data-widgets="afford,repay,form,book,share"
+          data-webhook="https://webhook.site/00000000-0000-0000-0000-000000000000"
+          data-position="left"
+          data-afford-position="left"
+          data-repay-position="left"
+          data-form-position="right"
+          data-repay-mode="float"
+          data-repay-price="459900"
+          data-repay-vehicle="2023 Toyota Fortuner 2.8 GD-6"
+          data-share-vehicle-path="/vehicle/"></script>
+</body>
+</html>

@@ -62,10 +62,27 @@
     return (scr && scr.getAttribute(name)) || fallback;
   }
 
+  /* CallMeBot: fire-and-forget WhatsApp ping to the dealer. Opt-in via
+     data-callmebot-key. Customer PII rides in the URL to callmebot.com, so
+     this is an instant-notification floor, not a system of record — pair it
+     with data-webhook for a durable CRM record. */
+  function cmbNotify(cfg, source, text) {
+    if (!cfg || !cfg.cmbKey || !cfg.cmbPhone) return;
+    try {
+      new Image().src =
+        "https://api.callmebot.com/whatsapp.php?phone=" + cfg.cmbPhone +
+        "&apikey=" + encodeURIComponent(cfg.cmbKey) +
+        "&text=" + encodeURIComponent("New " + source + " lead — " + (cfg.dealer || "") + "\n" + (text || ""));
+    } catch (e) {}
+  }
+
   var cfg = {
     dealer: attr("data-dealer", "this dealership"),
     slug: attr("data-slug", ""),
     flowUrl: attr("data-flow", ""),
+    webhook: attr("data-webhook", ""),
+    cmbKey: attr("data-callmebot-key", ""),
+    cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),
     wa: (attr("data-wa", "") || "").replace(/\D/g, ""),
     text: attr("data-text", ""),   // override primary text colour
     scale: attr("data-scale", ""), // launcher size multiplier
@@ -340,9 +357,10 @@
 
     /* mobile */
     isInline ? "" : [
-      "@media(max-width:420px){:host{right:10px;left:10px;bottom:14px;max-width:none}",
-      "#tf{align-items:stretch}",
-      ".tf-launcher{max-width:none;width:100%;justify-content:flex-start}",
+      "@media(max-width:480px){",
+      "#tf{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}",
+      ".tf-launcher{width:58px;min-height:58px;height:58px;padding:8px;border-radius:50%;justify-content:center;gap:0}",
+      ".tf-launcher>div:last-child{display:none}",
       ".tf-panel{width:100%}}"
     ].join(""),
 
@@ -823,10 +841,12 @@
 
     /* ---- network: returns a promise<boolean> for a real delivery ---- */
     function postLead(source) {
-      if (!(cfg.slug && cfg.flowUrl)) return Promise.resolve(false);
+      cmbNotify(cfg, source || "TruForm", buildNotes());
+      if (!(cfg.webhook || (cfg.slug && cfg.flowUrl))) return Promise.resolve(false);
+      var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
       var ctrl = ("AbortController" in window) ? new AbortController() : null;
       var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
-      return fetch(cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead", {
+      return fetch(leadUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildPayload(source)),

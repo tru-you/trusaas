@@ -33,6 +33,20 @@
     return (scr && scr.getAttribute(name)) || fallback;
   }
 
+  /* CallMeBot: fire-and-forget WhatsApp ping to the dealer. Opt-in via
+     data-callmebot-key. Customer PII rides in the URL to callmebot.com, so
+     this is an instant-notification floor, not a system of record — pair it
+     with data-webhook for a durable CRM record. */
+  function cmbNotify(cfg, source, text) {
+    if (!cfg || !cfg.cmbKey || !cfg.cmbPhone) return;
+    try {
+      new Image().src =
+        "https://api.callmebot.com/whatsapp.php?phone=" + cfg.cmbPhone +
+        "&apikey=" + encodeURIComponent(cfg.cmbKey) +
+        "&text=" + encodeURIComponent("New " + source + " lead — " + (cfg.dealer || "") + "\n" + (text || ""));
+    } catch (e) {}
+  }
+
   var cfg = {
     dealer: attr("data-dealer", "this dealership"),
     wa: attr("data-wa", ""),
@@ -46,6 +60,9 @@
     accent2: attr("data-accent-2", ""),
     accent3: attr("data-accent-3", ""),
     flowUrl: attr("data-flow", ""),
+    webhook: attr("data-webhook", ""),
+    cmbKey: attr("data-callmebot-key", ""),
+    cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),
     slug: attr("data-slug", "")
   };
 
@@ -185,7 +202,7 @@
     "border:1px solid rgb(var(--ta-signal-rgb)/.28);color:#fff;",
     "box-shadow:0 12px 36px -10px rgba(0,0,0,.55),0 0 24px -8px rgb(var(--ta-signal-rgb)/.35),inset 0 1px 0 rgba(255,255,255,.1);",
     "backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);",
-    "transition:transform .35s var(--ta-spring),box-shadow .35s var(--ta-ease);max-width:240px;text-align:left}",
+    "transition:transform .35s var(--ta-spring),box-shadow .35s var(--ta-ease);width:250px;min-height:80px;text-align:left}",
     "#" + ID + "-root .ta-launcher:hover{transform:translateY(-3px) scale(1.02);",
     "box-shadow:0 18px 40px -10px rgb(var(--ta-signal-rgb)/.4),0 0 32px -6px rgb(var(--ta-blue-rgb)/.3),inset 0 1px 0 rgba(255,255,255,.14)}",
     "#" + ID + "-root .ta-launcher:active{transform:scale(.97)}",
@@ -302,9 +319,14 @@
     "#" + ID + "-root .ta-foot{padding:10px 14px 12px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;",
     "font-size:10px;color:var(--ta-muted);text-align:center}",
     "#" + ID + "-root .ta-foot b{color:var(--ta-signal-bright)}",
-    "@media (max-width:420px){#" + ID + "-root{right:12px;left:12px;align-items:stretch}",
-    "#" + ID + "-root .ta-launcher{max-width:none;width:100%;justify-content:flex-start}",
-    "#" + ID + "-root .ta-panel{width:100%;max-height:min(82vh,680px)}}",
+    /* Mobile: collapse the launcher to an icon-only round FAB so several
+       widgets can stack on the same side without colliding. The panel goes
+       full-bleed (bottom sheet) when opened. */
+    "@media (max-width:480px){",
+    "#" + ID + "-root{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}",
+    "#" + ID + "-root .ta-launcher{width:58px;min-height:58px;height:58px;padding:8px;border-radius:50%;justify-content:center;gap:0}",
+    "#" + ID + "-root .ta-launcher>span:last-child{display:none}",
+    "#" + ID + "-root .ta-panel{width:calc(100vw - 24px);max-width:400px;max-height:min(82vh,680px)}}",
     "@media (prefers-reduced-motion:reduce){#" + ID + "-root *{animation:none!important;transition-duration:.01ms!important}}",
     /* data-text: override primary text colour (launcher + panel). */
     cfg.text ? "#" + ID + "-root{--ta-text:" + cfg.text + "}#" + ID + "-root .ta-launcher,#" + ID + "-root .ta-ltitle,#" + ID + "-root .ta-panel{color:" + cfg.text + "}" : "",
@@ -548,12 +570,14 @@
           "Instalment band: " + money(r.minInstalment) + " – " + money(r.maxInstalment) + "/pm",
           "(Soft estimate only — not a credit application)"
         ].join("\n");
+        cmbNotify(cfg, "TruAfford", msg);
         if (!cfg.wa) return;
         window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
-        if (cfg.slug && cfg.flowUrl) {
+        if (cfg.webhook || (cfg.slug && cfg.flowUrl)) {
           var names = (state.name || "").trim().split(/\s+/);
+          var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
           try {
-            fetch(cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead", {
+            fetch(leadUrl, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
