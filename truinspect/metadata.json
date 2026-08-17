@@ -1,6 +1,6 @@
 {
-  "name": "TruLens",
-  "description": "Mobile lot-photography guide for car dealerships. Employs real-time angle overlays, bubble-level sensor aids, smart background removal, studio backdrops, and AI-driven listing title and copy generation with cloud sync.",
+  "name": "TruInspect",
+  "description": "Mobile vehicle inspection and trade-in appraisal tool for car dealerships. Guides inspectors through a 27-slot photo walk-around, records per-point condition, manual damage tagging, a disclosure checklist, and printable PDF VIR reports. Trade-in workflow values vehicles against live market prices and produces signed offers. Damage grading is computed from real inspector inputs, not black-box AI.",
   "requestFramePermissions": ["camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_DEEPSEEK_API"]
 }
