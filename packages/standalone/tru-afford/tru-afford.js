@@ -573,8 +573,9 @@
           "(Soft estimate only — not a credit application)"
         ].join("\n");
         cmbNotify(cfg, "TruAfford", msg);
-        if (!cfg.wa) return;
-        window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+        /* Capture the lead FIRST — the WhatsApp redirect below is a bonus, not
+           a gate. A webhook-only dealer (data-webhook, no data-wa) must still
+           land the lead, so this block stays above the `!cfg.wa` return. */
         if (cfg.webhook || (cfg.slug && cfg.flowUrl)) {
           var names = (state.name || "").trim().split(/\s+/);
           var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
@@ -596,6 +597,8 @@
             }).catch(function () {});
           } catch (e) {}
         }
+        if (!cfg.wa) return;
+        window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
       });
     }
   }

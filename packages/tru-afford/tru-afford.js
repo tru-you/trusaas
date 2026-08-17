@@ -555,8 +555,9 @@
           "Instalment band: " + money(r.minInstalment) + " – " + money(r.maxInstalment) + "/pm",
           "(Soft estimate only — not a credit application)"
         ].join("\n");
-        if (!cfg.wa) return;
-        window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+        /* Capture the lead FIRST — the WhatsApp redirect below is a bonus, not
+           a gate. A dealer without data-wa must still land the lead, so this
+           block stays above the `!cfg.wa` return. */
         if (cfg.slug && cfg.flowUrl) {
           var names = (state.name || "").trim().split(/\s+/);
           try {
@@ -577,6 +578,8 @@
             }).catch(function () {});
           } catch (e) {}
         }
+        if (!cfg.wa) return;
+        window.open("https://wa.me/" + cfg.wa + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
       });
     }
   }
