@@ -1,0 +1,29 @@
+# TruDealer standalone widgets — static CDN host
+# Deploy this folder as the site root (publish = ".").
+# The loader resolves sibling widgets relative to its own URL, so keep the
+# nested folder layout intact (tru-loader/, tru-afford/, …).
+
+[build]
+  publish = "."
+
+# Serve the showcase at the domain root without changing the URL.
+[[redirects]]
+  from = "/"
+  to = "/showcase.html"
+  status = 200
+
+# Widget scripts are embedded on third-party dealer sites, so allow any origin
+# and keep a short cache so fixes propagate within minutes (ETag still gives
+# cheap 304s). Bump to a long immutable cache only if you move to versioned
+# paths like /v1/.
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=300, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
