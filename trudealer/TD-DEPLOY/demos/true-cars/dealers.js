@@ -1,1 +1,0 @@
-location.replace("https://www.tru-saas.com");

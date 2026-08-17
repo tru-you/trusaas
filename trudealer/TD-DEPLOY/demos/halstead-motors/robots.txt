@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-
-# Chat widget internals. These directories carry other tenants' demo pages and
-# their live phone numbers; they are not content and must never be indexed on
-# this domain.
-Disallow: /truchat/
-
-Sitemap: https://www.halsteadmotors.example/sitemap.xml
