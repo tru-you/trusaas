@@ -1,9 +1,10 @@
 /**
  * TruAfford — soft affordability / pre-qual widget (TruSaaS)
  *
- * CANONICAL SOURCE. The per-dealer copies under case-sites/ and truweb/ are
- * deploy artefacts — fix bugs here, then re-copy. Four copies had already
- * drifted (all four claimed data-dealer="Your Car Guy") before this existed.
+ * ⚠️ FROZEN (2026-08). Active source of truth: packages/standalone/tru-afford/.
+ * Develop and fix THERE, then redeploy the CDN. This canonical copy is kept
+ * only for the existing case-site deploy artefacts under case-sites/ — do not
+ * add features here. See packages/WIDGETS-SOURCE.md.
  *
  * Drop-in:
  *   <script src="tru-afford.js"

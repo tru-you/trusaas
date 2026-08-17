@@ -1,8 +1,10 @@
 /**
  * TruShare — per-vehicle sharing for dealer websites (TruSaaS)
  *
- * CANONICAL SOURCE. Per-dealer copies under case-sites/ are deploy
- * artefacts — fix bugs here, then re-copy.
+ * ⚠️ FROZEN (2026-08). Active source of truth: packages/standalone/tru-share/.
+ * Develop and fix THERE, then redeploy the CDN. This canonical copy is kept
+ * only for existing case-site deploy artefacts — do not add features here.
+ * See packages/WIDGETS-SOURCE.md.
  *
  * WHY THIS EXISTS, AND WHAT IT IS NOT
  * TruSocial (Zernio, in TruFlow Premium) posts to connected Facebook /

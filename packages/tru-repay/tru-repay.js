@@ -1,8 +1,10 @@
 /**
  * TruRepay — embeddable, dealer-branded finance (repayment) calculator (TruSaaS)
  *
- * CANONICAL SOURCE. Per-dealer copies under case-sites/ are deploy
- * artefacts — fix bugs here, then re-copy.
+ * ⚠️ FROZEN (2026-08). Active source of truth: packages/standalone/tru-repay/.
+ * Develop and fix THERE, then redeploy the CDN. This canonical copy is kept
+ * only for existing case-site deploy artefacts — do not add features here.
+ * See packages/WIDGETS-SOURCE.md.
  *
  * A repayment calculator that also GENERATES A LEAD: the shopper works out an
  * instalment (price / deposit / term / balloon / rate), taps "Get this deal",

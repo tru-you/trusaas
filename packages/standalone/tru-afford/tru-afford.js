@@ -572,7 +572,16 @@
           "Instalment band: " + money(r.minInstalment) + " – " + money(r.maxInstalment) + "/pm",
           "(Soft estimate only — not a credit application)"
         ].join("\n");
-        cmbNotify(cfg, "TruAfford", msg);
+        /* CallMeBot rides a plaintext GET through a third-party relay, so send
+           only the OUTCOME the dealer needs to follow up (name, phone, band,
+           budget range) — never the raw income/expenses inputs. The webhook
+           below still gets the full breakdown; that's the dealer's own endpoint. */
+        cmbNotify(cfg, "TruAfford", [
+          "Name: " + (state.name || "—"),
+          "Phone: " + (state.phone || "—"),
+          "Soft band: " + r.band,
+          "Budget range: " + money(r.priceMin) + " – " + money(r.priceMax)
+        ].join("\n"));
         /* Capture the lead FIRST — the WhatsApp redirect below is a bonus, not
            a gate. A webhook-only dealer (data-webhook, no data-wa) must still
            land the lead, so this block stays above the `!cfg.wa` return. */

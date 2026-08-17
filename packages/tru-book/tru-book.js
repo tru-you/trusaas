@@ -1,7 +1,9 @@
 /**
  * TruBook — Canonical Booking & Appointment Widget (TruDealer / TruSaaS)
  *
- * CANONICAL SOURCE.
+ * ⚠️ FROZEN (2026-08). Active source of truth: packages/standalone/tru-book/.
+ * Develop there; this copy is kept only for existing case-site deploys.
+ * See packages/WIDGETS-SOURCE.md.
  * Drop-in appointment booking widget for showroom visits, test drives, and workshop trade-ins.
  * Supports configurable dealer branding, CRM lead webhook delivery via dealer slug,
  * automatic calendar (.ics) generation, and WhatsApp confirmation.

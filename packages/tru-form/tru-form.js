@@ -1,8 +1,10 @@
 /**
  * TruForm — embeddable contact / enquiry form (TruSaaS)
  *
- * CANONICAL SOURCE. Per-dealer copies under case-sites/ are deploy
- * artefacts — fix bugs here, then re-copy.
+ * ⚠️ FROZEN (2026-08). Active source of truth: packages/standalone/tru-form/.
+ * Develop and fix THERE, then redeploy the CDN. This canonical copy is kept
+ * only for existing case-site deploy artefacts — do not add features here.
+ * See packages/WIDGETS-SOURCE.md.
  *
  * Drop-in:
  *   <script src="tru-form.js"

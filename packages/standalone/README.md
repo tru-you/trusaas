@@ -1,5 +1,10 @@
 # TruDealer Standalone Widgets
 
+> ✅ **This is the active source of truth for all dealer widgets** (2026-08).
+> The old `packages/tru-*` canonical copies are frozen — see
+> [`packages/WIDGETS-SOURCE.md`](../WIDGETS-SOURCE.md). Develop here, then deploy
+> to `cdn.tru-saas.com`.
+
 Drop-in dealer widgets for sites **outside** the TruDealer / TruFlow ecosystem —
 no DMS, no TruFlow instance, no CRM required. One loader tag adds:
 
