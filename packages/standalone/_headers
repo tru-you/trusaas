@@ -1,0 +1,8 @@
+# Applied on every deploy (including CLI --dir deploys, where netlify.toml
+# [[headers]] are not processed). These files are embedded on third-party
+# dealer sites, so allow any origin and keep a short cache — a fix propagates
+# within minutes while ETags still give cheap 304s.
+/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=300, must-revalidate
+  X-Content-Type-Options: nosniff
