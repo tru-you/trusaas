@@ -53,6 +53,12 @@ function truw_bottom(&$attrs, $w) {
     $attrs['data-' . $w . '-bottom'] = is_numeric($b) ? ($b . 'px') : $b;
 }
 
+/** Add data-<w>-scale (per-launcher size multiplier) if set and not 1. */
+function truw_scale(&$attrs, $w) {
+    $s = trim(truw_opt($w . '_scale', ''));
+    if ($s !== '' && $s !== '1') $attrs['data-' . $w . '-scale'] = $s;
+}
+
 /** Emit the loader tag in the footer. */
 function truw_inject() {
     // Enabled AND visible on this page.
@@ -86,10 +92,12 @@ function truw_inject() {
     if (in_array('afford', $widgets)) {
         $attrs['data-afford-position'] = truw_opt('afford_side', 'left');
         truw_bottom($attrs, 'afford');
+        truw_scale($attrs, "afford");
     }
     if (in_array('repay', $widgets)) {
         $attrs['data-repay-position'] = truw_opt('repay_side', 'left');
         truw_bottom($attrs, 'repay');
+        truw_scale($attrs, "repay");
         $attrs['data-repay-mode']     = truw_opt('repay_mode', 'float');
         if (truw_opt('repay_mode', 'float') === 'inline' && truw_opt('repay_target')) {
             $attrs['data-repay-target'] = truw_opt('repay_target');
@@ -100,6 +108,7 @@ function truw_inject() {
     if (in_array('form', $widgets)) {
         $attrs['data-form-position'] = truw_opt('form_side', 'right');
         truw_bottom($attrs, 'form');
+        truw_scale($attrs, "form");
     }
     if (in_array('book', $widgets) && truw_opt('book_address')) {
         $attrs['data-book-address'] = truw_opt('book_address');

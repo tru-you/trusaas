@@ -31,6 +31,7 @@ function truw_sanitize($input) {
     $text   = array('dealer_name', 'accent2', 'text_color', 'scale', 'theme', 'sales_whatsapp',
                     'afford_side', 'repay_side', 'form_side',
                     'afford_bottom', 'repay_bottom', 'form_bottom',
+                    'afford_scale', 'repay_scale', 'form_scale',
                     'repay_mode', 'repay_target',
                     'repay_vehicle', 'book_address', 'share_vehicle_path',
                     // per-page targeting: <widget>_show (mode) + <widget>_match (path/ids)
@@ -113,12 +114,16 @@ function truw_settings_page() {
             <h2 class="title">Placement</h2>
             <table class="form-table"><tbody>
                 <?php
+                $sizes = array('0.7', '0.75', '0.8', '0.85', '0.9', '0.95', '1', '1.1', '1.2', '1.3');
                 truw_field('afford_side', 'TruAfford side', 'select', array('options' => array('left', 'right'), 'default' => 'left'));
                 truw_field('afford_bottom', '↳ Height from bottom', 'text', array('placeholder' => '116 (px)', 'help' => 'How far up the launcher sits from the bottom edge. Blank = default (116px, so it clears a lower FAB).'));
+                truw_field('afford_scale', '↳ Size', 'select', array('options' => $sizes, 'default' => '1', 'help' => 'Shrink or grow just this launcher. TruAfford carries more text, so 0.8–0.85 makes it match TruForm.'));
                 truw_field('repay_side', 'TruRepay side', 'select', array('options' => array('left', 'right'), 'default' => 'left'));
                 truw_field('repay_bottom', '↳ Height from bottom', 'text', array('placeholder' => '24 (px)', 'help' => 'Blank = default (24px).'));
+                truw_field('repay_scale', '↳ Size', 'select', array('options' => $sizes, 'default' => '1'));
                 truw_field('form_side', 'TruForm side', 'select', array('options' => array('right', 'left'), 'default' => 'right'));
                 truw_field('form_bottom', '↳ Height from bottom', 'text', array('placeholder' => '24 (px)', 'help' => 'Blank = default (24px). Raise it to clear a chat bubble or WhatsApp button.'));
+                truw_field('form_scale', '↳ Size', 'select', array('options' => $sizes, 'default' => '1'));
                 ?>
             </tbody></table>
 
