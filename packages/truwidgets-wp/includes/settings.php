@@ -14,13 +14,24 @@ add_action('admin_init', function () {
     register_setting('truw_group', TRUW_OPT, 'truw_sanitize');
 });
 
+// WordPress' native colour picker on our settings page — gives a visual swatch
+// + wheel so you can see the colour you're choosing.
+add_action('admin_enqueue_scripts', function ($hook) {
+    if ($hook !== 'settings_page_truwidgets') return;
+    wp_enqueue_style('wp-color-picker');
+    wp_enqueue_script('wp-color-picker');
+    wp_add_inline_script('wp-color-picker', 'jQuery(function($){$(".truw-color").wpColorPicker();});');
+});
+
 /** Whitelist + light sanitising. */
 function truw_sanitize($input) {
     $out = array();
     if (!is_array($input)) return $out;
 
     $text   = array('dealer_name', 'accent2', 'text_color', 'scale', 'theme', 'sales_whatsapp',
-                    'afford_side', 'repay_side', 'form_side', 'repay_mode', 'repay_target',
+                    'afford_side', 'repay_side', 'form_side',
+                    'afford_bottom', 'repay_bottom', 'form_bottom',
+                    'repay_mode', 'repay_target',
                     'repay_vehicle', 'book_address', 'share_vehicle_path',
                     // per-page targeting: <widget>_show (mode) + <widget>_match (path/ids)
                     'afford_show', 'repay_show', 'form_show', 'book_show', 'share_show',
@@ -56,7 +67,7 @@ function truw_field($key, $label, $type = 'text', $opts = array()) {
     } elseif ($type === 'checkbox') {
         echo '<label><input type="checkbox" name="' . esc_attr($name) . '" value="1"' . checked($val, '1', false) . '> ' . esc_html($opts['cblabel'] ?? '') . '</label>';
     } elseif ($type === 'color') {
-        echo '<input type="text" id="' . esc_attr($key) . '" name="' . esc_attr($name) . '" value="' . esc_attr($val) . '" placeholder="#1466E0" style="width:120px" />';
+        echo '<input type="text" class="truw-color" id="' . esc_attr($key) . '" name="' . esc_attr($name) . '" value="' . esc_attr($val) . '" data-default-color="' . esc_attr($val ? $val : '#1466E0') . '" placeholder="#1466E0" />';
     } else {
         $w = ($type === 'url') ? 'width:100%;max-width:520px' : 'width:320px';
         echo '<input type="text" id="' . esc_attr($key) . '" name="' . esc_attr($name) . '" value="' . esc_attr($val) . '" placeholder="' . esc_attr($ph) . '" style="' . $w . '" />';
@@ -81,7 +92,7 @@ function truw_settings_page() {
                 truw_field('accent2', 'Accent 2 (gradient end)', 'color', array('help' => 'Optional.'));
                 truw_field('use_text', 'Custom text colour', 'checkbox', array('cblabel' => 'Override the default text colour'));
                 truw_field('text_color', '↳ Text colour', 'color', array('help' => 'Used only when the box above is ticked.'));
-                truw_field('scale', 'Widget size', 'select', array('options' => array('0.9', '1', '1.1', '1.2', '1.3'), 'default' => '1', 'help' => 'Launcher size multiplier. 1 = default.'));
+                truw_field('scale', 'Widget size (height &amp; width)', 'select', array('options' => array('0.8', '0.9', '1', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6'), 'default' => '1', 'help' => 'Scales the launcher up or down — bigger number = taller &amp; wider. 1 = default. Applies to TruAfford, TruRepay and TruForm launchers.'));
                 truw_field('theme', 'Theme', 'select', array('options' => array('dark', 'light'), 'default' => 'dark'));
                 truw_field('sales_whatsapp', 'Sales WhatsApp', 'text', array('placeholder' => '27834659921', 'help' => 'Digits only, country code, no +.'));
                 ?>
@@ -103,8 +114,11 @@ function truw_settings_page() {
             <table class="form-table"><tbody>
                 <?php
                 truw_field('afford_side', 'TruAfford side', 'select', array('options' => array('left', 'right'), 'default' => 'left'));
+                truw_field('afford_bottom', '↳ Height from bottom', 'text', array('placeholder' => '116 (px)', 'help' => 'How far up the launcher sits from the bottom edge. Blank = default (116px, so it clears a lower FAB).'));
                 truw_field('repay_side', 'TruRepay side', 'select', array('options' => array('left', 'right'), 'default' => 'left'));
+                truw_field('repay_bottom', '↳ Height from bottom', 'text', array('placeholder' => '24 (px)', 'help' => 'Blank = default (24px).'));
                 truw_field('form_side', 'TruForm side', 'select', array('options' => array('right', 'left'), 'default' => 'right'));
+                truw_field('form_bottom', '↳ Height from bottom', 'text', array('placeholder' => '24 (px)', 'help' => 'Blank = default (24px). Raise it to clear a chat bubble or WhatsApp button.'));
                 ?>
             </tbody></table>
 
