@@ -105,7 +105,7 @@
     cur: attr("data-currency", "R"),
     brand: attr("data-brand", "TruDealer"),
     theme: attr("data-theme", "dark"),
-    z: attr("data-z", "999975")
+    z: attr("data-z", "2147200000")
   };
 
   window.__truRepayCount = (window.__truRepayCount || 0) + 1;
@@ -322,7 +322,7 @@
     ".tr-foot{padding:8px 14px 10px;border-top:1px solid var(--tr-hair);flex-shrink:0;font-size:9.5px;color:var(--tr-muted);text-align:center}",
     ".tr-foot b{color:var(--tr-signal-bright);font-weight:700}",
 
-    isInline ? "" : "@media(max-width:480px){.tr-launcher{width:58px;min-height:58px;height:58px;padding:8px;border-radius:50%;justify-content:center;gap:0}.tr-launcher>div:last-child{display:none}#tr{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}.tr-panel{width:100%}}",
+    isInline ? "" : "@media(max-width:480px){@keyframes trShine{0%{transform:translateX(-160%) skewX(-20deg)}55%,100%{transform:translateX(300%) skewX(-20deg)}}.tr-launcher{width:66px;min-height:66px;height:66px;padding:9px;border-radius:50%;justify-content:center;gap:0;position:relative;overflow:hidden}.tr-launcher>div:last-child{display:none}.tr-launcher::after{content:'';position:absolute;top:0;left:0;width:48%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-160%) skewX(-20deg);animation:trShine 3.6s ease-in-out infinite;pointer-events:none;z-index:2}#tr{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}.tr-panel{width:100%}}",
     "@media(prefers-reduced-motion:reduce){#tr *{animation:none!important;transition-duration:.01ms!important}}",
     "#tr button:focus-visible,#tr input:focus-visible{outline:2px solid var(--tr-signal-bright);outline-offset:2px}",
     /* data-text: override primary text colour. */

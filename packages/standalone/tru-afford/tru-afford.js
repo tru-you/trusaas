@@ -53,7 +53,7 @@
     rate: parseFloat(attr("data-rate", "0.1175")),
     position: attr("data-position", "right"), // right | left
     offsetBottom: attr("data-bottom", "88px"), // clear WhatsApp FAB
-    z: attr("data-z", "999990"),
+    z: attr("data-z", "2147400000"),
     text: attr("data-text", ""),   // override primary text colour
     scale: attr("data-scale", ""), // launcher size multiplier, e.g. 1.1
     accent: attr("data-accent", "#4FE3DC"),
@@ -323,9 +323,11 @@
        widgets can stack on the same side without colliding. The panel goes
        full-bleed (bottom sheet) when opened. */
     "@media (max-width:480px){",
+    "@keyframes taShine{0%{transform:translateX(-160%) skewX(-20deg)}55%,100%{transform:translateX(300%) skewX(-20deg)}}",
     "#" + ID + "-root{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}",
-    "#" + ID + "-root .ta-launcher{width:58px;min-height:58px;height:58px;padding:8px;border-radius:50%;justify-content:center;gap:0}",
+    "#" + ID + "-root .ta-launcher{width:66px;min-height:66px;height:66px;padding:9px;border-radius:50%;justify-content:center;gap:0;position:relative;overflow:hidden}",
     "#" + ID + "-root .ta-launcher>span:last-child{display:none}",
+    "#" + ID + "-root .ta-launcher::after{content:'';position:absolute;top:0;left:0;width:48%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-160%) skewX(-20deg);animation:taShine 3.6s ease-in-out infinite;pointer-events:none;z-index:2}",
     "#" + ID + "-root .ta-panel{width:calc(100vw - 24px);max-width:400px;max-height:min(82vh,680px)}}",
     "@media (prefers-reduced-motion:reduce){#" + ID + "-root *{animation:none!important;transition-duration:.01ms!important}}",
     /* data-text: override primary text colour (launcher + panel). */

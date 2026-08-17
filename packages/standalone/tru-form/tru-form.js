@@ -100,7 +100,7 @@
        TruDealer" on every site using the default. */
     brand: attr("data-brand", "TruDealer"),
     theme: attr("data-theme", "dark"),
-    z: attr("data-z", "999980"),
+    z: attr("data-z", "2147300000"),
     fields: (attr("data-fields", "") || "").split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean)
   };
 
@@ -358,9 +358,11 @@
     /* mobile */
     isInline ? "" : [
       "@media(max-width:480px){",
+      "@keyframes tfShine{0%{transform:translateX(-160%) skewX(-20deg)}55%,100%{transform:translateX(300%) skewX(-20deg)}}",
       "#tf{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}",
-      ".tf-launcher{width:58px;min-height:58px;height:58px;padding:8px;border-radius:50%;justify-content:center;gap:0}",
+      ".tf-launcher{width:66px;min-height:66px;height:66px;padding:9px;border-radius:50%;justify-content:center;gap:0;position:relative;overflow:hidden}",
       ".tf-launcher>div:last-child{display:none}",
+      ".tf-launcher::after{content:'';position:absolute;top:0;left:0;width:48%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-160%) skewX(-20deg);animation:tfShine 3.6s ease-in-out infinite;pointer-events:none;z-index:2}",
       ".tf-panel{width:100%}}"
     ].join(""),
 
