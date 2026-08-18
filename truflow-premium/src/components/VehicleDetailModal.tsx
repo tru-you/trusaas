@@ -810,10 +810,26 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                   <VehiclePicker
                     theme="flow"
                     initial={{ make: vehicle.make, model: vehicle.model, year: vehicle.year, variant: vehicle.trim }}
-                    onSelect={(v: VehiclePickerValue) => {
+                    onSelect={async (v: VehiclePickerValue) => {
                       onUpdateVehicle(vehicle.id, {
                         make: v.make, model: v.model, year: v.year, trim: v.variant, mmCode: v.mmCode,
                       } as Partial<Vehicle>);
+                      // Auto-fill specs from the resolved M&M code (Static Info,
+                      // flat subscription). Fuel type is the safe cross-field.
+                      if (!v.mmCode) return;
+                      try {
+                        const res = await fetch("/api/imagin8/static", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ mmCode: v.mmCode }),
+                        });
+                        if (!res.ok) return;
+                        const s = await res.json();
+                        const fuelMap: Record<string, string> = { P: "Petrol", D: "Diesel", H: "Hybrid", E: "Electric" };
+                        if (s.fuelType && fuelMap[s.fuelType]) {
+                          onUpdateVehicle(vehicle.id, { fuelType: fuelMap[s.fuelType] } as Partial<Vehicle>);
+                        }
+                      } catch { /* spec auto-fill is best-effort */ }
                     }}
                   />
                   <div className="grid grid-cols-2 gap-3">

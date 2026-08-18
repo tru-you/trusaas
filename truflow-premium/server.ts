@@ -6363,10 +6363,11 @@ app.post("/api/integration/webhook-codat", (req, res) => {
 
 // ==================== IMAGIN8 / TRANSUNION ====================
 
-import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice } from "../packages/imagin8";
+import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice, getStaticInfo as imagin8GetStaticInfo } from "../packages/imagin8";
 import { fetchValuation } from "./src/lib/scraper";
 
 const IMAGIN8_PLATFORM_KEY = process.env.IMAGIN8_API_KEY || "";
+const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
 
 // The imagin8 routes below reference `authenticate` as per-route middleware and
 // `req.user` — both from a different codebase. The global middleware already
@@ -6381,6 +6382,11 @@ function dealerImagin8Key(state: any, dealershipId: string): string | null {
   return d?.imagin8ApiKey || null;
 }
 
+function dealerImagin8CustomerId(state: any, dealershipId: string): string | null {
+  const d = state.dealerships?.find((d: any) => d.id === dealershipId);
+  return d?.imagin8CustomerId || null;
+}
+
 app.post("/api/imagin8/valuation", authenticate, async (req: any, res) => {
   const { mmCode, year, mileage } = req.body || {};
   if (!mmCode || !year) {
@@ -6388,11 +6394,12 @@ app.post("/api/imagin8/valuation", authenticate, async (req: any, res) => {
   }
   const state = readState();
   const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
-  if (!apiKey) {
-    return res.status(503).json({ error: "Imagin8 API key not configured — set IMAGIN8_API_KEY or add a key in dealer settings." });
+  const customerId = dealerImagin8CustomerId(state, req.user.dealershipId) || IMAGIN8_CUSTOMER_ID;
+  if (!apiKey || !customerId) {
+    return res.status(503).json({ error: "Imagin8 not configured — set IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID, or add a key/customerId in dealer settings." });
   }
   try {
-    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey });
+    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey, customerId });
     console.log(`[imagin8] valuation for ${mmCode}/${year}: trade=${result.tradePrice} retail=${result.retailPrice}`);
     res.json(result);
   } catch (err: any) {
@@ -6409,16 +6416,36 @@ app.post("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
   const lookupType = (type === "reg" || type === "engine") ? type : "vin";
   const state = readState();
   const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
-  if (!apiKey) {
-    return res.status(503).json({ error: "Imagin8 API key not configured." });
+  const customerId = dealerImagin8CustomerId(state, req.user.dealershipId) || IMAGIN8_CUSTOMER_ID;
+  if (!apiKey || !customerId) {
+    return res.status(503).json({ error: "Imagin8 not configured (API key + customerId required)." });
   }
   try {
-    const result = await imagin8RegCheck(identifier, lookupType, { apiKey });
+    const result = await imagin8RegCheck(identifier, lookupType, { apiKey, customerId });
     console.log(`[imagin8] reg check ${lookupType}=${identifier}: stolen=${result.stolen} finance=${result.financePending}`);
     res.json(result);
   } catch (err: any) {
     console.error("[imagin8] reg check failed:", err?.message || err);
     res.status(502).json({ error: err?.message || "Imagin8 reg check failed" });
+  }
+});
+
+// Static specs for the Add Vehicle flow (platform key / flat subscription).
+app.post("/api/imagin8/static", authenticate, async (req: any, res) => {
+  const { mmCode } = req.body || {};
+  if (!mmCode) return res.status(400).json({ error: "mmCode is required" });
+  const state = readState();
+  const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
+  const customerId = dealerImagin8CustomerId(state, req.user.dealershipId) || IMAGIN8_CUSTOMER_ID;
+  if (!apiKey || !customerId) {
+    return res.status(503).json({ error: "Imagin8 not configured (API key + customerId required)." });
+  }
+  try {
+    const result = await imagin8GetStaticInfo(mmCode, { apiKey, customerId });
+    res.json(result);
+  } catch (err: any) {
+    console.error("[imagin8] static info failed:", err?.message || err);
+    res.status(502).json({ error: err?.message || "Static info failed" });
   }
 });
 
@@ -6582,6 +6609,9 @@ app.get("/api/public/trade-report/:id", (req, res) => {
   res.send(renderTradeReport(r));
 });
 
+// Invoicing is handled by DocHub + per-client Xero, not Imagin8 Core —
+// the createInvoice route was removed. Bank AVS-R stays (Flow's LeadDetailModal
+// uses it for debit-order verification); it is not surfaced in Lens/Inspect.
 app.post("/api/imagin8/avs", authenticate, async (req: any, res) => {
   const { bankAccount, branchCode, idNumber, initials, surname } = req.body || {};
   if (!bankAccount || !branchCode || !idNumber) {
@@ -6589,11 +6619,12 @@ app.post("/api/imagin8/avs", authenticate, async (req: any, res) => {
   }
   const state = readState();
   const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
-  if (!apiKey) {
-    return res.status(503).json({ error: "Imagin8 API key not configured." });
+  const customerId = dealerImagin8CustomerId(state, req.user.dealershipId) || IMAGIN8_CUSTOMER_ID;
+  if (!apiKey || !customerId) {
+    return res.status(503).json({ error: "Imagin8 not configured (API key + customerId required)." });
   }
   try {
-    const result = await imagin8BankAvs(bankAccount, branchCode, idNumber, initials || "", surname || "", { apiKey });
+    const result = await imagin8BankAvs(bankAccount, branchCode, idNumber, initials || "", surname || "", { apiKey, customerId });
     console.log(`[imagin8] AVS for account ending ${bankAccount.slice(-4)}: valid=${result.valid} idMatch=${result.idMatch}`);
     res.json(result);
   } catch (err: any) {
@@ -6602,6 +6633,8 @@ app.post("/api/imagin8/avs", authenticate, async (req: any, res) => {
   }
 });
 
+// Invoicing: DocHubPanel still posts here today. Slated to move fully to
+// DocHub + per-client Xero, at which point this route retires.
 app.post("/api/imagin8/invoice", authenticate, async (req: any, res) => {
   const { customerName, customerEmail, customerPhone, customerAddress, customerVatNumber, lineItems, reference, notes, dueDate, paymentMethod } = req.body || {};
   if (!customerName || !Array.isArray(lineItems) || !lineItems.length) {
@@ -6609,13 +6642,14 @@ app.post("/api/imagin8/invoice", authenticate, async (req: any, res) => {
   }
   const state = readState();
   const apiKey = dealerImagin8Key(state, req.user.dealershipId) || IMAGIN8_PLATFORM_KEY;
-  if (!apiKey) {
-    return res.status(503).json({ error: "Imagin8 API key not configured." });
+  const customerId = dealerImagin8CustomerId(state, req.user.dealershipId) || IMAGIN8_CUSTOMER_ID;
+  if (!apiKey || !customerId) {
+    return res.status(503).json({ error: "Imagin8 not configured (API key + customerId required)." });
   }
   try {
     const result = await imagin8CreateInvoice(
       { customerName, customerEmail, customerPhone, customerAddress, customerVatNumber, lineItems, reference, notes, dueDate, paymentMethod },
-      { apiKey },
+      { apiKey, customerId },
     );
     console.log(`[imagin8] invoice created: ${result.invoiceNumber} total=${result.total}`);
     res.json(result);

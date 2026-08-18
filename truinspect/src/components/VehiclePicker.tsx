@@ -4,23 +4,45 @@ import { ChevronDown, Search, X } from "lucide-react";
 
 /*  Cascading vehicle selector backed by the TransUnion M&M code catalogue.
     Shape: { [make]: { [model]: { [variant]: { c: mmCode, y: [years] } } } }
-    The JSON lives in /vehicle-catalogue.json (~1.7 MB, ~260 KB gzipped).       */
+
+    The curated catalogue is chunked per-make behind a call: /catalogue/index.json
+    is a tiny (~12 KB) makes index, and each make's subtree loads on demand from
+    /catalogue/<file>.json. This replaces the old 1.83 MB upfront fetch — same
+    curated data, byte-for-byte (proven by reassembly at build), just lazy.       */
 
 type CatalogueVariant = { c: string; y: number[] };
 type CatalogueModel = Record<string, CatalogueVariant>;
 type CatalogueMake = Record<string, CatalogueModel>;
-type Catalogue = Record<string, CatalogueMake>;
+type MakeIndexEntry = { name: string; file: string };
 
-let catalogueCache: Catalogue | null = null;
-let cataloguePromise: Promise<Catalogue> | null = null;
+let makeIndexCache: MakeIndexEntry[] | null = null;
+let makeIndexPromise: Promise<MakeIndexEntry[]> | null = null;
+const makeDataCache = new Map<string, CatalogueMake>();
+const makeDataPromises = new Map<string, Promise<CatalogueMake>>();
 
-function loadCatalogue(): Promise<Catalogue> {
-  if (catalogueCache) return Promise.resolve(catalogueCache);
-  if (cataloguePromise) return cataloguePromise;
-  cataloguePromise = fetch("/vehicle-catalogue.json")
+function loadMakeIndex(): Promise<MakeIndexEntry[]> {
+  if (makeIndexCache) return Promise.resolve(makeIndexCache);
+  if (makeIndexPromise) return makeIndexPromise;
+  makeIndexPromise = fetch("/catalogue/index.json")
     .then((r) => r.json())
-    .then((d: Catalogue) => { catalogueCache = d; return d; });
-  return cataloguePromise;
+    .then((d: MakeIndexEntry[]) => { makeIndexCache = d; return d; });
+  return makeIndexPromise;
+}
+
+function loadMakeData(make: string): Promise<CatalogueMake> {
+  const cached = makeDataCache.get(make);
+  if (cached) return Promise.resolve(cached);
+  const pending = makeDataPromises.get(make);
+  if (pending) return pending;
+  const p = loadMakeIndex().then((idx) => {
+    const entry = idx.find((e) => e.name === make);
+    if (!entry) return {} as CatalogueMake;
+    return fetch(`/catalogue/${entry.file}`)
+      .then((r) => r.json())
+      .then((d: CatalogueMake) => { makeDataCache.set(make, d); return d; });
+  });
+  makeDataPromises.set(make, p);
+  return p;
 }
 
 export interface VehiclePickerValue {
@@ -201,33 +223,45 @@ function SearchSelect({
 /* ── Main picker ───────────────────────────────────────── */
 
 export default function VehiclePicker({ initial, onSelect, theme = "flow" }: Props) {
-  const [catalogue, setCatalogue] = useState<Catalogue | null>(catalogueCache);
+  const [makeIndex, setMakeIndex] = useState<MakeIndexEntry[] | null>(makeIndexCache);
   const [make, setMake] = useState(initial?.make || "");
   const [model, setModel] = useState(initial?.model || "");
   const [variant, setVariant] = useState(initial?.variant || "");
   const [year, setYear] = useState(initial?.year || 0);
+  const [makeData, setMakeData] = useState<CatalogueMake | null>(
+    initial?.make ? makeDataCache.get(initial.make) || null : null
+  );
+  const [makeLoading, setMakeLoading] = useState(false);
 
-  useEffect(() => { loadCatalogue().then(setCatalogue); }, []);
+  useEffect(() => { loadMakeIndex().then(setMakeIndex); }, []);
 
-  const makes = useMemo(() => (catalogue ? Object.keys(catalogue).sort() : []), [catalogue]);
+  // Load the selected make's subtree on demand.
+  useEffect(() => {
+    if (!make) { setMakeData(null); return; }
+    const cached = makeDataCache.get(make);
+    if (cached) { setMakeData(cached); return; }
+    let alive = true;
+    setMakeLoading(true);
+    loadMakeData(make).then((d) => { if (alive) { setMakeData(d); setMakeLoading(false); } });
+    return () => { alive = false; };
+  }, [make]);
+
+  const makes = useMemo(() => (makeIndex ? makeIndex.map((e) => e.name) : []), [makeIndex]);
 
   const models = useMemo(
-    () => (catalogue && make && catalogue[make] ? Object.keys(catalogue[make]).sort() : []),
-    [catalogue, make]
+    () => (makeData ? Object.keys(makeData).sort() : []),
+    [makeData]
   );
 
   const variants = useMemo(
-    () =>
-      catalogue && make && model && catalogue[make]?.[model]
-        ? Object.keys(catalogue[make][model]).sort()
-        : [],
-    [catalogue, make, model]
+    () => (makeData && model && makeData[model] ? Object.keys(makeData[model]).sort() : []),
+    [makeData, model]
   );
 
   const years = useMemo(() => {
-    const v = catalogue?.[make]?.[model]?.[variant];
+    const v = makeData?.[model]?.[variant];
     return v ? v.y : [];
-  }, [catalogue, make, model, variant]);
+  }, [makeData, model, variant]);
 
   const handleMake = useCallback((v: string) => {
     setMake(v); setModel(""); setVariant(""); setYear(0);
@@ -245,22 +279,22 @@ export default function VehiclePicker({ initial, onSelect, theme = "flow" }: Pro
     (v: string) => {
       const y = Number(v);
       setYear(y);
-      const entry = catalogue?.[make]?.[model]?.[variant];
+      const entry = makeData?.[model]?.[variant];
       if (entry) {
         onSelect({ make, model, variant, year: y, mmCode: entry.c });
       }
     },
-    [catalogue, make, model, variant, onSelect]
+    [makeData, make, model, variant, onSelect]
   );
 
-  if (!catalogue) {
+  if (!makeIndex) {
     return <div className="text-[13px] text-white/40 py-2">Loading vehicle catalogue…</div>;
   }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
       <SearchSelect theme={theme} label="Make" options={makes} value={make} onChange={handleMake} placeholder="Select make" />
-      <SearchSelect theme={theme} label="Model" options={models} value={model} onChange={handleModel} placeholder="Select model" disabled={!make} />
+      <SearchSelect theme={theme} label="Model" options={models} value={model} onChange={handleModel} placeholder={makeLoading ? "Loading…" : "Select model"} disabled={!make || makeLoading} />
       <div className="sm:col-span-2"><SearchSelect theme={theme} label="Variant" options={variants} value={variant} onChange={handleVariant} placeholder="Select variant" disabled={!model} /></div>
       <SearchSelect theme={theme} label="Year" options={years.map(String)} value={year ? String(year) : ""} onChange={handleYear} placeholder="Year" disabled={!variant} />
     </div>

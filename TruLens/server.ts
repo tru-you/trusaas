@@ -2194,16 +2194,19 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
 
 // ==================== IMAGIN8 / TRANSUNION ====================
 
-import { getValues as imagin8GetValues, regCheck as imagin8RegCheck } from "../packages/imagin8";
+import { getValues as imagin8GetValues, getStaticInfo as imagin8GetStaticInfo } from "../packages/imagin8";
 
 const IMAGIN8_API_KEY = process.env.IMAGIN8_API_KEY || "";
+const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
+const imagin8Opts = { apiKey: IMAGIN8_API_KEY, customerId: IMAGIN8_CUSTOMER_ID };
+const imagin8Configured = () => IMAGIN8_API_KEY && IMAGIN8_CUSTOMER_ID;
 
 app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
   const { mmCode, year, mileage } = req.body || {};
   if (!mmCode || !year) return res.status(400).json({ error: 'mmCode and year are required' });
-  if (!IMAGIN8_API_KEY) return res.status(503).json({ error: 'IMAGIN8_API_KEY not configured' });
+  if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
   try {
-    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey: IMAGIN8_API_KEY });
+    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, imagin8Opts);
     res.json(result);
   } catch (err: any) {
     console.error('[imagin8] valuation failed:', err?.message || err);
@@ -2211,18 +2214,22 @@ app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
   }
 });
 
-app.post('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
-  const { identifier, type } = req.body || {};
-  if (!identifier) return res.status(400).json({ error: 'identifier is required' });
-  if (!IMAGIN8_API_KEY) return res.status(503).json({ error: 'IMAGIN8_API_KEY not configured' });
+// Static specs for the Add Vehicle flow (platform key / flat subscription).
+app.post('/api/imagin8/static', authenticate, async (req: any, res) => {
+  const { mmCode } = req.body || {};
+  if (!mmCode) return res.status(400).json({ error: 'mmCode is required' });
+  if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
   try {
-    const result = await imagin8RegCheck(identifier, (type === 'reg' || type === 'engine') ? type : 'vin', { apiKey: IMAGIN8_API_KEY });
+    const result = await imagin8GetStaticInfo(mmCode, imagin8Opts);
     res.json(result);
   } catch (err: any) {
-    console.error('[imagin8] reg check failed:', err?.message || err);
-    res.status(502).json({ error: err?.message || 'Reg check failed' });
+    console.error('[imagin8] static info failed:', err?.message || err);
+    res.status(502).json({ error: err?.message || 'Static info failed' });
   }
 });
+
+// NOTE: Reg Check intentionally omitted here — TruLens is the Premium field
+// companion and links to TruFlow, which runs reg check. Avoids double-billing.
 
 // ==================== VITE & STATIC FILES ====================
 

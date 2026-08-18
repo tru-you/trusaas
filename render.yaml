@@ -88,6 +88,12 @@ services:
         value: https://premium.tru-saas.com  # custom domain on Render (onrender host still works as fallback)
       - key: DEEPSEEK_API_KEY
         sync: false
+      # Imagin8 / TransUnion eValue8 — both required (sent as APIKey + customerId).
+      # Makes/Models/StaticInfo = flat subscription; Values/RegCheck = per-call.
+      - key: IMAGIN8_API_KEY
+        sync: false
+      - key: IMAGIN8_CUSTOMER_ID
+        sync: false
 
   # ── 1b. TruInspect — AI damage detection / PDF inspection reports ─────────
   - type: web
@@ -119,6 +125,12 @@ services:
       - key: LOCAL_MODE
         value: "1"
       - key: DEEPSEEK_API_KEY
+        sync: false
+      # Imagin8 / TransUnion eValue8 — both required (sent as APIKey + customerId).
+      # Makes/Models/StaticInfo = flat subscription; Values/RegCheck = per-call.
+      - key: IMAGIN8_API_KEY
+        sync: false
+      - key: IMAGIN8_CUSTOMER_ID
         sync: false
       # Headless render worker (trusaas-crm-scraper): JS-heavy dealer pages
       # (WeBuyCars, CMH...) are rendered there; JSON dealers (Car Store,
@@ -244,6 +256,12 @@ services:
       - key: ADMIN_ACCESS_CODE
         sync: false
       - key: DEEPSEEK_API_KEY
+        sync: false
+      # Imagin8 / TransUnion eValue8 — both required (sent as APIKey + customerId).
+      # Makes/Models/StaticInfo = flat subscription; Values/RegCheck = per-call.
+      - key: IMAGIN8_API_KEY
+        sync: false
+      - key: IMAGIN8_CUSTOMER_ID
         sync: false
       # ── TruSocial (Zernio integration) ──
       # Team-level API key from docs.zernio.com. Required for profile
