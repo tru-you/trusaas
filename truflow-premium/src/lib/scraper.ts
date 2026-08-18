@@ -10,6 +10,9 @@ export interface ScraperSource {
   url: (make: string, model: string, year: string) => string;
   fetchConfig: AxiosRequestConfig;
   selectors: string[];
+  /** Query-param name for pagination (default "page"). A site that ignores it
+   *  just returns page 1 again, which the price+km dedupe collapses. */
+  pageParam?: string;
 }
 
 export interface SourceResult {
@@ -153,6 +156,22 @@ const MAX_PRICE = 50_000_000;
 /** Below this many dealer listings the market average is too thin to trust on
  *  its own — the pipeline then falls back and blends in classifieds. */
 const MIN_DEALER_LISTINGS = 3;
+
+/** Classifieds are now SPA/Algolia sites: the server HTML often carries only a
+ *  couple of JSON-LD "featured" items while the real 20–50 listings load via a
+ *  client XHR. If a plain-HTTP page yields fewer than this, render the full
+ *  page through the headless worker instead of trusting the sliver — this is
+ *  the fix for "1 listing on a popular car". */
+const MIN_HTTP_LISTINGS = Number(process.env.SCRAPER_MIN_HTTP_LISTINGS) || 8;
+
+/** How many pages of each classifieds source to walk. Page 1 alone is a thin,
+ *  volatile sample on a popular model. */
+const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAGES) || 3);
+
+/** When dealer + classifieds together come back thinner than this, fire the
+ *  paid SERP layer (if configured) to cast a wider net across every SA site
+ *  Google has indexed. Gated so the common, data-rich path never pays. */
+const SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
 
 // ==================== CACHE ====================
 
@@ -320,6 +339,52 @@ function htmlToListings(html: string, selectors: string[]): Listing[] {
   return extractPrices(html, selectors).map((price) => ({ price }));
 }
 
+/** Pull {price, km} listings out of a Next.js page's __NEXT_DATA__ blob (Cars.co.za
+ *  and other Next sites embed their full result set there, carrying price AND
+ *  mileage — richer than the 1 JSON-LD node the page exposes). The payload is
+ *  often double-encoded (a JSON string inside the JSON), so we unwrap nested
+ *  JSON-looking strings as we walk. Only listings whose title names the queried
+ *  make/model within the year tolerance are kept, so the multi-year, multi-model
+ *  cars the page also carries can't skew the sample. Returns [] on any non-Next
+ *  page, so callers fall back to JSON-LD/CSS exactly as before. */
+export function extractNextDataListings(html: string, make: string, model: string, year: string): Listing[] {
+  const $ = cheerio.load(html);
+  const raw = $('#__NEXT_DATA__').contents().text() || $('#__NEXT_DATA__').text();
+  if (!raw) return [];
+  let root: any;
+  try { root = JSON.parse(raw); } catch { return []; }
+
+  const out: Listing[] = [];
+  const seen = new Set<string>();
+  const visit = (n: any) => {
+    if (n == null) return;
+    if (typeof n === 'string') {
+      const s = n.trim();
+      if ((s[0] === '{' || s[0] === '[') && s.includes('"price"')) {
+        try { visit(JSON.parse(s)); } catch { /* not embedded JSON */ }
+      }
+      return;
+    }
+    if (typeof n !== 'object') return;
+    if (Array.isArray(n)) { n.forEach(visit); return; }
+    const price = typeof n.price === 'number' ? n.price : null;
+    if (price != null && price >= MIN_PRICE && price <= MAX_PRICE && (n.make || n.model || n.title)) {
+      const title = String(n.title || `${n.year ?? ''} ${n.make ?? ''} ${n.model ?? ''}`);
+      if (titleMentionsVehicle(title, make, model, year)) {
+        const key = `${n.reference ?? n.id ?? ''}|${price}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          const km = num(n.mileage ?? n.km ?? n.odometer);
+          out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined });
+        }
+      }
+    }
+    for (const k of Object.keys(n)) visit(n[k]);
+  };
+  visit(root);
+  return out;
+}
+
 function median(nums: number[]): number | null {
   if (!nums.length) return null;
   const s = [...nums].sort((a, b) => a - b);
@@ -343,7 +408,7 @@ function adjustForMileage(listings: Listing[], targetKm?: number): number[] {
   if (!targetKm || !Number.isFinite(targetKm) || targetKm <= 0) return raw;
 
   const withKm = listings.filter((l): l is Required<Listing> => typeof l.km === 'number');
-  if (withKm.length < 4) return raw; // too little km signal to adjust safely
+  if (withKm.length < 3) return raw; // too little km signal to adjust safely
 
   const mx = withKm.reduce((s, l) => s + l.km, 0) / withKm.length;
   const my = withKm.reduce((s, l) => s + l.price, 0) / withKm.length;
@@ -356,10 +421,14 @@ function adjustForMileage(listings: Listing[], targetKm?: number): number[] {
   // Trust the fitted slope only if it's negative and within a sane band.
   if (!(slope < -0.2 && slope > -8)) slope = defaultSlope;
 
+  // Clamp each adjustment to ±40% of the listing's own price. This is a close
+  // evaluation, not an exact one: a wider band lets a high-km/low-km outlier be
+  // pulled meaningfully toward the subject car without a noisy slope inventing
+  // an absurd number.
   return listings.map((l) => {
     if (typeof l.km !== 'number') return l.price;
     const adj = l.price + slope * (targetKm - l.km);
-    return Math.round(Math.min(l.price * 1.3, Math.max(l.price * 0.7, adj)));
+    return Math.round(Math.min(l.price * 1.4, Math.max(l.price * 0.6, adj)));
   });
 }
 
@@ -434,10 +503,13 @@ async function renderViaWorker(url: string): Promise<string | null> {
   return null;
 }
 
-/** Render a page for parsing: the worker when available, plain HTTP otherwise. */
+/** Render a page for parsing: the worker first, then Web Unlocker (unblocks a
+ *  Cloudflared dealer page the plain worker can't reach), then plain HTTP. */
 export async function fetchPageForParsing(url: string): Promise<string | null> {
   const rendered = await renderViaWorker(url);
   if (rendered) return rendered;
+  const unlocked = await renderViaUnlocker(url);
+  if (unlocked) return unlocked;
   try {
     return await fetchWithRetry(url, { timeout: REQUEST_TIMEOUT, headers: DEFAULT_HEADERS });
   } catch (err: any) {
@@ -540,11 +612,18 @@ export function loadDealerSources(): DealerSource[] {
   }
 }
 
+/** How many model years either side of the query still count as a comp. A
+ *  trade-in wants a close ballpark, not a single-year sliver — ±2 roughly
+ *  doubles the usable sample on a thin model without dragging in a different
+ *  generation. Env-overridable. */
+const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 2;
+
 /** Listing titles must name the actual vehicle: make (any of its spellings)
  *  AND model (plus any dealer-configured `match`) all have to appear, and the
- *  title's model year must be within ±1 of the query year. A same-make
- *  different-model or different-year listing must not skew a trade-in
- *  valuation. Titles without a recognisable model year don't count at all.
+ *  title's model year must be within ±YEAR_TOLERANCE of the query year. A
+ *  same-make different-model listing must not skew a valuation. A title with
+ *  no recognisable year is NOT rejected — the search URL already constrains the
+ *  year, and dropping every year-less card was throwing away real comps.
  *  `match` exists for dealers whose titles abbreviate the model ("GTI",
  *  "R-Line", "1.4 TSI"). */
 function titleMentionsVehicle(title: string, make: string, model: string, year: string, match?: string): boolean {
@@ -552,8 +631,9 @@ function titleMentionsVehicle(title: string, make: string, model: string, year: 
   const y = parseInt(String(year), 10);
   if (Number.isFinite(y) && y >= 1990 && y <= 2100) {
     const ym = t.match(/\b(?:19|20)\d{2}\b/);
-    if (!ym) return false;
-    if (Math.abs(parseInt(ym[0], 10) - y) > 1) return false;
+    // Only reject on a year that's present AND out of band; a missing year is
+    // allowed through (the query URL already narrowed the year).
+    if (ym && Math.abs(parseInt(ym[0], 10) - y) > YEAR_TOLERANCE) return false;
   }
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), 'i').test(t));
   const q = modelCore(model);
@@ -604,7 +684,6 @@ function extractDealerPrices(
 
   return prices;
 }
-
 
 // ==================== DEALER JSON API LAYER ====================
 
@@ -677,7 +756,7 @@ async function fetchJsonDealerPrices(
       modelCore(itemModel).includes(q) ||
       modelCore(itemTitle).includes(q);
     const qYear = parseInt(year, 10);
-    const yearOk = !Number.isFinite(itemYear) || !Number.isFinite(qYear) || Math.abs(itemYear - qYear) <= 1;
+    const yearOk = !Number.isFinite(itemYear) || !Number.isFinite(qYear) || Math.abs(itemYear - qYear) <= YEAR_TOLERANCE;
     if (!makeOk || !modelOk || !yearOk) continue;
     const val = jsonPrice(item[cfg.priceField || 'price']);
     if (val === null) continue;
@@ -720,6 +799,148 @@ function robustAverage(prices: number[]): number | null {
   const trim = Math.max(1, Math.floor(s.length * 0.1));
   const core = s.slice(trim, s.length - trim);
   return Math.round(core.reduce((a, b) => a + b, 0) / core.length);
+}
+
+// ==================== SERP (GOOGLE) LAYER ====================
+//
+// Google has already indexed every SA classifieds + dealer site, so one search
+// aggregates comps across all of them — the best recall there is, and the best
+// answer for the long tail where any single site is thin. We never scrape
+// Google directly (it hard-blocks server IPs and it's against their ToS); a
+// SERP provider runs the query through its own proxies and hands back JSON.
+//
+// Provider-agnostic and OFF by default: with no key set fetchSerpListings is a
+// no-op and the pipeline behaves exactly as before. Set SERP_PROVIDER +
+// SERP_API_KEY (Bright Data or SerpApi) to switch it on — one env var to swap
+// providers, no code change.
+
+const SERP_API_URL = process.env.SERP_API_URL || '';
+const SERP_API_KEY = process.env.SERP_API_KEY || '';
+const SERP_ZONE = process.env.SERP_ZONE || 'serp';
+const SERP_PROVIDER = (
+  process.env.SERP_PROVIDER ||
+  (SERP_API_URL.includes('brightdata') ? 'brightdata' : SERP_API_URL.includes('serpapi') ? 'serpapi' : '')
+).toLowerCase();
+const SERP_TIMEOUT_MS = Number(process.env.SERP_TIMEOUT_MS) || 12000;
+
+// ── Web Unlocker (Bright Data) ───────────────────────────────────────────
+// Same unified endpoint + key as the SERP layer, different zone. It returns the
+// target page's UNBLOCKED raw HTML (solving Cloudflare / anti-bot on AutoTrader
+// and Cars.co.za), which flows into htmlToListings unchanged. One account key
+// covers both zones; BRIGHTDATA_API_KEY overrides only if you want a separate
+// billing key. Off unless SCRAPER_UNLOCKER_ENABLED is truthy, so with nothing
+// set the pipeline behaves exactly as before.
+const BD_API_KEY = process.env.BRIGHTDATA_API_KEY || SERP_API_KEY;
+const UNLOCKER_ZONE = process.env.UNLOCKER_ZONE || 'unlocker';
+const UNLOCKER_ENABLED = /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || '');
+const UNLOCKER_TIMEOUT_MS = Number(process.env.UNLOCKER_TIMEOUT_MS) || 20000;
+/** Unlocker only fetches the first N pages of a classifieds source (it's paid);
+ *  the free worker still paginates further. */
+const UNLOCKER_MAX_PAGES = Math.max(1, Number(process.env.UNLOCKER_MAX_PAGES) || 1);
+
+/** True when Web Unlocker is switched on and has a key. Gates the (paid) call. */
+export function unlockerConfigured(): boolean {
+  return UNLOCKER_ENABLED && !!BD_API_KEY;
+}
+
+/** POST a target URL to Bright Data's unified request API on `zone` and return
+ *  the response body — unblocked HTML for the Unlocker zone. No-op without a
+ *  key; never throws. */
+async function brightDataFetch(targetUrl: string, zone: string, timeoutMs: number): Promise<string | null> {
+  if (!BD_API_KEY) return null;
+  try {
+    const res = await fetch(SERP_API_URL || 'https://api.brightdata.com/request', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${BD_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ zone, url: targetUrl, format: 'raw' }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!res.ok) return null;
+    return await res.text();
+  } catch (err: any) {
+    console.warn('[scraper] brightDataFetch failed:', err?.message || err);
+    return null;
+  }
+}
+
+/** Fetch a page through Bright Data Web Unlocker. Returns unblocked HTML, or
+ *  null when disabled — callers fall through to the next render tier. */
+export async function renderViaUnlocker(url: string): Promise<string | null> {
+  if (!unlockerConfigured()) return null;
+  return brightDataFetch(url, UNLOCKER_ZONE, UNLOCKER_TIMEOUT_MS);
+}
+
+/** True when a SERP provider is wired up. Used to gate the (paid) call. */
+export function serpConfigured(): boolean {
+  return !!SERP_API_KEY && (SERP_PROVIDER === 'brightdata' || SERP_PROVIDER === 'serpapi');
+}
+
+/** Turn a SERP provider's JSON into price Listings. Handles both the SerpApi
+ *  shape (organic_results / shopping_results) and the Bright Data shape
+ *  (organic / shopping). Keeps only results whose text names the actual
+ *  make/model/year, then reads a structured price when present, else the first
+ *  R-price in the title/snippet. Exported so it can be unit-tested without a
+ *  live provider. SERP rarely carries odometer, so these are price-only. */
+export function parseSerpResults(json: any, make: string, model: string, year: string): Listing[] {
+  if (!json || typeof json !== 'object') return [];
+  const out: Listing[] = [];
+  const consider = (title: unknown, snippet: unknown, structuredPrice?: unknown) => {
+    const text = `${String(title || '')} ${String(snippet || '')}`.trim();
+    if (!text) return;
+    if (!titleMentionsVehicle(text, make, model, year)) return;
+    let price = typeof structuredPrice === 'number' ? jsonPrice(structuredPrice) : null;
+    if (price == null) price = priceFromText(text);
+    if (price != null) out.push({ price });
+  };
+  const organic = json.organic_results || json.organic || [];
+  for (const r of Array.isArray(organic) ? organic : []) {
+    consider(r?.title, r?.snippet ?? r?.description ?? r?.desc);
+  }
+  const shopping = json.shopping_results || json.shopping || [];
+  for (const r of Array.isArray(shopping) ? shopping : []) {
+    consider(r?.title, r?.snippet ?? r?.description, r?.extracted_price ?? r?.price);
+  }
+  // Dedupe on price — the same asking price echoing across three sites in the
+  // results is almost always the same car listed in three places.
+  const seen = new Set<number>();
+  return out.filter((l) => (seen.has(l.price) ? false : (seen.add(l.price), true)));
+}
+
+/** Query Google through the configured SERP provider and return price
+ *  Listings. No-op (returns []) when no provider/key is set, and never throws —
+ *  a SERP outage degrades to whatever the free layers found. */
+export async function fetchSerpListings(make: string, model: string, year: string): Promise<Listing[]> {
+  if (!serpConfigured()) return [];
+  const q = `${year} ${make} ${model} for sale South Africa price`;
+  try {
+    let json: any = null;
+    if (SERP_PROVIDER === 'brightdata') {
+      const googleUrl =
+        `https://www.google.com/search?q=${encodeURIComponent(q)}&gl=za&hl=en&num=20&brd_json=1`;
+      const res = await fetch(SERP_API_URL || 'https://api.brightdata.com/request', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${SERP_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zone: SERP_ZONE, url: googleUrl, format: 'raw' }),
+        signal: AbortSignal.timeout(SERP_TIMEOUT_MS),
+      });
+      if (!res.ok) return [];
+      const body = await res.text();
+      try { json = JSON.parse(body); } catch { return []; }
+    } else {
+      // SerpApi
+      const base = SERP_API_URL || 'https://serpapi.com/search.json';
+      const url =
+        `${base}?engine=google&google_domain=google.co.za&gl=za&hl=en&num=20` +
+        `&q=${encodeURIComponent(q)}&api_key=${encodeURIComponent(SERP_API_KEY)}`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(SERP_TIMEOUT_MS) });
+      if (!res.ok) return [];
+      json = await res.json();
+    }
+    return parseSerpResults(json, make, model, year);
+  } catch (err: any) {
+    console.warn('[scraper] SERP layer failed:', err?.message || err);
+    return [];
+  }
 }
 
 // ==================== MAIN EXPORTED FUNCTION ====================
@@ -835,59 +1056,115 @@ export async function fetchValuation(
     return data;
   }
 
-  // Too thin or empty — Layer 3: classifieds, always fetched as part of the
-  // fallback. Plain HTTP first (AutoTrader serves its listing cards server-side, and the render
-  // worker may be asleep on a free instance); only when the plain page yields
-  // no listings is the worker render tried.
+  // Too thin or empty — Layer 3: classifieds. Walk each source across a few
+  // pages; per page take plain HTTP first, but when it comes back thin (an
+  // SPA served only a JSON-LD sliver) render the whole page through the worker
+  // and keep whichever gave more. Accepting the first non-empty page was what
+  // pinned popular cars at a single listing.
   const sources = buildSources();
-  const fetchPromises = sources.map(async (src) => {
-    const url = src.url(make, baseModel, y);
-    try {
-      let html: string | null = null;
-      try {
-        html = await fetchWithRetry(url, { timeout: REQUEST_TIMEOUT, headers: DEFAULT_HEADERS });
-      } catch (err: any) {
-        console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
-      }
-      if (html && htmlToListings(html, src.selectors).length > 0) {
-        return { name: src.name, html, selectors: src.selectors };
-      }
-      const rendered = await renderViaWorker(url);
-      return { name: src.name, html: rendered, selectors: src.selectors };
-    } catch (err: any) {
-      console.warn(`[scraper] ${src.name} failed:`, err.message);
-      return { name: src.name, html: null, selectors: src.selectors };
-    }
-  });
 
-  const settled = await Promise.allSettled(fetchPromises);
+  const pageUrl = (src: ScraperSource, page: number): string => {
+    const base = src.url(make, baseModel, y);
+    if (page <= 1) return base;
+    const param = src.pageParam || 'page';
+    const sep = base.includes('?') ? '&' : '?';
+    return `${base}${sep}${param}=${page}`;
+  };
+
+  // Prefer a Next.js __NEXT_DATA__ result set (Cars.co.za: full, km-carrying,
+  // year-filtered) over the JSON-LD/CSS scrape; fall back to the latter for
+  // non-Next sites (AutoTrader). Runs here, not in htmlToListings, because only
+  // here do we have make/model/year to filter the embedded listings.
+  const parseClassified = (html: string, selectors: string[]): Listing[] => {
+    const nd = extractNextDataListings(html, make, baseModel, y);
+    return nd.length ? nd : htmlToListings(html, selectors);
+  };
+
+  const perSource = await Promise.all(
+    sources.map(async (src) => {
+      const acc: Listing[] = [];
+      for (let p = 1; p <= CLASSIFIEDS_PAGES; p++) {
+        const url = pageUrl(src, p);
+        let listings: Listing[] = [];
+        try {
+          const html = await fetchWithRetry(url, { timeout: REQUEST_TIMEOUT, headers: DEFAULT_HEADERS });
+          listings = parseClassified(html, src.selectors);
+        } catch (err: any) {
+          console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
+        }
+        // Paid unblock tier — defeats the Cloudflare block that plain HTTP hits
+        // on AutoTrader/Cars.co.za. Capped to the first UNLOCKER_MAX_PAGES pages
+        // and only when the free page came back thin.
+        if (listings.length < MIN_HTTP_LISTINGS && p <= UNLOCKER_MAX_PAGES) {
+          const un = await renderViaUnlocker(url);
+          if (un) {
+            const r = parseClassified(un, src.selectors);
+            if (r.length > listings.length) listings = r;
+          }
+        }
+        // Free worker render — still useful for a genuine SPA-XHR miss the
+        // Unlocker's light JS didn't surface.
+        if (listings.length < MIN_HTTP_LISTINGS) {
+          const rendered = await renderViaWorker(url);
+          if (rendered) {
+            const r = parseClassified(rendered, src.selectors);
+            if (r.length > listings.length) listings = r;
+          }
+        }
+        if (listings.length === 0) break; // nothing on this page → stop paging
+        acc.push(...listings);
+      }
+      // Dedupe within the source: a site that ignores the page param serves
+      // page 1 again, and identical price+km would otherwise inflate.
+      const seen = new Set<string>();
+      const deduped = acc.filter((l) => {
+        const k = `${l.price}|${l.km ?? ''}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+      return { name: src.name, listings: deduped };
+    }),
+  );
 
   const classifiedListings: Listing[] = [];
   const sourcesOutput: SourceResult[] = [];
-
-  for (const result of settled) {
-    if (result.status === 'rejected') continue;
-    const { name, html, selectors } = result.value;
-    if (!html) {
-      sourcesOutput.push({ name, count: 0, avg: null });
-      continue;
-    }
-
-    const listings = htmlToListings(html, selectors);
+  for (const { name, listings } of perSource) {
     classifiedListings.push(...listings);
     const prices = listings.map((l) => l.price);
     sourcesOutput.push({
       name,
       count: prices.length,
-      avg: prices.length
-        ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length)
-        : null,
+      avg: prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : null,
     });
   }
 
-  // Blend everything: whatever the dealer market gave us (1–2 listings is too
-  // thin to trust alone) plus the classifieds fallback.
-  const allListings = [...dealerListings, ...classifiedListings];
+  // Layer 4: SERP (Google) — only when the free layers are thin AND a provider
+  // is configured, so the common data-rich path never pays. Cached with the
+  // rest, so at most one paid call per model per cache window.
+  let serpListings: Listing[] = [];
+  if (dealerListings.length + classifiedListings.length < SERP_TRIGGER_MAX && serpConfigured()) {
+    serpListings = await fetchSerpListings(make, baseModel, y);
+    if (serpListings.length) {
+      const prices = serpListings.map((l) => l.price);
+      sourcesOutput.push({
+        name: 'Google (SERP)',
+        count: prices.length,
+        avg: Math.round(prices.reduce((s, v) => s + v, 0) / prices.length),
+      });
+    }
+  }
+
+  // Blend everything, then dedupe across layers on price+km so the same car
+  // surfacing on several sites (and in Google) counts once.
+  const combined = [...dealerListings, ...classifiedListings, ...serpListings];
+  const crossSeen = new Set<string>();
+  const allListings = combined.filter((l) => {
+    const k = `${l.price}|${l.km ?? ''}`;
+    if (crossSeen.has(k)) return false;
+    crossSeen.add(k);
+    return true;
+  });
   const finalSources = [...dealerSources, ...sourcesOutput];
 
   if (allListings.length === 0) {
