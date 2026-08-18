@@ -847,6 +847,18 @@ export default function InventoryList({
                     className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                   />
                 </div>
+                {/* Auto-filled by the make/model picker above (the M&M code it
+                    resolves); editable for a hand correction. */}
+                <div>
+                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">M&amp;M Code</label>
+                  <input
+                    type="text"
+                    placeholder="From make/model"
+                    value={mmCode}
+                    onChange={(e) => setMmCode(e.target.value)}
+                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
+                  />
+                </div>
 
                 {/* Optional Extras — full-width multi-select checklist */}
                 <div className="col-span-2 relative">
