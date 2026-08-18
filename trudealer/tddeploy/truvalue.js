@@ -60,7 +60,8 @@
     slug: attr("data-slug", ""),
     mount: attr("data-mount", ""),   // CSS selector → render inline in-page instead of a floating launcher
     theme: attr("data-theme", ""),   // "light" → light surface to match a light host page
-    font: attr("data-font", "")      // override font-family to match the host page
+    font: attr("data-font", ""),     // override font-family to match the host page
+    margin: attr("data-margin", "15") // dealer trade margin % — retail less this = shown trade estimate
   };
 
   var ID = "tru-value";
@@ -397,8 +398,8 @@
       if (r.ok) {
         resultBlock =
           '<div class="tv-result">' +
-          '<div class="tv-band">Market estimate · subject to full assessment</div>' +
-          '<div style="font-size:11px;color:var(--tv-muted);font-weight:700">Estimated value · ' + esc(vehLine) + "</div>" +
+          '<div class="tv-band">Trade estimate · subject to full assessment</div>' +
+          '<div style="font-size:11px;color:var(--tv-muted);font-weight:700">Estimated trade-in · ' + esc(vehLine) + "</div>" +
           '<div class="tv-big">' + money(r.low) + " – " + money(r.high) + "</div>" +
           '<div class="tv-range">Verified against ' + (r.listingsFound || 0) + " live market listing" + ((r.listingsFound === 1) ? "" : "s") +
             (r.mileageAdjusted ? " · mileage-adjusted" : "") + "</div>" +
@@ -455,7 +456,7 @@
       body: JSON.stringify({
         make: state.make, model: state.model, year: state.year, mileage: state.mileage,
         reg: state.reg, vin: state.vin, condition: state.condition, damage: state.damage,
-        dealer: cfg.dealer, slug: cfg.slug, accent: cfg.accent
+        dealer: cfg.dealer, slug: cfg.slug, accent: cfg.accent, margin: Number(cfg.margin)
       })
     })
       .then(function (r) { return r.json(); })
@@ -480,7 +481,7 @@
       "VIN: " + (state.vin || "—"),
       "Condition: " + state.condition + "/5",
       "Damage/notes: " + (state.damage || "—"),
-      "Est. market value: " + estLine,
+      "Est. trade-in value: " + estLine,
       (r.reportUrl ? "My trade-in report: " + r.reportUrl : "Please send my trade-in report."),
       "(Indicative estimate — subject to full assessment)"
     ].join("\n");

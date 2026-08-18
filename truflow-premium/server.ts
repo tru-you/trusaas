@@ -6533,7 +6533,7 @@ table{width:100%;border-collapse:collapse;margin:6px 0 4px}td{padding:9px 0;bord
 </style></head><body><div class="wrap">
 <div class="hd"><h1>${e(r.dealer || "Trade-In")} · Trade-In Estimate</h1><p>${e(veh)} · ${date}</p></div>
 <div class="bd">
-<div class="est">Estimated market value</div>
+<div class="est">Estimated trade-in value</div>
 <div class="big">${zar(r.low)} – ${zar(r.high)}</div>
 <div class="sub">Verified against ${r.listingsFound || 0} live market listing${r.listingsFound === 1 ? "" : "s"}${r.mileageAdjusted ? " · mileage-adjusted" : ""}</div>
 <table>
@@ -6543,8 +6543,10 @@ ${row("Registration", r.reg || "—")}
 ${row("VIN", r.vin || "—")}
 ${row("Condition", r.condition ? r.condition + " / 5" : "—")}
 ${row("Damage / notes", r.damage || "None noted")}
+${row("Market retail (est.)", r.retail ? zar(r.retail) : "—")}
+${row("Dealer margin", r.margin != null ? r.margin + "%" : "—")}
 </table>
-<div class="note"><b>Subject to full assessment.</b> This is an indicative market estimate, not a firm offer. The final trade-in value follows a physical assessment of the vehicle by ${e(r.dealer || "the dealership")} and may vary with condition, service history and demand.</div>
+<div class="note"><b>Subject to full assessment.</b> This is an indicative trade-in estimate — live market retail less a ${r.margin != null ? r.margin : 15}% dealer margin — not a firm offer. The final trade-in value follows a physical assessment of the vehicle by ${e(r.dealer || "the dealership")} and may vary with condition, service history and demand.</div>
 </div>
 <div class="ft">Powered by <b>TruSaaS · TruValue</b> — live-market vehicle valuation</div>
 </div></body></html>`;
@@ -6564,12 +6566,18 @@ app.post("/api/public/trade-estimate", async (req: any, res) => {
     const data = await fetchValuation(String(make), String(model), String(year), {
       mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : undefined,
     });
-    const est = data.averageRetailPrice;
-    if (est == null) {
+    const retail = data.averageRetailPrice;
+    if (retail == null) {
       return res.json({ ok: false, reason: "no_data", listingsFound: 0 });
     }
-    const low = Math.round(est * 0.94);
-    const high = Math.round(est * 1.06);
+    // Apply the dealer's trade margin so the figure is an indicative TRADE-IN
+    // value (retail less margin), not the retail sell price — keeps the seller's
+    // expectation in line with what the dealer can actually pay. Default 15%.
+    const mRaw = Number((req.body || {}).margin);
+    const margin = Number.isFinite(mRaw) ? Math.min(40, Math.max(0, mRaw)) : 15;
+    const trade = Math.round(retail * (1 - margin / 100));
+    const low = Math.round(trade * 0.96);
+    const high = Math.round(trade * 1.04);
 
     // Persist a shareable report (vehicle + estimate only, no PII) and hand
     // back its URL so the widget can deliver it via WhatsApp.
@@ -6583,13 +6591,13 @@ app.post("/api/public/trade-estimate", async (req: any, res) => {
       reg: String(reg || ""), vin: String(vin || ""),
       condition: Number(condition) || null, damage: String(damage || ""),
       accent: /^#?[0-9a-fA-F]{6}$/.test(String((req.body || {}).accent || "")) ? String((req.body || {}).accent) : "",
-      low, high, estimate: est, listingsFound: data.listingsFound, mileageAdjusted: !!data.mileageAdjusted,
+      low, high, estimate: trade, retail, margin, listingsFound: data.listingsFound, mileageAdjusted: !!data.mileageAdjusted,
     };
     writeTradeReports(reports);
     const reportUrl = originOf(req) + "/api/public/trade-report/" + id;
-    console.log(`[trade-estimate] ${make} ${model} ${year}: est=${est} listings=${data.listingsFound} report=${id}`);
+    console.log(`[trade-estimate] ${make} ${model} ${year}: retail=${retail} trade=${trade} (-${margin}%) listings=${data.listingsFound} report=${id}`);
     res.json({
-      ok: true, currency: "ZAR", estimate: est, low, high,
+      ok: true, currency: "ZAR", estimate: trade, retail, margin, low, high,
       listingsFound: data.listingsFound, mileageAdjusted: !!data.mileageAdjusted,
       sampleMedianKm: data.sampleMedianKm ?? null, reportUrl,
     });
