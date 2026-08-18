@@ -148,7 +148,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     setTuValLoading(true);
     setTuValuation(null);
     try {
-      const res = await fetch("/api/imagin8/valuation", {
+      const res = await authFetch("/api/imagin8/valuation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mmCode: vehicle.mmCode, year: vehicle.year, mileage: vehicle.mileage }),
@@ -170,7 +170,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     setRegCheckResult(null);
     try {
       const type = vehicle.vin ? "vin" : "reg";
-      const res = await fetch("/api/imagin8/regcheck", {
+      const res = await authFetch("/api/imagin8/regcheck", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier: id, type }),
@@ -190,7 +190,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
     setMarketValLoading(true);
     setMarketValuation(null);
     try {
-      const res = await fetch("/api/valuation", {
+      const res = await authFetch("/api/valuation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ make: vehicle.make, model: vehicle.model, year: vehicle.year, mileage: vehicle.mileage }),
@@ -818,7 +818,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       // flat subscription). Fuel type is the safe cross-field.
                       if (!v.mmCode) return;
                       try {
-                        const res = await fetch("/api/imagin8/static", {
+                        const res = await authFetch("/api/imagin8/static", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ mmCode: v.mmCode }),
