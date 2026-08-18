@@ -339,6 +339,52 @@ function htmlToListings(html: string, selectors: string[]): Listing[] {
   return extractPrices(html, selectors).map((price) => ({ price }));
 }
 
+/** Pull {price, km} listings out of a Next.js page's __NEXT_DATA__ blob (Cars.co.za
+ *  and other Next sites embed their full result set there, carrying price AND
+ *  mileage — richer than the 1 JSON-LD node the page exposes). The payload is
+ *  often double-encoded (a JSON string inside the JSON), so we unwrap nested
+ *  JSON-looking strings as we walk. Only listings whose title names the queried
+ *  make/model within the year tolerance are kept, so the multi-year, multi-model
+ *  cars the page also carries can't skew the sample. Returns [] on any non-Next
+ *  page, so callers fall back to JSON-LD/CSS exactly as before. */
+export function extractNextDataListings(html: string, make: string, model: string, year: string): Listing[] {
+  const $ = cheerio.load(html);
+  const raw = $('#__NEXT_DATA__').contents().text() || $('#__NEXT_DATA__').text();
+  if (!raw) return [];
+  let root: any;
+  try { root = JSON.parse(raw); } catch { return []; }
+
+  const out: Listing[] = [];
+  const seen = new Set<string>();
+  const visit = (n: any) => {
+    if (n == null) return;
+    if (typeof n === 'string') {
+      const s = n.trim();
+      if ((s[0] === '{' || s[0] === '[') && s.includes('"price"')) {
+        try { visit(JSON.parse(s)); } catch { /* not embedded JSON */ }
+      }
+      return;
+    }
+    if (typeof n !== 'object') return;
+    if (Array.isArray(n)) { n.forEach(visit); return; }
+    const price = typeof n.price === 'number' ? n.price : null;
+    if (price != null && price >= MIN_PRICE && price <= MAX_PRICE && (n.make || n.model || n.title)) {
+      const title = String(n.title || `${n.year ?? ''} ${n.make ?? ''} ${n.model ?? ''}`);
+      if (titleMentionsVehicle(title, make, model, year)) {
+        const key = `${n.reference ?? n.id ?? ''}|${price}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          const km = num(n.mileage ?? n.km ?? n.odometer);
+          out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined });
+        }
+      }
+    }
+    for (const k of Object.keys(n)) visit(n[k]);
+  };
+  visit(root);
+  return out;
+}
+
 function median(nums: number[]): number | null {
   if (!nums.length) return null;
   const s = [...nums].sort((a, b) => a - b);
@@ -1025,6 +1071,15 @@ export async function fetchValuation(
     return `${base}${sep}${param}=${page}`;
   };
 
+  // Prefer a Next.js __NEXT_DATA__ result set (Cars.co.za: full, km-carrying,
+  // year-filtered) over the JSON-LD/CSS scrape; fall back to the latter for
+  // non-Next sites (AutoTrader). Runs here, not in htmlToListings, because only
+  // here do we have make/model/year to filter the embedded listings.
+  const parseClassified = (html: string, selectors: string[]): Listing[] => {
+    const nd = extractNextDataListings(html, make, baseModel, y);
+    return nd.length ? nd : htmlToListings(html, selectors);
+  };
+
   const perSource = await Promise.all(
     sources.map(async (src) => {
       const acc: Listing[] = [];
@@ -1033,7 +1088,7 @@ export async function fetchValuation(
         let listings: Listing[] = [];
         try {
           const html = await fetchWithRetry(url, { timeout: REQUEST_TIMEOUT, headers: DEFAULT_HEADERS });
-          listings = htmlToListings(html, src.selectors);
+          listings = parseClassified(html, src.selectors);
         } catch (err: any) {
           console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
         }
@@ -1043,7 +1098,7 @@ export async function fetchValuation(
         if (listings.length < MIN_HTTP_LISTINGS && p <= UNLOCKER_MAX_PAGES) {
           const un = await renderViaUnlocker(url);
           if (un) {
-            const r = htmlToListings(un, src.selectors);
+            const r = parseClassified(un, src.selectors);
             if (r.length > listings.length) listings = r;
           }
         }
@@ -1052,7 +1107,7 @@ export async function fetchValuation(
         if (listings.length < MIN_HTTP_LISTINGS) {
           const rendered = await renderViaWorker(url);
           if (rendered) {
-            const r = htmlToListings(rendered, src.selectors);
+            const r = parseClassified(rendered, src.selectors);
             if (r.length > listings.length) listings = r;
           }
         }
