@@ -36,6 +36,13 @@ services:
     runtime: node
     plan: starter
     rootDir: TruLens
+    # Auto-deploy the moment TruLens/ changes; ignore commits that don't touch
+    # it so a dealer's live app isn't restarted for unrelated marketing pushes.
+    # (This is why the Aug-15 dropdown fix sat un-deployed — auto-deploy was off.)
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - TruLens/**
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
@@ -88,6 +95,10 @@ services:
     runtime: node
     plan: starter
     rootDir: truinspect
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - truinspect/**
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
@@ -130,6 +141,10 @@ services:
     runtime: node
     plan: starter
     rootDir: truflow-mobile
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - truflow-mobile/**
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
@@ -147,6 +162,10 @@ services:
     runtime: node
     plan: starter
     rootDir: trulive
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - trulive/**
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
@@ -167,6 +186,10 @@ services:
     runtime: node
     plan: starter
     rootDir: trutrade
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - trutrade/**
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
@@ -186,6 +209,10 @@ services:
     runtime: node
     plan: starter
     rootDir: truflow-premium
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - truflow-premium/**
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
@@ -240,6 +267,10 @@ services:
     runtime: node
     plan: starter
     rootDir: truchat-api
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - truchat-api/**
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
