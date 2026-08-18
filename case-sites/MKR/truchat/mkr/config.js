@@ -24,7 +24,9 @@ window.MKR_TRUCHAT_CONFIG = {
   salesWhatsApp: "27662912809",
   waBusinessNumber: "",
 
-  leadWebhook: "",
+  dealerSlug: "true-cars",
+
+  leadWebhook: "https://premium.tru-saas.com/api/integration/webhook-lead",
   leadStorageKey: "mkr_truchat_leads_v1",
   portalPin: "",
 

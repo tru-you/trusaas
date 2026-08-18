@@ -2729,5 +2729,16 @@ document.querySelectorAll('.scene video,.mc-preview video,.case-preview video').
   vids.forEach(function(v){ io.observe(v); });
 })();
 </script>
+<!-- TruBook — files walkthrough bookings to the true-cars DMS; intercepts legacy cal.com links -->
+<script src="tru-book.js" data-dealer="TruDealer" data-slug="true-cars" data-flow="https://premium.tru-saas.com" data-wa="27620502091" data-accent="#0D9488" data-address="Online — Google Meet screen-share" data-brand="Powered by TruDealer"></script>
+<script>
+(function(){
+  function openBook(e){ if(e){e.preventDefault();} if(window.TruBook){TruBook.open({mode:'walkthrough'});} else {window.open('https://cal.com/pgdebeer','_blank','noopener');} }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest && e.target.closest('a[href*="cal.com/pgdebeer"]');
+    if(a){ openBook(e); }
+  });
+})();
+</script>
 </body>
 </html>

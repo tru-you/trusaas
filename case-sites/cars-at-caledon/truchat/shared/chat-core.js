@@ -389,7 +389,24 @@
       };
       saveLeadEntry(entry, LS_KEY);
       if (s.qualified || force) {
-        postWebhook(CFG.leadWebhook, { type: "truchat_lead", dealer: CFG.dealerName, entry: entry });
+        var _nm = (s.name || "").trim().split(/\s+/);
+        postWebhook(CFG.leadWebhook, {
+          dealerSlug: CFG.dealerSlug || "",
+          firstName: _nm[0] || "Chat",
+          lastName: _nm.slice(1).join(" "),
+          phone: s.phone || "",
+          source: "TruChat Widget",
+          notes: [
+            s.vehicleInterest ? "Vehicle: " + s.vehicleInterest : "",
+            s.financeInterest ? "Finance: " + s.financeInterest : "",
+            s.testDriveDate ? "Test drive: " + s.testDriveDate : "",
+            s.inspectionDate ? "Inspection: " + s.inspectionDate : "",
+            s.tradeInDetails ? "Trade-in: " + s.tradeInDetails : "",
+            entry.ticket ? "Ref: " + entry.ticket : ""
+          ].filter(Boolean).join("\n"),
+          journey: "chat",
+          truchat: entry
+        });
       }
       if (typeof options.onLead === "function") options.onLead(entry);
     }

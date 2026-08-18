@@ -24,7 +24,9 @@ window.COC_TRUCHAT_CONFIG = {
   salesWhatsApp: "27618759389",
   waBusinessNumber: "",
 
-  leadWebhook: "",
+  dealerSlug: "true-cars",
+
+  leadWebhook: "https://premium.tru-saas.com/api/integration/webhook-lead",
   leadStorageKey: "coc_truchat_leads_v1",
   portalPin: "",
 

@@ -27,7 +27,9 @@ window.TRUECARS_TRUCHAT_CONFIG = {
   salesWhatsApp: "27620502091",
   waBusinessNumber: "",
 
-  leadWebhook: "",
+  dealerSlug: "true-cars",
+
+  leadWebhook: "https://premium.tru-saas.com/api/integration/webhook-lead",
   leadStorageKey: "truecars_truchat_leads_v1",
   portalPin: "true",
 

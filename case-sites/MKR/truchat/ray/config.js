@@ -38,7 +38,8 @@ window.RAY_TRUCHAT_CONFIG = {
    * Use Make.com / Zapier / n8n / Formspree so portal isn't the only inbox.
    * Example Formspree: "https://formspree.io/f/xxxxxxxx"
    */
-  leadWebhook: "",
+  dealerSlug: "true-cars",
+  leadWebhook: "https://premium.tru-saas.com/api/integration/webhook-lead",
 
   /** Simple PIN for portal.html (leave "" to disable) */
   portalPin: "ycg",
