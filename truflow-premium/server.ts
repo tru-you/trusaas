@@ -6445,6 +6445,143 @@ app.post("/api/valuation", authenticate, async (req: any, res) => {
   }
 });
 
+// ---- TruValue public endpoints (embeddable trade-in widget) ----
+// Auth-exempt via /api/public/*; CORS is open globally. Reuses the market
+// scraper (15-min cache absorbs repeats). A light per-IP throttle guards the
+// paid scraper from being hammered through a public embed.
+const tradeEstimateHits = new Map<string, { n: number; ts: number }>();
+function tradeEstimateThrottled(ip: string): boolean {
+  const now = Date.now();
+  const WINDOW = 60_000, MAX = 20;
+  const e = tradeEstimateHits.get(ip);
+  if (!e || now - e.ts > WINDOW) { tradeEstimateHits.set(ip, { n: 1, ts: now }); return false; }
+  e.n++;
+  return e.n > MAX;
+}
+
+// Trade-in reports live in one JSON on the mounted disk. Vehicle + estimate
+// only — NO name/phone (those ride the lead). The id is unguessable and the
+// store is capped so it can't grow without bound.
+const TRADE_REPORTS_FILE = path.join(DATA_DIR, "trade-reports.json");
+function readTradeReports(): Record<string, any> {
+  try { return JSON.parse(fs.readFileSync(TRADE_REPORTS_FILE, "utf-8")); } catch { return {}; }
+}
+function writeTradeReports(m: Record<string, any>) {
+  try {
+    const keys = Object.keys(m);
+    if (keys.length > 1000) {
+      keys.sort((a, b) => (m[a].createdAt || 0) - (m[b].createdAt || 0));
+      for (const k of keys.slice(0, keys.length - 1000)) delete m[k];
+    }
+    fs.writeFileSync(TRADE_REPORTS_FILE, JSON.stringify(m));
+  } catch (e: any) { console.warn("[trade-report] save failed:", e?.message || e); }
+}
+function newReportId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function renderTradeReport(r: any): string {
+  const zar = (n: number) => "R " + Math.round(n || 0).toLocaleString("en-ZA");
+  const veh = [r.year, r.make, r.model].filter(Boolean).join(" ");
+  const e = (s: any) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  const date = new Date(r.createdAt || Date.now()).toLocaleDateString("en-ZA", { year: "numeric", month: "long", day: "numeric" });
+  const row = (k: string, v: string) => `<tr><td class="k">${e(k)}</td><td class="v">${e(v)}</td></tr>`;
+  const accent = /^#?[0-9a-fA-F]{6}$/.test(String(r.accent || "")) ? (String(r.accent)[0] === "#" ? String(r.accent) : "#" + r.accent) : "#0f766e";
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Trade-In Estimate · ${e(veh)}</title>
+<style>
+:root{--ink:#0b0d12;--line:#e6e8ee;--muted:#5b6472;--accent:${accent}}
+*{box-sizing:border-box}body{margin:0;background:#f4f6f9;color:var(--ink);font:15px/1.5 -apple-system,Segoe UI,Roboto,Inter,sans-serif}
+.wrap{max-width:640px;margin:24px auto;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.hd{padding:22px 26px;background:linear-gradient(120deg,var(--accent),#0b0d12);color:#fff}
+.hd h1{margin:0;font-size:18px;font-weight:800}.hd p{margin:4px 0 0;opacity:.85;font-size:12.5px}
+.bd{padding:22px 26px}.est{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.big{font-size:30px;font-weight:900;margin:2px 0 2px;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;margin:6px 0 4px}td{padding:9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.k{color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;width:42%}.v{font-weight:600}
+.note{margin-top:18px;padding:12px 14px;border-radius:10px;background:#fff8e6;border:1px solid #f2d98a;color:#7a5b00;font-size:12.5px;line-height:1.5}
+.ft{padding:14px 26px;border-top:1px solid var(--line);color:var(--muted);font-size:11px;text-align:center}
+@media print{body{background:#fff}.wrap{border:0;margin:0}}
+</style></head><body><div class="wrap">
+<div class="hd"><h1>${e(r.dealer || "Trade-In")} · Trade-In Estimate</h1><p>${e(veh)} · ${date}</p></div>
+<div class="bd">
+<div class="est">Estimated market value</div>
+<div class="big">${zar(r.low)} – ${zar(r.high)}</div>
+<div class="sub">Verified against ${r.listingsFound || 0} live market listing${r.listingsFound === 1 ? "" : "s"}${r.mileageAdjusted ? " · mileage-adjusted" : ""}</div>
+<table>
+${row("Vehicle", veh || "—")}
+${row("Mileage", r.mileage ? Number(r.mileage).toLocaleString("en-ZA") + " km" : "—")}
+${row("Registration", r.reg || "—")}
+${row("VIN", r.vin || "—")}
+${row("Condition", r.condition ? r.condition + " / 5" : "—")}
+${row("Damage / notes", r.damage || "None noted")}
+</table>
+<div class="note"><b>Subject to full assessment.</b> This is an indicative market estimate, not a firm offer. The final trade-in value follows a physical assessment of the vehicle by ${e(r.dealer || "the dealership")} and may vary with condition, service history and demand.</div>
+</div>
+<div class="ft">Powered by <b>TruSaaS · TruValue</b> — live-market vehicle valuation</div>
+</div></body></html>`;
+}
+
+app.post("/api/public/trade-estimate", async (req: any, res) => {
+  const { make, model, year, mileage, reg, vin, condition, damage, dealer, slug } = req.body || {};
+  if (!make || !model || !year) {
+    return res.status(400).json({ ok: false, error: "make, model, and year are required" });
+  }
+  const ip = String(req.headers["x-forwarded-for"] || req.ip || "").split(",")[0].trim() || "anon";
+  if (tradeEstimateThrottled(ip)) {
+    return res.status(429).json({ ok: false, error: "Too many requests — try again shortly." });
+  }
+  try {
+    const subjectKm = Number(mileage);
+    const data = await fetchValuation(String(make), String(model), String(year), {
+      mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : undefined,
+    });
+    const est = data.averageRetailPrice;
+    if (est == null) {
+      return res.json({ ok: false, reason: "no_data", listingsFound: 0 });
+    }
+    const low = Math.round(est * 0.94);
+    const high = Math.round(est * 1.06);
+
+    // Persist a shareable report (vehicle + estimate only, no PII) and hand
+    // back its URL so the widget can deliver it via WhatsApp.
+    const id = newReportId();
+    const reports = readTradeReports();
+    reports[id] = {
+      id, createdAt: Date.now(),
+      dealer: String(dealer || ""), slug: String(slug || ""),
+      make: String(make), model: String(model), year: Number(year),
+      mileage: Number.isFinite(subjectKm) && subjectKm > 0 ? Math.round(subjectKm) : null,
+      reg: String(reg || ""), vin: String(vin || ""),
+      condition: Number(condition) || null, damage: String(damage || ""),
+      accent: /^#?[0-9a-fA-F]{6}$/.test(String((req.body || {}).accent || "")) ? String((req.body || {}).accent) : "",
+      low, high, estimate: est, listingsFound: data.listingsFound, mileageAdjusted: !!data.mileageAdjusted,
+    };
+    writeTradeReports(reports);
+    const reportUrl = originOf(req) + "/api/public/trade-report/" + id;
+    console.log(`[trade-estimate] ${make} ${model} ${year}: est=${est} listings=${data.listingsFound} report=${id}`);
+    res.json({
+      ok: true, currency: "ZAR", estimate: est, low, high,
+      listingsFound: data.listingsFound, mileageAdjusted: !!data.mileageAdjusted,
+      sampleMedianKm: data.sampleMedianKm ?? null, reportUrl,
+    });
+  } catch (err: any) {
+    console.error("[trade-estimate] failed:", err?.message || err);
+    res.status(502).json({ ok: false, error: "Estimate failed" });
+  }
+});
+
+app.get("/api/public/trade-report/:id", (req, res) => {
+  const r = readTradeReports()[String(req.params.id)];
+  if (!r) {
+    res.status(404).setHeader("Content-Type", "text/html; charset=utf-8");
+    return res.send("<!doctype html><meta charset=utf-8><body style='font:16px system-ui;padding:40px;color:#333'>This trade-in report was not found or has expired.</body>");
+  }
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send(renderTradeReport(r));
+});
+
 app.post("/api/imagin8/avs", authenticate, async (req: any, res) => {
   const { bankAccount, branchCode, idNumber, initials, surname } = req.body || {};
   if (!bankAccount || !branchCode || !idNumber) {

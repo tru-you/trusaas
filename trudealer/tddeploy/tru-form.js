@@ -62,11 +62,30 @@
     return (scr && scr.getAttribute(name)) || fallback;
   }
 
+  /* CallMeBot: fire-and-forget WhatsApp ping to the dealer. Opt-in via
+     data-callmebot-key. Customer PII rides in the URL to callmebot.com, so
+     this is an instant-notification floor, not a system of record — pair it
+     with data-webhook for a durable CRM record. */
+  function cmbNotify(cfg, source, text) {
+    if (!cfg || !cfg.cmbKey || !cfg.cmbPhone) return;
+    try {
+      new Image().src =
+        "https://api.callmebot.com/whatsapp.php?phone=" + cfg.cmbPhone +
+        "&apikey=" + encodeURIComponent(cfg.cmbKey) +
+        "&text=" + encodeURIComponent("New " + source + " lead — " + (cfg.dealer || "") + "\n" + (text || ""));
+    } catch (e) {}
+  }
+
   var cfg = {
     dealer: attr("data-dealer", "this dealership"),
     slug: attr("data-slug", ""),
     flowUrl: attr("data-flow", ""),
+    webhook: attr("data-webhook", ""),
+    cmbKey: attr("data-callmebot-key", ""),
+    cmbPhone: ((attr("data-callmebot-phone", "") || attr("data-wa", "")) || "").replace(/\D/g, ""),
     wa: (attr("data-wa", "") || "").replace(/\D/g, ""),
+    text: attr("data-text", ""),   // override primary text colour
+    scale: attr("data-scale", ""), // launcher size multiplier
     heading: attr("data-heading", "Get in Touch"),
     subheading: attr("data-subheading", "We'll get back to you shortly."),
     position: attr("data-position", "right"),
@@ -81,7 +100,7 @@
        TruDealer" on every site using the default. */
     brand: attr("data-brand", "TruDealer"),
     theme: attr("data-theme", "dark"),
-    z: attr("data-z", "999980"),
+    z: attr("data-z", "2147300000"),
     fields: (attr("data-fields", "") || "").split(",").map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean)
   };
 
@@ -338,15 +357,22 @@
 
     /* mobile */
     isInline ? "" : [
-      "@media(max-width:420px){:host{right:10px;left:10px;bottom:14px;max-width:none}",
-      "#tf{align-items:stretch}",
-      ".tf-launcher{max-width:none;width:100%;justify-content:flex-start}",
+      "@media(max-width:480px){",
+      "@keyframes tfShine{0%{transform:translateX(-160%) skewX(-20deg)}55%,100%{transform:translateX(300%) skewX(-20deg)}}",
+      "#tf{align-items:" + (cfg.position === "left" ? "flex-start" : "flex-end") + "}",
+      ".tf-launcher{width:76px;min-height:76px;height:76px;padding:12px;border-radius:50%;justify-content:center;gap:0;position:relative;overflow:hidden}",
+      ".tf-launcher>div:last-child{display:none}",
+      ".tf-launcher::after{content:'';position:absolute;top:0;left:0;width:48%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-160%) skewX(-20deg);animation:tfShine 3.6s ease-in-out infinite;pointer-events:none;z-index:2}",
       ".tf-panel{width:100%}}"
     ].join(""),
 
     "@media(prefers-reduced-motion:reduce){#tf *{animation:none!important;transition-duration:.01ms!important}}",
     "#tf button:focus-visible,#tf input:focus-visible,#tf textarea:focus-visible,#tf select:focus-visible{",
-    "outline:2px solid var(--tf-signal-bright);outline-offset:2px}"
+    "outline:2px solid var(--tf-signal-bright);outline-offset:2px}",
+    /* data-text: override primary text colour. */
+    cfg.text ? "#tf{--tf-text:" + cfg.text + "}#tf .tf-launcher,#tf .tf-ltitle,#tf .tf-panel{color:" + cfg.text + "}" : "",
+    /* data-scale: resize the float launcher, anchored to its corner. */
+    (cfg.scale && !isInline) ? "#tf .tf-launcher{transform:scale(" + cfg.scale + ");transform-origin:bottom " + cfg.position + "}" : ""
   ].join("");
 
   /* ---- icons ---- */
@@ -527,10 +553,10 @@
           '<div class="tf-field"><label for="tf-interest">Interested in</label>',
             '<select id="tf-interest">',
               '<option value="">Select an option...</option>',
-              '<option value="Book a walkthrough">Book a walkthrough</option>',
-              '<option value="Which tier fits me">Which tier fits me</option>',
-              '<option value="Switching from another DMS">Switching from another DMS</option>',
-              '<option value="Custom build">Custom build</option>',
+              '<option value="Buying a vehicle">Buying a vehicle</option>',
+              '<option value="Selling / trade-in">Selling / trade-in</option>',
+              '<option value="Finance enquiry">Finance enquiry</option>',
+              '<option value="Test drive">Test drive</option>',
               '<option value="General enquiry">General enquiry</option>',
             '</select></div>',
 
@@ -817,10 +843,12 @@
 
     /* ---- network: returns a promise<boolean> for a real delivery ---- */
     function postLead(source) {
-      if (!(cfg.slug && cfg.flowUrl)) return Promise.resolve(false);
+      cmbNotify(cfg, source || "TruForm", buildNotes());
+      if (!(cfg.webhook || (cfg.slug && cfg.flowUrl))) return Promise.resolve(false);
+      var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
       var ctrl = ("AbortController" in window) ? new AbortController() : null;
       var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
-      return fetch(cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead", {
+      return fetch(leadUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildPayload(source)),
