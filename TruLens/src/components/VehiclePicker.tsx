@@ -77,8 +77,8 @@ function SearchSelect({
   // Measure the trigger and place the menu so it always stays on-screen:
   // flip up when it would run past the bottom, and clamp height + left/right
   // to the viewport so it can never be clipped by an ancestor or pushed off.
-  useEffect(() => {
-    if (!open || !btnRef.current) return;
+  const place = useCallback(() => {
+    if (!btnRef.current) return;
     const r = btnRef.current.getBoundingClientRect();
     const GAP = 4, MARGIN = 8, MAX = 288, MIN_W = 200;
     const below = window.innerHeight - r.bottom - GAP - MARGIN;
@@ -93,22 +93,35 @@ function SearchSelect({
       width,
       maxHeight: Math.max(120, Math.min(MAX, flip ? above : below)),
     });
-    setQuery("");
-    inputRef.current?.focus();
-  }, [open]);
+  }, []);
 
-  // A fixed-position menu goes stale the moment the page scrolls or resizes;
-  // closing it is simpler and less jarring than chasing the trigger.
   useEffect(() => {
     if (!open) return;
-    const close = () => setOpen(false);
-    window.addEventListener("scroll", close, true);
-    window.addEventListener("resize", close);
-    return () => {
-      window.removeEventListener("scroll", close, true);
-      window.removeEventListener("resize", close);
+    place();
+    setQuery("");
+    inputRef.current?.focus();
+  }, [open, place]);
+
+  // Reposition — never close — on scroll/resize. On a phone, auto-focusing the
+  // search box opens the keyboard, which fires resize/scroll; scrolling the
+  // option list fires scroll too. Closing on those made the menu pop straight
+  // back shut the instant it opened. Only an outside tap closes it (handler
+  // above). rAF-throttled so a scroll storm stays cheap.
+  useEffect(() => {
+    if (!open) return;
+    let raf = 0;
+    const onMove = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; place(); });
     };
-  }, [open]);
+    window.addEventListener("scroll", onMove, true);
+    window.addEventListener("resize", onMove);
+    return () => {
+      window.removeEventListener("scroll", onMove, true);
+      window.removeEventListener("resize", onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [open, place]);
 
   const filtered = useMemo(() => {
     if (!query) return options;
