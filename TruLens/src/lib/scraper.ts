@@ -356,7 +356,7 @@ function htmlToListings(html: string, selectors: string[]): Listing[] {
  *  and mileage-adjusted, which the raw CSS price scan below cannot. Returns []
  *  when the page has no recognisable tiles, so callers fall back to the price
  *  scan unchanged. */
-function extractCardListings(html: string, make: string, model: string, year: string): Listing[] {
+export function extractCardListings(html: string, make: string, model: string, year: string): Listing[] {
   const $ = cheerio.load(html);
   const out: Listing[] = [];
   const seen = new Set<string>();
@@ -437,8 +437,8 @@ function median(nums: number[]): number | null {
  * Two same-year cars at 40k and 130k km are not worth the same — averaging them
  * raw is the biggest accuracy hole in a listings-based valuation. When enough
  * listings carry km, we fit a rand-per-km slope from the sample itself (least
- * squares); otherwise a conservative default (~4% of the median price per
- * 20,000 km). Every adjustment is clamped to ±30% of the listing's own price so
+ * squares); otherwise a conservative default (~3% of the median price per
+ * 20,000 km). Every adjustment is clamped to ±20% of the listing's own price so
  * a noisy slope can never produce an absurd number, and listings without km
  * pass through untouched. Returns bare (possibly adjusted) prices.
  */
@@ -456,18 +456,19 @@ function adjustForMileage(listings: Listing[], targetKm?: number): number[] {
   let slope = den ? numr / den : 0; // rand per km — expected negative
 
   const medPrice = median(withKm.map((l) => l.price)) ?? my;
-  const defaultSlope = -(medPrice * 0.04) / 20_000; // ~4% per 20,000 km
-  // Trust the fitted slope only if it's negative and within a sane band.
-  if (!(slope < -0.2 && slope > -8)) slope = defaultSlope;
+  const defaultSlope = -(medPrice * 0.03) / 20_000; // ~3% per 20,000 km
+  // Trust the fitted slope only if it's negative and within a sane band — a
+  // steep slope fitted on a mixed-variant sample (GTI vs base) would otherwise
+  // swing prices far more than mileage ever does.
+  if (!(slope < -0.2 && slope > -3)) slope = defaultSlope;
 
-  // Clamp each adjustment to ±40% of the listing's own price. This is a close
-  // evaluation, not an exact one: a wider band lets a high-km/low-km outlier be
-  // pulled meaningfully toward the subject car without a noisy slope inventing
-  // an absurd number.
+  // Clamp each adjustment to ±20% of the listing's own price. This is a close
+  // evaluation, not an exact one: a tight band keeps mileage from dominating a
+  // valuation that is really about the car, not its odometer.
   return listings.map((l) => {
     if (typeof l.km !== 'number') return l.price;
     const adj = l.price + slope * (targetKm - l.km);
-    return Math.round(Math.min(l.price * 1.4, Math.max(l.price * 0.6, adj)));
+    return Math.round(Math.min(l.price * 1.2, Math.max(l.price * 0.8, adj)));
   });
 }
 
