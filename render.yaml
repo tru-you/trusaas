@@ -142,6 +142,11 @@ services:
         sync: false
       - key: TRUINSPECT_TOKEN_SECRET
         sync: false
+      # TruFlow DMS base URL — code verification (verifyCodeWithTruFlow) and
+      # "Export to DMS" both call this. Defaults to localhost without it, which
+      # breaks sign-in and exports in production.
+      - key: TRUFLOW_DMS_URL
+        value: https://premium.tru-saas.com
       - key: DEEPSEEK_API_KEY
         sync: false
       # Imagin8 / TransUnion eValue8 — both required (sent as APIKey + customerId).
