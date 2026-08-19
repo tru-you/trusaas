@@ -60,6 +60,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
         if (!needsReconCost(updated.status)) {
           updated.estimatedRepairCost = 0;
           updated.condition = 'Good';
+          updated.reconNote = '';
         } else {
           updated.condition = 'Needs Recon';
         }
@@ -288,11 +289,27 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
               autoFocus={needsReconCost(item.status)}
               className={`w-full px-4 min-h-[46px] rounded-xl text-[15px] font-medium border focus:outline-none ${
                 needsReconCost(item.status)
-                  ? 'bg-red-950/30 border-red-500/50 text-red-200 placeholder-red-400/50 focus:border-red-400'
+                  ? 'bg-amber-950/15 border-amber-700/30 text-[#E8EAE6] placeholder-amber-600/40 focus:border-amber-500/40'
                   : 'bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:border-cyan-500/40'
               }`}
             />
           </div>
+
+          {/* Recon reason — what the cost covers. Only when the item is flagged;
+              this line prints under the item on the report so the customer sees
+              WHY there's a deduction, not just the amount. */}
+          {needsReconCost(item.status) && (
+            <div className="mt-4">
+              <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">What does this cost cover?</p>
+              <textarea
+                rows={2}
+                value={item.reconNote || ''}
+                onChange={(e) => updateItem({ reconNote: e.target.value })}
+                placeholder="e.g. Repaint front bumper — deep scratch across panel"
+                className="w-full px-4 py-3 rounded-xl text-[14px] leading-snug border resize-none bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+              />
+            </div>
+          )}
         </div>
 
         {/* Step navigator (dots) */}

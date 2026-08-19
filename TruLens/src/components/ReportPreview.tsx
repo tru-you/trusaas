@@ -17,6 +17,26 @@ interface ReportPreviewProps {
   onVehicleUpdated?: (v: Vehicle) => void;
 }
 
+/**
+ * Pick the largest html2canvas scale that keeps the rasterised report within
+ * mobile canvas limits. Android Chrome caps a canvas at ~16.7M pixels (and
+ * ~65k per side) and runs out of memory well before that on a long report — at
+ * a hard-coded scale of 2 a full report blows past the cap and html2pdf throws,
+ * which is the "PDF failed" the dealer sees. We size the scale to the node's
+ * real dimensions so it renders at the best quality that still fits, clamped to
+ * [1, 2] so a short report still looks crisp.
+ */
+function safePdfScale(el: HTMLElement): number {
+  const cssW = el.scrollWidth || el.getBoundingClientRect().width || 794;
+  const cssH = el.scrollHeight || el.getBoundingClientRect().height || 1123;
+  const MAX_AREA = 12_000_000; // stay comfortably under the ~16.7M mobile cap
+  const MAX_SIDE = 12_000;
+  const byArea = Math.sqrt(MAX_AREA / (cssW * cssH));
+  const bySide = Math.min(MAX_SIDE / cssW, MAX_SIDE / cssH);
+  const ideal = Math.min(2, window.devicePixelRatio || 1.5);
+  return Math.max(1, Math.min(ideal, byArea, bySide));
+}
+
 function severityMeta(sev: number) {
   if (sev >= 5) return { label: 'Critical', color: '#DC2626', bg: '#FEE2E2' };
   if (sev >= 4) return { label: 'Major', color: '#EA580C', bg: '#FFEDD5' };
@@ -167,7 +187,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
           margin: [8, 8, 8, 8],
           filename: `TruLens_Report_${vehicle.stockNumber || 'draft'}.pdf`,
           image: { type: 'jpeg', quality: 0.95 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+          html2canvas: { scale: safePdfScale(el), useCORS: true, backgroundColor: '#ffffff', logging: false, imageTimeout: 15000 },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] },
         } as any)

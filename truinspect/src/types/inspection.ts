@@ -19,6 +19,10 @@ export interface InspectionItem {
   condition: InspectionCondition;
   photoUrl: string | null;
   estimatedRepairCost: number;
+  /** Dealer's note on WHAT the recon cost covers (e.g. "Repaint front bumper").
+   *  Entered when the item is flagged for recon; printed under the item's line
+   *  in the report's valuation build-up. Optional — legacy saved items omit it. */
+  reconNote?: string;
   isCompleted: boolean;
 }
 

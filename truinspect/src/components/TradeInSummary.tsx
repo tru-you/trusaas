@@ -8,6 +8,26 @@ import {
 import truinspectLogo from '../assets/images/truinspect-logo.svg';
 import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
+/**
+ * Pick the largest html2canvas scale that keeps the rasterised report within
+ * mobile canvas limits. Android Chrome caps a canvas at ~16.7M pixels (and
+ * ~65k per side) and runs out of memory well before that on a long report — at
+ * a hard-coded scale of 2 a full A4 appraisal blows past the cap and html2pdf
+ * throws, which is the "PDF failed" the dealer sees. We size the scale to the
+ * node's real dimensions so it renders at the best quality that still fits,
+ * clamped to [1, 2] so a short report still looks crisp.
+ */
+function safePdfScale(el: HTMLElement): number {
+  const cssW = el.scrollWidth || el.getBoundingClientRect().width || 794;
+  const cssH = el.scrollHeight || el.getBoundingClientRect().height || 1123;
+  const MAX_AREA = 12_000_000; // stay comfortably under the ~16.7M mobile cap
+  const MAX_SIDE = 12_000;
+  const byArea = Math.sqrt(MAX_AREA / (cssW * cssH));
+  const bySide = Math.min(MAX_SIDE / cssW, MAX_SIDE / cssH);
+  const ideal = Math.min(2, window.devicePixelRatio || 1.5);
+  return Math.max(1, Math.min(ideal, byArea, bySide));
+}
+
 interface TradeInSummaryProps {
   vehicle: Vehicle;
   items: InspectionItem[];
@@ -160,7 +180,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           margin: [8, 8, 8, 8],
           filename: `TradeIn_${vehicle.stockNumber || 'draft'}.pdf`,
           image: { type: 'jpeg', quality: 0.92 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+          html2canvas: { scale: safePdfScale(el), useCORS: true, backgroundColor: '#ffffff', logging: false, imageTimeout: 15000 },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] },
         } as any)
@@ -375,6 +395,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             .ti-report .adjustments { margin-bottom: 20px; }
             .ti-report .adj { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
             .ti-report .adj .desc { font-size: 11px; color: var(--ink-2); }
+            .ti-report .adj .recon-note { display: block; margin-top: 2px; font-size: 10px; line-height: 1.4; color: var(--muted); font-style: italic; }
             .ti-report .adj .impact { font-family: var(--mono); font-size: 11px; font-weight: 600; text-align: right; }
             .ti-report .adj .impact.neg { color: var(--red); }
             .ti-report .adj .impact.pos { color: var(--green); }
@@ -513,7 +534,12 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             </div>
             {reconAdjustments.map((it) => (
               <div className="adj" key={it.id}>
-                <span className="desc">{it.label} — {it.status.replace(/_/g, ' ').toLowerCase()}</span>
+                <span className="desc">
+                  {it.label} — {it.status.replace(/_/g, ' ').toLowerCase()}
+                  {it.reconNote && it.reconNote.trim() && (
+                    <span className="recon-note">{it.reconNote.trim()}</span>
+                  )}
+                </span>
                 <span className="impact neg">− {fmt(it.estimatedRepairCost)}</span>
               </div>
             ))}
