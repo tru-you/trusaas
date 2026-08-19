@@ -147,11 +147,11 @@ export default function App() {
   }, [user]);
 
   // Add vehicle
-  const handleAddVehicle = async (newVehicleData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => {
+  const handleAddVehicle = async (newVehicleData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>, initialPhotos?: Record<string, string>) => {
     if (!user) return;
     setSyncStatus('syncing');
     const token = await user.getIdToken();
-    
+
     const newVehicle: Vehicle = {
       ...newVehicleData,
       id: 'car-' + Math.floor(100000 + Math.random() * 900000),
@@ -174,6 +174,11 @@ export default function App() {
         const updated = await res.json();
         setVehicles(prev => [updated.vehicle, ...prev]);
         setSyncStatus('synced');
+        if (initialPhotos) {
+          for (const [slotId, base64] of Object.entries(initialPhotos)) {
+            uploadPhotoToServer(newVehicle.id, slotId, base64);
+          }
+        }
       } else {
         const errorData = await res.json().catch(() => ({}));
         console.error('Failed to create vehicle - Server response:', res.status, errorData);
@@ -297,7 +302,7 @@ export default function App() {
     await uploadPhotoToServer(activeVehicleId, slotToSave, processedImage, updatedReport);
   };
 
-  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport: QualityReport) => {
+  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport?: QualityReport) => {
     if (!user) return;
     setSyncStatus('syncing');
     setUploadError(null);
@@ -625,9 +630,20 @@ export default function App() {
               vehicle={activeVehicle}
               onBack={() => setActiveView('inventory')}
               onUploadPhoto={uploadTradePhoto}
-              onComplete={(completedItems) => {
+              onComplete={(completedItems, extras) => {
                 setTradeInItems(completedItems);
                 setActiveView('trade-in-valuation');
+                if (extras?.isSmokerVehicle !== undefined) {
+                  handleUpdateVehicle(activeVehicle, {
+                    tradeInData: {
+                      ...activeVehicle.tradeInData,
+                      vehicleDetails: {
+                        ...activeVehicle.tradeInData?.vehicleDetails,
+                        isSmokerVehicle: extras.isSmokerVehicle,
+                      },
+                    },
+                  } as Partial<Vehicle>);
+                }
                 /* Photos are already "/media/…" URLs (uploaded as they were
                    captured). Only a shot whose upload failed is still a blob:
                    URL — convert just those to base64 so the server can still

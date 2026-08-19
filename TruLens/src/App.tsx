@@ -164,7 +164,7 @@ export default function App() {
   }, [user]);
 
   // Add vehicle
-  const handleAddVehicle = async (newVehicleData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => {
+  const handleAddVehicle = async (newVehicleData: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>, initialPhotos?: Record<string, string>) => {
     if (!user) return;
     setSyncStatus('syncing');
     const token = await user.getIdToken();
@@ -191,6 +191,11 @@ export default function App() {
         const updated = await res.json();
         setVehicles(prev => [updated.vehicle, ...prev]);
         setSyncStatus('synced');
+        if (initialPhotos) {
+          for (const [slotId, base64] of Object.entries(initialPhotos)) {
+            uploadPhotoToServer(newVehicle.id, slotId, base64, undefined as any);
+          }
+        }
       } else {
         const errorData = await res.json().catch(() => ({}));
         console.error('Failed to create vehicle - Server response:', res.status, errorData);
@@ -379,7 +384,7 @@ export default function App() {
     await uploadPhotoToServer(activeVehicleId, targetSlot, processedImage, updatedReport, assessment, closeupPhotos);
   };
 
-  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport: QualityReport, assessment?: PointResult, closeupPhotos?: string[]) => {
+  const uploadPhotoToServer = async (vehicleId: string, slotId: string, base64Image: string, qualityReport?: QualityReport, assessment?: PointResult, closeupPhotos?: string[]) => {
     if (!user) return;
     setSyncStatus('syncing');
     setUploadError(null);

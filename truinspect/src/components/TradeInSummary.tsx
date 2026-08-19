@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ArrowLeft, Download, Printer, Star, Pen, Clock } from 'lucide-react';
-import { Vehicle } from '../types';
+import { Vehicle, DamageFinding } from '../types';
 import {
   InspectionItem, ValuationState, TradeInData,
   computeOverallRating, deriveReportId,
 } from '../types/inspection';
+import { DEFAULT_TEMPLATE } from '../templates';
 import truinspectLogo from '../assets/images/truinspect-logo.svg';
 import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
@@ -146,6 +147,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
       mileage: vehicle.mileage || 0,
       vin: vehicle.vin,
       overallRating,
+      isSmokerVehicle: vehicle.tradeInData?.vehicleDetails?.isSmokerVehicle,
     },
     dealerDetails: {
       dealershipName: dealerName,
@@ -391,6 +393,12 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             .ti-report .cond .grade.poor { color: var(--red); background: var(--red-bg); }
             .ti-report .cond-overall { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border: 2px solid; border-radius: 8px; margin-bottom: 12px; }
 
+            /* Damage findings */
+            .ti-report .dmg-finding { border-radius: 0 6px 6px 0; padding: 8px 12px; margin-bottom: 6px; border-left: 3px solid var(--muted); break-inside: avoid; page-break-inside: avoid; }
+            .ti-report .dmg-finding .dmg-h { font-family: var(--mono); font-size: 8px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+            .ti-report .dmg-finding .dmg-l { font-size: 10.5px; color: var(--ink-2); margin-top: 3px; font-weight: 500; }
+            .ti-report .dmg-none { font-size: 11px; color: var(--muted); font-style: italic; margin-bottom: 16px; }
+
             /* Valuation build-up */
             .ti-report .adjustments { margin-bottom: 20px; }
             .ti-report .adj { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
@@ -522,6 +530,47 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
               );
             })}
           </div>
+
+          {/* Smoker vehicle flag */}
+          {vehicle.tradeInData?.vehicleDetails?.isSmokerVehicle && (
+            <div style={{ margin: '10px 0', padding: '8px 12px', background: 'rgba(227,154,91,0.10)', borderLeft: '3px solid #E39A5B', borderRadius: 6, fontSize: 13, color: '#E39A5B', fontWeight: 600 }}>
+              Ex-smoker's vehicle — interior may require deep cleaning or ozone treatment
+            </div>
+          )}
+
+          {/* Damage findings from inspector tags */}
+          {(() => {
+            const SEVERITY_META: Record<number, { label: string; color: string; bg: string }> = {
+              1: { label: 'Cosmetic', color: '#4FE3DC', bg: 'rgba(79,227,220,0.08)' },
+              2: { label: 'Minor', color: '#7DD3A8', bg: 'rgba(125,211,168,0.08)' },
+              3: { label: 'Moderate', color: '#E7C46B', bg: 'rgba(231,196,107,0.08)' },
+              4: { label: 'Major', color: '#E39A5B', bg: 'rgba(227,154,91,0.10)' },
+              5: { label: 'Structural', color: '#C07676', bg: 'rgba(192,118,118,0.10)' },
+            };
+            const all = Object.entries(vehicle.damageFindings || {}).flatMap(([slotId, list]) =>
+              (list as DamageFinding[]).map(f => ({ ...f, slotId, panel: DEFAULT_TEMPLATE.slots.find(s => s.id === slotId)?.name || slotId }))
+            );
+            if (!all.length) return null;
+            return (
+              <>
+                <div className="section-title"><span className="n">Damage Findings ({all.length})</span><span className="ln"></span></div>
+                {all.map((f, i) => {
+                  const sev = SEVERITY_META[f.severity] || SEVERITY_META[2];
+                  return (
+                    <div className="dmg-finding" key={i} style={{ background: sev.bg, borderLeftColor: sev.color }}>
+                      <div className="dmg-h" style={{ color: sev.color }}>
+                        {sev.label} · {f.damageType} · {f.panel}
+                      </div>
+                      <div className="dmg-l">
+                        {f.note || 'Tagged by inspector'}
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{ marginBottom: 20 }} />
+              </>
+            );
+          })()}
 
           {/* Valuation build-up */}
           <div className="section-title"><span className="n">Valuation Build-up</span><span className="ln"></span></div>

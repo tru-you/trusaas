@@ -129,6 +129,15 @@ const SLOTS: TemplateSlot[] = [
     phase: 1,
     category: 'Front & Engine',
   },
+  {
+    id: 'vin_plate',
+    name: 'VIN Number Plate',
+    description: 'Close-up of the VIN plate — dashboard (visible through windscreen) or driver-side door jamb. Must be legible.',
+    required: false,
+    idealAngle: { pitch: 0, roll: 0, yaw: 0 },
+    phase: 1,
+    category: 'Front & Engine',
+  },
 
   /* Category 2: Clockwise Exterior Walk-Around — ONE lap of the vehicle, in
      the order you physically reach each shot: front-right corner, down the

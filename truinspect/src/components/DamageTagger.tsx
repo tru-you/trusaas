@@ -283,7 +283,7 @@ export default function DamageTagger({ vehicle, onBack, onSave, onContinueToChec
                     onClick={() => updateTag(editing.id, { damageType: t })}
                     className={`px-3 py-1 rounded-full text-[13px] font-semibold border capitalize ${
                       editing.damageType === t
-                        ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-300'
+                        ? 'bg-white/15 border-white/50 text-white'
                         : 'bg-neutral-900 border-neutral-800 text-neutral-400'
                     }`}
                   >

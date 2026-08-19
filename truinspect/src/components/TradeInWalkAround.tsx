@@ -10,7 +10,7 @@ import {
 interface TradeInWalkAroundProps {
   vehicle: Vehicle;
   onBack: () => void;
-  onComplete: (items: InspectionItem[]) => void;
+  onComplete: (items: InspectionItem[], extras?: { isSmokerVehicle?: boolean }) => void;
   /** Store one photo under the given item id and resolve to its "/media/…" URL
    *  (null if it couldn't). Item ids are the same 27 slot ids the Inspect
    *  workflow uses, so this writes into the vehicle's shared `photos` store —
@@ -45,6 +45,9 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
   const [currentStep, setCurrentStep] = React.useState(0);
   /** Item ids whose photo is still uploading — Continue waits for these. */
   const [uploading, setUploading] = React.useState<Record<string, boolean>>({});
+  const [isSmokerVehicle, setIsSmokerVehicle] = React.useState(
+    () => vehicle.tradeInData?.vehicleDetails?.isSmokerVehicle ?? false,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const item = items[currentStep];
@@ -120,7 +123,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
   const isUploading = Object.values(uploading).some(Boolean);
 
   const canSubmit = items.every((it) => {
-    if (it.id === 'odometer') return !!it.photoUrl;
+    if (it.id === 'odometer' || it.id === 'vin_plate') return !!it.photoUrl;
     if (needsReconCost(it.status)) return !!it.photoUrl;
     return true;
   });
@@ -184,7 +187,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           {/* Photo */}
           <div className="mb-4">
             {(() => {
-              const photoRequired = item.id === 'odometer' || needsReconCost(item.status);
+              const photoRequired = item.id === 'odometer' || item.id === 'vin_plate' || needsReconCost(item.status);
               return item.photoUrl ? (
                 <div className="relative">
                   <img src={item.photoUrl} alt={item.label} className="w-full h-48 object-cover rounded-xl border border-neutral-700" />
@@ -208,7 +211,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
                 >
                   <Camera size={32} />
                   <span className="text-[13px] font-semibold">
-                    {photoRequired ? 'Photo required — a cost is entered' : 'Photo optional — tap to add'}
+                    {item.id === 'vin_plate' ? 'Photo required — VIN verification' : photoRequired ? 'Photo required — a cost is entered' : 'Photo optional — tap to add'}
                   </span>
                 </button>
               );
@@ -312,6 +315,24 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           )}
         </div>
 
+        {/* Ex-smoker toggle — shown on interior cabin step */}
+        {item.id === 'interior_cabin' && (
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4 mt-3">
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={isSmokerVehicle}
+                onChange={(e) => setIsSmokerVehicle(e.target.checked)}
+                className="w-5 h-5 rounded border-neutral-600 bg-neutral-800 accent-cyan-500 shrink-0"
+              />
+              <span className="text-[14px] text-[#E8EAE6]">Ex-smoker's vehicle</span>
+            </label>
+            <p className="text-[12px] text-[rgba(232,234,230,0.45)] mt-1.5 ml-8">
+              Evidence of smoking — ash burns, discolouration, or odour
+            </p>
+          </div>
+        )}
+
         {/* Step navigator (dots) */}
         <div className="mt-4 flex items-center gap-1 justify-center flex-wrap">
           {items.map((it, idx) => (
@@ -355,7 +376,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           <button
             type="button"
             disabled={!canSubmit || isUploading}
-            onClick={() => onComplete(items)}
+            onClick={() => onComplete(items, { isSmokerVehicle })}
             className="btn-primary on-fill flex-1 min-h-[52px] text-[15px] flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <CheckCircle2 size={14} /> {isUploading ? 'Saving photos…' : 'Continue to Valuation'}

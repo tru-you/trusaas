@@ -23,7 +23,7 @@ export default function DiscScanner({
   onResult,
   onClose,
 }: {
-  onResult: (scan: DiscScan) => void;
+  onResult: (scan: DiscScan, photo?: string) => void;
   onClose: () => void;
 }) {
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
@@ -57,12 +57,23 @@ export default function DiscScanner({
     }
   }, []);
 
-  const finish = React.useCallback((payload: string) => {
+  const grabFrame = React.useCallback((): string | undefined => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) return undefined;
+    const c = document.createElement('canvas');
+    c.width = video.videoWidth;
+    c.height = video.videoHeight;
+    c.getContext('2d')?.drawImage(video, 0, 0);
+    return c.toDataURL('image/jpeg', 0.85);
+  }, []);
+
+  const finish = React.useCallback((payload: string, photo?: string) => {
     if (doneRef.current) return;
     doneRef.current = true;
+    const frame = photo || grabFrame();
     stopEverything();
-    onResultRef.current(parseSaDisc(payload));
-  }, [stopEverything]);
+    onResultRef.current(parseSaDisc(payload), frame);
+  }, [stopEverything, grabFrame]);
 
   const getZxing = React.useCallback(() => {
     if (!zxingRef.current) {
@@ -210,8 +221,14 @@ export default function DiscScanner({
       URL.revokeObjectURL(url);
     }
     setReading(false);
-    if (payload) finish(payload);
-    else setHint('No barcode in that photo — get closer so the barcode fills the frame, then retake.');
+    if (payload) {
+      const reader = new FileReader();
+      reader.onload = () => finish(payload!, reader.result as string);
+      reader.onerror = () => finish(payload!);
+      reader.readAsDataURL(file);
+    } else {
+      setHint('No barcode in that photo — get closer so the barcode fills the frame, then retake.');
+    }
   }, [ensureDetector, finish, getZxing]);
 
   React.useEffect(() => {

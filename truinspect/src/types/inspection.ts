@@ -51,6 +51,7 @@ export interface TradeInVehicleDetails {
   mileage: number;
   vin?: string;
   overallRating: number;
+  isSmokerVehicle?: boolean;
 }
 
 export interface TradeInDealerDetails {
@@ -125,6 +126,7 @@ export const TRADE_IN_ITEMS: TradeInItemDef[] = [
   { id: 'front_bumper', label: 'Front Bumper & Grill', category: 'Front & Engine', itemType: 'visual_panel' },
   { id: 'front_windscreen', label: 'Front Windscreen', category: 'Front & Engine', itemType: 'visual_panel' },
   { id: 'license_disc', label: 'License Disc & Windscreen Markings', category: 'Front & Engine', itemType: 'documentation' },
+  { id: 'vin_plate', label: 'VIN Number Plate (dashboard or door jamb)', category: 'Front & Engine', itemType: 'verification' },
 
   // Category 2: Clockwise Exterior Walk-Around
   { id: 'fender_front_right', label: 'Front Right Wing / Fender', category: 'Clockwise Exterior', itemType: 'visual_panel' },

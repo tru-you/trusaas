@@ -20,7 +20,7 @@ interface InventoryListProps {
   vehicles: Vehicle[];
   onSelectVehicle: (vehicle: Vehicle) => void;
   onViewReport?: (vehicle: Vehicle) => void;
-  onAddVehicle: (newVehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>) => void;
+  onAddVehicle: (newVehicle: Omit<Vehicle, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'quality'>, initialPhotos?: Record<string, string>) => void;
   onDeleteVehicle: (id: string) => void;
   onExportToDms?: (vehicle: Vehicle) => Promise<DmsExportResult>;
   onUpdateVehicle?: (vehicle: Vehicle, patch: Partial<Vehicle>) => Promise<Vehicle | null>;
@@ -298,8 +298,11 @@ export default function InventoryList({
 
 
   // Fill the form from a scanned licence disc — everything stays editable.
-  const applyDiscScan = (d: DiscScan) => {
+  const [discPhoto, setDiscPhoto] = React.useState<string | null>(null);
+
+  const applyDiscScan = (d: DiscScan, photo?: string) => {
     setScanningDisc(false);
+    if (photo) setDiscPhoto(photo);
     const titleCase = (v) => v.toLowerCase().split(' ').map((w) => w ? w[0].toUpperCase() + w.slice(1) : w).join(' ');
     if (d.make) setMake(titleCase(d.make));
     if (d.model) setModel(titleCase(d.model));
@@ -421,10 +424,11 @@ export default function InventoryList({
         fuelType,
         status,
         optionalExtras,
-      });
+      }, discPhoto ? { license_disc: discPhoto } : undefined);
     }
 
     // Reset form
+    setDiscPhoto(null);
     setEditingVehicle(null);
     setMake('');
     setModel('');
