@@ -132,6 +132,16 @@ services:
         value: /var/data
       - key: LOCAL_MODE
         value: "1"
+      # REQUIRED for sign-in. Without these the API rejects every login with
+      # "No way to verify codes". TRUFLOW_SYNC_KEY verifies dealer codes against
+      # TruFlow; TRUINSPECT_ACCESS_CODE is the legacy shared code. Values live in
+      # the Render dashboard (sync: false), so a Blueprint sync must never drop them.
+      - key: TRUFLOW_SYNC_KEY
+        sync: false
+      - key: TRUINSPECT_ACCESS_CODE
+        sync: false
+      - key: TRUINSPECT_TOKEN_SECRET
+        sync: false
       - key: DEEPSEEK_API_KEY
         sync: false
       # Imagin8 / TransUnion eValue8 — both required (sent as APIKey + customerId).
