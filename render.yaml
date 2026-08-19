@@ -94,6 +94,14 @@ services:
         sync: false
       - key: IMAGIN8_CUSTOMER_ID
         sync: false
+      # Bright Data Web Unlocker — unblocks Cars.co.za (Cloudflare 403) so its
+      # full __NEXT_DATA__ result set returns in ~2-5s. Key/zone set in dashboard.
+      - key: SCRAPER_UNLOCKER_ENABLED
+        value: "1"
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: BRIGHTDATA_UNLOCKER_ZONE
+        sync: false
 
   # ── 1b. TruInspect — AI damage detection / PDF inspection reports ─────────
   - type: web
@@ -138,6 +146,16 @@ services:
       # worker entirely. Comma-separated list = round-robin + failover.
       - key: SCRAPER_SERVICE_URLS
         value: https://trusaas-crm-scraper.onrender.com
+      # Bright Data Web Unlocker — unblocks Cars.co.za (Cloudflare 403) so its
+      # full __NEXT_DATA__ result set returns in ~2-5s instead of a slow worker
+      # render. Key/zone are set in the Render dashboard, never committed
+      # (zone reuses the same value as TruCRM's BRIGHTDATA_UNLOCKER_ZONE).
+      - key: SCRAPER_UNLOCKER_ENABLED
+        value: "1"
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: BRIGHTDATA_UNLOCKER_ZONE
+        sync: false
 
   # ── 2. TruFlow Mobile — standalone Premium companion app ────────────────────
   #
@@ -274,6 +292,14 @@ services:
       # payload structure). Configure the matching header on Zernio's
       # webhook settings page.
       - key: ZERNIO_WEBHOOK_SECRET
+        sync: false
+      # Bright Data Web Unlocker — unblocks Cars.co.za (Cloudflare 403) so its
+      # full __NEXT_DATA__ result set returns in ~2-5s. Key/zone set in dashboard.
+      - key: SCRAPER_UNLOCKER_ENABLED
+        value: "1"
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: BRIGHTDATA_UNLOCKER_ZONE
         sync: false
 
   # ── 4. TruChat API — hosted Claude chat brain for static sites ────────────

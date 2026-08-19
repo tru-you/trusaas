@@ -119,7 +119,7 @@ const WORKER_URLS = (
 
 let workerIndex = 0;
 
-const WORKER_TIMEOUT_MS = Number(process.env.SCRAPER_WORKER_TIMEOUT_MS) || 60000;
+const WORKER_TIMEOUT_MS = Number(process.env.SCRAPER_WORKER_TIMEOUT_MS) || 30000;
 
 /** Run `fn` over `items` with at most `size` promises in flight at once. */
 async function mapPool<T, R>(items: T[], size: number, fn: (item: T) => Promise<R>): Promise<R[]> {
@@ -153,9 +153,15 @@ const DEFAULT_HEADERS = {
 const MIN_PRICE = 10_000;
 const MAX_PRICE = 50_000_000;
 
-/** Below this many dealer listings the market average is too thin to trust on
- *  its own — the pipeline then falls back and blends in classifieds. */
+/** Below this many JSON-dealer listings the HTML-dealer lane (headless renders)
+ *  fires to widen the dealer sample. Kept low: the JSON dealers are fast, and
+ *  the render lane is only worth paying for when they're nearly empty. */
 const MIN_DEALER_LISTINGS = 3;
+
+/** A dealer sample this rich is final on its own and skips classifieds. Set
+ *  high enough that a valuation rests on a real sample (20–30 comps) instead of
+ *  the handful of listings that used to short-circuit the classifieds layer. */
+const DEALER_FINAL_THRESHOLD = Math.max(3, Number(process.env.SCRAPER_DEALER_FINAL_THRESHOLD) || 20);
 
 /** Classifieds are now SPA/Algolia sites: the server HTML often carries only a
  *  couple of JSON-LD "featured" items while the real 20–50 listings load via a
@@ -172,6 +178,11 @@ const CLASSIFIEDS_PAGES = Math.max(1, Number(process.env.SCRAPER_CLASSIFIEDS_PAG
  *  paid SERP layer (if configured) to cast a wider net across every SA site
  *  Google has indexed. Gated so the common, data-rich path never pays. */
 const SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
+
+/** Hard ceiling on a whole valuation (dealer + classifieds combined). The
+ *  pipeline returns whatever it has when the budget runs out, so a dead worker
+ *  or a slow unlocker can never hang the trade-in flow. */
+const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 20000;
 
 // ==================== CACHE ====================
 
@@ -339,6 +350,34 @@ function htmlToListings(html: string, selectors: string[]): Listing[] {
   return extractPrices(html, selectors).map((price) => ({ price }));
 }
 
+/** Pull {price, km} listings off a card-based classifieds page (AutoTrader's
+ *  SPA markup). Each result tile carries the year/make/model title, an e-price
+ *  element and an "N km" summary — so listings can be year/make/model filtered
+ *  and mileage-adjusted, which the raw CSS price scan below cannot. Returns []
+ *  when the page has no recognisable tiles, so callers fall back to the price
+ *  scan unchanged. */
+function extractCardListings(html: string, make: string, model: string, year: string): Listing[] {
+  const $ = cheerio.load(html);
+  const out: Listing[] = [];
+  const seen = new Set<string>();
+  $('a[class*="result-tile"]').each((_, el) => {
+    const $c = $(el);
+    const titleEl = $c.find('[class*="highlight-title"], [class*="result-title"], h2, h3').first();
+    const title = (titleEl.length ? titleEl.text() : $c.text()).replace(/\s+/g, ' ').trim();
+    if (!titleMentionsVehicle(title, make, model, year)) return;
+    const priceEl = $c.find('[class^="e-price__"], [class*="price"]').first();
+    const price = priceEl.length ? num(priceEl.text()) : priceFromText($c.text());
+    if (price == null || price < MIN_PRICE || price > MAX_PRICE) return;
+    const kmMatch = $c.text().match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);
+    const km = kmMatch ? num(kmMatch[1]) : undefined;
+    const key = `${Math.round(price)}|${km ?? ''}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined });
+  });
+  return out;
+}
+
 /** Pull {price, km} listings out of a Next.js page's __NEXT_DATA__ blob (Cars.co.za
  *  and other Next sites embed their full result set there, carrying price AND
  *  mileage — richer than the 1 JSON-LD node the page exposes). The payload is
@@ -470,12 +509,13 @@ let workerCircuitOpenUntil = 0;
  *  skips renders for 5 min after repeated failures so requests don't wait
  *  60s each on a dead worker. Returns the rendered HTML, or null when no
  *  worker is configured or none could render — never throws. */
-async function renderViaWorker(url: string): Promise<string | null> {
+async function renderViaWorker(url: string, maxMs?: number): Promise<string | null> {
   if (WORKER_URLS.length === 0) return null;
   if (Date.now() < workerCircuitOpenUntil) {
     console.warn('[scraper] headless circuit open — skipping render');
     return null;
   }
+  const timeoutMs = Math.max(1, Math.min(WORKER_TIMEOUT_MS, maxMs ?? WORKER_TIMEOUT_MS));
   for (let attempt = 0; attempt < WORKER_URLS.length; attempt++) {
     const worker = WORKER_URLS[workerIndex++ % WORKER_URLS.length];
     try {
@@ -483,7 +523,7 @@ async function renderViaWorker(url: string): Promise<string | null> {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
-        signal: AbortSignal.timeout(WORKER_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       });
       if (!res.ok) continue;
       const body = await res.json();
@@ -613,10 +653,10 @@ export function loadDealerSources(): DealerSource[] {
 }
 
 /** How many model years either side of the query still count as a comp. A
- *  trade-in wants a close ballpark, not a single-year sliver — ±2 roughly
- *  doubles the usable sample on a thin model without dragging in a different
- *  generation. Env-overridable. */
-const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 2;
+ *  trade-in wants a close ballpark, not a single-year sliver — ±3 widens the
+ *  sample on a thin model without dragging in a different generation.
+ *  Env-overridable. */
+const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
 
 /** Listing titles must name the actual vehicle: make (any of its spellings)
  *  AND model (plus any dealer-configured `match`) all have to appear, and the
@@ -831,7 +871,7 @@ const SERP_TIMEOUT_MS = Number(process.env.SERP_TIMEOUT_MS) || 12000;
 // billing key. Off unless SCRAPER_UNLOCKER_ENABLED is truthy, so with nothing
 // set the pipeline behaves exactly as before.
 const BD_API_KEY = process.env.BRIGHTDATA_API_KEY || SERP_API_KEY;
-const UNLOCKER_ZONE = process.env.UNLOCKER_ZONE || 'unlocker';
+const UNLOCKER_ZONE = process.env.UNLOCKER_ZONE || process.env.BRIGHTDATA_UNLOCKER_ZONE || 'unlocker';
 const UNLOCKER_ENABLED = /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENABLED || '');
 const UNLOCKER_TIMEOUT_MS = Number(process.env.UNLOCKER_TIMEOUT_MS) || 20000;
 /** Unlocker only fetches the first N pages of a classifieds source (it's paid);
@@ -852,11 +892,26 @@ async function brightDataFetch(targetUrl: string, zone: string, timeoutMs: numbe
     const res = await fetch(SERP_API_URL || 'https://api.brightdata.com/request', {
       method: 'POST',
       headers: { Authorization: `Bearer ${BD_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ zone, url: targetUrl, format: 'raw' }),
+      body: JSON.stringify({ zone, url: targetUrl, format: 'raw', country: 'za' }),
       signal: AbortSignal.timeout(timeoutMs),
     });
-    if (!res.ok) return null;
-    return await res.text();
+    if (!res.ok) {
+      console.warn(`[scraper] brightDataFetch HTTP ${res.status} on ${targetUrl}`);
+      return null;
+    }
+    const text = await res.text();
+    // Some zones wrap the raw page in a JSON envelope even with format:"raw" —
+    // unwrap the actual HTML defensively (same as TruCRM's webUnlockerFetch).
+    if (text.startsWith('{') || text.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(text);
+        const maybe = parsed?.body ?? parsed?.html ?? parsed?.result;
+        if (typeof maybe === 'string' && maybe.length > 0) return maybe;
+      } catch {
+        // not JSON — keep the raw text
+      }
+    }
+    return text;
   } catch (err: any) {
     console.warn('[scraper] brightDataFetch failed:', err?.message || err);
     return null;
@@ -865,9 +920,9 @@ async function brightDataFetch(targetUrl: string, zone: string, timeoutMs: numbe
 
 /** Fetch a page through Bright Data Web Unlocker. Returns unblocked HTML, or
  *  null when disabled — callers fall through to the next render tier. */
-export async function renderViaUnlocker(url: string): Promise<string | null> {
+export async function renderViaUnlocker(url: string, maxMs?: number): Promise<string | null> {
   if (!unlockerConfigured()) return null;
-  return brightDataFetch(url, UNLOCKER_ZONE, UNLOCKER_TIMEOUT_MS);
+  return brightDataFetch(url, UNLOCKER_ZONE, Math.max(1, Math.min(UNLOCKER_TIMEOUT_MS, maxMs ?? UNLOCKER_TIMEOUT_MS)));
 }
 
 /** True when a SERP provider is wired up. Used to gate the (paid) call. */
@@ -974,6 +1029,9 @@ export async function fetchValuation(
   const mo = encodeURIComponent(baseModel);
   const y = String(year);
 
+  const deadline = Date.now() + TOTAL_BUDGET_MS;
+  const budgetLeft = () => deadline - Date.now();
+
   // Layer 1: dealer stock pages — real market data from as many competition
   // dealerships as are configured. Enough listings and we're done: it's the
   // freshest, most local signal there is.
@@ -993,13 +1051,34 @@ export async function fetchValuation(
         ? await fetchJsonDealerPrices(d, make, baseModel, y)
         : await (async () => {
             const pages = Math.max(1, d.pages ?? 2);
-            // Serialised worker: one render at a time — pages must not pile
-            // up concurrently or every client-side render timeout fires.
             const found: number[] = [];
             for (let p = 1; p <= pages; p++) {
-              const html = await fetchPageForParsing(expandDealerUrl(d, make, baseModel, y, p));
-              if (!html) break;
-              found.push(...extractDealerPrices(html, d, make, baseModel, y));
+              if (budgetLeft() <= 0) break;
+              const url = expandDealerUrl(d, make, baseModel, y, p);
+              // Plain HTTP first: most dealer stock pages are server-rendered
+              // and answer in well under a second, whereas a headless render
+              // (serialised on the worker, cold-starting on the free tier)
+              // can take 30s+. Only when the cheap fetch yields no matching
+              // listings — a JS-only SPA or a bot wall — do we pay for the
+              // render tier, exactly the classifieds-lane pattern.
+              let prices: number[] = [];
+              let html: string | null = null;
+              try {
+                html = await fetchWithRetry(url, { timeout: REQUEST_TIMEOUT, headers: DEFAULT_HEADERS });
+              } catch (err: any) {
+                console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
+              }
+              if (html) prices = extractDealerPrices(html, d, make, baseModel, y);
+
+              if (prices.length === 0) {
+                const rendered = (await renderViaWorker(url, budgetLeft())) ?? (await renderViaUnlocker(url, budgetLeft()));
+                if (rendered) {
+                  const rp = extractDealerPrices(rendered, d, make, baseModel, y);
+                  if (rp.length) prices = rp;
+                }
+              }
+              if (prices.length === 0) break; // nothing on this page → stop paging
+              found.push(...prices);
             }
             // Dedupe: a site that ignores the page param returns the same
             // listings again; identical prices would otherwise inflate the
@@ -1042,7 +1121,7 @@ export async function fetchValuation(
 
   // The dealer market is the freshest signal there is — a rich enough sample
   // is final on its own and we're done.
-  if (dealerListings.length >= MIN_DEALER_LISTINGS) {
+  if (dealerListings.length >= DEALER_FINAL_THRESHOLD) {
     const adjusted = adjustForMileage(dealerListings, targetKm);
     const data: ValuationResult = {
       averageRetailPrice: robustAverage(adjusted),
@@ -1077,13 +1156,17 @@ export async function fetchValuation(
   // here do we have make/model/year to filter the embedded listings.
   const parseClassified = (html: string, selectors: string[]): Listing[] => {
     const nd = extractNextDataListings(html, make, baseModel, y);
-    return nd.length ? nd : htmlToListings(html, selectors);
+    if (nd.length) return nd;
+    const cards = extractCardListings(html, make, baseModel, y);
+    if (cards.length) return cards;
+    return htmlToListings(html, selectors);
   };
 
   const perSource = await Promise.all(
     sources.map(async (src) => {
       const acc: Listing[] = [];
       for (let p = 1; p <= CLASSIFIEDS_PAGES; p++) {
+        if (budgetLeft() <= 0) break;
         const url = pageUrl(src, p);
         let listings: Listing[] = [];
         try {
@@ -1093,19 +1176,21 @@ export async function fetchValuation(
           console.warn(`[scraper] http fetch failed for ${url}:`, err?.message || err);
         }
         // Paid unblock tier — defeats the Cloudflare block that plain HTTP hits
-        // on AutoTrader/Cars.co.za. Capped to the first UNLOCKER_MAX_PAGES pages
-        // and only when the free page came back thin.
+        // on Cars.co.za (server fetch is 403). Capped to the first
+        // UNLOCKER_MAX_PAGES pages and only when the free page came back thin.
+        let unlocked: string | null = null;
         if (listings.length < MIN_HTTP_LISTINGS && p <= UNLOCKER_MAX_PAGES) {
-          const un = await renderViaUnlocker(url);
-          if (un) {
-            const r = parseClassified(un, src.selectors);
+          unlocked = await renderViaUnlocker(url, budgetLeft());
+          if (unlocked) {
+            const r = parseClassified(unlocked, src.selectors);
             if (r.length > listings.length) listings = r;
           }
         }
-        // Free worker render — still useful for a genuine SPA-XHR miss the
-        // Unlocker's light JS didn't surface.
-        if (listings.length < MIN_HTTP_LISTINGS) {
-          const rendered = await renderViaWorker(url);
+        // Free worker render — only when the unlocker didn't already return the
+        // full page (rendering again would be pure latency), for a genuine
+        // SPA-XHR miss the Unlocker's raw HTML didn't surface.
+        if (listings.length < MIN_HTTP_LISTINGS && !unlocked) {
+          const rendered = await renderViaWorker(url, budgetLeft());
           if (rendered) {
             const r = parseClassified(rendered, src.selectors);
             if (r.length > listings.length) listings = r;

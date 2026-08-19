@@ -4,11 +4,13 @@
     {
       "name": "WeBuyCars (nationwide)",
       "url": "https://shop.webuycars.co.za/buy-a-car",
-      "cardSelector": ".grid-card"
+      "cardSelector": ".grid-card",
+      "pages": 1
     },
     {
       "name": "Bidvest McCarthy (all makes)",
-      "url": "https://www.mccarthy.co.za/search/all-vehicles?page=1&region=0&make=0&series=0&minprice=0&maxprice=99999999&minage=0&maxage=30&minkm=0&maxkm=9999999&gear=0&shape=0&fuel=0&orderby=1"
+      "url": "https://www.mccarthy.co.za/search/all-vehicles?page=1&region=0&make=0&series=0&minprice=0&maxprice=99999999&minage=0&maxage=30&minkm=0&maxkm=9999999&gear=0&shape=0&fuel=0&orderby=1",
+      "pages": 1
     },
     {
       "name": "McCarthy Toyota",
@@ -48,7 +50,8 @@
       "url": "https://www.autopedigree.co.za/inventory-search",
       "cardSelector": ".tt-col-item",
       "pages": 1,
-      "note": "Renders are slow (~45-60s) — single page to keep valuation times sane; revisit with a search URL"
+      "enabled": false,
+      "note": "Renders are slow (~45-60s) — parked until a search URL exists"
     },
     {
       "name": "Car Store Cape Town",
