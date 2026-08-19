@@ -4,6 +4,7 @@ import type { DocSettings } from "./src/types";
 const PAGE = { w: 595.28, h: 841.89 };
 const MARGIN = 45.35; // 16mm
 const CONTENT_W = PAGE.w - MARGIN * 2;
+const FOOTER_RESERVE = 72; // content floor: keep this clear at the bottom for the footer
 const INK = rgb(0.078, 0.09, 0.11);
 const MUTED = rgb(0.463, 0.494, 0.537);
 const FAINT = rgb(0.541, 0.627, 0.6);
@@ -15,11 +16,16 @@ const BODY_TEXT = rgb(0.29, 0.314, 0.345);
 const WHITE = rgb(1, 1, 1);
 
 export const VAT_RATE = 0.15;
+const VAT_INVOICE_ID_THRESHOLD = 5000; // SARS: recipient VAT no. required at/above this consideration
 
 const DEFAULT_OWNERSHIP =
   "Ownership of the vehicle specified herein remains vested in the Seller (or the " +
   "underwriting Financial Institution) and shall not pass to the Buyer until the full " +
   "purchase price has been received in cleared funds in the Seller's bank account.";
+
+const POPIA_NOTE =
+  "Personal information on this document is processed solely to conclude this sale and to " +
+  "meet statutory record-keeping obligations, in line with POPIA and the dealer's privacy policy.";
 
 /* ── shared interfaces ───────────────────────────────────────────────────── */
 
@@ -52,6 +58,31 @@ export interface VehicleBlock {
   registrationNumber?: string;
 }
 
+/* ── text safety ─────────────────────────────────────────────────────────────
+   StandardFont Helvetica encodes WinAnsi only. Any glyph outside that set
+   (macrons, non-Latin scripts, emoji, exotic punctuation) throws at draw time.
+   We fold the common offenders to safe equivalents and drop anything else, so a
+   dealer/buyer name can never crash a document. */
+const CHAR_MAP: Record<string, string> = {
+  "‘": "'", "’": "'", "‚": "'", "‛": "'",
+  "“": '"', "”": '"', "„": '"',
+  "–": "-", "—": "-", "−": "-",
+  "…": "...", " ": " ", "•": "·", "​": "",
+};
+function sanitize(s: string): string {
+  if (!s) return "";
+  let out = "";
+  for (const ch of s) {
+    if (CHAR_MAP[ch] !== undefined) { out += CHAR_MAP[ch]; continue; }
+    const code = ch.codePointAt(0)!;
+    // Keep printable WinAnsi range; drop the rest rather than throw.
+    if (code === 0x0a || code === 0x0d || code === 0x09) { out += " "; continue; }
+    if (code <= 0x7e || (code >= 0xa0 && code <= 0xff)) out += ch;
+    // else: unencodable — drop silently
+  }
+  return out;
+}
+
 /* ── drawing helpers ─────────────────────────────────────────────────────── */
 
 function money(n: number): string {
@@ -61,14 +92,16 @@ function money(n: number): string {
 }
 
 interface Ctx {
+  doc: PDFDocument;
   page: PDFPage;
   regular: PDFFont;
   bold: PDFFont;
   y: number;
+  runningHeader?: (ctx: Ctx) => void; // redrawn at the top of every continuation page
 }
 
 function text(ctx: Ctx, s: string, opts: { x?: number; size?: number; bold?: boolean; color?: any; maxW?: number } = {}) {
-  let str = s;
+  let str = sanitize(s);
   const size = opts.size ?? 9.5;
   const font = opts.bold ? ctx.bold : ctx.regular;
   if (opts.maxW) {
@@ -86,9 +119,10 @@ function text(ctx: Ctx, s: string, opts: { x?: number; size?: number; bold?: boo
 }
 
 function textRight(ctx: Ctx, s: string, right: number, opts: { size?: number; bold?: boolean; color?: any } = {}) {
+  const str = sanitize(s);
   const size = opts.size ?? 9.5;
   const font = opts.bold ? ctx.bold : ctx.regular;
-  ctx.page.drawText(s, { x: right - font.widthOfTextAtSize(s, size), y: ctx.y, size, font, color: opts.color ?? INK });
+  ctx.page.drawText(str, { x: right - font.widthOfTextAtSize(str, size), y: ctx.y, size, font, color: opts.color ?? INK });
 }
 
 function hRule(ctx: Ctx, colour = RULE, x1 = MARGIN, x2 = PAGE.w - MARGIN) {
@@ -99,28 +133,65 @@ function darkRule(ctx: Ctx) {
   ctx.page.drawLine({ start: { x: MARGIN, y: ctx.y }, end: { x: PAGE.w - MARGIN, y: ctx.y }, thickness: 0.75, color: INK });
 }
 
-function paragraphWrap(ctx: Ctx, s: string, opts: { size?: number; lead?: number; color?: any; maxW?: number; x?: number } = {}) {
+/* ── pagination ──────────────────────────────────────────────────────────────
+   Every unbounded block (tables, terms, defects, checklists) calls ensure()
+   before drawing a row. When the row would cross into the footer zone we open a
+   fresh page and redraw the running header, so nothing is ever clipped. */
+function newPage(ctx: Ctx) {
+  ctx.page = ctx.doc.addPage([PAGE.w, PAGE.h]);
+  ctx.y = PAGE.h - MARGIN;
+  if (ctx.runningHeader) ctx.runningHeader(ctx);
+}
+
+function ensure(ctx: Ctx, needed: number) {
+  if (ctx.y - needed < MARGIN + FOOTER_RESERVE) newPage(ctx);
+}
+
+function runningHeaderFactory(dealerName: string, title: string) {
+  return (ctx: Ctx) => {
+    text(ctx, dealerName, { size: 9, bold: true, color: MUTED });
+    textRight(ctx, `${title} (continued)`, PAGE.w - MARGIN, { size: 8, color: FAINT });
+    ctx.y -= 10;
+    hRule(ctx, RULE);
+    ctx.y -= 20;
+  };
+}
+
+/* Stamp "Page i of N" on every page, centred at the foot. Called once at the end. */
+function stampPageNumbers(ctx: Ctx) {
+  const pages = ctx.doc.getPages();
+  const n = pages.length;
+  if (n <= 1) return;
+  pages.forEach((p, i) => {
+    const label = `Page ${i + 1} of ${n}`;
+    const w = ctx.regular.widthOfTextAtSize(label, 7);
+    p.drawText(label, { x: (PAGE.w - w) / 2, y: 24, size: 7, font: ctx.regular, color: FAINT });
+  });
+}
+
+function paragraphWrap(ctx: Ctx, s: string, opts: { size?: number; lead?: number; color?: any; maxW?: number; x?: number; paginate?: boolean } = {}) {
   const size = opts.size ?? 8.5;
   const lead = opts.lead ?? 12;
   const color = opts.color ?? BODY_TEXT;
   const maxW = opts.maxW ?? CONTENT_W;
   const x = opts.x ?? MARGIN;
-  const words = s.split(/\s+/);
+  const words = sanitize(s).split(/\s+/);
   let line = "";
+  const flush = () => {
+    if (opts.paginate) ensure(ctx, lead);
+    text(ctx, line, { x, size, color });
+    ctx.y -= lead;
+  };
   for (const w of words) {
     const probe = line ? `${line} ${w}` : w;
     if (ctx.regular.widthOfTextAtSize(probe, size) > maxW) {
-      text(ctx, line, { x, size, color });
-      ctx.y -= lead;
+      flush();
       line = w;
     } else {
       line = probe;
     }
   }
-  if (line) {
-    text(ctx, line, { x, size, color });
-    ctx.y -= lead;
-  }
+  if (line) flush();
 }
 
 function dateStr(d: Date): string {
@@ -132,7 +203,7 @@ async function createDoc() {
   const page = doc.addPage([PAGE.w, PAGE.h]);
   const regular = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  const ctx: Ctx = { page, regular, bold, y: PAGE.h - MARGIN };
+  const ctx: Ctx = { doc, page, regular, bold, y: PAGE.h - MARGIN };
   return { doc, ctx };
 }
 
@@ -162,8 +233,9 @@ function dealerHeader(ctx: Ctx, d: DealerLetterhead) {
 
   let ry = top;
   for (const rl of rightLines) {
-    const w = ctx.regular.widthOfTextAtSize(rl, 8);
-    ctx.page.drawText(rl, { x: right - w, y: ry, size: 8, font: ctx.regular, color: MUTED });
+    const clean = sanitize(rl);
+    const w = ctx.regular.widthOfTextAtSize(clean, 8);
+    ctx.page.drawText(clean, { x: right - w, y: ry, size: 8, font: ctx.regular, color: MUTED });
     ry -= 12;
   }
 
@@ -187,12 +259,14 @@ function metaGrid(ctx: Ctx, rows: MetaRow[], startY: number) {
   for (const row of rows) {
     const color = row.accent ? ACCENT : FAINT;
     const valColor = row.accent ? ACCENT : INK;
-    const labelW = ctx.bold.widthOfTextAtSize(row.label, 7);
-    const valueW = ctx.bold.widthOfTextAtSize(row.value, 9);
+    const label = sanitize(row.label);
+    const value = sanitize(row.value);
+    const labelW = ctx.bold.widthOfTextAtSize(label, 7);
+    const valueW = ctx.bold.widthOfTextAtSize(value, 9);
     const gap = 14;
     const labelX = right - valueW - gap - labelW;
-    ctx.page.drawText(row.label, { x: labelX, y, size: 7, font: ctx.bold, color });
-    ctx.page.drawText(row.value, { x: right - valueW, y, size: 9, font: ctx.bold, color: valColor });
+    ctx.page.drawText(label, { x: labelX, y, size: 7, font: ctx.bold, color });
+    ctx.page.drawText(value, { x: right - valueW, y, size: 9, font: ctx.bold, color: valColor });
     y -= 14;
   }
 }
@@ -201,25 +275,12 @@ function metaGrid(ctx: Ctx, rows: MetaRow[], startY: number) {
 
 interface FieldRow { label: string; value: string }
 
-function drawFieldGrid(ctx: Ctx, fields: FieldRow[], x: number, maxW: number) {
-  const labelSize = 7;
-  const valueSize = 8.5;
-  for (const f of fields) {
-    text(ctx, f.label, { x, size: labelSize, bold: true, color: FAINT });
-    const labelW = ctx.bold.widthOfTextAtSize(f.label, labelSize);
-    text(ctx, f.value, { x: x + labelW + 8, size: valueSize, maxW: maxW - labelW - 8 });
-    ctx.y -= 13;
-  }
-}
-
 function partiesBox(ctx: Ctx, buyer: BuyerBlock, v: VehicleBlock, leftLabel = "BILLED TO") {
-  const boxTop = ctx.y;
   const boxX = MARGIN;
   const boxW = CONTENT_W;
   const divX = MARGIN + boxW * 0.42;
   const rightColX = divX + 14;
   const rightColW = boxW - (divX - MARGIN) - 28;
-  const leftColW = divX - MARGIN - 28;
   const pad = 14;
 
   const leftFieldRows: FieldRow[] = [
@@ -243,6 +304,8 @@ function partiesBox(ctx: Ctx, buyer: BuyerBlock, v: VehicleBlock, leftLabel = "B
   const vehLineCount = 1 + 1 + vehFields.length;
   const rows = Math.max(leftLineCount, vehLineCount);
   const boxH = rows * 13 + pad * 2 + 20;
+
+  ensure(ctx, boxH + 8);
 
   ctx.page.drawRectangle({ x: boxX, y: ctx.y - boxH, width: boxW, height: boxH, color: TINT });
   ctx.page.drawRectangle({ x: boxX, y: ctx.y - boxH, width: boxW, height: boxH, borderColor: RULE, borderWidth: 0.75 });
@@ -282,18 +345,22 @@ function partiesBox(ctx: Ctx, buyer: BuyerBlock, v: VehicleBlock, leftLabel = "B
   ctx.y = contentTop - boxH + pad - 10;
 }
 
-/* ── line items table ───────────────────────────────────────────────────── */
+/* ── line items table (page-aware) ──────────────────────────────────────── */
 
-function lineItemsTable(ctx: Ctx, lines: { label: string; amountIncl: number }[]) {
+function lineItemsHeader(ctx: Ctx) {
   const right = PAGE.w - MARGIN;
-
   darkRule(ctx);
   ctx.y -= 12;
   text(ctx, "DESCRIPTION", { size: 7, bold: true, color: FAINT });
   textRight(ctx, "AMOUNT (INCL.)", right, { size: 7, bold: true, color: FAINT });
   ctx.y -= 16;
+}
 
+function lineItemsTable(ctx: Ctx, lines: { label: string; amountIncl: number }[]) {
+  const right = PAGE.w - MARGIN;
+  lineItemsHeader(ctx);
   for (const l of lines) {
+    if (ctx.y - 16 < MARGIN + FOOTER_RESERVE) { newPage(ctx); lineItemsHeader(ctx); }
     text(ctx, l.label, { size: 9.5, maxW: CONTENT_W - 110 });
     textRight(ctx, money(l.amountIncl), right, { size: 9.5 });
     ctx.y -= 4;
@@ -305,49 +372,44 @@ function lineItemsTable(ctx: Ctx, lines: { label: string; amountIncl: number }[]
 /* ── totals block ───────────────────────────────────────────────────────── */
 
 function totalBar(ctx: Ctx, label: string, amount: string) {
+  ensure(ctx, 40);
   const barW = 240;
   const barH = 28;
   const barX = PAGE.w - MARGIN - barW;
   ctx.page.drawRectangle({ x: barX, y: ctx.y - barH + 8, width: barW, height: barH, color: INK });
-  ctx.page.drawText(label, { x: barX + 12, y: ctx.y - 6, size: 7.5, font: ctx.bold, color: WHITE });
+  ctx.page.drawText(sanitize(label), { x: barX + 12, y: ctx.y - 6, size: 7.5, font: ctx.bold, color: WHITE });
   const amtW = ctx.bold.widthOfTextAtSize(amount, 12);
   ctx.page.drawText(amount, { x: PAGE.w - MARGIN - 12 - amtW, y: ctx.y - 8, size: 12, font: ctx.bold, color: WHITE });
   ctx.y -= barH + 4;
 }
 
-/* ── tinted info box ────────────────────────────────────────────────────── */
+/* ── labelled section (boxless, page-safe) ──────────────────────────────────
+   Used for lists that can grow past a page (defects, terms). Replaces the old
+   measure-then-cover box, which double-drew text and could not paginate. */
+function sectionLabel(ctx: Ctx, label: string, color = FAINT) {
+  ensure(ctx, 28);
+  darkRule(ctx);
+  ctx.y -= 12;
+  text(ctx, label, { size: 7, bold: true, color });
+  ctx.y -= 16;
+}
 
-function tintedBox(ctx: Ctx, heading: string, drawContent: (innerX: number, innerW: number) => void, opts: { halfWidth?: "left" | "right"; accentHeading?: boolean } = {}) {
-  const pad = 14;
-  let boxX = MARGIN;
-  let boxW = CONTENT_W;
-  if (opts.halfWidth === "left") { boxW = CONTENT_W * 0.42; }
-  if (opts.halfWidth === "right") { boxX = MARGIN + CONTENT_W * 0.42 + 12; boxW = CONTENT_W * 0.58 - 12; }
-
-  const savedY = ctx.y;
-  const innerX = boxX + pad;
-  const innerW = boxW - pad * 2;
-
-  ctx.y -= pad;
-  text(ctx, heading, { x: innerX, size: 7, bold: true, color: opts.accentHeading !== false ? ACCENT : FAINT });
-  ctx.y -= 14;
-  drawContent(innerX, innerW);
-
-  const boxH = savedY - ctx.y + pad;
-  ctx.page.drawRectangle({ x: boxX, y: savedY - boxH, width: boxW, height: boxH, color: TINT });
-  ctx.page.drawRectangle({ x: boxX, y: savedY - boxH, width: boxW, height: boxH, borderColor: RULE, borderWidth: 0.75 });
-
-  const savedY2 = ctx.y;
-  ctx.y = savedY - pad;
-  text(ctx, heading, { x: innerX, size: 7, bold: true, color: opts.accentHeading !== false ? ACCENT : FAINT });
-  ctx.y -= 14;
-  drawContent(innerX, innerW);
-  ctx.y = savedY2 - pad;
+/* Dealer-supplied terms — usable on any document (page-safe). */
+function termsSection(ctx: Ctx, terms?: string[]) {
+  const list = terms?.filter(Boolean);
+  if (!list || list.length === 0) return;
+  ctx.y -= 6;
+  sectionLabel(ctx, "TERMS AND CONDITIONS");
+  for (let i = 0; i < list.length; i++) {
+    paragraphWrap(ctx, `${i + 1}. ${list[i]}`, { size: 9, lead: 12, color: BODY_TEXT, paginate: true });
+    ctx.y -= 4;
+  }
 }
 
 /* ── signature block ────────────────────────────────────────────────────── */
 
 function signatureBlock(ctx: Ctx, leftLabel: string, rightLabel: string, date?: Date) {
+  ensure(ctx, 84);
   const right = PAGE.w - MARGIN;
   const mid = PAGE.w / 2;
   const gap = 24;
@@ -361,7 +423,6 @@ function signatureBlock(ctx: Ctx, leftLabel: string, rightLabel: string, date?: 
 
   ctx.y -= 20;
   const dateColW = (mid - gap - MARGIN) * 0.62;
-  const timeColW = (mid - gap - MARGIN) * 0.32;
   const dateX2 = mid + gap;
   const dateColW2 = (right - mid - gap) * 0.62;
   const timeX = MARGIN + dateColW + 12;
@@ -385,16 +446,15 @@ function signatureBlock(ctx: Ctx, leftLabel: string, rightLabel: string, date?: 
 /* ── page footer ────────────────────────────────────────────────────────── */
 
 function pageFooter(ctx: Ctx, d: DealerLetterhead, docNumber: string, thankYouNote?: string) {
-  if (thankYouNote) {
+  const ESSENTIAL_H = 56; // rule + registration line + POPIA note — must never break
+  // Only break the page for the essential footer; the "thank you" is decorative
+  // and yields when space is tight, so a doc never spills a footer-only page.
+  if (ctx.y - ESSENTIAL_H < MARGIN) newPage(ctx);
+  if (thankYouNote && ctx.y - (30 + ESSENTIAL_H) >= MARGIN) {
     ctx.y -= 12;
-    const tw = ctx.regular.widthOfTextAtSize(thankYouNote, 9);
-    ctx.page.drawText(thankYouNote, {
-      x: MARGIN + (CONTENT_W - tw) / 2,
-      y: ctx.y,
-      size: 9,
-      font: ctx.regular,
-      color: BODY_TEXT,
-    });
+    const note = sanitize(thankYouNote);
+    const tw = ctx.regular.widthOfTextAtSize(note, 9);
+    ctx.page.drawText(note, { x: MARGIN + (CONTENT_W - tw) / 2, y: ctx.y, size: 9, font: ctx.regular, color: BODY_TEXT });
     ctx.y -= 18;
   }
 
@@ -407,7 +467,9 @@ function pageFooter(ctx: Ctx, d: DealerLetterhead, docNumber: string, thankYouNo
     d.vatNumber ? `VAT ${d.vatNumber}` : "",
   ].filter(Boolean).join("  ·  ");
   text(ctx, regLine, { size: 7.5, color: FAINT });
-  textRight(ctx, docNumber, PAGE.w - MARGIN, { size: 7.5, color: FAINT });
+  textRight(ctx, `${docNumber}  ·  E&OE`, PAGE.w - MARGIN, { size: 7.5, color: FAINT });
+  ctx.y -= 12;
+  paragraphWrap(ctx, POPIA_NOTE, { size: 6.8, lead: 8.5, color: FAINT, maxW: CONTENT_W });
 }
 
 /* ── 1. Proforma Invoice ─────────────────────────────────────────────────── */
@@ -427,12 +489,12 @@ export interface ProformaInput {
 export async function renderProforma(input: ProformaInput): Promise<Uint8Array> {
   const { doc, ctx } = await createDoc();
   const right = PAGE.w - MARGIN;
+  ctx.runningHeader = runningHeaderFactory(input.dealer.name || "", "Proforma Invoice");
 
   dealerHeader(ctx, input.dealer);
 
   const titleY = ctx.y;
   docTitle(ctx, "Proforma Invoice");
-
   metaGrid(ctx, [
     { label: "PROFORMA NO.", value: input.proformaNumber },
     { label: "DATE", value: dateStr(input.issuedAt) },
@@ -449,6 +511,7 @@ export async function renderProforma(input: ProformaInput): Promise<Uint8Array> 
   const excl = input.totalIncl / (1 + VAT_RATE);
   const vat = input.totalIncl - excl;
   const totalsX = PAGE.w - MARGIN - 240;
+  ensure(ctx, 90);
 
   text(ctx, "Total excluding VAT", { x: totalsX, size: 9, color: MUTED });
   textRight(ctx, money(excl), right, { size: 9 });
@@ -461,16 +524,19 @@ export async function renderProforma(input: ProformaInput): Promise<Uint8Array> 
   totalBar(ctx, "TOTAL INCLUDING VAT", money(input.totalIncl));
 
   ctx.y -= 10;
+  ensure(ctx, 50);
   ctx.page.drawRectangle({ x: MARGIN, y: ctx.y - 40, width: CONTENT_W, height: 40, color: TINT });
   ctx.page.drawRectangle({ x: MARGIN, y: ctx.y - 40, width: CONTENT_W, height: 40, borderColor: RULE, borderWidth: 0.75 });
   ctx.y -= 14;
-  paragraphWrap(ctx, "This proforma invoice is an estimate only and does not constitute a binding offer. " +
-    "Prices are subject to change until a formal Offer to Purchase is signed by both parties.",
+  paragraphWrap(ctx, "This is a proforma invoice and NOT a tax invoice. It is an estimate only and does not " +
+    "constitute a binding offer. Prices are subject to change until a formal Offer to Purchase is signed by both parties.",
     { size: 8.5, color: BODY_TEXT, x: MARGIN + 14, maxW: CONTENT_W - 28 });
   ctx.y -= 8;
 
-  pageFooter(ctx, input.dealer, input.proformaNumber, input.docSettings?.footerNote);
+  termsSection(ctx, input.docSettings?.saleTerms);
 
+  pageFooter(ctx, input.dealer, input.proformaNumber, input.docSettings?.footerNote);
+  stampPageNumbers(ctx);
   return doc.save();
 }
 
@@ -494,12 +560,12 @@ export interface OfferInput {
 export async function renderOffer(input: OfferInput): Promise<Uint8Array> {
   const { doc, ctx } = await createDoc();
   const right = PAGE.w - MARGIN;
+  ctx.runningHeader = runningHeaderFactory(input.dealer.name || "", "Offer to Purchase");
 
   dealerHeader(ctx, input.dealer);
 
   const titleY = ctx.y;
   docTitle(ctx, "Offer to Purchase");
-
   metaGrid(ctx, [
     { label: "OFFER NO.", value: input.offerNumber },
     { label: "DATE", value: dateStr(input.issuedAt) },
@@ -514,13 +580,14 @@ export async function renderOffer(input: OfferInput): Promise<Uint8Array> {
 
   ctx.y -= 6;
   const totalsX = PAGE.w - MARGIN - 240;
+  ensure(ctx, 70);
 
   text(ctx, "Purchase price (incl. VAT)", { x: totalsX, size: 9, bold: true });
   textRight(ctx, money(input.totalIncl), right, { size: 9, bold: true });
   ctx.y -= 14;
 
   if (input.tradeIn) {
-    text(ctx, `Trade-in -- ${input.tradeIn.description}`, { x: totalsX, size: 9, color: MUTED });
+    text(ctx, `Trade-in - ${input.tradeIn.description}`, { x: totalsX, size: 9, color: MUTED });
     textRight(ctx, `- ${money(input.tradeIn.allowance)}`, right, { size: 9, color: MUTED });
     ctx.y -= 14;
   }
@@ -535,73 +602,33 @@ export async function renderOffer(input: OfferInput): Promise<Uint8Array> {
     totalBar(ctx, "BALANCE DUE ON DELIVERY", money(input.balanceDue));
   }
 
-  // Disclosed defects
+  // Disclosed defects — CPA s55/s56 (page-safe, single-pass)
   ctx.y -= 10;
-  const defectBoxTop = ctx.y;
-  const hasDefects = input.disclosedDefects && input.disclosedDefects.length > 0;
-
-  ctx.page.drawRectangle({ x: MARGIN, y: 0, width: CONTENT_W, height: 1, color: TINT });
-  const innerX = MARGIN + 14;
-  const innerW = CONTENT_W - 28;
-
-  const measureY = ctx.y;
-  ctx.y -= 14;
-  ctx.y -= 14;
+  const hasDefects = !!(input.disclosedDefects && input.disclosedDefects.length > 0);
+  sectionLabel(ctx, "DISCLOSED DEFECTS  ·  CPA s55/s56", ACCENT);
   if (hasDefects) {
     for (const defect of input.disclosedDefects!) {
+      ensure(ctx, 13);
+      text(ctx, `·  ${defect}`, { size: 9 });
       ctx.y -= 13;
     }
     ctx.y -= 6;
     paragraphWrap(ctx, "The Buyer acknowledges having been informed of the above defects and accepts " +
       "the vehicle subject to them, in accordance with section 55(6) of the Consumer Protection Act.",
-      { size: 8, color: MUTED, x: innerX, maxW: innerW });
+      { size: 8, color: MUTED, maxW: CONTENT_W, paginate: true });
   } else {
     paragraphWrap(ctx, "The Seller declares that, to the best of its knowledge, the vehicle has no known defects " +
       "as at the date of this offer. The Buyer's rights under sections 55 and 56 of the Consumer Protection Act are not affected.",
-      { size: 8, color: MUTED, x: innerX, maxW: innerW });
-  }
-  const defectBoxH = measureY - ctx.y + 28;
-
-  ctx.page.drawRectangle({ x: MARGIN, y: measureY - defectBoxH + 14, width: CONTENT_W, height: defectBoxH, color: TINT });
-  ctx.page.drawRectangle({ x: MARGIN, y: measureY - defectBoxH + 14, width: CONTENT_W, height: defectBoxH, borderColor: RULE, borderWidth: 0.75 });
-
-  ctx.y = measureY;
-  ctx.y -= 14;
-  text(ctx, "DISCLOSED DEFECTS  ·  CPA s55/s56", { x: innerX, size: 7, bold: true, color: ACCENT });
-  ctx.y -= 14;
-  if (hasDefects) {
-    for (const defect of input.disclosedDefects!) {
-      text(ctx, `·  ${defect}`, { x: innerX, size: 9 });
-      ctx.y -= 13;
-    }
-    ctx.y -= 6;
-    paragraphWrap(ctx, "The Buyer acknowledges having been informed of the above defects and accepts " +
-      "the vehicle subject to them, in accordance with section 55(6) of the Consumer Protection Act.",
-      { size: 8, color: MUTED, x: innerX, maxW: innerW });
-  } else {
-    paragraphWrap(ctx, "The Seller declares that, to the best of its knowledge, the vehicle has no known defects " +
-      "as at the date of this offer. The Buyer's rights under sections 55 and 56 of the Consumer Protection Act are not affected.",
-      { size: 8, color: MUTED, x: innerX, maxW: innerW });
+      { size: 8, color: MUTED, maxW: CONTENT_W, paginate: true });
   }
   ctx.y -= 14;
 
-  // Terms
-  const terms = input.docSettings?.saleTerms?.filter(Boolean);
-  if (terms && terms.length > 0) {
-    hRule(ctx, RULE);
-    ctx.y -= 12;
-    text(ctx, "TERMS AND CONDITIONS", { size: 7, bold: true, color: FAINT });
-    ctx.y -= 14;
-    for (let i = 0; i < terms.length; i++) {
-      paragraphWrap(ctx, `${i + 1}. ${terms[i]}`, { size: 9, lead: 12, color: BODY_TEXT });
-      ctx.y -= 4;
-    }
-  }
+  // Dealer terms (also available on every other document)
+  termsSection(ctx, input.docSettings?.saleTerms);
 
   signatureBlock(ctx, "BUYER SIGNATURE", "SELLER SIGNATURE", input.issuedAt);
-
   pageFooter(ctx, input.dealer, input.offerNumber, input.docSettings?.footerNote);
-
+  stampPageNumbers(ctx);
   return doc.save();
 }
 
@@ -621,12 +648,12 @@ export interface TaxInvoiceInput {
 export async function renderTaxInvoice(input: TaxInvoiceInput): Promise<Uint8Array> {
   const { doc, ctx } = await createDoc();
   const right = PAGE.w - MARGIN;
+  ctx.runningHeader = runningHeaderFactory(input.dealer.name || "", "Tax Invoice");
 
   dealerHeader(ctx, input.dealer);
 
   const titleY = ctx.y;
   docTitle(ctx, "Tax Invoice");
-
   metaGrid(ctx, [
     { label: "INVOICE NO.", value: input.invoiceNumber },
     { label: "DATE", value: dateStr(input.issuedAt) },
@@ -646,6 +673,7 @@ export async function renderTaxInvoice(input: TaxInvoiceInput): Promise<Uint8Arr
   const excl = input.totalIncl / (1 + VAT_RATE);
   const vat = input.totalIncl - excl;
   const totalsX = PAGE.w - MARGIN - 240;
+  ensure(ctx, 70);
 
   text(ctx, "Total excluding VAT", { x: totalsX, size: 9, color: MUTED });
   textRight(ctx, money(excl), right, { size: 9 });
@@ -657,9 +685,19 @@ export async function renderTaxInvoice(input: TaxInvoiceInput): Promise<Uint8Arr
   ctx.y -= 10;
   totalBar(ctx, "TOTAL DUE", money(input.totalIncl));
 
+  // SARS s20(4): recipient VAT number required at/above the threshold.
+  if (input.totalIncl >= VAT_INVOICE_ID_THRESHOLD && !input.buyer.vatNumber) {
+    ctx.y -= 12;
+    ensure(ctx, 16);
+    text(ctx, "Recipient VAT number required for supplies of R5 000 or more where the recipient is a vendor.",
+      { size: 7, color: MUTED });
+    ctx.y -= 4;
+  }
+
   // Banking details + Ownership side by side
   const bd = input.docSettings?.bankingDetails;
   ctx.y -= 10;
+  ensure(ctx, 120);
   const sectionTop = ctx.y;
 
   if (bd?.bankName || bd?.accountNumber) {
@@ -703,8 +741,9 @@ export async function renderTaxInvoice(input: TaxInvoiceInput): Promise<Uint8Arr
     { size: 8.5, lead: 12, color: BODY_TEXT, x: ownX, maxW: ownW });
 
   ctx.y = Math.min(ctx.y, bankBottom) - 6;
+  termsSection(ctx, input.docSettings?.saleTerms);
   pageFooter(ctx, input.dealer, input.invoiceNumber, input.docSettings?.footerNote);
-
+  stampPageNumbers(ctx);
   return doc.save();
 }
 
@@ -723,13 +762,12 @@ export interface HandoverInput {
 
 export async function renderHandover(input: HandoverInput): Promise<Uint8Array> {
   const { doc, ctx } = await createDoc();
-  const right = PAGE.w - MARGIN;
+  ctx.runningHeader = runningHeaderFactory(input.dealer.name || "", "Handover Certificate");
 
   dealerHeader(ctx, input.dealer);
 
   const titleY = ctx.y;
   docTitle(ctx, "Handover Certificate");
-
   metaGrid(ctx, [
     { label: "HANDOVER REF.", value: input.handoverNumber },
     { label: "DATE", value: dateStr(input.issuedAt) },
@@ -739,13 +777,9 @@ export async function renderHandover(input: HandoverInput): Promise<Uint8Array> 
   ctx.y -= 10;
   partiesBox(ctx, input.buyer, input.vehicle, "RECEIVED BY");
 
-  // Checklist
+  // Checklist (page-aware)
   ctx.y -= 18;
-  darkRule(ctx);
-  ctx.y -= 12;
-  text(ctx, "HANDOVER CHECKLIST", { size: 7, bold: true, color: FAINT });
-  ctx.y -= 16;
-
+  sectionLabel(ctx, "HANDOVER CHECKLIST");
   const items = input.checklist?.length ? input.checklist : [
     { label: "Vehicle keys (all sets) handed over", checked: false },
     { label: "Spare wheel and jack present", checked: false },
@@ -756,6 +790,7 @@ export async function renderHandover(input: HandoverInput): Promise<Uint8Array> 
     { label: "Vehicle condition walkthrough completed with buyer", checked: false },
   ];
   for (const item of items) {
+    if (ctx.y - 16 < MARGIN + FOOTER_RESERVE) { newPage(ctx); sectionLabel(ctx, "HANDOVER CHECKLIST (continued)"); }
     const boxSize = 9;
     const boxY = ctx.y - 1;
     if (item.checked) {
@@ -772,25 +807,25 @@ export async function renderHandover(input: HandoverInput): Promise<Uint8Array> 
 
   // Warranty + Buyer acknowledgement side by side
   ctx.y -= 10;
+  ensure(ctx, 130);
   const sectionTop = ctx.y;
 
   const warrantyBoxX = MARGIN;
   const warrantyBoxW = CONTENT_W * 0.42;
   const wPad = 14;
   const wInnerX = warrantyBoxX + wPad;
-  const wt = input.docSettings?.warrantyTerms;
+  const warrantyText = input.docSettings?.warrantyTerms || "As per the terms agreed in the Offer to Purchase.";
 
-  const warrantyText = wt || "As per the terms agreed in the Offer to Purchase.";
+  // measure warranty height with a throwaway pass on a fresh cursor value
   ctx.y = sectionTop - wPad;
   text(ctx, "WARRANTY", { x: wInnerX, size: 7, bold: true, color: ACCENT });
   ctx.y -= 14;
-  const wTextTop = ctx.y;
   paragraphWrap(ctx, warrantyText, { size: 9, lead: 13, color: INK, x: wInnerX, maxW: warrantyBoxW - wPad * 2 });
   const warrantyBoxH = sectionTop - ctx.y + wPad;
 
   ctx.page.drawRectangle({ x: warrantyBoxX, y: sectionTop - warrantyBoxH, width: warrantyBoxW, height: warrantyBoxH, color: TINT });
   ctx.page.drawRectangle({ x: warrantyBoxX, y: sectionTop - warrantyBoxH, width: warrantyBoxW, height: warrantyBoxH, borderColor: RULE, borderWidth: 0.75 });
-
+  // redraw warranty text on top of the box
   ctx.y = sectionTop - wPad;
   text(ctx, "WARRANTY", { x: wInnerX, size: 7, bold: true, color: ACCENT });
   ctx.y -= 14;
@@ -799,6 +834,7 @@ export async function renderHandover(input: HandoverInput): Promise<Uint8Array> 
   // Buyer acknowledgement on the right
   const ackX = MARGIN + CONTENT_W * 0.42 + 16;
   const ackW = CONTENT_W * 0.58 - 16;
+  const warrantyBottom = ctx.y;
   ctx.y = sectionTop;
   ctx.y -= 14;
   text(ctx, "BUYER ACKNOWLEDGEMENT", { x: ackX, size: 7, bold: true, color: FAINT });
@@ -812,9 +848,10 @@ export async function renderHandover(input: HandoverInput): Promise<Uint8Array> 
     "for the vehicle, including but not limited to traffic fines, toll charges, and third-party claims.",
     { size: 8.5, lead: 12, color: BODY_TEXT, x: ackX, maxW: ackW });
 
+  ctx.y = Math.min(ctx.y, warrantyBottom);
+  termsSection(ctx, input.docSettings?.saleTerms);
   signatureBlock(ctx, "BUYER SIGNATURE", "DEALER REPRESENTATIVE", input.issuedAt);
-
   pageFooter(ctx, input.dealer, input.handoverNumber, input.docSettings?.footerNote);
-
+  stampPageNumbers(ctx);
   return doc.save();
 }
