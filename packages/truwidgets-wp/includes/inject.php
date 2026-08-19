@@ -65,7 +65,13 @@ function truw_inject() {
     $widgets = array_values(array_filter(truw_enabled_list(), 'truw_widget_visible'));
     if (empty($widgets)) return;
 
-    $base = rtrim(truw_opt('cdn_base', 'https://cdn.tru-saas.com'), '/');
+    // Guard the CDN base: a mangled value (e.g. "http://htt" from a fat-finger
+    // or browser autofill) would 404 the loader and kill every widget. Require
+    // a real https host; otherwise fall back to the default CDN.
+    $base = rtrim(truw_opt('cdn_base', ''), '/');
+    if (!preg_match('#^https?://[^/\s]+\.[^/\s]+#', $base)) {
+        $base = 'https://cdn.tru-saas.com';
+    }
     $src  = $base . '/tru-loader/tru-loader.js';
     $wa   = preg_replace('/\D/', '', truw_opt('sales_whatsapp', ''));
 
