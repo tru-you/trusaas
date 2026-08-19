@@ -611,7 +611,12 @@
       return L.join("\n");
     }
     function postLead(source) {
-      cmbNotify(cfg, source || "TruRepay", notes());
+      /* CallMeBot is the yard's auto-notification — prepend who to call back,
+         since notes() carries only the finance figures. */
+      cmbNotify(cfg, source || "TruRepay",
+        "Name: " + (val("tr-name") || "—") +
+        "\nPhone: " + (val("tr-phone") || "—") +
+        "\n" + notes());
       if (!(cfg.webhook || (cfg.slug && cfg.flowUrl))) return Promise.resolve(false);
       var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
       var ctrl = ("AbortController" in window) ? new AbortController() : null;

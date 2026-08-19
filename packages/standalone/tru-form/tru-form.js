@@ -843,7 +843,13 @@
 
     /* ---- network: returns a promise<boolean> for a real delivery ---- */
     function postLead(source) {
-      cmbNotify(cfg, source || "TruForm", buildNotes());
+      /* The CallMeBot ping is the yard's automatic notification — it MUST carry
+         who to call back. buildNotes() omits name/phone (they're separate payload
+         fields for the webhook), so prepend them here. */
+      cmbNotify(cfg, source || "TruForm",
+        "Name: " + ((val("tf-fn") + " " + val("tf-ln")).trim() || "—") +
+        "\nPhone: " + (val("tf-ph") || "—") +
+        "\n" + buildNotes());
       /* No webhook / TruFlow endpoint: a CallMeBot ping (fire-and-forget) is
          still a real delivery for a notification-only dealer, so report success
          when it is configured rather than showing the customer an error. */
