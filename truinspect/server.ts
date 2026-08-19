@@ -767,6 +767,9 @@ app.get('/api/health', (_req, res) => {
     // var reached the process, which is otherwise invisible until someone
     // tries a bypass and gets in.
     accessCodeConfigured: !!ACCESS_CODE,
+    // True when DEEPSEEK_API_KEY reached the process — the AI listing writer
+    // (and any DeepSeek call) runs in mock mode when this is false.
+    aiConfigured,
     mode: LOCAL_MODE ? 'local' : 'cloud',
     dmsUrl: DEFAULT_DMS_URL,
     port: PORT,
