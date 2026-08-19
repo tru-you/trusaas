@@ -81,6 +81,24 @@ function truw_settings_page() {
     if (!current_user_can('manage_options')) return; ?>
     <div class="wrap">
         <h1>TruWidgets</h1>
+        <?php
+        /* Loud guard: a lead widget is on but there's nowhere for a lead to go.
+           A CallMeBot key with no phone number does NOT count (its ping aborts). */
+        $wa_set  = preg_replace('/\D/', '', truw_opt('sales_whatsapp', '')) !== '';
+        $hook    = truw_opt('webhook') !== '';
+        $cmb_ok  = truw_opt('callmebot_key') && (preg_replace('/\D/', '', truw_opt('callmebot_phone', '')) !== '' || $wa_set);
+        $lead_widget_on = truw_opt('w_afford') === '1' || truw_opt('w_repay') === '1' ||
+                          truw_opt('w_form') === '1' || truw_opt('w_book') === '1';
+        if ($lead_widget_on && !$wa_set && !$hook && !$cmb_ok) {
+            echo '<div class="notice notice-error"><p><strong>Leads have nowhere to go.</strong> '
+               . 'A lead widget is enabled but no destination is set — submissions will silently do nothing. '
+               . 'Fix at least one: set <strong>Sales WhatsApp</strong>, a <strong>Webhook URL</strong>, or a '
+               . '<strong>CallMeBot key <em>and</em> phone</strong> below.</p></div>';
+        } elseif ($lead_widget_on && truw_opt('callmebot_key') && !$cmb_ok) {
+            echo '<div class="notice notice-warning"><p><strong>CallMeBot has a key but no phone.</strong> '
+               . 'Set <strong>CallMeBot phone</strong> (or a <strong>Sales WhatsApp</strong> number, which it falls back to) or the ping is skipped.</p></div>';
+        }
+        ?>
         <p>Drop-in dealer widgets, driven entirely from this page. Enable the ones you want, brand them, and set where leads go. The widget code loads from the TruSaaS CDN.</p>
         <form method="post" action="options.php">
             <?php settings_fields('truw_group'); ?>

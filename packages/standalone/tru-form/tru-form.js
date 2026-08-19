@@ -844,7 +844,12 @@
     /* ---- network: returns a promise<boolean> for a real delivery ---- */
     function postLead(source) {
       cmbNotify(cfg, source || "TruForm", buildNotes());
-      if (!(cfg.webhook || (cfg.slug && cfg.flowUrl))) return Promise.resolve(false);
+      /* No webhook / TruFlow endpoint: a CallMeBot ping (fire-and-forget) is
+         still a real delivery for a notification-only dealer, so report success
+         when it is configured rather than showing the customer an error. */
+      if (!(cfg.webhook || (cfg.slug && cfg.flowUrl))) {
+        return Promise.resolve(!!(cfg.cmbKey && cfg.cmbPhone));
+      }
       var leadUrl = cfg.webhook || (cfg.flowUrl.replace(/\/$/, "") + "/api/integration/webhook-lead");
       var ctrl = ("AbortController" in window) ? new AbortController() : null;
       var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
