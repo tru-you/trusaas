@@ -2199,6 +2199,7 @@ import { getValues as imagin8GetValues, getStaticInfo as imagin8GetStaticInfo } 
 const IMAGIN8_API_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
 // Chargeable getValues also needs the account login + registered applicationName.
+// (getStaticInfo param casing fixed in shared packages/imagin8.ts — cd82754.)
 const imagin8Opts = {
   apiKey: IMAGIN8_API_KEY,
   customerId: IMAGIN8_CUSTOMER_ID,
