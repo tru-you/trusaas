@@ -1,5 +1,8 @@
 import React from 'react';
 import MobileDevice from './components/MobileDevice';
+import DesktopShell from './components/DesktopShell';
+import DesktopDashboard from './components/DesktopDashboard';
+import VehicleManager from './components/VehicleManager';
 import InventoryList from './components/InventoryList';
 import CameraGuide from './components/CameraGuide';
 import Login from './components/Login';
@@ -17,6 +20,7 @@ import { createDefaultItems } from './types/inspection';
 import { useAuth } from './contexts/AuthContext';
 import GuidePanel from './components/GuidePanel';
 import DealerAssist from './components/DealerAssist';
+import { isDesktopManager } from './lib/pwa';
 
 /** Convert a blob: URL to a data: URL so it survives navigation / reload. */
 async function blobUrlToDataUrl(url: string): Promise<string> {
@@ -108,6 +112,13 @@ export default function App() {
 
   const [guideOpen, setGuideOpen] = React.useState(false);
   const [assistOpen, setAssistOpen] = React.useState(false);
+  const [desktop, setDesktop] = React.useState(() => isDesktopManager());
+
+  React.useEffect(() => {
+    const update = () => setDesktop(isDesktopManager());
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
 
   // Load inventory from server
@@ -550,6 +561,209 @@ export default function App() {
     <MobileDevice>
       {!user ? (
         <Login />
+      ) : desktop ? (
+        <DesktopShell
+          vehicles={vehicles}
+          activeVehicleId={activeVehicleId}
+          onSelectVehicle={handleSelectVehicle}
+          activeView={activeView}
+          syncStatus={syncStatus}
+          onForceSync={fetchInventory}
+          onOpenReport={handleViewReport}
+          onOpenTradeInReport={handleViewTradeInReport}
+          onOpenTradeIn={handleOpenTradeIn}
+          onInspect={(v) => { setActiveVehicleId(v.id); setActiveView('camera'); }}
+          onDeleteVehicle={handleDeleteVehicle}
+        >
+          {activeView === 'inventory' && !activeVehicle && (
+            <DesktopDashboard
+              vehicles={vehicles}
+              onSelectVehicle={handleSelectVehicle}
+              onAddVehicle={handleAddVehicle}
+            />
+          )}
+
+          {activeView === 'inventory' && activeVehicle && (
+            <VehicleManager
+              vehicle={activeVehicle}
+              onUpdateVehicle={handleUpdateVehicle}
+              onViewReport={() => setActiveView('report')}
+              onOpenTradeIn={() => setActiveView('trade-in')}
+              onOpenDamage={() => setActiveView('damage')}
+              onOpenChecklist={() => handleOpenChecklist(activeVehicle)}
+              onBack={() => { setActiveVehicleId(null); setActiveView('inventory'); }}
+            />
+          )}
+
+          {activeView === 'checklist' && activeVehicle && (
+            <InspectionSheet
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onSave={async (points) => {
+                await handleUpdateVehicle(activeVehicle, { inspectionPoints: points });
+              }}
+              onTagDamage={() => setActiveView('damage')}
+              onGenerateReport={() => setActiveView('report')}
+            />
+          )}
+
+          {activeView === 'damage' && activeVehicle && (
+            <DamageTagger
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onSave={async (damageFindings) => {
+                await handleUpdateVehicle(activeVehicle, { damageFindings });
+              }}
+              onContinueToChecklist={() => setActiveView('checklist')}
+            />
+          )}
+
+          {activeView === 'trade-in' && activeVehicle && (
+            <TradeInWalkAround
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onUploadPhoto={uploadTradePhoto}
+              onComplete={(completedItems, extras) => {
+                setTradeInItems(completedItems);
+                setActiveView('trade-in-valuation');
+                if (extras?.isSmokerVehicle !== undefined) {
+                  handleUpdateVehicle(activeVehicle, {
+                    tradeInData: {
+                      ...activeVehicle.tradeInData,
+                      vehicleDetails: {
+                        ...activeVehicle.tradeInData?.vehicleDetails,
+                        isSmokerVehicle: extras.isSmokerVehicle,
+                      },
+                    },
+                  } as Partial<Vehicle>);
+                }
+                Promise.all(
+                  completedItems.map(async (it) => ({
+                    ...it,
+                    photoUrl: it.photoUrl?.startsWith('blob:')
+                      ? await blobUrlToDataUrl(it.photoUrl)
+                      : (it.photoUrl || null),
+                  }))
+                ).then((persisted) => {
+                  setTradeInItems(persisted);
+                  handleUpdateVehicle(activeVehicle, {
+                    tradeInData: {
+                      ...activeVehicle.tradeInData,
+                      items: persisted,
+                      valuation: tradeInValuation || activeVehicle.tradeInData?.valuation || undefined,
+                    },
+                  } as Partial<Vehicle>);
+                });
+              }}
+            />
+          )}
+
+          {activeView === 'trade-in-valuation' && activeVehicle && (
+            <TradeInValuation
+              vehicle={activeVehicle}
+              items={tradeInItems}
+              onBack={() => setActiveView('trade-in')}
+              onComplete={(val) => {
+                setTradeInValuation(val);
+                setActiveView('trade-in-summary');
+              }}
+            />
+          )}
+
+          {activeView === 'trade-in-summary' && activeVehicle && !tradeInValuation && (
+            <div className="flex flex-col items-center justify-center h-full bg-neutral-950 text-[#E8EAE6] p-6 text-center">
+              <p className="text-[15px] text-neutral-400 mb-4">No valuation data yet — complete the market valuation step first.</p>
+              <button
+                onClick={() => setActiveView('trade-in-valuation')}
+                className="px-6 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-[#06080D] text-[13px] font-semibold"
+              >
+                Go to Valuation
+              </button>
+            </div>
+          )}
+
+          {activeView === 'trade-in-summary' && activeVehicle && tradeInValuation && (
+            <TradeInSummary
+              vehicle={activeVehicle}
+              items={tradeInItems}
+              valuation={tradeInValuation}
+              onBack={() => setActiveView('inventory')}
+              onSave={handleSaveTradeIn}
+            />
+          )}
+
+          {activeView === 'report' && activeVehicle && (
+            <ReportPreview
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onVehicleUpdated={async (v) => {
+                const saved = await handleUpdateVehicle(activeVehicle, v);
+                if (!saved) {
+                  setVehicles((prev) => prev.map((x) => (x.id === v.id ? normalizeVehicle(v) : x)));
+                }
+              }}
+            />
+          )}
+
+          {activeView === 'completion' && activeVehicle && (
+            <CompletionReview
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('camera')}
+              onSubmit={() => setActiveView('report')}
+              onRetakeSlot={(navSlotId) => {
+                const photo = activeVehicle.photos?.[navSlotId];
+                if (photo) {
+                  setActiveSlotId(navSlotId);
+                  setActiveImageSrc(photo);
+                  setActiveView('editor');
+                }
+              }}
+            />
+          )}
+
+          {activeView === 'camera' && activeVehicle && (
+            <CameraGuide
+              vehicle={activeVehicle}
+              onBack={() => setActiveView('inventory')}
+              onComplete={() => setActiveView('completion')}
+              onPhotoCaptured={handlePhotoCaptured}
+              onOpenDamageTagger={() => setActiveView('damage')}
+              onOpenChecklist={() => handleOpenChecklist(activeVehicle)}
+              onBulkPhotosUploaded={(updatedVehicle) => {
+                setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
+              }}
+            />
+          )}
+
+          {activeView === 'editor' && activeVehicle && activeSlotId && activeImageSrc && (
+            <SlotReview
+              vehicle={activeVehicle}
+              slotId={activeSlotId}
+              imageSrc={activeImageSrc}
+              onBack={() => {
+                setActiveView('camera');
+                setActiveImageSrc(null);
+                setActiveSlotId(null);
+                setActiveQualityReport(null);
+              }}
+              onSave={handleSaveSlotReview}
+              onNavigateSlot={(navSlotId) => {
+                const photo = activeVehicle.photos?.[navSlotId];
+                if (photo) {
+                  setActiveSlotId(navSlotId);
+                  setActiveImageSrc(photo);
+                }
+              }}
+            />
+          )}
+
+          <GuidePanel
+            open={guideOpen}
+            onOpenChange={setGuideOpen}
+            currentSection={activeView}
+          />
+          <DealerAssist userName={user?.displayName || undefined} open={assistOpen} onOpenChange={setAssistOpen} />
+        </DesktopShell>
       ) : (
         <>
           {activeView === 'inventory' && (
@@ -567,9 +781,6 @@ export default function App() {
                   </button>
                 </div>
               )}
-              {/* A failed save has to be seen. The pending shot is already gone
-                  by the time this renders, so without it the loss is invisible
-                  and the dealer keeps shooting into a void. */}
               {uploadError && (
                 <div
                   role="alert"
@@ -644,10 +855,6 @@ export default function App() {
                     },
                   } as Partial<Vehicle>);
                 }
-                /* Photos are already "/media/…" URLs (uploaded as they were
-                   captured). Only a shot whose upload failed is still a blob:
-                   URL — convert just those to base64 so the server can still
-                   file them on save. The common path does no conversion. */
                 Promise.all(
                   completedItems.map(async (it) => ({
                     ...it,
