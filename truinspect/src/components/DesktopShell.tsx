@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Check, Copy, RefreshCw, Plus, LogOut } from 'lucide-react';
+import { Search, Check, Copy, RefreshCw, Plus, LogOut, Car, Users } from 'lucide-react';
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -15,6 +15,8 @@ interface DesktopShellProps {
   onAddVehicle?: () => void;
   onSignOut?: () => void;
   dealerName?: string;
+  section?: 'vehicles' | 'buyers';
+  onSectionChange?: (s: 'vehicles' | 'buyers') => void;
   onOpenReport?: (vehicle: Vehicle) => void;
   onOpenTradeInReport?: (vehicle: Vehicle) => void;
   onOpenTradeIn?: (vehicle: Vehicle) => void;
@@ -31,6 +33,8 @@ export default function DesktopShell({
   onAddVehicle,
   onSignOut,
   dealerName,
+  section = 'vehicles',
+  onSectionChange,
   children,
 }: DesktopShellProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -63,7 +67,30 @@ export default function DesktopShell({
         className="ti-sidebar w-[340px] shrink-0 flex flex-col"
         style={{ background: 'var(--ink)', borderRight: '1px solid var(--glass-line)' }}
       >
-        {/* Search + add */}
+        {/* Section nav */}
+        {onSectionChange && (
+          <div className="px-4 pt-4">
+            <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+              {([['vehicles', 'Vehicles', Car], ['buyers', 'Buyers', Users]] as const).map(([key, label, Icon]) => (
+                <button
+                  key={key}
+                  onClick={() => onSectionChange(key)}
+                  className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-semibold rounded-md cursor-pointer transition-colors"
+                  style={{
+                    minHeight: 32,
+                    background: section === key ? 'var(--cyan)' : 'transparent',
+                    color: section === key ? 'var(--tru-ink-900, #06080D)' : 'var(--muted)',
+                  }}
+                >
+                  <Icon size={13} /> {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Search + add (vehicles only) */}
+        {section === 'vehicles' && (
         <div className="px-4 py-4 space-y-3" style={{ borderBottom: '1px solid var(--glass-line)' }}>
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--faint)' }} />
@@ -96,8 +123,10 @@ export default function DesktopShell({
             </button>
           </div>
         </div>
+        )}
 
-        {/* Vehicle list */}
+        {/* Vehicle list (vehicles only) */}
+        {section === 'vehicles' && (
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 ? (
             <div className="p-6 text-center text-[13px]" style={{ color: 'var(--muted)' }}>
@@ -161,6 +190,9 @@ export default function DesktopShell({
             })
           )}
         </div>
+        )}
+
+        {section === 'buyers' && <div className="flex-1" />}
 
         {/* Footer: signed-in dealer + sign out */}
         {onSignOut && (

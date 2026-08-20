@@ -1,16 +1,15 @@
 import React from 'react';
 import {
   ArrowLeft, Save, FileText, ShoppingCart, AlertTriangle, Camera, Pencil,
-  CheckCircle2, Phone, Mail, MessageCircle, HandCoins, User,
+  CheckCircle2, Phone, Mail, MessageCircle, HandCoins, User, Upload, Paperclip,
+  Trash2, Plus,
 } from 'lucide-react';
-import { Upload } from 'lucide-react';
-import { Vehicle } from '../types';
+import { Vehicle, VehicleOffer } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { telHref, mailtoHref, whatsappHref, openContact } from '../lib/contact';
 import { deriveReportId } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
-import OtpDocument from './OtpDocument';
 
 interface Props {
   vehicle: Vehicle;
@@ -40,12 +39,14 @@ export default function VehicleManager({
     servicePlan: vehicle.servicePlan || '', extras: vehicle.extras || '',
     customerName: vehicle.customerName || '', customerPhone: vehicle.customerPhone || '',
     customerEmail: vehicle.customerEmail || '',
-    offerAmount: String(vehicle.purchaseOffer?.amount || ''), offerNote: vehicle.purchaseOffer?.note || '',
-    offerDeposit: '',
   });
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
-  const [otpOpen, setOtpOpen] = React.useState(false);
+  // Add-offer form (offers are received from buyers, not issued here)
+  const [offer, setOffer] = React.useState({ buyerName: '', buyerContact: '', amount: '', note: '' });
+  const [offerDoc, setOfferDoc] = React.useState<string>('');
+  const [savingOffer, setSavingOffer] = React.useState(false);
+  const offerDocRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
     setForm({
@@ -56,9 +57,9 @@ export default function VehicleManager({
       servicePlan: vehicle.servicePlan || '', extras: vehicle.extras || '',
       customerName: vehicle.customerName || '', customerPhone: vehicle.customerPhone || '',
       customerEmail: vehicle.customerEmail || '',
-      offerAmount: String(vehicle.purchaseOffer?.amount || ''), offerNote: vehicle.purchaseOffer?.note || '',
-      offerDeposit: '',
     });
+    setOffer({ buyerName: '', buyerContact: '', amount: '', note: '' });
+    setOfferDoc('');
     setSaved(false);
   }, [vehicle.id]);
 
@@ -100,15 +101,7 @@ export default function VehicleManager({
 
   const hasPhone = !!form.customerPhone.trim();
   const hasEmail = !!form.customerEmail.trim();
-
-  const generateOtp = async () => {
-    const amt = parseFloat(form.offerAmount) || 0;
-    await onUpdateVehicle(vehicle, {
-      ...buildUpdates(),
-      purchaseOffer: { amount: amt, note: form.offerNote, status: 'sent', sentAt: new Date().toISOString() },
-    });
-    setOtpOpen(true);
-  };
+  const offers = vehicle.offers || [];
 
   const readAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
     const r = new FileReader();
@@ -148,6 +141,50 @@ export default function VehicleManager({
       if (fileRef.current) fileRef.current.value = '';
     }
   };
+
+  const pickOfferDoc = async (file: File) => {
+    try { setOfferDoc(await readAsDataUrl(file)); } catch { /* ignore */ }
+  };
+
+  const addOffer = async () => {
+    const amt = parseFloat(offer.amount) || 0;
+    if (!offer.buyerName.trim() || !amt) return;
+    setSavingOffer(true);
+    try {
+      let documentRef: string | undefined;
+      if (offerDoc) {
+        const token = await user?.getIdToken();
+        const res = await fetch('/api/inventory/upload-trade-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ base64Image: offerDoc }),
+        });
+        if (res.ok) documentRef = (await res.json()).ref;
+      }
+      const next: VehicleOffer = {
+        id: 'offer-' + Math.floor(100000 + Math.random() * 900000),
+        buyerName: offer.buyerName.trim(),
+        buyerContact: offer.buyerContact.trim() || undefined,
+        amount: amt,
+        note: offer.note.trim() || undefined,
+        documentRef,
+        status: 'received',
+        receivedAt: new Date().toISOString(),
+      };
+      await onUpdateVehicle(vehicle, { offers: [next, ...offers] });
+      setOffer({ buyerName: '', buyerContact: '', amount: '', note: '' });
+      setOfferDoc('');
+      if (offerDocRef.current) offerDocRef.current.value = '';
+    } finally {
+      setSavingOffer(false);
+    }
+  };
+
+  const setOfferStatus = (id: string, status: VehicleOffer['status']) =>
+    onUpdateVehicle(vehicle, { offers: offers.map((o) => (o.id === id ? { ...o, status } : o)) });
+
+  const removeOffer = (id: string) =>
+    onUpdateVehicle(vehicle, { offers: offers.filter((o) => o.id !== id) });
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -265,27 +302,70 @@ export default function VehicleManager({
           </div>
         </section>
 
-        {/* Offer to purchase */}
+        {/* Offers received on this vehicle */}
         <section className="ti-card p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="ti-section-title"><HandCoins size={14} style={{ color: 'var(--cyan)' }} /> Offer to Purchase</h3>
-            {vehicle.purchaseOffer?.status === 'sent' && (
-              <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: 'var(--cyan-faint)', color: 'var(--cyan)' }}>
-                Sent {vehicle.purchaseOffer.sentAt ? new Date(vehicle.purchaseOffer.sentAt).toLocaleDateString('en-ZA') : ''}
-              </span>
-            )}
+            <h3 className="ti-section-title"><HandCoins size={14} style={{ color: 'var(--cyan)' }} /> Offers ({offers.length})</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div><label className={labelCls}>Total Price incl VAT (R)</label><input className={inputCls} type="number" value={form.offerAmount} onChange={set('offerAmount')} placeholder="0" /></div>
-            <div><label className={labelCls}>Deposit (R)</label><input className={inputCls} type="number" value={form.offerDeposit} onChange={set('offerDeposit')} placeholder="0" /></div>
-            <div><label className={labelCls}>Note (optional)</label><input className={inputCls} value={form.offerNote} onChange={set('offerNote')} placeholder="e.g. Valid 7 days, subject to finance" /></div>
+
+          {/* Existing offers */}
+          {offers.length > 0 && (
+            <div className="space-y-2">
+              {offers.map((o) => (
+                <div key={o.id} className="ti-card-quiet p-3 flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-semibold truncate" style={{ color: 'var(--white)' }}>{o.buyerName}</span>
+                      <span className="text-[13px]" style={{ fontFamily: 'var(--mono)', color: 'var(--cyan)' }}>R {o.amount.toLocaleString('en-ZA')}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full capitalize" style={{
+                        background: o.status === 'accepted' ? 'var(--cyan-faint)' : 'rgba(232,234,230,0.06)',
+                        color: o.status === 'accepted' ? 'var(--cyan)' : o.status === 'declined' ? 'var(--danger)' : 'var(--muted)',
+                      }}>{o.status}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5 text-[11px]" style={{ color: 'var(--muted)' }}>
+                      {o.buyerContact && <span>{o.buyerContact}</span>}
+                      <span>{new Date(o.receivedAt).toLocaleDateString('en-ZA')}</span>
+                      {o.documentRef && <a href={o.documentRef} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-[var(--cyan)]"><Paperclip size={10} /> Document</a>}
+                    </div>
+                    {o.note && <p className="text-[11px] mt-1" style={{ color: 'var(--white-dim)' }}>{o.note}</p>}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {o.status !== 'accepted' && (
+                      <button onClick={() => setOfferStatus(o.id, 'accepted')} className="tru-btn-ghost px-2 text-[11px] cursor-pointer" style={{ minHeight: 30, color: 'var(--cyan)' }}>Accept</button>
+                    )}
+                    {o.status !== 'declined' && (
+                      <button onClick={() => setOfferStatus(o.id, 'declined')} className="tru-btn-ghost px-2 text-[11px] cursor-pointer" style={{ minHeight: 30 }}>Decline</button>
+                    )}
+                    <button onClick={() => removeOffer(o.id)} title="Remove offer" className="tru-btn-ghost h-8 w-8 flex items-center justify-center cursor-pointer"><Trash2 size={13} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add an offer received from a buyer / other dealership */}
+          <div className="rounded-lg p-3 space-y-3" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+            <p className="text-[12px] font-semibold" style={{ color: 'var(--white-dim)' }}>Log an offer received</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div><label className={labelCls}>Buyer / Dealership</label><input className={inputCls} value={offer.buyerName} onChange={(e) => setOffer((s) => ({ ...s, buyerName: e.target.value }))} placeholder="Name" /></div>
+              <div><label className={labelCls}>Contact (optional)</label><input className={inputCls} value={offer.buyerContact} onChange={(e) => setOffer((s) => ({ ...s, buyerContact: e.target.value }))} placeholder="Phone / email" style={{ fontFamily: 'var(--mono)' }} /></div>
+              <div><label className={labelCls}>Amount (R)</label><input className={inputCls} type="number" value={offer.amount} onChange={(e) => setOffer((s) => ({ ...s, amount: e.target.value }))} placeholder="0" /></div>
+            </div>
+            <div><label className={labelCls}>Note (optional)</label><input className={inputCls} value={offer.note} onChange={(e) => setOffer((s) => ({ ...s, note: e.target.value }))} placeholder="e.g. Valid 7 days, cash, subject to viewing" /></div>
+            <div className="flex items-center gap-2">
+              <input ref={offerDocRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && pickOfferDoc(e.target.files[0])} />
+              <button onClick={() => offerDocRef.current?.click()} className="tru-btn-secondary flex items-center gap-2 px-3 text-[12px] cursor-pointer" style={{ minHeight: 38 }}>
+                <Paperclip size={13} /> {offerDoc ? 'Document attached' : 'Attach OTP doc'}
+              </button>
+              <div className="flex-1" />
+              <button disabled={!offer.buyerName.trim() || !offer.amount || savingOffer} onClick={addOffer} className="btn-primary on-fill flex items-center gap-2 px-4 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 38 }}>
+                <Plus size={14} /> {savingOffer ? 'Saving…' : 'Add Offer'}
+              </button>
+            </div>
           </div>
-          <p className="text-[12px]" style={{ color: 'var(--muted)' }}>
-            Generates a formal OTP deed (VAT breakdown, Voetstoots &amp; POPI clauses, signature lines) — print to PDF or send. TruInspect stops at the offer; invoicing lives in your PMS.
+          <p className="text-[11px]" style={{ color: 'var(--muted)' }}>
+            Track offers received from buyers or other dealers. TruInspect just records them — the deal itself lives in your PMS.
           </p>
-          <button disabled={!form.offerAmount} onClick={generateOtp} className="btn-primary on-fill flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed w-full" style={{ minHeight: 46 }}>
-            <FileText size={15} /> Generate Offer to Purchase (OTP)
-          </button>
         </section>
 
         {/* Photos */}
@@ -356,17 +436,6 @@ export default function VehicleManager({
           </button>
         </div>
       </div>
-
-      {otpOpen && (
-        <OtpDocument
-          vehicle={vehicle}
-          amount={parseFloat(form.offerAmount) || 0}
-          deposit={parseFloat(form.offerDeposit) || 0}
-          note={form.offerNote}
-          customer={{ name: form.customerName, phone: form.customerPhone, email: form.customerEmail }}
-          onClose={() => setOtpOpen(false)}
-        />
-      )}
     </div>
   );
 }

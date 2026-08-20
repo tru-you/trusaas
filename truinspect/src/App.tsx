@@ -4,6 +4,7 @@ import DesktopShell from './components/DesktopShell';
 import DesktopDashboard from './components/DesktopDashboard';
 import VehicleManager from './components/VehicleManager';
 import AddVehicleDialog from './components/AddVehicleDialog';
+import BuyersList from './components/BuyersList';
 import InventoryList from './components/InventoryList';
 import CameraGuide from './components/CameraGuide';
 import Login from './components/Login';
@@ -115,6 +116,7 @@ export default function App() {
   const [assistOpen, setAssistOpen] = React.useState(false);
   const [desktop, setDesktop] = React.useState(() => isDesktopManager());
   const [addOpen, setAddOpen] = React.useState(false);
+  const [deskSection, setDeskSection] = React.useState<'vehicles' | 'buyers'>('vehicles');
 
   React.useEffect(() => {
     const update = () => setDesktop(isDesktopManager());
@@ -590,13 +592,17 @@ export default function App() {
           onAddVehicle={() => setAddOpen(true)}
           onSignOut={signOut}
           dealerName={(typeof localStorage !== 'undefined' && localStorage.getItem('trulens_dealer_name')) || undefined}
+          section={deskSection}
+          onSectionChange={(s) => { setDeskSection(s); if (s === 'buyers') { setActiveVehicleId(null); } }}
           onOpenReport={handleViewReport}
           onOpenTradeInReport={handleViewTradeInReport}
           onOpenTradeIn={handleOpenTradeIn}
           onInspect={(v) => { setActiveVehicleId(v.id); setActiveView('camera'); }}
           onDeleteVehicle={handleDeleteVehicle}
         >
-          {activeView === 'inventory' && !activeVehicle && (
+          {deskSection === 'buyers' && <BuyersList />}
+
+          {deskSection === 'vehicles' && activeView === 'inventory' && !activeVehicle && (
             <DesktopDashboard
               vehicles={vehicles}
               onSelectVehicle={handleSelectVehicleDesktop}

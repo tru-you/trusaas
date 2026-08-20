@@ -81,14 +81,24 @@ export interface Vehicle {
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
-  /** Manager portal: a formal offer to purchase. TruInspect stops here — it is
-   *  not an invoicing tool; the PMS handles anything past the offer. */
-  purchaseOffer?: {
-    amount: number;
-    note?: string;
-    status: 'draft' | 'sent' | 'accepted' | 'declined';
-    sentAt?: string;
-  };
+  /** Manager portal: offers to purchase RECEIVED on this vehicle — typically
+   *  from other dealers/buyers. The inspecting yard uploads and tracks them; it
+   *  does not issue them. TruInspect stops at tracking — the PMS handles the
+   *  deal itself. */
+  offers?: VehicleOffer[];
+}
+
+export interface VehicleOffer {
+  id: string;
+  /** Who made the offer — buyer or dealership name */
+  buyerName: string;
+  buyerContact?: string;
+  amount: number;
+  note?: string;
+  /** Uploaded photo/scan of the signed OTP (/media/… disk ref, never inline) */
+  documentRef?: string;
+  status: 'received' | 'accepted' | 'declined';
+  receivedAt: string;
 }
 
 /** TruInspect: one answered checklist question */
