@@ -784,6 +784,15 @@ app.get('/api/health', (_req, res) => {
     // True when DEEPSEEK_API_KEY reached the process — the AI listing writer
     // (and any DeepSeek call) runs in mock mode when this is false.
     aiConfigured,
+    // Booleans only (never the values) — confirm which Imagin8/TU env vars
+    // actually reached the process. getValues needs ALL five true.
+    imagin8: {
+      apiKey: !!process.env.IMAGIN8_API_KEY,
+      customerId: !!process.env.IMAGIN8_CUSTOMER_ID,
+      userName: !!process.env.IMAGIN8_USERNAME,
+      password: !!process.env.IMAGIN8_PASSWORD,
+      appName: !!process.env.IMAGIN8_APP_NAME,
+    },
     mode: LOCAL_MODE ? 'local' : 'cloud',
     dmsUrl: DEFAULT_DMS_URL,
     port: PORT,
