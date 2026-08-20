@@ -81,6 +81,9 @@ export interface Vehicle {
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
+  /** Manager portal: a customer-facing summary/notes the manager writes or
+   *  rewrites before the report goes out. Shown on the report. */
+  managerComments?: string;
   /** Manager portal: offers to purchase RECEIVED on this vehicle — typically
    *  from other dealers/buyers. The inspecting yard uploads and tracks them; it
    *  does not issue them. TruInspect stops at tracking — the PMS handles the

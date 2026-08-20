@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plus, Phone, Mail, MessageCircle, Trash2, Search, Building2 } from 'lucide-react';
 import { telHref, mailtoHref, whatsappHref, openContact } from '../lib/contact';
+import { useAuth } from '../contexts/AuthContext';
 
 export interface Buyer {
   id: string;
@@ -15,22 +16,53 @@ const KEY = 'truinspect_buyers';
 const inputCls = 'ti-input';
 const labelCls = 'ti-field-label';
 
-function load(): Buyer[] {
+function loadCache(): Buyer[] {
   try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; }
 }
-function save(list: Buyer[]) {
+function saveCache(list: Buyer[]) {
   try { localStorage.setItem(KEY, JSON.stringify(list)); } catch { /* ignore */ }
 }
 
-/** Frequently-contacted buyers / businesses. Local to this device — a light
- *  contact book so a manager can reach a regular buyer without leaving the
- *  portal. Not a CRM; the PMS owns customer records. */
+/** Frequently-contacted buyers / businesses — a light contact book so a manager
+ *  can reach a regular buyer without leaving the portal. Synced to the server
+ *  per dealer (so it follows the dealership across machines), with localStorage
+ *  as an offline cache. Not a CRM; the PMS owns customer records. */
 export default function BuyersList() {
-  const [buyers, setBuyers] = React.useState<Buyer[]>(() => load());
+  const { user } = useAuth();
+  const [buyers, setBuyers] = React.useState<Buyer[]>(() => loadCache());
   const [q, setQ] = React.useState('');
   const [form, setForm] = React.useState({ name: '', phone: '', email: '', deliveryAddress: '', note: '' });
 
-  const persist = (list: Buyer[]) => { setBuyers(list); save(list); };
+  // Load the server copy on mount; the cached list shows instantly meanwhile.
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const token = await user?.getIdToken();
+        const res = await fetch('/api/buyers', { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok && alive) {
+          const data = await res.json();
+          if (Array.isArray(data.buyers)) { setBuyers(data.buyers); saveCache(data.buyers); }
+        }
+      } catch { /* offline — keep the cache */ }
+    })();
+    return () => { alive = false; };
+  }, [user]);
+
+  const persist = (list: Buyer[]) => {
+    setBuyers(list);
+    saveCache(list);
+    (async () => {
+      try {
+        const token = await user?.getIdToken();
+        await fetch('/api/buyers', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ buyers: list }),
+        });
+      } catch { /* offline — cache holds it until next save */ }
+    })();
+  };
 
   const add = () => {
     if (!form.name.trim()) return;

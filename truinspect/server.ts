@@ -240,6 +240,26 @@ function writeLocalStore(store: LocalStore) {
   }
 }
 
+/* Buyers — a per-dealer contact book for the desktop manager. Small text-only
+ * records, so a single JSON keyed by dealerSlug is plenty (no base64, no bloat). */
+const BUYERS_FILE = path.join(LOCAL_DATA_DIR, 'buyers.json');
+function readBuyersMap(): Record<string, any[]> {
+  try {
+    if (fs.existsSync(BUYERS_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(BUYERS_FILE, 'utf-8'));
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    }
+  } catch (e) { console.error('Buyers read error:', e); }
+  return {};
+}
+function writeBuyersMap(map: Record<string, any[]>) {
+  try {
+    if (!fs.existsSync(LOCAL_DATA_DIR)) fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+    fs.writeFileSync(BUYERS_FILE, JSON.stringify(map, null, 2), 'utf-8');
+  } catch (e) { console.error('Buyers write error:', e); }
+}
+const buyerScope = (req: any) => req?.user?.dealerSlug || 'local';
+
 /**
  * Move any base64 still in the local store onto disk.
  *
@@ -1115,6 +1135,29 @@ app.delete('/api/inventory/:id', authenticate, async (req: any, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/inventory - Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ── Buyers (desktop manager contact book, per dealer) ──
+app.get('/api/buyers', authenticate, (req: any, res) => {
+  try {
+    res.json({ buyers: readBuyersMap()[buyerScope(req)] || [] });
+  } catch (e) {
+    console.error('GET /api/buyers - Error:', e);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.put('/api/buyers', authenticate, (req: any, res) => {
+  try {
+    const list = Array.isArray(req.body?.buyers) ? req.body.buyers : [];
+    const map = readBuyersMap();
+    map[buyerScope(req)] = list;
+    writeBuyersMap(map);
+    res.json({ success: true, count: list.length });
+  } catch (e) {
+    console.error('PUT /api/buyers - Error:', e);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

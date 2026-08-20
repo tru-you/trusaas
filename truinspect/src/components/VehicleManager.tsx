@@ -39,7 +39,7 @@ export default function VehicleManager({
     fuelType: vehicle.fuelType || 'Petrol', warranty: vehicle.warranty || '',
     servicePlan: vehicle.servicePlan || '', extras: vehicle.extras || '',
     customerName: vehicle.customerName || '', customerPhone: vehicle.customerPhone || '',
-    customerEmail: vehicle.customerEmail || '',
+    customerEmail: vehicle.customerEmail || '', managerComments: vehicle.managerComments || '',
   });
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
@@ -57,7 +57,7 @@ export default function VehicleManager({
       fuelType: vehicle.fuelType || 'Petrol', warranty: vehicle.warranty || '',
       servicePlan: vehicle.servicePlan || '', extras: vehicle.extras || '',
       customerName: vehicle.customerName || '', customerPhone: vehicle.customerPhone || '',
-      customerEmail: vehicle.customerEmail || '',
+      customerEmail: vehicle.customerEmail || '', managerComments: vehicle.managerComments || '',
     });
     setOffer({ buyerName: '', buyerContact: '', amount: '', note: '' });
     setOfferDoc('');
@@ -75,6 +75,7 @@ export default function VehicleManager({
     fuelType: form.fuelType as Vehicle['fuelType'],
     warranty: form.warranty, servicePlan: form.servicePlan, extras: form.extras,
     customerName: form.customerName, customerPhone: form.customerPhone, customerEmail: form.customerEmail,
+    managerComments: form.managerComments,
   });
 
   const handleSave = async () => {
@@ -288,6 +289,13 @@ export default function VehicleManager({
               <textarea className={inputCls} rows={3} value={form.extras} onChange={set('extras')} placeholder="e.g. Sunroof, leather seats, reverse camera, park sensors" /></div>
           </section>
         </div>
+
+        {/* Manager comments — customer-facing summary for the report */}
+        <section className="ti-card p-5 space-y-3">
+          <h3 className="ti-section-title"><Pencil size={14} style={{ color: 'var(--cyan)' }} /> Comments</h3>
+          <p className="text-[12px]" style={{ color: 'var(--muted)' }}>Customer-facing summary printed on the report — rewrite the field notes into something buyer-ready.</p>
+          <textarea className={inputCls} rows={4} value={form.managerComments} onChange={set('managerComments')} placeholder="e.g. Well-maintained, full service history, minor stone chips on bonnet touched up. Drives excellently." />
+        </section>
 
         {/* Customer + send report */}
         <section className="ti-card p-5 space-y-4">

@@ -825,6 +825,12 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>Checklist answered: {checklistAnswered.length} · flagged: {checklistFlags.length}</div>
               </div>
             </div>
+            {vehicle.managerComments ? (
+              <div className="card" style={{ marginTop:8 }}>
+                <div className="k">Comments</div>
+                <div style={{ fontSize:11, color:'var(--ink)', marginTop:2, whiteSpace:'pre-wrap', lineHeight:1.5 }}>{vehicle.managerComments}</div>
+              </div>
+            ) : null}
             <div className="card" style={{ marginTop:8 }}>
               <div className="k">Vehicle identity</div>
               <div style={{ fontSize:10.5, color:'var(--ink-2)' }}>
