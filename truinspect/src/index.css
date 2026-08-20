@@ -680,3 +680,43 @@ button.absolute:active { transform: translateY(2px); }
    at 11px — all of them status text on the busiest screens, which is exactly
    the text someone squints at across a windscreen. */
 .text-\[11px\] { font-size: 12px; }
+
+/* ══ Desktop manager layout ═════════════════════════════════════════════
+   When MobileDevice renders the .ti-desktop shell, the app's mobile-first
+   components get more room. The views were built to fill a phone column —
+   on a wide screen they need a max-width and centring so they don't
+   stretch to 1920px. Reports are an exception: they have their own
+   max-width (210mm) and look fine wide. */
+
+.ti-desktop .tl-glass {
+  backdrop-filter: blur(12px);
+}
+
+/* Cap content views so inventory, forms, checklists don't stretch absurdly */
+.ti-desktop .flex-1.overflow-y-auto,
+.ti-desktop .flex-1.overflow-hidden {
+  max-width: 100%;
+}
+
+/* The inventory grid on desktop can show 2-up vehicle cards */
+@media (min-width: 1024px) {
+  .ti-desktop .space-y-3 > .rounded-2xl {
+    max-width: 100%;
+  }
+}
+
+/* Touch target floor relaxed on desktop — fine pointer doesn't need 44px */
+@media (pointer: fine) {
+  .ti-desktop button,
+  .ti-desktop [role="button"],
+  .ti-desktop a[href],
+  .ti-desktop select,
+  .ti-desktop textarea,
+  .ti-desktop input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]) {
+    min-height: 36px;
+  }
+  .ti-desktop button:has(svg),
+  .ti-desktop [role="button"]:has(svg) {
+    min-width: 36px;
+  }
+}

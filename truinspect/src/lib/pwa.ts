@@ -22,6 +22,12 @@ export function isMobileViewport(): boolean {
   return window.matchMedia('(max-width: 900px), (pointer: coarse)').matches || isStandaloneDisplay();
 }
 
+/** Desktop with a mouse = manager mode. Tablets (pointer: coarse) stay as field workers. */
+export function isDesktopManager(): boolean {
+  if (typeof window === 'undefined') return false;
+  return !isMobileViewport() && window.matchMedia('(pointer: fine)').matches;
+}
+
 export async function registerTruInspectServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return null;
 
