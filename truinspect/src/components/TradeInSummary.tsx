@@ -6,8 +6,6 @@ import {
   computeOverallRating, deriveReportId,
 } from '../types/inspection';
 import { DEFAULT_TEMPLATE } from '../templates';
-import truinspectLogo from '../assets/images/truinspect-logo.svg';
-import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
 /**
  * Pick the largest html2canvas scale that keeps the rasterised report within
@@ -61,6 +59,10 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
   const dealerName =
     vehicle.dealerName ||
     localStorage.getItem('trulens_dealer_name') || '';
+  const dealerBranch = localStorage.getItem('trulens_dealer_branch') || '';
+  const dealerAddress = localStorage.getItem('trulens_dealer_address') || '';
+  const dealerVat = localStorage.getItem('trulens_dealer_vat') || '';
+  const dealerEmail = localStorage.getItem('trulens_dealer_email') || '';
 
   const overallRating = computeOverallRating(items);
   const totalRecon = items.reduce((s, i) => s + i.estimatedRepairCost, 0);
@@ -341,8 +343,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
 
             /* Header */
             .ti-report .ti-hdr { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid var(--ink); margin-bottom: 18px; break-inside: avoid; page-break-inside: avoid; }
-            .ti-report .ti-hdr-left img.logo { height: 32px; width: auto; display: block; }
-            .ti-report .ti-hdr-left .dealer { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+            .ti-report .ti-hdr-left .dealer { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 4px; }
             .ti-report .ti-hdr-right { text-align: right; }
             .ti-report .ti-hdr-right .doc-type { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); font-weight: 700; }
             .ti-report .ti-hdr-right .doc-id { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 4px; }
@@ -435,8 +436,6 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             .ti-report .disclaimer { font-size: 9.5px; line-height: 1.5; color: var(--faint); margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
             .ti-report .ti-foot { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
             .ti-report .ti-foot .am { color: var(--amber); }
-            .ti-report .ti-foot .foot-right { display: flex; align-items: center; gap: 8px; }
-            .ti-report .ti-foot img.foot-logo { height: 16px; width: auto; }
 
             @media (max-width: 720px) {
               .ti-report { padding: 6mm 5mm; }
@@ -457,15 +456,33 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             }
           `}</style>
 
+          {/* Hidden SVG defs for logo gradients */}
+          <svg width="0" height="0" style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">
+            <defs>
+              <linearGradient id="c1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#94A3B8"/><stop offset="100%" stopColor="#121A26"/></linearGradient>
+              <linearGradient id="c2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22B8CC"/><stop offset="100%" stopColor="#065F73"/></linearGradient>
+            </defs>
+          </svg>
+
           {/* Header */}
           <div className="ti-hdr">
-            <div className="ti-hdr-left">
-              <img className="logo" src={truinspectLogo} alt="TruInspect" />
-              {dealerName && <div className="dealer">{dealerName}</div>}
+            <div className="ti-hdr-left" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style={{ width: 24, height: 24, flexShrink: 0 }}>
+                <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#c1)"/>
+                <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#c2)"/>
+              </svg>
+              <div style={{ lineHeight: 1 }}>
+                <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', color: 'var(--ink)' }}>Tru</span>
+                <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', color: 'var(--cyan)' }}>Inspect</span>
+                {dealerName && <div className="dealer">{dealerName}{dealerBranch ? ` · ${dealerBranch}` : ''}</div>}
+              </div>
             </div>
             <div className="ti-hdr-right">
               <div className="doc-type">Trade-in Valuation</div>
               <div className="doc-id">{deriveReportId(vehicle)} · {now}</div>
+              <div style={{ display: 'inline-block', marginTop: 5, fontFamily: 'var(--mono)', fontSize: '8px', fontWeight: 600, letterSpacing: '.16em', textTransform: 'uppercase' as const, color: 'var(--cyan)', background: 'var(--cyan-bg)', border: '1px solid rgba(7,136,155,.25)', borderRadius: 100, padding: '3px 8px' }}>
+                ◷ {photosWithLabel.length}-shot inspection
+              </div>
             </div>
           </div>
 
@@ -494,6 +511,10 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             <div className="row"><span className="k">Stock #</span><span className="v">{vehicle.stockNumber || '—'}</span></div>
             <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
             <div className="row"><span className="k">Odometer</span><span className="v">{(vehicle.mileage || 0).toLocaleString('en-ZA')} km</span></div>
+            {vehicle.warranty && <div className="row"><span className="k">Warranty</span><span className="v">{vehicle.warranty}</span></div>}
+            {vehicle.servicePlan && <div className="row"><span className="k">Service plan</span><span className="v">{vehicle.servicePlan}</span></div>}
+            {vehicle.extras && <div className="row"><span className="k">Extras</span><span className="v">{vehicle.extras}</span></div>}
+            <div className="row"><span className="k">Appraising dealer</span><span className="v">{dealerName || '—'}{dealerBranch ? ` · ${dealerBranch}` : ''}</span></div>
           </div>
 
           {/* Photo gallery */}
@@ -610,9 +631,12 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           <div className="signoff">
             <table>
               <tbody>
-                <tr><td className="k">Dealership</td><td className="v">{dealerName || '—'}</td></tr>
+                <tr><td className="k">Dealership</td><td className="v">{dealerName || '—'}{dealerBranch ? ` · ${dealerBranch}` : ''}</td></tr>
                 <tr><td className="k">Inspector</td><td className="v">{inspectorName || '—'}</td></tr>
                 <tr><td className="k">Contact</td><td className="v">{contactPhone || '—'}</td></tr>
+                {dealerEmail && <tr><td className="k">Email</td><td className="v">{dealerEmail}</td></tr>}
+                {dealerAddress && <tr><td className="k">Address</td><td className="v">{dealerAddress}</td></tr>}
+                {dealerVat && <tr><td className="k">VAT No.</td><td className="v">{dealerVat}</td></tr>}
                 <tr><td className="k">Date</td><td className="v">{now}</td></tr>
               </tbody>
             </table>
@@ -634,11 +658,8 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           </div>
 
           <div className="ti-foot">
-            <span className="am">Prepared by {dealerName || '—'} · powered by TruDealer</span>
-            <span className="foot-right">
-              <img className="foot-logo" src={trudealerLockup} alt="TruDealer" />
-              <span>{deriveReportId(vehicle)}</span>
-            </span>
+            <span className="am">TruInspect · Trade-in Valuation · powered by TruSaaS</span>
+            <span>{deriveReportId(vehicle)} · {now}</span>
           </div>
         </div>
 
