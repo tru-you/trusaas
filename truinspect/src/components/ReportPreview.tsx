@@ -8,8 +8,6 @@ import { computeInspectionReadiness } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 import { deriveReportId } from '../types/inspection';
 import { DEFAULT_TEMPLATE } from '../templates';
-import truinspectLogo from '../assets/images/truinspect-logo.svg';
-import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -127,6 +125,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
     vehicle.dealerWhatsApp ||
     (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_dealer_wa') : null) ||
     '';
+  const dealerAddress = (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_dealer_address') : null) || '';
+  const dealerVat = (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_dealer_vat') : null) || '';
+  const dealerEmail = (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_dealer_email') : null) || '';
+  const dealerPhone = vehicle.dealerPhone || (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_dealer_phone') : null) || '';
+  const inspectionTcs = (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_tradein_tcs') : null) || '';
 
   const brandedVehicle = useMemo(
     () => ({
@@ -383,8 +386,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             /* Header band */
             .tl-report .hdr { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding-bottom:10px; margin-bottom:16px; border-bottom:2.5px solid var(--ink); break-inside:avoid; page-break-inside:avoid; }
             .tl-report .hdr-left { display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap; }
-            .tl-report .hdr-left img.logo { height:28px; width:auto; flex:none; }
-            .tl-report .hdr-left img.lockup { height:16px; width:auto; flex:none; margin-left:6px; }
             .tl-report .hdr-left .dealer { font-size:9.5px; color:var(--ink-2); margin-left:8px; line-height:1.35; overflow-wrap:break-word; }
             .tl-report .hdr-left .dealer b { color:var(--ink); }
             .tl-report .hdr-right { text-align:right; flex:none; }
@@ -494,8 +495,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             /* Footer */
             .tl-report .foot { border-top:1px solid var(--line); margin-top:16px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-family:var(--mono); font-size:7.8px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
             .tl-report .foot .cy { color:var(--cyan); }
-            .tl-report .foot .lockup-wrap { display:flex; align-items:center; gap:8px; }
-            .tl-report .foot img.lockup { height:16px; width:auto; }
             .tl-report .accent { height:3px; background:var(--cyan); margin:0 0 2px; }
 
             @media print {
@@ -519,14 +518,10 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             {/* Header band */}
             <div className="hdr">
               <div className="hdr-left">
-                <img className="logo" src={truinspectLogo} alt="TruInspect" />
-                <img className="lockup" src={trudealerLockup} alt="TruDealer" />
-                {(dealerName || dealerBranch) && (
-                  <div className="dealer">
-                    {dealerName && <b>{dealerName}</b>}
-                    {dealerBranch ? <> · {dealerBranch}</> : null}
-                  </div>
-                )}
+                <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', color: 'var(--ink)', lineHeight: 1 }}>
+                  {dealerName || 'Vehicle Inspection Report'}
+                </div>
+                {dealerBranch && <div className="dealer">{dealerBranch}</div>}
               </div>
               <div className="hdr-right">
                 <div className="doc-type">Vehicle Inspection Report</div>
@@ -817,7 +812,11 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                 <div className="k">Inspected by</div>
                 <div style={{ fontWeight:700 }}>{dealerName}</div>
                 {dealerBranch ? <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>{dealerBranch}</div> : null}
-                {dealerWa ? <div style={{ fontSize:10, marginTop:6 }}>WhatsApp {dealerWa}</div> : null}
+                {dealerPhone ? <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>{dealerPhone}</div> : null}
+                {dealerEmail ? <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>{dealerEmail}</div> : null}
+                {dealerAddress ? <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>{dealerAddress}</div> : null}
+                {dealerVat ? <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>VAT {dealerVat}</div> : null}
+                {dealerWa ? <div style={{ fontSize:10, marginTop:4 }}>WhatsApp {dealerWa}</div> : null}
               </div>
               <div className="card" style={{ marginBottom:0 }}>
                 <div className="k">Work done</div>
@@ -836,6 +835,16 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               </div>
               <div style={{ fontSize:10.5, color:'var(--ink-2)', marginTop:2 }}>Inspected {generatedAt}</div>
             </div>
+
+            {/* T&Cs from settings */}
+            {inspectionTcs && (
+              <>
+                <div className="section-title"><span className="n">Terms &amp; Conditions</span><span className="ln" /></div>
+                <div className="card">
+                  <div className="prose" style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>{inspectionTcs}</div>
+                </div>
+              </>
+            )}
 
             {/* Condition scale legend */}
             <div className="section-title"><span className="n">Condition scale</span><span className="ln" /></div>
@@ -867,11 +876,8 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
 
             <div className="accent" />
             <div className="foot">
-              <div>Prepared by <b className="cy">{dealerName}</b> · powered by <b>TruDealer</b></div>
-              <div className="lockup-wrap">
-                <img className="lockup" src={trudealerLockup} alt="TruDealer" />
-                <span>{reportId}</span>
-              </div>
+              <div><span className="cy">TruInspect</span> · Vehicle Inspection Report · powered by TruDealer</div>
+              <div>{reportId} · {generatedAt}</div>
               <div>Visual inspection at a moment in time — not a mechanical warranty. See Scope.</div>
             </div>
           </div>

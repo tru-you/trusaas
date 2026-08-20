@@ -485,7 +485,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
               <div className="sub">TransUnion &amp; live market data</div>
             </div>
             <div className="val-box offer">
-              <div className="lbl">Trade-in offer</div>
+              <div className="lbl">Purchase offer</div>
               <div className="price"><span className="sym">R </span>{valuation.finalTradeInValue.toLocaleString('en-ZA')}</div>
               <div className="sub">Condition-adjusted · valid {validUntil}</div>
             </div>
@@ -604,7 +604,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
               </div>
             ))}
             <div className="adj total">
-              <span className="desc">Trade-in offer</span>
+              <span className="desc">Purchase offer</span>
               <span className="impact">{fmt(valuation.finalTradeInValue)}</span>
             </div>
           </div>
