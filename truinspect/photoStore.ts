@@ -241,6 +241,63 @@ export async function resizeDataUri(dataUri: string): Promise<string> {
   }
 }
 
+/** Collect every stored media ref from a vehicle record (photos + trade-in). */
+export function collectRefs(vehicle: any): string[] {
+  const refs: string[] = [];
+  if (!vehicle || typeof vehicle !== 'object') return refs;
+  const photos = vehicle.photos;
+  if (photos && typeof photos === 'object') {
+    for (const v of Object.values(photos)) if (isStoredRef(v)) refs.push(v);
+  }
+  const tid = vehicle.tradeInData;
+  if (tid && typeof tid === 'object') {
+    if (Array.isArray(tid.items)) {
+      for (const it of tid.items) {
+        if (it && isStoredRef(it.photoUrl)) refs.push(it.photoUrl);
+      }
+    }
+    if (tid.dealerDetails && isStoredRef(tid.dealerDetails.digitalSignatureUrl)) {
+      refs.push(tid.dealerDetails.digitalSignatureUrl);
+    }
+  }
+  return refs;
+}
+
+/** Delete a media file by its stored ref. Returns true if the file was removed. */
+export function remove(ref: string): boolean {
+  const file = resolveRef(ref);
+  if (!file) return false;
+  try {
+    fs.unlinkSync(file);
+    return true;
+  } catch (err: any) {
+    if (err.code === 'ENOENT') return false;
+    console.error('[photoStore] remove failed:', err);
+    return false;
+  }
+}
+
+/**
+ * Remove media files that no stored ref points to.
+ * Pass all refs currently in use; any file on disk not in that set is deleted.
+ * Returns count of files removed.
+ */
+export function sweepOrphans(liveRefs: Set<string>): number {
+  if (!MEDIA_DIR) return 0;
+  let removed = 0;
+  try {
+    for (const name of fs.readdirSync(MEDIA_DIR)) {
+      if (name.endsWith('.tmp')) continue;
+      const ref = `${MEDIA_ROUTE}/${name}`;
+      if (!liveRefs.has(ref)) {
+        try { fs.unlinkSync(path.join(MEDIA_DIR, name)); removed++; } catch {}
+      }
+    }
+  } catch {}
+  if (removed) console.log(`[photoStore] swept ${removed} orphan(s).`);
+  return removed;
+}
+
 /** Bytes currently on disk, for reporting migration progress. */
 export function stats(): { files: number; bytes: number } {
   try {

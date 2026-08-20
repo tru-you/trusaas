@@ -17,6 +17,9 @@ import {
   asDataUri,
   resizeDataUri,
   stats as photoStats,
+  collectRefs,
+  remove as removePhoto,
+  sweepOrphans,
 } from './photoStore';
 import { DEFAULT_TEMPLATE } from './src/templates';
 
@@ -638,10 +641,15 @@ async function saveVehicle(vehicle: any): Promise<any> {
 async function deleteVehicle(id: string): Promise<boolean> {
   if (LOCAL_MODE || !fdb) {
     const store = readLocalStore();
-    const before = store.vehicles.length;
+    const victim = store.vehicles.find((v) => v.id === id);
+    if (!victim) return false;
+    const refs = collectRefs(victim);
     store.vehicles = store.vehicles.filter((v) => v.id !== id);
     writeLocalStore(store);
-    return store.vehicles.length < before;
+    // Collect refs still used by remaining vehicles before deleting files
+    const live = new Set(store.vehicles.flatMap(collectRefs));
+    for (const ref of refs) { if (!live.has(ref)) removePhoto(ref); }
+    return true;
   }
   await fdb.collection('vehicles').doc(id).delete();
   return true;
@@ -774,6 +782,7 @@ app.get('/api/health', (_req, res) => {
     dmsUrl: DEFAULT_DMS_URL,
     port: PORT,
     uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
+    media: photoStats(),
     ts: new Date().toISOString(),
   });
 });
@@ -1589,6 +1598,20 @@ async function startServer() {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(` PWA: ${PORT === 443 || process.env.HTTPS ? 'https' : 'http'}://<this-host>:${PORT}  → Add to Home Screen on phone`);
   });
+
+  // Sweep orphaned media files every 24 hours (local mode only)
+  if (LOCAL_MODE) {
+    const SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000;
+    const runSweep = () => {
+      try {
+        const store = readLocalStore();
+        const live = new Set(store.vehicles.flatMap(collectRefs));
+        sweepOrphans(live);
+      } catch (err) { console.error('[photoStore] sweep error:', err); }
+    };
+    setTimeout(runSweep, 60_000); // first sweep 1 min after boot
+    setInterval(runSweep, SWEEP_INTERVAL_MS);
+  }
 }
 
 startServer();
