@@ -214,12 +214,19 @@ function normalizeVehicle(raw: any): any {
 function readLocalStore(): LocalStore {
   try {
     if (fs.existsSync(LOCAL_DATA_FILE)) {
+      const stat = fs.statSync(LOCAL_DATA_FILE);
+      if (stat.size > 20 * 1024 * 1024) {
+        console.warn(`Local store too large (${(stat.size / 1024 / 1024).toFixed(1)} MB) — likely contains embedded base64. Renaming and starting fresh.`);
+        fs.renameSync(LOCAL_DATA_FILE, LOCAL_DATA_FILE + '.corrupt.' + Date.now());
+        return { vehicles: [] };
+      }
       const parsed = JSON.parse(fs.readFileSync(LOCAL_DATA_FILE, 'utf-8'));
       const vehicles = Array.isArray(parsed?.vehicles) ? parsed.vehicles.map(normalizeVehicle) : [];
       return { vehicles };
     }
   } catch (e) {
     console.error('Local store read error:', e);
+    try { fs.renameSync(LOCAL_DATA_FILE, LOCAL_DATA_FILE + '.corrupt.' + Date.now()); } catch { /* best effort */ }
   }
   return { vehicles: [] };
 }
