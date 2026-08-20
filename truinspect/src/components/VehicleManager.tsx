@@ -1,13 +1,14 @@
 import React from 'react';
 import {
   ArrowLeft, Save, FileText, ShoppingCart, AlertTriangle, Camera, Pencil,
-  CheckCircle2, Phone, Mail, MessageCircle, HandCoins, Send, User,
+  CheckCircle2, Phone, Mail, MessageCircle, HandCoins, User,
 } from 'lucide-react';
 import { Vehicle } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { telHref, mailtoHref, whatsappHref, openContact } from '../lib/contact';
 import { deriveReportId } from '../types/inspection';
+import OtpDocument from './OtpDocument';
 
 interface Props {
   vehicle: Vehicle;
@@ -34,9 +35,11 @@ export default function VehicleManager({
     customerName: vehicle.customerName || '', customerPhone: vehicle.customerPhone || '',
     customerEmail: vehicle.customerEmail || '',
     offerAmount: String(vehicle.purchaseOffer?.amount || ''), offerNote: vehicle.purchaseOffer?.note || '',
+    offerDeposit: '',
   });
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
+  const [otpOpen, setOtpOpen] = React.useState(false);
 
   React.useEffect(() => {
     setForm({
@@ -48,6 +51,7 @@ export default function VehicleManager({
       customerName: vehicle.customerName || '', customerPhone: vehicle.customerPhone || '',
       customerEmail: vehicle.customerEmail || '',
       offerAmount: String(vehicle.purchaseOffer?.amount || ''), offerNote: vehicle.purchaseOffer?.note || '',
+      offerDeposit: '',
     });
     setSaved(false);
   }, [vehicle.id]);
@@ -87,23 +91,17 @@ export default function VehicleManager({
   const reportId = deriveReportId(vehicle, 'VIR');
 
   const reportMessage = `Hi${form.customerName ? ' ' + form.customerName : ''}, here is the inspection report for the ${vehLabel} (Ref ${reportId}) from ${dealerName}.`;
-  const offerMessage = () => {
-    const amt = parseFloat(form.offerAmount) || 0;
-    return `Hi${form.customerName ? ' ' + form.customerName : ''}, ${dealerName} would like to offer R ${amt.toLocaleString('en-ZA')} to purchase your ${vehLabel}.${form.offerNote ? ' ' + form.offerNote : ''}`;
-  };
 
   const hasPhone = !!form.customerPhone.trim();
   const hasEmail = !!form.customerEmail.trim();
 
-  const sendOffer = async (via: 'whatsapp' | 'email') => {
+  const generateOtp = async () => {
     const amt = parseFloat(form.offerAmount) || 0;
     await onUpdateVehicle(vehicle, {
       ...buildUpdates(),
       purchaseOffer: { amount: amt, note: form.offerNote, status: 'sent', sentAt: new Date().toISOString() },
     });
-    const msg = offerMessage();
-    if (via === 'whatsapp' && hasPhone) openContact(whatsappHref(form.customerPhone, msg));
-    else if (via === 'email' && hasEmail) openContact(mailtoHref(form.customerEmail, `Offer to purchase — ${vehLabel}`, msg));
+    setOtpOpen(true);
   };
 
   return (
@@ -233,20 +231,16 @@ export default function VehicleManager({
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div><label className={labelCls}>Offer Amount (R)</label><input className={inputCls} type="number" value={form.offerAmount} onChange={set('offerAmount')} placeholder="0" /></div>
-            <div className="md:col-span-2"><label className={labelCls}>Note (optional)</label><input className={inputCls} value={form.offerNote} onChange={set('offerNote')} placeholder="e.g. Offer valid 7 days, subject to final inspection" /></div>
+            <div><label className={labelCls}>Total Price incl VAT (R)</label><input className={inputCls} type="number" value={form.offerAmount} onChange={set('offerAmount')} placeholder="0" /></div>
+            <div><label className={labelCls}>Deposit (R)</label><input className={inputCls} type="number" value={form.offerDeposit} onChange={set('offerDeposit')} placeholder="0" /></div>
+            <div><label className={labelCls}>Note (optional)</label><input className={inputCls} value={form.offerNote} onChange={set('offerNote')} placeholder="e.g. Valid 7 days, subject to finance" /></div>
           </div>
           <p className="text-[12px]" style={{ color: 'var(--muted)' }}>
-            TruInspect stops at the offer — invoicing and paperwork live in your PMS.
+            Generates a formal OTP deed (VAT breakdown, Voetstoots &amp; POPI clauses, signature lines) — print to PDF or send. TruInspect stops at the offer; invoicing lives in your PMS.
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button disabled={!hasPhone || !form.offerAmount} onClick={() => sendOffer('whatsapp')} className="btn-primary on-fill flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 44 }}>
-              <MessageCircle size={15} /> Send Offer via WhatsApp
-            </button>
-            <button disabled={!hasEmail || !form.offerAmount} onClick={() => sendOffer('email')} className="tru-btn-secondary flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 44 }}>
-              <Send size={15} /> Send Offer via Email
-            </button>
-          </div>
+          <button disabled={!form.offerAmount} onClick={generateOtp} className="btn-primary on-fill flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed w-full" style={{ minHeight: 46 }}>
+            <FileText size={15} /> Generate Offer to Purchase (OTP)
+          </button>
         </section>
 
         {/* Photos */}
@@ -311,6 +305,17 @@ export default function VehicleManager({
           </button>
         </div>
       </div>
+
+      {otpOpen && (
+        <OtpDocument
+          vehicle={vehicle}
+          amount={parseFloat(form.offerAmount) || 0}
+          deposit={parseFloat(form.offerDeposit) || 0}
+          note={form.offerNote}
+          customer={{ name: form.customerName, phone: form.customerPhone, email: form.customerEmail }}
+          onClose={() => setOtpOpen(false)}
+        />
+      )}
     </div>
   );
 }
