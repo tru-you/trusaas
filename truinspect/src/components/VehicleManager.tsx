@@ -3,16 +3,19 @@ import {
   ArrowLeft, Save, FileText, ShoppingCart, AlertTriangle, Camera, Pencil,
   CheckCircle2, Phone, Mail, MessageCircle, HandCoins, User,
 } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { Vehicle } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { telHref, mailtoHref, whatsappHref, openContact } from '../lib/contact';
 import { deriveReportId } from '../types/inspection';
+import { useAuth } from '../contexts/AuthContext';
 import OtpDocument from './OtpDocument';
 
 interface Props {
   vehicle: Vehicle;
   onUpdateVehicle: (vehicle: Vehicle, updates: Partial<Vehicle>) => Promise<Vehicle | undefined>;
+  onPhotosUploaded: (updated: Vehicle) => void;
   onViewReport: () => void;
   onOpenTradeIn: () => void;
   onOpenDamage: () => void;
@@ -24,8 +27,11 @@ const inputCls = 'ti-input';
 const labelCls = 'ti-field-label';
 
 export default function VehicleManager({
-  vehicle, onUpdateVehicle, onViewReport, onOpenTradeIn, onOpenDamage, onOpenChecklist, onBack,
+  vehicle, onUpdateVehicle, onPhotosUploaded, onViewReport, onOpenTradeIn, onOpenDamage, onOpenChecklist, onBack,
 }: Props) {
+  const { user } = useAuth();
+  const fileRef = React.useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = React.useState(false);
   const [form, setForm] = React.useState({
     make: vehicle.make, model: vehicle.model, year: String(vehicle.year), trim: vehicle.trim,
     vin: vehicle.vin, color: vehicle.color, price: String(vehicle.price || ''),
@@ -102,6 +108,45 @@ export default function VehicleManager({
       purchaseOffer: { amount: amt, note: form.offerNote, status: 'sent', sentAt: new Date().toISOString() },
     });
     setOtpOpen(true);
+  };
+
+  const readAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
+
+  /* Desktop has no camera, so a manager attaches photos from files. Files map
+     to the next unfilled required slots in order, then to any remaining slots. */
+  const handleUploadFiles = async (files: FileList) => {
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const token = await user?.getIdToken();
+      const allSlots = DEFAULT_TEMPLATE.slots;
+      const emptySlots = [
+        ...allSlots.filter((s) => s.required && !vehicle.photos?.[s.id]),
+        ...allSlots.filter((s) => !s.required && !vehicle.photos?.[s.id]),
+      ];
+      let latest = vehicle;
+      const list = Array.from(files);
+      for (let i = 0; i < list.length && i < emptySlots.length; i++) {
+        const base64 = await readAsDataUrl(list[i]);
+        const res = await fetch('/api/inventory/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ vehicleId: vehicle.id, slotId: emptySlots[i].id, base64Image: base64 }),
+        });
+        if (res.ok) latest = (await res.json()).vehicle;
+      }
+      onPhotosUploaded(latest);
+    } catch (e) {
+      console.error('Photo upload failed:', e);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
   };
 
   return (
@@ -245,9 +290,15 @@ export default function VehicleManager({
 
         {/* Photos */}
         <section className="ti-card p-5 space-y-4">
-          <h3 className="ti-section-title"><Camera size={14} style={{ color: 'var(--cyan)' }} /> Photos ({requiredTaken}/{totalRequired})</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="ti-section-title"><Camera size={14} style={{ color: 'var(--cyan)' }} /> Photos ({requiredTaken}/{totalRequired})</h3>
+            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && handleUploadFiles(e.target.files)} />
+            <button onClick={() => fileRef.current?.click()} disabled={uploading} className="tru-btn-secondary flex items-center gap-2 px-3 text-[13px] cursor-pointer disabled:opacity-40" style={{ minHeight: 36 }}>
+              <Upload size={13} /> {uploading ? 'Uploading…' : 'Upload Photos'}
+            </button>
+          </div>
           {photoSlots.length === 0 ? (
-            <p className="text-[13px] py-4 text-center" style={{ color: 'var(--muted)' }}>No photos captured yet — field workers capture these on their phones.</p>
+            <p className="text-[13px] py-4 text-center" style={{ color: 'var(--muted)' }}>No photos yet — field workers capture on their phones, or upload from files above.</p>
           ) : (
             <div className="grid grid-cols-4 xl:grid-cols-6 gap-2">
               {photoSlots.map((slot) => (

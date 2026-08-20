@@ -461,6 +461,22 @@ export default function App() {
     }
   };
 
+  /* Desktop manager: selecting a vehicle opens its management panel, not the
+     phone camera (there is no camera on a desktop, and the manager reviews /
+     edits rather than captures). The camera flow stays phone-only. */
+  const handleSelectVehicleDesktop = (vehicle: Vehicle) => {
+    try {
+      const safe = normalizeVehicle(vehicle);
+      setVehicles((prev) => prev.map((v) => (v.id === safe.id ? safe : v)));
+      setActiveVehicleId(safe.id);
+      setActiveView('inventory');
+      setLoadError(null);
+    } catch (e) {
+      console.error('Failed to open vehicle:', e);
+      setLoadError(e instanceof Error ? e.message : 'Could not open vehicle');
+    }
+  };
+
   // Open the inspector questionnaire for a vehicle
   const handleOpenChecklist = (vehicle: Vehicle) => {
     setActiveVehicleId(vehicle.id);
@@ -567,7 +583,7 @@ export default function App() {
         <DesktopShell
           vehicles={vehicles}
           activeVehicleId={activeVehicleId}
-          onSelectVehicle={handleSelectVehicle}
+          onSelectVehicle={handleSelectVehicleDesktop}
           activeView={activeView}
           syncStatus={syncStatus}
           onForceSync={fetchInventory}
@@ -583,7 +599,7 @@ export default function App() {
           {activeView === 'inventory' && !activeVehicle && (
             <DesktopDashboard
               vehicles={vehicles}
-              onSelectVehicle={handleSelectVehicle}
+              onSelectVehicle={handleSelectVehicleDesktop}
               onAddVehicle={() => setAddOpen(true)}
             />
           )}
@@ -592,6 +608,7 @@ export default function App() {
             <VehicleManager
               vehicle={activeVehicle}
               onUpdateVehicle={handleUpdateVehicle}
+              onPhotosUploaded={(updated) => setVehicles((prev) => prev.map((v) => (v.id === updated.id ? updated : v)))}
               onViewReport={() => setActiveView('report')}
               onOpenTradeIn={() => setActiveView('trade-in')}
               onOpenDamage={() => setActiveView('damage')}
