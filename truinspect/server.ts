@@ -238,54 +238,78 @@ function salvageCorruptJson(raw: string): any[] {
   return vehicles.filter((v) => { if (seen.has(v.id)) return false; seen.add(v.id); return true; });
 }
 
+/**
+ * Fast path — called on every inventory read, so it must never do heavy work.
+ * If the main file is missing or unparseable it returns empty and, at most
+ * once, renames the bad file aside so it is not re-read. Recovery of a corrupt
+ * file is a separate one-time startup step (recoverCorruptStoreOnce), never
+ * per-request — a 53 MB salvage scan on every read is what timed the service
+ * (and its scraper endpoints) out.
+ */
 function readLocalStore(): LocalStore {
-  const tryParse = (filePath: string): LocalStore | null => {
-    try {
-      if (!fs.existsSync(filePath)) return null;
-      const raw = fs.readFileSync(filePath, 'utf-8');
-      try {
-        const parsed = JSON.parse(raw);
-        const vehicles = Array.isArray(parsed?.vehicles) ? parsed.vehicles.map(normalizeVehicle) : [];
-        return { vehicles };
-      } catch (e) {
-        console.warn(`JSON parse failed for ${filePath}, attempting salvage…`);
-        const salvaged = salvageCorruptJson(raw).map(normalizeVehicle);
-        if (salvaged.length > 0) {
-          console.log(`Salvaged ${salvaged.length} vehicles from corrupted store.`);
-          const store = { vehicles: salvaged };
-          writeLocalStore(store);
-          return store;
-        }
-        return null;
-      }
-    } catch (e) {
-      console.error('Local store read error:', e);
-      return null;
-    }
-  };
+  try {
+    if (!fs.existsSync(LOCAL_DATA_FILE)) return { vehicles: [] };
+    const raw = fs.readFileSync(LOCAL_DATA_FILE, 'utf-8');
+    const parsed = JSON.parse(raw);
+    const vehicles = Array.isArray(parsed?.vehicles) ? parsed.vehicles.map(normalizeVehicle) : [];
+    return { vehicles };
+  } catch (e) {
+    console.error('Local store read error — moving the bad file aside:', e);
+    try { fs.renameSync(LOCAL_DATA_FILE, LOCAL_DATA_FILE + '.corrupt.' + Date.now()); } catch { /* best effort */ }
+    return { vehicles: [] };
+  }
+}
 
-  const main = tryParse(LOCAL_DATA_FILE);
-  if (main && main.vehicles.length > 0) return main;
-
-  const dir = path.dirname(LOCAL_DATA_FILE);
-  if (fs.existsSync(dir)) {
+/**
+ * One-time, at startup only. If the live store is empty/missing but a
+ * `.corrupt` snapshot exists, salvage what parses out of it, write a clean
+ * store, and remove the snapshot so it is never scanned again. Runs once — not
+ * on the request path.
+ */
+let recoveryDone = false;
+function recoverCorruptStoreOnce(): void {
+  if (recoveryDone) return;
+  recoveryDone = true;
+  try {
+    const live = readLocalStore();
+    if (live.vehicles.length > 0) return;
+    const dir = LOCAL_DATA_DIR;
+    if (!fs.existsSync(dir)) return;
     const corrupted = fs.readdirSync(dir)
       .filter((f) => f.startsWith('local-inventory.json.corrupt.'))
-      .sort()
-      .reverse();
+      .sort().reverse();
     for (const f of corrupted) {
-      console.log(`Attempting recovery from ${f}…`);
-      const recovered = tryParse(path.join(dir, f));
-      if (recovered && recovered.vehicles.length > 0) {
-        writeLocalStore(recovered);
-        console.log(`Recovered ${recovered.vehicles.length} vehicles from ${f}`);
-        try { fs.unlinkSync(path.join(dir, f)); } catch { /* leave it */ }
-        return recovered;
+      const full = path.join(dir, f);
+      try {
+        const size = fs.statSync(full).size;
+        // A snapshot this large is base64 that leaked into the JSON; salvaging
+        // it would re-bloat the store and re-create the corruption. Skip it and
+        // keep startup fast — the bytes stay on disk (renamed) for manual rescue.
+        if (size > 25 * 1024 * 1024) {
+          console.warn(`Skipping ${f} (${(size / 1024 / 1024).toFixed(1)} MB) — too large to salvage safely.`);
+        } else {
+          const raw = fs.readFileSync(full, 'utf-8');
+          const salvaged = salvageCorruptJson(raw).map(normalizeVehicle);
+          if (salvaged.length > 0) {
+            writeLocalStore({ vehicles: salvaged });
+            console.log(`Recovered ${salvaged.length} vehicles from ${f}`);
+          }
+        }
+      } catch (e) {
+        console.warn(`Recovery of ${f} failed:`, e);
       }
+      // Whether it yielded vehicles or not, drop the snapshot so it is never
+      // re-scanned. Renamed (not deleted) so the raw bytes remain retrievable.
+      try { fs.renameSync(full, full + '.done'); } catch { /* best effort */ }
+      if (salvagedCount(dir) > 0) break;
     }
+  } catch (e) {
+    console.warn('Corrupt-store recovery skipped:', e);
   }
+}
 
-  return main || { vehicles: [] };
+function salvagedCount(_dir: string): number {
+  try { return readLocalStore().vehicles.length; } catch { return 0; }
 }
 
 function writeLocalStore(store: LocalStore) {
@@ -1656,6 +1680,11 @@ async function startServer() {
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
+  }
+
+  // One-time corrupt-store recovery — before we start serving, never per-request.
+  if (LOCAL_MODE) {
+    try { recoverCorruptStoreOnce(); } catch (e) { console.warn('Recovery failed:', e); }
   }
 
   app.listen(PORT, '0.0.0.0', () => {
