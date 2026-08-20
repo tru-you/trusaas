@@ -658,7 +658,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           </div>
 
           <div className="ti-foot">
-            <span className="am">TruInspect · Trade-in Valuation · powered by TruSaaS</span>
+            <span className="am">TruInspect · Trade-in Valuation · powered by TruDealer</span>
             <span>{deriveReportId(vehicle)} · {now}</span>
           </div>
         </div>
