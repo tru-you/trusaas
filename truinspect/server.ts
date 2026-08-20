@@ -211,24 +211,81 @@ function normalizeVehicle(raw: any): any {
   };
 }
 
-function readLocalStore(): LocalStore {
-  try {
-    if (fs.existsSync(LOCAL_DATA_FILE)) {
-      const stat = fs.statSync(LOCAL_DATA_FILE);
-      if (stat.size > 20 * 1024 * 1024) {
-        console.warn(`Local store too large (${(stat.size / 1024 / 1024).toFixed(1)} MB) — likely contains embedded base64. Renaming and starting fresh.`);
-        fs.renameSync(LOCAL_DATA_FILE, LOCAL_DATA_FILE + '.corrupt.' + Date.now());
-        return { vehicles: [] };
-      }
-      const parsed = JSON.parse(fs.readFileSync(LOCAL_DATA_FILE, 'utf-8'));
-      const vehicles = Array.isArray(parsed?.vehicles) ? parsed.vehicles.map(normalizeVehicle) : [];
-      return { vehicles };
+function salvageCorruptJson(raw: string): any[] {
+  const vehicles: any[] = [];
+  const idPattern = /"id"\s*:\s*"/g;
+  let match;
+  while ((match = idPattern.exec(raw)) !== null) {
+    let depth = 0;
+    let start = -1;
+    for (let i = match.index - 1; i >= 0; i--) {
+      if (raw[i] === '{') { start = i; break; }
     }
-  } catch (e) {
-    console.error('Local store read error:', e);
-    try { fs.renameSync(LOCAL_DATA_FILE, LOCAL_DATA_FILE + '.corrupt.' + Date.now()); } catch { /* best effort */ }
+    if (start === -1) continue;
+    depth = 0;
+    let end = -1;
+    for (let i = start; i < raw.length; i++) {
+      if (raw[i] === '{') depth++;
+      else if (raw[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    if (end === -1) continue;
+    try {
+      const obj = JSON.parse(raw.slice(start, end + 1));
+      if (obj.id && obj.make) vehicles.push(obj);
+    } catch { /* skip incomplete object */ }
   }
-  return { vehicles: [] };
+  const seen = new Set<string>();
+  return vehicles.filter((v) => { if (seen.has(v.id)) return false; seen.add(v.id); return true; });
+}
+
+function readLocalStore(): LocalStore {
+  const tryParse = (filePath: string): LocalStore | null => {
+    try {
+      if (!fs.existsSync(filePath)) return null;
+      const raw = fs.readFileSync(filePath, 'utf-8');
+      try {
+        const parsed = JSON.parse(raw);
+        const vehicles = Array.isArray(parsed?.vehicles) ? parsed.vehicles.map(normalizeVehicle) : [];
+        return { vehicles };
+      } catch (e) {
+        console.warn(`JSON parse failed for ${filePath}, attempting salvage…`);
+        const salvaged = salvageCorruptJson(raw).map(normalizeVehicle);
+        if (salvaged.length > 0) {
+          console.log(`Salvaged ${salvaged.length} vehicles from corrupted store.`);
+          const store = { vehicles: salvaged };
+          writeLocalStore(store);
+          return store;
+        }
+        return null;
+      }
+    } catch (e) {
+      console.error('Local store read error:', e);
+      return null;
+    }
+  };
+
+  const main = tryParse(LOCAL_DATA_FILE);
+  if (main && main.vehicles.length > 0) return main;
+
+  const dir = path.dirname(LOCAL_DATA_FILE);
+  if (fs.existsSync(dir)) {
+    const corrupted = fs.readdirSync(dir)
+      .filter((f) => f.startsWith('local-inventory.json.corrupt.'))
+      .sort()
+      .reverse();
+    for (const f of corrupted) {
+      console.log(`Attempting recovery from ${f}…`);
+      const recovered = tryParse(path.join(dir, f));
+      if (recovered && recovered.vehicles.length > 0) {
+        writeLocalStore(recovered);
+        console.log(`Recovered ${recovered.vehicles.length} vehicles from ${f}`);
+        try { fs.unlinkSync(path.join(dir, f)); } catch { /* leave it */ }
+        return recovered;
+      }
+    }
+  }
+
+  return main || { vehicles: [] };
 }
 
 function writeLocalStore(store: LocalStore) {
