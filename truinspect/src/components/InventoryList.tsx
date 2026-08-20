@@ -241,6 +241,7 @@ export default function InventoryList({
   const [scanningDisc, setScanningDisc] = React.useState(false);
   const [scanNote, setScanNote] = React.useState<string | null>(null);
   const [discPhoto, setDiscPhoto] = React.useState<string | null>(null);
+  const [pickerKey, setPickerKey] = React.useState(0);
 
   const applyDiscScan = (d: DiscScan, photo?: string) => {
     setScanningDisc(false);
@@ -252,6 +253,7 @@ export default function InventoryList({
     if (d.colour) setColor(titleCase(d.colour));
     if (d.vin) setVin(d.vin);
     if (d.year) setYear(d.year);
+    setPickerKey((k) => k + 1);
     const got = ['make', 'model', 'vin', 'year'].filter((k) => (d as any)[k]).length;
     setScanNote(
       got === 0
@@ -641,8 +643,9 @@ export default function InventoryList({
 
             <div className="space-y-3">
               <VehiclePicker
+                key={pickerKey}
                 theme="inspect"
-                initial={editingVehicle ? { make: editingVehicle.make, model: editingVehicle.model, year: editingVehicle.year, variant: editingVehicle.trim } : undefined}
+                initial={editingVehicle ? { make: editingVehicle.make, model: editingVehicle.model, year: editingVehicle.year, variant: editingVehicle.trim } : (make || model ? { make, model, year, variant: trim } : undefined)}
                 onSelect={(v: VehiclePickerValue) => {
                   setMake(v.make);
                   setModel(v.model);
