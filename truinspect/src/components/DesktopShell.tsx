@@ -1,10 +1,8 @@
 import React from 'react';
-import { Search, Car, Plus, Check, Copy, Trash2, Camera, BarChart3, FileText, Settings, Sliders, Pencil, ChevronDown, Shield, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Search, Check, Copy, RefreshCw, Plus } from 'lucide-react';
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
-
-type DesktopView = 'dashboard' | 'settings' | 'vehicle-detail' | 'report' | 'trade-in-report' | 'valuation' | 'damage' | 'checklist';
 
 interface DesktopShellProps {
   vehicles: Vehicle[];
@@ -13,9 +11,8 @@ interface DesktopShellProps {
   activeView: string;
   syncStatus: 'synced' | 'syncing' | 'error';
   onForceSync: () => void;
-  /** The current view component to render in the main panel */
   children: React.ReactNode;
-  /** Sidebar actions */
+  onAddVehicle?: () => void;
   onOpenReport?: (vehicle: Vehicle) => void;
   onOpenTradeInReport?: (vehicle: Vehicle) => void;
   onOpenTradeIn?: (vehicle: Vehicle) => void;
@@ -27,15 +24,10 @@ export default function DesktopShell({
   vehicles,
   activeVehicleId,
   onSelectVehicle,
-  activeView,
   syncStatus,
   onForceSync,
+  onAddVehicle,
   children,
-  onOpenReport,
-  onOpenTradeInReport,
-  onOpenTradeIn,
-  onInspect,
-  onDeleteVehicle,
 }: DesktopShellProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [copiedStockId, setCopiedStockId] = React.useState<string | null>(null);
@@ -63,26 +55,39 @@ export default function DesktopShell({
   return (
     <div className="ti-desktop-shell flex flex-1 min-h-0 overflow-hidden">
       {/* ── Sidebar: vehicle list ─────────────────────────────── */}
-      <aside className="ti-sidebar w-[360px] shrink-0 flex flex-col border-r border-neutral-800 bg-neutral-950">
-        {/* Search + sync */}
-        <div className="px-3 py-3 border-b border-neutral-800 space-y-2">
+      <aside
+        className="ti-sidebar w-[340px] shrink-0 flex flex-col"
+        style={{ background: 'var(--ink)', borderRight: '1px solid var(--glass-line)' }}
+      >
+        {/* Search + add */}
+        <div className="px-4 py-4 space-y-3" style={{ borderBottom: '1px solid var(--glass-line)' }}>
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--faint)' }} />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search vehicles…"
-              className="w-full pl-9 pr-3 py-2 rounded-lg text-[13px] bg-neutral-900 border border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+              className="ti-input pl-10"
+              style={{ fontFamily: 'var(--mono)' }}
             />
           </div>
-          <div className="flex items-center justify-between text-[11px] text-neutral-500 px-1">
+          {onAddVehicle && (
+            <button
+              onClick={onAddVehicle}
+              className="btn-primary on-fill w-full flex items-center justify-center gap-2 text-[13px] cursor-pointer"
+              style={{ minHeight: 40 }}
+            >
+              <Plus size={15} /> Add Vehicle
+            </button>
+          )}
+          <div className="flex items-center justify-between text-[12px] px-0.5" style={{ color: 'var(--muted)' }}>
             <span>{filtered.length} vehicle{filtered.length !== 1 ? 's' : ''}</span>
             <button
               onClick={onForceSync}
-              className="flex items-center gap-1 hover:text-neutral-300 transition-colors"
+              className="flex items-center gap-1.5 cursor-pointer transition-colors hover:text-[var(--white-dim)]"
             >
-              <RefreshCw size={11} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
+              <RefreshCw size={12} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
               {syncStatus === 'syncing' ? 'Syncing…' : syncStatus === 'error' ? 'Sync error' : 'Synced'}
             </button>
           </div>
@@ -91,14 +96,13 @@ export default function DesktopShell({
         {/* Vehicle list */}
         <div className="flex-1 overflow-y-auto">
           {filtered.length === 0 ? (
-            <div className="p-6 text-center text-neutral-500 text-[13px]">
+            <div className="p-6 text-center text-[13px]" style={{ color: 'var(--muted)' }}>
               {searchTerm ? 'No vehicles match your search.' : 'No vehicles in catalogue.'}
             </div>
           ) : (
             filtered.map((vehicle) => {
               const isActive = vehicle.id === activeVehicleId;
-              const requiredSlots = DEFAULT_TEMPLATE.slots.filter((s) => s.required);
-              const requiredTaken = requiredSlots.filter((s) => vehicle.photos?.[s.id]).length;
+              const requiredTaken = DEFAULT_TEMPLATE.slots.filter((s) => s.required && vehicle.photos?.[s.id]).length;
               const readiness = computeInspectionReadiness(vehicle, DEFAULT_TEMPLATE);
               const pct = Math.round((requiredTaken / totalRequired) * 100);
 
@@ -106,49 +110,45 @@ export default function DesktopShell({
                 <div
                   key={vehicle.id}
                   onClick={() => onSelectVehicle(vehicle)}
-                  className={`px-3 py-3 border-b border-neutral-900 cursor-pointer transition-colors ${
-                    isActive
-                      ? 'bg-cyan-500/10 border-l-2 border-l-cyan-400'
-                      : 'hover:bg-neutral-900/60 border-l-2 border-l-transparent'
-                  }`}
+                  className="px-4 py-3 cursor-pointer transition-colors"
+                  style={{
+                    borderBottom: '1px solid var(--glass-line)',
+                    borderLeft: isActive ? '2px solid var(--cyan)' : '2px solid transparent',
+                    background: isActive ? 'var(--cyan-faint)' : 'transparent',
+                  }}
+                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'rgba(232,234,230,0.03)'; }}
+                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <h4 className={`text-[14px] font-semibold leading-tight truncate ${
-                        isActive ? 'text-[#E8EAE6]' : 'text-neutral-300'
-                      }`}>
+                      <h4 className="text-[14px] font-semibold leading-tight truncate" style={{ color: isActive ? 'var(--white)' : 'var(--white-dim)' }}>
                         {vehicle.year} {vehicle.make} {vehicle.model}
                       </h4>
-                      <p className="text-[12px] text-neutral-500 mt-0.5 truncate">
-                        {vehicle.trim || 'Standard'} · R {(vehicle.price || 0).toLocaleString()}
+                      <p className="text-[12px] mt-0.5 truncate" style={{ color: 'var(--muted)' }}>
+                        {vehicle.trim || 'Standard'} · R {(vehicle.price || 0).toLocaleString('en-ZA')}
                       </p>
                     </div>
-                    <span
-                      className="text-[10px] font-semibold shrink-0 mt-0.5"
-                      style={{ color: readiness.color }}
-                    >
+                    <span className="text-[11px] font-semibold shrink-0 mt-0.5" style={{ color: readiness.color }}>
                       {readiness.label}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 mt-1.5">
+                  <div className="flex items-center gap-3 mt-2">
                     {vehicle.stockNumber && (
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          copyStockNumber(vehicle.stockNumber!, vehicle.id);
-                        }}
-                        className="text-[11px] font-mono text-neutral-600 hover:text-neutral-400 flex items-center gap-1"
+                        onClick={(e) => { e.stopPropagation(); copyStockNumber(vehicle.stockNumber!, vehicle.id); }}
+                        className="text-[11px] flex items-center gap-1 transition-colors hover:text-[var(--white-dim)]"
+                        style={{ fontFamily: 'var(--mono)', color: 'var(--faint)' }}
                       >
                         {vehicle.stockNumber}
-                        {copiedStockId === vehicle.id ? <Check size={10} className="text-cyan-400" /> : <Copy size={10} />}
+                        {copiedStockId === vehicle.id ? <Check size={10} style={{ color: 'var(--cyan)' }} /> : <Copy size={10} />}
                       </button>
                     )}
                     <div className="flex-1" />
-                    <span className="text-[11px] text-neutral-600">{pct}%</span>
-                    <div className="w-16 h-1 bg-neutral-800 rounded-full overflow-hidden">
+                    <span className="text-[11px]" style={{ color: 'var(--muted)' }}>{pct}%</span>
+                    <div className="w-14 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(232,234,230,0.08)' }}>
                       <div
-                        className={`h-full rounded-full ${requiredTaken === totalRequired ? 'bg-emerald-500' : 'bg-indigo-500'}`}
-                        style={{ width: `${pct}%` }}
+                        className="h-full rounded-full"
+                        style={{ width: `${pct}%`, background: requiredTaken === totalRequired ? 'var(--cyan)' : '#6366F1' }}
                       />
                     </div>
                   </div>
@@ -160,7 +160,7 @@ export default function DesktopShell({
       </aside>
 
       {/* ── Main content area ─────────────────────────────────── */}
-      <main className="ti-main flex-1 min-w-0 overflow-hidden flex flex-col bg-neutral-950">
+      <main className="ti-main flex-1 min-w-0 overflow-hidden flex flex-col" style={{ background: 'var(--ink)' }}>
         {children}
       </main>
     </div>

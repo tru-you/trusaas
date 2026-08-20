@@ -3,6 +3,7 @@ import MobileDevice from './components/MobileDevice';
 import DesktopShell from './components/DesktopShell';
 import DesktopDashboard from './components/DesktopDashboard';
 import VehicleManager from './components/VehicleManager';
+import AddVehicleDialog from './components/AddVehicleDialog';
 import InventoryList from './components/InventoryList';
 import CameraGuide from './components/CameraGuide';
 import Login from './components/Login';
@@ -113,6 +114,7 @@ export default function App() {
   const [guideOpen, setGuideOpen] = React.useState(false);
   const [assistOpen, setAssistOpen] = React.useState(false);
   const [desktop, setDesktop] = React.useState(() => isDesktopManager());
+  const [addOpen, setAddOpen] = React.useState(false);
 
   React.useEffect(() => {
     const update = () => setDesktop(isDesktopManager());
@@ -569,6 +571,7 @@ export default function App() {
           activeView={activeView}
           syncStatus={syncStatus}
           onForceSync={fetchInventory}
+          onAddVehicle={() => setAddOpen(true)}
           onOpenReport={handleViewReport}
           onOpenTradeInReport={handleViewTradeInReport}
           onOpenTradeIn={handleOpenTradeIn}
@@ -579,7 +582,7 @@ export default function App() {
             <DesktopDashboard
               vehicles={vehicles}
               onSelectVehicle={handleSelectVehicle}
-              onAddVehicle={handleAddVehicle}
+              onAddVehicle={() => setAddOpen(true)}
             />
           )}
 
@@ -763,6 +766,12 @@ export default function App() {
             currentSection={activeView}
           />
           <DealerAssist userName={user?.displayName || undefined} open={assistOpen} onOpenChange={setAssistOpen} />
+          {addOpen && (
+            <AddVehicleDialog
+              onClose={() => setAddOpen(false)}
+              onAdd={handleAddVehicle}
+            />
+          )}
         </DesktopShell>
       ) : (
         <>

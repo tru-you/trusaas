@@ -75,6 +75,20 @@ export interface Vehicle {
   tradeInData?: import('./types/inspection').TradeInData;
   /** Per-dealer valuation history — keyed by dealerSlug */
   valuationHistory?: Record<string, import('./types/inspection').ValuationSnapshot[]>;
+  /** Manager portal: the customer/seller this vehicle relates to, so reports
+   *  and a purchase offer can be sent from the desktop manager via the native
+   *  dialer / emailer / WhatsApp. Not part of field capture. */
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  /** Manager portal: a formal offer to purchase. TruInspect stops here — it is
+   *  not an invoicing tool; the PMS handles anything past the offer. */
+  purchaseOffer?: {
+    amount: number;
+    note?: string;
+    status: 'draft' | 'sent' | 'accepted' | 'declined';
+    sentAt?: string;
+  };
 }
 
 /** TruInspect: one answered checklist question */

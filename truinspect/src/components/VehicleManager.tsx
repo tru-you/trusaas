@@ -1,8 +1,13 @@
 import React from 'react';
-import { ArrowLeft, Save, FileText, ShoppingCart, Shield, AlertTriangle, Camera, Pencil, CheckCircle2, Upload } from 'lucide-react';
+import {
+  ArrowLeft, Save, FileText, ShoppingCart, AlertTriangle, Camera, Pencil,
+  CheckCircle2, Phone, Mail, MessageCircle, HandCoins, Send, User,
+} from 'lucide-react';
 import { Vehicle } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { computeInspectionReadiness } from '../lib/readiness';
+import { telHref, mailtoHref, whatsappHref, openContact } from '../lib/contact';
+import { deriveReportId } from '../types/inspection';
 
 interface Props {
   vehicle: Vehicle;
@@ -14,58 +19,55 @@ interface Props {
   onBack: () => void;
 }
 
+const inputCls = 'ti-input';
+const labelCls = 'ti-field-label';
+
 export default function VehicleManager({
-  vehicle,
-  onUpdateVehicle,
-  onViewReport,
-  onOpenTradeIn,
-  onOpenDamage,
-  onOpenChecklist,
-  onBack,
+  vehicle, onUpdateVehicle, onViewReport, onOpenTradeIn, onOpenDamage, onOpenChecklist, onBack,
 }: Props) {
-  const [make, setMake] = React.useState(vehicle.make);
-  const [model, setModel] = React.useState(vehicle.model);
-  const [year, setYear] = React.useState(String(vehicle.year));
-  const [trim, setTrim] = React.useState(vehicle.trim);
-  const [vin, setVin] = React.useState(vehicle.vin);
-  const [color, setColor] = React.useState(vehicle.color);
-  const [price, setPrice] = React.useState(String(vehicle.price || ''));
-  const [mileage, setMileage] = React.useState(String(vehicle.mileage || ''));
-  const [transmission, setTransmission] = React.useState(vehicle.transmission || 'Automatic');
-  const [fuelType, setFuelType] = React.useState(vehicle.fuelType || 'Petrol');
-  const [warranty, setWarranty] = React.useState(vehicle.warranty || '');
-  const [servicePlan, setServicePlan] = React.useState(vehicle.servicePlan || '');
-  const [extras, setExtras] = React.useState(vehicle.extras || '');
+  const [form, setForm] = React.useState({
+    make: vehicle.make, model: vehicle.model, year: String(vehicle.year), trim: vehicle.trim,
+    vin: vehicle.vin, color: vehicle.color, price: String(vehicle.price || ''),
+    mileage: String(vehicle.mileage || ''), transmission: vehicle.transmission || 'Automatic',
+    fuelType: vehicle.fuelType || 'Petrol', warranty: vehicle.warranty || '',
+    servicePlan: vehicle.servicePlan || '', extras: vehicle.extras || '',
+    customerName: vehicle.customerName || '', customerPhone: vehicle.customerPhone || '',
+    customerEmail: vehicle.customerEmail || '',
+    offerAmount: String(vehicle.purchaseOffer?.amount || ''), offerNote: vehicle.purchaseOffer?.note || '',
+  });
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
 
   React.useEffect(() => {
-    setMake(vehicle.make);
-    setModel(vehicle.model);
-    setYear(String(vehicle.year));
-    setTrim(vehicle.trim);
-    setVin(vehicle.vin);
-    setColor(vehicle.color);
-    setPrice(String(vehicle.price || ''));
-    setMileage(String(vehicle.mileage || ''));
-    setTransmission(vehicle.transmission || 'Automatic');
-    setFuelType(vehicle.fuelType || 'Petrol');
-    setWarranty(vehicle.warranty || '');
-    setServicePlan(vehicle.servicePlan || '');
-    setExtras(vehicle.extras || '');
+    setForm({
+      make: vehicle.make, model: vehicle.model, year: String(vehicle.year), trim: vehicle.trim,
+      vin: vehicle.vin, color: vehicle.color, price: String(vehicle.price || ''),
+      mileage: String(vehicle.mileage || ''), transmission: vehicle.transmission || 'Automatic',
+      fuelType: vehicle.fuelType || 'Petrol', warranty: vehicle.warranty || '',
+      servicePlan: vehicle.servicePlan || '', extras: vehicle.extras || '',
+      customerName: vehicle.customerName || '', customerPhone: vehicle.customerPhone || '',
+      customerEmail: vehicle.customerEmail || '',
+      offerAmount: String(vehicle.purchaseOffer?.amount || ''), offerNote: vehicle.purchaseOffer?.note || '',
+    });
     setSaved(false);
   }, [vehicle.id]);
 
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const buildUpdates = (): Partial<Vehicle> => ({
+    make: form.make, model: form.model, year: parseInt(form.year) || vehicle.year, trim: form.trim,
+    vin: form.vin, color: form.color, price: parseFloat(form.price) || 0,
+    mileage: parseInt(form.mileage) || undefined,
+    transmission: form.transmission as Vehicle['transmission'],
+    fuelType: form.fuelType as Vehicle['fuelType'],
+    warranty: form.warranty, servicePlan: form.servicePlan, extras: form.extras,
+    customerName: form.customerName, customerPhone: form.customerPhone, customerEmail: form.customerEmail,
+  });
+
   const handleSave = async () => {
     setSaving(true);
-    await onUpdateVehicle(vehicle, {
-      make, model, year: parseInt(year) || vehicle.year, trim, vin, color,
-      price: parseFloat(price) || 0,
-      mileage: parseInt(mileage) || undefined,
-      transmission: transmission as Vehicle['transmission'],
-      fuelType: fuelType as Vehicle['fuelType'],
-      warranty, servicePlan, extras,
-    });
+    await onUpdateVehicle(vehicle, buildUpdates());
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -78,112 +80,103 @@ export default function VehicleManager({
   const pct = Math.round((requiredTaken / totalRequired) * 100);
   const damageCount = vehicle.damageFindings ? Object.values(vehicle.damageFindings).flat().length : 0;
   const inspectionDone = vehicle.inspectionPoints && Object.keys(vehicle.inspectionPoints).length > 0;
-
   const photoSlots = DEFAULT_TEMPLATE.slots.filter((s) => vehicle.photos?.[s.id]);
 
-  const Field = ({ label, value, onChange, type = 'text', placeholder = '' }: {
-    label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string;
-  }) => (
-    <div>
-      <label className="block text-[11px] text-neutral-500 uppercase tracking-wider mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3 py-2 rounded-lg text-[13px] bg-neutral-900 border border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
-      />
-    </div>
-  );
+  const dealerName = (typeof localStorage !== 'undefined' && localStorage.getItem('trulens_dealer_name')) || 'our dealership';
+  const vehLabel = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
+  const reportId = deriveReportId(vehicle, 'VIR');
+
+  const reportMessage = `Hi${form.customerName ? ' ' + form.customerName : ''}, here is the inspection report for the ${vehLabel} (Ref ${reportId}) from ${dealerName}.`;
+  const offerMessage = () => {
+    const amt = parseFloat(form.offerAmount) || 0;
+    return `Hi${form.customerName ? ' ' + form.customerName : ''}, ${dealerName} would like to offer R ${amt.toLocaleString('en-ZA')} to purchase your ${vehLabel}.${form.offerNote ? ' ' + form.offerNote : ''}`;
+  };
+
+  const hasPhone = !!form.customerPhone.trim();
+  const hasEmail = !!form.customerEmail.trim();
+
+  const sendOffer = async (via: 'whatsapp' | 'email') => {
+    const amt = parseFloat(form.offerAmount) || 0;
+    await onUpdateVehicle(vehicle, {
+      ...buildUpdates(),
+      purchaseOffer: { amount: amt, note: form.offerNote, status: 'sent', sentAt: new Date().toISOString() },
+    });
+    const msg = offerMessage();
+    if (via === 'whatsapp' && hasPhone) openContact(whatsappHref(form.customerPhone, msg));
+    else if (via === 'email' && hasEmail) openContact(mailtoHref(form.customerEmail, `Offer to purchase — ${vehLabel}`, msg));
+  };
 
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Header */}
-      <div className="sticky top-0 z-20 border-b border-neutral-800 bg-neutral-950/95 backdrop-blur-sm px-6 py-3 flex items-center justify-between">
+      <div
+        className="sticky top-0 z-20 px-6 py-3 flex items-center justify-between"
+        style={{ background: 'color-mix(in srgb, var(--ink) 92%, transparent)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--glass-line)' }}
+      >
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition">
+          <button onClick={onBack} className="tru-btn-ghost h-9 w-9 flex items-center justify-center cursor-pointer">
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h2 className="text-[16px] font-bold text-[#E8EAE6]">
-              {vehicle.year} {vehicle.make} {vehicle.model}
-            </h2>
-            <p className="text-[12px] text-neutral-500">{vehicle.stockNumber || 'No stock #'} · <span style={{ color: readiness.color }}>{readiness.label}</span></p>
+            <h2 className="text-[17px] font-semibold" style={{ color: 'var(--white)' }}>{vehLabel}</h2>
+            <p className="text-[12px]" style={{ color: 'var(--muted)' }}>
+              {vehicle.stockNumber || 'No stock #'} · <span style={{ color: readiness.color }}>{readiness.label}</span>
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-[#06080D] text-[13px] font-semibold transition"
-          >
-            {saved ? <CheckCircle2 size={14} /> : <Save size={14} />}
-            {saving ? 'Saving…' : saved ? 'Saved' : 'Save Changes'}
-          </button>
-        </div>
+        <button onClick={handleSave} disabled={saving} className="btn-primary on-fill flex items-center gap-2 px-4 text-[13px] cursor-pointer" style={{ minHeight: 40 }}>
+          {saved ? <CheckCircle2 size={14} /> : <Save size={14} />}
+          {saving ? 'Saving…' : saved ? 'Saved' : 'Save Changes'}
+        </button>
       </div>
 
       <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
         {/* Quick stats */}
-        <div className="grid grid-cols-4 gap-3">
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 px-4 py-3">
-            <p className="text-[11px] text-neutral-500">Photos</p>
-            <p className="text-[18px] font-bold text-[#E8EAE6] mt-0.5">{requiredTaken}/{totalRequired}</p>
-            <div className="w-full h-1 bg-neutral-800 rounded-full mt-1.5 overflow-hidden">
-              <div className={`h-full rounded-full ${pct === 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`} style={{ width: `${pct}%` }} />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="ti-stat">
+            <p className="ti-stat-label">Photos</p>
+            <p className="ti-stat-value">{requiredTaken}/{totalRequired}</p>
+            <div className="w-full h-1 rounded-full mt-1.5 overflow-hidden" style={{ background: 'rgba(232,234,230,0.08)' }}>
+              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct === 100 ? 'var(--cyan)' : '#6366F1' }} />
             </div>
           </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 px-4 py-3">
-            <p className="text-[11px] text-neutral-500">Damage Tags</p>
-            <p className={`text-[18px] font-bold mt-0.5 ${damageCount > 0 ? 'text-amber-400' : 'text-neutral-600'}`}>{damageCount}</p>
+          <div className="ti-stat">
+            <p className="ti-stat-label">Damage Tags</p>
+            <p className="ti-stat-value" style={damageCount > 0 ? { color: 'var(--danger)' } : { color: 'var(--faint)' }}>{damageCount}</p>
           </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 px-4 py-3">
-            <p className="text-[11px] text-neutral-500">Inspection</p>
-            <p className={`text-[14px] font-semibold mt-1 ${inspectionDone ? 'text-emerald-400' : 'text-neutral-600'}`}>
-              {inspectionDone ? 'Complete' : 'Pending'}
-            </p>
+          <div className="ti-stat">
+            <p className="ti-stat-label">Inspection</p>
+            <p className="ti-stat-value" style={{ fontSize: 'var(--t-body)', color: inspectionDone ? 'var(--cyan)' : 'var(--faint)' }}>{inspectionDone ? 'Complete' : 'Pending'}</p>
           </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 px-4 py-3">
-            <p className="text-[11px] text-neutral-500">Price</p>
-            <p className="text-[18px] font-bold text-[#E8EAE6] mt-0.5">R {(vehicle.price || 0).toLocaleString()}</p>
+          <div className="ti-stat">
+            <p className="ti-stat-label">Asking Price</p>
+            <p className="ti-stat-value">R {(vehicle.price || 0).toLocaleString('en-ZA')}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {/* Vehicle details */}
-          <section className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-5 space-y-4">
-            <h3 className="text-[14px] font-semibold text-[#E8EAE6] flex items-center gap-2">
-              <Pencil size={14} className="text-cyan-400" /> Vehicle Details
-            </h3>
+          <section className="ti-card p-5 space-y-4">
+            <h3 className="ti-section-title"><Pencil size={14} style={{ color: 'var(--cyan)' }} /> Vehicle Details</h3>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Make" value={make} onChange={setMake} />
-              <Field label="Model" value={model} onChange={setModel} />
-              <Field label="Year" value={year} onChange={setYear} type="number" />
-              <Field label="Trim" value={trim} onChange={setTrim} />
-              <Field label="VIN" value={vin} onChange={setVin} />
-              <Field label="Colour" value={color} onChange={setColor} />
-              <Field label="Price (R)" value={price} onChange={setPrice} type="number" />
-              <Field label="Mileage (km)" value={mileage} onChange={setMileage} type="number" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+              <div><label className={labelCls}>Make</label><input className={inputCls} value={form.make} onChange={set('make')} /></div>
+              <div><label className={labelCls}>Model</label><input className={inputCls} value={form.model} onChange={set('model')} /></div>
+              <div><label className={labelCls}>Year</label><input className={inputCls} type="number" value={form.year} onChange={set('year')} /></div>
+              <div><label className={labelCls}>Trim</label><input className={inputCls} value={form.trim} onChange={set('trim')} /></div>
+              <div><label className={labelCls}>VIN</label><input className={inputCls} value={form.vin} onChange={set('vin')} style={{ fontFamily: 'var(--mono)' }} /></div>
+              <div><label className={labelCls}>Colour</label><input className={inputCls} value={form.color} onChange={set('color')} /></div>
+              <div><label className={labelCls}>Price (R)</label><input className={inputCls} type="number" value={form.price} onChange={set('price')} /></div>
+              <div><label className={labelCls}>Mileage (km)</label><input className={inputCls} type="number" value={form.mileage} onChange={set('mileage')} /></div>
               <div>
-                <label className="block text-[11px] text-neutral-500 uppercase tracking-wider mb-1">Transmission</label>
-                <select
-                  value={transmission}
-                  onChange={(e) => setTransmission(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-[13px] bg-neutral-900 border border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
-                >
+                <label className={labelCls}>Transmission</label>
+                <select className={inputCls} value={form.transmission} onChange={set('transmission')} style={{ minHeight: 40 }}>
                   <option value="Automatic">Automatic</option>
                   <option value="Manual">Manual</option>
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] text-neutral-500 uppercase tracking-wider mb-1">Fuel Type</label>
-                <select
-                  value={fuelType}
-                  onChange={(e) => setFuelType(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-[13px] bg-neutral-900 border border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
-                >
+                <label className={labelCls}>Fuel Type</label>
+                <select className={inputCls} value={form.fuelType} onChange={set('fuelType')} style={{ minHeight: 40 }}>
                   <option value="Petrol">Petrol</option>
                   <option value="Diesel">Diesel</option>
                   <option value="Hybrid">Hybrid</option>
@@ -193,65 +186,81 @@ export default function VehicleManager({
             </div>
           </section>
 
-          {/* T&Cs and extras */}
-          <section className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-5 space-y-4">
-            <h3 className="text-[14px] font-semibold text-[#E8EAE6] flex items-center gap-2">
-              <FileText size={14} className="text-cyan-400" /> Warranty, Service & Extras
-            </h3>
-            <div>
-              <label className="block text-[11px] text-neutral-500 uppercase tracking-wider mb-1">Warranty</label>
-              <textarea
-                value={warranty}
-                onChange={(e) => setWarranty(e.target.value)}
-                rows={2}
-                placeholder="e.g. 3 year / 100 000 km factory warranty"
-                className="w-full px-3 py-2 rounded-lg text-[13px] bg-neutral-900 border border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40 resize-none"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] text-neutral-500 uppercase tracking-wider mb-1">Service Plan</label>
-              <textarea
-                value={servicePlan}
-                onChange={(e) => setServicePlan(e.target.value)}
-                rows={2}
-                placeholder="e.g. Full service history, next service at 90 000 km"
-                className="w-full px-3 py-2 rounded-lg text-[13px] bg-neutral-900 border border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40 resize-none"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] text-neutral-500 uppercase tracking-wider mb-1">Extras / Features</label>
-              <textarea
-                value={extras}
-                onChange={(e) => setExtras(e.target.value)}
-                rows={3}
-                placeholder="e.g. Sunroof, leather seats, reverse camera, park sensors"
-                className="w-full px-3 py-2 rounded-lg text-[13px] bg-neutral-900 border border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40 resize-none"
-              />
-            </div>
+          {/* Warranty / service / extras */}
+          <section className="ti-card p-5 space-y-4">
+            <h3 className="ti-section-title"><FileText size={14} style={{ color: 'var(--cyan)' }} /> Warranty, Service &amp; Extras</h3>
+            <div><label className={labelCls}>Warranty</label>
+              <textarea className={inputCls} rows={2} value={form.warranty} onChange={set('warranty')} placeholder="e.g. 3 year / 100 000 km factory warranty" /></div>
+            <div><label className={labelCls}>Service Plan</label>
+              <textarea className={inputCls} rows={2} value={form.servicePlan} onChange={set('servicePlan')} placeholder="e.g. Full service history, next service at 90 000 km" /></div>
+            <div><label className={labelCls}>Extras / Features</label>
+              <textarea className={inputCls} rows={3} value={form.extras} onChange={set('extras')} placeholder="e.g. Sunroof, leather seats, reverse camera, park sensors" /></div>
           </section>
         </div>
 
-        {/* Photo gallery */}
-        <section className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[14px] font-semibold text-[#E8EAE6] flex items-center gap-2">
-              <Camera size={14} className="text-cyan-400" /> Photos ({requiredTaken}/{totalRequired})
-            </h3>
+        {/* Customer + send report */}
+        <section className="ti-card p-5 space-y-4">
+          <h3 className="ti-section-title"><User size={14} style={{ color: 'var(--cyan)' }} /> Customer &amp; Report Delivery</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div><label className={labelCls}>Name</label><input className={inputCls} value={form.customerName} onChange={set('customerName')} placeholder="Customer name" /></div>
+            <div><label className={labelCls}>Phone</label><input className={inputCls} value={form.customerPhone} onChange={set('customerPhone')} placeholder="082 000 0000" style={{ fontFamily: 'var(--mono)' }} /></div>
+            <div><label className={labelCls}>Email</label><input className={inputCls} type="email" value={form.customerEmail} onChange={set('customerEmail')} placeholder="name@email.com" style={{ fontFamily: 'var(--mono)' }} /></div>
           </div>
+          <p className="text-[12px]" style={{ color: 'var(--muted)' }}>
+            Send the report via the customer's own channel — TruInspect opens your native dialer, mail app or WhatsApp. Export the report as PDF first from <span style={{ color: 'var(--white-dim)' }}>View Report</span>, then attach it.
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            <button disabled={!hasPhone} onClick={() => openContact(telHref(form.customerPhone))} className="tru-btn-secondary flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 42 }}>
+              <Phone size={14} /> Call
+            </button>
+            <button disabled={!hasEmail} onClick={() => openContact(mailtoHref(form.customerEmail, `Your vehicle report — ${vehLabel}`, reportMessage))} className="tru-btn-secondary flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 42 }}>
+              <Mail size={14} /> Email
+            </button>
+            <button disabled={!hasPhone} onClick={() => openContact(whatsappHref(form.customerPhone, reportMessage))} className="tru-btn-secondary flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 42 }}>
+              <MessageCircle size={14} /> WhatsApp
+            </button>
+          </div>
+        </section>
+
+        {/* Offer to purchase */}
+        <section className="ti-card p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="ti-section-title"><HandCoins size={14} style={{ color: 'var(--cyan)' }} /> Offer to Purchase</h3>
+            {vehicle.purchaseOffer?.status === 'sent' && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: 'var(--cyan-faint)', color: 'var(--cyan)' }}>
+                Sent {vehicle.purchaseOffer.sentAt ? new Date(vehicle.purchaseOffer.sentAt).toLocaleDateString('en-ZA') : ''}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div><label className={labelCls}>Offer Amount (R)</label><input className={inputCls} type="number" value={form.offerAmount} onChange={set('offerAmount')} placeholder="0" /></div>
+            <div className="md:col-span-2"><label className={labelCls}>Note (optional)</label><input className={inputCls} value={form.offerNote} onChange={set('offerNote')} placeholder="e.g. Offer valid 7 days, subject to final inspection" /></div>
+          </div>
+          <p className="text-[12px]" style={{ color: 'var(--muted)' }}>
+            TruInspect stops at the offer — invoicing and paperwork live in your PMS.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button disabled={!hasPhone || !form.offerAmount} onClick={() => sendOffer('whatsapp')} className="btn-primary on-fill flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 44 }}>
+              <MessageCircle size={15} /> Send Offer via WhatsApp
+            </button>
+            <button disabled={!hasEmail || !form.offerAmount} onClick={() => sendOffer('email')} className="tru-btn-secondary flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" style={{ minHeight: 44 }}>
+              <Send size={15} /> Send Offer via Email
+            </button>
+          </div>
+        </section>
+
+        {/* Photos */}
+        <section className="ti-card p-5 space-y-4">
+          <h3 className="ti-section-title"><Camera size={14} style={{ color: 'var(--cyan)' }} /> Photos ({requiredTaken}/{totalRequired})</h3>
           {photoSlots.length === 0 ? (
-            <p className="text-[13px] text-neutral-500 py-4 text-center">No photos captured yet — field workers capture these on their phones.</p>
+            <p className="text-[13px] py-4 text-center" style={{ color: 'var(--muted)' }}>No photos captured yet — field workers capture these on their phones.</p>
           ) : (
             <div className="grid grid-cols-4 xl:grid-cols-6 gap-2">
               {photoSlots.map((slot) => (
-                <div key={slot.id} className="relative aspect-[4/3] rounded-lg overflow-hidden border border-neutral-800 bg-neutral-900">
-                  <img
-                    src={vehicle.photos[slot.id]}
-                    alt={slot.label}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-2 py-1">
-                    <p className="text-[10px] text-neutral-300 truncate">{slot.label}</p>
+                <div key={slot.id} className="relative aspect-[4/3] rounded-lg overflow-hidden" style={{ border: '1px solid var(--glass-line)' }}>
+                  <img src={vehicle.photos[slot.id]} alt={slot.label} className="w-full h-full object-cover" loading="lazy" />
+                  <div className="absolute bottom-0 left-0 right-0 px-2 py-1" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}>
+                    <p className="text-[10px] truncate" style={{ color: 'var(--white-dim)' }}>{slot.label}</p>
                   </div>
                 </div>
               ))}
@@ -261,35 +270,23 @@ export default function VehicleManager({
 
         {/* Damage overview */}
         {damageCount > 0 && (
-          <section className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-5 space-y-3">
+          <section className="ti-card p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-[14px] font-semibold text-[#E8EAE6] flex items-center gap-2">
-                <AlertTriangle size={14} className="text-amber-400" /> Damage Findings ({damageCount})
-              </h3>
-              <button
-                onClick={onOpenDamage}
-                className="text-[12px] text-cyan-400 hover:text-cyan-300 transition"
-              >
-                Edit Damage Tags
-              </button>
+              <h3 className="ti-section-title"><AlertTriangle size={14} style={{ color: 'var(--danger)' }} /> Damage Findings ({damageCount})</h3>
+              <button onClick={onOpenDamage} className="text-[12px] cursor-pointer transition-colors hover:text-[var(--cyan-bright)]" style={{ color: 'var(--cyan)' }}>Edit Damage Tags</button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
               {Object.entries(vehicle.damageFindings || {}).flatMap(([slotId, findings]) =>
                 findings.map((f) => {
                   const slot = DEFAULT_TEMPLATE.slots.find((s) => s.id === slotId);
-                  const severityColors: Record<number, string> = {
-                    1: 'text-neutral-400', 2: 'text-yellow-400', 3: 'text-amber-400', 4: 'text-orange-400', 5: 'text-red-400',
-                  };
                   return (
-                    <div key={f.id} className="rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2">
+                    <div key={f.id} className="ti-card-quiet px-3 py-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-semibold text-[#E8EAE6] capitalize">{f.damageType}</span>
-                        <span className={`text-[11px] font-mono ${severityColors[f.severity] || 'text-neutral-500'}`}>
-                          Sev {f.severity}/5
-                        </span>
+                        <span className="text-[12px] font-semibold capitalize" style={{ color: 'var(--white)' }}>{f.damageType}</span>
+                        <span className="text-[11px]" style={{ fontFamily: 'var(--mono)', color: f.severity >= 4 ? 'var(--danger)' : 'var(--muted)' }}>Sev {f.severity}/5</span>
                       </div>
-                      <p className="text-[11px] text-neutral-500 mt-0.5">{f.panel} · {slot?.label || slotId}</p>
-                      {f.note && <p className="text-[11px] text-neutral-400 mt-1">{f.note}</p>}
+                      <p className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>{f.panel} · {slot?.label || slotId}</p>
+                      {f.note && <p className="text-[11px] mt-1" style={{ color: 'var(--white-dim)' }}>{f.note}</p>}
                     </div>
                   );
                 })
@@ -300,17 +297,17 @@ export default function VehicleManager({
 
         {/* Actions */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-          <button onClick={onViewReport} className="flex items-center gap-2 justify-center px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800/60 text-[13px] font-semibold text-[#E8EAE6] transition">
-            <FileText size={15} className="text-cyan-400" /> View Report
+          <button onClick={onViewReport} className="tru-btn-secondary flex items-center gap-2 justify-center text-[13px] cursor-pointer" style={{ minHeight: 46 }}>
+            <FileText size={15} /> View Report
           </button>
-          <button onClick={onOpenTradeIn} className="flex items-center gap-2 justify-center px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800/60 text-[13px] font-semibold text-[#E8EAE6] transition">
-            <ShoppingCart size={15} className="text-cyan-400" /> Trade-In
+          <button onClick={onOpenTradeIn} className="tru-btn-secondary flex items-center gap-2 justify-center text-[13px] cursor-pointer" style={{ minHeight: 46 }}>
+            <ShoppingCart size={15} /> Trade-In
           </button>
-          <button onClick={onOpenDamage} className="flex items-center gap-2 justify-center px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800/60 text-[13px] font-semibold text-[#E8EAE6] transition">
-            <AlertTriangle size={15} className="text-amber-400" /> Damage Tags
+          <button onClick={onOpenDamage} className="tru-btn-ghost flex items-center gap-2 justify-center text-[13px] cursor-pointer" style={{ minHeight: 46 }}>
+            <AlertTriangle size={15} /> Damage Tags
           </button>
-          <button onClick={onOpenChecklist} className="flex items-center gap-2 justify-center px-4 py-3 rounded-xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800/60 text-[13px] font-semibold text-[#E8EAE6] transition">
-            <CheckCircle2 size={15} className="text-emerald-400" /> Inspection
+          <button onClick={onOpenChecklist} className="tru-btn-ghost flex items-center gap-2 justify-center text-[13px] cursor-pointer" style={{ minHeight: 46 }}>
+            <CheckCircle2 size={15} /> Inspection
           </button>
         </div>
       </div>
