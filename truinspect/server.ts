@@ -319,7 +319,7 @@ if (!LOCAL_MODE || hasAdc) {
 
 if (LOCAL_MODE) {
   console.log('────────────────────────────────────────────');
-  console.log(' TruInspect LOCAL PC MODE');
+  console.log(' TruInspect LOCAL PC MODE (v1.3)');
   console.log(' Inventory file: ' + LOCAL_DATA_FILE);
   console.log(' DMS export URL: ' + DEFAULT_DMS_URL);
   console.log(' Open: http://localhost:3000');
