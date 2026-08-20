@@ -151,7 +151,10 @@ export interface StaticInfo {
 
 /** Full vehicle specification for an M&M code — auto-fills the stock card. */
 export async function getStaticInfo(mmCode: string, opts: Imagin8Opts): Promise<StaticInfo> {
-  const data = await post("im8vehicle_api", "getStaticInfo", { mmcode: mmCode }, opts);
+  // Live is case-sensitive on the param: `mmCode`/`vehicleCode` return specs,
+  // lowercase `mmcode` returns an empty {"raw":""}. Send the working names
+  // (confirmed against the live API 2026-08-21).
+  const data = await post("im8vehicle_api", "getStaticInfo", { mmCode, vehicleCode: mmCode }, opts);
   const row: any = (data?.StaticInfo || data?.staticInfo || [])[0] || {};
   return {
     mmCode: row?.mmCode || mmCode,
