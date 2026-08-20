@@ -211,46 +211,16 @@ function normalizeVehicle(raw: any): any {
   };
 }
 
-function salvageCorruptJson(raw: string): any[] {
-  const vehicles: any[] = [];
-  const idPattern = /"id"\s*:\s*"/g;
-  let match;
-  while ((match = idPattern.exec(raw)) !== null) {
-    let depth = 0;
-    let start = -1;
-    for (let i = match.index - 1; i >= 0; i--) {
-      if (raw[i] === '{') { start = i; break; }
-    }
-    if (start === -1) continue;
-    depth = 0;
-    let end = -1;
-    for (let i = start; i < raw.length; i++) {
-      if (raw[i] === '{') depth++;
-      else if (raw[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
-    }
-    if (end === -1) continue;
-    try {
-      const obj = JSON.parse(raw.slice(start, end + 1));
-      if (obj.id && obj.make) vehicles.push(obj);
-    } catch { /* skip incomplete object */ }
-  }
-  const seen = new Set<string>();
-  return vehicles.filter((v) => { if (seen.has(v.id)) return false; seen.add(v.id); return true; });
-}
-
 /**
- * Fast path — called on every inventory read, so it must never do heavy work.
- * If the main file is missing or unparseable it returns empty and, at most
- * once, renames the bad file aside so it is not re-read. Recovery of a corrupt
- * file is a separate one-time startup step (recoverCorruptStoreOnce), never
- * per-request — a 53 MB salvage scan on every read is what timed the service
- * (and its scraper endpoints) out.
+ * Simple, cheap read — the original behaviour, restored. Called on every
+ * inventory read, so it does no heavy work: parse the file or return empty.
+ * If the file is unparseable it is renamed aside once (so a corrupt file can
+ * never wedge the service) and we start empty. No per-request salvage.
  */
 function readLocalStore(): LocalStore {
   try {
     if (!fs.existsSync(LOCAL_DATA_FILE)) return { vehicles: [] };
-    const raw = fs.readFileSync(LOCAL_DATA_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(fs.readFileSync(LOCAL_DATA_FILE, 'utf-8'));
     const vehicles = Array.isArray(parsed?.vehicles) ? parsed.vehicles.map(normalizeVehicle) : [];
     return { vehicles };
   } catch (e) {
@@ -258,58 +228,6 @@ function readLocalStore(): LocalStore {
     try { fs.renameSync(LOCAL_DATA_FILE, LOCAL_DATA_FILE + '.corrupt.' + Date.now()); } catch { /* best effort */ }
     return { vehicles: [] };
   }
-}
-
-/**
- * One-time, at startup only. If the live store is empty/missing but a
- * `.corrupt` snapshot exists, salvage what parses out of it, write a clean
- * store, and remove the snapshot so it is never scanned again. Runs once — not
- * on the request path.
- */
-let recoveryDone = false;
-function recoverCorruptStoreOnce(): void {
-  if (recoveryDone) return;
-  recoveryDone = true;
-  try {
-    const live = readLocalStore();
-    if (live.vehicles.length > 0) return;
-    const dir = LOCAL_DATA_DIR;
-    if (!fs.existsSync(dir)) return;
-    const corrupted = fs.readdirSync(dir)
-      .filter((f) => f.startsWith('local-inventory.json.corrupt.'))
-      .sort().reverse();
-    for (const f of corrupted) {
-      const full = path.join(dir, f);
-      try {
-        const size = fs.statSync(full).size;
-        // A snapshot this large is base64 that leaked into the JSON; salvaging
-        // it would re-bloat the store and re-create the corruption. Skip it and
-        // keep startup fast — the bytes stay on disk (renamed) for manual rescue.
-        if (size > 25 * 1024 * 1024) {
-          console.warn(`Skipping ${f} (${(size / 1024 / 1024).toFixed(1)} MB) — too large to salvage safely.`);
-        } else {
-          const raw = fs.readFileSync(full, 'utf-8');
-          const salvaged = salvageCorruptJson(raw).map(normalizeVehicle);
-          if (salvaged.length > 0) {
-            writeLocalStore({ vehicles: salvaged });
-            console.log(`Recovered ${salvaged.length} vehicles from ${f}`);
-          }
-        }
-      } catch (e) {
-        console.warn(`Recovery of ${f} failed:`, e);
-      }
-      // Whether it yielded vehicles or not, drop the snapshot so it is never
-      // re-scanned. Renamed (not deleted) so the raw bytes remain retrievable.
-      try { fs.renameSync(full, full + '.done'); } catch { /* best effort */ }
-      if (salvagedCount(dir) > 0) break;
-    }
-  } catch (e) {
-    console.warn('Corrupt-store recovery skipped:', e);
-  }
-}
-
-function salvagedCount(_dir: string): number {
-  try { return readLocalStore().vehicles.length; } catch { return 0; }
 }
 
 function writeLocalStore(store: LocalStore) {
@@ -1680,11 +1598,6 @@ async function startServer() {
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
-  }
-
-  // One-time corrupt-store recovery — before we start serving, never per-request.
-  if (LOCAL_MODE) {
-    try { recoverCorruptStoreOnce(); } catch (e) { console.warn('Recovery failed:', e); }
   }
 
   app.listen(PORT, '0.0.0.0', () => {
