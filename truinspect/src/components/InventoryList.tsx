@@ -219,6 +219,33 @@ export default function InventoryList({
     return 'custom';
   });
   const [dmsUrlSaved, setDmsUrlSaved] = React.useState(false);
+  const [dealerVat, setDealerVat] = React.useState(
+    () => localStorage.getItem('trulens_dealer_vat') || ''
+  );
+  const [dealerAddress, setDealerAddress] = React.useState(
+    () => localStorage.getItem('trulens_dealer_address') || ''
+  );
+  const [dealerEmail, setDealerEmail] = React.useState(
+    () => localStorage.getItem('trulens_dealer_email') || ''
+  );
+  const [dealerPhone, setDealerPhone] = React.useState(
+    () => localStorage.getItem('trulens_dealer_phone') || ''
+  );
+
+  // Auto-save all settings to localStorage on change
+  React.useEffect(() => {
+    localStorage.setItem('trulens_dealer_name', dealershipName);
+    localStorage.setItem('trulens_dealer_branch', branch);
+    localStorage.setItem('trulens_dealer_wa', dealerWhatsApp);
+    localStorage.setItem('trulens_currency', currency);
+    localStorage.setItem('trulens_ai_threshold', String(aiThreshold));
+    localStorage.setItem('trulens_dms_url', dmsUrl);
+    localStorage.setItem('trulens_dealer_vat', dealerVat);
+    localStorage.setItem('trulens_dealer_address', dealerAddress);
+    localStorage.setItem('trulens_dealer_email', dealerEmail);
+    localStorage.setItem('trulens_dealer_phone', dealerPhone);
+  }, [dealershipName, branch, dealerWhatsApp, currency, aiThreshold, dmsUrl, dealerVat, dealerAddress, dealerEmail, dealerPhone]);
+
   const [make, setMake] = React.useState('');
   const [model, setModel] = React.useState('');
   const [year, setYear] = React.useState(new Date().getFullYear());
@@ -233,6 +260,9 @@ export default function InventoryList({
   const [transmission, setTransmission] = React.useState<'Automatic' | 'Manual'>('Manual');
   const [fuelType, setFuelType] = React.useState<'Petrol' | 'Diesel' | 'Hybrid' | 'Electric'>('Petrol');
   const [status, setStatus] = React.useState<'In-Progress' | 'Ready'>('In-Progress');
+  const [warranty, setWarranty] = React.useState('');
+  const [servicePlan, setServicePlan] = React.useState('');
+  const [extras, setExtras] = React.useState('');
 
   /* Licence-disc scan — same component and parser as TruLens. An inspector
      standing at the windscreen has the disc in front of them; typing a 17-char
@@ -332,6 +362,9 @@ export default function InventoryList({
     setTransmission(v.transmission || 'Manual');
     setFuelType(v.fuelType || 'Petrol');
     setStatus(v.status === 'Listed' ? 'Ready' : v.status);
+    setWarranty(v.warranty || '');
+    setServicePlan(v.servicePlan || '');
+    setExtras(v.extras || '');
     setShowAddForm(true);
   };
 
@@ -355,6 +388,9 @@ export default function InventoryList({
         transmission,
         fuelType,
         status,
+        warranty: warranty.trim() || undefined,
+        servicePlan: servicePlan.trim() || undefined,
+        extras: extras.trim() || undefined,
       });
     } else {
       onAddVehicle({
@@ -371,7 +407,10 @@ export default function InventoryList({
         mileage: mileage.trim() ? Number(mileage) : undefined,
         transmission,
         fuelType,
-        status
+        status,
+        warranty: warranty.trim() || undefined,
+        servicePlan: servicePlan.trim() || undefined,
+        extras: extras.trim() || undefined
       }, discPhoto ? { license_disc: discPhoto } : undefined);
     }
 
@@ -391,6 +430,9 @@ export default function InventoryList({
     setTransmission('Manual');
     setFuelType('Petrol');
     setStatus('In-Progress');
+    setWarranty('');
+    setServicePlan('');
+    setExtras('');
     setDiscPhoto(null);
 
     setShowAddForm(false);
@@ -790,6 +832,38 @@ export default function InventoryList({
                   {staticNote && (
                     <p className="mt-1 text-[12px] text-[#4FE3DC]">{staticNote}</p>
                   )}
+                </div>
+                <div className="col-span-2 space-y-2 pt-2 border-t border-neutral-800/50">
+                  <div>
+                    <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Warranty</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 3yr / 100 000km factory warranty"
+                      value={warranty}
+                      onChange={(e) => setWarranty(e.target.value)}
+                      className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Service plan</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 5yr / 90 000km service plan"
+                      value={servicePlan}
+                      onChange={(e) => setServicePlan(e.target.value)}
+                      className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">Extras</label>
+                    <textarea
+                      rows={2}
+                      placeholder="e.g. Towbar, roof rails, leather seats, sunroof"
+                      value={extras}
+                      onChange={(e) => setExtras(e.target.value)}
+                      className="w-full bg-[rgba(232,234,230,0.04)] px-3 py-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors resize-none"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -1333,32 +1407,56 @@ export default function InventoryList({
               <span className="text-[13px] font-bold text-neutral-200 tracking-normal">Organisation settings</span>
             </div>
 
-            {/* Profile Section */}
-            <div className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-neutral-850 bg-neutral-900/40">
-                <span className="text-[13px] font-bold text-neutral-400 ">Organisation profile</span>
-              </div>
-              <div className="p-4 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[13px] text-neutral-500  font-bold">Organisation name</label>
-                  <input 
-                    type="text" 
-                    value={dealershipName}
-                    onChange={(e) => setDealershipName(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
-                  />
+            {/* Profile Section — collapsible */}
+            <details open className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
+              <summary className="p-3 border-b border-neutral-850 bg-neutral-900/40 cursor-pointer list-none flex items-center justify-between">
+                <span className="text-[13px] font-bold text-neutral-400">Dealership profile</span>
+                <ChevronDown size={14} className="text-neutral-500" />
+              </summary>
+              <div className="p-4 space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[13px] text-neutral-500 font-bold">Dealership name</label>
+                  <input type="text" value={dealershipName} onChange={(e) => setDealershipName(e.target.value)}
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[13px] text-neutral-500  font-bold">Branch</label>
-                  <input 
-                    type="text" 
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
-                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500"
-                  />
+                <div className="space-y-1">
+                  <label className="text-[13px] text-neutral-500 font-bold">Branch</label>
+                  <input type="text" value={branch} onChange={(e) => setBranch(e.target.value)}
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] focus:outline-none focus:border-indigo-500" />
                 </div>
               </div>
-            </div>
+            </details>
+
+            {/* Business details — collapsible */}
+            <details className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
+              <summary className="p-3 border-b border-neutral-850 bg-neutral-900/40 cursor-pointer list-none flex items-center justify-between">
+                <span className="text-[13px] font-bold text-neutral-400">Business details</span>
+                <ChevronDown size={14} className="text-neutral-500" />
+              </summary>
+              <div className="p-4 space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[13px] text-neutral-500 font-bold">VAT number</label>
+                  <input type="text" value={dealerVat} onChange={(e) => setDealerVat(e.target.value)} placeholder="e.g. 4123456789"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[13px] text-neutral-500 font-bold">Physical address</label>
+                  <textarea rows={2} value={dealerAddress} onChange={(e) => setDealerAddress(e.target.value)} placeholder="Street, city, postal code"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-indigo-500 resize-none" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[13px] text-neutral-500 font-bold">Phone</label>
+                  <input type="tel" value={dealerPhone} onChange={(e) => setDealerPhone(e.target.value)} placeholder="+27 …"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[13px] text-neutral-500 font-bold">Email</label>
+                  <input type="email" value={dealerEmail} onChange={(e) => setDealerEmail(e.target.value)} placeholder="sales@dealership.co.za"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-indigo-500" />
+                </div>
+                <p className="text-[12px] text-neutral-500 italic">Printed on reports — VAT, address, phone and email.</p>
+              </div>
+            </details>
 
             {/* Regional & Localization */}
             <div className="bg-neutral-950 border border-neutral-850 rounded-xl overflow-hidden">
@@ -1450,24 +1548,7 @@ export default function InventoryList({
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6]"
                 />
               </label>
-              <button
-                type="button"
-                onClick={() => {
-                  localStorage.setItem('trulens_dealer_name', dealershipName);
-                  localStorage.setItem('trulens_dealer_branch', branch);
-                  localStorage.setItem('trulens_dealer_wa', dealerWhatsApp);
-                  localStorage.setItem('trulens_currency', currency);
-                  localStorage.setItem('trulens_ai_threshold', String(aiThreshold));
-                  localStorage.setItem('trulens_dms_url', dmsUrl);
-                  setDmsUrlSaved(true);
-                  setExportToast({ type: 'ok', text: 'Settings saved on this device (used in VIR & WhatsApp)' });
-                  setTimeout(() => setExportToast(null), 2800);
-                  setTimeout(() => setDmsUrlSaved(false), 1600);
-                }}
-                className="w-full tl-btn-3d bg-indigo-600 hover:bg-indigo-500 text-[#E8EAE6] font-bold py-3 rounded-xl text-[15px] transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
-              >
-                Save Configuration
-              </button>
+              <p className="text-[12px] text-neutral-500 italic text-center">Settings auto-save as you type</p>
 
               {/* The install banner is dismissible and only shows when the
                   browser volunteers the prompt, so this is the only reliable

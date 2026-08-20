@@ -67,6 +67,10 @@ export interface Vehicle {
   slotAssessment?: Record<string, PointResult>;
   /** TruInspect: close-up damage photos taken at capture time, keyed by photo slot id */
   closeups?: Record<string, string[]>;
+  /** Warranty / service plan / extras — dealer-entered, shown on reports */
+  warranty?: string;
+  servicePlan?: string;
+  extras?: string;
   /** Trade-in appraisal: 28-step walk-around + valuation */
   tradeInData?: import('./types/inspection').TradeInData;
   /** Per-dealer valuation history — keyed by dealerSlug */
