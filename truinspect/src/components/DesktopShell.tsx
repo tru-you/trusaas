@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Check, Copy, RefreshCw, Plus } from 'lucide-react';
+import { Search, Check, Copy, RefreshCw, Plus, LogOut } from 'lucide-react';
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -13,6 +13,8 @@ interface DesktopShellProps {
   onForceSync: () => void;
   children: React.ReactNode;
   onAddVehicle?: () => void;
+  onSignOut?: () => void;
+  dealerName?: string;
   onOpenReport?: (vehicle: Vehicle) => void;
   onOpenTradeInReport?: (vehicle: Vehicle) => void;
   onOpenTradeIn?: (vehicle: Vehicle) => void;
@@ -27,6 +29,8 @@ export default function DesktopShell({
   syncStatus,
   onForceSync,
   onAddVehicle,
+  onSignOut,
+  dealerName,
   children,
 }: DesktopShellProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -157,6 +161,24 @@ export default function DesktopShell({
             })
           )}
         </div>
+
+        {/* Footer: signed-in dealer + sign out */}
+        {onSignOut && (
+          <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ borderTop: '1px solid var(--glass-line)' }}>
+            <div className="min-w-0">
+              <p className="text-[12px] font-semibold truncate" style={{ color: 'var(--white-dim)' }}>{dealerName || 'Signed in'}</p>
+              <p className="text-[11px]" style={{ color: 'var(--faint)' }}>Manager</p>
+            </div>
+            <button
+              onClick={onSignOut}
+              className="tru-btn-ghost flex items-center gap-1.5 px-2.5 text-[12px] cursor-pointer shrink-0"
+              style={{ minHeight: 34 }}
+              title="Sign out of this device"
+            >
+              <LogOut size={13} /> Sign out
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* ── Main content area ─────────────────────────────────── */}

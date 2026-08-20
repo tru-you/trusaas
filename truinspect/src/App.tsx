@@ -92,7 +92,7 @@ function normalizeVehicle(raw: any): Vehicle {
 }
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [vehicles, setVehicles] = React.useState<Vehicle[]>([]);
   const [activeVehicleId, setActiveVehicleId] = React.useState<string | null>(null);
   const [activeView, setActiveView] = React.useState<'inventory' | 'camera' | 'editor' | 'report' | 'checklist' | 'damage' | 'trade-in' | 'trade-in-valuation' | 'trade-in-summary' | 'completion'>('inventory');
@@ -572,6 +572,8 @@ export default function App() {
           syncStatus={syncStatus}
           onForceSync={fetchInventory}
           onAddVehicle={() => setAddOpen(true)}
+          onSignOut={signOut}
+          dealerName={(typeof localStorage !== 'undefined' && localStorage.getItem('trulens_dealer_name')) || undefined}
           onOpenReport={handleViewReport}
           onOpenTradeInReport={handleViewTradeInReport}
           onOpenTradeIn={handleOpenTradeIn}
