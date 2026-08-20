@@ -343,6 +343,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
 
             /* Header */
             .ti-report .ti-hdr { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid var(--ink); margin-bottom: 18px; break-inside: avoid; page-break-inside: avoid; }
+            .ti-report .ti-hdr-left .dealer-brand { font-family: var(--sans); font-size: 15px; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); line-height: 1; }
             .ti-report .ti-hdr-left .dealer { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 4px; }
             .ti-report .ti-hdr-right { text-align: right; }
             .ti-report .ti-hdr-right .doc-type { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); font-weight: 700; }
@@ -457,31 +458,17 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
           `}</style>
 
           {/* Hidden SVG defs for logo gradients */}
-          <svg width="0" height="0" style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">
-            <defs>
-              <linearGradient id="c1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#94A3B8"/><stop offset="100%" stopColor="#121A26"/></linearGradient>
-              <linearGradient id="c2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#22B8CC"/><stop offset="100%" stopColor="#065F73"/></linearGradient>
-            </defs>
-          </svg>
-
           {/* Header */}
           <div className="ti-hdr">
-            <div className="ti-hdr-left" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style={{ width: 24, height: 24, flexShrink: 0 }}>
-                <path d="M55 60 L100 35 L100 80 L75 95 L75 145 L55 132 Z" fill="url(#c1)"/>
-                <path d="M100 80 L145 60 L145 132 L100 160 L100 115 L125 100 L100 85 Z" fill="url(#c2)"/>
-              </svg>
-              <div style={{ lineHeight: 1 }}>
-                <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', color: 'var(--ink)' }}>Tru</span>
-                <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', color: 'var(--cyan)' }}>Inspect</span>
-                {dealerName && <div className="dealer">{dealerName}{dealerBranch ? ` · ${dealerBranch}` : ''}</div>}
-              </div>
+            <div className="ti-hdr-left">
+              <div className="dealer-brand">{dealerName || 'Trade-in Valuation'}</div>
+              {dealerBranch && <div className="dealer">{dealerBranch}</div>}
             </div>
             <div className="ti-hdr-right">
               <div className="doc-type">Trade-in Valuation</div>
               <div className="doc-id">{deriveReportId(vehicle)} · {now}</div>
               <div style={{ display: 'inline-block', marginTop: 5, fontFamily: 'var(--mono)', fontSize: '8px', fontWeight: 600, letterSpacing: '.16em', textTransform: 'uppercase' as const, color: 'var(--cyan)', background: 'var(--cyan-bg)', border: '1px solid rgba(7,136,155,.25)', borderRadius: 100, padding: '3px 8px' }}>
-                ◷ {photosWithLabel.length}-shot inspection
+                ◷ {items.length}-point · {photosWithLabel.length}-shot inspection
               </div>
             </div>
           </div>
@@ -494,7 +481,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
                 <span className="sym">R </span>
                 {valuation.averageRetailPrice != null ? valuation.averageRetailPrice.toLocaleString('en-ZA') : '—'}
               </div>
-              <div className="sub">Based on current market retail pricing</div>
+              <div className="sub">TransUnion &amp; live market data</div>
             </div>
             <div className="val-box offer">
               <div className="lbl">Trade-in offer</div>
@@ -511,6 +498,8 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
             <div className="row"><span className="k">Stock #</span><span className="v">{vehicle.stockNumber || '—'}</span></div>
             <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
             <div className="row"><span className="k">Odometer</span><span className="v">{(vehicle.mileage || 0).toLocaleString('en-ZA')} km</span></div>
+            {vehicle.transmission && <div className="row"><span className="k">Transmission</span><span className="v">{vehicle.transmission}</span></div>}
+            {vehicle.fuelType && <div className="row"><span className="k">Fuel type</span><span className="v">{vehicle.fuelType}</span></div>}
             {vehicle.warranty && <div className="row"><span className="k">Warranty</span><span className="v">{vehicle.warranty}</span></div>}
             {vehicle.servicePlan && <div className="row"><span className="k">Service plan</span><span className="v">{vehicle.servicePlan}</span></div>}
             {vehicle.extras && <div className="row"><span className="k">Extras</span><span className="v">{vehicle.extras}</span></div>}
