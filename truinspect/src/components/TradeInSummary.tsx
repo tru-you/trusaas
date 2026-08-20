@@ -63,6 +63,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
   const dealerAddress = localStorage.getItem('trulens_dealer_address') || '';
   const dealerVat = localStorage.getItem('trulens_dealer_vat') || '';
   const dealerEmail = localStorage.getItem('trulens_dealer_email') || '';
+  const tradeInTcs = localStorage.getItem('trulens_tradein_tcs') || '';
 
   const overallRating = computeOverallRating(items);
   const totalRecon = items.reduce((s, i) => s + i.estimatedRepairCost, 0);
@@ -641,6 +642,13 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
               <div className="line"><div className="lbl">Vehicle owner</div></div>
             </div>
           </div>
+
+          {tradeInTcs && (
+            <>
+              <div className="section-title" style={{ marginTop: 16 }}><span className="n">Terms &amp; Conditions</span><span className="ln"></span></div>
+              <div className="disclaimer" style={{ whiteSpace: 'pre-wrap', borderTop: 'none', marginTop: 0, paddingTop: 0 }}>{tradeInTcs}</div>
+            </>
+          )}
 
           <div className="disclaimer">
             This valuation is based on current market data and the physical condition observed during inspection. It is not a guarantee of resale value. The trade-in offer is subject to final verification of vehicle documentation, outstanding finance settlement, and registration transfer. Offer expires on the date stated above. Full inspection report available under the linked VIR reference.

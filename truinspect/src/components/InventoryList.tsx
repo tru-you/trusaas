@@ -231,6 +231,9 @@ export default function InventoryList({
   const [dealerPhone, setDealerPhone] = React.useState(
     () => localStorage.getItem('trulens_dealer_phone') || ''
   );
+  const [tradeInTcs, setTradeInTcs] = React.useState(
+    () => localStorage.getItem('trulens_tradein_tcs') || ''
+  );
 
   // Auto-save all settings to localStorage on change
   React.useEffect(() => {
@@ -244,7 +247,8 @@ export default function InventoryList({
     localStorage.setItem('trulens_dealer_address', dealerAddress);
     localStorage.setItem('trulens_dealer_email', dealerEmail);
     localStorage.setItem('trulens_dealer_phone', dealerPhone);
-  }, [dealershipName, branch, dealerWhatsApp, currency, aiThreshold, dmsUrl, dealerVat, dealerAddress, dealerEmail, dealerPhone]);
+    localStorage.setItem('trulens_tradein_tcs', tradeInTcs);
+  }, [dealershipName, branch, dealerWhatsApp, currency, aiThreshold, dmsUrl, dealerVat, dealerAddress, dealerEmail, dealerPhone, tradeInTcs]);
 
   const [make, setMake] = React.useState('');
   const [model, setModel] = React.useState('');
@@ -1455,6 +1459,12 @@ export default function InventoryList({
                     className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-indigo-500" />
                 </div>
                 <p className="text-[12px] text-neutral-500 italic">Printed on reports — VAT, address, phone and email.</p>
+                <div className="space-y-1 pt-2 border-t border-neutral-800">
+                  <label className="text-[13px] text-neutral-500 font-bold">Trade-in T&amp;Cs</label>
+                  <textarea rows={4} value={tradeInTcs} onChange={(e) => setTradeInTcs(e.target.value)} placeholder="Enter your dealership terms and conditions for trade-in valuations…"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-[13px] text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-indigo-500 resize-none" />
+                  <p className="text-[12px] text-neutral-500 italic">Auto-populates on every trade-in report.</p>
+                </div>
               </div>
             </details>
 
