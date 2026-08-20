@@ -246,10 +246,20 @@ export async function getValues(
     return { ...base, note: "TransUnion valuation unavailable — using market estimate." };
   }
 
-  const retailPrice = num(data?.RetailPrice ?? data?.retailPrice ?? data?.Retail);
-  const tradePrice = num(data?.TradePrice ?? data?.tradePrice ?? data?.Trade);
-  const marketValue = num(data?.MarketValue ?? data?.marketValue ?? data?.Market);
-  const newPrice = num(data?.NewPrice ?? data?.newPrice ?? data?.New);
+  /* Sandbox returns the prices flat ({ RetailPrice, TradePrice, … }); some live
+   *  responses wrap them in an envelope. Search the top level and the common
+   *  containers so either shape maps. */
+  const src: any = data?.RetailPrice != null || data?.TradePrice != null
+    ? data
+    : (data?.Values ?? data?.values ?? data?.data ?? data?.Result ?? data ?? {});
+  const pick = (...keys: string[]) => {
+    for (const k of keys) { const v = num(src?.[k] ?? data?.[k]); if (v != null) return v; }
+    return null;
+  };
+  const retailPrice = pick("RetailPrice", "retailPrice", "Retail");
+  const tradePrice = pick("TradePrice", "tradePrice", "Trade");
+  const marketValue = pick("MarketValue", "marketValue", "Market", "ListedPrice");
+  const newPrice = pick("NewPrice", "newPrice", "New");
   const gotAnyPrice = [retailPrice, tradePrice, marketValue, newPrice].some((v) => v != null);
 
   return {
