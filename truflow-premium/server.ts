@@ -6368,6 +6368,13 @@ import { fetchValuation } from "./src/lib/scraper";
 
 const IMAGIN8_PLATFORM_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
+// Chargeable per-call services (getValues, regCheck) also need the account
+// login + a pre-registered applicationName, or Imagin8 returns an HTML error
+// page. Set in the dashboard / shared env group, never committed.
+const IMAGIN8_USERNAME = process.env.IMAGIN8_USERNAME || "";
+const IMAGIN8_PASSWORD = process.env.IMAGIN8_PASSWORD || "";
+const IMAGIN8_APP_NAME = process.env.IMAGIN8_APP_NAME || "";
+const imagin8Login = { userName: IMAGIN8_USERNAME, password: IMAGIN8_PASSWORD, appName: IMAGIN8_APP_NAME };
 
 // The imagin8 routes below reference `authenticate` as per-route middleware and
 // `req.user` — both from a different codebase. The global middleware already
@@ -6399,7 +6406,7 @@ app.post("/api/imagin8/valuation", authenticate, async (req: any, res) => {
     return res.status(503).json({ error: "Imagin8 not configured — set IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID, or add a key/customerId in dealer settings." });
   }
   try {
-    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey, customerId });
+    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey, customerId, ...imagin8Login });
     console.log(`[imagin8] valuation for ${mmCode}/${year}: trade=${result.tradePrice} retail=${result.retailPrice}`);
     res.json(result);
   } catch (err: any) {

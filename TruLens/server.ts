@@ -2198,7 +2198,14 @@ import { getValues as imagin8GetValues, getStaticInfo as imagin8GetStaticInfo } 
 
 const IMAGIN8_API_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
-const imagin8Opts = { apiKey: IMAGIN8_API_KEY, customerId: IMAGIN8_CUSTOMER_ID };
+// Chargeable getValues also needs the account login + registered applicationName.
+const imagin8Opts = {
+  apiKey: IMAGIN8_API_KEY,
+  customerId: IMAGIN8_CUSTOMER_ID,
+  userName: process.env.IMAGIN8_USERNAME || "",
+  password: process.env.IMAGIN8_PASSWORD || "",
+  appName: process.env.IMAGIN8_APP_NAME || "",
+};
 const imagin8Configured = () => IMAGIN8_API_KEY && IMAGIN8_CUSTOMER_ID;
 
 app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {

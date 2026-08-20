@@ -88,11 +88,18 @@ services:
         value: https://premium.tru-saas.com  # custom domain on Render (onrender host still works as fallback)
       - key: DEEPSEEK_API_KEY
         sync: false
-      # Imagin8 / TransUnion eValue8 — both required (sent as APIKey + customerId).
-      # Makes/Models/StaticInfo = flat subscription; Values/RegCheck = per-call.
+      # Imagin8 / TransUnion eValue8. Platform calls need APIKey + customerId;
+      # chargeable getValues/regCheck ALSO need the account login + registered
+      # applicationName — same values across ALL apps (sync via an env group).
       - key: IMAGIN8_API_KEY
         sync: false
       - key: IMAGIN8_CUSTOMER_ID
+        sync: false
+      - key: IMAGIN8_USERNAME
+        sync: false
+      - key: IMAGIN8_PASSWORD
+        sync: false
+      - key: IMAGIN8_APP_NAME
         sync: false
       # Bright Data Web Unlocker — unblocks Cars.co.za (Cloudflare 403) so its
       # full __NEXT_DATA__ result set returns in ~2-5s. Key/zone set in dashboard.
@@ -300,11 +307,18 @@ services:
         sync: false
       - key: DEEPSEEK_API_KEY
         sync: false
-      # Imagin8 / TransUnion eValue8 — both required (sent as APIKey + customerId).
-      # Makes/Models/StaticInfo = flat subscription; Values/RegCheck = per-call.
+      # Imagin8 / TransUnion eValue8. Platform calls need APIKey + customerId;
+      # chargeable getValues/regCheck ALSO need the account login + registered
+      # applicationName — same values across ALL apps (sync via an env group).
       - key: IMAGIN8_API_KEY
         sync: false
       - key: IMAGIN8_CUSTOMER_ID
+        sync: false
+      - key: IMAGIN8_USERNAME
+        sync: false
+      - key: IMAGIN8_PASSWORD
+        sync: false
+      - key: IMAGIN8_APP_NAME
         sync: false
       # ── TruSocial (Zernio integration) ──
       # Team-level API key from docs.zernio.com. Required for profile
