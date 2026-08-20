@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight, Zap, ExternalLink, Loader2, TrendingDown, TrendingUp, Minus, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink, Loader2, TrendingDown, TrendingUp, Minus, Shield } from 'lucide-react';
 import { Vehicle } from '../types';
 import { InspectionItem, ValuationState, ValuationSnapshot, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,10 +39,6 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
   // TransUnion official valuation
   const [tuVal, setTuVal] = React.useState<any>(null);
   const [tuValLoading, setTuValLoading] = React.useState(false);
-  // Reg check
-  const [regCheck, setRegCheck] = React.useState<any>(null);
-  const [regCheckLoading, setRegCheckLoading] = React.useState(false);
-
   const handleTuValuation = async () => {
     if (!vehicle.mmCode || !user) return;
     setTuValLoading(true);
@@ -61,28 +57,6 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
       alert(err?.message || 'TU valuation failed');
     } finally {
       setTuValLoading(false);
-    }
-  };
-
-  const handleRegCheck = async () => {
-    const id = vehicle.vin || (vehicle as any).registrationNumber;
-    if (!id || !user) return;
-    setRegCheckLoading(true);
-    setRegCheck(null);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/imagin8/regcheck', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ identifier: id, type: vehicle.vin ? 'vin' : 'reg' }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setRegCheck(data);
-    } catch (err: any) {
-      alert(err?.message || 'Reg check failed');
-    } finally {
-      setRegCheckLoading(false);
     }
   };
 
@@ -194,38 +168,25 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
-        {/* Fetch button */}
+        {/* Fetch buttons */}
         <button
           type="button"
           onClick={handleFetchValuation}
           disabled={fetching}
-          className="btn-primary on-fill w-full min-h-[52px] flex items-center justify-center gap-2 text-[16px] disabled:opacity-60"
+          className="btn-primary on-fill w-full min-h-[52px] flex items-center justify-center gap-2 text-[16px] cursor-pointer disabled:opacity-60"
         >
-          <Zap size={18} />
-          Fetch Market Value
+          {fetching ? 'Scanning…' : 'Fetch Live Market Value'}
         </button>
 
-        {/* TransUnion official + Reg Check */}
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleTuValuation}
-            disabled={tuValLoading || !vehicle.mmCode}
-            className="flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-xl text-[13px] font-semibold bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 disabled:opacity-40 transition"
-          >
-            <Zap size={14} />
-            {tuValLoading ? 'Loading...' : 'TU Valuation'}
-          </button>
-          <button
-            type="button"
-            onClick={handleRegCheck}
-            disabled={regCheckLoading || (!vehicle.vin && !(vehicle as any).registrationNumber)}
-            className="flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-xl text-[13px] font-semibold bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 disabled:opacity-40 transition"
-          >
-            <Shield size={14} />
-            {regCheckLoading ? 'Checking...' : 'Reg Check'}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleTuValuation}
+          disabled={tuValLoading || !vehicle.mmCode}
+          className="tru-btn-secondary w-full min-h-[48px] flex items-center justify-center gap-2 text-[14px] cursor-pointer disabled:opacity-40"
+        >
+          <Shield size={15} />
+          {tuValLoading ? 'Loading…' : 'TransUnion Valuation'}
+        </button>
 
         {/* TU Valuation result */}
         {tuVal && tuVal.available === false && (
@@ -252,29 +213,18 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
               ))}
             </div>
             {tuVal.variant && <div className="text-[11px] text-neutral-500">{tuVal.make} {tuVal.model} {tuVal.variant}</div>}
-          </div>
-        )}
-
-        {/* Reg Check result */}
-        {regCheck && (
-          <div className={`rounded-xl border p-4 space-y-2 ${
-            regCheck.stolen || regCheck.financePending
-              ? 'border-red-500/30 bg-red-500/10'
-              : 'border-emerald-500/20 bg-emerald-500/10'
-          }`}>
-            <div className={`text-[11px] font-mono uppercase tracking-wider ${
-              regCheck.stolen || regCheck.financePending ? 'text-red-400' : 'text-emerald-400'
-            }`}>Vehicle Background</div>
-            {regCheck.alerts?.length > 0 ? (
-              regCheck.alerts.map((a: string, i: number) => (
-                <div key={i} className="flex items-center gap-2 text-red-400 text-[13px] font-semibold">
-                  <AlertCircle size={14} /> {a}
-                </div>
-              ))
-            ) : (
-              <div className="flex items-center gap-2 text-emerald-400 text-[13px] font-semibold">
-                <CheckCircle2 size={14} /> Clear — no stolen flag, no outstanding finance
-              </div>
+            {tuVal.retailPrice != null && (
+              <button
+                type="button"
+                onClick={() => {
+                  const p = Math.round(tuVal.retailPrice);
+                  setManualPrice(String(p));
+                  recalc(p, valuation.marginPercentage);
+                }}
+                className="mt-2 w-full min-h-[36px] rounded-lg text-[12px] font-semibold bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 transition"
+              >
+                Use retail R {Math.round(tuVal.retailPrice).toLocaleString('en-ZA')}
+              </button>
             )}
           </div>
         )}
