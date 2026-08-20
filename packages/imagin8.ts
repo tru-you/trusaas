@@ -21,6 +21,12 @@ const SANDBOX_BASE = "https://www.imagin8.co.za/api/Sandbox/channelApps/api";
 export interface Imagin8Opts {
   apiKey: string;
   customerId: string;
+  /** Per-call (chargeable) services — getValues, regCheck, accidentReport —
+   *  also require the account's login and a pre-registered application name.
+   *  Platform calls (getMakes/getModels/getStaticInfo) ignore these. */
+  userName?: string;
+  password?: string;
+  appName?: string;
   sandbox?: boolean;
   timeout?: number;
 }
@@ -194,14 +200,37 @@ export interface TuValuation {
  * with the raw payload preserved, and callers fall back to the scraper FMV.
  * Correcting the field mapping later needs no signature change.
  */
+/** Map actual km to the API's mileage band code. Bands are indicative — the
+ *  API only accepts VL/LO/AV/HI/VH — and default to Average when km is unknown. */
+function mileageCode(km: number | undefined): string {
+  if (km == null || km <= 0) return "AV";
+  if (km < 20_000) return "VL";
+  if (km < 60_000) return "LO";
+  if (km < 120_000) return "AV";
+  if (km < 200_000) return "HI";
+  return "VH";
+}
+
 export async function getValues(
   mmCode: string,
   year: string | number,
   mileage: number | undefined,
   opts: Imagin8Opts,
 ): Promise<TuValuation> {
-  const params: Record<string, unknown> = { mmcode: mmCode, year: String(year) };
-  if (mileage != null && mileage > 0) params.mileage = Math.round(mileage);
+  /* Field names and required credentials per the eValue8 API console:
+   *   vehicleCode (8-digit M&M), yearModel, plus the account login
+   *   (userName/password) and a pre-registered applicationName. mileage here is
+   *   a CODE (VL/LO/AV/HI/VH), not a number — we map from km, defaulting to
+   *   Average when unknown. Sending a raw number is what the old payload did,
+   *   and the API rejected it with an HTML error page. */
+  const params: Record<string, unknown> = {
+    vehicleCode: mmCode,
+    yearModel: String(year),
+    userName: opts.userName,
+    password: opts.password,
+    applicationName: opts.appName,
+    mileage: mileageCode(mileage),
+  };
 
   const base: TuValuation = {
     available: false, note: null,

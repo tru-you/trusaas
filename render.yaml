@@ -149,11 +149,21 @@ services:
         value: https://premium.tru-saas.com
       - key: DEEPSEEK_API_KEY
         sync: false
-      # Imagin8 / TransUnion eValue8 — both required (sent as APIKey + customerId).
-      # Makes/Models/StaticInfo = flat subscription; Values/RegCheck = per-call.
+      # Imagin8 / TransUnion eValue8. Platform calls (Makes/Models/StaticInfo)
+      # need only APIKey + customerId. The chargeable per-call services
+      # (getValues, regCheck) ALSO require the account login + a pre-registered
+      # applicationName — without them Imagin8 returns an HTML error page and
+      # the TU valuation fails ("<!DOCTYPE… not valid JSON"). Set all in the
+      # dashboard, never commit them.
       - key: IMAGIN8_API_KEY
         sync: false
       - key: IMAGIN8_CUSTOMER_ID
+        sync: false
+      - key: IMAGIN8_USERNAME
+        sync: false
+      - key: IMAGIN8_PASSWORD
+        sync: false
+      - key: IMAGIN8_APP_NAME
         sync: false
       # Headless render worker (trusaas-crm-scraper): JS-heavy dealer pages
       # (WeBuyCars, CMH...) are rendered there; JSON dealers (Car Store,

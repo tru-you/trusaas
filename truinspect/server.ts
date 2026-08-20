@@ -1510,7 +1510,18 @@ import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, getStaticIn
 
 const IMAGIN8_API_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
-const imagin8Opts = { apiKey: IMAGIN8_API_KEY, customerId: IMAGIN8_CUSTOMER_ID };
+// Per-call (chargeable) services also need the account login + a registered
+// application name — set these in the Render dashboard, never committed.
+const IMAGIN8_USERNAME = process.env.IMAGIN8_USERNAME || "";
+const IMAGIN8_PASSWORD = process.env.IMAGIN8_PASSWORD || "";
+const IMAGIN8_APP_NAME = process.env.IMAGIN8_APP_NAME || "";
+const imagin8Opts = {
+  apiKey: IMAGIN8_API_KEY,
+  customerId: IMAGIN8_CUSTOMER_ID,
+  userName: IMAGIN8_USERNAME,
+  password: IMAGIN8_PASSWORD,
+  appName: IMAGIN8_APP_NAME,
+};
 const imagin8Configured = () => IMAGIN8_API_KEY && IMAGIN8_CUSTOMER_ID;
 
 app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
