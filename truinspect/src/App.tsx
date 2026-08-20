@@ -5,6 +5,7 @@ import DesktopDashboard from './components/DesktopDashboard';
 import VehicleManager from './components/VehicleManager';
 import AddVehicleDialog from './components/AddVehicleDialog';
 import BuyersList from './components/BuyersList';
+import DesktopSettings from './components/DesktopSettings';
 import InventoryList from './components/InventoryList';
 import CameraGuide from './components/CameraGuide';
 import Login from './components/Login';
@@ -116,7 +117,7 @@ export default function App() {
   const [assistOpen, setAssistOpen] = React.useState(false);
   const [desktop, setDesktop] = React.useState(() => isDesktopManager());
   const [addOpen, setAddOpen] = React.useState(false);
-  const [deskSection, setDeskSection] = React.useState<'vehicles' | 'buyers'>('vehicles');
+  const [deskSection, setDeskSection] = React.useState<'vehicles' | 'buyers' | 'settings'>('vehicles');
 
   React.useEffect(() => {
     const update = () => setDesktop(isDesktopManager());
@@ -593,7 +594,7 @@ export default function App() {
           onSignOut={signOut}
           dealerName={(typeof localStorage !== 'undefined' && localStorage.getItem('trulens_dealer_name')) || undefined}
           section={deskSection}
-          onSectionChange={(s) => { setDeskSection(s); if (s === 'buyers') { setActiveVehicleId(null); } }}
+          onSectionChange={(s) => { setDeskSection(s); if (s !== 'vehicles') { setActiveVehicleId(null); } }}
           onOpenReport={handleViewReport}
           onOpenTradeInReport={handleViewTradeInReport}
           onOpenTradeIn={handleOpenTradeIn}
@@ -601,6 +602,7 @@ export default function App() {
           onDeleteVehicle={handleDeleteVehicle}
         >
           {deskSection === 'buyers' && <BuyersList />}
+          {deskSection === 'settings' && <DesktopSettings />}
 
           {deskSection === 'vehicles' && activeView === 'inventory' && !activeVehicle && (
             <DesktopDashboard
@@ -616,9 +618,21 @@ export default function App() {
               onUpdateVehicle={handleUpdateVehicle}
               onPhotosUploaded={(updated) => setVehicles((prev) => prev.map((v) => (v.id === updated.id ? updated : v)))}
               onViewReport={() => setActiveView('report')}
-              onOpenTradeIn={() => setActiveView('trade-in')}
+              onOpenTradeIn={() => {
+                // Desktop has no camera — skip the walkaround and go straight to
+                // the valuation (scraper + TU), loading any saved trade-in data.
+                if (activeVehicle.tradeInData?.items?.length) {
+                  setTradeInItems(activeVehicle.tradeInData.items);
+                  setTradeInValuation(activeVehicle.tradeInData.valuation || null);
+                } else {
+                  setTradeInItems([]);
+                  setTradeInValuation(null);
+                }
+                setActiveView('trade-in-valuation');
+              }}
               onOpenDamage={() => setActiveView('damage')}
               onOpenChecklist={() => handleOpenChecklist(activeVehicle)}
+              onDelete={async () => { await handleDeleteVehicle(activeVehicle.id); setActiveVehicleId(null); setActiveView('inventory'); }}
               onBack={() => { setActiveVehicleId(null); setActiveView('inventory'); }}
             />
           )}
@@ -690,7 +704,7 @@ export default function App() {
             <TradeInValuation
               vehicle={activeVehicle}
               items={tradeInItems}
-              onBack={() => setActiveView('trade-in')}
+              onBack={() => setActiveView(desktop ? 'inventory' : 'trade-in')}
               onComplete={(val) => {
                 setTradeInValuation(val);
                 setActiveView('trade-in-summary');
@@ -866,7 +880,7 @@ export default function App() {
             <TradeInValuation
               vehicle={activeVehicle}
               items={tradeInItems}
-              onBack={() => setActiveView('trade-in')}
+              onBack={() => setActiveView(desktop ? 'inventory' : 'trade-in')}
               onComplete={(val) => {
                 setTradeInValuation(val);
                 setActiveView('trade-in-summary');

@@ -19,6 +19,7 @@ interface Props {
   onOpenTradeIn: () => void;
   onOpenDamage: () => void;
   onOpenChecklist: () => void;
+  onDelete: () => void;
   onBack: () => void;
 }
 
@@ -26,7 +27,7 @@ const inputCls = 'ti-input';
 const labelCls = 'ti-field-label';
 
 export default function VehicleManager({
-  vehicle, onUpdateVehicle, onPhotosUploaded, onViewReport, onOpenTradeIn, onOpenDamage, onOpenChecklist, onBack,
+  vehicle, onUpdateVehicle, onPhotosUploaded, onViewReport, onOpenTradeIn, onOpenDamage, onOpenChecklist, onDelete, onBack,
 }: Props) {
   const { user } = useAuth();
   const fileRef = React.useRef<HTMLInputElement | null>(null);
@@ -204,10 +205,20 @@ export default function VehicleManager({
             </p>
           </div>
         </div>
-        <button onClick={handleSave} disabled={saving} className="btn-primary on-fill flex items-center gap-2 px-4 text-[13px] cursor-pointer" style={{ minHeight: 40 }}>
-          {saved ? <CheckCircle2 size={14} /> : <Save size={14} />}
-          {saving ? 'Saving…' : saved ? 'Saved' : 'Save Changes'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { if (window.confirm(`Delete ${vehLabel}? This removes the vehicle and its photos. This cannot be undone.`)) onDelete(); }}
+            className="tru-btn-ghost flex items-center gap-2 px-3 text-[13px] cursor-pointer"
+            style={{ minHeight: 40, color: 'var(--danger)' }}
+            title="Delete this vehicle"
+          >
+            <Trash2 size={14} /> Delete
+          </button>
+          <button onClick={handleSave} disabled={saving} className="btn-primary on-fill flex items-center gap-2 px-4 text-[13px] cursor-pointer" style={{ minHeight: 40 }}>
+            {saved ? <CheckCircle2 size={14} /> : <Save size={14} />}
+            {saving ? 'Saving…' : saved ? 'Saved' : 'Save Changes'}
+          </button>
+        </div>
       </div>
 
       <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Check, Copy, RefreshCw, Plus, LogOut, Car, Users } from 'lucide-react';
+import { Search, Check, Copy, RefreshCw, Plus, LogOut, Car, Users, Settings } from 'lucide-react';
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -15,8 +15,8 @@ interface DesktopShellProps {
   onAddVehicle?: () => void;
   onSignOut?: () => void;
   dealerName?: string;
-  section?: 'vehicles' | 'buyers';
-  onSectionChange?: (s: 'vehicles' | 'buyers') => void;
+  section?: 'vehicles' | 'buyers' | 'settings';
+  onSectionChange?: (s: 'vehicles' | 'buyers' | 'settings') => void;
   onOpenReport?: (vehicle: Vehicle) => void;
   onOpenTradeInReport?: (vehicle: Vehicle) => void;
   onOpenTradeIn?: (vehicle: Vehicle) => void;
@@ -71,7 +71,7 @@ export default function DesktopShell({
         {onSectionChange && (
           <div className="px-4 pt-4">
             <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
-              {([['vehicles', 'Vehicles', Car], ['buyers', 'Buyers', Users]] as const).map(([key, label, Icon]) => (
+              {([['vehicles', 'Vehicles', Car], ['buyers', 'Buyers', Users], ['settings', 'Settings', Settings]] as const).map(([key, label, Icon]) => (
                 <button
                   key={key}
                   onClick={() => onSectionChange(key)}
@@ -192,7 +192,7 @@ export default function DesktopShell({
         </div>
         )}
 
-        {section === 'buyers' && <div className="flex-1" />}
+        {section !== 'vehicles' && <div className="flex-1" />}
 
         {/* Footer: signed-in dealer + sign out */}
         {onSignOut && (
