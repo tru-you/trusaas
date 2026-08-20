@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Camera, FileText, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Plus, Camera, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -64,7 +64,7 @@ export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehic
           </div>
         ) : (
           <div className="space-y-3">
-            <h2 className="text-[13px] font-semibold" style={{ color: 'var(--white-dim)' }}>Recent Vehicles</h2>
+            <h2 className="text-[13px] font-semibold" style={{ color: 'var(--white-dim)' }}>Vehicles — done on mobile &amp; what's still needed</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
               {vehicles.slice(0, 12).map((vehicle) => {
                 const readiness = computeInspectionReadiness(vehicle, DEFAULT_TEMPLATE);
@@ -72,6 +72,16 @@ export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehic
                 const pct = Math.round((requiredTaken / totalRequired) * 100);
                 const damageCount = vehicle.damageFindings ? Object.values(vehicle.damageFindings).flat().length : 0;
                 const inspected = vehicle.inspectionPoints && Object.keys(vehicle.inspectionPoints).length > 0;
+
+                // What the field worker has done vs. what the manager still needs
+                const done: string[] = [];
+                const needed: string[] = [];
+                (requiredTaken > 0 ? done : needed).push(requiredTaken === totalRequired ? 'All photos' : `Photos ${requiredTaken}/${totalRequired}`);
+                if (inspected) done.push('Inspected'); else needed.push('Inspection');
+                if (damageCount > 0) done.push(`${damageCount} damage tag${damageCount > 1 ? 's' : ''}`);
+                if (vehicle.tradeInData) done.push('Trade-in');
+                if (!vehicle.price) needed.push('Price');
+                if (!vehicle.extras) needed.push('Extras');
 
                 return (
                   <button
@@ -85,7 +95,7 @@ export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehic
                           {vehicle.year} {vehicle.make} {vehicle.model}
                         </h3>
                         <p className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                          {vehicle.trim || 'Standard'} · R {(vehicle.price || 0).toLocaleString('en-ZA')}
+                          {vehicle.trim || 'Standard'} · {vehicle.price ? 'R ' + vehicle.price.toLocaleString('en-ZA') : 'No price set'}
                         </p>
                       </div>
                       <span className="text-[11px] font-semibold shrink-0" style={{ color: readiness.color }}>{readiness.label}</span>
@@ -98,15 +108,26 @@ export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehic
                       <span className="text-[11px] shrink-0" style={{ color: 'var(--muted)' }}>{pct}%</span>
                     </div>
 
-                    <div className="flex items-center gap-3 mt-2 text-[11px]" style={{ color: 'var(--faint)' }}>
-                      <span className="flex items-center gap-1"><Camera size={11} /> {requiredTaken}/{totalRequired}</span>
-                      {damageCount > 0 && (
-                        <span className="flex items-center gap-1" style={{ color: 'var(--danger)' }}><AlertTriangle size={11} /> {damageCount}</span>
-                      )}
-                      {inspected && (
-                        <span className="flex items-center gap-1" style={{ color: 'var(--cyan)' }}><CheckCircle2 size={11} /> Inspected</span>
-                      )}
-                    </div>
+                    {/* Done — what the field worker captured on mobile */}
+                    {done.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {done.map((d) => (
+                          <span key={d} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'var(--cyan-faint)', color: 'var(--cyan)' }}>
+                            <CheckCircle2 size={9} /> {d}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {/* Needed — what the manager must still add */}
+                    {needed.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {needed.map((n) => (
+                          <span key={n} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(232,234,230,0.06)', color: 'var(--muted)' }}>
+                            <AlertTriangle size={9} /> {n}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </button>
                 );
               })}

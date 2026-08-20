@@ -727,57 +727,9 @@ export default function App() {
             />
           )}
 
-          {activeView === 'completion' && activeVehicle && (
-            <CompletionReview
-              vehicle={activeVehicle}
-              onBack={() => setActiveView('camera')}
-              onSubmit={() => setActiveView('report')}
-              onRetakeSlot={(navSlotId) => {
-                const photo = activeVehicle.photos?.[navSlotId];
-                if (photo) {
-                  setActiveSlotId(navSlotId);
-                  setActiveImageSrc(photo);
-                  setActiveView('editor');
-                }
-              }}
-            />
-          )}
-
-          {activeView === 'camera' && activeVehicle && (
-            <CameraGuide
-              vehicle={activeVehicle}
-              onBack={() => setActiveView('inventory')}
-              onComplete={() => setActiveView('completion')}
-              onPhotoCaptured={handlePhotoCaptured}
-              onOpenDamageTagger={() => setActiveView('damage')}
-              onOpenChecklist={() => handleOpenChecklist(activeVehicle)}
-              onBulkPhotosUploaded={(updatedVehicle) => {
-                setVehicles(prev => prev.map(v => v.id === updatedVehicle.id ? updatedVehicle : v));
-              }}
-            />
-          )}
-
-          {activeView === 'editor' && activeVehicle && activeSlotId && activeImageSrc && (
-            <SlotReview
-              vehicle={activeVehicle}
-              slotId={activeSlotId}
-              imageSrc={activeImageSrc}
-              onBack={() => {
-                setActiveView('camera');
-                setActiveImageSrc(null);
-                setActiveSlotId(null);
-                setActiveQualityReport(null);
-              }}
-              onSave={handleSaveSlotReview}
-              onNavigateSlot={(navSlotId) => {
-                const photo = activeVehicle.photos?.[navSlotId];
-                if (photo) {
-                  setActiveSlotId(navSlotId);
-                  setActiveImageSrc(photo);
-                }
-              }}
-            />
-          )}
+          {/* Camera / editor / completion are phone-only capture views — a
+              desktop manager has no camera, so they are deliberately absent
+              here. Photos are added on desktop via VehicleManager's upload. */}
 
           <GuidePanel
             open={guideOpen}
