@@ -59,10 +59,10 @@ function liveToCatalogue(variants: any[]): CatalogueMake {
 async function loadLiveMakeData(make: string, getToken?: () => Promise<string | null>): Promise<CatalogueMake | null> {
   try {
     const token = getToken ? await getToken() : null;
-    const res = await fetch("/api/imagin8/models", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      body: JSON.stringify({ make }),
+    const qs = new URLSearchParams({ make }).toString();
+    const res = await fetch(`/api/imagin8/models?${qs}`, {
+      method: "GET",
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     });
     if (!res.ok) return null;
     const data = await res.json();

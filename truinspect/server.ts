@@ -1603,12 +1603,13 @@ app.post('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
 });
 
 // Static specs for the Add Vehicle flow (platform key / flat subscription).
-app.post('/api/imagin8/static', authenticate, async (req: any, res) => {
-  const { mmCode } = req.body || {};
+// Switched to GET query params — JSON POST bodies return 400 on Render/Cloudflare.
+app.get('/api/imagin8/static', authenticate, async (req: any, res) => {
+  const mmCode = req.query?.mmCode;
   if (!mmCode) return res.status(400).json({ error: 'mmCode is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
   try {
-    const result = await imagin8GetStaticInfo(mmCode, imagin8Opts);
+    const result = await imagin8GetStaticInfo(String(mmCode), imagin8Opts);
     res.json(result);
   } catch (err: any) {
     console.error('[imagin8] static info failed:', err?.message || err);
@@ -1618,8 +1619,9 @@ app.post('/api/imagin8/static', authenticate, async (req: any, res) => {
 
 // Live model catalogue for the Add Vehicle picker (platform key / flat subscription).
 // Returns { variants: CatalogueVariant[] } so the picker can build model → variant → mmCode.
-app.post('/api/imagin8/models', authenticate, async (req: any, res) => {
-  const { make } = req.body || {};
+// Switched to GET query params — JSON POST bodies return 400 on Render/Cloudflare.
+app.get('/api/imagin8/models', authenticate, async (req: any, res) => {
+  const make = req.query?.make;
   if (!make) return res.status(400).json({ error: 'make is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
   try {

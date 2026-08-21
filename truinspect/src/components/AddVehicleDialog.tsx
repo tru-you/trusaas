@@ -32,10 +32,10 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
     setLookup('loading');
     try {
       const token = await user?.getIdToken();
-      const res = await fetch('/api/imagin8/static', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ mmCode: code }),
+      const qs = new URLSearchParams({ mmCode: code }).toString();
+      const res = await fetch(`/api/imagin8/static?${qs}`, {
+        method: 'GET',
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
       const s = res.ok ? await res.json() : null;
       const fuelMap: Record<string, string> = { P: 'Petrol', D: 'Diesel', H: 'Hybrid', E: 'Electric' };

@@ -350,10 +350,10 @@ export default function InventoryList({
     setStaticNote(null);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('/api/imagin8/static', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ mmCode: mm }),
+      const qs = new URLSearchParams({ mmCode: mm }).toString();
+      const res = await fetch(`/api/imagin8/static?${qs}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'lookup failed');
       const s = await res.json();
