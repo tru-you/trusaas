@@ -6386,6 +6386,7 @@ const IMAGIN8_PASSWORD = process.env.IMAGIN8_PASSWORD || "";
 const IMAGIN8_APP_NAME = process.env.IMAGIN8_APP_NAME || "";
 const imagin8Login = { userName: IMAGIN8_USERNAME, password: IMAGIN8_PASSWORD, appName: IMAGIN8_APP_NAME };
 // (getStaticInfo param casing fixed in shared packages/imagin8.ts — cd82754.)
+// (getValues now sends the required `guide` (MMYYYY) — shared pkg.)
 
 // The imagin8 routes below reference `authenticate` as per-route middleware and
 // `req.user` — both from a different codebase. The global middleware already

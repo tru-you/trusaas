@@ -214,6 +214,15 @@ function mileageCode(km: number | undefined): string {
   return "VH";
 }
 
+/** TransUnion data publication (guide) in MMYYYY — e.g. "082026" for Aug 2026.
+ *  The API needs it sent explicitly (the implicit default returns no value).
+ *  Override with IMAGIN8_GUIDE if TU's latest published guide lags the month. */
+function currentGuide(): string {
+  if (typeof process !== "undefined" && process.env?.IMAGIN8_GUIDE) return process.env.IMAGIN8_GUIDE;
+  const now = new Date();
+  return String(now.getMonth() + 1).padStart(2, "0") + now.getFullYear();
+}
+
 export async function getValues(
   mmCode: string,
   year: string | number,
@@ -233,6 +242,7 @@ export async function getValues(
     password: opts.password,
     applicationName: opts.appName,
     mileage: mileageCode(mileage),
+    guide: currentGuide(),
   };
 
   const base: TuValuation = {
@@ -247,6 +257,15 @@ export async function getValues(
   } catch (err: any) {
     // Unprovisioned key, network, or API error — soft-fail, don't blow up the UI.
     return { ...base, note: "TransUnion valuation unavailable — using market estimate." };
+  }
+
+  /* The API can answer result:0 (transport OK) yet carry an Error object, e.g.
+   *  { Error: { ErrorMessage: "Subscription Not Valid" } } when the valuation
+   *  bundle isn't active on the customerId. Surface that reason instead of a
+   *  vague "no price" so the cause is visible. */
+  const apiError = data?.Error?.ErrorMessage || data?.error?.ErrorMessage || data?.ErrorMessage;
+  if (apiError) {
+    return { ...base, raw: data, note: `TransUnion: ${apiError} — using market estimate.` };
   }
 
   /* Sandbox returns the prices flat ({ RetailPrice, TradePrice, … }); some live

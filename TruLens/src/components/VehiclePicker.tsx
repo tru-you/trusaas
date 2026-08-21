@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import ReactDOM from "react-dom";
 import { ChevronDown, Search, X } from "lucide-react";
 
-/*  Cascading vehicle selector backed by the TransUnion M&M code catalogue.
-    Shape: { [make]: { [model]: { [variant]: { c: mmCode, y: [years] } } } }
-
-    The curated catalogue is chunked per-make behind a call: /catalogue/index.json
-    is a tiny (~12 KB) makes index, and each make's subtree loads on demand from
-    /catalogue/<file>.json. This replaces the old 1.83 MB upfront fetch — same
-    curated data, byte-for-byte (proven by reassembly at build), just lazy.       */
+/*  Cascading vehicle selector — hybrid static + live Imagin8.
+    
+    Makes load from the static /catalogue/index.json (fast, cached).
+    Models/variants/years load from the live Imagin8 API first
+    (/api/imagin8/models, flat-fee unlimited calls), and fall back
+    to the static /catalogue/<file>.json if the API is unconfigured
+    or unreachable.  */
 
 type CatalogueVariant = { c: string; y: number[] };
 type CatalogueModel = Record<string, CatalogueVariant>;
@@ -29,12 +29,64 @@ function loadMakeIndex(): Promise<MakeIndexEntry[]> {
   return makeIndexPromise;
 }
 
-function loadMakeData(make: string): Promise<CatalogueMake> {
+/** Transform live Imagin8 getModels response into the CatalogueMake shape. */
+function liveToCatalogue(variants: any[]): CatalogueMake {
+  const out: CatalogueMake = {};
+  for (const v of variants) {
+    const mmCode = v.mmCode || v.mvCode || "";
+    const fullModel = v.model || v.mmModel || v.mvModel || "";
+    if (!mmCode || !fullModel) continue;
+    // Heuristic: first word = model, rest = variant
+    const words = fullModel.trim().split(/\s+/);
+    const modelKey = words[0] || fullModel;
+    const variantKey = words.slice(1).join(" ") || fullModel;
+    // Build year list from introDate / disconDate
+    const years: number[] = [];
+    const intro = v.introDate || v.IntroYear;
+    const discon = v.disconDate || v.DisconYear;
+    const startYear = intro ? parseInt(String(intro).slice(0, 4), 10) : new Date().getFullYear() - 10;
+    const endYear = discon ? parseInt(String(discon).slice(0, 4), 10) : new Date().getFullYear() + 1;
+    if (Number.isFinite(startYear) && Number.isFinite(endYear)) {
+      for (let y = startYear; y <= endYear; y++) years.push(y);
+    }
+    if (!out[modelKey]) out[modelKey] = {};
+    out[modelKey][variantKey] = { c: mmCode, y: years.length ? years : [new Date().getFullYear()] };
+  }
+  return out;
+}
+
+/** Fetch live model data from Imagin8 (flat-fee unlimited). */
+async function loadLiveMakeData(make: string, getToken?: () => Promise<string | null>): Promise<CatalogueMake | null> {
+  try {
+    const token = getToken ? await getToken() : null;
+    const res = await fetch("/api/imagin8/models", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ make }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const variants = Array.isArray(data.variants) ? data.variants : [];
+    if (!variants.length) return null;
+    return liveToCatalogue(variants);
+  } catch {
+    return null;
+  }
+}
+
+function loadMakeData(make: string, getToken?: () => Promise<string | null>): Promise<CatalogueMake> {
   const cached = makeDataCache.get(make);
   if (cached) return Promise.resolve(cached);
   const pending = makeDataPromises.get(make);
   if (pending) return pending;
-  const p = loadMakeIndex().then((idx) => {
+  const p = loadMakeIndex().then(async (idx) => {
+    // Try live API first for fresher data
+    const live = await loadLiveMakeData(make, getToken);
+    if (live && Object.keys(live).length) {
+      makeDataCache.set(make, live);
+      return live;
+    }
+    // Fall back to static curated catalogue
     const entry = idx.find((e) => e.name === make);
     if (!entry) return {} as CatalogueMake;
     return fetch(`/catalogue/${entry.file}`)
@@ -57,6 +109,7 @@ interface Props {
   initial?: Partial<VehiclePickerValue>;
   onSelect: (v: VehiclePickerValue) => void;
   theme?: "flow" | "lens" | "inspect";
+  getToken?: () => Promise<string | null>;
 }
 
 /* ── Searchable select ─────────────────────────────────── */
@@ -222,7 +275,7 @@ function SearchSelect({
 
 /* ── Main picker ───────────────────────────────────────── */
 
-export default function VehiclePicker({ initial, onSelect, theme = "flow" }: Props) {
+export default function VehiclePicker({ initial, onSelect, theme = "flow", getToken }: Props) {
   const [makeIndex, setMakeIndex] = useState<MakeIndexEntry[] | null>(makeIndexCache);
   const [make, setMake] = useState(initial?.make || "");
   const [model, setModel] = useState(initial?.model || "");
@@ -236,15 +289,16 @@ export default function VehiclePicker({ initial, onSelect, theme = "flow" }: Pro
   useEffect(() => { loadMakeIndex().then(setMakeIndex); }, []);
 
   // Load the selected make's subtree on demand.
+  // Live API first (fresher data), static fallback.
   useEffect(() => {
     if (!make) { setMakeData(null); return; }
     const cached = makeDataCache.get(make);
     if (cached) { setMakeData(cached); return; }
     let alive = true;
     setMakeLoading(true);
-    loadMakeData(make).then((d) => { if (alive) { setMakeData(d); setMakeLoading(false); } });
+    loadMakeData(make, getToken).then((d) => { if (alive) { setMakeData(d); setMakeLoading(false); } });
     return () => { alive = false; };
-  }, [make]);
+  }, [make, getToken]);
 
   const makes = useMemo(() => (makeIndex ? makeIndex.map((e) => e.name) : []), [makeIndex]);
 

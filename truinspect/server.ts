@@ -338,7 +338,7 @@ if (!LOCAL_MODE || hasAdc) {
 
 if (LOCAL_MODE) {
   console.log('────────────────────────────────────────────');
-  console.log(' TruInspect LOCAL PC MODE (v1.5)');
+  console.log(' TruInspect LOCAL PC MODE (v1.6)');
   console.log(' Inventory file: ' + LOCAL_DATA_FILE);
   console.log(' DMS export URL: ' + DEFAULT_DMS_URL);
   console.log(' Open: http://localhost:3000');
@@ -1558,7 +1558,7 @@ app.get('/api/export/dms/config', authenticate, async (_req: any, res) => {
 
 // ==================== IMAGIN8 / TRANSUNION ====================
 
-import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, getStaticInfo as imagin8GetStaticInfo } from "../packages/imagin8";
+import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, getStaticInfo as imagin8GetStaticInfo, getModels as imagin8GetModels } from "../packages/imagin8";
 
 const IMAGIN8_API_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
@@ -1613,6 +1613,21 @@ app.post('/api/imagin8/static', authenticate, async (req: any, res) => {
   } catch (err: any) {
     console.error('[imagin8] static info failed:', err?.message || err);
     res.status(502).json({ error: err?.message || 'Static info failed' });
+  }
+});
+
+// Live model catalogue for the Add Vehicle picker (platform key / flat subscription).
+// Returns { variants: CatalogueVariant[] } so the picker can build model → variant → mmCode.
+app.post('/api/imagin8/models', authenticate, async (req: any, res) => {
+  const { make } = req.body || {};
+  if (!make) return res.status(400).json({ error: 'make is required' });
+  if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
+  try {
+    const variants = await imagin8GetModels(String(make), imagin8Opts);
+    res.json({ variants });
+  } catch (err: any) {
+    console.error('[imagin8] getModels failed:', err?.message || err);
+    res.status(502).json({ error: err?.message || 'Model lookup failed' });
   }
 });
 

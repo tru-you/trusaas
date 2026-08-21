@@ -717,6 +717,7 @@ export default function InventoryList({
               <VehiclePicker
                 key={pickerKey}
                 theme="inspect"
+                getToken={() => user.getIdToken()}
                 initial={editingVehicle ? { make: editingVehicle.make, model: editingVehicle.model, year: editingVehicle.year, variant: editingVehicle.trim } : (make || model ? { make, model, year, variant: trim } : undefined)}
                 onSelect={(v: VehiclePickerValue) => {
                   setMake(v.make);

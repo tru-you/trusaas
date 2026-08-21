@@ -716,6 +716,7 @@ export default function InventoryList({
             <div className="space-y-3">
               <VehiclePicker
                 theme="lens"
+                getToken={() => user.getIdToken()}
                 initial={editingVehicle ? { make: editingVehicle.make, model: editingVehicle.model, year: editingVehicle.year, variant: editingVehicle.trim } : undefined}
                 onSelect={(v: VehiclePickerValue) => {
                   setMake(v.make);
