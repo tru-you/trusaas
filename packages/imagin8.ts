@@ -288,10 +288,10 @@ export async function getValues(
     for (const k of keys) { const v = num(src?.[k] ?? data?.[k]); if (v != null) return v; }
     return null;
   };
-  const retailPrice = pick("RetailPrice", "retailPrice", "Retail");
-  const tradePrice = pick("TradePrice", "tradePrice", "Trade");
-  const marketValue = pick("MarketValue", "marketValue", "Market", "ListedPrice");
-  const newPrice = pick("NewPrice", "newPrice", "New");
+  const retailPrice = pick("RetailPrice", "retailPrice", "Retail", "mmRetail");
+  const tradePrice = pick("TradePrice", "tradePrice", "Trade", "mmTrade");
+  const marketValue = pick("MarketValue", "marketValue", "Market", "ListedPrice", "mmEstimator");
+  const newPrice = pick("NewPrice", "newPrice", "New", "mmNew");
   const gotAnyPrice = [retailPrice, tradePrice, marketValue, newPrice].some((v) => v != null);
 
   return {
