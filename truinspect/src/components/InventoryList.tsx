@@ -325,6 +325,10 @@ export default function InventoryList({
       const fuelMap: Record<string, 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric'> =
         { P: 'Petrol', D: 'Diesel', H: 'Hybrid', E: 'Electric' };
       if (s.fuelType && fuelMap[s.fuelType]) { setFuelType(fuelMap[s.fuelType]); filled.push('fuel'); }
+      // Re-init the make/model picker so it reflects the code's identity — the
+      // picker is catalogue-driven and otherwise keeps its own selection, which
+      // is why make/model looked like they "didn't adjust" to the M&M code.
+      if (s.make || s.model) setPickerKey((k) => k + 1);
       setStaticNote(
         filled.length
           ? `Filled ${filled.join(', ')} from the M&M code — check and adjust.`
@@ -688,6 +692,28 @@ export default function InventoryList({
             </div>
 
             <div className="space-y-3">
+              {/* M&M-first: the code is the identity. Enter it and make/model/
+                  fuel/specs fill from the (flat-rate) static API; the catalogue
+                  picker below is the browse-by-hand alternative. */}
+              <div>
+                <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">M&amp;M Code — auto-fills make, model &amp; fuel</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="e.g. 60090200"
+                  value={mmCode}
+                  onChange={(e) => setMmCode(e.target.value)}
+                  onBlur={(e) => lookupStaticInfo(e.target.value)}
+                  className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
+                />
+                {staticLoading && <p className="mt-1 text-[12px] text-[rgba(232,234,230,0.5)]">Looking up specs…</p>}
+                {staticNote && <p className="mt-1 text-[12px] text-[#4FE3DC]">{staticNote}</p>}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-neutral-800/60" />
+                <span className="text-[11px] text-neutral-600">or browse the catalogue</span>
+                <div className="flex-1 h-px bg-neutral-800/60" />
+              </div>
               <VehiclePicker
                 key={pickerKey}
                 theme="inspect"
@@ -817,25 +843,6 @@ export default function InventoryList({
                     onChange={(e) => setVin(e.target.value.toUpperCase())}
                     className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
                   />
-                </div>
-                {/* Auto-filled by the make/model picker above (the M&M code it
-                    resolves); editable for a hand correction. */}
-                <div>
-                  <label className="text-[13px] font-medium text-[rgba(232,234,230,0.72)] block mb-1">M&amp;M Code</label>
-                  <input
-                    type="text"
-                    placeholder="From make/model — auto-fills specs"
-                    value={mmCode}
-                    onChange={(e) => setMmCode(e.target.value)}
-                    onBlur={(e) => lookupStaticInfo(e.target.value)}
-                    className="w-full min-h-[48px] bg-[rgba(232,234,230,0.04)] px-3 rounded-[12px] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] text-[16px] text-[#E8EAE6] placeholder-[rgba(232,234,230,0.32)] outline-none focus:border-[#4FE3DC] transition-colors font-mono"
-                  />
-                  {staticLoading && (
-                    <p className="mt-1 text-[12px] text-[rgba(232,234,230,0.5)]">Looking up specs…</p>
-                  )}
-                  {staticNote && (
-                    <p className="mt-1 text-[12px] text-[#4FE3DC]">{staticNote}</p>
-                  )}
                 </div>
                 <div className="col-span-2 space-y-2 pt-2 border-t border-neutral-800/50">
                   <div>
