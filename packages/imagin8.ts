@@ -1,17 +1,18 @@
 /**
  * Imagin8 eValue8 API client — TransUnion vehicle data for SA dealers.
  *
- * Transport (confirmed against the live API console, 2026-08):
- *   POST https://www.imagin8.co.za/api/{Live|Sandbox}/channelApps/api/<controller>.php
- *   Content-Type: application/json
- *   Body: { route, APIKey, customerId, ...params }
+ * Transport (confirmed against the live API, 2026-08-21):
+ *   GET https://www.imagin8.co.za/api/{Live|Sandbox}/channelApps/api/<controller>.php?route=...&APIKey=...&...
  *
- * Auth is TWO credentials, both in the body:
+ * The API accepts query string parameters only. POST with JSON body returns
+ * "No request data received". All params (auth + payload) are URL-encoded.
+ *
+ * Auth is TWO credentials:
  *   - APIKey     — the secret (IMAGIN8_API_KEY, or a dealer's own key)
  *   - customerId — the account id (IMAGIN8_CUSTOMER_ID, or a dealer's own)
  *
  * Billing model:
- *   - getMakes / getModels → platform key (flat monthly, unlimited) — free to dealer.
+ *   - getMakes / getModels / getStaticInfo → platform key (flat monthly, unlimited) — free to dealer.
  *   - getValues / regCheck → dealer's key (per-call, dealer pays).
  */
 
@@ -31,32 +32,40 @@ export interface Imagin8Opts {
   timeout?: number;
 }
 
-/** POST a routed request to a controller and return the parsed JSON. */
-async function post(
+/** Build a query string from a flat object. Skips null/undefined/empty. */
+function toQueryString(obj: Record<string, unknown>): string {
+  const parts: string[] = [];
+  for (const [k, v] of Object.entries(obj)) {
+    if (v == null || v === "") continue;
+    parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`);
+  }
+  return parts.join("&");
+}
+
+/** GET a routed request to a controller and return the parsed JSON. */
+async function get(
   controller: string,
   route: string,
   params: Record<string, unknown>,
   opts: Imagin8Opts,
 ): Promise<any> {
   const base = opts.sandbox ? SANDBOX_BASE : LIVE_BASE;
-  const url = `${base}/${controller}.php`;
-
-  const body = {
+  const qs = toQueryString({
     route,
     APIKey: opts.apiKey,
     customerId: opts.customerId,
     ...params,
-  };
+  });
+  const url = `${base}/${controller}.php?${qs}`;
 
   const controllerAbort = new AbortController();
   const timer = setTimeout(() => controllerAbort.abort(), opts.timeout ?? 20_000);
 
   try {
     const res = await fetch(url, {
-      method: "POST",
+      method: "GET",
       signal: controllerAbort.signal,
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(body),
+      headers: { Accept: "application/json" },
     });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
@@ -113,14 +122,14 @@ function mapVariant(row: any): CatalogueVariant {
 
 /** All variants for a given make (make/model/variant + years + M&M code). */
 export async function getMakes(make: string, opts: Imagin8Opts): Promise<CatalogueVariant[]> {
-  const data = await post("im8vehicle_api", "getMakes", { make }, opts);
+  const data = await get("im8vehicle_api", "getMakes", { make }, opts);
   const rows: any[] = data?.Variants || data?.variants || [];
   return rows.map(mapVariant);
 }
 
 /** Models for a make (thin wrapper; same row shape as getMakes). */
 export async function getModels(make: string, opts: Imagin8Opts): Promise<CatalogueVariant[]> {
-  const data = await post("im8vehicle_api", "getModels", { make }, opts);
+  const data = await get("im8vehicle_api", "getModels", { make }, opts);
   const rows: any[] = data?.Variants || data?.variants || data?.Models || [];
   return rows.map(mapVariant);
 }
@@ -154,7 +163,7 @@ export async function getStaticInfo(mmCode: string, opts: Imagin8Opts): Promise<
   // Live is case-sensitive on the param: `mmCode`/`vehicleCode` return specs,
   // lowercase `mmcode` returns an empty {"raw":""}. Send the working names
   // (confirmed against the live API 2026-08-21).
-  const data = await post("im8vehicle_api", "getStaticInfo", { mmCode, vehicleCode: mmCode }, opts);
+  const data = await get("im8vehicle_api", "getStaticInfo", { mmCode, vehicleCode: mmCode }, opts);
   const row: any = (data?.StaticInfo || data?.staticInfo || [])[0] || {};
   return {
     mmCode: row?.mmCode || mmCode,
@@ -254,7 +263,7 @@ export async function getValues(
 
   let data: any;
   try {
-    data = await post("im8vehicle_api", "getValues", params, opts);
+    data = await get("im8vehicle_api", "getValues", params, opts);
   } catch (err: any) {
     // Unprovisioned key, network, or API error — soft-fail, don't blow up the UI.
     return { ...base, note: "TransUnion valuation unavailable — using market estimate." };
@@ -323,7 +332,7 @@ export async function regCheck(
   opts: Imagin8Opts,
 ): Promise<RegCheckResult> {
   const paramKey = type === "vin" ? "vinno" : type === "reg" ? "regno" : "engineno";
-  const data = await post("im8vehicle_api", "regCheck", { [paramKey]: identifier }, opts);
+  const data = await get("im8vehicle_api", "regCheck", { [paramKey]: identifier }, opts);
 
   const alerts: string[] = [];
   if (toBool(data?.Stolen)) alerts.push("STOLEN — vehicle is flagged as stolen");
@@ -370,7 +379,7 @@ export async function bankAvs(
   surname: string,
   opts: Imagin8Opts,
 ): Promise<AvsResult> {
-  const data = await post("im8bank_api", "avsr", {
+  const data = await get("im8bank_api", "avsr", {
     accountnumber: bankAccount,
     branchcode: branchCode,
     idnumber: idNumber,
@@ -428,7 +437,7 @@ export async function createInvoice(
   params: CreateInvoiceParams,
   opts: Imagin8Opts,
 ): Promise<InvoiceResult> {
-  const data = await post("im8core_api", "invoice.create", {
+  const data = await get("im8core_api", "invoice.create", {
     CustomerName: params.customerName,
     CustomerEmail: params.customerEmail,
     CustomerPhone: params.customerPhone,
