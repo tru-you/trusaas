@@ -60,16 +60,24 @@ async function loadLiveMakeData(make: string, getToken?: () => Promise<string | 
   try {
     const token = getToken ? await getToken() : null;
     const qs = new URLSearchParams({ make }).toString();
+    console.log(`[VehiclePicker] fetching /api/imagin8/models?${qs}`);
     const res = await fetch(`/api/imagin8/models?${qs}`, {
       method: "GET",
       headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     });
-    if (!res.ok) return null;
+    console.log(`[VehiclePicker] response status: ${res.status}`);
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.warn(`[VehiclePicker] API error ${res.status}:`, text.slice(0, 200));
+      return null;
+    }
     const data = await res.json();
     const variants = Array.isArray(data.variants) ? data.variants : [];
+    console.log(`[VehiclePicker] got ${variants.length} variants`);
     if (!variants.length) return null;
     return liveToCatalogue(variants);
-  } catch {
+  } catch (err: any) {
+    console.error(`[VehiclePicker] fetch failed:`, err?.message || err);
     return null;
   }
 }
