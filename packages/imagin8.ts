@@ -243,6 +243,7 @@ export async function getValues(
     applicationName: opts.appName,
     mileage: mileageCode(mileage),
     guide: currentGuide(),
+    condition: "GO",
   };
 
   const base: TuValuation = {
