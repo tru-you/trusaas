@@ -151,6 +151,16 @@ app.get("/api/health", (_req, res) => {
        under a mistyped name restarts the service and looks identical to
        success from outside; this is the field that tells them apart. */
     syncKeyConfigured: !!SYNC_SERVICE_KEY,
+    // Booleans only — confirm which Imagin8/TU keys reached the process.
+    // getValues needs all five true (or the dealer's own key/customerId set
+    // in dealership settings).
+    imagin8: {
+      apiKey: !!process.env.IMAGIN8_API_KEY,
+      customerId: !!process.env.IMAGIN8_CUSTOMER_ID,
+      userName: !!process.env.IMAGIN8_USERNAME,
+      password: !!process.env.IMAGIN8_PASSWORD,
+      appName: !!process.env.IMAGIN8_APP_NAME,
+    },
     uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
     ts: new Date().toISOString(),
   });
