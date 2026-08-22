@@ -184,20 +184,26 @@ export function computeTradeInValue(
 
 export function computeOverallRating(items: InspectionItem[]): number {
   if (items.length === 0) return 5.0;
-  let penalty = 0;
+  const penalties: number[] = [];
   for (const item of items) {
+    // Status is the primary fault signal.
     if (item.status === 'DAMAGED' || item.status === 'EXPIRED' || item.status === 'NO_BOOK') {
-      penalty += 0.5;
+      penalties.push(0.5);
     } else if (item.status === 'NOT_PRESENT' || item.status === 'MISSING') {
-      penalty += 0.3;
+      penalties.push(0.25);
     } else if (item.status === 'PARTIAL') {
-      penalty += 0.15;
+      penalties.push(0.15);
     }
-    if (item.condition === 'Poor') {
-      penalty += 0.3;
-    } else if (item.condition === 'Average') {
-      penalty += 0.1;
+    // Condition only adds on top for a genuinely poor item, and never double
+    // counts a DAMAGED status (the fault is already captured above).
+    if (item.condition === 'Poor' && item.status !== 'DAMAGED') {
+      penalties.push(0.2);
     }
+    // 'Average' is normal for a used car — not a fault, so no penalty.
   }
+  // Diminishing returns: the worst fault counts fully, each further one less,
+  // so many minor notes don't collapse a car to 1/5.
+  penalties.sort((a, b) => b - a);
+  const penalty = penalties.reduce((s, p, i) => s + p / (i + 1), 0);
   return Math.max(1.0, Math.round((5.0 - Math.min(4.0, penalty)) * 10) / 10);
 }
