@@ -615,25 +615,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               );
             })()}
 
-            {/* Required photo checklist */}
-            <div className="section-title"><span className="n"><ClipboardList size={11} /> Required photo checklist</span><span className="ln" /></div>
-            <table className="checklist">
-              <thead>
-                <tr><th>Slot</th><th>Status</th></tr>
-              </thead>
-              <tbody>
-                {DEFAULT_TEMPLATE.slots.filter(s => s.required).map(s => {
-                  const has = !!vehicle.photos?.[s.id];
-                  return (
-                    <tr key={s.id}>
-                      <td>{s.name}</td>
-                      <td style={{ color: has ? 'var(--green)' : 'var(--red)', fontWeight:700 }}>{has ? 'Captured' : 'Missing'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
             {/* Damage findings */}
             <div className="section-title"><span className="n"><AlertTriangle size={11} /> Damage findings</span><span className="ln" /></div>
             <div className="card" style={{ display:'flex', alignItems:'center', gap:10 }}>
