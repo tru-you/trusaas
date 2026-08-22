@@ -488,7 +488,7 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
               <div className="doc-type">Trade-in Valuation</div>
               <div className="doc-id">{deriveReportId(vehicle)} · {now}</div>
               <div style={{ display: 'inline-block', marginTop: 5, fontFamily: 'var(--mono)', fontSize: '8px', fontWeight: 600, letterSpacing: '.16em', textTransform: 'uppercase' as const, color: 'var(--cyan)', background: 'var(--cyan-bg)', border: '1px solid rgba(7,136,155,.25)', borderRadius: 100, padding: '3px 8px' }}>
-                ◷ {items.length}-point · {photosWithLabel.length}-shot inspection
+                ◷ {items.length}-point inspection
               </div>
             </div>
           </div>
