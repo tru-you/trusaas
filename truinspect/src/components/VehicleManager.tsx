@@ -2,7 +2,7 @@ import React from 'react';
 import {
   ArrowLeft, Save, FileText, ShoppingCart, AlertTriangle, Camera, Pencil,
   CheckCircle2, Phone, Mail, MessageCircle, HandCoins, User, Upload, Paperclip,
-  Trash2, Plus,
+  Trash2, Plus, X, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { Vehicle, VehicleOffer } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -48,6 +48,10 @@ export default function VehicleManager({
   const [offerDoc, setOfferDoc] = React.useState<string>('');
   const [savingOffer, setSavingOffer] = React.useState(false);
   const offerDocRef = React.useRef<HTMLInputElement | null>(null);
+
+  /** Lightbox state for desktop photo zoom */
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  const [lightboxIndex, setLightboxIndex] = React.useState(0);
 
   React.useEffect(() => {
     setForm({
@@ -400,9 +404,15 @@ export default function VehicleManager({
             <p className="text-[13px] py-4 text-center" style={{ color: 'var(--muted)' }}>No photos yet — field workers capture on their phones, or upload from files above.</p>
           ) : (
             <div className="grid grid-cols-4 xl:grid-cols-6 gap-2">
-              {photoSlots.map((slot) => (
-                <div key={slot.id} className="relative aspect-[4/3] rounded-lg overflow-hidden" style={{ border: '1px solid var(--glass-line)' }}>
-                  <img src={vehicle.photos[slot.id]} alt={slot.label} className="w-full h-full object-cover" loading="lazy" />
+              {photoSlots.map((slot, idx) => (
+                <div
+                  key={slot.id}
+                  className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group"
+                  style={{ border: '1px solid var(--glass-line)' }}
+                  onClick={() => { setLightboxIndex(idx); setLightboxOpen(true); }}
+                >
+                  <img src={vehicle.photos[slot.id]} alt={slot.label} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   <div className="absolute bottom-0 left-0 right-0 px-2 py-1" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}>
                     <p className="text-[10px] truncate" style={{ color: 'var(--white-dim)' }}>{slot.label}</p>
                   </div>
@@ -455,6 +465,73 @@ export default function VehicleManager({
           </button>
         </div>
       </div>
+
+      {/* ── Lightbox ── */}
+      {lightboxOpen && photoSlots.length > 0 && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={() => setLightboxOpen(false)}
+        >
+          {/* Top bar */}
+          <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3">
+            <p className="text-[13px] font-medium" style={{ color: 'var(--white-dim)' }}>
+              {photoSlots[lightboxIndex]?.label} <span className="text-[12px]" style={{ color: 'var(--muted)' }}>({lightboxIndex + 1} / {photoSlots.length})</span>
+            </p>
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <X size={22} style={{ color: 'var(--white)' }} />
+            </button>
+          </div>
+
+          {/* Image */}
+          <div className="flex-1 flex items-center justify-center w-full px-4 py-16" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={vehicle.photos[photoSlots[lightboxIndex].id]}
+              alt={photoSlots[lightboxIndex]?.label}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+          </div>
+
+          {/* Nav arrows */}
+          {photoSlots.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + photoSlots.length) % photoSlots.length); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <ChevronLeft size={24} style={{ color: 'var(--white)' }} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % photoSlots.length); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <ChevronRight size={24} style={{ color: 'var(--white)' }} />
+              </button>
+            </>
+          )}
+
+          {/* Damage badges for this photo */}
+          {vehicle.damageFindings?.[photoSlots[lightboxIndex].id]?.length > 0 && (
+            <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 justify-center" onClick={(e) => e.stopPropagation()}>
+              {vehicle.damageFindings[photoSlots[lightboxIndex].id].map((f) => (
+                <span
+                  key={f.id}
+                  className="px-2.5 py-1 rounded-full text-[11px] font-medium"
+                  style={{
+                    background: f.severity >= 4 ? 'rgba(239,68,68,0.25)' : 'rgba(232,234,230,0.12)',
+                    color: f.severity >= 4 ? 'var(--danger)' : 'var(--white-dim)',
+                    border: `1px solid ${f.severity >= 4 ? 'rgba(239,68,68,0.4)' : 'rgba(232,234,230,0.15)'}`,
+                  }}
+                >
+                  {f.damageType} · Sev {f.severity}/5
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
