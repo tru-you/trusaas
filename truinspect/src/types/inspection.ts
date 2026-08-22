@@ -4,7 +4,7 @@ export type InspectionStatus =
   | 'VALID' | 'EXPIRED' | 'MISSING'
   | 'FSH' | 'PARTIAL' | 'NO_BOOK';
 
-export type InspectionCondition = 'Good' | 'Fair' | 'Poor' | 'Needs Recon';
+export type InspectionCondition = 'Showroom' | 'Good' | 'Average' | 'Poor';
 
 export type ItemType = 'visual_panel' | 'accessory' | 'documentation' | 'verification';
 
@@ -23,6 +23,10 @@ export interface InspectionItem {
    *  Entered when the item is flagged for recon; printed under the item's line
    *  in the report's valuation build-up. Optional — legacy saved items omit it. */
   reconNote?: string;
+  /** Service book specific fields */
+  lastServicedDate?: string;
+  serviceDue?: boolean;
+  serviceComments?: string;
   isCompleted: boolean;
 }
 
@@ -189,9 +193,9 @@ export function computeOverallRating(items: InspectionItem[]): number {
     } else if (item.status === 'PARTIAL') {
       penalty += 0.15;
     }
-    if (item.condition === 'Poor' || item.condition === 'Needs Recon') {
+    if (item.condition === 'Poor') {
       penalty += 0.3;
-    } else if (item.condition === 'Fair') {
+    } else if (item.condition === 'Average') {
       penalty += 0.1;
     }
   }

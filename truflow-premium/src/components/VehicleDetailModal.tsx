@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { authFetch } from "../lib/session";
 import { VEHICLE_EXTRAS } from "../lib/vehicleExtras";
-import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from "../../../packages/imagin8-gating.tsx";
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from "./imagin8-gating";
 
 function numberToWords(n: number): string {
   if (n === 0) return "Zero";

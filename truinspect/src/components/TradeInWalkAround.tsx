@@ -62,10 +62,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
       if (patch.status !== undefined) {
         if (!needsReconCost(updated.status)) {
           updated.estimatedRepairCost = 0;
-          updated.condition = 'Good';
-          updated.reconNote = '';
-        } else {
-          updated.condition = 'Needs Recon';
+          // Condition and note stay as-is — user controls the rating manually.
         }
       }
       const hasPhoto = !!updated.photoUrl;
@@ -257,9 +254,9 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
           <div className="mb-4">
             <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Condition</p>
             <div className="flex gap-2">
-              {(['Good', 'Fair', 'Poor', 'Needs Recon'] as InspectionCondition[]).map((c) => {
+              {(['Showroom', 'Good', 'Average', 'Poor'] as InspectionCondition[]).map((c) => {
                 const active = item.condition === c;
-                const acceptable = c === 'Good' || c === 'Fair';
+                const acceptable = c === 'Showroom' || c === 'Good';
                 return (
                   <button
                     key={c}
@@ -303,7 +300,7 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
               WHY there's a deduction, not just the amount. */}
           {needsReconCost(item.status) && (
             <div className="mt-4">
-              <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">What does this cost cover?</p>
+              <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-2">Notes regarding Recon:</p>
               <textarea
                 rows={2}
                 value={item.reconNote || ''}
@@ -311,6 +308,42 @@ export default function TradeInWalkAround({ vehicle, onBack, onComplete, onUploa
                 placeholder="e.g. Repaint front bumper — deep scratch across panel"
                 className="w-full px-4 py-3 rounded-xl text-[14px] leading-snug border resize-none bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
               />
+            </div>
+          )}
+          {/* Service book specific fields */}
+          {item.id === 'service_book' && (
+            <div className="mt-4 space-y-3">
+              <div>
+                <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-1.5">When was the vehicle last serviced?</p>
+                <input
+                  type="date"
+                  value={item.lastServicedDate || ''}
+                  onChange={(e) => updateItem({ lastServicedDate: e.target.value })}
+                  className="w-full px-4 min-h-[46px] rounded-xl text-[15px] border bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] focus:outline-none focus:border-cyan-500/40"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="service-due"
+                  checked={item.serviceDue || false}
+                  onChange={(e) => updateItem({ serviceDue: e.target.checked })}
+                  className="w-5 h-5 rounded border-neutral-600 bg-neutral-800 accent-cyan-500 shrink-0"
+                />
+                <label htmlFor="service-due" className="text-[14px] text-[#E8EAE6] cursor-pointer select-none">
+                  Vehicle is due for a service
+                </label>
+              </div>
+              <div>
+                <p className="text-[12px] text-[rgba(232,234,230,0.55)] mb-1.5">Any other service-related comments</p>
+                <textarea
+                  rows={2}
+                  value={item.serviceComments || ''}
+                  onChange={(e) => updateItem({ serviceComments: e.target.value })}
+                  placeholder="e.g. Cambelt due at next service, brake pads 20% remaining"
+                  className="w-full px-4 py-3 rounded-xl text-[14px] leading-snug border resize-none bg-neutral-950/80 border-neutral-800 text-[#E8EAE6] placeholder-neutral-600 focus:outline-none focus:border-cyan-500/40"
+                />
+              </div>
             </div>
           )}
         </div>

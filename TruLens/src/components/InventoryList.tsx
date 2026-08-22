@@ -12,7 +12,7 @@ import { Vehicle, DmsExportResult } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
-import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from '../../../packages/imagin8-gating.tsx';
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 import DiscScanner from './DiscScanner';
 import VehiclePicker, { VehiclePickerValue } from './VehiclePicker';
 import type { DiscScan } from '../lib/saDisc';

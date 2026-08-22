@@ -55,6 +55,19 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
     vehicle.dealerPhone ||
     localStorage.getItem('trulens_dealer_phone') || ''
   );
+  /** Dealer margin — surfaced on the final screen so the appraiser can tweak
+   *  the offer before the customer sees it. Synced to localStorage. */
+  const [marginPercentage, setMarginPercentage] = useState(() =>
+    Number(localStorage.getItem('trulens_margin_pct')) || valuation.marginPercentage || 15
+  );
+  const [finalOffer, setFinalOffer] = useState(valuation.finalTradeInValue);
+
+  useEffect(() => {
+    const avg = valuation.averageRetailPrice || 0;
+    const recon = valuation.totalReconCost || 0;
+    const offer = Math.round((avg - recon) * (1 - marginPercentage / 100));
+    setFinalOffer(Math.max(0, offer));
+  }, [marginPercentage, valuation.averageRetailPrice, valuation.totalReconCost]);
 
   const dealerName =
     vehicle.dealerName ||
@@ -158,7 +171,12 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
       contactPhone,
       digitalSignatureUrl: signatureUrl,
     },
-    valuation: { ...valuation, totalReconCost: totalRecon },
+    valuation: {
+      ...valuation,
+      totalReconCost: totalRecon,
+      marginPercentage,
+      finalTradeInValue: finalOffer,
+    },
     items,
   });
 
@@ -257,13 +275,14 @@ export default function TradeInSummary({ vehicle, items, valuation, onBack, onSa
 
   /* Worst condition in the category wins the pill — a category with one
      "Poor" item should not read as Good because the rest are fine. */
-  const conditionRank: Record<string, number> = { Good: 0, Fair: 1, 'Needs Recon': 2, Poor: 3 };
+  const conditionRank: Record<string, number> = { Showroom: 0, Good: 1, Average: 2, Poor: 3 };
   const categoryGrade = (catItems: InspectionItem[]): { label: string; cls: string } => {
     if (!catItems.length) return { label: '—', cls: 'good' };
-    const worst = catItems.reduce((w, i) => (conditionRank[i.condition] > conditionRank[w] ? i.condition : w), 'Good');
+    const worst = catItems.reduce((w, i) => (conditionRank[i.condition] > conditionRank[w] ? i.condition : w), 'Showroom');
+    if (worst === 'Showroom') return { label: 'Showroom', cls: 'good' };
     if (worst === 'Good') return { label: 'Good', cls: 'good' };
-    if (worst === 'Fair') return { label: 'Fair', cls: 'fair' };
-    return { label: worst === 'Needs Recon' ? 'Needs Recon' : 'Poor', cls: 'poor' };
+    if (worst === 'Average') return { label: 'Average', cls: 'fair' };
+    return { label: 'Poor', cls: 'poor' };
   };
 
   /* Valuation build-up: market average, then each item carrying a recon

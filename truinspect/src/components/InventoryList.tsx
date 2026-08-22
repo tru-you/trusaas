@@ -17,7 +17,7 @@ import type { DiscScan } from '../lib/saDisc';
 import InstallAppButton from './InstallAppButton';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
-import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from '../../../packages/imagin8-gating.tsx';
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
