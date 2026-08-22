@@ -1,6 +1,6 @@
 # TruSaaS — Agent Project Memory
 
-**Last updated:** 2026-08-22 by Kimi (OpenCode)
+**Last updated:** 2026-08-23 by Kimi (OpenCode)
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or deployment config changes.
 
 ---
@@ -87,7 +87,7 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 - `GET /api/imagin8/bundles` — read dealer bundles
 - `POST /api/imagin8/bundles` — admin/dealer top-up
 
-**Shared UI:** `packages/imagin8-gating.tsx` — `Imagin8GatedButton`, `useImagin8Gating`, `Imagin8Bundles`
+**Shared UI:** `packages/tru-ui-src/src/imagin8-gating.tsx` — `Imagin8GatedButton`, `useImagin8Gating`, `Imagin8Bundles`. Synced into each app's `src/components/imagin8-gating.tsx` at build time.
 
 ### DeepSeek
 
@@ -185,6 +185,77 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 - `IMAGIN8_APP_NAME` changed to `eValue8Broker` in Render dashboard
 - Applied to: `trusaas-lens`, `trusaas-inspect`, `trusaas-premium`
 
+### Build Fix: `imagin8-gating.tsx` Location (2026-08-22)
+
+**Problem:** `packages/imagin8-gating.tsx` caused Vite/Rollup resolve errors for React when imported from outside `src/`.
+
+**Fix:** Moved to `packages/tru-ui-src/src/imagin8-gating.tsx` so the `sync:ui` prebuild script copies it into each app's `src/components/`. Local copies added for TruLens, TruInspect, and TruFlow Premium. All imports updated to `./imagin8-gating`.
+
+**Files changed:**
+- `packages/tru-ui-src/src/imagin8-gating.tsx` (new)
+- `TruLens/src/components/imagin8-gating.tsx` (new)
+- `truinspect/src/components/imagin8-gating.tsx` (new)
+- `truflow-premium/src/components/imagin8-gating.tsx` (new)
+
+### Remove Imagin8 Buttons from Inventory Cards (2026-08-22)
+
+**Problem:** 3 gated buttons on every vehicle card cluttered the inventory list UI.
+
+**Fix:** Removed `Imagin8GatedButton` rows from `TruLens` and `TruInspect` `InventoryList` vehicle cards. Buttons now live only in detail/modal views (Add Vehicle, VehicleDetailModal).
+
+**Files changed:**
+- `TruLens/src/components/InventoryList.tsx`
+- `truinspect/src/components/InventoryList.tsx`
+
+### `true-cars` Unlimited Imagin8 Bypass (2026-08-22)
+
+**Problem:** `true-cars` slug (our own dealership/showroom) shouldn't be bundle-gated.
+
+**Fix:** Added `UNLIMITED_DEALERS = new Set(['true-cars'])` + `isUnlimitedDealer()` to all 3 servers. Paid routes skip bundle checks and deduction for this slug.
+
+**Files changed:**
+- `TruLens/server.ts`
+- `truinspect/server.ts`
+- `truflow-premium/server.ts`
+
+### Add Vehicle: Reg Check + Accident Report (2026-08-22)
+
+**New:** Two ghost buttons in the Add Vehicle flow for both TruLens and TruInspect:
+- **Verify Registration** — calls `regCheck` via VIN/stock number
+- **Accident Report** — calls `accidentReport` via VIN
+
+Results display inline as chips: "Clear" (emerald) / "Stolen" / "Finance pending" / "X claim(s)" (rose).
+
+**Files changed:**
+- `TruLens/src/components/InventoryList.tsx` (Add Vehicle form)
+- `truinspect/src/components/AddVehicleDialog.tsx`
+
+### TruInspect Desktop Lightbox (2026-08-22)
+
+**New:** Click any photo in `VehicleManager` desktop grid to open full-screen lightbox.
+- Arrow navigation between photos
+- Shows slot label + count
+- Damage tags displayed as chips at bottom
+
+**Files changed:**
+- `truinspect/src/components/VehicleManager.tsx`
+
+### Trade-In: Service Book Fields + Editable Margin (2026-08-22)
+
+**New fields on `service_book` step:**
+- `lastServicedDate` — date picker
+- `serviceDue` — checkbox
+- `serviceComments` — textarea
+
+**Editable margin on final screen:**
+- `TradeInSummary` now shows a dealer margin input that recalculates the final offer live
+- Persists through save and reflects in the report
+
+**Files changed:**
+- `truinspect/src/types/inspection.ts`
+- `truinspect/src/components/TradeInWalkAround.tsx`
+- `truinspect/src/components/TradeInSummary.tsx`
+
 ---
 
 ## 5. Configuration Notes
@@ -259,15 +330,18 @@ All data lives on mounted Render disks. **Without these, every deploy wipes inve
 
 ## 7. Known Issues / TODO
 
+- [x] ~~Imagin8 gated buttons — click handlers currently show `alert()` placeholders~~ **Fixed:** wired real API calls in Add Vehicle flow + Premium VehicleDetailModal
+- [x] ~~Bundle top-up UI — currently no dealer-facing interface~~ **Partial:** admin POST `/api/imagin8/bundles` still only top-up method, but `true-cars` is unlimited
 - [ ] TruInspect `VehicleManager.tsx` / `DesktopDashboard.tsx` — pre-existing TS errors unrelated to recent changes
 - [ ] `packages/imagin8.ts` `getModels` response shape — currently heuristic split on first word for model/variant. May need refinement based on real Imagin8 responses.
-- [ ] Imagin8 gated buttons — click handlers currently show `alert()` placeholders; need to wire real API calls and result display
-- [ ] Bundle top-up UI — currently no dealer-facing interface to buy more bundles; admin POST `/api/imagin8/bundles` only
 - [ ] TruFlow Premium `render.yaml` — `IMAGIN8_APP_NAME` also declared but may not need `getModels` route unless Premium gets a VehiclePicker too
+- [ ] TruInspect `AddVehicleDialog.tsx` — no market valuation button (only in TruLens Add Vehicle). Could add TU valuation here too.
+- [ ] Your Car Guy WP site full revert — blocked pending cPanel access
+- [ ] TruLens/TruInspect deep security audit — remaining MEDIUM/LOW issues (CORS, XSS sanitization) not yet addressed
 
 ---
 
-## 7. How to Update This File
+## 8. How to Update This File
 
 Whenever you:
 - Add/remove a service or integration
@@ -279,7 +353,7 @@ Whenever you:
 
 ---
 
-## 8. Quick Reference
+## 9. Quick Reference
 
 ### Git Remotes
 - GitHub: `https://github.com/tru-you/trusaas.git`
