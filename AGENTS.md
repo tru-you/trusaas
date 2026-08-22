@@ -1,6 +1,6 @@
 # TruSaaS — Agent Project Memory
 
-**Last updated:** 2026-08-21 by Kimi (OpenCode)
+**Last updated:** 2026-08-22 by Kimi (OpenCode)
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or deployment config changes.
 
 ---
@@ -50,28 +50,44 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ### Imagin8 / TransUnion eValue8
 
-**Status:** Active, testing new `applicationName` (`eValue8Broker`)
+**Status:** Active, `applicationName` = `Flow` (confirmed working)
 
 **Env vars (all services):**
 - `IMAGIN8_API_KEY` — platform API key
 - `IMAGIN8_CUSTOMER_ID` — account ID
 - `IMAGIN8_USERNAME` — account login
 - `IMAGIN8_PASSWORD` — account password
-- `IMAGIN8_APP_NAME` — **currently `eValue8Broker` for testing**
+- `IMAGIN8_APP_NAME` — **`Flow`** (changed from `eValue8Broker`)
 
 **API methods used:**
 - `getStaticInfo(mmCode)` → vehicle specs (flat-fee, unlimited calls) — used in Add Vehicle auto-fill
 - `getModels(make)` → live model catalogue (flat-fee, unlimited calls) — **working 2026-08-21**
-- `getValues(mmCode, year, mileage)` → TU valuation (chargeable per-call, needs all 5 creds) — **working 2026-08-21**, returns `mmRetail`/`mmTrade`/`mmNew`/`mmEstimator`
-- `regCheck(identifier, type)` → vehicle background check (chargeable per-call)
+- `getValues(mmCode, year, mileage)` → TU valuation (chargeable per-call) — **bundle-gated**, returns `mmRetail`/`mmTrade`/`mmNew`/`mmEstimator`
+- `regCheck(identifier, type)` → vehicle background check (chargeable per-call) — **bundle-gated**
+- `accidentReport(vin)` → claims history, damaged areas, claim amounts (chargeable per-call) — **bundle-gated, new 2026-08-22**
+
+**Pricing tiers:**
+- **Free (flat-fee, unlimited):** `getStaticInfo`, `getModels`
+- **Paid (bundle-gated, per-dealer):** `getValues`, `regCheck`, `accidentReport`
+
+**Bundle gating behavior:**
+- Paid buttons always visible — never hidden
+- Bundles > 0: Normal active state, shows remaining count badge
+- Bundles == 0: Glassmorphic "Unlock" state with lock icon + "Premium" badge — enticing, never disabled/gray
+- Bundle storage: per-dealer JSON in `DATA_DIR/imagin8-bundles.json`
 
 **Transport:** All Imagin8 calls use **GET + query string params** (not POST body). Render/Cloudflare rejects non-empty JSON POST bodies.
 
-**Server routes (GET):**
-- `GET /api/imagin8/static?mmCode=...` — all apps
-- `GET /api/imagin8/models?make=...` — Lens + Inspect
-- `POST /api/imagin8/valuation` — all apps (JSON body works here, different endpoint)
-- `POST /api/imagin8/regcheck` — Inspect + Premium
+**Server routes:**
+- `GET /api/imagin8/static?mmCode=...` — all apps (free)
+- `GET /api/imagin8/models?make=...` — all apps (free)
+- `POST /api/imagin8/valuation` — all apps (paid, gated)
+- `POST /api/imagin8/regcheck` — Inspect + Premium (paid, gated); `GET /api/imagin8/regcheck?identifier=...&type=...` — Lens (paid, gated)
+- `GET /api/imagin8/accident-report?vin=...` — all apps (paid, gated)
+- `GET /api/imagin8/bundles` — read dealer bundles
+- `POST /api/imagin8/bundles` — admin/dealer top-up
+
+**Shared UI:** `packages/imagin8-gating.tsx` — `Imagin8GatedButton`, `useImagin8Gating`, `Imagin8Bundles`
 
 ### DeepSeek
 
@@ -91,6 +107,56 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 ---
 
 ## 4. Recent Changes (2026-08-21)
+
+### Unified Demo Mode (2026-08-22)
+
+**Problem:** Each app had its own demo/login pattern — Premium had a proper one, TruLens/Inspect had hacky local fallbacks.
+
+**Solution:** All 3 apps now share the same demo architecture:
+- `POST /api/auth/demo` — returns a signed HMAC token with unique `demo-<hex>` uid
+- 24-hour TTL (`DEMO_TTL_MS = 24 * 60 * 60 * 1000`)
+- Data isolation — vehicles stored per-uid, so each browser gets its own sandbox
+- `DEMO_ENABLED` env var (defaults to `!ACCESS_CODE`, i.e. enabled in local dev)
+- Small "Try demo (24h)" link at bottom of login screen — unobtrusive for paid users
+
+**Files changed:**
+- `TruLens/server.ts` — `signDemoToken`, `verifyDemoToken`, `/api/auth/demo`
+- `TruLens/src/contexts/AuthContext.tsx` — `enterDemoMode()` calls server
+- `TruLens/src/components/Login.tsx` — demo button at bottom
+- `truinspect/server.ts` — same demo token system
+- `truinspect/src/contexts/AuthContext.tsx` — `enterDemoMode()` + `isDemo`
+- `truinspect/src/components/Login.tsx` — demo button at bottom
+- `truflow-premium` — already had it (`enterDemo()` → `/api/auth/demo`)
+
+### Imagin8 Bundle Gating + Accident Report (2026-08-22)
+
+**New endpoint:** `accidentReport(vin)` — VIN-based claims history with damaged areas + claim amounts.
+
+**Bundle gating system:**
+1. Added `accidentReport` export to `packages/imagin8.ts`
+2. Created `packages/imagin8-gating.tsx` — shared `Imagin8GatedButton` component
+   - Active state: cyan accent, shows remaining count
+   - Gated state: glassmorphic, lock icon, "Premium" badge — enticing, never disabled
+3. Added per-dealer bundle persistence (`imagin8-bundles.json`) to all 3 servers
+4. Added bundle-gated routes to all apps:
+   - `POST /api/imagin8/valuation` — consumes `valuation` bundle
+   - `POST /api/imagin8/regcheck` / `GET /api/imagin8/regcheck` — consumes `regCheck` bundle
+   - `GET /api/imagin8/accident-report` — consumes `accidentReport` bundle
+   - `GET/POST /api/imagin8/bundles` — admin top-up
+5. Added 3 gated buttons to vehicle cards in all apps:
+   - **TruLens** + **TruInspect**: on inventory list vehicle card (before capture)
+   - **TruFlow Premium**: in VehicleDetailModal specs tab (next to existing TU Valuation/Reg Check)
+
+**Files changed:**
+- `packages/imagin8.ts`
+- `packages/imagin8-gating.tsx` (new)
+- `TruLens/server.ts`
+- `TruLens/src/components/InventoryList.tsx`
+- `TruLens/src/components/ReportPreview.tsx` (reverted)
+- `truinspect/server.ts`
+- `truinspect/src/components/InventoryList.tsx`
+- `truflow-premium/server.ts`
+- `truflow-premium/src/components/VehicleDetailModal.tsx`
 
 ### Live Imagin8 `getModels` in VehiclePicker
 
@@ -144,6 +210,7 @@ Set in Render dashboard, **never commit values**. `render.yaml` declares keys wi
 - `TRUFLOW_SYNC_KEY` — shared secret between Lens ↔ Premium ↔ Inspect
 - `TRULENS_ACCESS_CODE` or `TRUINSPECT_ACCESS_CODE` — legacy fallback
 - `IMAGIN8_*` — all five vars needed for chargeable calls
+- `DEMO_ENABLED` — set to `0` on production to disable demo mode
 
 ### Disk Mounts
 
@@ -154,10 +221,48 @@ All data lives on mounted Render disks. **Without these, every deploy wipes inve
 
 ---
 
-## 6. Known Issues / TODO
+## 6. Security Notes
+
+### Recent Fixes (2026-08-22)
+
+**1. Removed `local-demo-user` superuser bypass**
+- `TruLens/server.ts:passesScope()` no longer hardcodes `uid === 'local-demo-user'` as a universal pass
+- Demo users (both old `local-demo-user` and new `demo-<hex>`) are now scoped by `ownerId` like any real user
+
+**2. Sanitized health endpoint**
+- Removed `mode`, `dmsUrl`, `port` from `GET /api/health` response (TruLens)
+- Keeps `accessCodeConfigured`, `syncKeyConfigured`, `dealerCodesConfigured` (booleans/counts only)
+
+**3. Rate limiting on auth endpoints**
+- All 3 apps: `POST /api/auth/login`, `POST /api/auth/device`, `POST /api/auth/demo`
+- 10 attempts per IP per minute, returns 429 when exceeded
+- Simple in-memory Map (resets on restart — sufficient for brute-force protection)
+
+**4. TruInspect demo token ordering**
+- Fixed: `verifyDemoToken()` now runs BEFORE the local-mode fallback
+- Prevents arbitrary unsigned JWTs from shadowing legitimate signed demo tokens
+
+**5. Demo restrictions (TruLens + TruFlow Premium)**
+- 5-vehicle limit per demo user (`POST /api/inventory` rejects new vehicles when count ≥ 5)
+- DMS export blocked server-side (`POST /api/export/dms` returns 403 for `req.user.demo`)
+- Publish to website disabled in UI (`disabled={isDemo}` on Publish button)
+- Export button disabled in UI (`disabled={isDemo}` on Export button)
+- Premium: `POST /api/inventory` rejects when `dealershipId === "demo"` and count ≥ 5
+
+### Remaining (Pre-existing)
+
+- [ ] TruInspect local mode (`HAS_REAL_TOKEN_SECRET=false`) accepts ANY Bearer token with a valid JWT shape — mitigated by setting `TRUINSPECT_ACCESS_CODE` or `TRUFLOW_SYNC_KEY` in production
+- [ ] No CSRF tokens — mitigated by Bearer token auth (not cookie-based)
+- [ ] Photos served publicly at `/media/<hash>` — by design for dealer websites
+
+---
+
+## 7. Known Issues / TODO
 
 - [ ] TruInspect `VehicleManager.tsx` / `DesktopDashboard.tsx` — pre-existing TS errors unrelated to recent changes
 - [ ] `packages/imagin8.ts` `getModels` response shape — currently heuristic split on first word for model/variant. May need refinement based on real Imagin8 responses.
+- [ ] Imagin8 gated buttons — click handlers currently show `alert()` placeholders; need to wire real API calls and result display
+- [ ] Bundle top-up UI — currently no dealer-facing interface to buy more bundles; admin POST `/api/imagin8/bundles` only
 - [ ] TruFlow Premium `render.yaml` — `IMAGIN8_APP_NAME` also declared but may not need `getModels` route unless Premium gets a VehiclePicker too
 
 ---

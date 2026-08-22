@@ -257,6 +257,16 @@ export default function Login() {
           </a>
           {' — Future Automotive · V 1.2'}
         </p>
+
+        {/* Trial — small and unobtrusive, bottom of screen */}
+        <button
+          type="button"
+          onClick={async () => { setCodeBusy(true); await enterDemoMode(); setCodeBusy(false); }}
+          disabled={codeBusy}
+          className="mt-4 mx-auto block text-[11px] text-[rgba(232,234,230,0.35)] hover:text-[rgba(232,234,230,0.55)] transition-colors cursor-pointer disabled:opacity-50"
+        >
+          {codeBusy ? 'Starting demo…' : 'Try demo (24h)'}
+        </button>
       </div>
     </div>
   );

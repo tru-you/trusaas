@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Vehicle, Dealership } from "../types";
 import { openTruLens } from "../lib/productConfig";
 import { openStockWhatsApp } from "../lib/salesShare";
@@ -33,9 +33,12 @@ import {
   Linkedin,
   Instagram,
   Printer,
+  History,
+  TrendingUp,
 } from "lucide-react";
 import { authFetch } from "../lib/session";
 import { VEHICLE_EXTRAS } from "../lib/vehicleExtras";
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from "../../../packages/imagin8-gating.tsx";
 
 function numberToWords(n: number): string {
   if (n === 0) return "Zero";
@@ -134,6 +137,17 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
   // Market scraper
   const [marketValuation, setMarketValuation] = useState<any>(null);
   const [marketValLoading, setMarketValLoading] = useState(false);
+
+  // Imagin8 bundle gating
+  const [imagin8Bundles, setImagin8Bundles] = useState<Imagin8Bundles>(ZERO_BUNDLES);
+
+  // Fetch bundles on mount
+  useEffect(() => {
+    fetch('/api/imagin8/bundles')
+      .then(r => r.ok ? r.json() : ZERO_BUNDLES)
+      .then(b => setImagin8Bundles(b))
+      .catch(() => setImagin8Bundles(ZERO_BUNDLES));
+  }, []);
 
   // Extras tab
   const [extrasCategory, setExtrasCategory] = useState<string>("Basic");
@@ -611,25 +625,25 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <div className="text-[11px] font-mono text-[color:var(--cyan)] uppercase tracking-wider">Imagin8 · Auto-fill from TransUnion</div>
                     <span className="text-[11px] text-[color:var(--muted)]">or fill manually below</span>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={async () => {
-                        await handleTuValuation();
-                      }}
-                      disabled={tuValLoading}
-                      className="tru-btn-secondary flex items-center justify-center gap-2 px-3.5 py-2.5 text-[13px] font-semibold text-[color:var(--cyan)] disabled:opacity-40 cursor-pointer"
-                    >
-                      <Zap size={14} />
-                      {tuValLoading ? "Loading..." : "TU Valuation"}
-                    </button>
-                    <button
+                  <div className="flex flex-wrap gap-2">
+                    <Imagin8GatedButton
+                      feature="valuation"
+                      bundles={imagin8Bundles}
+                      onClick={handleTuValuation}
+                      icon={<Zap size={14} />}
+                    />
+                    <Imagin8GatedButton
+                      feature="regCheck"
+                      bundles={imagin8Bundles}
                       onClick={handleRegCheck}
-                      disabled={regCheckLoading}
-                      className="tru-btn-secondary flex items-center justify-center gap-2 px-3.5 py-2.5 text-[13px] font-semibold text-amber-400 disabled:opacity-40 cursor-pointer"
-                    >
-                      <Shield size={14} />
-                      {regCheckLoading ? "Checking..." : "Reg Check"}
-                    </button>
+                      icon={<Shield size={14} />}
+                    />
+                    <Imagin8GatedButton
+                      feature="accidentReport"
+                      bundles={imagin8Bundles}
+                      onClick={() => alert('Accident report: ' + vehicle.stockNumber)}
+                      icon={<History size={14} />}
+                    />
                     <button
                       onClick={handleMarketValue}
                       disabled={marketValLoading}

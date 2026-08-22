@@ -9,9 +9,11 @@ const DEMO_KEY = 'trulens_demo_session';
 const DEVICE_TOKEN_KEY = 'trulens_device_token';
 
 /** Minimal User-like object for offline / PC demo mode */
-export function createDemoUser(): User {
+export function createDemoUser(uid?: string, token?: string): User {
+  const demoUid = uid || 'local-demo-user';
+  const demoToken = token || 'local-demo-token';
   return {
-    uid: 'local-demo-user',
+    uid: demoUid,
     email: 'demo@trulens.local',
     emailVerified: true,
     isAnonymous: false,
@@ -24,11 +26,11 @@ export function createDemoUser(): User {
     refreshToken: '',
     tenantId: null,
     delete: async () => {},
-    getIdToken: async () => localStorage.getItem(DEVICE_TOKEN_KEY) || 'local-demo-token',
+    getIdToken: async () => localStorage.getItem(DEVICE_TOKEN_KEY) || demoToken,
     getIdTokenResult: async () =>
       ({
-        token: localStorage.getItem(DEVICE_TOKEN_KEY) || 'local-demo-token',
-        claims: { uid: 'local-demo-user' },
+        token: localStorage.getItem(DEVICE_TOKEN_KEY) || demoToken,
+        claims: { uid: demoUid },
         authTime: new Date().toISOString(),
         issuedAtTime: new Date().toISOString(),
         expirationTime: new Date(Date.now() + 86400000).toISOString(),
@@ -65,11 +67,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
 
-  const enterDemoMode = () => {
-    localStorage.setItem(DEMO_KEY, '1');
-    setIsDemo(true);
-    setUser(createDemoUser());
-    setLoading(false);
+  const enterDemoMode = async () => {
+    try {
+      const res = await fetch('/api/auth/demo', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Demo unavailable');
+      localStorage.setItem(DEMO_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
+      localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
+      setIsDemo(true);
+      setUser(createDemoUser(data.uid, data.token));
+      setLoading(false);
+    } catch (e) {
+      // Fallback to old local-demo if server demo fails
+      localStorage.setItem(DEMO_KEY, '1');
+      setIsDemo(true);
+      setUser(createDemoUser('local-demo-user', 'local-demo-token'));
+      setLoading(false);
+    }
   };
 
   /** Swap the dealership's access code for a signed device token. */

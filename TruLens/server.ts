@@ -541,6 +541,39 @@ function decodeJwtPayload(token: string): any | null {
   }
 }
 
+// ── Demo mode (prospect trial) ────────────────────────────────────────────
+
+const DEMO_ENABLED = process.env.DEMO_ENABLED === '1' || process.env.DEMO_ENABLED === 'true' || !ACCESS_CODE;
+const DEMO_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function signDemoToken(uid: string): string {
+  const payload = Buffer.from(JSON.stringify({
+    sub: uid,
+    demo: true,
+    exp: Date.now() + DEMO_TTL_MS,
+  })).toString('base64url');
+  const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
+  return `demo:${payload}.${sig}`;
+}
+
+function verifyDemoToken(token: string): any | null {
+  try {
+    if (!token.startsWith('demo:')) return null;
+    const raw = token.slice(5);
+    const [payload, sig] = raw.split('.');
+    if (!payload || !sig) return null;
+    const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(payload).digest('base64url');
+    const a = Buffer.from(sig);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
+    if (!claims.exp || claims.exp < Date.now()) return null;
+    return claims;
+  } catch {
+    return null;
+  }
+}
+
 // Middleware to verify Firebase ID Token — falls back to local/demo user on PC
 const authenticate = async (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
@@ -570,6 +603,18 @@ const authenticate = async (req: any, res: any, next: any) => {
   // is configured, i.e. local development.
   if (!ACCESS_CODE && (idToken === 'local-demo-token' || idToken === 'demo' || idToken.startsWith('local-'))) {
     req.user = { uid: 'local-demo-user', email: 'demo@trulens.local', local: true };
+    return next();
+  }
+
+  // Proper demo token — signed, unique uid, 24h TTL.
+  const demoClaims = verifyDemoToken(idToken);
+  if (demoClaims) {
+    req.user = {
+      uid: demoClaims.sub,
+      email: 'demo@trulens.local',
+      demo: true,
+      local: true,
+    };
     return next();
   }
 
@@ -717,14 +762,12 @@ async function listVehicles(user: LensScope): Promise<any[]> {
 }
 
 /* Scoping rules for both read paths:
-   - local-demo-user always wins (dev/PC demo mode).
    - Explicitly tagged vehicle → the token's dealerSlug must match.
    - Untagged (legacy) vehicle → fall back to ownerId match. Using the
      default-dealer fallback for access decisions was a bug — it 404'd the
      rightful owner of any legacy capture that predates dealer tagging. */
 function passesScope(record: any, user?: LensScope): boolean {
   if (!user) return true;
-  if (user.uid === 'local-demo-user') return true;
   if (record.dealerSlug) {
     return !user.dealerSlug || record.dealerSlug === user.dealerSlug;
   }
@@ -876,7 +919,27 @@ async function verifyCodeWithTruFlow(
   }
 }
 
-app.post('/api/auth/device', async (req, res) => {
+// ── Simple in-memory rate limiter for auth endpoints ──
+const authAttempts = new Map<string, { count: number; resetAt: number }>();
+const AUTH_MAX_ATTEMPTS = 10;
+const AUTH_WINDOW_MS = 60 * 1000; // 1 minute
+
+function rateLimitAuth(req: any, res: any, next: any) {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  const now = Date.now();
+  const record = authAttempts.get(ip);
+  if (record && record.resetAt > now) {
+    if (record.count >= AUTH_MAX_ATTEMPTS) {
+      return res.status(429).json({ error: 'Too many attempts. Try again in a minute.' });
+    }
+    record.count++;
+  } else {
+    authAttempts.set(ip, { count: 1, resetAt: now + AUTH_WINDOW_MS });
+  }
+  next();
+}
+
+app.post('/api/auth/device', rateLimitAuth, async (req, res) => {
   const given = String(req.body?.code || '');
 
   /* TruFlow first. A dealer onboarded there works here immediately, with no
@@ -915,6 +978,14 @@ app.post('/api/auth/device', async (req, res) => {
   }
 
   return res.status(401).json({ error: 'That code is not recognised.' });
+});
+
+/** Prospect demo — no code, isolated data, 24h TTL. */
+app.post('/api/auth/demo', rateLimitAuth, async (_req, res) => {
+  if (!DEMO_ENABLED) return res.status(404).json({ error: 'Demo is not available.' });
+  const uid = 'demo-' + crypto.randomBytes(8).toString('hex');
+  const token = signDemoToken(uid);
+  res.json({ token, uid, demo: true, expiresInHours: 24 });
 });
 
 /** Which commit is actually running.
@@ -956,9 +1027,6 @@ app.get('/api/health', (_req, res) => {
     // fails or a dealer files a car into the wrong yard.
     syncKeyConfigured: !!SYNC_KEY,
     dealerCodesConfigured: DEALER_CODES.length,
-    mode: LOCAL_MODE ? 'local' : 'cloud',
-    dmsUrl: DEFAULT_DMS_URL,
-    port: PORT,
     uptimeSec: Math.floor((Date.now() - STARTED_AT) / 1000),
     ts: new Date().toISOString(),
   });
@@ -1348,6 +1416,16 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
       };
       const saved = await saveVehicle(updatedVehicle);
       return res.json({ success: true, vehicle: saved });
+    }
+
+    // Demo users are limited to 5 vehicles to prevent disk abuse.
+    if (req.user?.demo) {
+      const all = await listVehicles(req.user);
+      if (all.length >= 5) {
+        return res.status(403).json({
+          error: 'Demo limit reached — 5 vehicles maximum. Sign in with a dealership code for unlimited access.',
+        });
+      }
     }
 
     /* Timestamp fallback so no capture ever lands without a stock number.
@@ -1906,6 +1984,15 @@ function buildDmsBreakdown(photos: Record<string, string>) {
 app.post('/api/export/dms', authenticate, async (req: any, res) => {
   try {
     const userId = req.user.uid;
+
+    // Demo users cannot export to the real DMS — their data stays sandboxed.
+    if (req.user?.demo) {
+      return res.status(403).json({
+        success: false,
+        error: 'Demo mode — exports are disabled. Sign in with a dealership code to push to the DMS.',
+      });
+    }
+
     const {
       vehicleId,
       dmsUrl: dmsUrlOverride,
@@ -2194,7 +2281,7 @@ app.post('/api/valuation', authenticate, async (req: any, res) => {
 
 // ==================== IMAGIN8 / TRANSUNION ====================
 
-import { getValues as imagin8GetValues, getStaticInfo as imagin8GetStaticInfo, getModels as imagin8GetModels } from "../packages/imagin8";
+import { getValues as imagin8GetValues, getStaticInfo as imagin8GetStaticInfo, getModels as imagin8GetModels, accidentReport as imagin8AccidentReport, regCheck as imagin8RegCheck } from "../packages/imagin8";
 
 const IMAGIN8_API_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
@@ -2209,6 +2296,34 @@ const imagin8Opts = {
   appName: process.env.IMAGIN8_APP_NAME || "",
 };
 const imagin8Configured = () => IMAGIN8_API_KEY && IMAGIN8_CUSTOMER_ID;
+
+// ── Imagin8 bundle tracking (per-dealer) ──
+const BUNDLES_FILE = path.join(LOCAL_DATA_DIR, 'imagin8-bundles.json');
+
+function readBundles(): Record<string, any> {
+  try {
+    if (!fs.existsSync(BUNDLES_FILE)) return {};
+    return JSON.parse(fs.readFileSync(BUNDLES_FILE, 'utf-8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeBundles(bundles: Record<string, any>) {
+  if (!fs.existsSync(LOCAL_DATA_DIR)) fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+  fs.writeFileSync(BUNDLES_FILE, JSON.stringify(bundles, null, 2));
+}
+
+function getDealerBundles(dealerId: string) {
+  const all = readBundles();
+  return all[dealerId] || { valuation: 0, regCheck: 0, accidentReport: 0 };
+}
+
+function setDealerBundles(dealerId: string, bundles: any) {
+  const all = readBundles();
+  all[dealerId] = bundles;
+  writeBundles(all);
+}
 
 app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
   const { mmCode, year, mileage } = req.body || {};
@@ -2254,8 +2369,70 @@ app.get('/api/imagin8/models', authenticate, async (req: any, res) => {
   }
 });
 
-// NOTE: Reg Check intentionally omitted here — TruLens is the Premium field
-// companion and links to TruFlow, which runs reg check. Avoids double-billing.
+// NOTE: Reg Check and Accident Report are now bundle-gated in TruLens too.
+
+// Reg Check (chargeable per-call — bundle-gated).
+app.get('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
+  const identifier = req.query?.identifier || req.query?.vin;
+  const type = req.query?.type || 'vin';
+  const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
+  if (!identifier) return res.status(400).json({ error: 'identifier is required' });
+  if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
+
+  const bundles = getDealerBundles(dealerId);
+  if ((bundles.regCheck || 0) <= 0) {
+    return res.status(402).json({ error: 'No reg check bundles remaining', bundles });
+  }
+
+  try {
+    const result = await imagin8RegCheck(String(identifier), (type === 'reg' || type === 'engine') ? type : 'vin', imagin8Opts);
+    bundles.regCheck = Math.max(0, (bundles.regCheck || 0) - 1);
+    setDealerBundles(dealerId, bundles);
+    res.json({ ...result, bundlesRemaining: bundles });
+  } catch (err: any) {
+    console.error('[imagin8] regCheck failed:', err?.message || err);
+    res.status(502).json({ error: err?.message || 'Reg check failed' });
+  }
+});
+
+// Accident Report (chargeable per-call — bundle-gated).
+// GET /api/imagin8/accident-report?vin=XXX&dealerId=...
+app.get('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
+  const vin = req.query?.vin;
+  const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
+  if (!vin) return res.status(400).json({ error: 'vin is required' });
+  if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
+
+  const bundles = getDealerBundles(dealerId);
+  if ((bundles.accidentReport || 0) <= 0) {
+    return res.status(402).json({ error: 'No accident report bundles remaining', bundles });
+  }
+
+  try {
+    const result = await imagin8AccidentReport(String(vin), imagin8Opts);
+    bundles.accidentReport = Math.max(0, (bundles.accidentReport || 0) - 1);
+    setDealerBundles(dealerId, bundles);
+    res.json({ ...result, bundlesRemaining: bundles });
+  } catch (err: any) {
+    console.error('[imagin8] accidentReport failed:', err?.message || err);
+    res.status(502).json({ error: err?.message || 'Accident report failed' });
+  }
+});
+
+// Bundle management (admin/dealer self-service).
+app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
+  const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
+  res.json(getDealerBundles(dealerId));
+});
+
+app.post('/api/imagin8/bundles', authenticate, async (req: any, res) => {
+  const dealerId = req.body?.dealerId || req.user?.dealerId || 'default';
+  const patch = req.body?.bundles || {};
+  const current = getDealerBundles(dealerId);
+  const next = { ...current, ...patch };
+  setDealerBundles(dealerId, next);
+  res.json(next);
+});
 
 // ==================== VITE & STATIC FILES ====================
 

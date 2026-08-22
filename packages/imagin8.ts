@@ -13,7 +13,7 @@
  *
  * Billing model:
  *   - getMakes / getModels / getStaticInfo → platform key (flat monthly, unlimited) — free to dealer.
- *   - getValues / regCheck → dealer's key (per-call, dealer pays).
+ *   - getValues / regCheck / accidentReport → dealer's key (per-call, dealer pays).
  */
 
 const LIVE_BASE = "https://www.imagin8.co.za/api/Live/channelApps/api";
@@ -353,6 +353,47 @@ export async function regCheck(
     colour: data?.Colour || null,
     description: data?.Description || null,
     alerts,
+    raw: data,
+  };
+}
+
+// ── Vehicle Accident Report (dealer key) ──
+
+export interface AccidentClaim {
+  date: string | null;
+  areaDamaged: string | null;
+  claimAmount: number | null;
+  description: string | null;
+}
+
+export interface AccidentReportResult {
+  vin: string;
+  hasClaims: boolean;
+  claims: AccidentClaim[];
+  raw: any;
+}
+
+export async function accidentReport(
+  vin: string,
+  opts: Imagin8Opts,
+): Promise<AccidentReportResult> {
+  const data = await get("im8vehicle_api", "accidentReport", { vin }, opts);
+
+  const claims: AccidentClaim[] = [];
+  const rawClaims: any[] = data?.Claims || data?.claims || [];
+  for (const c of rawClaims) {
+    claims.push({
+      date: c?.Date || c?.date || null,
+      areaDamaged: c?.AreaDamaged || c?.areaDamaged || c?.area || null,
+      claimAmount: num(c?.ClaimAmount || c?.claimAmount),
+      description: c?.Description || c?.description || null,
+    });
+  }
+
+  return {
+    vin,
+    hasClaims: claims.length > 0 || toBool(data?.HasClaims || data?.hasClaims),
+    claims,
     raw: data,
   };
 }

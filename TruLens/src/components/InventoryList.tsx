@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
-  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle, MessageCircle} from 'lucide-react';
+  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle, MessageCircle, Shield, History, TrendingUp} from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -12,6 +12,7 @@ import { Vehicle, DmsExportResult } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from '../../../packages/imagin8-gating.tsx';
 import DiscScanner from './DiscScanner';
 import VehiclePicker, { VehiclePickerValue } from './VehiclePicker';
 import type { DiscScan } from '../lib/saDisc';
@@ -75,6 +76,15 @@ export default function InventoryList({
   const [exportingId, setExportingId] = React.useState<string | null>(null);
   const [publishingId, setPublishingId] = React.useState<string | null>(null);
   const [exportToast, setExportToast] = React.useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [imagin8Bundles, setImagin8Bundles] = React.useState<Imagin8Bundles>(ZERO_BUNDLES);
+
+  // Fetch Imagin8 bundles on mount
+  React.useEffect(() => {
+    fetch('/api/imagin8/bundles')
+      .then(r => r.ok ? r.json() : ZERO_BUNDLES)
+      .then(b => setImagin8Bundles(b))
+      .catch(() => setImagin8Bundles(ZERO_BUNDLES));
+  }, []);
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -1282,6 +1292,28 @@ export default function InventoryList({
                       </div>
                     </div>
 
+                    {/* Imagin8 data services — gated per-dealer bundles */}
+                    <div className="flex flex-wrap gap-2">
+                      <Imagin8GatedButton
+                        feature="valuation"
+                        bundles={imagin8Bundles}
+                        onClick={() => alert('Market valuation: ' + vehicle.stockNumber)}
+                        icon={<TrendingUp size={14} />}
+                      />
+                      <Imagin8GatedButton
+                        feature="regCheck"
+                        bundles={imagin8Bundles}
+                        onClick={() => alert('Reg check: ' + vehicle.stockNumber)}
+                        icon={<Shield size={14} />}
+                      />
+                      <Imagin8GatedButton
+                        feature="accidentReport"
+                        bundles={imagin8Bundles}
+                        onClick={() => alert('Accident report: ' + vehicle.stockNumber)}
+                        icon={<History size={14} />}
+                      />
+                    </div>
+
                     {/* One primary (the job), a 3-up ghost row (the extras). Was a
                         cyan fill, two grey fills and a blue fill at equal weight,
                         which said nothing on the card was the job. */}
@@ -1298,8 +1330,8 @@ export default function InventoryList({
                       <div className="grid grid-cols-3 gap-2">
                         <button
                           onClick={(e) => handleExportClick(e, vehicle)}
-                          disabled={takenCount === 0 || exportingId === vehicle.id || !onExportToDms}
-                          title={takenCount > 0 ? `Push ${takenCount} photos to TruFlow DMS` : 'Take photos first'}
+                          disabled={isDemo || takenCount === 0 || exportingId === vehicle.id || !onExportToDms}
+                          title={isDemo ? 'Demo mode — export disabled' : takenCount > 0 ? `Push ${takenCount} photos to TruFlow DMS` : 'Take photos first'}
                           className="tru-btn-ghost flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           {exportingId === vehicle.id ? (
@@ -1323,10 +1355,10 @@ export default function InventoryList({
                             refuses. No blue anywhere. */}
                         <button
                           type="button"
-                          disabled={!onUpdateVehicle || !isStructurallyWebReady(vehicle) || publishingId === vehicle.id}
+                          disabled={isDemo || !onUpdateVehicle || !isStructurallyWebReady(vehicle) || publishingId === vehicle.id}
                           onClick={async (e) => {
                             e.stopPropagation();
-                            if (!onUpdateVehicle) return;
+                            if (!onUpdateVehicle || isDemo) return;
                             setPublishingId(vehicle.id);
                             const nextShow = !vehicle.showOnWebsite;
                             const saved = await onUpdateVehicle(vehicle, {
@@ -1353,9 +1385,11 @@ export default function InventoryList({
                             }
                           }}
                           title={
-                            vehicle.showOnWebsite
-                              ? 'Remove from public website stock feed'
-                              : 'Publish to dealer website stock feed'
+                            isDemo
+                              ? 'Demo mode — publishing disabled'
+                              : vehicle.showOnWebsite
+                                ? 'Remove from public website stock feed'
+                                : 'Publish to dealer website stock feed'
                           }
                           className={`flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 rounded-[12px] transition-colors disabled:cursor-not-allowed ${
                             isStructurallyWebReady(vehicle)

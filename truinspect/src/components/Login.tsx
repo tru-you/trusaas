@@ -31,7 +31,7 @@ import { useAuth } from '../contexts/AuthContext';
 type ServerState = 'checking' | 'secured' | 'unconfigured' | 'unreachable';
 
 export default function Login() {
-  const { signInWithCode } = useAuth();
+  const { signInWithCode, enterDemoMode } = useAuth();
   const [code, setCode] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -235,6 +235,15 @@ export default function Login() {
           </a>
           {' — Future Automotive · V 1.2'}
         </p>
+
+        {/* Trial — small and unobtrusive, bottom of screen */}
+        <button
+          type="button"
+          onClick={async () => { await enterDemoMode(); }}
+          className="mt-4 mx-auto block text-[11px] text-[rgba(232,234,230,0.35)] hover:text-[rgba(232,234,230,0.55)] transition-colors cursor-pointer"
+        >
+          Try demo (24h)
+        </button>
       </div>
     </div>
   );

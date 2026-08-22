@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, Sliders,
-  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil, X, ChevronDown, HelpCircle, MessageCircle
+  FileText, Settings, Camera, LogOut, Loader2, ScanLine, Pencil, X, ChevronDown, HelpCircle, MessageCircle, Shield, History, TrendingUp
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -17,6 +17,7 @@ import type { DiscScan } from '../lib/saDisc';
 import InstallAppButton from './InstallAppButton';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from '../../../packages/imagin8-gating.tsx';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
@@ -77,6 +78,15 @@ export default function InventoryList({
   const [exportingId, setExportingId] = React.useState<string | null>(null);
 
   const [exportToast, setExportToast] = React.useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [imagin8Bundles, setImagin8Bundles] = React.useState<Imagin8Bundles>(ZERO_BUNDLES);
+
+  // Fetch Imagin8 bundles on mount
+  React.useEffect(() => {
+    fetch('/api/imagin8/bundles')
+      .then(r => r.ok ? r.json() : ZERO_BUNDLES)
+      .then(b => setImagin8Bundles(b))
+      .catch(() => setImagin8Bundles(ZERO_BUNDLES));
+  }, []);
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -1158,6 +1168,28 @@ export default function InventoryList({
                           style={{ width: `${Math.round((requiredTaken / totalRequired) * 100)}%` }}
                         />
                       </div>
+                    </div>
+
+                    {/* Imagin8 data services — gated per-dealer bundles */}
+                    <div className="flex flex-wrap gap-2">
+                      <Imagin8GatedButton
+                        feature="valuation"
+                        bundles={imagin8Bundles}
+                        onClick={() => alert('Market valuation: ' + vehicle.stockNumber)}
+                        icon={<TrendingUp size={14} />}
+                      />
+                      <Imagin8GatedButton
+                        feature="regCheck"
+                        bundles={imagin8Bundles}
+                        onClick={() => alert('Reg check: ' + vehicle.stockNumber)}
+                        icon={<Shield size={14} />}
+                      />
+                      <Imagin8GatedButton
+                        feature="accidentReport"
+                        bundles={imagin8Bundles}
+                        onClick={() => alert('Accident report: ' + vehicle.stockNumber)}
+                        icon={<History size={14} />}
+                      />
                     </div>
 
                     {/* Four buttons, always the same four: Inspect and Trade-In are
