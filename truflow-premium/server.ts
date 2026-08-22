@@ -198,6 +198,12 @@ function setDealerImagin8Bundles(dealershipId: string, bundles: any) {
   writeImagin8Bundles(all);
 }
 
+/** Dealerships with unlimited Imagin8 access — no bundle deduction, no gating. */
+const UNLIMITED_DEALERS = new Set(["true-cars"]);
+function isUnlimitedDealer(dealerId: string) {
+  return UNLIMITED_DEALERS.has(dealerId);
+}
+
 const DATA_FILE = path.join(DATA_DIR, "data.json");
 // Repo-shipped seed. Used once, only when the disk is still empty — never
 // written back to, so a redeploy can't clobber the dealer's real stock.
@@ -6496,14 +6502,16 @@ app.post("/api/imagin8/valuation", authenticate, async (req: any, res) => {
   }
 
   const bundles = getDealerImagin8Bundles(dealershipId);
-  if ((bundles.valuation || 0) <= 0) {
+  if (!isUnlimitedDealer(dealershipId) && (bundles.valuation || 0) <= 0) {
     return res.status(402).json({ error: "No valuation bundles remaining", bundles });
   }
 
   try {
     const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey, customerId, ...imagin8Login });
-    bundles.valuation = Math.max(0, (bundles.valuation || 0) - 1);
-    setDealerImagin8Bundles(dealershipId, bundles);
+    if (!isUnlimitedDealer(dealershipId)) {
+      bundles.valuation = Math.max(0, (bundles.valuation || 0) - 1);
+      setDealerImagin8Bundles(dealershipId, bundles);
+    }
     console.log(`[imagin8] valuation for ${mmCode}/${year}: trade=${result.tradePrice} retail=${result.retailPrice}`);
     res.json({ ...result, bundlesRemaining: bundles });
   } catch (err: any) {
@@ -6527,14 +6535,16 @@ app.post("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
   }
 
   const bundles = getDealerImagin8Bundles(dealershipId);
-  if ((bundles.regCheck || 0) <= 0) {
+  if (!isUnlimitedDealer(dealershipId) && (bundles.regCheck || 0) <= 0) {
     return res.status(402).json({ error: "No reg check bundles remaining", bundles });
   }
 
   try {
     const result = await imagin8RegCheck(identifier, lookupType, { apiKey, customerId });
-    bundles.regCheck = Math.max(0, (bundles.regCheck || 0) - 1);
-    setDealerImagin8Bundles(dealershipId, bundles);
+    if (!isUnlimitedDealer(dealershipId)) {
+      bundles.regCheck = Math.max(0, (bundles.regCheck || 0) - 1);
+      setDealerImagin8Bundles(dealershipId, bundles);
+    }
     console.log(`[imagin8] reg check ${lookupType}=${identifier}: stolen=${result.stolen} finance=${result.financePending}`);
     res.json({ ...result, bundlesRemaining: bundles });
   } catch (err: any) {
@@ -6557,14 +6567,16 @@ app.get("/api/imagin8/accident-report", authenticate, async (req: any, res) => {
   }
 
   const bundles = getDealerImagin8Bundles(dealershipId);
-  if ((bundles.accidentReport || 0) <= 0) {
+  if (!isUnlimitedDealer(dealershipId) && (bundles.accidentReport || 0) <= 0) {
     return res.status(402).json({ error: "No accident report bundles remaining", bundles });
   }
 
   try {
     const result = await imagin8AccidentReport(String(vin), { apiKey, customerId, ...imagin8Login });
-    bundles.accidentReport = Math.max(0, (bundles.accidentReport || 0) - 1);
-    setDealerImagin8Bundles(dealershipId, bundles);
+    if (!isUnlimitedDealer(dealershipId)) {
+      bundles.accidentReport = Math.max(0, (bundles.accidentReport || 0) - 1);
+      setDealerImagin8Bundles(dealershipId, bundles);
+    }
     res.json({ ...result, bundlesRemaining: bundles });
   } catch (err: any) {
     console.error("[imagin8] accidentReport failed:", err?.message || err);

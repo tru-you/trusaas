@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
-  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle, MessageCircle, Shield, History, TrendingUp} from 'lucide-react';
+  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle, MessageCircle} from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -12,7 +12,6 @@ import { Vehicle, DmsExportResult } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
 import { computeWebReadiness, isStructurallyWebReady } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
-import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 import DiscScanner from './DiscScanner';
 import VehiclePicker, { VehiclePickerValue } from './VehiclePicker';
 import type { DiscScan } from '../lib/saDisc';
@@ -76,15 +75,6 @@ export default function InventoryList({
   const [exportingId, setExportingId] = React.useState<string | null>(null);
   const [publishingId, setPublishingId] = React.useState<string | null>(null);
   const [exportToast, setExportToast] = React.useState<{ type: 'ok' | 'err'; text: string } | null>(null);
-  const [imagin8Bundles, setImagin8Bundles] = React.useState<Imagin8Bundles>(ZERO_BUNDLES);
-
-  // Fetch Imagin8 bundles on mount
-  React.useEffect(() => {
-    fetch('/api/imagin8/bundles')
-      .then(r => r.ok ? r.json() : ZERO_BUNDLES)
-      .then(b => setImagin8Bundles(b))
-      .catch(() => setImagin8Bundles(ZERO_BUNDLES));
-  }, []);
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -1290,28 +1280,6 @@ export default function InventoryList({
                           style={{ width: `${totalCore > 0 ? Math.round((coreTaken / totalCore) * 100) : 0}%` }}
                         />
                       </div>
-                    </div>
-
-                    {/* Imagin8 data services — gated per-dealer bundles */}
-                    <div className="flex flex-wrap gap-2">
-                      <Imagin8GatedButton
-                        feature="valuation"
-                        bundles={imagin8Bundles}
-                        onClick={() => alert('Market valuation: ' + vehicle.stockNumber)}
-                        icon={<TrendingUp size={14} />}
-                      />
-                      <Imagin8GatedButton
-                        feature="regCheck"
-                        bundles={imagin8Bundles}
-                        onClick={() => alert('Reg check: ' + vehicle.stockNumber)}
-                        icon={<Shield size={14} />}
-                      />
-                      <Imagin8GatedButton
-                        feature="accidentReport"
-                        bundles={imagin8Bundles}
-                        onClick={() => alert('Accident report: ' + vehicle.stockNumber)}
-                        icon={<History size={14} />}
-                      />
                     </div>
 
                     {/* One primary (the job), a 3-up ghost row (the extras). Was a
