@@ -55,6 +55,47 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
     }
   };
 
+  const [regCheckResult, setRegCheckResult] = React.useState<any>(null);
+  const [regCheckLoading, setRegCheckLoading] = React.useState(false);
+  const runRegCheck = async () => {
+    const id = f.vin.trim() || f.stockNumber.trim();
+    if (!id || !user) return;
+    setRegCheckLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/imagin8/regcheck', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ identifier: id, type: 'vin' }),
+      });
+      setRegCheckResult(res.ok ? await res.json() : { error: 'Failed' });
+    } catch {
+      setRegCheckResult({ error: 'Failed' });
+    } finally {
+      setRegCheckLoading(false);
+    }
+  };
+
+  const [accidentResult, setAccidentResult] = React.useState<any>(null);
+  const [accidentLoading, setAccidentLoading] = React.useState(false);
+  const runAccidentReport = async () => {
+    const id = f.vin.trim();
+    if (!id || !user) return;
+    setAccidentLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const qs = new URLSearchParams({ vin: id }).toString();
+      const res = await fetch(`/api/imagin8/accident-report?${qs}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAccidentResult(res.ok ? await res.json() : { error: 'Failed' });
+    } catch {
+      setAccidentResult({ error: 'Failed' });
+    } finally {
+      setAccidentLoading(false);
+    }
+  };
+
   const canSubmit = f.make.trim() && f.model.trim() && f.mileage.trim();
 
   const submit = (e: React.FormEvent) => {
@@ -144,6 +185,46 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
             </select>
           </div>
         </div>
+
+        {/* Imagin8 lookups — reg check & accident report */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={runRegCheck}
+            disabled={regCheckLoading || (!f.vin.trim() && !f.stockNumber.trim())}
+            className="tru-btn-ghost min-h-[40px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
+          >
+            {regCheckLoading ? 'Checking…' : 'Verify Registration'}
+          </button>
+          <button
+            type="button"
+            onClick={runAccidentReport}
+            disabled={accidentLoading || !f.vin.trim()}
+            className="tru-btn-ghost min-h-[40px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
+          >
+            {accidentLoading ? 'Checking…' : 'Accident Report'}
+          </button>
+        </div>
+        {regCheckResult && !regCheckResult.error && (
+          <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+            <div className="flex items-center justify-between">
+              <span style={{ color: 'var(--muted)' }}>Reg check</span>
+              <span className={regCheckResult.stolen || regCheckResult.financePending ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                {regCheckResult.stolen ? 'Stolen' : regCheckResult.financePending ? 'Finance pending' : 'Clear'}
+              </span>
+            </div>
+          </div>
+        )}
+        {accidentResult && !accidentResult.error && (
+          <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+            <div className="flex items-center justify-between">
+              <span style={{ color: 'var(--muted)' }}>Accident history</span>
+              <span className={accidentResult.claims?.length > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                {accidentResult.claims?.length > 0 ? `${accidentResult.claims.length} claim(s)` : 'No claims'}
+              </span>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="tru-btn-ghost px-4 text-[13px] cursor-pointer" style={{ minHeight: 42 }}>Cancel</button>

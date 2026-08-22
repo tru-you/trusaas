@@ -296,6 +296,47 @@ export default function InventoryList({
     }
   }, [make, model, year, mileage, vin, user]);
 
+  // Imagin8 data lookups — reg check & accident report (shown in Add Vehicle flow)
+  const [regCheckResult, setRegCheckResult] = React.useState<any>(null);
+  const [regCheckLoading, setRegCheckLoading] = React.useState(false);
+  const runRegCheck = React.useCallback(async () => {
+    const id = vin.trim() || stockNumber.trim();
+    if (!id || !user) return;
+    setRegCheckLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const qs = new URLSearchParams({ identifier: id, type: 'vin' }).toString();
+      const res = await fetch(`/api/imagin8/regcheck?${qs}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRegCheckResult(res.ok ? await res.json() : { error: 'Failed' });
+    } catch {
+      setRegCheckResult({ error: 'Failed' });
+    } finally {
+      setRegCheckLoading(false);
+    }
+  }, [vin, stockNumber, user]);
+
+  const [accidentResult, setAccidentResult] = React.useState<any>(null);
+  const [accidentLoading, setAccidentLoading] = React.useState(false);
+  const runAccidentReport = React.useCallback(async () => {
+    const id = vin.trim();
+    if (!id || !user) return;
+    setAccidentLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const qs = new URLSearchParams({ vin: id }).toString();
+      const res = await fetch(`/api/imagin8/accident-report?${qs}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAccidentResult(res.ok ? await res.json() : { error: 'Failed' });
+    } catch {
+      setAccidentResult({ error: 'Failed' });
+    } finally {
+      setAccidentLoading(false);
+    }
+  }, [vin, user]);
+
 
   // Fill the form from a scanned licence disc — everything stays editable.
   const [discPhoto, setDiscPhoto] = React.useState<string | null>(null);
@@ -797,6 +838,46 @@ export default function InventoryList({
                 </div>
               )}
             </div>
+
+            {/* Imagin8 lookups — reg check & accident report */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={runRegCheck}
+                disabled={regCheckLoading || (!vin.trim() && !stockNumber.trim())}
+                className="tru-btn-ghost min-h-[44px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
+              >
+                {regCheckLoading ? 'Checking…' : 'Verify Registration'}
+              </button>
+              <button
+                type="button"
+                onClick={runAccidentReport}
+                disabled={accidentLoading || !vin.trim()}
+                className="tru-btn-ghost min-h-[44px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
+              >
+                {accidentLoading ? 'Checking…' : 'Accident Report'}
+              </button>
+            </div>
+            {regCheckResult && !regCheckResult.error && (
+              <div className="rounded-[12px] border border-[rgba(79,227,220,0.2)] bg-[rgba(79,227,220,0.04)] p-3 text-[12px] text-[#E8EAE6]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[rgba(232,234,230,0.72)]">Reg check</span>
+                  <span className={regCheckResult.stolen || regCheckResult.financePending ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                    {regCheckResult.stolen ? 'Stolen' : regCheckResult.financePending ? 'Finance pending' : 'Clear'}
+                  </span>
+                </div>
+              </div>
+            )}
+            {accidentResult && !accidentResult.error && (
+              <div className="rounded-[12px] border border-[rgba(79,227,220,0.2)] bg-[rgba(79,227,220,0.04)] p-3 text-[12px] text-[#E8EAE6]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[rgba(232,234,230,0.72)]">Accident history</span>
+                  <span className={accidentResult.claims?.length > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                    {accidentResult.claims?.length > 0 ? `${accidentResult.claims.length} claim(s)` : 'No claims'}
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Everything else behind one disclosure. Values live in component
                 state, so collapsing this never loses what was typed, and the
