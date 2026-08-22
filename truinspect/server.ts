@@ -1690,7 +1690,7 @@ app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
   if (!mmCode || !year) return res.status(400).json({ error: 'mmCode and year are required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
-  const dId = dealerId || req.user?.dealerId || 'default';
+  const dId = dealerId || req.user?.dealerSlug || 'default';
   const bundles = getDealerImagin8Bundles(dId);
   if (!isUnlimitedDealer(dId) && (bundles.valuation || 0) <= 0) {
     return res.status(402).json({ error: 'No valuation bundles remaining', bundles });
@@ -1714,7 +1714,7 @@ app.post('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
   if (!identifier) return res.status(400).json({ error: 'identifier is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
-  const dId = dealerId || req.user?.dealerId || 'default';
+  const dId = dealerId || req.user?.dealerSlug || 'default';
   const bundles = getDealerImagin8Bundles(dId);
   if (!isUnlimitedDealer(dId) && (bundles.regCheck || 0) <= 0) {
     return res.status(402).json({ error: 'No reg check bundles remaining', bundles });
@@ -1736,7 +1736,7 @@ app.post('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
 // Accident Report (chargeable per-call — bundle-gated).
 app.get('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
   const vin = req.query?.vin;
-  const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
+  const dealerId = req.query?.dealerId || req.user?.dealerSlug || 'default';
   if (!vin) return res.status(400).json({ error: 'vin is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
@@ -1760,12 +1760,12 @@ app.get('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
 
 // Bundle management (admin/dealer self-service).
 app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
-  const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
+  const dealerId = req.query?.dealerId || req.user?.dealerSlug || 'default';
   res.json(getDealerImagin8Bundles(dealerId));
 });
 
 app.post('/api/imagin8/bundles', authenticate, async (req: any, res) => {
-  const dealerId = req.body?.dealerId || req.user?.dealerId || 'default';
+  const dealerId = req.body?.dealerId || req.user?.dealerSlug || 'default';
   const patch = req.body?.bundles || {};
   const current = getDealerImagin8Bundles(dealerId);
   const next = { ...current, ...patch };
