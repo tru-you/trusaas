@@ -4,7 +4,6 @@ import {
   Camera, FileText, ClipboardList, Clock, Copy, Check,
 } from 'lucide-react';
 import { Vehicle, PointResult } from '../types';
-import { computeInspectionReadiness } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 import { deriveReportId } from '../types/inspection';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -13,15 +12,6 @@ interface ReportPreviewProps {
   vehicle: Vehicle;
   onBack: () => void;
   onVehicleUpdated?: (v: Vehicle) => void;
-}
-
-/** How many of the template's slots have a photo — a count, not a quality
- *  score. Photo capture quality (lighting/angle/AI score) is a TruLens
- *  concept and plays no part in this report; see the note on CONDITION_SCALE
- *  below for why. */
-function countCapturedPhotos(vehicle: Vehicle) {
-  const captured = DEFAULT_TEMPLATE.slots.filter(s => !!vehicle.photos?.[s.id]).length;
-  return { captured };
 }
 
 /**
@@ -62,33 +52,48 @@ function severityMeta(sev: number) {
 
 /**
  * Overall condition out of 5 — computed ONLY from real inspector inputs:
- * tagged damage (by severity) plus per-point ratings and function faults.
- * No black-box scoring.
+ * tagged damage (by severity) plus function faults. "Note" observations are
+ * informational, not a fault, so they do not reduce the score. A slot or
+ * checklist point that already carries a damage tag is not penalised again
+ * (no triple-counting of the same scratch).
  */
 function computeCondition(vehicle: Vehicle) {
   const all = Object.entries(vehicle.damageFindings || {}).flatMap(([slotId, list]) =>
     (list || []).map(f => ({ ...f, slotId }))
   );
-  const sevPenalties = [0, 0.1, 0.25, 0.55, 1.0, 1.7];
+
+  // Severity is the ground truth: a severity-1 blemish barely dents a /5
+  // score, a severity-5 structural concern hurts it. Gentler than the old
+  // scale so a car with minor damage still reads as "Good", not "Poor".
+  const sevPenalties = [0, 0.1, 0.25, 0.5, 0.9, 1.4];
 
   const slotsWithTags = new Set(all.map(f => f.slotId));
-  const rawPenalties: number[] = all.map(f => sevPenalties[f.severity] ?? 0.3);
+  const rawPenalties: number[] = all.map(f => sevPenalties[f.severity] ?? 0.25);
 
   const pts = vehicle.inspectionPoints || {};
   const flaggedPoints = (DEFAULT_TEMPLATE.checklistPoints || [])
     .map(p => ({ point: p, res: pts[p.id] }))
     .filter(({ res }) => res && (res.rating === 'note' || res.rating === 'damage' || res.works === 'no'));
-  for (const { res } of flaggedPoints) {
-    if (res?.works === 'no') rawPenalties.push(0.4);
-    else if (res?.rating === 'damage') rawPenalties.push(0.5);
-    else if (res?.rating === 'note') rawPenalties.push(0.15);
+  for (const { point, res } of flaggedPoints) {
+    // Function faults are real defects; "note" is only a note.
+    if (res?.works === 'no') {
+      rawPenalties.push(0.4);
+      continue;
+    }
+    // A checklist "damage" is only counted when the matching photo slot does
+    // not already have a damage tag — otherwise the same mark scores twice.
+    if (res?.rating === 'damage') {
+      if (point.photoSlotId && slotsWithTags.has(point.photoSlotId)) continue;
+      rawPenalties.push(0.4);
+    }
+    // "note" adds no penalty.
   }
 
   const slotAssess = vehicle.slotAssessment || {};
   for (const [slotId, res] of Object.entries(slotAssess)) {
     if (slotsWithTags.has(slotId)) continue;
-    if (res?.rating === 'damage') rawPenalties.push(0.5);
-    else if (res?.rating === 'note') rawPenalties.push(0.15);
+    if (res?.rating === 'damage') rawPenalties.push(0.4);
+    // "note" adds no penalty.
   }
 
   rawPenalties.sort((a, b) => b - a);
@@ -131,17 +136,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
   const dealerPhone = vehicle.dealerPhone || (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_dealer_phone') : null) || '';
   const inspectionTcs = (typeof localStorage !== 'undefined' ? localStorage.getItem('trulens_tradein_tcs') : null) || '';
 
-  const brandedVehicle = useMemo(
-    () => ({
-      ...vehicle,
-      dealerName,
-      dealerWhatsApp: dealerWa || vehicle.dealerWhatsApp,
-    }),
-    [vehicle, dealerName, dealerWa]
-  );
-
-  const readiness = useMemo(() => computeInspectionReadiness(brandedVehicle), [brandedVehicle]);
-  const overall = useMemo(() => countCapturedPhotos(vehicle), [vehicle]);
   const condition = useMemo(() => computeCondition(vehicle), [vehicle]);
 
   /** Inspector questionnaire: answered items + the flagged (disclosure) subset */
@@ -344,8 +338,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.55)] font-bold">Inspection status</div>
               <div className="font-bold text-[16px] text-cyan-300">{condition.label}</div>
               <div className="text-[rgba(232,234,230,0.55)] mt-1">
-                Photos {readiness.requiredTaken}/{readiness.requiredTotal}
-                {` · ${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
+                {`${condition.findings.length} damage tag${condition.findings.length === 1 ? '' : 's'}`}
                 {` · ${checklistFlags.length} checklist flag${checklistFlags.length === 1 ? '' : 's'}`}
               </div>
             </div>
@@ -539,7 +532,7 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
                   <div className="icon"><VerdictIcon size={18} /></div>
                   <div className="body">
                     <h3>{verdictHeading}</h3>
-                    <p>{band.meaning} · {condition.findings.length} damage tag{condition.findings.length === 1 ? '' : 's'} · {readiness.requiredTaken}/{readiness.requiredTotal} required photos captured.</p>
+                    <p>{band.meaning} · {condition.findings.length} damage tag{condition.findings.length === 1 ? '' : 's'}.</p>
                   </div>
                   <div className="score">
                     <div className="num">{hasCondition ? condition.stars.toFixed(1) : '—'}</div>
@@ -559,7 +552,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               <div className="row"><span className="k">Colour</span><span className="v">{vehicle.color || '—'}</span></div>
               <div className="row"><span className="k">Type</span><span className="v">{vehicle.vehicleType || '—'}</span></div>
               <div className="row"><span className="k">List price</span><span className="v">R {Number(vehicle.price || 0).toLocaleString('en-ZA')}</span></div>
-              <div className="row"><span className="k">Photos</span><span className="v">{readiness.requiredTaken}/{readiness.requiredTotal} required</span></div>
               <div className="row"><span className="k">Damage tags</span><span className="v">{condition.findings.length}</span></div>
             </div>
 
@@ -820,7 +812,6 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               </div>
               <div className="card" style={{ marginBottom:0 }}>
                 <div className="k">Work done</div>
-                <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>Photos captured: {Object.keys(vehicle.photos || {}).length}</div>
                 <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>Damage tags: {condition.findings.length}</div>
                 <div style={{ fontSize:10, color:'var(--ink-2)', marginTop:2 }}>Checklist answered: {checklistAnswered.length} · flagged: {checklistFlags.length}</div>
               </div>
