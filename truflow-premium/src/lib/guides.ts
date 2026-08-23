@@ -573,6 +573,120 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    id: "check-before-pricing",
+    title: "Check a car before you price it",
+    goal: "A car has a TransUnion trade/retail value, a background check and a claims history — before you commit to a price.",
+    blurb: "TU valuation, reg check and accident report.",
+    section: "inventory",
+    steps: [
+      {
+        app: "flow",
+        title: "Open the car's Specs tab",
+        detail:
+          "Stock → tap the car → Specs tab. The TransUnion verification buttons sit with the make/model/variant pickers they depend on.",
+      },
+      {
+        app: "flow",
+        title: "Get the M&M code first",
+        detail:
+          "Pick Make, Model and Variant — that resolves the car's M&M code. The official TU Valuation needs it; without it you'll be asked to select them first.",
+      },
+      {
+        app: "flow",
+        title: "Run TU Valuation",
+        detail:
+          "Tap TU Valuation for live trade and retail prices, with one-tap auto-fill into your pricing fields. Uses one Premium credit per call.",
+      },
+      {
+        app: "flow",
+        title: "Reg Check and Accident Report",
+        detail:
+          "Reg Check needs the VIN or registration number — stolen and finance flags come back instantly. Accident Report (VIN required) returns the claims history: damaged areas and amounts paid.",
+      },
+    ],
+  },
+  {
+    id: "market-price-free",
+    title: "Get a market price — free",
+    goal: "A live read of what similar cars are asking on AutoTrader and Cars.co.za, without using any credits.",
+    blurb: "Scraped market asking prices. Free, unlimited.",
+    section: "inventory",
+    steps: [
+      {
+        app: "flow",
+        title: "Fill Make and Model",
+        detail:
+          "On the car's Specs tab, make sure Make and Model are filled — Market Value searches by them.",
+      },
+      {
+        app: "flow",
+        title: "Tap Market Value",
+        detail:
+          "It pulls live asking prices for similar cars off AutoTrader and Cars.co.za and shows the result right below the button.",
+      },
+      {
+        app: "flow",
+        title: "Use it alongside TU",
+        detail:
+          "Market Value is what the market is ASKING; the TU Valuation is the official trade/retail figure. Together they bracket your price — and Market Value never touches your Premium credits.",
+      },
+    ],
+  },
+  {
+    id: "premium-credits",
+    title: "What are Premium credits?",
+    goal: "You know exactly which actions use credits, how many are left, and what happens when they run out.",
+    blurb: "How TransUnion calls are counted.",
+    section: "inventory",
+    steps: [
+      {
+        app: "flow",
+        title: "Three actions use credits",
+        detail:
+          "TU Valuation, Reg Check and Accident Report each consume one credit from your dealership's balance. Everything else — photos, listings, the stock feed, Market Value — is unlimited.",
+      },
+      {
+        app: "flow",
+        title: "Watch the counter",
+        detail:
+          "The verification buttons show your remaining count, so there's no surprise mid-deal. Credits belong to the dealership, not to one login.",
+      },
+      {
+        app: "flow",
+        title: "Run out? Nothing breaks",
+        detail:
+          "At zero, the buttons switch to an unlock state instead of vanishing — top-ups are arranged with your TruSaaS account manager, and free features keep working as always.",
+      },
+    ],
+  },
+  {
+    id: "verify-buyer",
+    title: "Verify a buyer before delivery",
+    goal: "The buyer's bank account checks out and the money is documented before the car leaves the yard.",
+    blurb: "Bank verification and clean invoicing on a deal.",
+    section: "leads",
+    steps: [
+      {
+        app: "flow",
+        title: "Verify the bank account (AVS)",
+        detail:
+          "Open the deal lead and find Bank Verification. Enter the account number and branch code — AVS confirms the account exists and the ID matches the name before you accept payment.",
+      },
+      {
+        app: "flow",
+        title: "Invoice through DocHub",
+        detail:
+          "In DocHub's Invoice stage, Generate renders an invoice from your dealership details, banking info and numbering — or Attach if you'd rather upload your own signed document.",
+      },
+      {
+        app: "flow",
+        title: "Close out the handover",
+        detail:
+          "Finish with the Handover stage so delivery is documented, then Mark sold — the listing pulls itself off the web automatically.",
+      },
+    ],
+  },
 ];
 
 /** Guides relevant to a given section, spine first — used for contextual help. */

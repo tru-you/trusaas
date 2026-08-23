@@ -64,6 +64,11 @@ export interface Dealership {
    *  checks). M&M lookups use the platform key — this is only needed when a
    *  dealer wants official TransUnion valuations or vehicle history checks. */
   imagin8ApiKey?: string;
+  /** When the dealer tapped "I'll do this later" on the first-run setup
+   *  checklist. Account-level (not per-browser) so the prompt doesn't follow
+   *  them across devices. Completeness itself is always derived live from
+   *  this record by /api/dealership/setup-status — never stored. */
+  setupAcknowledgedAt?: string;
   /** High-water marks for this dealer's issued document numbers.
    *
    *  SARS requires a tax invoice number to be sequential and non-repeating.

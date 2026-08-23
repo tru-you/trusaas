@@ -81,6 +81,7 @@ import { DOC_STAGES } from "./types";
 import Counter from "./components/Counter";
 import ChatWidget from "./components/ChatWidget";
 import GuidePanel from "./components/GuidePanel";
+import SetupPrompt, { SetupChecklistCard } from "./components/SetupPrompt";
 import DocumentsHub from "./components/DocumentsHub";
 import DealerDetailsSettings from "./components/DealerDetailsSettings";
 import DocSettingsPanel from "./components/DocSettingsPanel";
@@ -108,6 +109,7 @@ import WebManagementGrid from "./components/WebManagementGrid";
 import BulkImport from "./components/BulkImport";
 import TestDriveCalendar from "./components/TestDriveCalendar";
 import { hasValidSession, clearSession, getAccount, authFetch, SESSION_EXPIRED_EVENT } from "./lib/session";
+import { fetchSetupStatus, setupSnoozed, snoozeSetup, type SetupStatus } from "./lib/setupStatus";
 import { useIsDesktop } from "./lib/useIsDesktop";
 import { computeDmsGalleryReadiness } from "./lib/dmsReadiness";
 import {
@@ -312,6 +314,13 @@ export default function App() {
   // first session — it auto-opens so the Lens → Flow → Website spine is the
   // first thing they meet instead of a cold dashboard.
   const [guideOpen, setGuideOpen] = useState(false);
+  // First-run setup checklist — server-derived (see lib/setupStatus), so every
+  // device agrees on it. setupOpen is the modal's own toggle; the card has a
+  // separate per-device snooze because "hide for a week" shouldn't need a
+  // round-trip.
+  const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
+  const [setupOpen, setSetupOpen] = useState(true);
+  const [setupCardHidden, setSetupCardHidden] = useState(() => setupSnoozed());
   const [currentUserId, setCurrentUserId] = useState("u1");
   // Driven by the signed token, not a sessionStorage flag — a flag said "logged
   // in" while the token was gone or expired, and every API call 401'd behind a
@@ -335,12 +344,22 @@ export default function App() {
   // both race-free and more honest: seen means they actually closed it.
   useEffect(() => {
     if (!isLoggedIn) return;
+    // Hold off until setup status resolves: the setup modal takes precedence
+    // over the first-run tour — never stack two overlays on a brand-new
+    // dealer. The guide opens next session (or right after setup completes).
+    if (setupStatus === null) return;
+    const setupWillPrompt =
+      !setupStatus.skipPrompt &&
+      !setupStatus.complete &&
+      !setupStatus.acknowledgedAt &&
+      getAccount()?.role !== "salesperson";
+    if (setupWillPrompt) return;
     try {
       if (!localStorage.getItem("truflow_guide_seen")) setGuideOpen(true);
     } catch {
       /* private browsing — skip the tour rather than nag every load */
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, setupStatus]);
 
   // Opening is a plain state set; closing also records that the first-run tour
   // has been seen so it won't auto-open again on this device.
@@ -426,6 +445,40 @@ export default function App() {
     account?.role === 'admin' || account?.role === 'principal' ? 'owner'
     : account?.role === 'manager' ? 'manager' : 'salesperson';
   const selectedRole = accountRole;
+
+  // Setup checklist: fetched on login and re-fetched whenever the dealer moves
+  // between sections — fields are completed over in Settings, so coming back
+  // is the natural moment the card/modal should clear. Salespeople can't
+  // reach Settings, so they never fetch or see any of it.
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if (accountRole === "salesperson") return;
+    let cancelled = false;
+    fetchSetupStatus(dealershipId || undefined).then((s) => {
+      if (!cancelled) setSetupStatus(s);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn, activeSection, accountRole, dealershipId]);
+
+  // The modal is armed once per login; closing it (either button acknowledges
+  // server-side, or "Set up now" routes away) keeps it closed for the rest of
+  // the session — the Overview card carries the reminder from here.
+  useEffect(() => {
+    if (isLoggedIn) setSetupOpen(true);
+  }, [isLoggedIn]);
+
+  /** Modal shows once per account until acknowledged; the dashboard card
+   *  keeps nagging only about REQUIRED items, so optional branding gaps never
+   *  become a permanent badge. */
+  const setupModalVisible =
+    !!setupStatus &&
+    setupOpen &&
+    !setupStatus.skipPrompt &&
+    !setupStatus.complete &&
+    !setupStatus.acknowledgedAt;
+
   const [showEODReport, setShowEODReport] = useState(false);
   const [docFlowSettingsOpen, setDocFlowSettingsOpen] = useState(false);
 
@@ -871,8 +924,13 @@ export default function App() {
       ]
     },
     {
+      /* media_web was the original entry here; commit 3181857 renamed the slot
+         to web_management but the Stock media hub itself stayed built and
+         useful — gallery readiness scoring, the TruLens capture hand-off and
+         the public feed link exist only there, not in the grid below. */
       category: "Media & Web",
       items: [
+        { id: "media_web", label: "Stock media", icon: Image },
         { id: "web_management", label: "Web Management", icon: Globe2 },
       ]
     },
@@ -890,12 +948,12 @@ export default function App() {
     let items = group.items;
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'web_management',
+        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'media_web', 'web_management',
          'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'stock_health', 'web_management', 'manager', 'settings',
+        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'stock_health', 'media_web', 'web_management', 'manager', 'settings',
          'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     }
@@ -1655,6 +1713,20 @@ export default function App() {
                 </button>
               </div>
             </div>
+
+            {/* First-run setup reminder. The modal fires once per account; this
+                quiet card keeps only the REQUIRED gaps visible until they're
+                done (or snoozed for a week). */}
+            {accountRole !== "salesperson" && !setupCardHidden && (
+              <SetupChecklistCard
+                status={setupStatus}
+                onGoToSettings={() => navigateTo("settings")}
+                onSnooze={() => {
+                  snoozeSetup(7);
+                  setSetupCardHidden(true);
+                }}
+              />
+            )}
 
             {/* Stats — mobile. Re-cut for a salesperson on the floor: the one
                 number that is actionable the moment the app opens leads
@@ -4086,6 +4158,18 @@ export default function App() {
         currentSection={activeSection}
         hasProduct={hasProduct}
         onAskAssist={() => setAssistOpen(true)}
+      />
+
+      {/* First-run setup checklist. Takes precedence over the guide tour — the
+          first-run effect holds the tour back while this is about to fire. */}
+      <SetupPrompt
+        open={setupModalVisible}
+        onOpenChange={(o) => {
+          if (!o) setSetupOpen(false);
+        }}
+        status={setupStatus}
+        onGoToSettings={() => navigateTo("settings")}
+        dealershipId={dealershipId || undefined}
       />
 
       {/* The public-facing website chatbot simulation used to float bottom-left

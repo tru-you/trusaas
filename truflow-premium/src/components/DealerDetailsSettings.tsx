@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, Loader2, Building2 } from "lucide-react";
+import { Check, Loader2, Building2, ShieldCheck } from "lucide-react";
 import type { Dealership } from "../types";
 import { updateDealershipSelf } from "../api";
 
@@ -23,7 +23,6 @@ export default function DealerDetailsSettings({ dealership, isAdmin, onSaved }: 
     contactEmail: dealership.contactEmail || "",
     address: dealership.address || "",
     websiteUrl: dealership.websiteUrl || "",
-    imagin8ApiKey: (dealership as any).imagin8ApiKey || "",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -84,13 +83,19 @@ export default function DealerDetailsSettings({ dealership, isAdmin, onSaved }: 
         </div>
         {field("Address", "address", "12 Main Rd, Kariega, 6229")}
         <div className="border-t border-white/5 pt-3 mt-1">
-          <div className="text-[length:var(--t-micro)] font-mono text-[color:var(--muted)] mb-2">API Integrations</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {field("Imagin8 / TransUnion API Key", "imagin8ApiKey", "Your eValue8 API key")}
+          {/* TransUnion/Imagin8 access is provisioned by TruSaaS at platform
+              level (server env vars + per-dealer credit bundles) — there is
+              deliberately no dealer-entered API key here. The old input was
+              dead: the server's save whitelist dropped it, so anything typed
+              was silently discarded. */}
+          <div className="flex items-start gap-2 rounded-md bg-white/5 border border-[rgba(138,162,184,0.15)] px-3 py-2.5">
+            <ShieldCheck size={14} className="mt-0.5 shrink-0 text-[color:var(--cyan-bright)]" />
+            <p className="text-[12px] leading-snug text-[rgba(232,234,230,0.72)]">
+              <span className="font-semibold text-[color:var(--white)]">TransUnion verification</span>
+              {" "}— TU Valuations, Reg Checks, Accident Reports and M&M lookups are enabled for you by TruSaaS.
+              Paid calls use your dealership's Premium credits; contact your account manager to top up.
+            </p>
           </div>
-          <p className="text-[11px] text-[rgba(232,234,230,0.45)] mt-1.5">
-            Powers TU Valuations, Reg Checks, Bank AVS and M&M code lookups. Get your key from <b className="text-[rgba(232,234,230,0.65)]">evalue8.imagin8.co.za</b>
-          </p>
         </div>
         {error && (
           <div className="text-sm text-red-300 border border-red-500/30 bg-red-500/10 rounded-md px-3 py-2">

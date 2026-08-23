@@ -3656,6 +3656,85 @@ app.put("/api/dealership/self", (req: any, res) => {
   res.json({ dealership: state.dealerships[i] });
 });
 
+// --- First-run setup checklist ---------------------------------------
+// The Settings screens already existed; what was missing was any server-side
+// notion of "this dealer hasn't finished setting up". These two routes let
+// every device (and later the other apps) agree on that state instead of a
+// per-browser localStorage flag. Completeness is DERIVED from the live record
+// — never stored — so it can't drift out of sync with what the dealer saved.
+// TransUnion/Imagin8 keys are deliberately NOT part of this checklist: those
+// are platform env vars managed by TruSaaS, never dealer-entered.
+
+/** Which setup items we check, and whether each is required or recommended.
+ *  Required = identity fields quoted on every invoice/agreement; recommended
+ *  = document branding that falls back to defaults when missing. */
+const SETUP_ITEMS: Array<{ id: string; label: string; hint: string; required: boolean }> = [
+  { id: "identity-name", label: "Dealership name", hint: "Registered or trading name", required: true },
+  { id: "contact-email", label: "Contact email", hint: "Printed on documents and buyer notifications", required: true },
+  { id: "address", label: "Physical address", hint: "Shown on invoices and agreements", required: true },
+  { id: "doc-logo", label: "Logo", hint: "Brands your generated documents", required: false },
+  { id: "banking-details", label: "Banking details", hint: "So invoices can be paid by EFT", required: false },
+  { id: "sale-terms", label: "Sale terms", hint: "Numbered terms printed on agreements", required: false },
+];
+
+function computeSetupItems(d: any) {
+  const ds = d?.docSettings || {};
+  const b = ds.bankingDetails || {};
+  const done: Record<string, boolean> = {
+    "identity-name": !!(d?.name || d?.tradingAs),
+    "contact-email": !!d?.contactEmail,
+    address: !!d?.address,
+    "doc-logo": !!ds.logo,
+    "banking-details": !!(b.bankName && b.accountNumber && b.branchCode),
+    "sale-terms": Array.isArray(ds.saleTerms) && ds.saleTerms.length > 0,
+  };
+  return SETUP_ITEMS.map((it) => ({ ...it, done: !!done[it.id] }));
+}
+
+app.get("/api/dealership/setup-status", (req: any, res) => {
+  // Demo accounts and master admins without a scoped dealer have nothing to
+  // set up — report skipPrompt so the UI never nags them.
+  if (req.auth?.dealershipId === "demo") {
+    return res.json({ complete: true, requiredComplete: true, acknowledgedAt: null, skipPrompt: true, items: [] });
+  }
+  const targetId =
+    req.auth?.role === "admin" ? ((req.query.dealershipId as string) || req.auth?.dealershipId) : req.auth?.dealershipId;
+  if (!targetId) return res.status(400).json({ error: "dealershipId required" });
+  const d = readState().dealerships.find((x: any) => x.id === targetId);
+  if (!d) {
+    return res.json({ complete: true, requiredComplete: true, acknowledgedAt: null, skipPrompt: true, items: [] });
+  }
+  const items = computeSetupItems(d);
+  const requiredComplete = items.filter((i) => i.required).every((i) => i.done);
+  res.json({
+    complete: items.every((i) => i.done),
+    requiredComplete,
+    acknowledgedAt: d.setupAcknowledgedAt || null,
+    skipPrompt: false,
+    items,
+  });
+});
+
+/** Record "I'll do this later" at account level, so the prompt doesn't follow
+ *  the dealer onto their phone and laptop. Managers and up only — the prompt
+ *  itself never shows to salespeople. Admins may pass dealershipId in the body
+ *  (or reset:true to re-arm the prompt for testing/onboarding). */
+app.put("/api/dealership/setup-acknowledge", (req: any, res) => {
+  if (!req.auth?.role || !["admin", "manager", "principal"].includes(req.auth.role)) {
+    return res.status(403).json({ error: "Manager access required" });
+  }
+  const targetId =
+    req.auth?.role === "admin" ? (req.body?.dealershipId || req.auth?.dealershipId) : req.auth?.dealershipId;
+  if (!targetId) return res.status(400).json({ error: "dealershipId required" });
+  const state = readState();
+  const d = state.dealerships.find((x: any) => x.id === targetId);
+  if (!d) return res.status(404).json({ error: "Dealership not found" });
+  if (req.body?.reset) delete d.setupAcknowledgedAt;
+  else d.setupAcknowledgedAt = new Date().toISOString();
+  writeState(state);
+  res.json({ ok: true, acknowledgedAt: d.setupAcknowledgedAt || null });
+});
+
 /** Per-stage mode configuration. Dealers self-serve for their own dealership;
  *  admins may target any dealership by passing `dealershipId` in the body. */
 app.put("/api/docflow", (req: any, res) => {
