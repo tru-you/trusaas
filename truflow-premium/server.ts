@@ -6520,8 +6520,9 @@ app.post("/api/imagin8/valuation", authenticate, async (req: any, res) => {
   }
 });
 
-app.post("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
-  const { identifier, type } = req.body || {};
+app.all("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
+  const identifier = req.body?.identifier || req.query?.identifier;
+  const type = req.body?.type || req.query?.type;
   if (!identifier) {
     return res.status(400).json({ error: "identifier (VIN, reg number, or engine number) is required" });
   }
@@ -6554,8 +6555,8 @@ app.post("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
 });
 
 // Accident Report (chargeable per-call — bundle-gated).
-app.get("/api/imagin8/accident-report", authenticate, async (req: any, res) => {
-  const vin = req.query?.vin;
+app.all("/api/imagin8/accident-report", authenticate, async (req: any, res) => {
+  const vin = req.query?.vin || req.body?.vin;
   if (!vin) return res.status(400).json({ error: "vin is required" });
 
   const state = readState();
@@ -6589,6 +6590,9 @@ app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {
   const dealershipId = req.query?.dealershipId || req.user?.dealershipId || "default";
   if (req.user?.role !== "admin" && req.user?.dealershipId !== dealershipId) {
     return res.status(403).json({ error: "You may only view your own dealership's bundles." });
+  }
+  if (isUnlimitedDealer(dealershipId)) {
+    return res.json({ valuation: 9999, regCheck: 9999, accidentReport: 9999, unlimited: true });
   }
   res.json(getDealerImagin8Bundles(dealershipId));
 });

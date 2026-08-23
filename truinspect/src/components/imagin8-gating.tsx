@@ -58,6 +58,7 @@ export interface Imagin8GatedButtonProps {
   onUnlock?: () => void; // shown when bundles === 0
   className?: string;
   icon?: React.ReactNode;
+  label?: string;
 }
 
 /** A button that stays visible when bundles run out, but flips to an enticing
@@ -70,30 +71,35 @@ export const Imagin8GatedButton: React.FC<Imagin8GatedButtonProps> = ({
   onUnlock,
   className = "",
   icon,
+  label,
 }) => {
-  const available = bundles[feature] > 0;
-  const label = FEATURE_LABELS[feature];
+  const available = (bundles[feature] || 0) > 0;
+  const displayLabel = label || FEATURE_LABELS[feature];
 
   if (available) {
+    const showCount = bundles[feature] < 999 && !(bundles as any).unlimited;
     return (
       <button
+        type="button"
         onClick={onClick}
         className={`
-          inline-flex items-center gap-2
-          px-3 py-2 rounded-xl
+          inline-flex items-center justify-center gap-2
+          min-h-[42px] px-3.5 py-2 rounded-xl
           bg-[rgba(79,227,220,0.10)] border border-[rgba(79,227,220,0.25)]
           text-[#4FE3DC] text-[13px] font-medium
           hover:bg-[rgba(79,227,220,0.16)] hover:border-[rgba(79,227,220,0.40)]
           active:translate-y-[1px]
-          transition-all cursor-pointer
+          transition-all cursor-pointer select-none
           ${className}
         `}
       >
         {icon}
-        <span>{label}</span>
-        <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(79,227,220,0.15)] text-[#4FE3DC]">
-          {bundles[feature]}
-        </span>
+        <span className="truncate">{displayLabel}</span>
+        {showCount && (
+          <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(79,227,220,0.15)] text-[#4FE3DC] shrink-0">
+            {bundles[feature]}
+          </span>
+        )}
       </button>
     );
   }
@@ -101,28 +107,29 @@ export const Imagin8GatedButton: React.FC<Imagin8GatedButtonProps> = ({
   // Gated / "Unlock" state — glassmorphic, enticing, never disabled-looking
   return (
     <button
+      type="button"
       onClick={onUnlock}
       className={`
-        inline-flex items-center gap-2
-        px-3 py-2 rounded-xl
+        inline-flex items-center justify-center gap-2
+        min-h-[42px] px-3.5 py-2 rounded-xl
         bg-[rgba(232,234,230,0.04)] border border-[rgba(232,234,230,0.10)]
         text-[rgba(232,234,230,0.55)] text-[13px] font-medium
         hover:bg-[rgba(232,234,230,0.08)] hover:border-[rgba(232,234,230,0.18)]
         active:translate-y-[1px]
-        transition-all cursor-pointer
+        transition-all cursor-pointer select-none
         ${className}
       `}
     >
       <svg
         width="14" height="14" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-        className="text-[rgba(232,234,230,0.45)]"
+        className="text-[rgba(232,234,230,0.45)] shrink-0"
       >
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       </svg>
-      <span>Unlock {label}</span>
-      <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(232,234,230,0.08)] text-[rgba(232,234,230,0.45)]">
+      <span className="truncate">Unlock {displayLabel}</span>
+      <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(232,234,230,0.08)] text-[rgba(232,234,230,0.45)] shrink-0">
         Premium
       </span>
     </button>

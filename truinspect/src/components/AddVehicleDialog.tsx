@@ -214,12 +214,13 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
         </div>
 
         {/* Imagin8 lookups — reg check & accident report */}
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Imagin8GatedButton
             feature="regCheck"
             bundles={imagin8Bundles}
             onClick={runRegCheck}
             onUnlock={() => alert('Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.')}
+            className="w-full"
             icon={regCheckLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <Shield size={13} />}
           />
           <Imagin8GatedButton
@@ -227,6 +228,7 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
             bundles={imagin8Bundles}
             onClick={runAccidentReport}
             onUnlock={() => alert('Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.')}
+            className="w-full"
             icon={accidentLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <History size={13} />}
           />
         </div>

@@ -1,9 +1,9 @@
 import React from 'react';
-import {
+import { 
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
-  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle, MessageCircle} from 'lucide-react';
+  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle, MessageCircle, Shield, History } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import DiscScanner from './DiscScanner';
 import VehiclePicker, { VehiclePickerValue } from './VehiclePicker';
 import type { DiscScan } from '../lib/saDisc';
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
@@ -296,6 +297,27 @@ export default function InventoryList({
     }
   }, [make, model, year, mileage, vin, user]);
 
+  // Imagin8 bundle gating
+  const [imagin8Bundles, setImagin8Bundles] = React.useState<Imagin8Bundles>(ZERO_BUNDLES);
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const token = await user?.getIdToken();
+        const res = await fetch('/api/imagin8/bundles', {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        if (res.ok && alive) {
+          const data = await res.json();
+          setImagin8Bundles(data);
+        }
+      } catch {
+        // default to ZERO_BUNDLES
+      }
+    })();
+    return () => { alive = false; };
+  }, [user]);
+
   // Imagin8 data lookups — reg check & accident report (shown in Add Vehicle flow)
   const [regCheckResult, setRegCheckResult] = React.useState<any>(null);
   const [regCheckLoading, setRegCheckLoading] = React.useState(false);
@@ -303,15 +325,18 @@ export default function InventoryList({
     const id = vin.trim() || stockNumber.trim();
     if (!id || !user) return;
     setRegCheckLoading(true);
+    setRegCheckResult(null);
     try {
       const token = await user.getIdToken();
       const qs = new URLSearchParams({ identifier: id, type: 'vin' }).toString();
       const res = await fetch(`/api/imagin8/regcheck?${qs}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setRegCheckResult(res.ok ? await res.json() : { error: 'Failed' });
-    } catch {
-      setRegCheckResult({ error: 'Failed' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setRegCheckResult(res.ok ? data : { error: data.error || `Check failed (${res.status})` });
+    } catch (e: any) {
+      setRegCheckResult({ error: e?.message || 'Check failed' });
     } finally {
       setRegCheckLoading(false);
     }
@@ -323,15 +348,18 @@ export default function InventoryList({
     const id = vin.trim();
     if (!id || !user) return;
     setAccidentLoading(true);
+    setAccidentResult(null);
     try {
       const token = await user.getIdToken();
       const qs = new URLSearchParams({ vin: id }).toString();
       const res = await fetch(`/api/imagin8/accident-report?${qs}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setAccidentResult(res.ok ? await res.json() : { error: 'Failed' });
-    } catch {
-      setAccidentResult({ error: 'Failed' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setAccidentResult(res.ok ? data : { error: data.error || `Report failed (${res.status})` });
+    } catch (e: any) {
+      setAccidentResult({ error: e?.message || 'Report failed' });
     } finally {
       setAccidentLoading(false);
     }
@@ -841,40 +869,48 @@ export default function InventoryList({
 
             {/* Imagin8 lookups — reg check & accident report */}
             <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
+              <Imagin8GatedButton
+                feature="regCheck"
+                bundles={imagin8Bundles}
                 onClick={runRegCheck}
-                disabled={regCheckLoading || (!vin.trim() && !stockNumber.trim())}
-                className="tru-btn-ghost min-h-[44px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
-              >
-                {regCheckLoading ? 'Checking…' : 'Verify Registration'}
-              </button>
-              <button
-                type="button"
+                onUnlock={() => alert('Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.')}
+                className="w-full"
+                icon={regCheckLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <Shield size={13} />}
+              />
+              <Imagin8GatedButton
+                feature="accidentReport"
+                bundles={imagin8Bundles}
                 onClick={runAccidentReport}
-                disabled={accidentLoading || !vin.trim()}
-                className="tru-btn-ghost min-h-[44px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
-              >
-                {accidentLoading ? 'Checking…' : 'Accident Report'}
-              </button>
+                onUnlock={() => alert('Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.')}
+                className="w-full"
+                icon={accidentLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <History size={13} />}
+              />
             </div>
-            {regCheckResult && !regCheckResult.error && (
+            {regCheckResult && (
               <div className="rounded-[12px] border border-[rgba(79,227,220,0.2)] bg-[rgba(79,227,220,0.04)] p-3 text-[12px] text-[#E8EAE6]">
                 <div className="flex items-center justify-between">
                   <span className="text-[rgba(232,234,230,0.72)]">Reg check</span>
-                  <span className={regCheckResult.stolen || regCheckResult.financePending ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
-                    {regCheckResult.stolen ? 'Stolen' : regCheckResult.financePending ? 'Finance pending' : 'Clear'}
-                  </span>
+                  {regCheckResult.error ? (
+                    <span className="text-amber-400 font-semibold">{regCheckResult.error}</span>
+                  ) : (
+                    <span className={regCheckResult.stolen || regCheckResult.financePending ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                      {regCheckResult.stolen ? 'Stolen' : regCheckResult.financePending ? 'Finance pending' : 'Clear'}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
-            {accidentResult && !accidentResult.error && (
+            {accidentResult && (
               <div className="rounded-[12px] border border-[rgba(79,227,220,0.2)] bg-[rgba(79,227,220,0.04)] p-3 text-[12px] text-[#E8EAE6]">
                 <div className="flex items-center justify-between">
                   <span className="text-[rgba(232,234,230,0.72)]">Accident history</span>
-                  <span className={accidentResult.claims?.length > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
-                    {accidentResult.claims?.length > 0 ? `${accidentResult.claims.length} claim(s)` : 'No claims'}
-                  </span>
+                  {accidentResult.error ? (
+                    <span className="text-amber-400 font-semibold">{accidentResult.error}</span>
+                  ) : (
+                    <span className={accidentResult.claims?.length > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                      {accidentResult.claims?.length > 0 ? `${accidentResult.claims.length} claim(s)` : 'No claims'}
+                    </span>
+                  )}
                 </div>
               </div>
             )}

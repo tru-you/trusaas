@@ -169,6 +169,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Valuation failed");
+      if (data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
       setTuValuation(data);
     } catch (err: any) {
       alert(err?.message || "Valuation failed");
@@ -191,6 +192,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Reg check failed");
+      if (data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
       setRegCheckResult(data);
     } catch (err: any) {
       alert(err?.message || "Reg check failed");
@@ -198,6 +200,27 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
       setRegCheckLoading(false);
     }
   }, [vehicle.vin, (vehicle as any).registrationNumber]);
+
+  const [accidentReportLoading, setAccidentReportLoading] = useState(false);
+  const [accidentReportResult, setAccidentReportResult] = useState<any>(null);
+  const handleAccidentReport = useCallback(async () => {
+    const vin = vehicle.vin?.trim();
+    if (!vin) { alert("Enter a VIN number first to run an accident report."); return; }
+    setAccidentReportLoading(true);
+    setAccidentReportResult(null);
+    try {
+      const qs = new URLSearchParams({ vin }).toString();
+      const res = await authFetch(`/api/imagin8/accident-report?${qs}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Accident report failed");
+      if (data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setAccidentReportResult(data);
+    } catch (err: any) {
+      alert(err?.message || "Accident report failed");
+    } finally {
+      setAccidentReportLoading(false);
+    }
+  }, [vehicle.vin]);
 
   const handleMarketValue = useCallback(async () => {
     if (!vehicle.make || !vehicle.model) { alert("Please fill in Make and Model first."); return; }
@@ -630,24 +653,28 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       feature="valuation"
                       bundles={imagin8Bundles}
                       onClick={handleTuValuation}
-                      icon={<Zap size={14} />}
+                      onUnlock={() => alert("TransUnion official valuations are bundle-gated. Contact your TruSaaS account manager to activate live M&M valuations for this dealership.")}
+                      icon={tuValLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <Zap size={14} />}
                     />
                     <Imagin8GatedButton
                       feature="regCheck"
                       bundles={imagin8Bundles}
                       onClick={handleRegCheck}
-                      icon={<Shield size={14} />}
+                      onUnlock={() => alert("Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.")}
+                      icon={regCheckLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <Shield size={14} />}
                     />
                     <Imagin8GatedButton
                       feature="accidentReport"
                       bundles={imagin8Bundles}
-                      onClick={() => alert('Accident report: ' + vehicle.stockNumber)}
-                      icon={<History size={14} />}
+                      onClick={handleAccidentReport}
+                      onUnlock={() => alert("Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.")}
+                      icon={accidentReportLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <History size={14} />}
                     />
                     <button
+                      type="button"
                       onClick={handleMarketValue}
                       disabled={marketValLoading}
-                      className="tru-btn-secondary flex items-center justify-center gap-2 px-3.5 py-2.5 text-[13px] font-semibold text-emerald-400 disabled:opacity-40 cursor-pointer"
+                      className="tru-btn-secondary flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2 rounded-xl text-[13px] font-semibold text-emerald-400 disabled:opacity-40 cursor-pointer"
                     >
                       <Globe size={14} />
                       {marketValLoading ? "Scraping..." : "Market Value"}
@@ -751,6 +778,31 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       >
                         <Zap size={14} /> Apply VIN, engine, colour &amp; reg to vehicle
                       </button>
+                    </div>
+                  )}
+
+                  {/* Accident Report result */}
+                  {accidentReportResult && (
+                    <div className="border border-rose-500/20 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="text-[11px] font-mono uppercase tracking-wider text-rose-400">TransUnion Accident &amp; Claims History</div>
+                        <div className="text-[11px] font-semibold text-rose-300">
+                          {accidentReportResult.claims?.length > 0 ? `${accidentReportResult.claims.length} claim(s) found` : "No claims on record"}
+                        </div>
+                      </div>
+                      {accidentReportResult.claims?.length > 0 ? (
+                        <div className="space-y-1.5 mt-2">
+                          {accidentReportResult.claims.map((claim: any, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between text-[12px] bg-white/[0.03] px-2.5 py-1.5 rounded">
+                              <span className="text-[color:var(--muted)]">{claim.claimDate || claim.date || "Claim"}</span>
+                              <span className="text-[color:var(--white)] font-medium">{claim.description || claim.damagedArea || "Damage reported"}</span>
+                              <span className="text-rose-400 font-mono font-semibold">{claim.amount ? formatZAR(claim.amount) : "—"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[12px] text-emerald-400">Clear — no insurance claims or panel damage reported to TransUnion.</p>
+                      )}
                     </div>
                   )}
                 </div>

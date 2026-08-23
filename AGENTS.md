@@ -256,24 +256,33 @@ Results display inline as chips: "Clear" (emerald) / "Stolen" / "Finance pending
 - `truinspect/src/components/TradeInWalkAround.tsx`
 - `truinspect/src/components/TradeInSummary.tsx`
 
-### TruInspect Desktop Audit & Imagin8 Gating Alignment (2026-08-23)
+### TruInspect, TruLens & TruFlow Premium Bundle Gating & Verification Alignment (2026-08-23)
 
 **Summary of fixes & enhancements:**
+- Unified `Imagin8GatedButton` styling: clean button without "9999" counter badge for `true-cars` / unlimited users; proper `min-height: 42px`, `type="button"`, and grid alignment.
 - Fixed TypeScript compile errors (`slot.name` and single argument for `computeInspectionReadiness`).
-- Fixed `DesktopDashboard` 12-vehicle slice so entire catalogue displays.
-- Added keyboard navigation (`Escape`, `ArrowLeft`, `ArrowRight`) to `VehicleManager` photo lightbox.
-- Aligned Imagin8 bundle gating: TransUnion paid features (`regCheck`, `accidentReport`, `valuation`) use `Imagin8GatedButton` with "Unlock (Premium)" state and prompt to contact account manager when 0 bundles; `true-cars` slug is unlimited.
-- Market Value scraper (AutoTrader + Cars.co.za) remains 100% free and ungated for all users.
-- Added TransUnion verification controls with result chips to both desktop `VehicleManager` and mobile `InventoryList` Add/Edit flow.
+- Added keyboard navigation (`Escape`, `ArrowLeft`, `ArrowRight`) to `VehicleManager` photo lightbox in TruInspect.
+- Aligned Imagin8 bundle gating across all 3 apps: TransUnion paid features (`regCheck`, `accidentReport`, `valuation`) use `Imagin8GatedButton` with "Unlock (Premium)" state and prompt to contact account manager when 0 bundles; `true-cars` slug is unlimited.
+- Market Value scraper (AutoTrader + Cars.co.za via Bright Data) remains 100% free and ungated for all users.
+- Added live TransUnion verification controls with result chips to `truinspect` (Desktop & Mobile), `TruLens` (Add/Edit Vehicle form), and `truflow-premium` (`VehicleDetailModal` specs tab).
+- Wired real `accidentReport` in TruFlow Premium `VehicleDetailModal.tsx`.
 
 **Files changed:**
+- `packages/tru-ui-src/src/imagin8-gating.tsx`
 - `truinspect/server.ts`
+- `truinspect/src/components/imagin8-gating.tsx`
 - `truinspect/src/components/VehicleManager.tsx`
 - `truinspect/src/components/AddVehicleDialog.tsx`
 - `truinspect/src/components/InventoryList.tsx`
 - `truinspect/src/components/TradeInValuation.tsx`
 - `truinspect/src/components/DesktopDashboard.tsx`
 - `truinspect/src/components/DesktopShell.tsx`
+- `TruLens/server.ts`
+- `TruLens/src/components/imagin8-gating.tsx`
+- `TruLens/src/components/InventoryList.tsx`
+- `truflow-premium/server.ts`
+- `truflow-premium/src/components/imagin8-gating.tsx`
+- `truflow-premium/src/components/VehicleDetailModal.tsx`
 
 ---
 

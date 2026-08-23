@@ -2378,10 +2378,10 @@ app.get('/api/imagin8/models', authenticate, async (req: any, res) => {
 // NOTE: Reg Check and Accident Report are now bundle-gated in TruLens too.
 
 // Reg Check (chargeable per-call — bundle-gated).
-app.get('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
-  const identifier = req.query?.identifier || req.query?.vin;
-  const type = req.query?.type || 'vin';
-  const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
+app.all('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
+  const identifier = req.query?.identifier || req.query?.vin || req.body?.identifier;
+  const type = req.query?.type || req.body?.type || 'vin';
+  const dealerId = req.query?.dealerId || req.body?.dealerId || req.user?.dealerId || 'default';
   if (!identifier) return res.status(400).json({ error: 'identifier is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
@@ -2405,9 +2405,9 @@ app.get('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
 
 // Accident Report (chargeable per-call — bundle-gated).
 // GET /api/imagin8/accident-report?vin=XXX&dealerId=...
-app.get('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
-  const vin = req.query?.vin;
-  const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
+app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
+  const vin = req.query?.vin || req.body?.vin;
+  const dealerId = req.query?.dealerId || req.body?.dealerId || req.user?.dealerId || 'default';
   if (!vin) return res.status(400).json({ error: 'vin is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
@@ -2432,6 +2432,9 @@ app.get('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
 // Bundle management (admin/dealer self-service).
 app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
   const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
+  if (isUnlimitedDealer(dealerId)) {
+    return res.json({ valuation: 9999, regCheck: 9999, accidentReport: 9999, unlimited: true });
+  }
   res.json(getDealerBundles(dealerId));
 });
 
