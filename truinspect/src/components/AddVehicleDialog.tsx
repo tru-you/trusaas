@@ -1,7 +1,8 @@
 import React from 'react';
-import { X, Plus, Search, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, Plus, Search, Loader2, CheckCircle2, Shield, History } from 'lucide-react';
 import { Vehicle } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 
 interface Props {
   onClose: () => void;
@@ -15,6 +16,26 @@ const titleCase = (s: string) => s.replace(/\w\S*/g, (t) => t.charAt(0).toUpperC
 
 export default function AddVehicleDialog({ onClose, onAdd }: Props) {
   const { user } = useAuth();
+  const [imagin8Bundles, setImagin8Bundles] = React.useState<Imagin8Bundles>(ZERO_BUNDLES);
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const token = await user?.getIdToken();
+        const res = await fetch('/api/imagin8/bundles', {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        if (res.ok && alive) {
+          const data = await res.json();
+          setImagin8Bundles(data);
+        }
+      } catch {
+        // default to ZERO_BUNDLES
+      }
+    })();
+    return () => { alive = false; };
+  }, [user]);
+
   const [f, setF] = React.useState({
     mmCode: '', make: '', model: '', year: String(new Date().getFullYear()), trim: '',
     vin: '', stockNumber: '', color: '', price: '', mileage: '',
@@ -61,6 +82,7 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
     const id = f.vin.trim() || f.stockNumber.trim();
     if (!id || !user) return;
     setRegCheckLoading(true);
+    setRegCheckResult(null);
     try {
       const token = await user.getIdToken();
       const res = await fetch('/api/imagin8/regcheck', {
@@ -68,9 +90,11 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ identifier: id, type: 'vin' }),
       });
-      setRegCheckResult(res.ok ? await res.json() : { error: 'Failed' });
-    } catch {
-      setRegCheckResult({ error: 'Failed' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setRegCheckResult(res.ok ? data : { error: data.error || `Check failed (${res.status})` });
+    } catch (e: any) {
+      setRegCheckResult({ error: e?.message || 'Check failed' });
     } finally {
       setRegCheckLoading(false);
     }
@@ -82,15 +106,18 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
     const id = f.vin.trim();
     if (!id || !user) return;
     setAccidentLoading(true);
+    setAccidentResult(null);
     try {
       const token = await user.getIdToken();
       const qs = new URLSearchParams({ vin: id }).toString();
       const res = await fetch(`/api/imagin8/accident-report?${qs}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setAccidentResult(res.ok ? await res.json() : { error: 'Failed' });
-    } catch {
-      setAccidentResult({ error: 'Failed' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setAccidentResult(res.ok ? data : { error: data.error || `Report failed (${res.status})` });
+    } catch (e: any) {
+      setAccidentResult({ error: e?.message || 'Report failed' });
     } finally {
       setAccidentLoading(false);
     }
@@ -187,41 +214,47 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
         </div>
 
         {/* Imagin8 lookups — reg check & accident report */}
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
+        <div className="flex flex-wrap gap-2">
+          <Imagin8GatedButton
+            feature="regCheck"
+            bundles={imagin8Bundles}
             onClick={runRegCheck}
-            disabled={regCheckLoading || (!f.vin.trim() && !f.stockNumber.trim())}
-            className="tru-btn-ghost min-h-[40px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
-          >
-            {regCheckLoading ? 'Checking…' : 'Verify Registration'}
-          </button>
-          <button
-            type="button"
+            onUnlock={() => alert('Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.')}
+            icon={regCheckLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <Shield size={13} />}
+          />
+          <Imagin8GatedButton
+            feature="accidentReport"
+            bundles={imagin8Bundles}
             onClick={runAccidentReport}
-            disabled={accidentLoading || !f.vin.trim()}
-            className="tru-btn-ghost min-h-[40px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
-          >
-            {accidentLoading ? 'Checking…' : 'Accident Report'}
-          </button>
+            onUnlock={() => alert('Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.')}
+            icon={accidentLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <History size={13} />}
+          />
         </div>
-        {regCheckResult && !regCheckResult.error && (
+        {regCheckResult && (
           <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
             <div className="flex items-center justify-between">
               <span style={{ color: 'var(--muted)' }}>Reg check</span>
-              <span className={regCheckResult.stolen || regCheckResult.financePending ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
-                {regCheckResult.stolen ? 'Stolen' : regCheckResult.financePending ? 'Finance pending' : 'Clear'}
-              </span>
+              {regCheckResult.error ? (
+                <span className="text-amber-400 font-medium">{regCheckResult.error}</span>
+              ) : (
+                <span className={regCheckResult.stolen || regCheckResult.financePending ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                  {regCheckResult.stolen ? 'Stolen' : regCheckResult.financePending ? 'Finance pending' : 'Clear'}
+                </span>
+              )}
             </div>
           </div>
         )}
-        {accidentResult && !accidentResult.error && (
+        {accidentResult && (
           <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
             <div className="flex items-center justify-between">
               <span style={{ color: 'var(--muted)' }}>Accident history</span>
-              <span className={accidentResult.claims?.length > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
-                {accidentResult.claims?.length > 0 ? `${accidentResult.claims.length} claim(s)` : 'No claims'}
-              </span>
+              {accidentResult.error ? (
+                <span className="text-amber-400 font-medium">{accidentResult.error}</span>
+              ) : (
+                <span className={accidentResult.claims?.length > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                  {accidentResult.claims?.length > 0 ? `${accidentResult.claims.length} claim(s)` : 'No claims'}
+                </span>
+              )}
             </div>
           </div>
         )}

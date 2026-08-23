@@ -2,7 +2,7 @@ import React from 'react';
 import {
   ArrowLeft, Save, FileText, ShoppingCart, AlertTriangle, Camera, Pencil,
   CheckCircle2, Phone, Mail, MessageCircle, HandCoins, User, Upload, Paperclip,
-  Trash2, Plus, X, ChevronLeft, ChevronRight,
+  Trash2, Plus, X, ChevronLeft, ChevronRight, Shield, History, Loader2,
 } from 'lucide-react';
 import { Vehicle, VehicleOffer } from '../types';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -10,6 +10,7 @@ import { computeInspectionReadiness } from '../lib/readiness';
 import { telHref, mailtoHref, whatsappHref, openContact } from '../lib/contact';
 import { deriveReportId } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 
 interface Props {
   vehicle: Vehicle;
@@ -48,6 +49,74 @@ export default function VehicleManager({
   const [offerDoc, setOfferDoc] = React.useState<string>('');
   const [savingOffer, setSavingOffer] = React.useState(false);
   const offerDocRef = React.useRef<HTMLInputElement | null>(null);
+
+  // Imagin8 bundle gating
+  const [imagin8Bundles, setImagin8Bundles] = React.useState<Imagin8Bundles>(ZERO_BUNDLES);
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const token = await user?.getIdToken();
+        const res = await fetch('/api/imagin8/bundles', {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        if (res.ok && alive) {
+          const data = await res.json();
+          setImagin8Bundles(data);
+        }
+      } catch {
+        // default to ZERO_BUNDLES
+      }
+    })();
+    return () => { alive = false; };
+  }, [user]);
+
+  // Imagin8 data lookups — reg check & accident report
+  const [regCheckResult, setRegCheckResult] = React.useState<any>(null);
+  const [regCheckLoading, setRegCheckLoading] = React.useState(false);
+  const runRegCheck = async () => {
+    const id = form.vin.trim() || vehicle.vin?.trim() || vehicle.stockNumber?.trim();
+    if (!id || !user) return;
+    setRegCheckLoading(true);
+    setRegCheckResult(null);
+    try {
+      const token = await user.getIdToken();
+      const qs = new URLSearchParams({ identifier: id, type: 'vin' }).toString();
+      const res = await fetch(`/api/imagin8/regcheck?${qs}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setRegCheckResult(res.ok ? data : { error: data.error || `Check failed (${res.status})` });
+    } catch (e: any) {
+      setRegCheckResult({ error: e?.message || 'Check failed' });
+    } finally {
+      setRegCheckLoading(false);
+    }
+  };
+
+  const [accidentResult, setAccidentResult] = React.useState<any>(null);
+  const [accidentLoading, setAccidentLoading] = React.useState(false);
+  const runAccidentReport = async () => {
+    const id = form.vin.trim() || vehicle.vin?.trim();
+    if (!id || !user) return;
+    setAccidentLoading(true);
+    setAccidentResult(null);
+    try {
+      const token = await user.getIdToken();
+      const qs = new URLSearchParams({ vin: id }).toString();
+      const res = await fetch(`/api/imagin8/accident-report?${qs}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setAccidentResult(res.ok ? data : { error: data.error || `Report failed (${res.status})` });
+    } catch (e: any) {
+      setAccidentResult({ error: e?.message || 'Report failed' });
+    } finally {
+      setAccidentLoading(false);
+    }
+  };
 
   /** Lightbox state for desktop photo zoom */
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
@@ -90,7 +159,7 @@ export default function VehicleManager({
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const readiness = computeInspectionReadiness(vehicle, DEFAULT_TEMPLATE);
+  const readiness = computeInspectionReadiness(vehicle);
   const requiredSlots = DEFAULT_TEMPLATE.slots.filter((s) => s.required);
   const requiredTaken = requiredSlots.filter((s) => vehicle.photos?.[s.id]).length;
   const totalRequired = requiredSlots.length;
@@ -98,6 +167,21 @@ export default function VehicleManager({
   const damageCount = vehicle.damageFindings ? Object.values(vehicle.damageFindings).flat().length : 0;
   const inspectionDone = vehicle.inspectionPoints && Object.keys(vehicle.inspectionPoints).length > 0;
   const photoSlots = DEFAULT_TEMPLATE.slots.filter((s) => vehicle.photos?.[s.id]);
+
+  React.useEffect(() => {
+    if (!lightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLightboxOpen(false);
+      } else if (e.key === 'ArrowLeft') {
+        setLightboxIndex((i) => (i - 1 + photoSlots.length) % photoSlots.length);
+      } else if (e.key === 'ArrowRight') {
+        setLightboxIndex((i) => (i + 1) % photoSlots.length);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxOpen, photoSlots.length]);
 
   const dealerName = (typeof localStorage !== 'undefined' && localStorage.getItem('trulens_dealer_name')) || 'our dealership';
   const vehLabel = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
@@ -280,6 +364,58 @@ export default function VehicleManager({
                 </select>
               </div>
             </div>
+
+            {/* Imagin8 / Vehicle Verification */}
+            <div className="pt-2 border-t border-[var(--glass-line)] space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] font-semibold" style={{ color: 'var(--white-dim)' }}>TransUnion Verification</span>
+                <span className="text-[11px]" style={{ color: 'var(--muted)' }}>Imagin8 bundle-gated</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Imagin8GatedButton
+                  feature="regCheck"
+                  bundles={imagin8Bundles}
+                  onClick={runRegCheck}
+                  onUnlock={() => alert('Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.')}
+                  icon={regCheckLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <Shield size={13} />}
+                />
+                <Imagin8GatedButton
+                  feature="accidentReport"
+                  bundles={imagin8Bundles}
+                  onClick={runAccidentReport}
+                  onUnlock={() => alert('Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.')}
+                  icon={accidentLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <History size={13} />}
+                />
+              </div>
+              {regCheckResult && (
+                <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+                  <div className="flex items-center justify-between">
+                    <span style={{ color: 'var(--muted)' }}>Reg check</span>
+                    {regCheckResult.error ? (
+                      <span className="text-amber-400 font-medium">{regCheckResult.error}</span>
+                    ) : (
+                      <span className={regCheckResult.stolen || regCheckResult.financePending ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                        {regCheckResult.stolen ? 'Stolen' : regCheckResult.financePending ? 'Finance pending' : 'Clear'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+              {accidentResult && (
+                <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+                  <div className="flex items-center justify-between">
+                    <span style={{ color: 'var(--muted)' }}>Accident history</span>
+                    {accidentResult.error ? (
+                      <span className="text-amber-400 font-medium">{accidentResult.error}</span>
+                    ) : (
+                      <span className={accidentResult.claims?.length > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
+                        {accidentResult.claims?.length > 0 ? `${accidentResult.claims.length} claim(s)` : 'No claims'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Warranty / service / extras */}
@@ -411,10 +547,10 @@ export default function VehicleManager({
                   style={{ border: '1px solid var(--glass-line)' }}
                   onClick={() => { setLightboxIndex(idx); setLightboxOpen(true); }}
                 >
-                  <img src={vehicle.photos[slot.id]} alt={slot.label} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
+                  <img src={vehicle.photos[slot.id]} alt={slot.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   <div className="absolute bottom-0 left-0 right-0 px-2 py-1" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}>
-                    <p className="text-[10px] truncate" style={{ color: 'var(--white-dim)' }}>{slot.label}</p>
+                    <p className="text-[10px] truncate" style={{ color: 'var(--white-dim)' }}>{slot.name}</p>
                   </div>
                 </div>
               ))}
@@ -439,7 +575,7 @@ export default function VehicleManager({
                         <span className="text-[12px] font-semibold capitalize" style={{ color: 'var(--white)' }}>{f.damageType}</span>
                         <span className="text-[11px]" style={{ fontFamily: 'var(--mono)', color: f.severity >= 4 ? 'var(--danger)' : 'var(--muted)' }}>Sev {f.severity}/5</span>
                       </div>
-                      <p className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>{f.panel} · {slot?.label || slotId}</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>{f.panel} · {slot?.name || slotId}</p>
                       {f.note && <p className="text-[11px] mt-1" style={{ color: 'var(--white-dim)' }}>{f.note}</p>}
                     </div>
                   );
@@ -475,7 +611,7 @@ export default function VehicleManager({
           {/* Top bar */}
           <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3">
             <p className="text-[13px] font-medium" style={{ color: 'var(--white-dim)' }}>
-              {photoSlots[lightboxIndex]?.label} <span className="text-[12px]" style={{ color: 'var(--muted)' }}>({lightboxIndex + 1} / {photoSlots.length})</span>
+              {photoSlots[lightboxIndex]?.name} <span className="text-[12px]" style={{ color: 'var(--muted)' }}>({lightboxIndex + 1} / {photoSlots.length})</span>
             </p>
             <button
               onClick={() => setLightboxOpen(false)}
@@ -489,7 +625,7 @@ export default function VehicleManager({
           <div className="flex-1 flex items-center justify-center w-full px-4 py-16" onClick={(e) => e.stopPropagation()}>
             <img
               src={vehicle.photos[photoSlots[lightboxIndex].id]}
-              alt={photoSlots[lightboxIndex]?.label}
+              alt={photoSlots[lightboxIndex]?.name}
               className="max-w-full max-h-full object-contain rounded-lg"
             />
           </div>

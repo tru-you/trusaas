@@ -136,7 +136,7 @@ export default function DesktopShell({
             filtered.map((vehicle) => {
               const isActive = vehicle.id === activeVehicleId;
               const requiredTaken = DEFAULT_TEMPLATE.slots.filter((s) => s.required && vehicle.photos?.[s.id]).length;
-              const readiness = computeInspectionReadiness(vehicle, DEFAULT_TEMPLATE);
+              const readiness = computeInspectionReadiness(vehicle);
               const pct = Math.round((requiredTaken / totalRequired) * 100);
 
               return (

@@ -1709,19 +1709,21 @@ app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
   }
 });
 
-app.post('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
-  const { identifier, type, dealerId } = req.body || {};
+app.all('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
+  const identifier = req.body?.identifier || req.query?.identifier;
+  const type = req.body?.type || req.query?.type;
+  const dealerId = req.body?.dealerId || req.query?.dealerId || req.user?.dealerSlug || 'default';
   if (!identifier) return res.status(400).json({ error: 'identifier is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
-  const dId = dealerId || req.user?.dealerSlug || 'default';
+  const dId = dealerId;
   const bundles = getDealerImagin8Bundles(dId);
   if (!isUnlimitedDealer(dId) && (bundles.regCheck || 0) <= 0) {
     return res.status(402).json({ error: 'No reg check bundles remaining', bundles });
   }
 
   try {
-    const result = await imagin8RegCheck(identifier, (type === 'reg' || type === 'engine') ? type : 'vin', imagin8Opts);
+    const result = await imagin8RegCheck(String(identifier), (type === 'reg' || type === 'engine') ? type : 'vin', imagin8Opts);
     if (!isUnlimitedDealer(dId)) {
       bundles.regCheck = Math.max(0, (bundles.regCheck || 0) - 1);
       setDealerImagin8Bundles(dId, bundles);
@@ -1734,9 +1736,9 @@ app.post('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
 });
 
 // Accident Report (chargeable per-call — bundle-gated).
-app.get('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
-  const vin = req.query?.vin;
-  const dealerId = req.query?.dealerId || req.user?.dealerSlug || 'default';
+app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
+  const vin = req.query?.vin || req.body?.vin;
+  const dealerId = req.query?.dealerId || req.body?.dealerId || req.user?.dealerSlug || 'default';
   if (!vin) return res.status(400).json({ error: 'vin is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
@@ -1761,6 +1763,9 @@ app.get('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
 // Bundle management (admin/dealer self-service).
 app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
   const dealerId = req.query?.dealerId || req.user?.dealerSlug || 'default';
+  if (isUnlimitedDealer(dealerId)) {
+    return res.json({ valuation: 9999, regCheck: 9999, accidentReport: 9999, unlimited: true });
+  }
   res.json(getDealerImagin8Bundles(dealerId));
 });
 

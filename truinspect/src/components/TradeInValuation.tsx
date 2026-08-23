@@ -4,6 +4,7 @@ import { Vehicle } from '../types';
 import { InspectionItem, ValuationState, ValuationSnapshot, computeTradeInValue } from '../types/inspection';
 import { useAuth } from '../contexts/AuthContext';
 import { urlMake } from '../lib/makeAliases';
+import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
 
 interface TradeInValuationProps {
   vehicle: Vehicle;
@@ -36,11 +37,35 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
 
   const [history, setHistory] = React.useState<ValuationSnapshot[]>([]);
 
+  // Imagin8 bundle gating
+  const [imagin8Bundles, setImagin8Bundles] = React.useState<Imagin8Bundles>(ZERO_BUNDLES);
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const token = await user?.getIdToken();
+        const res = await fetch('/api/imagin8/bundles', {
+          headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        });
+        if (res.ok && alive) {
+          const data = await res.json();
+          setImagin8Bundles(data);
+        }
+      } catch {
+        // default to ZERO_BUNDLES
+      }
+    })();
+    return () => { alive = false; };
+  }, [user]);
+
   // TransUnion official valuation
   const [tuVal, setTuVal] = React.useState<any>(null);
   const [tuValLoading, setTuValLoading] = React.useState(false);
   const handleTuValuation = async () => {
-    if (!vehicle.mmCode || !user) return;
+    if (!vehicle.mmCode || !user) {
+      if (!vehicle.mmCode) alert('Select or enter an M&M code first for official TransUnion valuation.');
+      return;
+    }
     setTuValLoading(true);
     setTuVal(null);
     try {
@@ -52,6 +77,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+      if (data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
       setTuVal(data);
     } catch (err: any) {
       alert(err?.message || 'TU valuation failed');
@@ -168,7 +194,7 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
-        {/* Fetch buttons */}
+        {/* Fetch buttons: Scraper (100% Free) & TransUnion (Bundle-Gated) */}
         <button
           type="button"
           onClick={handleFetchValuation}
@@ -178,15 +204,14 @@ export default function TradeInValuation({ vehicle, items, onBack, onComplete }:
           {fetching ? 'Scanning…' : 'Fetch Live Market Value'}
         </button>
 
-        <button
-          type="button"
+        <Imagin8GatedButton
+          feature="valuation"
+          bundles={imagin8Bundles}
           onClick={handleTuValuation}
-          disabled={tuValLoading || !vehicle.mmCode}
-          className="tru-btn-secondary w-full min-h-[48px] flex items-center justify-center gap-2 text-[14px] cursor-pointer disabled:opacity-40"
-        >
-          <Shield size={15} />
-          {tuValLoading ? 'Loading…' : 'TransUnion Valuation'}
-        </button>
+          onUnlock={() => alert('Official TransUnion valuations are bundle-gated. Contact your TruSaaS account manager to activate live M&M valuations for this dealership.')}
+          className="w-full justify-center min-h-[48px] text-[14px]"
+          icon={tuValLoading ? <Loader2 size={15} className="animate-spin" /> : <Shield size={15} />}
+        />
 
         {/* TU Valuation result */}
         {tuVal && tuVal.available === false && (

@@ -66,8 +66,8 @@ export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehic
           <div className="space-y-3">
             <h2 className="text-[13px] font-semibold" style={{ color: 'var(--white-dim)' }}>Vehicles — done on mobile &amp; what's still needed</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              {vehicles.slice(0, 12).map((vehicle) => {
-                const readiness = computeInspectionReadiness(vehicle, DEFAULT_TEMPLATE);
+              {vehicles.map((vehicle) => {
+                const readiness = computeInspectionReadiness(vehicle);
                 const requiredTaken = taken(vehicle);
                 const pct = Math.round((requiredTaken / totalRequired) * 100);
                 const damageCount = vehicle.damageFindings ? Object.values(vehicle.damageFindings).flat().length : 0;
