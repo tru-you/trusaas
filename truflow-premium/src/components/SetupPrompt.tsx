@@ -37,7 +37,7 @@ function ItemRow({ item }: { item: SetupStatus["items"][number] }) {
       ) : (
         <Circle size={15} className="mt-[3px] shrink-0 text-[color:var(--muted)]" />
       )}
-      <span className="text-[13px] leading-snug">
+      <span className="text-[13px] leading-snug min-w-0">
         <span className={item.done ? "text-[rgba(232,234,230,0.45)] line-through" : "text-[color:var(--white)]"}>
           {item.label}
         </span>
@@ -46,7 +46,7 @@ function ItemRow({ item }: { item: SetupStatus["items"][number] }) {
         )}
       </span>
       {!item.required && !item.done && (
-        <span className="ml-auto mt-[2px] shrink-0 text-[10px] font-mono uppercase tracking-wider text-[color:var(--muted)] border border-[color:var(--glass-line)] rounded px-1.5 py-0.5">
+        <span className="shrink-0 mt-[2px] text-[10px] font-mono uppercase tracking-wider text-[color:var(--muted)] border border-[color:var(--glass-line)] rounded px-1.5 py-0.5">
           optional
         </span>
       )}
@@ -54,11 +54,15 @@ function ItemRow({ item }: { item: SetupStatus["items"][number] }) {
   );
 }
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
 export default function SetupPrompt({ open, onOpenChange, status, onGoToSettings, dealershipId }: SetupPromptProps) {
   const [acking, setAcking] = useState(false);
-  if (!open || !status || status.complete || status.skipPrompt) return null;
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const restoreFocusRef = React.useRef<HTMLElement | null>(null);
 
-  const remaining = pending(status);
+  const visible = open && !!status && !status.complete && !status.skipPrompt;
 
   const handleLater = async () => {
     setAcking(true);
@@ -74,21 +78,75 @@ export default function SetupPrompt({ open, onOpenChange, status, onGoToSettings
     }
   };
 
+  // Modal semantics: move focus in, keep it trapped, let Escape mean
+  // "later" (the same as the X), lock background scroll, and hand focus back
+  // on close. All no-ops while hidden.
+  React.useEffect(() => {
+    if (!visible) return;
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+    panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        void handleLater();
+        return;
+      }
+      if (e.key !== "Tab" || !panel) return;
+      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKeyDown);
+      restoreFocusRef.current?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  if (!visible || !status) return null;
+
+  const remaining = pending(status);
+
   return (
     // z-index sits above the sticky header but below form modals that stack
     // on top of everything (z-[200]) — setup should never trap a click.
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
-      <div className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[480px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-5 md:p-6 flex flex-col gap-4">
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) void handleLater();
+      }}
+    >
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="setup-prompt-title"
+        className="bg-[color:var(--ink-2)] border border-white/10 rounded-2xl w-full max-w-[480px] shadow-2xl relative font-sans animate-in zoom-in-95 duration-100 p-5 md:p-6 flex flex-col gap-4"
+      >
         <div className="flex items-center gap-2.5">
           <Store size={18} className="text-[color:var(--cyan-bright)]" />
-          <h3 className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">
+          <h3 id="setup-prompt-title" className="font-sans text-lg font-semibold tracking-tight text-[color:var(--white)]">
             Finish setting up your dealership
           </h3>
           <button
+            type="button"
             onClick={() => void handleLater()}
             disabled={acking}
-            aria-label="Dismiss"
-            className="ml-auto text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"
+            aria-label="Dismiss — I'll do this later"
+            className="ml-auto p-1 -m-1 text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -105,7 +163,7 @@ export default function SetupPrompt({ open, onOpenChange, status, onGoToSettings
           ))}
         </ul>
 
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center gap-2 pt-1">
           <button
             type="button"
             onClick={() => {
@@ -123,7 +181,7 @@ export default function SetupPrompt({ open, onOpenChange, status, onGoToSettings
             disabled={acking}
             className="px-4 py-2 min-h-[40px] text-sm text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] rounded-md cursor-pointer disabled:opacity-50"
           >
-            I'll do this later
+            {acking ? "Saving…" : "I'll do this later"}
           </button>
         </div>
         {remaining.some((i) => !i.required) && (
@@ -166,11 +224,12 @@ export function SetupChecklistCard({ status, onGoToSettings, onSnooze }: CardPro
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <button onClick={onGoToSettings} className="btn-primary inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-[12px] font-semibold">
+        <button type="button" onClick={onGoToSettings} className="btn-primary inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-[12px] font-semibold">
           Open Settings
           <ArrowRight size={13} />
         </button>
         <button
+          type="button"
           onClick={onSnooze}
           aria-label="Hide for a week"
           className="p-2 text-[rgba(232,234,230,0.55)] hover:text-[color:var(--white)] cursor-pointer"

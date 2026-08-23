@@ -38,7 +38,7 @@ function ItemRow({ item }: { item: SetupStatus['items'][number] }) {
       ) : (
         <Circle size={15} className="mt-[3px] shrink-0 text-[rgba(232,234,230,0.45)]" />
       )}
-      <span className="text-[13px] leading-snug">
+      <span className="text-[13px] leading-snug min-w-0">
         <span className={item.done ? 'text-[rgba(232,234,230,0.45)] line-through' : 'text-[var(--white)]'}>
           {item.label}
         </span>
@@ -47,7 +47,7 @@ function ItemRow({ item }: { item: SetupStatus['items'][number] }) {
         )}
       </span>
       {!item.required && !item.done && (
-        <span className="ml-auto mt-[2px] shrink-0 text-[10px] font-mono uppercase tracking-wider border rounded px-1.5 py-0.5" style={{ color: 'var(--faint)', borderColor: 'var(--glass-line)' }}>
+        <span className="shrink-0 mt-[2px] text-[10px] font-mono uppercase tracking-wider border rounded px-1.5 py-0.5" style={{ color: 'var(--faint)', borderColor: 'var(--glass-line)' }}>
           optional
         </span>
       )}
@@ -55,11 +55,15 @@ function ItemRow({ item }: { item: SetupStatus['items'][number] }) {
   );
 }
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
 export default function SetupPrompt({ open, onOpenChange, status, getToken, onSetUp }: SetupPromptProps) {
   const [acking, setAcking] = useState(false);
-  if (!open || !status || status.complete || status.skipPrompt) return null;
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const restoreFocusRef = React.useRef<HTMLElement | null>(null);
 
-  const remaining = pending(status);
+  const visible = open && !!status && !status.complete && !status.skipPrompt;
 
   const handleLater = async () => {
     setAcking(true);
@@ -75,20 +79,75 @@ export default function SetupPrompt({ open, onOpenChange, status, getToken, onSe
     }
   };
 
+  // Modal semantics: focus in, Tab trapped, Escape = "later", scroll locked,
+  // focus handed back on close.
+  React.useEffect(() => {
+    if (!visible) return;
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        void handleLater();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeyDown);
+      restoreFocusRef.current?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  if (!visible || !status) return null;
+
+  const remaining = pending(status);
+
   return (
     // Same overlay tier as GuidePanel/DealerAssist.
-    <div className="fixed inset-0 z-[1100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-[440px] rounded-2xl shadow-2xl p-5 flex flex-col gap-4 ti-card" style={{ background: 'var(--ink-2)' }}>
+    <div
+      className="fixed inset-0 z-[1100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) void handleLater();
+      }}
+    >
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="setup-prompt-title"
+        className="w-full max-w-[440px] rounded-2xl shadow-2xl p-5 flex flex-col gap-4 ti-card"
+        style={{ background: 'var(--ink-2)' }}
+      >
         <div className="flex items-center gap-2.5">
           <Store size={18} style={{ color: 'var(--cyan)' }} />
-          <h3 className="text-[17px] font-semibold tracking-tight" style={{ color: 'var(--white)' }}>
+          <h3 id="setup-prompt-title" className="text-[17px] font-semibold tracking-tight" style={{ color: 'var(--white)' }}>
             Finish setting up your dealership
           </h3>
           <button
+            type="button"
             onClick={() => void handleLater()}
             disabled={acking}
-            aria-label="Dismiss"
-            className="ml-auto cursor-pointer hover:opacity-80"
+            aria-label="Dismiss — I'll do this later"
+            className="ml-auto p-1 -m-1 cursor-pointer hover:opacity-80"
             style={{ color: 'var(--muted)' }}
           >
             <X size={16} />
@@ -106,7 +165,7 @@ export default function SetupPrompt({ open, onOpenChange, status, getToken, onSe
           ))}
         </ul>
 
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center gap-2 pt-1">
           {onSetUp && (
             <button
               type="button"
@@ -127,7 +186,7 @@ export default function SetupPrompt({ open, onOpenChange, status, getToken, onSe
             className="min-h-[42px] px-4 py-2 text-[13px] cursor-pointer disabled:opacity-50"
             style={{ color: 'var(--muted)' }}
           >
-            Later
+            {acking ? 'Saving…' : 'Later'}
           </button>
         </div>
         {remaining.some((i) => !i.required) && (

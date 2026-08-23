@@ -634,7 +634,7 @@ export default function App() {
               vehicles={vehicles}
               onSelectVehicle={handleSelectVehicleDesktop}
               onAddVehicle={() => setAddOpen(true)}
-              setupStatus={setupStatus}
+              setupStatus={setupCardHidden ? null : setupStatus}
               onSetUp={() => setDeskSection('settings')}
               onSnooze={() => {
                 snoozeSetup(7);
@@ -849,7 +849,7 @@ export default function App() {
                 onForceSync={fetchInventory}
                 onOpenGuide={() => setGuideOpen(true)}
                 onOpenDealerAssist={() => setAssistOpen(true)}
-                setupStatus={setupStatus}
+                setupStatus={setupCardHidden ? null : setupStatus}
                 onSetupSnooze={() => {
                   snoozeSetup(7);
                   setSetupCardHidden(true);

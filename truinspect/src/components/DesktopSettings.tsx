@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, FileText, CheckCircle2, Cloud } from 'lucide-react';
+import { Building2, FileText, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const inputCls = 'ti-input';
@@ -128,13 +128,29 @@ export default function DesktopSettings() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[28px] font-semibold" style={{ color: 'var(--white)', letterSpacing: 'var(--track-h2)' }}>Settings</h1>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--muted)' }}>Dealer identity &amp; terms — printed on every report and offer.</p>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--muted)' }}>
+              Dealer identity &amp; terms — printed on every report and offer. Syncs across devices.
+            </p>
           </div>
-          <span className="text-[12px] flex items-center gap-1.5 transition-opacity" style={{ color: 'var(--cyan)', opacity: saved || cloudSaved ? 1 : 0 }}>
-            <CheckCircle2 size={13} /> {cloudSaved ? 'Saved to your dealership' : 'Saved'}
-          </span>
-          <span className="text-[11px] flex items-center gap-1 ml-3" style={{ color: 'var(--faint)' }}>
-            <Cloud size={12} /> Synced across devices
+          {/* Save feedback is rendered (not just faded), inside a polite live
+              region so screen readers hear it; the reserved width keeps the
+              header row from shifting when the message appears/disappears. */}
+          <span
+            role="status"
+            aria-live="polite"
+            className="text-[12px] flex items-center gap-1.5 transition-opacity"
+            style={{
+              color: 'var(--cyan)',
+              opacity: saved || cloudSaved ? 1 : 0,
+              minWidth: 150,
+              justifyContent: 'flex-end',
+            }}
+          >
+            {(saved || cloudSaved) && (
+              <>
+                <CheckCircle2 size={13} /> {cloudSaved ? 'Saved across devices' : 'Saved'}
+              </>
+            )}
           </span>
         </div>
 

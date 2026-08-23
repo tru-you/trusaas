@@ -16,6 +16,8 @@ import DealerAssist from './components/DealerAssist';
 import SetupPrompt from './components/SetupPrompt';
 import {
   fetchSetupStatus,
+  snoozeSetup,
+  setupSnoozed,
   type SetupStatus as AppSetupStatus,
 } from './lib/setupStatus';
 
@@ -132,6 +134,7 @@ export default function App() {
   // while the Dashboard tab card carries the quiet reminder.
   const [setupStatus, setSetupStatus] = React.useState<AppSetupStatus | null>(null);
   const [setupOpen, setSetupOpen] = React.useState(true);
+  const [setupCardHidden, setSetupCardHidden] = React.useState(() => setupSnoozed());
   React.useEffect(() => {
     if (!user || !dealerConfirmed) return;
     let cancelled = false;
@@ -581,7 +584,11 @@ export default function App() {
                 onForceSync={fetchInventory}
                 onOpenGuide={() => setGuideOpen(true)}
                 onOpenDealerAssist={() => setAssistOpen(true)}
-                setupStatus={setupStatus}
+                setupStatus={setupCardHidden ? null : setupStatus}
+                onSetupSnooze={() => {
+                  snoozeSetup(7);
+                  setSetupCardHidden(true);
+                }}
               />
             </>
           )}

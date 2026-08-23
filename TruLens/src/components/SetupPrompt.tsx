@@ -27,6 +27,9 @@ interface SetupPromptProps {
 const pending = (s: SetupStatus) => s.items.filter((i) => !i.done);
 const doneCount = (s: SetupStatus) => s.items.length - pending(s).length;
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
 function ItemRow({ item }: { item: SetupStatus['items'][number] }) {
   return (
     <li className="flex items-start gap-2.5 py-1.5">
@@ -35,7 +38,7 @@ function ItemRow({ item }: { item: SetupStatus['items'][number] }) {
       ) : (
         <Circle size={15} className="mt-[3px] shrink-0 text-[rgba(232,234,230,0.45)]" />
       )}
-      <span className="text-[13px] leading-snug">
+      <span className="text-[13px] leading-snug min-w-0">
         <span className={item.done ? 'text-[rgba(232,234,230,0.45)] line-through' : 'text-[#E8EAE6]'}>
           {item.label}
         </span>
@@ -44,7 +47,7 @@ function ItemRow({ item }: { item: SetupStatus['items'][number] }) {
         )}
       </span>
       {!item.required && !item.done && (
-        <span className="ml-auto mt-[2px] shrink-0 text-[10px] font-mono uppercase tracking-wider text-[rgba(232,234,230,0.45)] border border-[rgba(232,234,230,0.12)] rounded px-1.5 py-0.5">
+        <span className="shrink-0 mt-[2px] text-[10px] font-mono uppercase tracking-wider text-[rgba(232,234,230,0.45)] border border-[rgba(232,234,230,0.12)] rounded px-1.5 py-0.5">
           optional
         </span>
       )}
@@ -54,9 +57,10 @@ function ItemRow({ item }: { item: SetupStatus['items'][number] }) {
 
 export default function SetupPrompt({ open, onOpenChange, status, getToken }: SetupPromptProps) {
   const [acking, setAcking] = useState(false);
-  if (!open || !status || status.complete || status.skipPrompt) return null;
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const restoreFocusRef = React.useRef<HTMLElement | null>(null);
 
-  const remaining = pending(status);
+  const visible = open && !!status && !status.complete && !status.skipPrompt;
 
   const handleLater = async () => {
     setAcking(true);
@@ -72,21 +76,76 @@ export default function SetupPrompt({ open, onOpenChange, status, getToken }: Se
     }
   };
 
+  // Modal semantics: focus in, Tab trapped, Escape = "later", scroll locked,
+  // focus handed back on close.
+  React.useEffect(() => {
+    if (!visible) return;
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        void handleLater();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeyDown);
+      restoreFocusRef.current?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
+  if (!visible || !status) return null;
+
+  const remaining = pending(status);
+
   return (
     // Same overlay tier as GuidePanel/DealerAssist — above app chrome, below
     // nothing that traps clicks.
-    <div className="fixed inset-0 z-[1100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-[420px] rounded-2xl border border-[rgba(232,234,230,0.10)] bg-[rgba(20,24,28,0.97)] shadow-2xl p-5 flex flex-col gap-4">
+    <div
+      className="fixed inset-0 z-[1100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) void handleLater();
+      }}
+    >
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="setup-prompt-title"
+        className="w-full max-w-[420px] rounded-2xl border border-[rgba(232,234,230,0.10)] bg-[rgba(20,24,28,0.97)] shadow-2xl p-5 flex flex-col gap-4"
+      >
         <div className="flex items-center gap-2.5">
           <Store size={18} className="text-[#4FE3DC]" />
-          <h3 className="text-[17px] font-semibold tracking-tight text-[#E8EAE6]">
+          <h3 id="setup-prompt-title" className="text-[17px] font-semibold tracking-tight text-[#E8EAE6]">
             Finish setting up your dealership
           </h3>
           <button
+            type="button"
             onClick={() => void handleLater()}
             disabled={acking}
-            aria-label="Dismiss"
-            className="ml-auto text-[rgba(232,234,230,0.72)] hover:text-[#E8EAE6] cursor-pointer"
+            aria-label="Dismiss — I'll do this later"
+            className="ml-auto p-1 -m-1 hover:opacity-80 cursor-pointer"
+            style={{ color: 'var(--muted)' }}
           >
             <X size={16} />
           </button>
@@ -103,7 +162,7 @@ export default function SetupPrompt({ open, onOpenChange, status, getToken }: Se
           ))}
         </ul>
 
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center gap-2 pt-1">
           <a
             href="https://premium.tru-saas.com"
             target="_blank"
@@ -120,7 +179,7 @@ export default function SetupPrompt({ open, onOpenChange, status, getToken }: Se
             disabled={acking}
             className="min-h-[42px] px-4 py-2 rounded-xl text-[13px] text-[rgba(232,234,230,0.65)] hover:text-[#E8EAE6] cursor-pointer disabled:opacity-50"
           >
-            Later
+            {acking ? 'Saving…' : 'Later'}
           </button>
         </div>
         {remaining.some((i) => !i.required) && (
@@ -135,13 +194,17 @@ export default function SetupPrompt({ open, onOpenChange, status, getToken }: Se
 
 interface CardProps {
   status: SetupStatus | null;
+  /** Opens the app's Settings tab where device-local config lives. */
+  onSetUp?: () => void;
+  /** Hides the card for a week (per-device). */
+  onSnooze?: () => void;
 }
 
 /** The quiet follow-up once the modal has been dismissed ("Later"). Shows at
  *  the top of the Dashboard tab until required items are done or snoozed for
  *  a week per device. Only REQUIRED gaps keep this alive — optional branding
  *  gaps are nudged exactly once in the modal and never become a badge. */
-export function SetupChecklistCard({ status }: CardProps) {
+export function SetupChecklistCard({ status, onSetUp, onSnooze }: CardProps) {
   if (!status || status.skipPrompt || status.requiredComplete) return null;
   const remaining = pending(status);
   if (remaining.length === 0) return null;
@@ -157,15 +220,26 @@ export function SetupChecklistCard({ status }: CardProps) {
           Still to do: {remaining.map((i) => i.label).join(', ')}
         </p>
       </div>
-      <a
-        href="https://premium.tru-saas.com"
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex items-center gap-1.5 shrink-0 min-h-[32px] px-3 py-1.5 rounded-lg bg-[rgba(79,227,220,0.14)] border border-[rgba(79,227,220,0.30)] text-[#4FE3DC] text-[11px] font-semibold hover:bg-[rgba(79,227,220,0.20)] transition-all"
-      >
-        Set up
-        <ArrowRight size={12} />
-      </a>
+      {onSetUp && (
+        <button
+          type="button"
+          onClick={onSetUp}
+          className="inline-flex items-center gap-1.5 shrink-0 min-h-[32px] px-3 py-1.5 rounded-lg bg-[rgba(79,227,220,0.14)] border border-[rgba(79,227,220,0.30)] text-[#4FE3DC] text-[11px] font-semibold hover:bg-[rgba(79,227,220,0.20)] transition-all cursor-pointer"
+        >
+          Set up
+          <ArrowRight size={12} />
+        </button>
+      )}
+      {onSnooze && (
+        <button
+          type="button"
+          onClick={onSnooze}
+          aria-label="Hide for a week"
+          className="p-2 shrink-0 text-[rgba(232,234,230,0.55)] hover:text-[#E8EAE6] cursor-pointer"
+        >
+          <X size={14} />
+        </button>
+      )}
     </div>
   );
 }
