@@ -94,6 +94,32 @@ const GUIDES: Guide[] = [
       { title: "Re-inspect if needed", detail: "You can reopen a signed-off vehicle to update photos or checklist items. The report regenerates automatically." },
     ],
   },
+  {
+    id: "verify-vehicle",
+    title: "Verify a car while adding it",
+    goal: "A car has a TransUnion background check and claims history before the inspection even starts.",
+    blurb: "Reg check and accident report in Add Vehicle.",
+    section: "inventory",
+    steps: [
+      { title: "Capture the VIN or stock number", detail: "In Add Vehicle, enter the VIN (or scan the disc). The verification buttons use it to look the car up." },
+      { title: "Tap Verify Registration", detail: "Runs a live TransUnion check — stolen and finance-pending flags come back in seconds as Clear / Stolen / Finance pending chips." },
+      { title: "Run Accident Report", detail: "Needs the VIN. Returns the claims history so a rebuilt unit never surprises you mid-appraisal." },
+      { title: "Credits apply", detail: "Each check uses one credit from your yard's balance; the count shows on the button. Out of credits? Your TruSaaS account manager tops you up — everything else in Inspect stays unlimited." },
+    ],
+  },
+  {
+    id: "brand-your-reports",
+    title: "Brand your reports",
+    goal: "Every inspection report and trade-in document carries your yard's name, contact details and terms.",
+    blurb: "Set identity once — printed on everything.",
+    section: "settings",
+    steps: [
+      { title: "Open Settings", detail: "Desktop: Settings in the sidebar. Phone: the Settings tab. The fields are the same on both." },
+      { title: "Fill the identity fields", detail: "Dealership name, address, email and VAT/reg number are printed on every report and trade-in document. Name, email and address are the must-haves." },
+      { title: "Add your trade-in T&Cs", detail: "Optional but recommended: your own terms print on the appraisal and offer instead of nothing." },
+      { title: "It syncs", detail: "Settings persist per dealership on this instance — sign in on another computer and they're already there. Reports still render instantly offline from this device's copy." },
+    ],
+  },
 ];
 
 export function guidesForSection(section: string): Guide[] {

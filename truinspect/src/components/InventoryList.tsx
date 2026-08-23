@@ -18,6 +18,8 @@ import InstallAppButton from './InstallAppButton';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { useAuth } from '../contexts/AuthContext';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
+import { SetupChecklistCard } from './SetupPrompt';
+import type { SetupStatus } from '../lib/setupStatus';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
@@ -33,6 +35,14 @@ interface InventoryListProps {
   onForceSync: () => void;
   onOpenGuide?: () => void;
   onOpenDealerAssist?: () => void;
+  /** First-run dealership setup checklist (server-derived); rendered as a
+   *  quiet card at the top of the Dashboard tab while required items are
+   *  missing. The modal itself lives in App so it survives navigation. */
+  setupStatus?: SetupStatus | null;
+  onSetupSnooze?: () => void;
+  /** Incremented by App when the setup modal's "Set up now" fires — opens
+   *  this component's Settings tab. */
+  setupGoSignal?: number;
 }
 
 const DMS_PRESETS = {
@@ -56,11 +66,22 @@ export default function InventoryList({
   syncStatus,
   onForceSync,
   onOpenGuide,
-  onOpenDealerAssist
+  onOpenDealerAssist,
+  setupStatus,
+  onSetupSnooze,
+  setupGoSignal
 }: InventoryListProps) {
   const { signOut, user } = useAuth();
   const [loggingOut, setLoggingOut] = React.useState(false);
   const [guideSeen, setGuideSeen] = React.useState(() => !!localStorage.getItem('truinspect_guide_seen'));
+  // Setup modal's "Set up now" — jump to the Settings tab when the signal bumps.
+  const setupGoRef = React.useRef(setupGoSignal || 0);
+  React.useEffect(() => {
+    if ((setupGoSignal || 0) > setupGoRef.current) {
+      setupGoRef.current = setupGoSignal || 0;
+      setCurrentTab('settings');
+    }
+  }, [setupGoSignal]);
   const [searchTerm, setSearchTerm] = React.useState('');
   /** Stock # from Flow deep-link (?stock=) — highlight + search */
   const [highlightStock, setHighlightStock] = React.useState<string | null>(null);
@@ -1340,6 +1361,16 @@ export default function InventoryList({
     </>
   ) : currentTab === 'dashboard' ? (
           <div className="space-y-4 pb-6 animate-in fade-in duration-500">
+            {/* Dealership setup reminder — quiet card while required identity
+                fields are missing from this instance's per-slug record. */}
+            {setupStatus && (
+              <SetupChecklistCard
+                status={setupStatus}
+                onSetUp={() => setCurrentTab('settings')}
+                onSnooze={onSetupSnooze}
+              />
+            )}
+
             {/* Dashboard Heading & Revenue Overview */}
             <div className="flex items-center justify-between">
               <div className="flex flex-col">

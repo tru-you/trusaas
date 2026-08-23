@@ -1237,6 +1237,133 @@ app.put('/api/buyers', authenticate, (req: any, res) => {
   }
 });
 
+// ── Dealership settings (standalone persistence, per dealer slug) ──
+// Inspect is a standalone product: unlike Lens it has no TruFlow central to
+// borrow the dealership record from, so when a dealer is provisioned with the
+// inspect product their identity fields persist HERE, keyed by slug — same
+// shape of problem as the buyers book above. Device-local localStorage stays
+// as an offline cache and keeps working exactly as before; this record is the
+// cross-device source of truth.
+//
+// TransUnion/Imagin8 keys are deliberately absent: those are platform env
+// vars managed by TruSaaS, never dealer-entered.
+
+const DEALER_SETTINGS_FILE = path.join(LOCAL_DATA_DIR, 'inspect-dealerships.json');
+
+function readDealerSettings(): Record<string, any> {
+  try {
+    if (!fs.existsSync(DEALER_SETTINGS_FILE)) return {};
+    const parsed = JSON.parse(fs.readFileSync(DEALER_SETTINGS_FILE, 'utf-8'));
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (e) {
+    console.error('Dealer settings read error:', e);
+    return {};
+  }
+}
+
+function writeDealerSettings(map: Record<string, any>) {
+  try {
+    if (!fs.existsSync(LOCAL_DATA_DIR)) fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+    fs.writeFileSync(DEALER_SETTINGS_FILE, JSON.stringify(map, null, 2), 'utf-8');
+  } catch (e) { console.error('Dealer settings write error:', e); }
+}
+
+const DEALER_SETTING_FIELDS = [
+  'name', 'branch', 'phone', 'email', 'whatsapp',
+  'vatNumber', 'registrationNumber', 'address', 'tradeInTcs',
+] as const;
+
+/** A real, slug-attributed login — demos and legacy shared-code tokens have
+ *  nothing to attribute settings to and are skipped everywhere below. */
+function scopedDealerSlug(req: any): string | null {
+  if (!req.user || req.user.demo || req.user.uid === 'local-demo-user') return null;
+  return typeof req.user.dealerSlug === 'string' && req.user.dealerSlug ? req.user.dealerSlug : null;
+}
+
+function computeSetupItems(d: any) {
+  const done: Record<string, boolean> = {
+    'identity-name': !!d?.name,
+    'contact-email': !!d?.email,
+    'address': !!d?.address,
+    'vat-reg': !!(d?.vatNumber || d?.registrationNumber),
+    'tradein-tcs': !!d?.tradeInTcs,
+  };
+  return [
+    { id: 'identity-name', label: 'Dealership name', hint: 'Printed on every inspection report', required: true },
+    { id: 'contact-email', label: 'Contact email', hint: 'Shown to buyers on reports', required: true },
+    { id: 'address', label: 'Address', hint: 'Yard address on reports and trade-in docs', required: true },
+    { id: 'vat-reg', label: 'VAT / registration number', hint: 'Quoted on trade-in paperwork', required: false },
+    { id: 'tradein-tcs', label: 'Trade-in terms & conditions', hint: 'Your T&Cs on trade-in summaries', required: false },
+  ].map((it) => ({ ...it, done: !!done[it.id] }));
+}
+
+app.get('/api/dealership/settings', authenticate, (req: any, res) => {
+  const slug = scopedDealerSlug(req);
+  if (!slug) return res.json({ settings: {}, skipPrompt: true });
+  try {
+    res.json({ settings: readDealerSettings()[slug] || {} });
+  } catch (e) {
+    console.error('GET /api/dealership/settings - Error:', e);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.put('/api/dealership/settings', authenticate, (req: any, res) => {
+  const slug = scopedDealerSlug(req);
+  // Demo prospects can play with the form but nothing persists.
+  if (!slug) return res.json({ success: true, skipped: true });
+  try {
+    const body = req.body?.settings || {};
+    const map = readDealerSettings();
+    const prev = map[slug] || {};
+    const next: any = { ...prev };
+    for (const k of DEALER_SETTING_FIELDS) {
+      if (typeof body[k] === 'string') next[k] = body[k].trim();
+    }
+    next.updatedAt = new Date().toISOString();
+    map[slug] = next;
+    writeDealerSettings(map);
+    res.json({ success: true, settings: next });
+  } catch (e) {
+    console.error('PUT /api/dealership/settings - Error:', e);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/api/dealership/setup-status', authenticate, (req: any, res) => {
+  const slug = scopedDealerSlug(req);
+  if (!slug) {
+    return res.json({ complete: true, requiredComplete: true, acknowledgedAt: null, skipPrompt: true, items: [] });
+  }
+  const d = readDealerSettings()[slug];
+  const items = computeSetupItems(d);
+  const requiredComplete = items.filter((i) => i.required).every((i) => i.done);
+  res.json({
+    complete: items.every((i) => i.done),
+    requiredComplete,
+    acknowledgedAt: d?.setupAcknowledgedAt || null,
+    skipPrompt: false,
+    items,
+  });
+});
+
+app.put('/api/dealership/setup-acknowledge', authenticate, (req: any, res) => {
+  const slug = scopedDealerSlug(req);
+  if (!slug) return res.json({ ok: true, skipped: true });
+  try {
+    const map = readDealerSettings();
+    const d = { ...(map[slug] || {}) };
+    if (req.body?.reset) delete d.setupAcknowledgedAt;
+    else d.setupAcknowledgedAt = new Date().toISOString();
+    map[slug] = d;
+    writeDealerSettings(map);
+    res.json({ ok: true, acknowledgedAt: d.setupAcknowledgedAt || null });
+  } catch (e) {
+    console.error('PUT /api/dealership/setup-acknowledge - Error:', e);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // 5. AI Listing Description Writer (DeepSeek) — kept at /api/gemini/analyze for
 // frontend compatibility; no image is sent to the model.
 app.post('/api/gemini/analyze', authenticate, async (req, res) => {
@@ -1764,7 +1891,9 @@ app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
 app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
   const dealerId = req.query?.dealerId || req.user?.dealerSlug || 'default';
   if (isUnlimitedDealer(dealerId)) {
-    return res.json({ valuation: 9999, regCheck: 9999, accidentReport: 9999, unlimited: true });
+    // Unlimited dealers get plain unlocked buttons — zeroed counters plus the
+    // flag, never 9999 sentinels. The shared Imagin8GatedButton keys off `unlimited`.
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });
   }
   res.json(getDealerImagin8Bundles(dealerId));
 });

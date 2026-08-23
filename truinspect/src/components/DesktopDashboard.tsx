@@ -3,14 +3,21 @@ import { Plus, Camera, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
+import type { SetupStatus } from '../lib/setupStatus';
+import { SetupChecklistCard } from './SetupPrompt';
 
 interface Props {
   vehicles: Vehicle[];
   onSelectVehicle: (vehicle: Vehicle) => void;
   onAddVehicle: () => void;
+  /** First-run dealership setup checklist (server-derived). Rendered as a
+   *  quiet card above the stats while required items are missing. */
+  setupStatus?: SetupStatus | null;
+  onSetUp?: () => void;
+  onSnooze?: () => void;
 }
 
-export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehicle }: Props) {
+export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehicle, setupStatus, onSetUp, onSnooze }: Props) {
   const totalRequired = DEFAULT_TEMPLATE.slots.filter((s) => s.required).length;
   const taken = (v: Vehicle) => DEFAULT_TEMPLATE.slots.filter((s) => s.required && v.photos?.[s.id]).length;
 
@@ -43,6 +50,12 @@ export default function DesktopDashboard({ vehicles, onSelectVehicle, onAddVehic
             <Plus size={16} /> Add Vehicle
           </button>
         </div>
+
+        {/* Dealership setup reminder — quiet card while required identity
+            fields are missing from this instance's per-slug record. */}
+        {setupStatus && (
+          <SetupChecklistCard status={setupStatus} onSetUp={onSetUp} onSnooze={onSnooze} />
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {stats.map((s) => (

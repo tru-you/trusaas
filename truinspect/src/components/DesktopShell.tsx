@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Check, Copy, RefreshCw, Plus, LogOut, Car, Users, Settings } from 'lucide-react';
+import { Search, Check, Copy, RefreshCw, Plus, LogOut, Car, Users, Settings, Compass } from 'lucide-react';
 import { Vehicle } from '../types';
 import { computeInspectionReadiness } from '../lib/readiness';
 import { DEFAULT_TEMPLATE } from '../templates';
@@ -22,6 +22,9 @@ interface DesktopShellProps {
   onOpenTradeIn?: (vehicle: Vehicle) => void;
   onInspect?: (vehicle: Vehicle) => void;
   onDeleteVehicle?: (id: string) => void;
+  /** Opens the in-app "How do I…?" guides — the desktop previously had no
+   *  way to reach them at all (only the phone's help button did). */
+  onOpenGuide?: () => void;
 }
 
 export default function DesktopShell({
@@ -35,6 +38,7 @@ export default function DesktopShell({
   dealerName,
   section = 'vehicles',
   onSectionChange,
+  onOpenGuide,
   children,
 }: DesktopShellProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -194,23 +198,37 @@ export default function DesktopShell({
 
         {section !== 'vehicles' && <div className="flex-1" />}
 
-        {/* Footer: signed-in dealer + sign out */}
-        {onSignOut && (
-          <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ borderTop: '1px solid var(--glass-line)' }}>
-            <div className="min-w-0">
-              <p className="text-[12px] font-semibold truncate" style={{ color: 'var(--white-dim)' }}>{dealerName || 'Signed in'}</p>
-              <p className="text-[11px]" style={{ color: 'var(--faint)' }}>Manager</p>
-            </div>
+        {/* Footer: guides + signed-in dealer + sign out */}
+        <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ borderTop: '1px solid var(--glass-line)' }}>
+          {onOpenGuide && (
             <button
-              onClick={onSignOut}
+              onClick={onOpenGuide}
               className="tru-btn-ghost flex items-center gap-1.5 px-2.5 text-[12px] cursor-pointer shrink-0"
               style={{ minHeight: 34 }}
-              title="Sign out of this device"
+              title="How do I…? in-app guides"
             >
-              <LogOut size={13} /> Sign out
+              <Compass size={13} /> Guides
             </button>
-          </div>
-        )}
+          )}
+          {onSignOut ? (
+            <>
+              <div className="min-w-0 flex-1">
+                <p className="text-[12px] font-semibold truncate" style={{ color: 'var(--white-dim)' }}>{dealerName || 'Signed in'}</p>
+                <p className="text-[11px]" style={{ color: 'var(--faint)' }}>Manager</p>
+              </div>
+              <button
+                onClick={onSignOut}
+                className="tru-btn-ghost flex items-center gap-1.5 px-2.5 text-[12px] cursor-pointer shrink-0"
+                style={{ minHeight: 34 }}
+                title="Sign out of this device"
+              >
+                <LogOut size={13} /> Sign out
+              </button>
+            </>
+          ) : (
+            !onOpenGuide && <div />
+          )}
+        </div>
       </aside>
 
       {/* ── Main content area ─────────────────────────────────── */}

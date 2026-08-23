@@ -23,6 +23,8 @@ import { createDefaultItems } from './types/inspection';
 import { useAuth } from './contexts/AuthContext';
 import GuidePanel from './components/GuidePanel';
 import DealerAssist from './components/DealerAssist';
+import SetupPrompt, { SetupChecklistCard } from './components/SetupPrompt';
+import { fetchSetupStatus, snoozeSetup, setupSnoozed, type SetupStatus as AppSetupStatus } from './lib/setupStatus';
 import { isDesktopManager } from './lib/pwa';
 
 /** Convert a blob: URL to a data: URL so it survives navigation / reload. */
@@ -115,6 +117,28 @@ export default function App() {
 
   const [guideOpen, setGuideOpen] = React.useState(false);
   const [assistOpen, setAssistOpen] = React.useState(false);
+  // First-run dealership setup — completeness derived on the server from this
+  // app's own per-slug settings record (Inspect is standalone). Demo tokens
+  // and legacy shared-code logins come back skipPrompt and never see it. The
+  // modal is armed once per login; the dashboard card carries the quiet
+  // reminder afterwards, with its own short per-device snooze.
+  const [setupStatus, setSetupStatus] = React.useState<AppSetupStatus | null>(null);
+  const [setupOpen, setSetupOpen] = React.useState(true);
+  const [setupCardHidden, setSetupCardHidden] = React.useState(() => setupSnoozed());
+  // Mobile "Set up now": InventoryList owns its own tab state, so the modal
+  // bumps this counter and the list reacts by opening its Settings tab.
+  const [setupGoSignal, setSetupGoSignal] = React.useState(0);
+  React.useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    setSetupOpen(true);
+    fetchSetupStatus(() => user.getIdToken()).then((s) => {
+      if (!cancelled) setSetupStatus(s);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
   const [desktop, setDesktop] = React.useState(() => isDesktopManager());
   const [addOpen, setAddOpen] = React.useState(false);
   const [deskSection, setDeskSection] = React.useState<'vehicles' | 'buyers' | 'settings'>('vehicles');
@@ -593,6 +617,7 @@ export default function App() {
           onAddVehicle={() => setAddOpen(true)}
           onSignOut={signOut}
           dealerName={(typeof localStorage !== 'undefined' && localStorage.getItem('trulens_dealer_name')) || undefined}
+          onOpenGuide={() => setGuideOpen(true)}
           section={deskSection}
           onSectionChange={(s) => { setDeskSection(s); if (s !== 'vehicles') { setActiveVehicleId(null); } }}
           onOpenReport={handleViewReport}
@@ -609,6 +634,12 @@ export default function App() {
               vehicles={vehicles}
               onSelectVehicle={handleSelectVehicleDesktop}
               onAddVehicle={() => setAddOpen(true)}
+              setupStatus={setupStatus}
+              onSetUp={() => setDeskSection('settings')}
+              onSnooze={() => {
+                snoozeSetup(7);
+                setSetupCardHidden(true);
+              }}
             />
           )}
 
@@ -756,6 +787,15 @@ export default function App() {
             onOpenChange={setGuideOpen}
             currentSection={activeView}
           />
+          <SetupPrompt
+            open={setupOpen && !!setupStatus && !setupStatus.complete && !setupStatus.skipPrompt && !setupStatus.acknowledgedAt}
+            onOpenChange={(o) => {
+              if (!o) setSetupOpen(false);
+            }}
+            status={setupStatus}
+            getToken={() => user?.getIdToken()}
+            onSetUp={() => setDeskSection('settings')}
+          />
           <DealerAssist userName={user?.displayName || undefined} open={assistOpen} onOpenChange={setAssistOpen} />
           {addOpen && (
             <AddVehicleDialog
@@ -809,6 +849,12 @@ export default function App() {
                 onForceSync={fetchInventory}
                 onOpenGuide={() => setGuideOpen(true)}
                 onOpenDealerAssist={() => setAssistOpen(true)}
+                setupStatus={setupStatus}
+                onSetupSnooze={() => {
+                  snoozeSetup(7);
+                  setSetupCardHidden(true);
+                }}
+                setupGoSignal={setupGoSignal}
               />
             </>
           )}
@@ -979,6 +1025,15 @@ export default function App() {
             open={guideOpen}
             onOpenChange={setGuideOpen}
             currentSection={activeView}
+          />
+          <SetupPrompt
+            open={setupOpen && !!setupStatus && !setupStatus.complete && !setupStatus.skipPrompt && !setupStatus.acknowledgedAt}
+            onOpenChange={(o) => {
+              if (!o) setSetupOpen(false);
+            }}
+            status={setupStatus}
+            getToken={() => user?.getIdToken()}
+            onSetUp={() => setSetupGoSignal((n) => n + 1)}
           />
           <DealerAssist userName={user?.displayName || undefined} open={assistOpen} onOpenChange={setAssistOpen} />
         </>
