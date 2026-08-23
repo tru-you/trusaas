@@ -425,6 +425,44 @@ button,input,textarea{font-family:inherit;}
 .guide-hdr-btn.pulse-hint::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:1.5px solid var(--cyan);opacity:0;animation:hint-ring 2s ease infinite;}
 @keyframes hint-pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
 @keyframes hint-ring{0%{opacity:.6;transform:scale(.85);}70%{opacity:0;transform:scale(1.3);}100%{opacity:0;transform:scale(1.3);}}
+
+/* ── v1.3 · Follow-up tasks ── */
+.sec-h .link + .link{margin-left:0;}
+.trow{display:flex;gap:13px;padding:14px;align-items:center;cursor:pointer;transition:.15s var(--ease);}
+.trow:active{transform:scale(.985);background:var(--glass);}
+.tcheck{width:38px;height:38px;border-radius:var(--r-pill);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--cyan-faint);border:1px solid var(--cyan-soft);color:var(--cyan);cursor:pointer;transition:.12s ease;}
+.tcheck svg{width:17px;height:17px;} .tcheck:active{transform:scale(.88);}
+.trow.done{opacity:.55;} .trow.done .lnm{text-decoration:line-through;}
+.due-late{color:var(--danger);}
+.tile.wide{grid-column:1/-1;display:flex;align-items:center;gap:14px;}
+.tile.wide .wl{flex:1;min-width:0;}
+.tile.wide .kn{margin-top:8px;font-size:26px;}
+.tile.wide .kd{margin-top:4px;}
+.tile.wide .warr{width:20px;height:20px;color:var(--cyan);flex-shrink:0;}
+
+/* ── v1.3 · Market value (free scraper) ── */
+.mvbtn{width:100%;height:46px;margin-top:12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--r);
+  background:var(--cyan-faint);border:1px solid var(--cyan-soft);color:var(--cyan);font-size:14px;font-weight:600;cursor:pointer;transition:.15s ease;}
+.mvbtn:active{transform:scale(.985);background:rgba(79,227,220,.16);} .mvbtn:disabled{opacity:.6;}
+.mvbtn svg{width:16px;height:16px;}
+.mv-free{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;padding:2px 7px;border-radius:var(--r-pill);background:rgba(52,211,153,.15);color:#34D399;}
+.mv-out{margin-top:10px;border:1px solid var(--cyan-soft);background:var(--cyan-faint);border-radius:var(--r);padding:12px 14px;font-size:13px;}
+.mv-out.err{border-color:var(--danger-faint);background:var(--danger-faint);color:var(--danger);}
+.mv-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.mv-row + .mv-row{margin-top:7px;}
+.mv-k{color:var(--dim);}
+.mv-v{font-family:var(--mono);font-weight:500;color:var(--paper);}
+.mv-big{color:var(--cyan);font-weight:600;font-size:15px;}
+.mv-sub{color:var(--muted);margin-top:7px;font-size:12.5px;}
+.mv-use{background:none;border:none;color:var(--cyan);font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit;margin-top:9px;}
+.mv-delta{margin-top:9px;padding-top:9px;border-top:1px dashed var(--glass-line2);font-size:12.5px;color:var(--dim);}
+
+/* ── v1.3 · Share this car ── */
+.share-row{width:100%;display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:var(--r);background:var(--ink-3);
+  border:1px solid var(--glass-line);color:var(--paper);font-size:14.5px;font-weight:600;cursor:pointer;margin-top:12px;transition:.15s ease;}
+.share-row svg{width:18px;height:18px;color:var(--cyan);flex-shrink:0;}
+.share-row:active{transform:scale(.985);background:var(--ink-4);}
+.share-row .sr-hint{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.03em;color:var(--faint);font-weight:400;}
 </style>
 </head>
 <body>
@@ -446,6 +484,8 @@ button,input,textarea{font-family:inherit;}
       <div class="h-hi" id="homeDealer">Dealer</div>
       <div class="h-sub">Your floor at a glance.</div>
       <div class="kgrid" id="kpis"></div>
+      <div class="sec-h" id="tasksHead" style="display:none"><h2>Due today</h2><span class="link" style="margin-left:auto" id="allTasksLink">All</span><span class="link" id="addTaskLink">+ Follow-up</span></div>
+      <div class="stack" id="homeTasks"></div>
       <div class="sec-h"><h2>Follow up</h2><span class="link" data-go="leads">All leads →</span></div>
       <div class="stack" id="homeLeads"><div class="loading">Loading</div></div>
       <div class="sec-h"><h2>Recent stock</h2><span class="link" data-go="stock">Manage →</span></div>
@@ -477,7 +517,7 @@ button,input,textarea{font-family:inherit;}
         <div class="rowlink" id="support"><svg viewBox="0 0 24 24" fill="currentColor" style="color:#25D366"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>Support<span style="margin-left:auto;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted)">WhatsApp</span></div>
         <div class="rowlink danger" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Sign out</div>
       </div>
-      <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-top:22px">Version 1.2 · Powered by TruDealer</p>
+      <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-top:22px">Version 1.3 · Powered by TruDealer</p>
     </section>
 
     <section class="screen" id="s-add">
@@ -490,6 +530,7 @@ button,input,textarea{font-family:inherit;}
         <div class="frow"><div class="field"><label>Transmission</label><select id="aTrans"><option>Automatic</option><option>Manual</option></select></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" id="aKm" placeholder="28500" autocomplete="off"></div></div>
         <div class="lbl">The money</div>
         <div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" id="aPrice" placeholder="459900" autocomplete="off"></div><div class="field"><label>TruPrice (R)</label><input inputmode="numeric" id="aTru" placeholder="479000" autocomplete="off"></div></div>
+        <button type="button" class="mvbtn" id="aMvBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M22 7h-9"/><path d="M14 17h5"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>Get market value<span class="mv-free">Free</span></button><div id="aMvOut"></div>
         <button type="submit" class="btn-primary uf-submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Add to inventory</button>
         <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px">Saved unpublished · shoot in TruLens to go live</p>
         <div style="height:14px"></div>
@@ -565,9 +606,10 @@ button,input,textarea{font-family:inherit;}
 <script>
 (function(){
   "use strict";
-  var API="", TOKEN="", AUTH=null, cachedLeads=[], cachedStock=[];
+  var API="", TOKEN="", AUTH=null, cachedLeads=[], cachedStock=[], cachedTasks=[];
+  var DEALER_SITE="", mvCache={}, curTaskId=null;
   var $=function(s,r){return (r||document).querySelector(s);};
-  var el=function(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+   var el=function(t,c,h,ds,act){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;if(ds)for(var k in ds)e.setAttribute(k,ds[k]);if(act)e.setAttribute("data-act",act);return e;};
   var esc=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});};
   var money=function(n){if(typeof n!=="number")n=parseInt(String(n).replace(/[^\d]/g,""),10)||0;return "R"+n.toLocaleString("en-ZA");};
   var initials=function(n){return (n||"?").split(" ").map(function(w){return w[0];}).slice(0,2).join("").toUpperCase();};
@@ -647,7 +689,7 @@ button,input,textarea{font-family:inherit;}
     if(!cachedLeads.length)$("#homeLeads").innerHTML=skelHTML("skel-lead",2);
     if(!cachedStock.length)$("#homeStock").innerHTML=skelHTML("skel-veh",2);
     if(!cachedLeads.length&&!cachedStock.length)$("#kpis").innerHTML=skelHTML("skel-kpi",4);
-    Promise.all([loadLeads(),loadInventory()]).finally(function(){polling=false;endPTR();setOffline(loadFailed);});
+    Promise.all([loadLeads(),loadInventory(),loadTasks()]).finally(function(){polling=false;endPTR();setOffline(loadFailed);});
   }
   function loadLeads(){
     return api("GET","/api/leads").then(function(x){cachedLeads=Array.isArray(x)?x:[];
@@ -666,6 +708,10 @@ button,input,textarea{font-family:inherit;}
       if(!cachedStock.length){$("#homeStock").innerHTML=retryHTML("Stock failed to load");$("#stockList").innerHTML=retryHTML("Stock failed to load");}
       renderHome();renderStock();
     });
+  }
+  function loadTasks(){
+    return api("GET","/api/tasks").then(function(x){cachedTasks=Array.isArray(x)?x:[];renderKPIs();renderTasks();
+    }).catch(function(){loadFailed=true;renderKPIs();});
   }
   setInterval(function(){if(TOKEN&&!sheetOpen())loadAll();},30000);
 
@@ -704,17 +750,27 @@ button,input,textarea{font-family:inherit;}
   var active=function(){return cachedStock.filter(function(v){return v.status!=="SOLD";});};
 
   /* ── KPIs ── */
+  function isStaleLead(l){
+    if((l.status||"New")!=="New"||!l.createdAt)return false;
+    return (Date.now()-new Date(l.createdAt))>864e5;
+  }
   function renderKPIs(){
     var a=active(), live=a.filter(isPub).length, needs=a.filter(function(v){return !isPub(v);}).length;
     var newl=cachedLeads.filter(function(l){return (l.status||"New")==="New";}).length;
+    var open=cachedTasks.filter(function(t){return t.status!=="Completed";});
+    var td=todayISO();
+    var due=open.filter(function(t){return (t.dueDate||"")<=td;}).length, upc=open.length-due;
     var tiles=[
-      {l:"In stock",n:a.length,d:"on the floor"},
-      {l:"Live on site",n:live,d:live+" of "+cachedStock.length+" published",c:"acc"},
-      {l:"Active leads",n:cachedLeads.length,d:newl+" new"},
-      {l:"Unpublished",n:needs,d:"not live on site yet",c:"need"}
+      {l:"In stock",n:a.length,d:"on the floor",act:"stock"},
+      {l:"Live on site",n:live,d:live+" of "+cachedStock.length+" published",c:"acc",act:"stock-live"},
+      {l:"Active leads",n:cachedLeads.length,d:newl+" new",act:"leads"},
+      {l:"Unpublished",n:needs,d:"not live on site yet",c:needs?"need":"",act:"stock-draft"}
     ];
     var g=$("#kpis");g.innerHTML="";
-    tiles.forEach(function(t){g.appendChild(el("div","tile "+(t.c||""),'<div class="kl">'+t.l+'</div><div class="kn">'+t.n+'</div><div class="kd">'+t.d+'</div>'));});
+    tiles.forEach(function(t){g.appendChild(el("div","tile "+(t.c||""),'<div class="kl">'+t.l+'</div><div class="kn">'+t.n+'</div><div class="kd">'+t.d+'</div>',null,t.act));});
+    var wl=due?("due today"+(upc?" · "+upc+" upcoming":"")):(upc?(upc+" upcoming"):"all caught up");
+    var wt=el("div","tile wide"+(due?" need":""),'<div class="wl"><div class="kl">Follow-ups</div><div class="kn">'+due+'</div><div class="kd">'+wl+'</div></div><svg class="warr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',null,"tasks");
+    g.appendChild(wt);
   }
 
   /* ── Lead row ── */
@@ -760,9 +816,18 @@ button,input,textarea{font-family:inherit;}
   /* ── Renders ── */
   function renderHome(){
     renderKPIs();
+    renderTasks();
     var hl=$("#homeLeads");hl.innerHTML="";
     if(!cachedLeads.length)hl.appendChild(emptyState("No leads yet"));
-    else cachedLeads.slice(0,3).forEach(function(l){var w=el("div","card");w.appendChild(leadRow(l));hl.appendChild(w);});
+    else {
+      // Follow-up order: stale New leads (untouched >24h) surface first, then newest.
+      var ls=cachedLeads.slice().sort(function(a,b){
+        var sa=isStaleLead(a)?0:1,sb=isStaleLead(b)?0:1;
+        if(sa!==sb)return sa-sb;
+        return new Date(b.createdAt||0)-new Date(a.createdAt||0);
+      });
+      ls.slice(0,3).forEach(function(l){var w=el("div","card");w.appendChild(leadRow(l));hl.appendChild(w);});
+    }
     var hs=$("#homeStock");hs.innerHTML="";
     active().slice(0,3).forEach(function(v){hs.appendChild(vehCard(v));});
   }
@@ -785,6 +850,7 @@ button,input,textarea{font-family:inherit;}
     var arr=cachedStock.filter(function(v){
       if(stockFilter==="In stock"&&v.status!=="INVENTORY")return false;
       if(stockFilter==="Live"&&!isPub(v))return false;
+      if(stockFilter==="Draft"&&(v.status==="SOLD"||isPub(v)))return false;
       if(stockFilter==="Sold"&&v.status!=="SOLD")return false;
       if(!q)return true;
       return ((vName(v)+" "+(v.trim||"")+" "+(v.stockNumber||"")).toLowerCase().indexOf(q)>=0);
@@ -821,6 +887,24 @@ button,input,textarea{font-family:inherit;}
   Array.prototype.forEach.call(document.querySelectorAll("[data-go]"),function(g){g.addEventListener("click",function(){go(g.getAttribute("data-go"));});});
   $("#avatarBtn").addEventListener("click",function(){go("acct");});
 
+  /* KPI tiles are shortcuts — tap through to the pre-filtered list. */
+  function setStockFilter(f){
+    stockFilter=f;
+    Array.prototype.forEach.call($("#stockChips").children,function(c){c.classList.toggle("on",c.textContent===f);});
+    renderStock();
+  }
+  $("#kpis").addEventListener("click",function(e){
+    var t=e.target.closest?e.target.closest("[data-act]"):null;if(!t)return;
+    var a=t.getAttribute("data-act");
+    if(a==="leads")go("leads");
+    else if(a==="stock")go("stock");
+    else if(a==="stock-live"){setStockFilter("Live");go("stock");}
+    else if(a==="stock-draft"){setStockFilter("Draft");go("stock");}
+    else if(a==="tasks")openTaskList();
+  });
+  $("#allTasksLink").addEventListener("click",openTaskList);
+  $("#addTaskLink").addEventListener("click",quickAddTask);
+
   /* ── Toast ── */
   var toastT;
   function toast(msg,isErr){var t=$("#toast");$("#toastMsg").textContent=msg;t.classList.toggle("err",!!isErr);t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("show");},2400);}
@@ -854,6 +938,7 @@ button,input,textarea{font-family:inherit;}
     $("#sheetBody").innerHTML = heroHtml +
       '<div class="vhead"><div class="vt">'+esc(name||"Vehicle")+(v.trim?'<div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:5px;font-weight:400">'+esc(v.trim)+'</div>':'')+'</div><div class="vp">'+money(vPrice(v))+'</div></div>'+
       '<div class="meta">'+meta.join("")+'</div>'+
+      '<button type="button" class="share-row" id="shareBtn">'+SVG_SHARE+'Share this car<span class="sr-hint">WhatsApp · link</span></button>'+
       '<div class="lbl">Listing</div>'+
       '<div class="listing">'+
         '<div class="lrow"><div class="a">Live on website</div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch"></div></div>'+
@@ -861,6 +946,7 @@ button,input,textarea{font-family:inherit;}
       '</div>'+
       '<div class="lbl">Details</div>'+
       '<div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" value="'+(vPrice(v)||"")+'" id="fPrice"></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" value="'+(v.mileage||"")+'" id="fKm"></div></div>'+
+      '<button type="button" class="mvbtn" id="vMvBtn">'+SVG_TREND+'Get market value<span class="mv-free">Free</span></button><div id="vMvOut"></div>'+
       '<div class="field"><label>Variant / trim</label><input type="text" value="'+esc(v.trim||"")+'" id="fTrim"></div>'+
       '<div class="field"><label>Listing blurb</label><textarea id="fDesc" placeholder="Short blurb for the listing…">'+esc(v.description||"")+'</textarea></div><div style="height:8px"></div>';
     $("#sheetFoot").style.display="";
@@ -903,6 +989,14 @@ button,input,textarea{font-family:inherit;}
         api("DELETE","/api/inventory/"+cv.id).then(function(){
           cachedStock=cachedStock.filter(function(x){return x.id!==cv.id;});toast(name+" deleted");renderHome();renderStock();closeSheet();
         }).catch(function(){toast("Couldn't delete — check connection",true);});
+      });
+    });
+    $("#shareBtn").addEventListener("click",function(){var cv=curVeh()||v;if(cv)shareVehicle(cv);});
+    $("#vMvBtn").addEventListener("click",function(){
+      var cv=curVeh();if(!cv)return;
+      var km=parseInt(($("#fKm").value||""),10)||cv.mileage||0;
+      runMV({year:cv.year,make:cv.make,model:cv.model,mileage:km},$("#vMvOut"),$("#vMvBtn"),vPrice(cv),function(p){
+        var inp=$("#fPrice");if(inp){inp.value=p;toast("Asking price set — tap Save");}
       });
     });
     openSheet();
@@ -996,6 +1090,229 @@ button,input,textarea{font-family:inherit;}
     }).catch(function(){toast("Couldn't save — check connection",true);if(btn){btn.disabled=false;btn.textContent="Log note";}});
   }
 
+  /* ── Follow-up tasks (GET/POST/PUT/DELETE /api/tasks — dealer-scoped, all tiers) ── */
+  var SVG_CHK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  var TSTAT=[["Pending","To do"],["In Progress","Active"],["Completed","Done"]];
+  function tStatLbl(s){for(var i=0;i<TSTAT.length;i++){if(TSTAT[i][0]===s)return TSTAT[i][1];}return s||"To do";}
+  function isOverdue(t){return t.status!=="Completed"&&!!t.dueDate&&t.dueDate<todayISO();}
+  function openTasks(){return cachedTasks.filter(function(t){return t.status!=="Completed";});}
+  function sortTasks(arr){
+    var td=todayISO();
+    return arr.slice().sort(function(a,b){
+      var ga=isOverdue(a)?0:((a.dueDate||td)===td?1:2), gb=isOverdue(b)?0:((b.dueDate||td)===td?1:2);
+      if(ga!==gb)return ga-gb;
+      return (a.dueDate||"9999").localeCompare(b.dueDate||"9999")||(a.title||"").localeCompare(b.title||"");
+    });
+  }
+  function fmtDay(d){if(!d)return "";try{return new Date(d+"T00:00:00").toLocaleDateString("en-ZA",{day:"numeric",month:"short"});}catch(e){return d;}}
+  function updTaskCache(task){for(var i=0;i<cachedTasks.length;i++){if(cachedTasks[i].id===task.id){cachedTasks[i]=task;return;}}cachedTasks.unshift(task);}
+  function dropTask(id){cachedTasks=cachedTasks.filter(function(t){return t.id!==id;});}
+  function taskCtx(t){
+    var bits=[];
+    if(t.leadId){var l=findLead(t.leadId);if(l)bits.push("Lead · "+(((l.firstName||"")+" "+(l.lastName||"")).trim()||"customer"));}
+    if(t.vehicleId){var v=vehById(t.vehicleId);if(v)bits.push(vName(v));}
+    return bits.join(" · ");
+  }
+  function taskRow(t){
+    var done=t.status==="Completed";
+    var ctx=taskCtx(t);
+    var dueLbl=done?"Done":(!t.dueDate||t.dueDate===todayISO())?"Today":(isOverdue(t)?"Overdue · ":"Due ")+fmtDay(t.dueDate);
+    var r=el("div","card");
+    r.innerHTML='<div class="trow'+(done?" done":"")+'">'+
+      '<button type="button" class="tcheck"'+(done?' style="opacity:.45"':'')+' aria-label="'+(done?"Completed":"Mark done")+'">'+SVG_CHK+'</button>'+
+      '<div class="lb"><div class="lnm">'+esc(t.title||"Follow-up")+'</div>'+(ctx?'<div class="li">'+esc(ctx)+'</div>':'')+
+      '<div class="lm">'+((isOverdue(t))?'<span class="due-late">'+esc(dueLbl)+'</span>':'<span>'+esc(dueLbl)+'</span>')+
+      (t.priority==="Urgent"&&!done?'<span>·</span><span class="due-late">Urgent</span>':'')+'</div></div></div>';
+    r.querySelector(".tcheck").addEventListener("click",function(e){e.stopPropagation();resolveTask(t.id);});
+    r.addEventListener("click",function(){openTask(t.id);});
+    return r;
+  }
+  function renderTasks(){
+    var box=$("#homeTasks"),head=$("#tasksHead");if(!box)return;
+    var td=todayISO();
+    var due=sortTasks(openTasks()).filter(function(t){return (t.dueDate||td)<=td;});
+    if(!due.length){head.style.display="none";box.innerHTML="";return;}
+    head.style.display="";
+    box.innerHTML="";
+    due.slice(0,5).forEach(function(t){box.appendChild(taskRow(t));});
+    if(due.length>5){
+      var m=el("div","grp","+"+(due.length-5)+" more — tap to see all");
+      m.style.cursor="pointer";m.addEventListener("click",openTaskList);box.appendChild(m);
+    }
+  }
+  function refreshTasksUI(){renderKPIs();renderTasks();renderHome();}
+  function resolveTask(id){
+    api("PUT","/api/tasks/"+id,{status:"Completed"}).then(function(res){
+      if(res&&res.task)updTaskCache(res.task);
+      refreshTasksUI();
+      if(sheetOpen()&&curTaskId===id)closeSheet();
+      toast("Resolved");
+    }).catch(function(){toast("Couldn't update — check connection",true);});
+  }
+  function openTask(id){
+    var t=null;for(var i=0;i<cachedTasks.length;i++){if(cachedTasks[i].id===id)t=cachedTasks[i];}
+    if(!t){closeSheet();return;}
+    curTaskId=id;
+    var l=t.leadId?findLead(t.leadId):null, v=t.vehicleId?vehById(t.vehicleId):null;
+    var statusSeg='<div class="seg" id="tStatus">';
+    TSTAT.forEach(function(s){statusSeg+='<button type="button" data-v="'+s[0]+'" class="'+(t.status===s[0]?"on":"")+'">'+s[1]+'</button>';});
+    statusSeg+='</div>';
+    var priSel=function(p){return (t.priority||"Normal")===p?" selected":"";};
+    var body=
+      '<div class="ld-head"><div class="lav" style="background:var(--cyan-faint);color:var(--cyan)">'+SVG_CHK.replace('viewBox','width="20" height="20" viewBox')+'</div><div class="nm"><div class="n">Follow-up</div><div class="s"><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">created for your floor list</span></div></div><button class="ld-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>'+
+      '<div class="field" style="margin-top:14px"><label>What needs doing</label><input type="text" id="tTitle" value="'+esc(t.title||"")+'" autocomplete="off"></div>'+
+      '<div class="frow"><div class="field"><label>Due date</label><input type="date" id="tDue" value="'+esc(t.dueDate||"")+'"></div>'+
+      '<div class="field"><label>Priority</label><select id="tPri"><option'+priSel("Normal")+'>Normal</option><option'+priSel("Urgent")+'>Urgent</option></select></div></div>'+
+      '<div class="lbl">Status</div>'+statusSeg;
+    if(l||v){
+      body+='<div class="lbl">Linked to</div><div class="ld-meta">';
+      if(l)body+='<div class="ld-mrow" data-open-lead="'+esc(l.id)+'" style="cursor:pointer"><span class="ld-mk">Lead</span><span class="ld-mv">'+esc((((l.firstName||"")+" "+(l.lastName||"")).trim()||"Customer"))+'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="float:right;margin-top:2px"><path d="m9 18 6-6-6-6"/></svg></span></div>';
+      if(v)body+='<div class="ld-mrow" data-open-veh="'+esc(v.id)+'" style="cursor:pointer"><span class="ld-mk">Car</span><span class="ld-mv">'+esc(vName(v)+(vPrice(v)?" · "+money(vPrice(v)):""))+'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="float:right;margin-top:2px"><path d="m9 18 6-6-6-6"/></svg></span></div>';
+      body+='</div>';
+    }
+    $("#sheetBody").innerHTML=body;
+    $("#sheetFoot").style.display="";
+    $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="tSave">'+SVG_CHK.replace('stroke-width="2.4"','stroke-width="2.4"')+'Save</button><button class="tru-btn-ghost danger foot-del" id="tDel" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+    $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
+    Array.prototype.forEach.call($("#tStatus").children,function(b){
+      b.addEventListener("click",function(){Array.prototype.forEach.call($("#tStatus").children,function(x){x.classList.remove("on");});b.classList.add("on");});
+    });
+    var ol=$("#sheetBody").querySelector("[data-open-lead]");
+    if(ol)ol.addEventListener("click",function(){openLead(ol.getAttribute("data-open-lead"));});
+    var ov=$("#sheetBody").querySelector("[data-open-veh]");
+    if(ov)ov.addEventListener("click",function(){openVeh(ov.getAttribute("data-open-veh"));});
+    $("#tSave").addEventListener("click",function(){
+      var title=($("#tTitle").value||"").trim();
+      if(!title){toast("Give it a short description");$("#tTitle").focus();return;}
+      var st=$("#tStatus .on"), status=st?st.getAttribute("data-v"):(t.status||"Pending");
+      var btn=$("#tSave");btn.disabled=true;
+      api("PUT","/api/tasks/"+id,{title:title,dueDate:$("#tDue").value||"",priority:$("#tPri").value,status:status}).then(function(res){
+        if(res&&res.task)updTaskCache(res.task);
+        refreshTasksUI();closeSheet();toast("Follow-up saved");
+      }).catch(function(){btn.disabled=false;toast("Couldn't save — check connection",true);});
+    });
+    $("#tDel").addEventListener("click",function(){
+      showModal({title:"Delete follow-up?",message:"This removes it from your list. This can’t be undone.",confirmLabel:"Delete",danger:true}).then(function(ok){
+        if(!ok)return;
+        api("DELETE","/api/tasks/"+id).then(function(){
+          dropTask(id);refreshTasksUI();closeSheet();toast("Deleted");
+        }).catch(function(){toast("Couldn't delete — check connection",true);});
+      });
+    });
+    openSheet();
+  }
+  function openTaskList(){
+    curTaskId=null;
+    var open=sortTasks(openTasks()), td=todayISO();
+    var done=cachedTasks.filter(function(t){return t.status==="Completed";})
+      .sort(function(a,b){return (b.dueDate||"").localeCompare(a.dueDate||"");}).slice(0,8);
+    var html='<div class="h-hi" style="margin-top:6px">Follow-ups</div><div class="h-sub" style="margin-bottom:10px">Everything on your floor list.</div>';
+    // build grouped sections
+    function sect(title,arr){if(!arr.length)return;html+='<div class="grp">'+title+'</div><div class="stack" style="margin-bottom:6px">';arr.forEach(function(t){html+='<div data-trow="'+esc(t.id)+'"></div>';});html+='</div>';}
+    var over=open.filter(isOverdue), tod=open.filter(function(t){return !isOverdue(t)&&(t.dueDate||td)===td;}), upc=open.filter(function(t){return !isOverdue(t)&&(t.dueDate||td)!==td&&t.dueDate;}), nodate=open.filter(function(t){return !t.dueDate&&t.status!=="Completed";});
+    if(nodate.length)sect("No date",nodate);
+    if(over.length)sect("Overdue",over);
+    if(tod.length)sect("Today",tod);
+    if(upc.length)sect("Upcoming",upc);
+    if(done.length)sect("Recently done",done);
+    $("#sheetBody").innerHTML=html;
+    if(!open.length&&!done.length)$("#sheetBody").appendChild(emptyState("Nothing here yet","Tap “New follow-up” to add one"));
+    Array.prototype.forEach.call($("#sheetBody").querySelectorAll("[data-trow]"),function(slot){
+      var t=null;for(var i=0;i<cachedTasks.length;i++){if(cachedTasks[i].id===slot.getAttribute("data-trow"))t=cachedTasks[i];}
+      if(t)slot.replaceWith(taskRow(t));
+    });
+    $("#sheetFoot").style.display="";
+    $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="newTaskBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New follow-up</button>';
+    $("#newTaskBtn").addEventListener("click",quickAddTask);
+    openSheet();
+  }
+  function quickAddTask(){
+    showModal({title:"New follow-up",message:"What do you need to do?",input:true,placeholder:"e.g. Call Sipho about the Corolla",confirmLabel:"Add"}).then(function(title){
+      title=(title||"").trim();if(!title)return;
+      api("POST","/api/tasks",{title:title,dueDate:todayISO(),priority:"Normal",status:"Pending"}).then(function(res){
+        if(res&&res.task)updTaskCache(res.task);
+        refreshTasksUI();
+        toast("Added — due today");
+        if(sheetOpen())openTaskList();
+      }).catch(function(){toast("Couldn't add — check connection",true);});
+    });
+  }
+
+  /* ── Market value (free AutoTrader/Cars.co.za scraper on the backend) ── */
+  var SVG_TREND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7h-9"/><path d="M14 17h5"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>';
+  var SVG_SHARE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/></svg>';
+  function runMV(params,out,btn,curPrice,onUse){
+    var key=[params.year,params.make,params.model,params.mileage||0].join("|").toLowerCase();
+    var orig=btn.innerHTML;
+    var done=function(){btn.innerHTML=orig;btn.disabled=false;};
+    if(mvCache[key]){out.innerHTML=mvCache[key];wireUse();return;}
+    btn.disabled=true;btn.textContent="Checking the market…";
+    api("POST","/api/valuation",{make:params.make,model:params.model,year:params.year,mileage:params.mileage||undefined}).then(function(res){
+      mvCache[key]=mvHTML(res,params,curPrice);
+      out.innerHTML=mvCache[key];wireUse();
+    }).catch(function(){
+      out.innerHTML='<div class="mv-out err">Couldn\'t check the market right now — check your connection and try again.</div>';
+    }).finally(done);
+    function wireUse(){
+      var u=out.querySelector(".mv-use");
+      if(u)u.addEventListener("click",function(){onUse(parseInt(u.getAttribute("data-p"),10));});
+    }
+  }
+  function mvHTML(res,params,curPrice){
+    if(!res||res.averageRetailPrice==null)return '<div class="mv-out"><span style="color:var(--muted)">No market data yet for that car — price it manually.</span></div>';
+    var h='<div class="mv-out">'+
+      '<div class="mv-row"><span class="mv-k">Market average</span><span class="mv-v mv-big">'+money(res.averageRetailPrice)+'</span></div>'+
+      '<div class="mv-row"><span class="mv-k">Sample</span><span class="mv-v">'+res.listingsFound+' listing'+(res.listingsFound===1?"":"s")+(res.mileageAdjusted?" · km-adjusted":"")+'</span></div>';
+    if(res.sampleMedianKm!=null)h+='<div class="mv-sub">Market median '+Number(res.sampleMedianKm).toLocaleString("en-ZA")+' km</div>';
+    if(curPrice>0){
+      var diff=Math.round(curPrice-res.averageRetailPrice);
+      if(Math.abs(diff)>499)h+='<div class="mv-delta">Asking '+money(curPrice)+' is <b style="color:var(--paper)">'+money(Math.abs(diff))+" "+(diff>0?"above":"below")+'</b> the market average.</div>';
+      else h+='<div class="mv-delta">Your asking price sits right on the market average.</div>';
+    }
+    h+='<button type="button" class="mv-use" data-p="'+res.averageRetailPrice+'">Use as asking price</button></div>';
+    return h;
+  }
+
+  /* ── Share this car (deep link mirrors the tru-share widget URL contract) ── */
+  // The dealer's own site URL comes out of the authed /api/state bootstrap
+  // (dealerships ride along unscoped there). Fetched lazily — only when a
+  // published car is first shared — and cached for the session.
+  function ensureDealerSite(cb){
+    if(DEALER_SITE){cb();return;}
+    if(!AUTH||!AUTH.dealershipId){cb();return;}
+    api("GET","/api/state").then(function(s){
+      var arr=(s&&s.dealerships)||[];
+      for(var i=0;i<arr.length;i++){
+        if(arr[i]&&arr[i].id===AUTH.dealershipId){DEALER_SITE=((arr[i].websiteUrl||"")+"").replace(/\/+$/,"");break;}
+      }
+    }).catch(function(){}).then(cb);
+  }
+  function shareVehicle(v){
+    ensureDealerSite(function(){
+      var name=[v.year,v.make,v.model,v.trim].filter(Boolean).join(" ").replace(/\s+/g," ").trim()||"This car";
+      var head=name+(vPrice(v)?" — "+money(vPrice(v)):"");
+      var spec=[v.mileage?Number(v.mileage).toLocaleString("en-ZA")+" km":"",v.transmission||"",v.fuelType||""].filter(Boolean).join(" · ");
+      var text=head+(spec?"\n"+spec:"");
+      var url="";
+      if(isPub(v)&&DEALER_SITE){
+        var hero=vHero(v);
+        var q=[];
+        var add=function(k,val){if(val!==""&&val!=null)q.push(k+"="+encodeURIComponent(val));};
+        add("stock",v.stockNumber||v.id);add("year",v.year||"");add("make",v.make||"");add("name",v.model||"");
+        add("variant",v.trim||"");if(vPrice(v)>0)add("price",Math.round(vPrice(v)));add("km",v.mileage||"");
+        add("trans",v.transmission||"");add("fuel",v.fuelType||"");add("body",v.bodyType||"");
+        if(hero)add("img",(location.origin+hero));
+        url=DEALER_SITE+"/vehicle/?"+q.join("&");
+        text+="\n\n"+url;
+      }
+      if(navigator.share&&url){
+        navigator.share({title:name,text:text,url:url}).catch(function(){});
+      } else {
+        window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank","noopener");
+      }
+    });
+  }
+
   /* ── Activity feed ── */
   var cachedActivity=[];
   function buildLocalActivity(){
@@ -1060,6 +1377,18 @@ button,input,textarea{font-family:inherit;}
       box.appendChild(row);
     });
   }
+
+  /* ── Market value from the Add Vehicle form ── */
+  $("#aMvBtn").addEventListener("click",function(){
+    var g=function(id){var e=$("#"+id);return e?e.value.trim():"";};
+    var year=parseInt(g("aYear"),10),make=g("aMake"),model=g("aModel");
+    if(!year||!make||!model){toast("Fill in year, make and model first",true);return;}
+    var km=parseInt(g("aKm"),10)||0;
+    runMV({year:year,make:make,model:model,mileage:km},$("#aMvOut"),$("#aMvBtn"),0,function(p){
+      var inp=$("#aPrice");if(inp&&inp.value.trim()===""){inp.value=p;toast("Asking price filled in");}
+      else if(inp){inp.value=p;toast("Asking price updated");}
+    });
+  });
 
   /* ── Add vehicle (POST /api/inventory) ── */
   $("#addForm").addEventListener("submit",function(e){
@@ -1152,6 +1481,18 @@ button,input,textarea{font-family:inherit;}
       {title:"Filter",detail:"Use the chips to show All, In stock, Live (on your website), or Sold."},
       {title:"Open a vehicle",detail:"Tap the card. The detail sheet shows photos, specs, pricing, and listing controls."},
       {title:"Toggle listing",detail:"Flip the Website switch to put the vehicle on or take it off your site. Change status to Sold when it leaves."}
+    ]},
+    {id:"follow-ups",title:"Plan your day with follow-ups",goal:"Keep track of who to call back and what's due today — never drop a lead.",blurb:"Add follow-ups, tick them off, reschedule in one tap.",section:"home",steps:[
+      {title:"Check Due today",detail:"The Home screen lists every follow-up that's overdue or due today, with the lead or car it relates to."},
+      {title:"Add one",detail:"Tap “+ Follow-up” on Home and type what needs doing — e.g. Call Sipho about the Corolla. It lands on today's list."},
+      {title:"Work the list",detail:"Tap a follow-up to edit it: change the date, set Urgent, or open the linked lead or car straight from the card."},
+      {title:"Tick it off",detail:"Tap the round check button when it's done. The Follow-ups tile on Home always shows what's still outstanding."}
+    ]},
+    {id:"market-value",title:"Price against the market",goal:"Check what similar cars are selling for right now before you set your price.",blurb:"Free live market check on any car.",section:"stock",steps:[
+      {title:"While adding a car",detail:"Fill in year, make and model, then tap Get market value. It scans live AutoTrader and Cars.co.za listings — free, unlimited."},
+      {title:"Read the result",detail:"You'll see the market average, how many listings were found, and whether the sample was adjusted for mileage."},
+      {title:"Use the number",detail:"Tap Use as asking price to fill it in, or use it as a sanity check and type your own."},
+      {title:"On cars you already have",detail:"Open any vehicle in Stock and tap Get market value under Details to see how your asking price compares."}
     ]},
     {id:"dealer-assist",title:"Use Dealer Assist",goal:"Chat with your AI assistant for quick answers about stock, leads, and deals.",blurb:"Open the chat, ask a question, get an answer.",section:"home",steps:[
       {title:"Open the chat",detail:"Tap the chat bubble in the bottom-right corner. Dealer Assist opens full-screen."},
@@ -1279,7 +1620,7 @@ button,input,textarea{font-family:inherit;}
   $("#leadSortSel").addEventListener("change",function(){leadSort=this.value;renderLeads();});
   $("#stockSortSel").addEventListener("change",function(){stockSort=this.value;renderStock();});
   chips($("#leadChips"),["All","New","Contacted","Negotiating","Closed Won"],function(v){leadFilter=v;renderLeads();});
-  chips($("#stockChips"),["All","In stock","Live","Sold"],function(v){stockFilter=v;renderStock();});
+  chips($("#stockChips"),["All","In stock","Live","Draft","Sold"],function(v){stockFilter=v;renderStock();});
 
   (function restore(){
     try{

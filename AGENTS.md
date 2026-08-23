@@ -108,6 +108,32 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ## 4. Recent Changes (2026-08-21)
 
+### TruFlow Mobile v1.3 — Market Value + Follow-ups + Share (2026-08-23)
+
+All mobile-only (`truflow-mobile/public/index.html` + `sw.js` bump `tfm-2026-08-23a`). Zero backend changes; everything works for standalone/light dealers and premium field workers (both auth against the same backend; only un-gated endpoints used).
+
+**Market Value (free scraper, all tiers):**
+- "Get market value · Free" button on Add Vehicle (needs year+make+model, uses mileage) and in vehicle detail sheet (under Details)
+- Calls `POST /api/valuation` (Bright Data AutoTrader/Cars.co.za scraper) via existing proxy
+- Result card: market average, listings found, km-adjusted flag, market median km; delta line vs current asking price on the detail sheet; "Use as asking price" fills the price field
+- Session cache keyed year|make|model|km; loading label swap; friendly error card
+
+**Follow-up tasks (Home-centric):**
+- `GET/POST/PUT/DELETE /api/tasks` wired into mobile; `loadTasks()` joined to `loadAll()` Promise.all (30s polling + pull-to-refresh cover it)
+- Home "Due today" section: overdue/due-today open tasks, lead/car context resolved from caches, one-tap Resolve check, "+ Follow-up" quick-add modal (due today default), max 5 rows + "N more"
+- Wide "Follow-ups" KPI tile (grid-column span 2) opens full list sheet grouped Overdue/Today/Upcoming/No date/Recently done with "New follow-up" footer button
+- Task edit sheet: title, date input, Normal/Urgent select, Pending/In Progress/Completed segment (labels To do/Active/Done), linked lead/vehicle deep-link into existing sheets, Save/Delete
+
+**UX polish:**
+- All KPI tiles tappable: In stock→Stock, Live→Stock(Live chip), Leads→Leads, Unpublished→Stock(Draft chip); new Draft filter chip added to stock chips
+- Home Follow up: stale New leads (>24h) surface first
+- "Share this car" row in vehicle detail: caption + deep link `<websiteUrl>/vehicle/?stock=…&year=…&make=…&name=…&variant=…&price=…&km=…&trans=…&fuel=…&img=…` mirroring `packages/standalone/tru-share/tru-share.js` URL contract so links unfurl; Web Share API when link exists, WhatsApp fallback otherwise (text-only for drafts/no-site dealers). websiteUrl resolved lazily from `GET /api/state` (dealerships ride along unscoped there; `/api/dealerships` is admin-only, `/api/public/dealerships` omits websiteUrl) and cached per session
+- Guide panel: added "Plan your day with follow-ups" + "Price against the market"; Account footer → Version 1.3
+
+**Verified live:** demo login → tasks CRUD/resolve/groups, real scraper results (Polo R243k/35 listings km-adjusted; Corolla R247k/21), price fill, tile nav + Draft filter, share caption, guide entries, no console errors.
+
+---
+
 ### Unified Demo Mode (2026-08-22)
 
 **Problem:** Each app had its own demo/login pattern — Premium had a proper one, TruLens/Inspect had hacky local fallbacks.
