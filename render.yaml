@@ -74,6 +74,11 @@ services:
       # TRULENS_ACCESS_CODE above still works and leaves the picker in charge.
       - key: TRULENS_DEALER_CODES
         sync: false
+      # Prospects demo Lens too (same rationale as trusaas-inspect): with an
+      # access code set, demo defaults OFF unless explicit. Demo sessions are
+      # uid-isolated, capped, and never touch the Imagin8 gateway.
+      - key: DEMO_ENABLED
+        value: "1"
       # Shared secret for the photo push to TruFlow. MUST equal TRUFLOW_SYNC_KEY
       # on trusaas-premium. Set it HERE FIRST, then on TruFlow — this note used
       # to say the opposite, which is the order that breaks exports:

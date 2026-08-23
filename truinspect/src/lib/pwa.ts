@@ -17,9 +17,16 @@ export function isIosSafari(): boolean {
   return iOS && webkit && !chromeIos;
 }
 
+/**
+ * Field-worker vs manager is decided by SIZE and POINTER, never by how the app
+ * was opened. Owner rule: anything above tablet size shows the desktop manager,
+ * whether it runs in a browser tab or as an installed PWA — installing must not
+ * demote a 27-inch monitor to a phone. Tablets stay field-side via the pointer
+ * check (touch-primary = field worker at any size), not via install state.
+ */
 export function isMobileViewport(): boolean {
   if (typeof window === 'undefined') return false;
-  return window.matchMedia('(max-width: 900px), (pointer: coarse)').matches || isStandaloneDisplay();
+  return window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
 }
 
 /** Desktop with a mouse = manager mode. Tablets (pointer: coarse) stay as field workers. */

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Battery, Wifi, Signal, Sparkles, Monitor } from 'lucide-react';
-import { isMobileViewport, isStandaloneDisplay, isDesktopManager } from '../lib/pwa';
+import { isMobileViewport, isDesktopManager } from '../lib/pwa';
 import PwaInstallBanner from './PwaInstallBanner';
 
 interface MobileDeviceProps {
@@ -12,15 +12,20 @@ interface MobileDeviceProps {
  * - Phone / tablet (field worker): full-bleed edge-to-edge app
  * - Desktop (manager): wide layout with manager chrome
  * - Neither triggers the old phone-mockup demo frame
+ *
+ * Owner rule: above tablet size the manager shows NO MATTER HOW the app was
+ * opened — an installed desktop PWA gets the manager too (standalone must not
+ * demote a monitor to a phone). Install state is deliberately not consulted
+ * here; see isMobileViewport.
  */
 export default function MobileDevice({ children }: MobileDeviceProps) {
   const [time, setTime] = React.useState('');
-  const [nativeMode, setNativeMode] = React.useState(() => isStandaloneDisplay() || isMobileViewport());
+  const [nativeMode, setNativeMode] = React.useState(() => isMobileViewport());
   const [desktopMode, setDesktopMode] = React.useState(() => isDesktopManager());
 
   React.useEffect(() => {
     const update = () => {
-      setNativeMode(isStandaloneDisplay() || isMobileViewport());
+      setNativeMode(isMobileViewport());
       setDesktopMode(isDesktopManager());
     };
     update();
