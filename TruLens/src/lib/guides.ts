@@ -96,6 +96,31 @@ const GUIDES: Guide[] = [
       { title: "Go live", detail: "In TruFlow, flip the Website toggle to On. The vehicle and its photos are now on your dealership site." },
     ],
   },
+  {
+    id: "verify-before-export",
+    title: "Verify a car while adding it",
+    goal: "A car has a TransUnion background check and claims history before it ever leaves the yard.",
+    blurb: "Reg check and accident report in Add Vehicle.",
+    section: "inventory",
+    steps: [
+      { title: "Fill the VIN or stock number", detail: "In Add Vehicle, capture the VIN (or scan the licence disc). The verification buttons use it to look the car up." },
+      { title: "Tap Verify Registration", detail: "Runs a live TransUnion check — stolen and finance-pending flags come back in seconds as a Clear / Stolen / Finance pending chip." },
+      { title: "Run Accident Report", detail: "Needs the VIN. Returns the vehicle's claims history so a rebuilt unit never surprises you at resale." },
+      { title: "Credits apply", detail: "Each check uses one credit from your yard's balance; the count shows on the button. Out of credits? Your TruSaaS account manager tops you up — everything else in Lens stays unlimited." },
+    ],
+  },
+  {
+    id: "scan-a-disc",
+    title: "Scan a licence disc instead of typing",
+    goal: "The car's details are captured from its disc photo — make, VIN, registration — with nothing mistyped.",
+    blurb: "Point at the disc, check the fields, done.",
+    section: "inventory",
+    steps: [
+      { title: "Open Add Vehicle → Scan disc", detail: "The scanner opens your camera. Hold the disc steady inside the frame until it reads." },
+      { title: "Check the extracted fields", detail: "Make, model, colour, VIN and registration are filled automatically — everything stays editable if the disc is worn or misread." },
+      { title: "Continue as normal", detail: "Add price, mileage and shoot photos. Scanning only fills fields; nothing else about the flow changes." },
+    ],
+  },
 ];
 
 export function guidesForSection(section: string): Guide[] {

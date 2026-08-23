@@ -1,13 +1,16 @@
 import React from "react";
 
-/** Per-dealer bundle counts for Imagin8 paid APIs. */
+/** Per-dealer bundle counts for Imagin8 paid APIs. An `unlimited: true` flag
+ *  (own-yard dealerships like true-cars) renders plain, always-active buttons
+ *  with no count badge — no 9999 sentinel numbers anywhere. */
 export interface Imagin8Bundles {
   valuation: number;
   regCheck: number;
   accidentReport: number;
+  unlimited?: boolean;
 }
 
-export type Imagin8Feature = keyof Imagin8Bundles;
+export type Imagin8Feature = Exclude<keyof Imagin8Bundles, "unlimited">;
 
 /** Labels shown on gated buttons. */
 export const FEATURE_LABELS: Record<Imagin8Feature, string> = {
@@ -31,19 +34,20 @@ export function useImagin8Gating(
   const [bundles, setBundles] = React.useState<Imagin8Bundles>(initial);
 
   const canUse = React.useCallback(
-    (feature: Imagin8Feature) => bundles[feature] > 0,
+    (feature: Imagin8Feature) => !!bundles.unlimited || bundles[feature] > 0,
     [bundles],
   );
 
   const consume = React.useCallback(
     async (feature: Imagin8Feature): Promise<boolean> => {
-      if (bundles[feature] <= 0) return false;
-      const next = { ...bundles, [feature]: bundles[feature] - 1 };
+      if (!canUse(feature)) return false;
+      const next: Imagin8Bundles = { ...bundles };
+      if (!bundles.unlimited) next[feature] = bundles[feature] - 1;
       setBundles(next);
       await onConsume?.(next);
       return true;
     },
-    [bundles, onConsume],
+    [bundles, canUse, onConsume],
   );
 
   return { bundles, canUse, consume };
@@ -73,11 +77,12 @@ export const Imagin8GatedButton: React.FC<Imagin8GatedButtonProps> = ({
   icon,
   label,
 }) => {
-  const available = (bundles[feature] || 0) > 0;
+  const unlimited = !!bundles.unlimited;
+  const available = unlimited || (bundles[feature] || 0) > 0;
   const displayLabel = label || FEATURE_LABELS[feature];
 
   if (available) {
-    const showCount = bundles[feature] < 999 && !(bundles as any).unlimited;
+    const showCount = !unlimited && (bundles[feature] || 0) < 999;
     return (
       <button
         type="button"

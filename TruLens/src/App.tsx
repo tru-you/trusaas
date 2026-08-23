@@ -13,6 +13,11 @@ import { useAuth } from './contexts/AuthContext';
 import DealerSelect from './components/DealerSelect';
 import GuidePanel from './components/GuidePanel';
 import DealerAssist from './components/DealerAssist';
+import SetupPrompt from './components/SetupPrompt';
+import {
+  fetchSetupStatus,
+  type SetupStatus as AppSetupStatus,
+} from './lib/setupStatus';
 
 /** Keep client state crash-safe even if API returns partial records. */
 function normalizeVehicle(raw: any): Vehicle {
@@ -119,6 +124,25 @@ export default function App() {
   // Sync status state
   const [guideOpen, setGuideOpen] = React.useState(false);
   const [assistOpen, setAssistOpen] = React.useState(false);
+
+  // First-run dealership setup — bridged to TruFlow central by the server, so
+  // demo tokens and legacy shared-code logins come back skipPrompt and never
+  // see it. The modal is armed once per login; closing it (either button
+  // acknowledges on the shared Flow record) keeps it closed for the session,
+  // while the Dashboard tab card carries the quiet reminder.
+  const [setupStatus, setSetupStatus] = React.useState<AppSetupStatus | null>(null);
+  const [setupOpen, setSetupOpen] = React.useState(true);
+  React.useEffect(() => {
+    if (!user || !dealerConfirmed) return;
+    let cancelled = false;
+    setSetupOpen(true);
+    fetchSetupStatus(() => user.getIdToken()).then((s) => {
+      if (!cancelled) setSetupStatus(s);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, dealerConfirmed]);
 
 
   const [syncStatus, setSyncStatus] = React.useState<'synced' | 'syncing' | 'error'>('synced');
@@ -557,6 +581,7 @@ export default function App() {
                 onForceSync={fetchInventory}
                 onOpenGuide={() => setGuideOpen(true)}
                 onOpenDealerAssist={() => setAssistOpen(true)}
+                setupStatus={setupStatus}
               />
             </>
           )}
@@ -650,6 +675,14 @@ export default function App() {
             open={guideOpen}
             onOpenChange={setGuideOpen}
             currentSection={activeView}
+          />
+          <SetupPrompt
+            open={setupOpen && !!setupStatus && !setupStatus.complete && !setupStatus.skipPrompt && !setupStatus.acknowledgedAt}
+            onOpenChange={(o) => {
+              if (!o) setSetupOpen(false);
+            }}
+            status={setupStatus}
+            getToken={() => user?.getIdToken()}
           />
           <DealerAssist userName={user?.displayName || undefined} open={assistOpen} onOpenChange={setAssistOpen} />
         </>

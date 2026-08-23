@@ -6671,7 +6671,10 @@ app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {
     return res.status(403).json({ error: "You may only view your own dealership's bundles." });
   }
   if (isUnlimitedDealer(dealershipId)) {
-    return res.json({ valuation: 9999, regCheck: 9999, accidentReport: 9999, unlimited: true });
+    // Unlimited dealers get plain unlocked buttons — zeroed counters plus the
+    // flag, never 9999 sentinels. The shared Imagin8GatedButton keys off
+    // `unlimited`.
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });
   }
   res.json(getDealerImagin8Bundles(dealershipId));
 });

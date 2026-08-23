@@ -988,6 +988,65 @@ app.post('/api/auth/demo', rateLimitAuth, async (_req, res) => {
   res.json({ token, uid, demo: true, expiresInHours: 24 });
 });
 
+// ── First-run setup checklist (bridged to TruFlow central) ──
+// The dealership record — identity fields, document branding, whether setup
+// was acknowledged — lives ONLY in TruFlow. What lives in Lens lives in Flow
+// and vice versa, so these routes are thin authenticated proxies rather than
+// a second copy of the data. Same server-to-server pattern as
+// verifyCodeWithTruFlow() above (sync key header, hard timeout).
+//
+// Tokens WITHOUT a dealership claim (legacy shared-code logins) and demo
+// tokens skip locally: there is no yard to attribute setup to.
+
+/** Is this request from a real, slug-attributed login? */
+function hasDealerScope(req: any): boolean {
+  return !!req.user?.dealerSlug && !req.user?.demo;
+}
+
+app.get('/api/setup/status', authenticate, async (req: any, res) => {
+  if (!hasDealerScope(req)) {
+    return res.json({ complete: true, requiredComplete: true, acknowledgedAt: null, skipPrompt: true, items: [] });
+  }
+  if (!SYNC_KEY) {
+    // No sync key configured: the bridge can't ask TruFlow anything. Skip the
+    // prompt rather than nag a dealer about state we cannot see.
+    return res.json({ complete: true, requiredComplete: true, acknowledgedAt: null, skipPrompt: true, items: [] });
+  }
+  try {
+    const url = `${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/dealership/setup-status?dealershipId=${encodeURIComponent(req.user.dealerSlug)}`;
+    const r = await fetch(url, {
+      headers: { 'x-tru-sync-key': SYNC_KEY },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!r.ok) throw new Error(`TruFlow responded ${r.status}`);
+    res.json(await r.json());
+  } catch (err: any) {
+    // TruFlow unreachable or unhappy: never block capture work on a nudge.
+    console.warn('[setup] status bridge unavailable:', err?.message || err);
+    res.json({ complete: true, requiredComplete: true, acknowledgedAt: null, skipPrompt: true, items: [] });
+  }
+});
+
+app.put('/api/setup/acknowledge', authenticate, async (req: any, res) => {
+  if (!hasDealerScope(req)) return res.json({ ok: true, skipped: true });
+  if (!SYNC_KEY) return res.json({ ok: true, skipped: true });
+  try {
+    const url = `${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/dealership/setup-acknowledge`;
+    const r = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-tru-sync-key': SYNC_KEY },
+      body: JSON.stringify({ dealershipId: req.user.dealerSlug }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!r.ok) throw new Error(`TruFlow responded ${r.status}`);
+    res.json(await r.json());
+  } catch (err: any) {
+    console.warn('[setup] acknowledge bridge unavailable:', err?.message || err);
+    // Ack is a nicety; failing it must not fail the request loudly.
+    res.json({ ok: false });
+  }
+});
+
 /** Which commit is actually running.
  *
  *  Confirming a deploy was otherwise inference, and the inferences were wrong in
@@ -2314,15 +2373,49 @@ function writeBundles(bundles: Record<string, any>) {
   fs.writeFileSync(BUNDLES_FILE, JSON.stringify(bundles, null, 2));
 }
 
+/** Which bucket in imagin8-bundles.json this request touches.
+ *
+ *  Resolution order matters for production data: tokens signed with a
+ *  per-dealership code carry their slug (claims.d), so those requests scope
+ *  cleanly. Demo tokens get their own uid so a prospect can never spend a
+ *  real yard's credits. An explicit dealerId (admin top-ups) still wins when
+ *  the token has no slug. The final 'default' bucket is what every legacy
+ *  shared-code login used to land in — kept as the last resort so existing
+ *  persisted allocations are never orphaned. */
+function resolveDealerId(req: any): string {
+  if (req.user?.demo && req.user?.uid) return req.user.uid;
+  return (
+    req.user?.dealerSlug ||
+    req.body?.dealerId ||
+    req.query?.dealerId ||
+    'default'
+  );
+}
+
 function getDealerBundles(dealerId: string) {
   const all = readBundles();
-  return all[dealerId] || { valuation: 0, regCheck: 0, accidentReport: 0 };
+  // Legacy read-fallback: before per-slug keying, every write landed under
+  // 'default'. Serve that entry rather than zeros so an allocation made
+  // pre-upgrade is still there on first read; the first deduction re-persists
+  // it under the caller's own key.
+  return all[dealerId] || all['default'] || { valuation: 0, regCheck: 0, accidentReport: 0 };
 }
 
 function setDealerBundles(dealerId: string, bundles: any) {
   const all = readBundles();
   all[dealerId] = bundles;
   writeBundles(all);
+}
+
+/** Unlimited dealers never see counts at all — the buttons render plain and
+ *  always active. The payload carries zeroed counters plus the flag instead
+ *  of 9999 sentinels; the UI keys off `unlimited`. */
+function bundlesPayload(dealerId: string) {
+  const bundles = getDealerBundles(dealerId);
+  if (isUnlimitedDealer(dealerId)) {
+    return { valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true };
+  }
+  return bundles;
 }
 
 /** Dealerships with unlimited Imagin8 access — no bundle deduction, no gating. */
@@ -2335,9 +2428,21 @@ app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
   const { mmCode, year, mileage } = req.body || {};
   if (!mmCode || !year) return res.status(400).json({ error: 'mmCode and year are required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
+
+  // Chargeable per-call — bundle-gated like its siblings below.
+  const dealerId = resolveDealerId(req);
+  const bundles = getDealerBundles(dealerId);
+  if (!isUnlimitedDealer(dealerId) && (bundles.valuation || 0) <= 0) {
+    return res.status(402).json({ error: 'No valuation bundles remaining', bundles: bundlesPayload(dealerId) });
+  }
+
   try {
     const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, imagin8Opts);
-    res.json(result);
+    if (!isUnlimitedDealer(dealerId)) {
+      bundles.valuation = Math.max(0, (bundles.valuation || 0) - 1);
+      setDealerBundles(dealerId, bundles);
+    }
+    res.json({ ...result, bundlesRemaining: bundlesPayload(dealerId) });
   } catch (err: any) {
     console.error('[imagin8] valuation failed:', err?.message || err);
     res.status(502).json({ error: err?.message || 'Valuation failed' });
@@ -2381,13 +2486,13 @@ app.get('/api/imagin8/models', authenticate, async (req: any, res) => {
 app.all('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
   const identifier = req.query?.identifier || req.query?.vin || req.body?.identifier;
   const type = req.query?.type || req.body?.type || 'vin';
-  const dealerId = req.query?.dealerId || req.body?.dealerId || req.user?.dealerId || 'default';
+  const dealerId = resolveDealerId(req);
   if (!identifier) return res.status(400).json({ error: 'identifier is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
   const bundles = getDealerBundles(dealerId);
   if (!isUnlimitedDealer(dealerId) && (bundles.regCheck || 0) <= 0) {
-    return res.status(402).json({ error: 'No reg check bundles remaining', bundles });
+    return res.status(402).json({ error: 'No reg check bundles remaining', bundles: bundlesPayload(dealerId) });
   }
 
   try {
@@ -2396,7 +2501,7 @@ app.all('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
       bundles.regCheck = Math.max(0, (bundles.regCheck || 0) - 1);
       setDealerBundles(dealerId, bundles);
     }
-    res.json({ ...result, bundlesRemaining: bundles });
+    res.json({ ...result, bundlesRemaining: bundlesPayload(dealerId) });
   } catch (err: any) {
     console.error('[imagin8] regCheck failed:', err?.message || err);
     res.status(502).json({ error: err?.message || 'Reg check failed' });
@@ -2407,13 +2512,13 @@ app.all('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
 // GET /api/imagin8/accident-report?vin=XXX&dealerId=...
 app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
   const vin = req.query?.vin || req.body?.vin;
-  const dealerId = req.query?.dealerId || req.body?.dealerId || req.user?.dealerId || 'default';
+  const dealerId = resolveDealerId(req);
   if (!vin) return res.status(400).json({ error: 'vin is required' });
   if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
 
   const bundles = getDealerBundles(dealerId);
   if (!isUnlimitedDealer(dealerId) && (bundles.accidentReport || 0) <= 0) {
-    return res.status(402).json({ error: 'No accident report bundles remaining', bundles });
+    return res.status(402).json({ error: 'No accident report bundles remaining', bundles: bundlesPayload(dealerId) });
   }
 
   try {
@@ -2422,7 +2527,7 @@ app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
       bundles.accidentReport = Math.max(0, (bundles.accidentReport || 0) - 1);
       setDealerBundles(dealerId, bundles);
     }
-    res.json({ ...result, bundlesRemaining: bundles });
+    res.json({ ...result, bundlesRemaining: bundlesPayload(dealerId) });
   } catch (err: any) {
     console.error('[imagin8] accidentReport failed:', err?.message || err);
     res.status(502).json({ error: err?.message || 'Accident report failed' });
@@ -2431,16 +2536,18 @@ app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
 
 // Bundle management (admin/dealer self-service).
 app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
-  const dealerId = req.query?.dealerId || req.user?.dealerId || 'default';
-  if (isUnlimitedDealer(dealerId)) {
-    return res.json({ valuation: 9999, regCheck: 9999, accidentReport: 9999, unlimited: true });
-  }
-  res.json(getDealerBundles(dealerId));
+  const dealerId = resolveDealerId(req);
+  res.json(bundlesPayload(dealerId));
 });
 
 app.post('/api/imagin8/bundles', authenticate, async (req: any, res) => {
-  const dealerId = req.body?.dealerId || req.user?.dealerId || 'default';
+  const dealerId = resolveDealerId(req);
   const patch = req.body?.bundles || {};
+  // Unlimited dealers have nothing to top up — reflect the flag rather than
+  // writing a meaningless counter row.
+  if (isUnlimitedDealer(dealerId)) {
+    return res.json(bundlesPayload(dealerId));
+  }
   const current = getDealerBundles(dealerId);
   const next = { ...current, ...patch };
   setDealerBundles(dealerId, next);

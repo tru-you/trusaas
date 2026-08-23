@@ -16,6 +16,7 @@ import DiscScanner from './DiscScanner';
 import VehiclePicker, { VehiclePickerValue } from './VehiclePicker';
 import type { DiscScan } from '../lib/saDisc';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
+import { SetupChecklistCard } from './SetupPrompt';
 
 interface InventoryListProps {
   vehicles: Vehicle[];
@@ -29,6 +30,10 @@ interface InventoryListProps {
   onForceSync: () => void;
   onOpenGuide?: () => void;
   onOpenDealerAssist?: () => void;
+  /** First-run dealership setup checklist, fetched by App via the TruFlow
+   *  bridge. Rendered as a quiet card at the top of the Dashboard tab while
+   *  required items are missing. */
+  setupStatus?: import('../lib/setupStatus').SetupStatus | null;
 }
 
 // The DMS target is fixed for every device and controlled server-side
@@ -51,7 +56,8 @@ export default function InventoryList({
   syncStatus,
   onForceSync,
   onOpenGuide,
-  onOpenDealerAssist
+  onOpenDealerAssist,
+  setupStatus
 }: InventoryListProps) {
   const { signOut, user, isDemo } = useAuth();
   const [loggingOut, setLoggingOut] = React.useState(false);
@@ -1503,6 +1509,12 @@ export default function InventoryList({
     </>
   ) : currentTab === 'dashboard' ? (
           <div className="space-y-4 pb-6 animate-in fade-in duration-500">
+            {/* Dealership setup reminder — quiet card while required items are
+                missing on the shared TruFlow record. Dismissed state lives
+                server-side (ack) + a short per-device snooze; the card itself
+                hides once requiredComplete flips true. */}
+            <SetupChecklistCard status={setupStatus} />
+
             {/* Dashboard heading & revenue overview */}
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
