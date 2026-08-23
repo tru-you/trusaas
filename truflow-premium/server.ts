@@ -5474,11 +5474,21 @@ app.put("/api/dealerships/:id", (req: any, res) => {
      from the dealer it belongs to. Retire and recreate instead. */
   const { name, location, websiteUrl, products, address, registrationNumber, vatNumber } = req.body || {};
   if (typeof name === "string" && name.trim()) state.dealerships[i].name = name.trim();
-  if (typeof location === "string") state.dealerships[i].location = location.trim();
+  if (typeof location === "string" && location.trim()) state.dealerships[i].location = location.trim();
   if (typeof websiteUrl === "string") state.dealerships[i].websiteUrl = websiteUrl.trim();
   if (typeof address === "string") state.dealerships[i].address = address.trim();
   if (typeof registrationNumber === "string") state.dealerships[i].registrationNumber = registrationNumber.trim();
   if (typeof vatNumber === "string") state.dealerships[i].vatNumber = vatNumber.trim();
+
+  /* Per-dealer Imagin8 customer credentials — owner-managed ONLY via this
+     admin route (the dealer-facing /dealership/self whitelist drops them by
+     design). Each dealership can be its own Imagin8 customer so paid
+     TransUnion calls bill that customer; blank falls back to the platform
+     account. An empty string clears the stored value. */
+  const { imagin8ApiKey, imagin8CustomerId } = req.body || {};
+  const dAny = state.dealerships[i] as any;
+  if (typeof imagin8ApiKey === "string") dAny.imagin8ApiKey = imagin8ApiKey.trim();
+  if (typeof imagin8CustomerId === "string") dAny.imagin8CustomerId = imagin8CustomerId.trim();
 
   /* Entitlements ARE editable, unlike the slug — granting or revoking an app is
      the routine part of running this. Unlisted names are dropped rather than
@@ -6567,104 +6577,153 @@ function dealerImagin8CustomerId(state: any, dealershipId: string): string | nul
   return d?.imagin8CustomerId || null;
 }
 
+// Demo tenants never gate against — or spend — anyone's real allocation.
+function isImagin8DemoSlug(dealershipId: string): boolean {
+  return dealershipId === "demo" || dealershipId.startsWith("demo-");
+}
+
+/** Shared core for the three chargeable Imagin8 calls. Both the dealer-facing
+ *  routes (JWT auth) and the suite's internal proxy routes (sync-key auth)
+ *  funnel through here so gating, per-dealer credentials and deduction live
+ *  in exactly one place. Returns a discriminated result instead of touching
+ *  `res`, so each caller maps its own response. */
+async function runChargedImagin8Call(
+  dealershipId: string,
+  feature: "valuation" | "regcheck" | "accident-report",
+  params: Record<string, any>
+): Promise<
+  | { status: 400 | 402 | 403 | 503; body: any }
+  | { status: 200; body: any }
+  | { status: 502; body: { error: string } }
+> {
+  const state = readState();
+  const apiKey = dealerImagin8Key(state, dealershipId) || IMAGIN8_PLATFORM_KEY;
+  const customerId = dealerImagin8CustomerId(state, dealershipId) || IMAGIN8_CUSTOMER_ID;
+  if (!apiKey || !customerId) {
+    return { status: 503, body: { error: "Imagin8 not configured — set IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID, or add a key/customerId in dealer settings." } };
+  }
+
+  const demo = isImagin8DemoSlug(dealershipId);
+  const bundles = demo
+    ? { valuation: 0, regCheck: 0, accidentReport: 0 }
+    : getDealerImagin8Bundles(dealershipId);
+
+  if (!isUnlimitedDealer(dealershipId) && (bundles[feature] || 0) <= 0) {
+    return { status: 402, body: { error: `No ${feature} bundles remaining`, bundles } };
+  }
+
+  try {
+    let result: any;
+    if (feature === "valuation") {
+      const { mmCode, year, mileage } = params;
+      result = await imagin8GetValues(String(mmCode), Number(year), mileage ? Number(mileage) : undefined, { apiKey, customerId, ...imagin8Login });
+      console.log(`[imagin8] valuation for ${mmCode}/${year}: trade=${result.tradePrice} retail=${result.retailPrice}`);
+    } else if (feature === "regcheck") {
+      const lookupType = params.type === "reg" || params.type === "engine" ? params.type : "vin";
+      result = await imagin8RegCheck(String(params.identifier), lookupType, { apiKey, customerId });
+      console.log(`[imagin8] reg check ${lookupType}=${params.identifier}: stolen=${result.stolen} finance=${result.financePending}`);
+    } else {
+      result = await imagin8AccidentReport(String(params.vin), { apiKey, customerId, ...imagin8Login });
+    }
+    if (!demo && !isUnlimitedDealer(dealershipId)) {
+      bundles[feature] = Math.max(0, (bundles[feature] || 0) - 1);
+      setDealerImagin8Bundles(dealershipId, bundles);
+    }
+    return { status: 200, body: { ...result, bundlesRemaining: bundles } };
+  } catch (err: any) {
+    console.error(`[imagin8] ${feature} failed:`, err?.message || err);
+    return { status: 502, body: { error: err?.message || "Imagin8 call failed" } };
+  }
+}
+
 app.post("/api/imagin8/valuation", authenticate, async (req: any, res) => {
   const { mmCode, year, mileage } = req.body || {};
   if (!mmCode || !year) {
     return res.status(400).json({ error: "mmCode and year are required" });
   }
-  const state = readState();
-  const dealershipId = req.user?.dealershipId || "default";
-  const apiKey = dealerImagin8Key(state, dealershipId) || IMAGIN8_PLATFORM_KEY;
-  const customerId = dealerImagin8CustomerId(state, dealershipId) || IMAGIN8_CUSTOMER_ID;
-  if (!apiKey || !customerId) {
-    return res.status(503).json({ error: "Imagin8 not configured — set IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID, or add a key/customerId in dealer settings." });
-  }
-
-  const bundles = getDealerImagin8Bundles(dealershipId);
-  if (!isUnlimitedDealer(dealershipId) && (bundles.valuation || 0) <= 0) {
-    return res.status(402).json({ error: "No valuation bundles remaining", bundles });
-  }
-
-  try {
-    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, { apiKey, customerId, ...imagin8Login });
-    if (!isUnlimitedDealer(dealershipId)) {
-      bundles.valuation = Math.max(0, (bundles.valuation || 0) - 1);
-      setDealerImagin8Bundles(dealershipId, bundles);
-    }
-    console.log(`[imagin8] valuation for ${mmCode}/${year}: trade=${result.tradePrice} retail=${result.retailPrice}`);
-    res.json({ ...result, bundlesRemaining: bundles });
-  } catch (err: any) {
-    console.error("[imagin8] valuation failed:", err?.message || err);
-    res.status(502).json({ error: err?.message || "Imagin8 valuation failed" });
-  }
+  const out = await runChargedImagin8Call(req.user?.dealershipId || "default", "valuation", req.body || {});
+  res.status(out.status).json(out.body);
 });
 
 app.all("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
   const identifier = req.body?.identifier || req.query?.identifier;
-  const type = req.body?.type || req.query?.type;
   if (!identifier) {
     return res.status(400).json({ error: "identifier (VIN, reg number, or engine number) is required" });
   }
-  const lookupType = (type === "reg" || type === "engine") ? type : "vin";
-  const state = readState();
-  const dealershipId = req.user?.dealershipId || "default";
-  const apiKey = dealerImagin8Key(state, dealershipId) || IMAGIN8_PLATFORM_KEY;
-  const customerId = dealerImagin8CustomerId(state, dealershipId) || IMAGIN8_CUSTOMER_ID;
-  if (!apiKey || !customerId) {
-    return res.status(503).json({ error: "Imagin8 not configured (API key + customerId required)." });
-  }
-
-  const bundles = getDealerImagin8Bundles(dealershipId);
-  if (!isUnlimitedDealer(dealershipId) && (bundles.regCheck || 0) <= 0) {
-    return res.status(402).json({ error: "No reg check bundles remaining", bundles });
-  }
-
-  try {
-    const result = await imagin8RegCheck(identifier, lookupType, { apiKey, customerId });
-    if (!isUnlimitedDealer(dealershipId)) {
-      bundles.regCheck = Math.max(0, (bundles.regCheck || 0) - 1);
-      setDealerImagin8Bundles(dealershipId, bundles);
-    }
-    console.log(`[imagin8] reg check ${lookupType}=${identifier}: stolen=${result.stolen} finance=${result.financePending}`);
-    res.json({ ...result, bundlesRemaining: bundles });
-  } catch (err: any) {
-    console.error("[imagin8] reg check failed:", err?.message || err);
-    res.status(502).json({ error: err?.message || "Imagin8 reg check failed" });
-  }
+  const out = await runChargedImagin8Call(req.user?.dealershipId || "default", "regcheck", {
+    identifier,
+    type: req.body?.type || req.query?.type,
+  });
+  res.status(out.status).json(out.body);
 });
 
 // Accident Report (chargeable per-call — bundle-gated).
 app.all("/api/imagin8/accident-report", authenticate, async (req: any, res) => {
   const vin = req.query?.vin || req.body?.vin;
   if (!vin) return res.status(400).json({ error: "vin is required" });
-
-  const state = readState();
-  const dealershipId = req.user?.dealershipId || "default";
-  const apiKey = dealerImagin8Key(state, dealershipId) || IMAGIN8_PLATFORM_KEY;
-  const customerId = dealerImagin8CustomerId(state, dealershipId) || IMAGIN8_CUSTOMER_ID;
-  if (!apiKey || !customerId) {
-    return res.status(503).json({ error: "Imagin8 not configured (API key + customerId required)." });
-  }
-
-  const bundles = getDealerImagin8Bundles(dealershipId);
-  if (!isUnlimitedDealer(dealershipId) && (bundles.accidentReport || 0) <= 0) {
-    return res.status(402).json({ error: "No accident report bundles remaining", bundles });
-  }
-
-  try {
-    const result = await imagin8AccidentReport(String(vin), { apiKey, customerId, ...imagin8Login });
-    if (!isUnlimitedDealer(dealershipId)) {
-      bundles.accidentReport = Math.max(0, (bundles.accidentReport || 0) - 1);
-      setDealerImagin8Bundles(dealershipId, bundles);
-    }
-    res.json({ ...result, bundlesRemaining: bundles });
-  } catch (err: any) {
-    console.error("[imagin8] accidentReport failed:", err?.message || err);
-    res.status(502).json({ error: err?.message || "Accident report failed" });
-  }
+  const out = await runChargedImagin8Call(req.user?.dealershipId || "default", "accident-report", { vin });
+  res.status(out.status).json(out.body);
 });
 
-// Bundle management (admin/dealer self-service).
+// ── Suite-internal Imagin8 gateway (Lens / Inspect proxies) ──
+// Same cores, authenticated by the shared sync key instead of a user token,
+// with the caller naming the dealership explicitly. This keeps ONE credit
+// ledger and ONE credential store for the whole suite — what lives in Lens
+// lives in Flow.
+function requireSyncKey(req: any, res: any, next: any) {
+  if (!SYNC_SERVICE_KEY || req.headers["x-tru-sync-key"] !== SYNC_SERVICE_KEY) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  next();
+}
+
+const resolveInternalDealership = (req: any) =>
+  String(req.body?.dealershipId || req.query?.dealershipId || "");
+
+app.post("/api/internal/imagin8/valuation", requireSyncKey, async (req: any, res) => {
+  const { mmCode, year, mileage } = req.body || {};
+  if (!mmCode || !year) return res.status(400).json({ error: "mmCode and year are required" });
+  const dealershipId = resolveInternalDealership(req);
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
+  const out = await runChargedImagin8Call(dealershipId, "valuation", req.body || {});
+  res.status(out.status).json(out.body);
+});
+
+app.all("/api/internal/imagin8/regcheck", requireSyncKey, async (req: any, res) => {
+  const identifier = req.body?.identifier || req.query?.identifier;
+  if (!identifier) return res.status(400).json({ error: "identifier is required" });
+  const dealershipId = resolveInternalDealership(req);
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
+  const out = await runChargedImagin8Call(dealershipId, "regcheck", {
+    identifier,
+    type: req.body?.type || req.query?.type,
+  });
+  res.status(out.status).json(out.body);
+});
+
+app.all("/api/internal/imagin8/accident-report", requireSyncKey, async (req: any, res) => {
+  const vin = req.query?.vin || req.body?.vin;
+  if (!vin) return res.status(400).json({ error: "vin is required" });
+  const dealershipId = resolveInternalDealership(req);
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
+  const out = await runChargedImagin8Call(dealershipId, "accident-report", { vin });
+  res.status(out.status).json(out.body);
+});
+
+app.get("/api/internal/imagin8/bundles", requireSyncKey, (req: any, res) => {
+  const dealershipId = String(req.query?.dealershipId || "");
+  if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
+  if (isUnlimitedDealer(dealershipId)) {
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });
+  }
+  if (isImagin8DemoSlug(dealershipId)) {
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0 });
+  }
+  res.json(getDealerImagin8Bundles(dealershipId));
+});
+
+// Bundle management. Reading your own balance is fine; CHANGING it is how a
+// dealer would mint free credits, so that is owner-only via the admin role.
 app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {
   const dealershipId = req.query?.dealershipId || req.user?.dealershipId || "default";
   if (req.user?.role !== "admin" && req.user?.dealershipId !== dealershipId) {
@@ -6680,11 +6739,14 @@ app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {
 });
 
 app.post("/api/imagin8/bundles", authenticate, async (req: any, res) => {
-  const dealershipId = req.body?.dealershipId || req.user?.dealershipId || "default";
-  if (req.user?.role !== "admin" && req.user?.dealershipId !== dealershipId) {
-    return res.status(403).json({ error: "You may only update your own dealership's bundles." });
+  if (req.auth?.role !== "admin") {
+    return res.status(403).json({ error: "Top-ups are managed by TruSaaS." });
   }
+  const dealershipId = req.body?.dealershipId || req.user?.dealershipId || "default";
   const patch = req.body?.bundles || {};
+  if (isUnlimitedDealer(dealershipId)) {
+    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });
+  }
   const current = getDealerImagin8Bundles(dealershipId);
   const next = { ...current, ...patch };
   setDealerImagin8Bundles(dealershipId, next);

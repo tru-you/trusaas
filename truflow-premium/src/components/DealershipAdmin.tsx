@@ -19,9 +19,10 @@ import type { Dealership as FullDealership } from "../types";
 const DealerDetailsSettings = lazy(() => import("./DealerDetailsSettings"));
 const DocSettingsPanel = lazy(() => import("./DocSettingsPanel"));
 const AccountingIntegrationsSettings = lazy(() => import("./AccountingIntegrationsSettings"));
+const Imagin8CustomerSettings = lazy(() => import("./Imagin8CustomerSettings"));
 const TruSocialSettings = lazy(() => import("./TruSocialSettings"));
 
-type SettingsTab = "details" | "documents" | "accounting" | "social";
+type SettingsTab = "details" | "transunion" | "documents" | "accounting" | "social";
 
 /**
  * Onboarding a dealership, as a screen rather than four curl commands.
@@ -530,6 +531,7 @@ export default function DealershipAdmin({
                         <div className="rounded-xl border border-white/10 bg-[color:var(--ink)]/40 p-3 flex flex-col gap-3">
                           <div className="flex flex-wrap gap-1.5">
                             {tabBtn("details", "Details")}
+                            {tabBtn("transunion", "TransUnion")}
                             {tabBtn("documents", "Documents")}
                             {tabBtn("accounting", "Accounting")}
                             {socialOn && tabBtn("social", "Social")}
@@ -546,6 +548,18 @@ export default function DealershipAdmin({
                                 dealership={full}
                                 isAdmin
                                 onSaved={() => {
+                                  load();
+                                  onDealerSaved?.();
+                                }}
+                              />
+                            )}
+                            {tab === "transunion" && (
+                              <Imagin8CustomerSettings
+                                dealershipId={d.id}
+                                slug={d.slug}
+                                apiKey={(d as any).imagin8ApiKey || ""}
+                                customerId={(d as any).imagin8CustomerId || ""}
+                                onChanged={() => {
                                   load();
                                   onDealerSaved?.();
                                 }}

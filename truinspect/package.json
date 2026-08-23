@@ -13,7 +13,8 @@
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "check:dealers": "tsx scripts/check-dealers.ts"
+    "check:dealers": "tsx scripts/check-dealers.ts",
+    "test": "tsx --test tests/"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

@@ -62,8 +62,13 @@ export interface Dealership {
   accountingEnabled?: boolean;
   /** Dealer's own Imagin8 API key for per-call endpoints (valuations, reg
    *  checks). M&M lookups use the platform key — this is only needed when a
-   *  dealer wants official TransUnion valuations or vehicle history checks. */
+   *  dealer wants official TransUnion valuations or vehicle history checks.
+   *  Set by the OWNER via DealershipAdmin (never dealer-entered): each
+   *  dealership is its own Imagin8 customer, so paid calls bill that
+   *  customer rather than the platform account. Blank = platform account. */
   imagin8ApiKey?: string;
+  /** The Imagin8 customer ID paired with imagin8ApiKey above. */
+  imagin8CustomerId?: string;
   /** When the dealer tapped "I'll do this later" on the first-run setup
    *  checklist. Account-level (not per-browser) so the prompt doesn't follow
    *  them across devices. Completeness itself is always derived live from

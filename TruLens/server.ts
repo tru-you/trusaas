@@ -2356,97 +2356,57 @@ const imagin8Opts = {
 };
 const imagin8Configured = () => IMAGIN8_API_KEY && IMAGIN8_CUSTOMER_ID;
 
-// ── Imagin8 bundle tracking (per-dealer) ──
-const BUNDLES_FILE = path.join(LOCAL_DATA_DIR, 'imagin8-bundles.json');
+// ── Imagin8 / TransUnion — proxied to Flow central ──
+// TruLens keeps NO local credit ledger and stores NO Imagin8 credentials.
+// Chargeable calls relay to Flow's internal gateway over the sync key — the
+// same trust anchor that lets this server verify codes and receive its slug —
+// so there is ONE ledger and ONE credential store for the whole suite
+// ("what lives in Lens lives in Flow"). Free flat-fee endpoints (static info,
+// model catalogue) still run here on the platform subscription.
+//
+// Demo tokens are short-circuited locally: a prospect never reaches the
+// gateway at all, let alone anyone's credits.
 
-function readBundles(): Record<string, any> {
-  try {
-    if (!fs.existsSync(BUNDLES_FILE)) return {};
-    return JSON.parse(fs.readFileSync(BUNDLES_FILE, 'utf-8'));
-  } catch {
-    return {};
-  }
-}
+const DEMO_ZERO_BUNDLES = { valuation: 0, regCheck: 0, accidentReport: 0 };
 
-function writeBundles(bundles: Record<string, any>) {
-  if (!fs.existsSync(LOCAL_DATA_DIR)) fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
-  fs.writeFileSync(BUNDLES_FILE, JSON.stringify(bundles, null, 2));
-}
-
-/** Which bucket in imagin8-bundles.json this request touches.
- *
- *  Resolution order matters for production data: tokens signed with a
- *  per-dealership code carry their slug (claims.d), so those requests scope
- *  cleanly. Demo tokens get their own uid so a prospect can never spend a
- *  real yard's credits. An explicit dealerId (admin top-ups) still wins when
- *  the token has no slug. The final 'default' bucket is what every legacy
- *  shared-code login used to land in — kept as the last resort so existing
- *  persisted allocations are never orphaned. */
+/** The dealership this request acts on. Per-dealer codes carry their slug;
+ *  legacy shared-code logins land on 'default' and are gated as such. */
 function resolveDealerId(req: any): string {
-  if (req.user?.demo && req.user?.uid) return req.user.uid;
-  return (
-    req.user?.dealerSlug ||
-    req.body?.dealerId ||
-    req.query?.dealerId ||
-    'default'
-  );
+  return req.user?.dealerSlug || 'default';
 }
 
-function getDealerBundles(dealerId: string) {
-  const all = readBundles();
-  // Legacy read-fallback: before per-slug keying, every write landed under
-  // 'default'. Serve that entry rather than zeros so an allocation made
-  // pre-upgrade is still there on first read; the first deduction re-persists
-  // it under the caller's own key.
-  return all[dealerId] || all['default'] || { valuation: 0, regCheck: 0, accidentReport: 0 };
-}
-
-function setDealerBundles(dealerId: string, bundles: any) {
-  const all = readBundles();
-  all[dealerId] = bundles;
-  writeBundles(all);
-}
-
-/** Unlimited dealers never see counts at all — the buttons render plain and
- *  always active. The payload carries zeroed counters plus the flag instead
- *  of 9999 sentinels; the UI keys off `unlimited`. */
-function bundlesPayload(dealerId: string) {
-  const bundles = getDealerBundles(dealerId);
-  if (isUnlimitedDealer(dealerId)) {
-    return { valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true };
+async function imagin8Proxy(
+  req: any,
+  res: any,
+  feature: 'valuation' | 'regcheck' | 'accident-report',
+  params: Record<string, unknown>,
+) {
+  if (!SYNC_KEY) {
+    return res.status(503).json({ error: 'Imagin8 gateway unavailable — TRUFLOW_SYNC_KEY is not configured.' });
   }
-  return bundles;
-}
-
-/** Dealerships with unlimited Imagin8 access — no bundle deduction, no gating. */
-const UNLIMITED_DEALERS = new Set(['true-cars']);
-function isUnlimitedDealer(dealerId: string) {
-  return UNLIMITED_DEALERS.has(dealerId);
+  try {
+    const r = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/internal/imagin8/${feature}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-tru-sync-key': SYNC_KEY },
+      body: JSON.stringify({ dealershipId: resolveDealerId(req), ...params }),
+      signal: AbortSignal.timeout(25000),
+    });
+    const body = await r.json().catch(() => ({ error: 'Unparseable gateway response' }));
+    return res.status(r.status).json(body);
+  } catch (err: any) {
+    console.warn('[imagin8] gateway unreachable:', err?.message || err);
+    // Fail CLOSED: an ungated success here would be a free paid call.
+    return res.status(502).json({ error: 'TruFlow unreachable — TransUnion calls are unavailable right now.' });
+  }
 }
 
 app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
+  if (req.user?.demo) {
+    return res.status(402).json({ error: 'No valuation bundles remaining', bundles: DEMO_ZERO_BUNDLES });
+  }
   const { mmCode, year, mileage } = req.body || {};
   if (!mmCode || !year) return res.status(400).json({ error: 'mmCode and year are required' });
-  if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
-
-  // Chargeable per-call — bundle-gated like its siblings below.
-  const dealerId = resolveDealerId(req);
-  const bundles = getDealerBundles(dealerId);
-  if (!isUnlimitedDealer(dealerId) && (bundles.valuation || 0) <= 0) {
-    return res.status(402).json({ error: 'No valuation bundles remaining', bundles: bundlesPayload(dealerId) });
-  }
-
-  try {
-    const result = await imagin8GetValues(mmCode, year, mileage ? Number(mileage) : undefined, imagin8Opts);
-    if (!isUnlimitedDealer(dealerId)) {
-      bundles.valuation = Math.max(0, (bundles.valuation || 0) - 1);
-      setDealerBundles(dealerId, bundles);
-    }
-    res.json({ ...result, bundlesRemaining: bundlesPayload(dealerId) });
-  } catch (err: any) {
-    console.error('[imagin8] valuation failed:', err?.message || err);
-    res.status(502).json({ error: err?.message || 'Valuation failed' });
-  }
+  await imagin8Proxy(req, res, 'valuation', { mmCode, year, mileage });
 });
 
 // Static specs for the Add Vehicle flow (platform key / flat subscription).
@@ -2484,74 +2444,48 @@ app.get('/api/imagin8/models', authenticate, async (req: any, res) => {
 
 // Reg Check (chargeable per-call — bundle-gated).
 app.all('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
-  const identifier = req.query?.identifier || req.query?.vin || req.body?.identifier;
-  const type = req.query?.type || req.body?.type || 'vin';
-  const dealerId = resolveDealerId(req);
+  if (req.user?.demo) {
+    return res.status(402).json({ error: 'No reg check bundles remaining', bundles: DEMO_ZERO_BUNDLES });
+  }
+  const identifier = req.body?.identifier || req.query?.identifier;
+  const type = req.body?.type || req.query?.type;
   if (!identifier) return res.status(400).json({ error: 'identifier is required' });
-  if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
-
-  const bundles = getDealerBundles(dealerId);
-  if (!isUnlimitedDealer(dealerId) && (bundles.regCheck || 0) <= 0) {
-    return res.status(402).json({ error: 'No reg check bundles remaining', bundles: bundlesPayload(dealerId) });
-  }
-
-  try {
-    const result = await imagin8RegCheck(String(identifier), (type === 'reg' || type === 'engine') ? type : 'vin', imagin8Opts);
-    if (!isUnlimitedDealer(dealerId)) {
-      bundles.regCheck = Math.max(0, (bundles.regCheck || 0) - 1);
-      setDealerBundles(dealerId, bundles);
-    }
-    res.json({ ...result, bundlesRemaining: bundlesPayload(dealerId) });
-  } catch (err: any) {
-    console.error('[imagin8] regCheck failed:', err?.message || err);
-    res.status(502).json({ error: err?.message || 'Reg check failed' });
-  }
+  await imagin8Proxy(req, res, 'regcheck', { identifier, type });
 });
 
 // Accident Report (chargeable per-call — bundle-gated).
-// GET /api/imagin8/accident-report?vin=XXX&dealerId=...
 app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
+  if (req.user?.demo) {
+    return res.status(402).json({ error: 'No accident report bundles remaining', bundles: DEMO_ZERO_BUNDLES });
+  }
   const vin = req.query?.vin || req.body?.vin;
-  const dealerId = resolveDealerId(req);
   if (!vin) return res.status(400).json({ error: 'vin is required' });
-  if (!imagin8Configured()) return res.status(503).json({ error: 'IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID not configured' });
-
-  const bundles = getDealerBundles(dealerId);
-  if (!isUnlimitedDealer(dealerId) && (bundles.accidentReport || 0) <= 0) {
-    return res.status(402).json({ error: 'No accident report bundles remaining', bundles: bundlesPayload(dealerId) });
-  }
-
-  try {
-    const result = await imagin8AccidentReport(String(vin), imagin8Opts);
-    if (!isUnlimitedDealer(dealerId)) {
-      bundles.accidentReport = Math.max(0, (bundles.accidentReport || 0) - 1);
-      setDealerBundles(dealerId, bundles);
-    }
-    res.json({ ...result, bundlesRemaining: bundlesPayload(dealerId) });
-  } catch (err: any) {
-    console.error('[imagin8] accidentReport failed:', err?.message || err);
-    res.status(502).json({ error: err?.message || 'Accident report failed' });
-  }
+  await imagin8Proxy(req, res, 'accident-report', { vin });
 });
 
-// Bundle management (admin/dealer self-service).
+// Bundle balance — read from Flow central so there is ONE ledger. Demo tokens
+// short-circuit locally and never reach the gateway.
 app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
-  const dealerId = resolveDealerId(req);
-  res.json(bundlesPayload(dealerId));
+  if (req.user?.demo) return res.json(DEMO_ZERO_BUNDLES);
+  if (!SYNC_KEY) return res.json(DEMO_ZERO_BUNDLES); // gateway down → fail closed
+  try {
+    const slug = resolveDealerId(req);
+    const r = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/internal/imagin8/bundles?dealershipId=${encodeURIComponent(slug)}`, {
+      headers: { 'x-tru-sync-key': SYNC_KEY },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) throw new Error(`gateway ${r.status}`);
+    res.json(await r.json());
+  } catch (err: any) {
+    console.warn('[imagin8] bundles gateway unreachable:', err?.message || err);
+    res.json(DEMO_ZERO_BUNDLES); // fail closed: buttons lock rather than lie
+  }
 });
 
-app.post('/api/imagin8/bundles', authenticate, async (req: any, res) => {
-  const dealerId = resolveDealerId(req);
-  const patch = req.body?.bundles || {};
-  // Unlimited dealers have nothing to top up — reflect the flag rather than
-  // writing a meaningless counter row.
-  if (isUnlimitedDealer(dealerId)) {
-    return res.json(bundlesPayload(dealerId));
-  }
-  const current = getDealerBundles(dealerId);
-  const next = { ...current, ...patch };
-  setDealerBundles(dealerId, next);
-  res.json(next);
+// Top-ups are a TruSaaS-side action (the owner buys the credits) — no dealer,
+// and no Lens route, may mint them.
+app.post('/api/imagin8/bundles', authenticate, (_req: any, res) => {
+  res.status(403).json({ error: 'Top-ups are managed by TruSaaS. Contact your account manager.' });
 });
 
 // ==================== VITE & STATIC FILES ====================
