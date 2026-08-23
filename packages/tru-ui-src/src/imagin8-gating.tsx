@@ -11,7 +11,7 @@ export type Imagin8Feature = keyof Imagin8Bundles;
 
 /** Labels shown on gated buttons. */
 export const FEATURE_LABELS: Record<Imagin8Feature, string> = {
-  valuation: "Market Valuation",
+  valuation: "TransUnion Valuation",
   regCheck: "Verify Registration",
   accidentReport: "Accident Report",
 };
@@ -113,7 +113,7 @@ export const Imagin8GatedButton: React.FC<Imagin8GatedButtonProps> = ({
         inline-flex items-center justify-center gap-2
         min-h-[42px] px-3.5 py-2 rounded-xl
         bg-[rgba(232,234,230,0.04)] border border-[rgba(232,234,230,0.10)]
-        text-[rgba(232,234,230,0.55)] text-[13px] font-medium
+        text-[rgba(232,234,230,0.65)] text-[13px] font-medium
         hover:bg-[rgba(232,234,230,0.08)] hover:border-[rgba(232,234,230,0.18)]
         active:translate-y-[1px]
         transition-all cursor-pointer select-none
@@ -121,16 +121,16 @@ export const Imagin8GatedButton: React.FC<Imagin8GatedButtonProps> = ({
       `}
     >
       <svg
-        width="14" height="14" viewBox="0 0 24 24" fill="none"
+        width="13" height="13" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
         className="text-[rgba(232,234,230,0.45)] shrink-0"
       >
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       </svg>
-      <span className="truncate">Unlock {displayLabel}</span>
-      <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(232,234,230,0.08)] text-[rgba(232,234,230,0.45)] shrink-0">
-        Premium
+      <span className="truncate">{displayLabel}</span>
+      <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(232,234,230,0.08)] text-[rgba(232,234,230,0.45)] shrink-0">
+        Unlock
       </span>
     </button>
   );

@@ -648,12 +648,13 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                     <div className="text-[11px] font-mono text-[color:var(--cyan)] uppercase tracking-wider">Imagin8 · Auto-fill from TransUnion</div>
                     <span className="text-[11px] text-[color:var(--muted)]">or fill manually below</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <Imagin8GatedButton
                       feature="valuation"
                       bundles={imagin8Bundles}
                       onClick={handleTuValuation}
                       onUnlock={() => alert("TransUnion official valuations are bundle-gated. Contact your TruSaaS account manager to activate live M&M valuations for this dealership.")}
+                      className="w-full"
                       icon={tuValLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <Zap size={14} />}
                     />
                     <Imagin8GatedButton
@@ -661,6 +662,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       bundles={imagin8Bundles}
                       onClick={handleRegCheck}
                       onUnlock={() => alert("Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.")}
+                      className="w-full"
                       icon={regCheckLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <Shield size={14} />}
                     />
                     <Imagin8GatedButton
@@ -668,16 +670,18 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       bundles={imagin8Bundles}
                       onClick={handleAccidentReport}
                       onUnlock={() => alert("Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.")}
+                      className="w-full"
                       icon={accidentReportLoading ? <Loader2 size={14} className="animate-spin text-cyan-400" /> : <History size={14} />}
                     />
                     <button
                       type="button"
                       onClick={handleMarketValue}
                       disabled={marketValLoading}
-                      className="tru-btn-secondary flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2 rounded-xl text-[13px] font-semibold text-emerald-400 disabled:opacity-40 cursor-pointer"
+                      className="w-full inline-flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2 rounded-xl bg-[rgba(52,211,153,0.10)] border border-[rgba(52,211,153,0.25)] text-emerald-400 text-[13px] font-medium hover:bg-[rgba(52,211,153,0.16)] hover:border-[rgba(52,211,153,0.40)] active:translate-y-[1px] transition-all disabled:opacity-40 cursor-pointer select-none"
                     >
-                      <Globe size={14} />
-                      {marketValLoading ? "Scraping..." : "Market Value"}
+                      {marketValLoading ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
+                      <span className="truncate">{marketValLoading ? "Scraping..." : "Market Value"}</span>
+                      <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(52,211,153,0.15)] text-emerald-400 shrink-0">Free</span>
                     </button>
                   </div>
 

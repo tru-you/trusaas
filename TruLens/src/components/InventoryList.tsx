@@ -3,7 +3,7 @@ import {
   Car, Plus, Search, CheckCircle2, AlertCircle, RefreshCw, ChevronRight,
   Trash2, Cloud, Sparkles, FolderOpen, Image as ImageIcon, ArrowRight, Download,
   BarChart3, Palette, Copy, Check, Award, Lightbulb, BookOpen, Sliders, ExternalLink,
-  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle, MessageCircle, Shield, History } from 'lucide-react';
+  FileText, Settings, Camera, LogOut, ScanLine, Loader2, Pencil, X, ChevronDown, HelpCircle, MessageCircle, Shield, History, TrendingUp } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
@@ -827,9 +827,11 @@ export default function InventoryList({
                 type="button"
                 onClick={runValuation}
                 disabled={valuationLoading || !make.trim() || !model.trim()}
-                className="tru-btn-ghost w-full min-h-[44px] flex items-center justify-center gap-2 text-[13px] cursor-pointer disabled:opacity-50"
+                className="w-full inline-flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2 rounded-xl bg-[rgba(52,211,153,0.10)] border border-[rgba(52,211,153,0.25)] text-emerald-400 text-[13px] font-medium hover:bg-[rgba(52,211,153,0.16)] hover:border-[rgba(52,211,153,0.40)] active:translate-y-[1px] transition-all disabled:opacity-40 cursor-pointer select-none"
               >
-                {valuationLoading ? 'Checking the market…' : 'Get market value'}
+                {valuationLoading ? <Loader2 size={14} className="animate-spin" /> : <TrendingUp size={14} />}
+                <span className="truncate">{valuationLoading ? 'Checking the market…' : 'Get market value'}</span>
+                <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(52,211,153,0.15)] text-emerald-400 shrink-0">Free</span>
               </button>
               {valuation && (
                 <div className="mt-2 rounded-[12px] border border-[rgba(79,227,220,0.3)] bg-[rgba(79,227,220,0.06)] p-3 text-[13px] text-[#E8EAE6]">
