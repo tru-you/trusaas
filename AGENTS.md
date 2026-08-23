@@ -1,6 +1,6 @@
 # TruSaaS — Agent Project Memory
 
-**Last updated:** 2026-08-23 by Kimi (OpenCode)
+**Last updated:** 2026-08-23 by ox-alpha (OpenCode)
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or deployment config changes.
 
 ---
@@ -84,10 +84,15 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 - `POST /api/imagin8/valuation` — all apps (paid, gated)
 - `POST /api/imagin8/regcheck` — Inspect + Premium (paid, gated); `GET /api/imagin8/regcheck?identifier=...&type=...` — Lens (paid, gated)
 - `GET /api/imagin8/accident-report?vin=...` — all apps (paid, gated)
-- `GET /api/imagin8/bundles` — read dealer bundles
+- `GET /api/imagin8/bundles` — read dealer bundles; returns `{zeros…, unlimited:true}` for unlimited dealers
 - `POST /api/imagin8/bundles` — admin/dealer top-up
 
-**Shared UI:** `packages/tru-ui-src/src/imagin8-gating.tsx` — `Imagin8GatedButton`, `useImagin8Gating`, `Imagin8Bundles`. Synced into each app's `src/components/imagin8-gating.tsx` at build time.
+**Setup-status routes (2026-08-23):**
+- Premium: `GET /api/dealership/setup-status` + `PUT /api/dealership/setup-acknowledge` — derived live from the dealership record (`setupAcknowledgedAt`)
+- Lens: `GET /api/setup/status` + `PUT /api/setup/acknowledge` — thin proxies to the Premium routes over `x-tru-sync-key`; ack is shared across apps via the Flow record
+- Inspect: `GET/PUT /api/dealership/settings` + same setup-status/acknowledge pair — standalone persistence in `DATA_DIR/inspect-dealerships.json`
+
+**Shared UI:** `packages/tru-ui-src/src/imagin8-gating.tsx` — `Imagin8GatedButton`, `useImagin8Gating`, `Imagin8Bundles`. Synced into each app's `src/components/imagin8-gating.tsx` at build time. ⚠️ Edit ONLY the shared source — app-local copies are clobbered by `sync:ui`.
 
 ### DeepSeek
 
@@ -107,6 +112,51 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 ---
 
 ## 4. Recent Changes (2026-08-21)
+
+### First-run Dealership Setup Checklist + Guide Refresh — all 3 apps (2026-08-23)
+
+Three changesets, one feature family. Dealers are now prompted to finish dealership setup when they enter an app, and the in-app guides were refreshed to cover the recent Imagin8/verification features.
+
+**Architecture decision (owner-set):** "what lives in Lens lives in Flow and vice versa; Inspect standalone." So:
+
+- **TruFlow Premium** owns THE dealership record — its setup-status is derived live from `data.json` dealerships.
+- **TruLens** has NO local record: its server **proxies** to Flow central (`x-tru-sync-key`, same pattern as code verification). Setup ack is shared across apps via the Flow record — dismiss once, dismissed everywhere.
+- **TruInspect** is standalone: persists its own per-slug record in `DATA_DIR/inspect-dealerships.json` (buyers.json pattern).
+- **Imagin8 keys are NEVER dealer-entered** — platform env vars only. The dead "Imagin8 API Key" input was removed from Premium's DealerDetailsSettings and replaced with a passive info chip ("TransUnion features enabled by TruSaaS").
+
+#### TruFlow Premium (`9a5bc81`)
+
+- Server: `GET /api/dealership/setup-status` (completeness DERIVED live from the dealership record, never stored) + `PUT /api/dealership/setup-acknowledge` (stamps `setupAcknowledgedAt`). Required items: name/tradingAs, contactEmail, address; recommended: doc logo, banking details, sale terms. Demo accounts and admin-without-scope → `skipPrompt`.
+- Frontend: new `src/lib/setupStatus.ts` + `src/components/SetupPrompt.tsx`. Modal fires once per account until acknowledged (server-side → cross-device); quiet dashboard card keeps nagging ONLY about required gaps (7-day per-device snooze). Salespeople never fetch or see any of it.
+- Modal takes precedence over the first-run guide auto-open (`App.tsx` ~336 effect now waits on setupStatus); guide opens next session instead of stacking two overlays.
+- Guides: +4 (TU verification buttons, free market-value scraper, Premium credits explained, buyer AVS/DocHub).
+- Fixed pre-existing nav test failure: re-added `media_web` ("Stock media") to groupedNavigation + role lists — it had been orphaned since the `web_management` rename (commit 3181857) while still being the only home of gallery-readiness counters, TruLens hand-off and public feed link. Tests back to 75/75.
+
+#### TruLens (`501bb47`)
+
+- Server bridge routes: `GET /api/setup/status` + `PUT /api/setup/acknowledge` proxy to Flow's dealership endpoints over the sync key. Demo tokens and slugless legacy shared-code tokens skip LOCALLY (client `isDemo` is unreliable after refresh). Flow unreachable → graceful `skipPrompt`; capture work is never blocked by a nudge.
+- Imagin8 parity fixes:
+  - `POST /api/imagin8/valuation` NOW bundle-gated like regcheck/accident-report (was wide open) — 402 at zero, deduct on success.
+  - New `resolveDealerId()`: demo→own uid · token `dealerSlug` → slug · explicit dealerId → as passed · else `'default'`. Bundle routes previously ALWAYS hit `'default'`.
+  - `getDealerBundles` keeps a legacy `'default'` READ-fallback so pre-existing allocations survive; first deduction migrates forward per slug.
+  - `true-cars` unlimited actually engages now (it used to check `'default'` and miss).
+- Frontend: ported `lib/setupStatus.ts` + `SetupPrompt.tsx`; modal beside GuidePanel mount, card on Dashboard tab. CTA deep-links premium.tru-saas.com (identity edited once, in Flow).
+- Guides: +2 (TU checks in Add Vehicle, licence-disc scan).
+
+#### TruInspect (`d653dfe`) — standalone persistence
+
+- Server: `inspect-dealerships.json` keyed by slug stores name, branch, phone, email, whatsapp, vatNumber, registrationNumber, address, tradeInTcs, `setupAcknowledgedAt`. Routes: `GET/PUT /api/dealership/settings`, `GET /api/dealership/setup-status` (required: name/email/address; optional: VAT-reg, trade-in T&Cs), `PUT /api/dealership/setup-acknowledge`. Demo & slugless tokens skip everywhere. Bundles GET returns `{zeros…, unlimited:true}` instead of 9999s.
+- DesktopSettings cross-device sync: localStorage keys (`trulens_dealer_*`) UNTOUCHED as the offline cache every report reads; server record merges in on load (server wins where it has a value); debounced write-back gated behind initial load so empty form state can never overwrite saved data.
+- Modal mounted in BOTH shells (desktop jumps to sidebar Settings section; mobile opens its Settings tab via a go-signal counter prop); quiet cards on DesktopDashboard + mobile Dashboard tab.
+- **Fixed:** desktop had NO way to open the in-app guides at all — added a footer Guides button in DesktopShell.
+- Guides: +2 (TU verification in Add Vehicle, branding your reports).
+
+#### Shared gating component (`packages/tru-ui-src/src/imagin8-gating.tsx`)
+
+- `unlimited: true` flag = plain ACTIVE buttons with no count badge — no more 9999 sentinel numbers anywhere. All three servers now return `{valuation:0, regCheck:0, accidentReport:0, unlimited:true}` for unlimited dealers.
+- ⚠️ **Gotcha for future edits:** each app's local copy of this component is overwritten from the shared source by `sync:ui` on every lint/build (predev/prelint hooks). Edit ONLY `packages/tru-ui-src/src/imagin8-gating.tsx`; local copies get clobbered otherwise.
+
+Files changed: `truflow-premium/{server.ts, src/App.tsx, src/types.ts, src/lib/guides.ts, src/lib/setupStatus.ts*, src/components/{SetupPrompt.tsx*, DealerDetailsSettings.tsx}}`, `TruLens/{server.ts, src/App.tsx, src/lib/{guides.ts, setupStatus.ts*}, src/components/{SetupPrompt.tsx*, InventoryList.tsx, imagin8-gating.tsx}}`, `truinspect/{server.ts, src/App.tsx, src/lib/{guides.ts, setupStatus.ts*}, src/components/{SetupPrompt.tsx*, InventoryList.tsx, DesktopShell.tsx, DesktopDashboard.tsx, DesktopSettings.tsx, imagin8-gating.tsx}}`, `packages/tru-ui-src/src/imagin8-gating.tsx`. (* = new)
 
 ### TruFlow Mobile v1.3 — Market Value + Follow-ups + Share (2026-08-23)
 
