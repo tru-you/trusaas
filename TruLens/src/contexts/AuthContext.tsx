@@ -46,7 +46,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isDemo: boolean;
-  enterDemoMode: () => void;
+  enterDemoMode: () => Promise<void>;
   signInWithCode: (code: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -55,7 +55,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   isDemo: false,
-  enterDemoMode: () => {},
+  enterDemoMode: async () => {},
   signInWithCode: async () => {},
   signOut: async () => {},
 });
@@ -68,22 +68,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDemo, setIsDemo] = useState(false);
 
   const enterDemoMode = async () => {
-    try {
-      const res = await fetch('/api/auth/demo', { method: 'POST' });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || 'Demo unavailable');
-      localStorage.setItem(DEMO_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
-      localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
-      setIsDemo(true);
-      setUser(createDemoUser(data.uid, data.token));
-      setLoading(false);
-    } catch (e) {
-      // Fallback to old local-demo if server demo fails
-      localStorage.setItem(DEMO_KEY, '1');
-      setIsDemo(true);
-      setUser(createDemoUser('local-demo-user', 'local-demo-token'));
-      setLoading(false);
-    }
+    /* No fake-fallback here, deliberately: the old catch-block minted a local
+       pseudo-user with a junk token whenever the server refused demo (prod has
+       DEMO_ENABLED off unless set), leaving users "logged in" to an app where
+       every request 401s — and it persisted DEMO_KEY='1', so reloads resumed
+       the broken session forever. If the server says no, that is the truth. */
+    const res = await fetch('/api/auth/demo', { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || 'Demo is not available here.');
+    localStorage.setItem(DEMO_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
+    localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
+    setIsDemo(true);
+    setUser(createDemoUser(data.uid, data.token));
+    setLoading(false);
   };
 
   /** Swap the dealership's access code for a signed device token. */
@@ -132,16 +129,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Restore offline demo session immediately
+    /* A REAL demo session stores an expiry timestamp from the server mint.
+       The legacy '1' marker only ever came from the removed fake-fallback —
+       poison it out on sight so stuck browsers land on login instead of
+       resurrecting a user whose token no server would accept. */
     if (localStorage.getItem(DEMO_KEY) === '1') {
-      setIsDemo(true);
-      setUser(createDemoUser());
-      setLoading(false);
+      localStorage.removeItem(DEMO_KEY);
+      localStorage.removeItem(DEVICE_TOKEN_KEY);
     }
+    const realDemoSession = () => {
+      const marker = localStorage.getItem(DEMO_KEY);
+      if (!marker || marker === '1') return false;
+      const stored = localStorage.getItem(DEVICE_TOKEN_KEY) || '';
+      return Number(marker) > Date.now() && stored !== '' && !stored.startsWith('local-demo');
+    };
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (localStorage.getItem(DEMO_KEY) === '1') {
-        // Stay in demo if user chose offline mode
+      if (realDemoSession()) {
+        // Resume a genuine server-minted demo session
         setIsDemo(true);
         setUser(createDemoUser());
         setLoading(false);

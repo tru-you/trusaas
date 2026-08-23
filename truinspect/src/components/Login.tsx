@@ -40,6 +40,7 @@ export default function Login() {
      phone, outdoors, next to a car. Entering it blind is how you fail twice. */
   const [reveal, setReveal] = React.useState(false);
   const [capsOn, setCapsOn] = React.useState(false);
+  const [demoError, setDemoError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let alive = true;
@@ -236,10 +237,24 @@ export default function Login() {
           {' — Future Automotive · V 1.2'}
         </p>
 
-        {/* Trial — small and unobtrusive, bottom of screen */}
+        {/* Trial — small and unobtrusive, bottom of screen. When the server
+            refuses demo (DEMO_ENABLED off), say so — never enter a fake
+            session that 401s on every call. */}
+        {demoError && (
+          <p role="alert" className="mt-4 mx-auto block max-w-[320px] text-center text-[12px] text-[#F87171] leading-relaxed">
+            {demoError}
+          </p>
+        )}
         <button
           type="button"
-          onClick={async () => { await enterDemoMode(); }}
+          onClick={async () => {
+            setDemoError(null);
+            try {
+              await enterDemoMode();
+            } catch (e) {
+              setDemoError(e instanceof Error ? e.message : 'Demo is not available here.');
+            }
+          }}
           className="mt-4 mx-auto block text-[11px] text-[rgba(232,234,230,0.35)] hover:text-[rgba(232,234,230,0.55)] transition-colors cursor-pointer"
         >
           Try demo (24h)

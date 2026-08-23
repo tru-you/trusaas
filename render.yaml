@@ -139,6 +139,12 @@ services:
         value: /var/data
       - key: LOCAL_MODE
         value: "1"
+      # Prospects demo Inspect more than any other app. With an access code set,
+      # demo defaults OFF unless this is explicit — the whole Imagin8 gateway
+      # design assumes prospect demos exist (they short-circuit locally, never
+      # reach the gateway, spend nothing).
+      - key: DEMO_ENABLED
+        value: "1"
       # REQUIRED for sign-in. Without these the API rejects every login with
       # "No way to verify codes". TRUFLOW_SYNC_KEY verifies dealer codes against
       # TruFlow; TRUINSPECT_ACCESS_CODE is the legacy shared code. Values live in

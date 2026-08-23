@@ -98,21 +98,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDemo, setIsDemo] = useState(false);
 
   const enterDemoMode = async () => {
-    try {
-      const res = await fetch('/api/auth/demo', { method: 'POST' });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || 'Demo unavailable');
-      localStorage.setItem(DEMO_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
-      localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
-      setIsDemo(true);
-      setUser(createDemoUser(data.uid, data.token));
-      setLoading(false);
-    } catch (e) {
-      // Fallback
-      setIsDemo(true);
-      setUser(createDemoUser('local-demo-user', 'local-demo-token'));
-      setLoading(false);
-    }
+    const res = await fetch('/api/auth/demo', { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    /* No fake-fallback here, deliberately: the old catch-block minted a local
+       pseudo-user with a junk token whenever the server refused demo (prod has
+       DEMO_ENABLED off for some deployments), leaving users "logged in" to an
+       app where every request 401s. If the server says no, that is the truth —
+       let it reach the login screen. */
+    if (!res.ok) throw new Error(data?.error || 'Demo is not available here.');
+    localStorage.setItem(DEMO_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
+    localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
+    setIsDemo(true);
+    setUser(createDemoUser(data.uid, data.token));
+    setLoading(false);
   };
 
   const signInWithCode = async (code: string) => {

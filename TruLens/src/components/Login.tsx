@@ -42,6 +42,7 @@ export default function Login() {
      blind is how you fail the screen twice in a row. */
   const [reveal, setReveal] = React.useState(false);
   const [capsOn, setCapsOn] = React.useState(false);
+  const [demoError, setDemoError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let alive = true;
@@ -155,7 +156,14 @@ export default function Login() {
 
             <button
               type="button"
-              onClick={enterDemoMode}
+              onClick={async () => {
+                setDemoError(null);
+                try {
+                  await enterDemoMode();
+                } catch (e) {
+                  setDemoError(e instanceof Error ? e.message : 'Demo is not available here.');
+                }
+              }}
               className="w-full flex items-center justify-center gap-2 min-h-[52px] rounded-xl tl-btn-3d text-[16px] font-semibold tracking-normal"
             >
               <Monitor size={16} />
@@ -258,10 +266,27 @@ export default function Login() {
           {' — Future Automotive · V 1.2'}
         </p>
 
-        {/* Trial — small and unobtrusive, bottom of screen */}
+        {/* Trial — small and unobtrusive, bottom of screen. When the server
+            refuses demo (DEMO_ENABLED off), say so — never enter a fake
+            session that 401s on every call. */}
+        {demoError && (
+          <p role="alert" className="mt-4 mx-auto block max-w-[320px] text-center text-[12px] text-[#F87171] leading-relaxed">
+            {demoError}
+          </p>
+        )}
         <button
           type="button"
-          onClick={async () => { setCodeBusy(true); await enterDemoMode(); setCodeBusy(false); }}
+          onClick={async () => {
+            setDemoError(null);
+            setCodeBusy(true);
+            try {
+              await enterDemoMode();
+            } catch (e) {
+              setDemoError(e instanceof Error ? e.message : 'Demo is not available here.');
+            } finally {
+              setCodeBusy(false);
+            }
+          }}
           disabled={codeBusy}
           className="mt-4 mx-auto block text-[11px] text-[rgba(232,234,230,0.35)] hover:text-[rgba(232,234,230,0.55)] transition-colors cursor-pointer disabled:opacity-50"
         >
