@@ -132,6 +132,12 @@ All mobile-only (`truflow-mobile/public/index.html` + `sw.js` bump `tfm-2026-08-
 
 **Verified live:** demo login → tasks CRUD/resolve/groups, real scraper results (Polo R243k/35 listings km-adjusted; Corolla R247k/21), price fill, tile nav + Draft filter, share caption, guide entries, no console errors.
 
+**Accessibility pass (same day, sw `tfm-2026-08-23b`):**
+- Nav tabs are real `<button>`s with `aria-current`; KPI tiles, task/lead/vehicle rows, chips and sec-h links get `role="button"` + Tab/Enter/Space via a `pressable()` helper; global `:focus-visible` ring
+- Publish switch: keyboard toggle + `aria-checked`; status segments expose `aria-pressed`
+- Escape closes topmost overlay (chat → guide → sheet); sheets are `role="dialog" aria-modal` with focus moved in on open and restored on close
+- Toast is an `aria-live="polite"` status region; all icon-only buttons labelled
+
 ---
 
 ### Unified Demo Mode (2026-08-22)

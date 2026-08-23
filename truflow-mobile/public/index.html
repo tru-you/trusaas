@@ -39,6 +39,10 @@ html,body{height:100%;}
 body{font-family:var(--sans);color:var(--paper);background:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden;}
 img{display:block;max-width:100%;}
 button,input,textarea{font-family:inherit;}
+/* Keyboard focus is visible only where it exists (tab/keyboard users) —
+   pointer taps never flash a ring. */
+:focus{outline:none;}
+:focus-visible{outline:2px solid var(--cyan-soft);outline-offset:2px;border-radius:4px;}
 
 /* full-viewport app; dvh with vh fallback for older iOS */
 .app{position:fixed;inset:0;height:100vh;height:100dvh;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--ink);}
@@ -115,8 +119,7 @@ button,input,textarea{font-family:inherit;}
 .search input::placeholder{color:var(--faint);}
 .chips{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:2px;scrollbar-width:none;}
 .chips::-webkit-scrollbar{display:none;}
-.chip{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.03em;padding:8px 14px;border-radius:var(--r-pill);background:var(--ink-2);border:1px solid var(--border);color:var(--muted);white-space:nowrap;cursor:pointer;transition:.18s var(--ease);flex-shrink:0;}
-.chip:active{transform:scale(.94);} .chip.on{background:var(--cyan);color:var(--ink);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 3px 0 var(--cyan-800), 0 6px 14px -4px rgba(0,0,0,.95);}
+.chip{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.03em;padding:8px 14px;border-radius:var(--r-pill);background:var(--ink-2);border:1px solid var(--border);color:var(--muted);white-space:nowrap;cursor:pointer;transition:.18s var(--ease);flex-shrink:0;}.chip:active{transform:scale(.94);} .chip.on{background:var(--cyan);color:var(--ink);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 3px 0 var(--cyan-800), 0 6px 14px -4px rgba(0,0,0,.95);}
 
 .veh{overflow:hidden;cursor:pointer;transition:.18s var(--ease);}
 .veh:active{transform:scale(.985);}
@@ -141,7 +144,7 @@ button,input,textarea{font-family:inherit;}
 .empty .t{font-weight:600;font-size:15px;color:var(--dim);} .empty .s{font-size:13px;margin-top:5px;}
 
 .nav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;align-items:stretch;z-index:20;background:rgba(13,17,23,.85);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border-top:1px solid var(--glass-line);}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--faint);cursor:pointer;transition:.2s var(--ease);}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--faint);cursor:pointer;transition:.2s var(--ease);background:none;border:none;padding:0;}
 .tab svg{width:22px;height:22px;transition:.2s var(--ease);} .tab span{font-size:12px;font-weight:500;}
 .tab.on{color:var(--cyan);} .tab.on svg{transform:translateY(-1px);} .tab:active{transform:scale(.9);}
 
@@ -539,12 +542,12 @@ button,input,textarea{font-family:inherit;}
   </main>
 
   <nav class="nav">
-    <div class="tab on" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></div>
-    <div class="tab" data-tab="leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Leads</span></div>
-    <div class="tab" data-tab="stock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg><span>Stock</span></div>
-    <div class="tab" data-tab="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg><span>Activity</span></div>
-    <div class="tab" data-tab="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></div>
-    <div class="tab" data-tab="acct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Account</span></div>
+    <button type="button" class="tab on" data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+    <button type="button" class="tab" data-tab="leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg><span>Leads</span></button>
+    <button type="button" class="tab" data-tab="stock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg><span>Stock</span></button>
+    <button type="button" class="tab" data-tab="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg><span>Activity</span></button>
+    <button type="button" class="tab" data-tab="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+    <button type="button" class="tab" data-tab="acct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Account</span></button>
   </nav>
 
   <!-- Chat helper (opened from header Assist button) -->
@@ -552,7 +555,7 @@ button,input,textarea{font-family:inherit;}
     <div class="chat-head">
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" style="width:22px;height:22px;flex-shrink:0"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>
       <span class="ch-title">Dealer Assist</span>
-      <button class="ch-close" id="chatClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <button class="ch-close" id="chatClose" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
     </div>
     <div class="chat-msgs" id="chatMsgs"><div class="cmsg bot">Hey! I'm your dealer assistant. Ask me about stock, leads, pricing — whatever you need on the floor.</div></div>
     <div class="chat-sug" id="chatSug"><button>What's my best seller?</button><button>How many leads this week?</button><button>Stock over 60 days</button></div>
@@ -561,10 +564,10 @@ button,input,textarea{font-family:inherit;}
 
   <div class="guide-panel" id="guidePanel">
     <div class="guide-head">
-      <button class="gh-back" id="guideBack" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="gh-back" id="guideBack" aria-label="Back to guide list" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
       <svg class="gh-icon" id="guideIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg>
       <span class="gh-title" id="guideTitle">How do I…?</span>
-      <button class="gh-close" id="guideClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      <button class="gh-close" id="guideClose" aria-label="Close guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
     </div>
     <div class="guide-body" id="guideBody"></div>
     <div class="guide-foot"><a href="https://wa.me/447476995694" target="_blank" rel="noopener">Still stuck? Contact support</a></div>
@@ -572,7 +575,7 @@ button,input,textarea{font-family:inherit;}
 
   <div class="scrim" id="scrim"></div>
   <div class="sheet" id="sheet"><div class="grab" id="grab"></div><div class="sheet-scroll" id="sheetBody"></div><div class="sheet-foot" id="sheetFoot"></div></div>
-  <div class="toast" id="toast"><span class="ic" id="toastIc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span id="toastMsg">Saved</span></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"><span class="ic" id="toastIc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span id="toastMsg">Saved</span></div>
 </div>
 
 <div class="gate" id="gate">
@@ -610,6 +613,16 @@ button,input,textarea{font-family:inherit;}
   var DEALER_SITE="", mvCache={}, curTaskId=null;
   var $=function(s,r){return (r||document).querySelector(s);};
    var el=function(t,c,h,ds,act){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;if(ds)for(var k in ds)e.setAttribute(k,ds[k]);if(act)e.setAttribute("data-act",act);return e;};
+  /* Divs that behave like buttons (cards, rows, tiles) get real button
+     semantics: focusable, Enter/Space activate, optional accessible name. */
+  var pressable=function(node,label){
+    node.setAttribute("role","button");node.setAttribute("tabindex","0");
+    if(label)node.setAttribute("aria-label",label);
+    node.addEventListener("keydown",function(e){
+      if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){e.preventDefault();node.click();}
+    });
+    return node;
+  };
   var esc=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});};
   var money=function(n){if(typeof n!=="number")n=parseInt(String(n).replace(/[^\d]/g,""),10)||0;return "R"+n.toLocaleString("en-ZA");};
   var initials=function(n){return (n||"?").split(" ").map(function(w){return w[0];}).slice(0,2).join("").toUpperCase();};
@@ -767,9 +780,10 @@ button,input,textarea{font-family:inherit;}
       {l:"Unpublished",n:needs,d:"not live on site yet",c:needs?"need":"",act:"stock-draft"}
     ];
     var g=$("#kpis");g.innerHTML="";
-    tiles.forEach(function(t){g.appendChild(el("div","tile "+(t.c||""),'<div class="kl">'+t.l+'</div><div class="kn">'+t.n+'</div><div class="kd">'+t.d+'</div>',null,t.act));});
+    tiles.forEach(function(t){g.appendChild(pressable(el("div","tile "+(t.c||""),'<div class="kl">'+t.l+'</div><div class="kn">'+t.n+'</div><div class="kd">'+t.d+'</div>',null,t.act),t.l));});
     var wl=due?("due today"+(upc?" · "+upc+" upcoming":"")):(upc?(upc+" upcoming"):"all caught up");
-    var wt=el("div","tile wide"+(due?" need":""),'<div class="wl"><div class="kl">Follow-ups</div><div class="kn">'+due+'</div><div class="kd">'+wl+'</div></div><svg class="warr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',null,"tasks");
+    var wt=pressable(el("div","tile wide"+(due?" need":""),'<div class="wl"><div class="kl">Follow-ups</div><div class="kn">'+due+'</div><div class="kd">'+wl+'</div></div><svg class="warr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',null,"tasks"));
+    wt.setAttribute("aria-label","Follow-ups: "+wl);
     g.appendChild(wt);
   }
 
@@ -786,6 +800,7 @@ button,input,textarea{font-family:inherit;}
       '<div class="lm"><span class="src">'+esc(l.source||"Website")+'</span>'+(phone?'<span>·</span><span>'+esc(phone)+'</span>':'')+'<span>·</span><span>'+timeAgo(l.createdAt)+'</span></div></div>'+
       (st==="New"&&phone?'<a class="qa wa" href="https://wa.me/'+phone.replace(/\D/g,"")+'" target="_blank" rel="noopener" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg></a>':'<span class="pill '+cls+' dot">'+esc(lbl)+'</span>');
     r.addEventListener("click",function(e){if(e.target.closest("a"))return;openLead(l.id);});
+    pressable(r,"Lead: "+nm+", "+lbl);
     return r;
   }
 
@@ -810,6 +825,7 @@ button,input,textarea{font-family:inherit;}
     c.innerHTML=head+'<div class="vb"><div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px"><div class="vt">'+esc(name||"Vehicle")+'</div><div class="vp">'+money(vPrice(v))+'</div></div>'+
       (specs.length?'<div class="vspecs">'+specs.map(function(s){return '<span class="spec">'+esc(s)+'</span>';}).join("")+'</div>':'')+'</div>';
     c.addEventListener("click",function(){openVeh(v);});
+    pressable(c,"Vehicle: "+(name||"unnamed")+(vPrice(v)?", "+money(vPrice(v)):"")+(sold?", sold":pub?", live":", draft"));
     return c;
   }
 
@@ -870,8 +886,9 @@ button,input,textarea{font-family:inherit;}
   function chips(host,items,cb){
     host.innerHTML="";
     items.forEach(function(it,i){
-      var c=el("div","chip"+(i===0?" on":""),it);
-      c.addEventListener("click",function(){cb(it);Array.prototype.forEach.call(host.children,function(x){x.classList.remove("on");});c.classList.add("on");});
+      var c=el("button","chip"+(i===0?" on":""),it);c.type="button";
+      if(i===0)c.setAttribute("aria-pressed","true");
+      c.addEventListener("click",function(){cb(it);Array.prototype.forEach.call(host.children,function(x){x.classList.remove("on");x.removeAttribute("aria-pressed");});c.classList.add("on");c.setAttribute("aria-pressed","true");});
       host.appendChild(c);
     });
   }
@@ -879,12 +896,19 @@ button,input,textarea{font-family:inherit;}
   /* ── Navigation ── */
   function go(tab){
     Array.prototype.forEach.call(document.querySelectorAll(".screen"),function(s){s.classList.toggle("on",s.id==="s-"+tab);});
-    Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){t.classList.toggle("on",t.getAttribute("data-tab")===tab);});
+    Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){
+      var on=t.getAttribute("data-tab")===tab;
+      t.classList.toggle("on",on);
+      if(on)t.setAttribute("aria-current","page");else t.removeAttribute("aria-current");
+    });
     $("#scroll").scrollTop=0;
     if(tab==="activity")renderActivity();
   }
   Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){t.addEventListener("click",function(){go(t.getAttribute("data-tab"));});});
   Array.prototype.forEach.call(document.querySelectorAll("[data-go]"),function(g){g.addEventListener("click",function(){go(g.getAttribute("data-go"));});});
+  // Section-header links ("All leads →", "All", "+ Follow-up") are spans —
+  // give them button semantics so keyboard users can reach them too.
+  Array.prototype.forEach.call(document.querySelectorAll(".sec-h .link"),function(s){pressable(s);});
   $("#avatarBtn").addEventListener("click",function(){go("acct");});
 
   /* KPI tiles are shortcuts — tap through to the pre-filtered list. */
@@ -911,10 +935,28 @@ button,input,textarea{font-family:inherit;}
 
   /* ── Sheet ── */
   var scrim=$("#scrim"),sheet=$("#sheet");
+  sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");
+  var lastFocus=null;
   function sheetOpen(){return sheet.classList.contains("open");}
-  function openSheet(){scrim.classList.add("open");sheet.classList.add("open");}
-  function closeSheet(){scrim.classList.remove("open");sheet.classList.remove("open");sheet.style.transform="";}
+  function openSheet(){
+    lastFocus=document.activeElement;
+    scrim.classList.add("open");sheet.classList.add("open");
+    var target=$("#sheetBody").querySelector("[data-close],button,input,select,textarea")||sheet;
+    setTimeout(function(){try{target.focus({preventScroll:true});}catch(e){target.focus();}},320);
+  }
+  function closeSheet(){
+    scrim.classList.remove("open");sheet.classList.remove("open");sheet.style.transform="";
+    if(lastFocus&&lastFocus.focus){try{lastFocus.focus({preventScroll:true});}catch(e){lastFocus.focus();}}
+    lastFocus=null;
+  }
   scrim.addEventListener("click",closeSheet);
+  // Escape closes the topmost layer: chat panel → guide → sheet.
+  document.addEventListener("keydown",function(e){
+    if(e.key!=="Escape")return;
+    if($("#chatPanel").classList.contains("open")){$("#chatPanel").classList.remove("open");return;}
+    if($("#guidePanel").classList.contains("open")){$("#guidePanel").classList.remove("open");return;}
+    if(sheetOpen())closeSheet();
+  });
   var dragY=null,grab=$("#grab");
   grab.addEventListener("touchstart",function(e){dragY=e.touches[0].clientY;sheet.style.transition="none";},{passive:true});
   grab.addEventListener("touchmove",function(e){if(dragY==null)return;var d=e.touches[0].clientY-dragY;if(d>0)sheet.style.transform="translateY("+d+"px)";},{passive:true});
@@ -928,8 +970,8 @@ button,input,textarea{font-family:inherit;}
     // Publish-state pill on the hero, so the sheet and the stock card agree.
     var topPill=v.status==="SOLD"?'<span class="pill mute">Sold</span>':(pub?'<span class="pill cyan dot">Live</span>':'<span class="pill glass">Draft</span>');
     var heroHtml = hero
-      ? '<div class="vhero"><img class="bg" src="'+esc(hero)+'" alt=""><button class="close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><div class="tr">'+topPill+'<span class="pill glass">'+(((v.images&&v.images.length)||0)+((v.extrasPhotos&&v.extrasPhotos.length)||0))+' photos</span></div><div><span class="pill glass">'+(typeof v.vir==="number"?"VIR "+v.vir+"/100":"No VIR")+'</span></div></div>'
-      : '<div class="vhero" style="background:repeating-linear-gradient(135deg,var(--ink-3),var(--ink-3) 12px,var(--ink-2) 12px,var(--ink-2) 24px)"><button class="close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><div class="tr">'+topPill+'</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);z-index:2"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg><span style="font-size:12px">No photos — capture in TruLens</span></div></div>';
+      ? '<div class="vhero"><img class="bg" src="'+esc(hero)+'" alt=""><button class="close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><div class="tr">'+topPill+'<span class="pill glass">'+(((v.images&&v.images.length)||0)+((v.extrasPhotos&&v.extrasPhotos.length)||0))+' photos</span></div><div><span class="pill glass">'+(typeof v.vir==="number"?"VIR "+v.vir+"/100":"No VIR")+'</span></div></div>'
+      : '<div class="vhero" style="background:repeating-linear-gradient(135deg,var(--ink-3),var(--ink-3) 12px,var(--ink-2) 12px,var(--ink-2) 24px)"><button class="close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><div class="tr">'+topPill+'</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);z-index:2"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg><span style="font-size:12px">No photos — capture in TruLens</span></div></div>';
     var meta=[];
     if(v.mileage)meta.push('<span class="mchip"><b>'+Number(v.mileage).toLocaleString("en-ZA")+'</b> km</span>');
     if(v.transmission)meta.push('<span class="mchip">'+esc(v.transmission)+'</span>');
@@ -941,8 +983,8 @@ button,input,textarea{font-family:inherit;}
       '<button type="button" class="share-row" id="shareBtn">'+SVG_SHARE+'Share this car<span class="sr-hint">WhatsApp · link</span></button>'+
       '<div class="lbl">Listing</div>'+
       '<div class="listing">'+
-        '<div class="lrow"><div class="a">Live on website</div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch"></div></div>'+
-        '<div class="lrow"><div class="a">Status</div><div class="seg" id="statusSeg"><button data-v="INVENTORY" class="'+(v.status==="INVENTORY"?"on":"")+'">In stock</button><button data-v="SOLD" class="'+(v.status==="SOLD"?"on":"")+'">Sold</button></div></div>'+
+        '<div class="lrow"><div class="a">Live on website</div><div class="sw'+(pub?" on":"")+'" id="pubSw" role="switch" tabindex="0" aria-checked="'+(pub?"true":"false")+'" aria-label="Live on website"></div></div>'+
+        '<div class="lrow"><div class="a">Status</div><div class="seg" id="statusSeg"><button type="button" data-v="INVENTORY" aria-pressed="'+(v.status==="INVENTORY"?"true":"false")+'" class="'+(v.status==="INVENTORY"?"on":"")+'">In stock</button><button type="button" data-v="SOLD" aria-pressed="'+(v.status==="SOLD"?"true":"false")+'" class="'+(v.status==="SOLD"?"on":"")+'">Sold</button></div></div>'+
       '</div>'+
       '<div class="lbl">Details</div>'+
       '<div class="frow"><div class="field"><label>Asking price (R)</label><input inputmode="numeric" value="'+(vPrice(v)||"")+'" id="fPrice"></div><div class="field"><label>Mileage (km)</label><input inputmode="numeric" value="'+(v.mileage||"")+'" id="fKm"></div></div>'+
@@ -959,20 +1001,22 @@ button,input,textarea{font-family:inherit;}
     });
 
     var sw=$("#pubSw");
-    sw.addEventListener("click",function(){
+    var flipSw=function(){
       var cv=curVeh();if(!cv)return;
       if((cv.status||"INVENTORY")!=="INVENTORY"){toast("Mark it In stock before publishing");return;}
       var next=!isPub(cv);
       patch({showOnWebsite:next},next?"Published to your site":"Hidden from your site").then(function(){
-        var nv=curVeh(),p=isPub(nv);sw.classList.toggle("on",p);
+        var nv=curVeh(),p=isPub(nv);sw.classList.toggle("on",p);sw.setAttribute("aria-checked",p?"true":"false");
       });
-    });
+    };
+    sw.addEventListener("click",flipSw);
+    sw.addEventListener("keydown",function(e){if(e.key===" "||e.key==="Enter"||e.key==="Spacebar"){e.preventDefault();flipSw();}});
     Array.prototype.forEach.call($("#statusSeg").children,function(b){
       b.addEventListener("click",function(){
         var cv=curVeh();if(!cv)return;var val=b.getAttribute("data-v");if(cv.status===val)return;
         patch({status:val},"Status → "+(val==="SOLD"?"Sold":"In stock")).then(function(){
-          Array.prototype.forEach.call($("#statusSeg").children,function(x){x.classList.remove("on");});b.classList.add("on");
-          var nv=curVeh(),p=isPub(nv);sw.classList.toggle("on",p);
+          Array.prototype.forEach.call($("#statusSeg").children,function(x){x.classList.remove("on");x.setAttribute("aria-pressed","false");});b.classList.add("on");b.setAttribute("aria-pressed","true");
+          var nv=curVeh(),p=isPub(nv);sw.classList.toggle("on",p);sw.setAttribute("aria-checked",p?"true":"false");
         });
       });
     });
@@ -1056,7 +1100,7 @@ button,input,textarea{font-family:inherit;}
 
     $("#sheetFoot").style.display="none";
     $("#sheetBody").innerHTML=
-      '<div class="ld-head"><div class="lav" style="">'+esc(initials(nm))+'</div><div class="nm"><div class="n">'+esc(nm)+'</div><div class="s"><span class="pill '+cls+' dot">'+esc(lbl)+'</span> <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">· '+esc(l.source||"Website")+' · '+timeAgo(l.createdAt)+'</span></div></div><button class="ld-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>'+
+      '<div class="ld-head"><div class="lav" style="">'+esc(initials(nm))+'</div><div class="nm"><div class="n">'+esc(nm)+'</div><div class="s"><span class="pill '+cls+' dot">'+esc(lbl)+'</span> <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">· '+esc(l.source||"Website")+' · '+timeAgo(l.createdAt)+'</span></div></div><button class="ld-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>'+
       actions+
       (l.notes?'<div class="lbl">Enquiry</div><div class="ld-enq">'+esc(l.notes)+'</div>':'')+
       spills+
@@ -1125,6 +1169,7 @@ button,input,textarea{font-family:inherit;}
       (t.priority==="Urgent"&&!done?'<span>·</span><span class="due-late">Urgent</span>':'')+'</div></div></div>';
     r.querySelector(".tcheck").addEventListener("click",function(e){e.stopPropagation();resolveTask(t.id);});
     r.addEventListener("click",function(){openTask(t.id);});
+    pressable(r,(done?"Completed follow-up: ":"Follow-up: ")+(t.title||""));
     return r;
   }
   function renderTasks(){
@@ -1155,11 +1200,11 @@ button,input,textarea{font-family:inherit;}
     curTaskId=id;
     var l=t.leadId?findLead(t.leadId):null, v=t.vehicleId?vehById(t.vehicleId):null;
     var statusSeg='<div class="seg" id="tStatus">';
-    TSTAT.forEach(function(s){statusSeg+='<button type="button" data-v="'+s[0]+'" class="'+(t.status===s[0]?"on":"")+'">'+s[1]+'</button>';});
+    TSTAT.forEach(function(s){statusSeg+='<button type="button" data-v="'+s[0]+'" aria-pressed="'+(t.status===s[0]?"true":"false")+'" class="'+(t.status===s[0]?"on":"")+'">'+s[1]+'</button>';});
     statusSeg+='</div>';
     var priSel=function(p){return (t.priority||"Normal")===p?" selected":"";};
     var body=
-      '<div class="ld-head"><div class="lav" style="background:var(--cyan-faint);color:var(--cyan)">'+SVG_CHK.replace('viewBox','width="20" height="20" viewBox')+'</div><div class="nm"><div class="n">Follow-up</div><div class="s"><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">created for your floor list</span></div></div><button class="ld-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>'+
+      '<div class="ld-head"><div class="lav" style="background:var(--cyan-faint);color:var(--cyan)">'+SVG_CHK.replace('viewBox','width="20" height="20" viewBox')+'</div><div class="nm"><div class="n">Follow-up</div><div class="s"><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">created for your floor list</span></div></div><button class="ld-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>'+
       '<div class="field" style="margin-top:14px"><label>What needs doing</label><input type="text" id="tTitle" value="'+esc(t.title||"")+'" autocomplete="off"></div>'+
       '<div class="frow"><div class="field"><label>Due date</label><input type="date" id="tDue" value="'+esc(t.dueDate||"")+'"></div>'+
       '<div class="field"><label>Priority</label><select id="tPri"><option'+priSel("Normal")+'>Normal</option><option'+priSel("Urgent")+'>Urgent</option></select></div></div>'+
@@ -1175,7 +1220,7 @@ button,input,textarea{font-family:inherit;}
     $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="tSave">'+SVG_CHK.replace('stroke-width="2.4"','stroke-width="2.4"')+'Save</button><button class="tru-btn-ghost danger foot-del" id="tDel" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
     $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
     Array.prototype.forEach.call($("#tStatus").children,function(b){
-      b.addEventListener("click",function(){Array.prototype.forEach.call($("#tStatus").children,function(x){x.classList.remove("on");});b.classList.add("on");});
+      b.addEventListener("click",function(){Array.prototype.forEach.call($("#tStatus").children,function(x){x.classList.remove("on");x.setAttribute("aria-pressed","false");});b.classList.add("on");b.setAttribute("aria-pressed","true");});
     });
     var ol=$("#sheetBody").querySelector("[data-open-lead]");
     if(ol)ol.addEventListener("click",function(){openLead(ol.getAttribute("data-open-lead"));});
