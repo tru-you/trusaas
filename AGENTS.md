@@ -1,6 +1,6 @@
 # TruSaaS — Agent Project Memory
 
-**Last updated:** 2026-08-23 by ox-alpha (OpenCode)
+**Last updated:** 2026-08-24 by ox-alpha (OpenCode)
 **Purpose:** Persistent project context for coding agents. Update this file whenever architecture, integrations, or deployment config changes.
 
 ---
@@ -74,18 +74,26 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 - Paid buttons always visible — never hidden
 - Bundles > 0: Normal active state, shows remaining count badge
 - Bundles == 0: Glassmorphic "Unlock" state with lock icon + "Premium" badge — enticing, never disabled/gray
-- Bundle storage: per-dealer JSON in `DATA_DIR/imagin8-bundles.json`
+- Bundle storage: **ONE ledger, in Flow central only** — `truflow-premium/DATA_DIR/imagin8-bundles.json`. Lens and Inspect keep NO local ledger (2026-08-24)
 
 **Transport:** All Imagin8 calls use **GET + query string params** (not POST body). Render/Cloudflare rejects non-empty JSON POST bodies.
 
+**Chargeable-call architecture (2026-08-24) — Imagin8 API surface ONLY, nothing else moved:**
+- Premium owns gating, credentials and deduction in one shared core (`runChargedImagin8Call`); sibling apps are thin proxies over `x-tru-sync-key`, failing CLOSED when Flow is unreachable
+- Per-dealership Imagin8 customers: `imagin8ApiKey`/`imagin8CustomerId` stored per dealership record, owner-managed ONLY via `PUT /api/dealerships/:id` (TransUnion tab in DealershipAdmin); dealer self-route drops them; blank = platform account
+- Demo tokens short-circuit locally in each app — a prospect never reaches the gateway; demo slugs get zeroed bundles, deduct nothing anywhere
+- Top-ups are owner-only (`POST /api/imagin8/bundles` → 403 for non-admins everywhere)
+- Tests: opt-in integration suites per app (`RUN_INTEGRATION=1 npm test`) spawn the real server against a mock Flow speaking verify-code + `/api/internal/imagin8/*`
+
 **Server routes:**
-- `GET /api/imagin8/static?mmCode=...` — all apps (free)
-- `GET /api/imagin8/models?make=...` — all apps (free)
-- `POST /api/imagin8/valuation` — all apps (paid, gated)
-- `POST /api/imagin8/regcheck` — Inspect + Premium (paid, gated); `GET /api/imagin8/regcheck?identifier=...&type=...` — Lens (paid, gated)
-- `GET /api/imagin8/accident-report?vin=...` — all apps (paid, gated)
-- `GET /api/imagin8/bundles` — read dealer bundles; returns `{zeros…, unlimited:true}` for unlimited dealers
-- `POST /api/imagin8/bundles` — admin/dealer top-up
+- `GET /api/imagin8/static?mmCode=...` — all apps locally (free, platform key)
+- `GET /api/imagin8/models?make=...` — all apps locally (free, platform key)
+- `POST /api/imagin8/valuation` — all apps (paid, gated); Lens/Inspect proxy to Flow
+- `POST /api/imagin8/regcheck` — Inspect + Premium (paid, gated); `GET /api/imagin8/regcheck?identifier=...&type=...` — Lens (paid, gated); Lens/Inspect proxy to Flow
+- `GET /api/imagin8/accident-report?vin=...` — all apps (paid, gated); Lens/Inspect proxy to Flow
+- `GET /api/imagin8/bundles` — read balance; unlimited dealers get `{zeros…, unlimited:true}`; Lens/Inspect read via Flow
+- `POST /api/imagin8/bundles` — owner/admin top-up on Premium; 403 on Lens/Inspect
+- `POST /api/internal/imagin8/{valuation,regcheck,accident-report}` + `GET /api/internal/imagin8/bundles` — Premium sync-key routes backing the proxies
 
 **Setup-status routes (2026-08-23):**
 - Premium: `GET /api/dealership/setup-status` + `PUT /api/dealership/setup-acknowledge` — derived live from the dealership record (`setupAcknowledgedAt`)
@@ -112,6 +120,30 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 ---
 
 ## 4. Recent Changes (2026-08-21)
+
+### Imagin8 Chargeable-Call Centralization — Flow holds THE ledger (2026-08-24, `c0829fc`)
+
+Scope discipline (owner-set): **only the Imagin8 API surface moved.** No slug routes, auth, verify-code, setup-status bridges or any other operation changed — verified by hunk-level diff review; every changed hunk in both sibling servers sits inside its Imagin8 block.
+
+**TruFlow Premium** — single authority:
+- `runChargedImagin8Call(dealershipId, feature, params)` — one core for valuation/regcheck/accident-report: config check → demo/unlimited/zero-bundle gating → real TU call → deduct on success. Both dealer-facing JWT routes and internal sync-key routes funnel through it.
+- Per-dealership Imagin8 customers (Model 2): `imagin8ApiKey` + `imagin8CustomerId` on the dealership record, owner-managed ONLY via `PUT /api/dealerships/:id` — new TransUnion tab in DealershipAdmin (`Imagin8CustomerSettings.tsx`). Dealer self-route whitelists them out. Blank = platform account.
+- Demo slugs (`demo`, `demo-*`): zeroed bundles, never reach the real API, never deduct. `true-cars` stays unlimited (`{zeros…, unlimited:true}` — no sentinel numbers).
+- Top-ups owner-only: `POST /api/imagin8/bundles` → 403 "Top-ups are managed by TruSaaS" for non-admins.
+- New sync-key internals backing the proxies: `POST /api/internal/imagin8/{valuation,regcheck,accident-report}`, `GET /api/internal/imagin8/bundles?dealershipId=…`.
+- One rider from the prior session, disclosed and kept: `PUT /api/dealerships/:id` no longer lets a blank string wipe `location`.
+
+**TruLens + TruInspect** — thin proxies (-136/-102 lines each):
+- Local ledgers and credential stores DELETED. Chargeable calls relay to Flow's internal routes over `x-tru-sync-key`; Flow unreachable → fail CLOSED (502 / zeroed bundles), never a free paid call.
+- Demo tokens short-circuit locally with 402 + zeros — prospects never touch the gateway.
+- Free flat-fee endpoints (static info, model catalogue) still run locally on the platform key.
+
+**Tests** — opt-in integration suites, new in Lens + Inspect (`npm test`; spawn gate: `RUN_INTEGRATION=1`):
+- Each suite spawns the REAL app server (throwaway DATA_DIR, ephemeral port) against a mock Flow speaking verify-code + the internal Imagin8 contract, including deduction so the relay is provable end-to-end.
+- Inspect mock holds the ledger itself (Flow's job now); covers demo isolation, relay-and-deduct, unlimited owner yard.
+- ⚠️ node:test runs multiple root `before()` hooks CONCURRENTLY — Lens originally split boot and token-mint across two hooks and raced its own server boot (deterministic ECONNREFUSED). Fixed: mint inside the boot hook. Don't split boot-dependent setup across root hooks.
+
+Verified: all 3 apps typecheck clean; Premium 75/75; Lens 12/12 and Inspect 12/12 integration (RUN_INTEGRATION=1), clean skip paths without it.
 
 ### First-run Dealership Setup Checklist + Guide Refresh — all 3 apps (2026-08-23)
 
