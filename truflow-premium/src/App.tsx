@@ -1920,18 +1920,6 @@ export default function App() {
                 </>
               )}
             </div>
-            {/* Public stock feed link lives here now — its old home was the
-                retired Stock media page. This is the URL a dealer's website or
-                any third-party tool consumes, so it stays one click away. */}
-            <a
-              className="block mt-1 text-right text-[11px] font-mono text-[color:var(--cyan)] hover:underline break-all"
-              href={`/api/public/stock?dealer=${encodeURIComponent(currentDealerSlug || getDealerSlug())}`}
-              target="_blank"
-              rel="noreferrer"
-              title="Your public stock feed — what your website receives"
-            >
-              Public stock feed: /api/public/stock?dealer={currentDealerSlug || getDealerSlug()}
-            </a>
             </div>
           </div>
         )}

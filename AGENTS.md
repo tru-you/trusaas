@@ -403,7 +403,7 @@ Results display inline as chips: "Clear" (emerald) / "Stolen" / "Finance pending
 ### Guide Accuracy Pass + Media & Web Nav Removal (2026-08-24)
 
 **Media & Web sidebar group dropped from TruFlow Premium entirely:**
-- `media_web` ("Stock media", briefly "Edit stock") deleted — it duplicated All Vehicles with a filter. Its unique assets moved: public stock feed link now lives on the dashboard Web readiness card; Shoot/Web-toggle/photo filters were already per-row on All Vehicles.
+- `media_web` ("Stock media", briefly "Edit stock") deleted — it duplicated All Vehicles with a filter. Its unique assets moved: Shoot/Web-toggle/photo filters were already per-row on All Vehicles; readiness counters were already on the dashboard. The public feed URL (`/api/public/stock?dealer=slug`) is documented in guides only — a dashboard link was added, then pulled at owner request (read as clutter).
 - `web_management` stays built and reachable via the dashboard Web readiness card's Manage button; recorded in tests/navigation.test.mjs WITHHELD with that reason. The nav-completeness guardrail caught the orphan within minutes of the nav edit — trust that test.
 - field-guide.html updated to match.
 

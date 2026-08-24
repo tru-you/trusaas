@@ -503,7 +503,7 @@ export const GUIDES: Guide[] = [
         app: "flow",
         title: "Find your public stock URL",
         detail:
-          "Your stock feed lives at /api/public/stock?dealer=your-slug. On the dashboard, the Web readiness card shows the 'Public stock feed' link — open it to see the exact JSON your website receives.",
+          "Your stock feed lives at /api/public/stock?dealer=your-slug — that is the exact address your dealer website fetches. Open it in a browser to see the live JSON every published vehicle rides on.",
       },
       {
         app: "website",
