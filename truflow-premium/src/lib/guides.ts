@@ -302,25 +302,25 @@ export const GUIDES: Guide[] = [
     title: "Get a car's photos web-ready",
     goal: "A unit has a full gallery and shows as web-ready.",
     blurb: "Take a car from no photos to publishable.",
-    section: "media_web",
+    section: "inventory",
     steps: [
       {
         app: "flow",
         title: "Find what needs a shoot",
         detail:
-          "Stock media shows counters — Need shoot vs Web-ready gallery. Pick a car flagged \"No gallery yet\" or incomplete.",
+          "All Vehicles has photo filter chips — Needs shoot, Partial, Web-ready. Pick a car flagged \"Needs shoot\" or \"Partial\".",
       },
       {
         app: "lens",
         title: "Shoot it in TruLens",
         detail:
-          "Tap Shoot to open TruLens for that stock number, complete the guided slots (aim for a full set — a short gallery still reads as incomplete), then Export to DMS.",
+          "Tap the camera button on the row to open TruLens for that stock number, complete the guided slots (aim for a full set — a short gallery still reads as incomplete), then Export to DMS.",
       },
       {
         app: "flow",
         title: "Refresh and check",
         detail:
-          "Reload Stock media — the badge turns to \"Gallery web-ready\" and the last-sync line updates. The Public stock feed link shows exactly what your website receives.",
+          "Back in Flow, refresh — the readiness chip on the row turns green. The Web readiness card on the dashboard keeps the counters, and its Public stock feed link shows exactly what your website receives.",
       },
     ],
   },
@@ -503,7 +503,7 @@ export const GUIDES: Guide[] = [
         app: "flow",
         title: "Find your public stock URL",
         detail:
-          "Your stock feed lives at /api/public/stock?dealer=your-slug. Open Stock media and tap 'Public stock feed link' to see it and copy the URL.",
+          "Your stock feed lives at /api/public/stock?dealer=your-slug. On the dashboard, the Web readiness card shows the 'Public stock feed' link — open it to see the exact JSON your website receives.",
       },
       {
         app: "website",
@@ -549,27 +549,99 @@ export const GUIDES: Guide[] = [
   {
     id: "inspect-vehicle",
     title: "Run an inspection report",
-    goal: "A vehicle has a professional condition report with AI damage detection.",
-    blurb: "AI-powered inspection in TruInspect.",
+    goal: "A vehicle has a professional condition report where every finding was tagged by a human inspector.",
+    blurb: "Guided walk-around, manual damage tags, branded report.",
     section: "inventory",
     steps: [
       {
         app: "inspect",
         title: "Open TruInspect",
         detail:
-          "Go to inspect.tru-saas.com and sign in. Start a new inspection for the vehicle.",
+          "Go to inspect.tru-saas.com and sign in. Tap the vehicle, then start a new inspection.",
       },
       {
         app: "inspect",
-        title: "Capture the panels",
+        title: "Shoot the guided walk-around",
         detail:
-          "Follow the guided walk-around. The AI detects dents, scratches and paint work as you shoot — damage is flagged on-screen in real time.",
+          "The camera walks you through 27 slots in three phases: front & engine, one clockwise lap of the outside, then interior, history and ID shots. After each shot you mark it OK, Note or Damage.",
       },
       {
         app: "inspect",
-        title: "Generate the PDF",
+        title: "Tag damage yourself",
         detail:
-          "Once complete, tap Generate Report. A branded PDF inspection report downloads with photos, damage markers, and a condition score.",
+          "Damage tagging is your eye, not an algorithm: tap the exact spot on the photo, choose the type (scratch, dent, chip, rust…) and severity from Cosmetic to Structural. Nothing is auto-detected — every finding in the report is one a human placed.",
+      },
+      {
+        app: "inspect",
+        title: "Work the checklist",
+        detail:
+          "35 check points across exterior, glass & lights, wheels & tyres, interior, engine and identity/documents. Mark each one, then Generate Report.",
+      },
+      {
+        app: "inspect",
+        title: "Get the branded VIR",
+        detail:
+          "The report downloads as a PDF (or single-file HTML that survives email) with photos, pinned damage, a condition score computed from your findings, and your yard's branding and disclaimers.",
+      },
+    ],
+  },
+  {
+    id: "trade-in-appraisal",
+    title: "Appraise a trade-in",
+    goal: "A trade-in has a documented walk-around, live market prices and an offer you can defend line by line.",
+    blurb: "Walk-around → market value → margin → signed offer.",
+    section: "inventory",
+    steps: [
+      {
+        app: "inspect",
+        title: "Walk the car",
+        detail:
+          "In TruInspect, tap Trade-In on the vehicle card. Work the item list — condition per panel, service book, extras — and flag anything damaged with a recon cost and photo.",
+      },
+      {
+        app: "inspect",
+        title: "Pull the live prices",
+        detail:
+          "Fetch Live Market Value shows what similar cars are asking on AutoTrader and Cars.co.za right now — free, unlimited. When you need the official figure, TransUnion Valuation returns trade/retail (uses one Premium credit).",
+      },
+      {
+        app: "inspect",
+        title: "Set your margin",
+        detail:
+          "The offer builds itself: retail minus recon costs, minus your margin %. The margin is editable on the spot, so you can move the number while the customer watches — no back-office rework.",
+      },
+      {
+        app: "inspect",
+        title: "Sign the appraisal",
+        detail:
+          "The summary document carries your dealership identity and T&Cs, the build-up from retail to offer, item photos, and a drawn signature. Export as PDF for the customer.",
+      },
+    ],
+  },
+  {
+    id: "orbit-360",
+    title: "Get a 360 spin on your listing",
+    goal: "Buyers can drag to rotate the actual car next to its gallery on your website.",
+    blurb: "Shoot the lap in TruLens — the spin builds itself.",
+    section: "inventory",
+    steps: [
+      {
+        app: "lens",
+        title: "Shoot the exterior lap",
+        detail:
+          "In TruLens, complete the clockwise panel shots of the walk-around — front bumper around to both fenders. Those panels are exactly what the spin is built from; wheels, roof and accessories stay out of it.",
+      },
+      {
+        app: "lens",
+        title: "Export to DMS",
+        detail:
+          "Export to DMS sends everything at once. With six or more orbit frames captured, the TruOrbit Web3D spin is built automatically as part of the same export — no second button.",
+      },
+      {
+        app: "website",
+        title: "Spin it on the listing",
+        detail:
+          "The spin publishes alongside the gallery. Buyers drag to rotate, play an auto-turntable, scrub frame-by-frame — and any damage you pinned stays visible at every angle.",
       },
     ],
   },

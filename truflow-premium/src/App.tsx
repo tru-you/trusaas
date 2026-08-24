@@ -27,7 +27,6 @@ import {
   Zap,
   Camera,
   Crosshair,
-  Image,
   MessageCircle,
   Copy,
   FileText,
@@ -734,7 +733,7 @@ export default function App() {
    * and nothing in the app put that number in front of the dealer daily.
    * Stock health already owns the money view; this owns the "why isn't it
    * moving" view, and every figure comes from the same readiness helper the
-   * Stock media page scores each vehicle with.
+   * All Vehicles table grades each row with.
    */
   const notOnline = (() => {
     const inStock = activeStock.filter((v) => v.status !== "SOLD");
@@ -923,17 +922,10 @@ export default function App() {
         { id: "payment", label: "Repayment calculator", icon: Calculator },
       ]
     },
-    {
-      /* media_web was the original entry here; commit 3181857 renamed the slot
-         to web_management but the Stock media hub itself stayed built and
-         useful — gallery readiness scoring, the TruLens capture hand-off and
-         the public feed link exist only there, not in the grid below. */
-      category: "Media & Web",
-      items: [
-        { id: "media_web", label: "Stock media", icon: Image },
-        { id: "web_management", label: "Web Management", icon: Globe2 },
-      ]
-    },
+    /* The old "Media & Web" group is gone altogether. Stock media / Edit stock
+       duplicated inventory with a filter, and Web Management remains reachable
+       from the dashboard's Web readiness card ("Manage") — which is where
+       gallery work starts anyway. No nav surface without its own job. */
     {
       category: "Dealer Settings",
       items: [
@@ -948,12 +940,12 @@ export default function App() {
     let items = group.items;
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'media_web', 'web_management',
+        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'web_management',
          'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'stock_health', 'media_web', 'web_management', 'manager', 'settings',
+        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'stock_health', 'web_management', 'manager', 'settings',
          'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     }
@@ -1928,6 +1920,18 @@ export default function App() {
                 </>
               )}
             </div>
+            {/* Public stock feed link lives here now — its old home was the
+                retired Stock media page. This is the URL a dealer's website or
+                any third-party tool consumes, so it stays one click away. */}
+            <a
+              className="block mt-1 text-right text-[11px] font-mono text-[color:var(--cyan)] hover:underline break-all"
+              href={`/api/public/stock?dealer=${encodeURIComponent(currentDealerSlug || getDealerSlug())}`}
+              target="_blank"
+              rel="noreferrer"
+              title="Your public stock feed — what your website receives"
+            >
+              Public stock feed: /api/public/stock?dealer={currentDealerSlug || getDealerSlug()}
+            </a>
             </div>
           </div>
         )}
@@ -3775,124 +3779,6 @@ export default function App() {
           </div>
         )}
 
-        {/* STOCK MEDIA HUB — gallery only; capture lives in TruLens */}
-        {activeSection === "media_web" && (
-          <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)] flex items-center gap-2">
-                  <Image size={24} className="text-[color:var(--cyan)]" /> Stock media & web readiness
-                </h1>
-                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium max-w-xl">
-                  Premium stores gallery + publish evidence. Capture is <b className="text-[color:var(--white)]">only in TruLens</b>.
-                  Pipeline: Shoot → Export to DMS → refresh here → website feed.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => openTruLens()}
-                className="btn btn-primary text-[13px] font-semibold flex items-center gap-2 px-4 py-3"
-              >
-                <Camera size={14} /> Open TruLens capture
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">With photos</div>
-                <div className="text-2xl font-semibold text-[color:var(--cyan)] mt-1">
-                  {activeStock.filter(v => (v.images?.length || 0) > 0).length}
-                </div>
-              </div>
-              <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Need shoot</div>
-                <div className="text-2xl font-semibold text-[color:var(--warning)] mt-1">
-                  {activeStock.filter(v => computeDmsGalleryReadiness(v).level === "capture").length}
-                </div>
-              </div>
-              <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Web-ready gallery</div>
-                <div className="text-2xl font-semibold text-[color:var(--cyan-bright)] mt-1">
-                  {activeStock.filter(v => computeDmsGalleryReadiness(v).webReady).length}
-                </div>
-              </div>
-              <div className="card p-4">
-                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Public stock feed</div>
-                <a
-                  className="text-[13px] text-[color:var(--cyan-bright)] font-mono mt-2 block break-all hover:underline"
-                  href={`/api/public/stock?dealer=${encodeURIComponent(currentDealerSlug || getDealerSlug())}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  /api/public/stock?dealer={currentDealerSlug || getDealerSlug()}
-                </a>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {activeStock.map(v => {
-                const r = computeDmsGalleryReadiness(v as any);
-                return (
-                  <div key={v.id} className="card overflow-hidden flex flex-col">
-                    <div className="aspect-[16/10] bg-[color:var(--ink-2)] relative">
-                      {r.photoCount > 0 ? (
-                        <img src={v.images![0]} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-[rgba(232,234,230,0.45)] gap-2">
-                          <Camera size={28} />
-                          <span className="text-[13px] font-semibold tracking-normal">No gallery yet</span>
-                        </div>
-                      )}
-                      <span
-                        className="absolute top-2 left-2 text-[13px] font-semibold px-2 py-0.5 rounded border"
-                        style={{ color: r.color, borderColor: r.color + "55", background: r.color + "22" }}
-                        title={r.reasons.join(" · ")}
-                      >
-                        {r.label}
-                      </span>
-                      {r.photoCount > 0 && (
-                        <span className="absolute top-2 right-2 text-[13px] font-semibold px-2 py-0.5 rounded bg-black/50 text-[color:var(--white)]">
-                          {r.photoCount} photos
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-3 flex flex-col gap-2 flex-1">
-                      <div>
-                        <div className="text-[16px] font-semibold text-[color:var(--white)]">{v.year} {v.make} {v.model}</div>
-                        <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{v.stockNumber}</div>
-                      </div>
-                      <div className="text-[13px] text-[rgba(232,234,230,0.72)]">
-                        {(v as any).lastPhotoSync
-                          ? `Last TruLens sync ${new Date((v as any).lastPhotoSync).toLocaleString()}`
-                          : "Not synced from TruLens yet"}
-                      </div>
-                      {r.reasons[0] && (
-                        <div className="text-[13px] text-[color:var(--glass-line)]">{r.reasons[0]}</div>
-                      )}
-                      <div className="mt-auto flex gap-2">
-                        <button
-                          type="button"
-                          className="btn btn-secondary text-[13px] flex-1"
-                          onClick={() => setSelectedDetailVehicle(v)}
-                        >
-                          Open stock card
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openTruLens(v.stockNumber)}
-                          className="btn btn-primary text-[13px] flex items-center justify-center gap-1 px-3"
-                          title="Complete guided shoot in TruLens"
-                        >
-                          <Camera size={12} /> Shoot
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* SETTINGS MODULE */}
         {activeSection === "settings" && (

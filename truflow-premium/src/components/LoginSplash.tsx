@@ -76,7 +76,7 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
               box. One line naming the job it does costs nothing and stops the
               screen reading like an internal tool someone left exposed. */}
           <p className="text-[13px] text-[rgba(232,234,230,0.55)] text-center leading-snug">
-            Dealer management — stock, leads, F&amp;I and reporting
+            Dealer management Ecosystem for Dealers by Dealers
           </p>
         </div>
 

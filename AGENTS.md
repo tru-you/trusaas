@@ -400,6 +400,20 @@ Results display inline as chips: "Clear" (emerald) / "Stolen" / "Finance pending
 
 ---
 
+### Guide Accuracy Pass + Media & Web Nav Removal (2026-08-24)
+
+**Media & Web sidebar group dropped from TruFlow Premium entirely:**
+- `media_web` ("Stock media", briefly "Edit stock") deleted — it duplicated All Vehicles with a filter. Its unique assets moved: public stock feed link now lives on the dashboard Web readiness card; Shoot/Web-toggle/photo filters were already per-row on All Vehicles.
+- `web_management` stays built and reachable via the dashboard Web readiness card's Manage button; recorded in tests/navigation.test.mjs WITHHELD with that reason. The nav-completeness guardrail caught the orphan within minutes of the nav edit — trust that test.
+- field-guide.html updated to match.
+
+**Guide copy grounded in what apps actually do (all 3 apps' src/lib/guides.ts):**
+- AI damage detection claims REMOVED everywhere. Damage tagging is manual in Inspect + Lens (tap spot, type, severity 1–5); Inspect's /api/inspect/damage endpoint is retired and returns empty findings; Lens's "Scan this photo with AI" button targets a route that does not exist in its server. Owner-set framing: "AI is involved, but not for detection."
+- Premium guides added: trade-in appraisal (Inspect walk-around → free market scraper / TU valuation → editable margin → signed offer), TruOrbit 360 spin (Lens lap panels → auto-built on DMS export ≥6 frames → drag-spin on listing).
+- Inspect checklist guide categories corrected to real groups; trade-in guide now states the actual offer formula (retail − recon − margin %).
+
+**LoginSplash tagline:** "Dealer management Ecosystem for Dealers by Dealers" (owner wording).
+
 ## 5. Configuration Notes
 
 ### Local Dev
