@@ -121,6 +121,30 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ## 4. Recent Changes (2026-08-21)
 
+### Demo Imagin8 unlocked — simulated TU calls, 5-of-each per session (2026-08-24)
+
+Owner call: demo mode must show the FULL Imagin8 experience so a prospect can run a valuation, reg check and accident report before the upsell wall. Chose **simulated** data (free, can't be gamed, safe on live instances) with a **5-of-each** bundle budget so the "credits running out → Unlock (Premium)" moment is still part of the demo arc.
+
+**Doctrine change:** demo tokens no longer 402 with zeroed bundles. They short-circuit locally to a deterministic, simulated TransUnion response (same input → same output, so the demo is stable) seeded from the request params. Demo never reaches the gateway, never touches anyone's real credits, and never calls the chargeable API. This is a deliberate reversal of the "demo = zero/402" behaviour in the centralization change (c0829fc).
+
+**Scope discipline — only the chargeable Imagin8 surface:** the simulated responder applies to `/api/imagin8/{valuation,regcheck,accident-report}` ONLY. The free market-value scraper (`POST /api/valuation` → Bright Data over AutoTrader/Cars.co.za) stays **LIVE and real in demo** — it is flat-free, has no bundle/gating, and never reads `req.user.demo`. Do not extend the demo simulation there; a demo prospect must see real current listing prices on that one. The distinction: TransUnion = chargeable per-call (simulated for demo), market value = free (always live).
+
+**Shared (`packages/imagin8.ts`):**
+- `DEMO_IMAGIN8_ALLOWANCE = { valuation: 5, regCheck: 5, accidentReport: 5 }`
+- Deterministic `simulatedValuation(mmCode, year, mileage)` / `simulatedRegCheck(identifier, type)` / `simulatedAccidentReport(vin)` returning the SAME normalized shapes (`TuValuation` / `RegCheckResult` / `AccidentReportResult`) the servers already hand the UI — so no frontend change needed. Seeded via FNV-1a hash; regCheck mostly clean with ~32% finance-pending + common microdot; accidentReport ~35% of VINs show 1–2 claims.
+- ⚠️ **Feature-key gotcha:** the route feature strings are `valuation|regcheck|accident-report` but the `Imagin8Bundles` ledger/UI keys are `valuation|regCheck|accidentReport`. Each server maps via `DEMO_FEATURE_SLOT`. **Do not index a bundle map with the hyphenated route string** — it silently never decrements (and was a pre-existing 402-always bug in Premium, fixed here).
+
+**Servers (all 3):**
+- Per-session budget tracked in-memory: Lens/Inspect key on `req.user.uid` (`demo-<hex>`, per-browser); Premium keys on a `sid` nonce added to the demo token (Premium demos share one tenant, so `sid` gives each login its own budget).
+- Chargeable routes check `req.user.demo`/`isImagin8DemoSlug` → if budget left, return simulated result + `bundlesRemaining` (decremented) + `demo: true`; if spent, 402 `{demoUsedUp}`. `/api/imagin8/bundles` returns the leftover allowance for demo.
+- Premium `runChargedImagin8Call(dealershipId, feature, params, demoSessionId?)` gained a demo branch; the dealer-facing routes were corrected from `req.user?.dealershipId` (never set — always "default") to `req.auth?.dealershipId`. Fixed the pre-existing `bundles[feature]` vs camelCase-slot mismatch so real dealers' regCheck/accidentReport gate/deduct correctly.
+
+**Demo entry-point parity (2026-08-24):** TruFlow Premium's `LoginSplash` had its "Try demo (24h)" button removed earlier (a dealer signing into their own DMS shouldn't be offered sample data); demo was only reachable via `?demo=1`. Restored the button, matching Lens/Inspect — a prospect who reaches Flow's login has nowhere else to try the full DMS. The `?demo=1` deep link still works.
+
+**Tests updated (opt-in, `RUN_INTEGRATION=1`):** Inspect + Lens demo assertions moved from `402`/`valuation 0` to `200` (simulated), allowance `5`, `demo: true`, and `bundlesRemaining` decrementing; the "never reaches the gateway / untouched yard bucket" proof still holds. Verified: Inspect 12/12, Lens 12/12, Premium 75/75.
+
+Files changed: `packages/imagin8.ts`, `truinspect/server.ts`, `TruLens/server.ts`, `truflow-premium/server.ts`, `truflow-premium/src/components/LoginSplash.tsx`, `truinspect/tests/server.test.mjs`, `TruLens/tests/server.test.mjs`.
+
 ### Imagin8 Chargeable-Call Centralization — Flow holds THE ledger (2026-08-24, `c0829fc`)
 
 Scope discipline (owner-set): **only the Imagin8 API surface moved.** No slug routes, auth, verify-code, setup-status bridges or any other operation changed — verified by hunk-level diff review; every changed hunk in both sibling servers sits inside its Imagin8 block.

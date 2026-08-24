@@ -519,3 +519,119 @@ function toBool(v: unknown): boolean {
   if (typeof v === "string") return v.toLowerCase() === "true" || v === "1" || v.toLowerCase() === "yes";
   return !!v;
 }
+
+// ── Simulated TransUnion responses (prospect demo) ──
+// A demo token must get the FULL Imagin8 experience so a prospect can run a
+// valuation, a reg check and an accident report before the upsell wall — but a
+// demo never spends real credits. So instead of hitting the chargeable API we
+// return deterministic, plausible results seeded off the request: same input →
+// same output, so the demo is stable and can't be gamed into draining a real
+// allocation. The bundle counter still decrements client-side, so "credits
+// running out → Unlock (Premium)" is part of the demo story.
+//
+// These match the normalized TuValuation / RegCheckResult / AccidentReportResult
+// shapes the servers already hand the UI, so no frontend change is needed.
+
+/** A demo session gets 5 of each paid call — plenty of runway to run the whole
+ *  suite across a few cars before the "Unlock (Premium)" wall reappears. */
+export const DEMO_IMAGIN8_ALLOWANCE = { valuation: 5, regCheck: 5, accidentReport: 5 };
+
+/** Deterministic FNV-1a hash → 32-bit uint. Stable per input string. */
+function hash32(str: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/** Deterministic unit value in [0, 1) from a seed string. */
+function unit(seed: string): number {
+  return (hash32(seed) % 10000) / 10000;
+}
+
+/** Believable used-car prices for a SA dealer app. Deterministic from the
+ *  mmCode/year so the same demo car returns the same numbers every visit. */
+export function simulatedValuation(mmCode: string, year: number, mileage?: number): TuValuation {
+  const yr = year || new Date().getFullYear();
+  const age = Math.max(0, new Date().getFullYear() - yr);
+  const rNew = unit(`${mmCode}:${yr}:new`);
+  const rRtl = unit(`${mmCode}:${yr}:retail`);
+  const rMkt = unit(`${mmCode}:${yr}:market`);
+  // Mass-market SA band (~R120k–R500k new) skewed toward affordable used stock.
+  const newPrice = Math.round(120_000 + rNew * 380_000);
+  const retail = Math.max(15_000, Math.round(newPrice * (0.92 - age * 0.045 - rRtl * 0.06)));
+  const trade = Math.round(retail * 0.88);
+  const marketValue = Math.round(retail * (0.96 + rMkt * 0.05));
+  return {
+    available: true,
+    note: null,
+    newPrice,
+    retailPrice: retail,
+    tradePrice: trade,
+    marketValue,
+    year: yr,
+    mmCode,
+    make: null,
+    model: null,
+    variant: null,
+    raw: null,
+  };
+}
+
+/** Deterministic vehicle background check. Mostly clean; ~1/3 carry registered
+ *  finance (a real SA reality), and microdotting is common. */
+export function simulatedRegCheck(identifier: string, type: "vin" | "reg" | "engine"): RegCheckResult {
+  const r = unit(`${identifier}:reg`);
+  const stolen = r < 0.03; // rare — flagged stolen
+  const financePending = r >= 0.03 && r < 0.35;
+  const microdotted = r >= 0.5; // widespread in SA
+  const alerts: string[] = [];
+  if (stolen) alerts.push("STOLEN — vehicle is flagged as stolen");
+  if (financePending) alerts.push("FINANCE — outstanding finance registered");
+  if (microdotted) alerts.push("MICRODOT — vehicle is microdotted");
+  return {
+    registered: true,
+    stolen,
+    financePending,
+    microdotted,
+    make: null,
+    model: null,
+    year: null,
+    vin: type === "vin" ? identifier : null,
+    engineNumber: type === "engine" ? identifier : null,
+    registrationNumber: type === "reg" ? identifier : null,
+    colour: null,
+    description: null,
+    alerts,
+    raw: null,
+  };
+}
+
+/** Deterministic accident report. ~1/3 of seeded VINs show 1–2 prior claims, so
+ *  a prospect can see both the "No records" and the damaged-area chips. */
+export function simulatedAccidentReport(vin: string): AccidentReportResult {
+  const r = unit(`${vin}:accident`);
+  const hasClaims = r < 0.35;
+  const claims: AccidentClaim[] = [];
+  if (hasClaims) {
+    const areas = [
+      "Front bumper", "Rear bumper", "Driver's side", "Passenger side",
+      "Bonnet", "Rear quarter panel",
+    ];
+    const count = 1 + Math.floor(unit(`${vin}:n`) * 2); // 1–2 claims
+    for (let i = 0; i < count; i++) {
+      const day = 1 + Math.floor(unit(`${vin}:d${i}`) * 28);
+      const month = 1 + Math.floor(unit(`${vin}:m${i}`) * 12);
+      const claimYear = new Date().getFullYear() - 1 - Math.floor(unit(`${vin}:y${i}`) * 5);
+      claims.push({
+        date: `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${claimYear}`,
+        areaDamaged: areas[Math.floor(unit(`${vin}:a${i}`) * areas.length)],
+        claimAmount: Math.round((5_000 + unit(`${vin}:c${i}`) * 60_000) / 100) * 100,
+        description: "Reported collision damage — panel repaired.",
+      });
+    }
+  }
+  return { vin, hasClaims, claims, raw: null };
+}

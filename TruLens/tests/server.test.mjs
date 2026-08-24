@@ -259,13 +259,17 @@ test("the owner's yard is unlimited with zeroed counters", async () => {
   assert.equal(b.regCheck, 0);
 });
 
-test("demo tokens see zero credits WITHOUT touching the gateway", async () => {
+test("demo tokens use their own simulated allowance WITHOUT touching the gateway", async () => {
   const hitsBefore = gatewayChargeHits;
   const { token } = await (await fetch(`${BASE}/api/auth/demo`, { method: "POST" })).json();
   const b = await (await authed(token, "/api/imagin8/bundles")).json();
-  assert.equal(b.valuation, 0);
+  assert.equal(b.valuation, 5); // its own simulated allowance
+  assert.equal(b.demo, true);
   const v = await postJson(token, "/api/imagin8/valuation", { mmCode: "12345", year: 2020 });
-  assert.equal(v.status, 402);
+  assert.equal(v.status, 200); // simulated, unlocked — not 402
+  const vb = await v.json();
+  assert.equal(vb.demo, true);
+  assert.equal(vb.bundlesRemaining.valuation, 4);
   assert.equal(gatewayChargeHits, hitsBefore); // never relayed
 });
 

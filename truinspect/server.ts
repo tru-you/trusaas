@@ -1760,7 +1760,7 @@ app.get('/api/export/dms/config', authenticate, async (_req: any, res) => {
 
 // ==================== IMAGIN8 / TRANSUNION ====================
 
-import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, getStaticInfo as imagin8GetStaticInfo, getModels as imagin8GetModels, accidentReport as imagin8AccidentReport } from "../packages/imagin8";
+import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, getStaticInfo as imagin8GetStaticInfo, getModels as imagin8GetModels, accidentReport as imagin8AccidentReport, simulatedValuation as imagin8SimValuation, simulatedRegCheck as imagin8SimRegCheck, simulatedAccidentReport as imagin8SimAccidentReport, DEMO_IMAGIN8_ALLOWANCE } from "../packages/imagin8";
 
 const IMAGIN8_API_KEY = process.env.IMAGIN8_API_KEY || "";
 const IMAGIN8_CUSTOMER_ID = process.env.IMAGIN8_CUSTOMER_ID || "";
@@ -1785,15 +1785,78 @@ const imagin8Configured = () => IMAGIN8_API_KEY && IMAGIN8_CUSTOMER_ID;
 // flat-fee endpoints (static info, model catalogue) still run here on the
 // platform subscription.
 //
-// Demo tokens are short-circuited locally: a prospect never reaches the
-// gateway at all, let alone anyone's credits.
+// Demo tokens are short-circuited locally with a SIMULATED result: a prospect
+// gets the full Imagin8 experience (valuation/reg check/accident report) for a
+// couple of cars, then the "Unlock (Premium)" wall reappears. It never reaches
+// the gateway, never touches anyone's real credits, and is free to run — so it
+// is safe to keep demo enabled even on the live prospect instances. Each
+// per-browser demo session (demo-<hex> uid) carries its own 2-of-each budget.
 
 const DEMO_ZERO_BUNDLES = { valuation: 0, regCheck: 0, accidentReport: 0 };
+const demoBundles = new Map<string, typeof DEMO_IMAGIN8_ALLOWANCE>();
+
+/** Map the route feature name to the Imagin8Bundles slot the UI reads. */
+const DEMO_FEATURE_SLOT: Record<'valuation' | 'regcheck' | 'accident-report', keyof typeof DEMO_IMAGIN8_ALLOWANCE> = {
+  valuation: 'valuation',
+  regcheck: 'regCheck',
+  'accident-report': 'accidentReport',
+};
 
 /** The dealership this request acts on. Per-dealer codes carry their slug;
  *  legacy shared-code logins land on 'default' and are gated as such. */
 function resolveDealerId(req: any): string {
   return req.user?.dealerSlug || 'default';
+}
+
+/** Remaining simulated demo budget, seeded to the full allowance on first use. */
+function demoRemaining(req: any): typeof DEMO_IMAGIN8_ALLOWANCE {
+  const key = req.user?.uid || 'demo';
+  let b = demoBundles.get(key);
+  if (!b) {
+    b = { ...DEMO_IMAGIN8_ALLOWANCE };
+    demoBundles.set(key, b);
+  }
+  return { ...b };
+}
+
+/** Consume one demo credit; returns the new remaining budget. */
+function demoConsume(req: any, feature: 'valuation' | 'regcheck' | 'accident-report'): typeof DEMO_IMAGIN8_ALLOWANCE {
+  const key = req.user?.uid || 'demo';
+  const b = demoRemaining(req);
+  const slot = DEMO_FEATURE_SLOT[feature];
+  b[slot] = Math.max(0, b[slot] - 1);
+  demoBundles.set(key, b);
+  return { ...b };
+}
+
+/** Handle a demo request locally with simulated data, or 402 once the 2-of-each
+ *  budget is spent. Returns true if the response was sent. */
+function handleDemoImagin8(
+  req: any,
+  res: any,
+  feature: 'valuation' | 'regcheck' | 'accident-report',
+  params: Record<string, any>,
+): boolean {
+  if (!req.user?.demo) return false;
+  const remaining = demoRemaining(req);
+  if ((remaining[DEMO_FEATURE_SLOT[feature]] || 0) <= 0) {
+    res.status(402).json({
+      error: 'Demo TransUnion credits used up.',
+      bundles: remaining,
+      demo: true,
+      demoUsedUp: true,
+    });
+    return true;
+  }
+  const next = demoConsume(req, feature);
+  const result =
+    feature === 'valuation'
+      ? imagin8SimValuation(String(params.mmCode), Number(params.year), params.mileage ? Number(params.mileage) : undefined)
+      : feature === 'regcheck'
+        ? imagin8SimRegCheck(String(params.identifier), params.type === 'reg' || params.type === 'engine' ? params.type : 'vin')
+        : imagin8SimAccidentReport(String(params.vin));
+  res.json({ ...result, bundlesRemaining: next, demo: true });
+  return true;
 }
 
 async function imagin8Proxy(
@@ -1822,38 +1885,32 @@ async function imagin8Proxy(
 }
 
 app.post('/api/imagin8/valuation', authenticate, async (req: any, res) => {
-  if (req.user?.demo) {
-    return res.status(402).json({ error: 'No valuation bundles remaining', bundles: DEMO_ZERO_BUNDLES });
-  }
   const { mmCode, year, mileage } = req.body || {};
   if (!mmCode || !year) return res.status(400).json({ error: 'mmCode and year are required' });
+  if (handleDemoImagin8(req, res, 'valuation', { mmCode, year, mileage })) return;
   await imagin8Proxy(req, res, 'valuation', { mmCode, year, mileage });
 });
 
 app.all('/api/imagin8/regcheck', authenticate, async (req: any, res) => {
-  if (req.user?.demo) {
-    return res.status(402).json({ error: 'No reg check bundles remaining', bundles: DEMO_ZERO_BUNDLES });
-  }
   const identifier = req.body?.identifier || req.query?.identifier;
   const type = req.body?.type || req.query?.type;
   if (!identifier) return res.status(400).json({ error: 'identifier is required' });
+  if (handleDemoImagin8(req, res, 'regcheck', { identifier, type })) return;
   await imagin8Proxy(req, res, 'regcheck', { identifier, type });
 });
 
 // Accident Report (chargeable per-call — bundle-gated).
 app.all('/api/imagin8/accident-report', authenticate, async (req: any, res) => {
-  if (req.user?.demo) {
-    return res.status(402).json({ error: 'No accident report bundles remaining', bundles: DEMO_ZERO_BUNDLES });
-  }
   const vin = req.query?.vin || req.body?.vin;
   if (!vin) return res.status(400).json({ error: 'vin is required' });
+  if (handleDemoImagin8(req, res, 'accident-report', { vin })) return;
   await imagin8Proxy(req, res, 'accident-report', { vin });
 });
 
 // Bundle balance — read from Flow central so there is ONE ledger. Demo tokens
-// short-circuit locally and never reach the gateway.
+// short-circuit locally to their own simulated budget and never reach the gateway.
 app.get('/api/imagin8/bundles', authenticate, async (req: any, res) => {
-  if (req.user?.demo) return res.json(DEMO_ZERO_BUNDLES);
+  if (req.user?.demo) return res.json({ ...demoRemaining(req), demo: true });
   if (!SYNC_KEY) return res.json(DEMO_ZERO_BUNDLES); // gateway down → fail closed
   try {
     const slug = resolveDealerId(req);

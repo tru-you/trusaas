@@ -267,18 +267,26 @@ test("demo settings never persist and setup skips locally", async () => {
   assert.equal(s.skipPrompt, true);
 });
 
-test("demo tokens never inherit the funded default bundle bucket", async () => {
+test("demo tokens get their own simulated 5-of-each allowance, not the funded bucket", async () => {
   const { token } = await (await fetch(`${BASE}/api/auth/demo`, { method: "POST" })).json();
   const b = await (await authed(token, "/api/imagin8/bundles")).json();
-  assert.equal(b.valuation, 0); // the default bucket holds 9s — demo sees none
+  assert.equal(b.valuation, 5); // its own allowance, not the default bucket's 9s
+  assert.equal(b.regCheck, 5);
+  assert.equal(b.accidentReport, 5);
+  assert.equal(b.demo, true);
   const reg = await postJson(token, "/api/imagin8/regcheck", { identifier: "VIN1" });
-  assert.equal(reg.status, 402);
+  assert.equal(reg.status, 200); // simulated, unlocked — not 402
+  const rb = await reg.json();
+  assert.equal(rb.demo, true);
+  assert.equal(rb.bundlesRemaining.regCheck, 4);
+  const b2 = await (await authed(token, "/api/imagin8/bundles")).json();
+  assert.equal(b2.regCheck, 4); // decremented per-session
 });
 
 test("demo gated calls never reach the gateway or anyone's bucket", async () => {
   const { token } = await (await fetch(`${BASE}/api/auth/demo`, { method: "POST" })).json();
   const reg = await postJson(token, "/api/imagin8/regcheck", { identifier: "VIN2" });
-  assert.equal(reg.status, 402); // short-circuited locally — no relay
+  assert.equal(reg.status, 200); // short-circuited locally — no relay
   // mock-yard's Flow-side allocation is untouched by the demo call.
   const b = await (await authed(yardToken, "/api/imagin8/bundles")).json();
   assert.equal(b.valuation, 9);

@@ -158,15 +158,35 @@ export default function LoginSplash({ onLogin }: { onLogin: () => void }) {
           </button>
         </form>
 
-        {/* The demo button that used to sit here is gone. A dealer signing in on
-            their own DMS should not be offered a way into someone else's sample
-            data, and it read as though the product were a sandbox. The ?demo=1
-            route above still works, so the "Try it" links on tru-saas.com take a
-            prospect straight in — they just no longer land on a dealer's login
-            screen as an option. */}
         {demoBusy && (
           <p className="mt-3 text-center text-[13px] text-[rgba(232,234,230,0.72)]">Opening demo…</p>
         )}
+
+        {/* The demo button that used to sit here was removed so a dealer signing
+            into their own DMS wasn't offered a way into someone else's sample
+            data. It's back (2026-08-24): the prospect-facing apps all carry a
+            "Try demo" entry, and Flow is where the full DMS value lives — a
+            prospect who reaches this login has nowhere else to try it. It sits
+            at the bottom, muted, exactly like Lens/Inspect, and still defers to
+            DEMO_ENABLED on the server. The ?demo=1 deep link still works too. */}
+        <button
+          type="button"
+          onClick={async () => {
+            setError('');
+            setDemoBusy(true);
+            try {
+              await enterDemo();
+              onLogin();
+            } catch (err: any) {
+              setError(err?.message || 'Demo is unavailable right now.');
+            } finally {
+              setDemoBusy(false);
+            }
+          }}
+          className="mt-4 mx-auto block text-[11px] text-[rgba(232,234,230,0.35)] hover:text-[rgba(232,234,230,0.55)] transition-colors cursor-pointer"
+        >
+          Try demo (24h)
+        </button>
 
         <div className="mt-6 pt-4 border-t border-white/10 text-center">
           <p className="text-[13px] text-[color:var(--faint)]">

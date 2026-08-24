@@ -563,7 +563,7 @@ function ensureAuthStore(): AuthStore {
   return store;
 }
 
-function signToken(account: AuthAccount, remember = false): string {
+function signToken(account: AuthAccount, remember = false, extra: Record<string, any> = {}): string {
   const store = ensureAuthStore();
   const payload = Buffer.from(
     JSON.stringify({
@@ -573,6 +573,7 @@ function signToken(account: AuthAccount, remember = false): string {
       role: account.role,
       label: account.label,
       exp: Date.now() + (remember ? TOKEN_TTL_REMEMBER_MS : TOKEN_TTL_MS),
+      ...extra,
     })
   ).toString("base64url");
   const sig = crypto.createHmac("sha256", store.secret).update(payload).digest("base64url");
@@ -1070,7 +1071,7 @@ app.post("/api/auth/demo", rateLimitAuth, (_req, res) => {
     writeAuth(store);
   }
   res.json({
-    token: signToken(acc, false), // short session — a demo shouldn't linger for 30 days
+    token: signToken(acc, false, { sid: crypto.randomUUID() }), // short session — a demo shouldn't linger for 30 days
     demo: true,
     account: { label: "Demo Dealership", role: "principal", dealershipId: "demo", demo: true },
   });
@@ -6544,7 +6545,7 @@ app.post("/api/integration/webhook-codat", (req, res) => {
 
 // ==================== IMAGIN8 / TRANSUNION ====================
 
-import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice, getStaticInfo as imagin8GetStaticInfo, accidentReport as imagin8AccidentReport } from "../packages/imagin8";
+import { getValues as imagin8GetValues, regCheck as imagin8RegCheck, bankAvs as imagin8BankAvs, createInvoice as imagin8CreateInvoice, getStaticInfo as imagin8GetStaticInfo, accidentReport as imagin8AccidentReport, simulatedValuation as imagin8SimValuation, simulatedRegCheck as imagin8SimRegCheck, simulatedAccidentReport as imagin8SimAccidentReport, DEMO_IMAGIN8_ALLOWANCE } from "../packages/imagin8";
 import { fetchValuation } from "./src/lib/scraper";
 
 const IMAGIN8_PLATFORM_KEY = process.env.IMAGIN8_API_KEY || "";
@@ -6582,6 +6583,32 @@ function isImagin8DemoSlug(dealershipId: string): boolean {
   return dealershipId === "demo" || dealershipId.startsWith("demo-");
 }
 
+/** Prospect-demo simulated budget, keyed per demo session (sid) so every
+ *  prospect gets their own 2-of-each before the "Unlock (Premium)" wall. This
+ *  is simulated/free — it never touches a real dealership's ledger. */
+const premiumDemoBundles = new Map<string, typeof DEMO_IMAGIN8_ALLOWANCE>();
+/** Map the route feature name to the Imagin8Bundles slot the UI reads. */
+const DEMO_FEATURE_SLOT: Record<"valuation" | "regcheck" | "accident-report", keyof typeof DEMO_IMAGIN8_ALLOWANCE> = {
+  valuation: "valuation",
+  regcheck: "regCheck",
+  "accident-report": "accidentReport",
+};
+function premiumDemoRemaining(key: string): typeof DEMO_IMAGIN8_ALLOWANCE {
+  let b = premiumDemoBundles.get(key);
+  if (!b) {
+    b = { ...DEMO_IMAGIN8_ALLOWANCE };
+    premiumDemoBundles.set(key, b);
+  }
+  return { ...b };
+}
+function premiumDemoConsume(key: string, feature: "valuation" | "regcheck" | "accident-report"): typeof DEMO_IMAGIN8_ALLOWANCE {
+  const b = premiumDemoRemaining(key);
+  const slot = DEMO_FEATURE_SLOT[feature];
+  b[slot] = Math.max(0, (b[slot] || 0) - 1);
+  premiumDemoBundles.set(key, b);
+  return { ...b };
+}
+
 /** Shared core for the three chargeable Imagin8 calls. Both the dealer-facing
  *  routes (JWT auth) and the suite's internal proxy routes (sync-key auth)
  *  funnel through here so gating, per-dealer credentials and deduction live
@@ -6590,12 +6617,32 @@ function isImagin8DemoSlug(dealershipId: string): boolean {
 async function runChargedImagin8Call(
   dealershipId: string,
   feature: "valuation" | "regcheck" | "accident-report",
-  params: Record<string, any>
+  params: Record<string, any>,
+  demoSessionId?: string
 ): Promise<
   | { status: 400 | 402 | 403 | 503; body: any }
   | { status: 200; body: any }
   | { status: 502; body: { error: string } }
 > {
+  const demo = isImagin8DemoSlug(dealershipId);
+
+  // Prospect demo: simulated, 2-of-each per session, never any real credits.
+  if (demo) {
+    const key = demoSessionId || dealershipId;
+    const remaining = premiumDemoRemaining(key);
+    if ((remaining[DEMO_FEATURE_SLOT[feature]] || 0) <= 0) {
+      return { status: 402, body: { error: "Demo TransUnion credits used up.", bundles: remaining, demo: true, demoUsedUp: true } };
+    }
+    const next = premiumDemoConsume(key, feature);
+    const result =
+      feature === "valuation"
+        ? imagin8SimValuation(String(params.mmCode), Number(params.year), params.mileage ? Number(params.mileage) : undefined)
+        : feature === "regcheck"
+          ? imagin8SimRegCheck(String(params.identifier), params.type === "reg" || params.type === "engine" ? params.type : "vin")
+          : imagin8SimAccidentReport(String(params.vin));
+    return { status: 200, body: { ...result, bundlesRemaining: next, demo: true } };
+  }
+
   const state = readState();
   const apiKey = dealerImagin8Key(state, dealershipId) || IMAGIN8_PLATFORM_KEY;
   const customerId = dealerImagin8CustomerId(state, dealershipId) || IMAGIN8_CUSTOMER_ID;
@@ -6603,12 +6650,10 @@ async function runChargedImagin8Call(
     return { status: 503, body: { error: "Imagin8 not configured — set IMAGIN8_API_KEY + IMAGIN8_CUSTOMER_ID, or add a key/customerId in dealer settings." } };
   }
 
-  const demo = isImagin8DemoSlug(dealershipId);
-  const bundles = demo
-    ? { valuation: 0, regCheck: 0, accidentReport: 0 }
-    : getDealerImagin8Bundles(dealershipId);
+  const bundles = getDealerImagin8Bundles(dealershipId);
+  const slot = DEMO_FEATURE_SLOT[feature];
 
-  if (!isUnlimitedDealer(dealershipId) && (bundles[feature] || 0) <= 0) {
+  if (!isUnlimitedDealer(dealershipId) && (bundles[slot] || 0) <= 0) {
     return { status: 402, body: { error: `No ${feature} bundles remaining`, bundles } };
   }
 
@@ -6625,8 +6670,8 @@ async function runChargedImagin8Call(
     } else {
       result = await imagin8AccidentReport(String(params.vin), { apiKey, customerId, ...imagin8Login });
     }
-    if (!demo && !isUnlimitedDealer(dealershipId)) {
-      bundles[feature] = Math.max(0, (bundles[feature] || 0) - 1);
+    if (!isUnlimitedDealer(dealershipId)) {
+      bundles[slot] = Math.max(0, (bundles[slot] || 0) - 1);
       setDealerImagin8Bundles(dealershipId, bundles);
     }
     return { status: 200, body: { ...result, bundlesRemaining: bundles } };
@@ -6641,7 +6686,7 @@ app.post("/api/imagin8/valuation", authenticate, async (req: any, res) => {
   if (!mmCode || !year) {
     return res.status(400).json({ error: "mmCode and year are required" });
   }
-  const out = await runChargedImagin8Call(req.user?.dealershipId || "default", "valuation", req.body || {});
+  const out = await runChargedImagin8Call(req.auth?.dealershipId || "default", "valuation", req.body || {}, req.auth?.sid);
   res.status(out.status).json(out.body);
 });
 
@@ -6650,10 +6695,10 @@ app.all("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
   if (!identifier) {
     return res.status(400).json({ error: "identifier (VIN, reg number, or engine number) is required" });
   }
-  const out = await runChargedImagin8Call(req.user?.dealershipId || "default", "regcheck", {
+  const out = await runChargedImagin8Call(req.auth?.dealershipId || "default", "regcheck", {
     identifier,
     type: req.body?.type || req.query?.type,
-  });
+  }, req.auth?.sid);
   res.status(out.status).json(out.body);
 });
 
@@ -6661,7 +6706,7 @@ app.all("/api/imagin8/regcheck", authenticate, async (req: any, res) => {
 app.all("/api/imagin8/accident-report", authenticate, async (req: any, res) => {
   const vin = req.query?.vin || req.body?.vin;
   if (!vin) return res.status(400).json({ error: "vin is required" });
-  const out = await runChargedImagin8Call(req.user?.dealershipId || "default", "accident-report", { vin });
+  const out = await runChargedImagin8Call(req.auth?.dealershipId || "default", "accident-report", { vin }, req.auth?.sid);
   res.status(out.status).json(out.body);
 });
 
@@ -6713,11 +6758,11 @@ app.all("/api/internal/imagin8/accident-report", requireSyncKey, async (req: any
 app.get("/api/internal/imagin8/bundles", requireSyncKey, (req: any, res) => {
   const dealershipId = String(req.query?.dealershipId || "");
   if (!dealershipId) return res.status(400).json({ error: "dealershipId is required" });
+  if (isImagin8DemoSlug(dealershipId)) {
+    return res.json({ ...premiumDemoRemaining(dealershipId), demo: true });
+  }
   if (isUnlimitedDealer(dealershipId)) {
     return res.json({ valuation: 0, regCheck: 0, accidentReport: 0, unlimited: true });
-  }
-  if (isImagin8DemoSlug(dealershipId)) {
-    return res.json({ valuation: 0, regCheck: 0, accidentReport: 0 });
   }
   res.json(getDealerImagin8Bundles(dealershipId));
 });
@@ -6725,9 +6770,12 @@ app.get("/api/internal/imagin8/bundles", requireSyncKey, (req: any, res) => {
 // Bundle management. Reading your own balance is fine; CHANGING it is how a
 // dealer would mint free credits, so that is owner-only via the admin role.
 app.get("/api/imagin8/bundles", authenticate, async (req: any, res) => {
-  const dealershipId = req.query?.dealershipId || req.user?.dealershipId || "default";
-  if (req.user?.role !== "admin" && req.user?.dealershipId !== dealershipId) {
+  const dealershipId = req.query?.dealershipId || req.auth?.dealershipId || "default";
+  if (req.auth?.role !== "admin" && req.auth?.dealershipId !== dealershipId) {
     return res.status(403).json({ error: "You may only view your own dealership's bundles." });
+  }
+  if (isImagin8DemoSlug(dealershipId)) {
+    return res.json({ ...premiumDemoRemaining(req.auth?.sid || dealershipId), demo: true });
   }
   if (isUnlimitedDealer(dealershipId)) {
     // Unlimited dealers get plain unlocked buttons — zeroed counters plus the
