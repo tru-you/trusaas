@@ -1095,6 +1095,7 @@ const DEFAULT_MOCK_STATE: DMSState = {
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
     { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://www.carsoncaledon.co.za' },
     { id: 'true-cars', name: 'True Cars', location: 'Port Elizabeth', slug: 'true-cars', websiteUrl: 'https://www.true-cars.co.za' },
+    { id: 'demo', name: 'Demo', location: 'Demo', slug: 'demo', websiteUrl: 'https://www.true-cars.co.za' },
   ],
   vehicles: [],
   leads: [],
@@ -1142,7 +1143,7 @@ function backfillShared(shared: SharedState): SharedState {
 
   shared.migrations = shared.migrations || {};
   if (!shared.migrations.prunedSeedDealers) {
-    const retired = new Set(["d3", "demo"]);
+    const retired = new Set(["d3"]);
     shared.dealerships = shared.dealerships.filter((d: any) => !retired.has(d.id));
     shared.migrations.prunedSeedDealers = true;
   }
@@ -1230,7 +1231,7 @@ function readState(): DMSState {
 
       parsed.migrations = parsed.migrations || {};
       if (!parsed.migrations.prunedSeedDealers) {
-        const retired = new Set(["d3", "demo"]);
+        const retired = new Set(["d3"]);
         parsed.dealerships = parsed.dealerships.filter((d: any) => !retired.has(d.id));
         parsed.vehicles = (parsed.vehicles || []).filter((v: any) => !retired.has(v.dealershipId));
         parsed.migrations.prunedSeedDealers = true;
