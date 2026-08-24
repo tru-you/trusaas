@@ -20,13 +20,13 @@
    Cyan is the one accent (interactive + live). No traffic lights: warnings are
    muted text, one dusty red for destructive. ── */
 :root{
-  --ink:#06080D; --ink-2:#0B0F17; --ink-3:#161B22; --ink-4:#21262D;
+  --ink:#06080D; --ink-2:#0D1117; --ink-3:#161B22; --ink-4:#21262D;
   --border:#30363D; --border-2:#6E7681;
   --paper:#E8EAE6; --dim:rgba(232,234,230,.72); --muted:rgba(232,234,230,.55); --faint:rgba(232,234,230,.32);
   --cyan:#4FE3DC; --cyan-500:#3ECFC8; --cyan-300:#7FF0EA; --cyan-800:#22807C;
-  --cyan-soft:rgba(79,227,220,.35); --cyan-faint:rgba(79,227,220,.08); --cyan-surface:rgba(79,227,220,.12);
+  --cyan-soft:rgba(79,227,220,.35); --cyan-faint:rgba(79,227,220,.08); --cyan-surface:rgba(79,227,220,.1);
   --danger:#B86A6A; --danger-faint:rgba(184,106,106,.14);
-  --glass:rgba(255,255,255,.04); --glass-line:rgba(255,255,255,.08); --glass-line2:rgba(232,234,230,.14);
+  --glass:rgba(232,234,230,.055); --glass-line:rgba(232,234,230,.14); --glass-line2:rgba(232,234,230,.14);
   --sans:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --r-sm:8px; --r:12px; --r-card:18px; --r-pill:100px; --btn-r:12px;
@@ -102,10 +102,16 @@ button,input,textarea{font-family:inherit;}
 .lead .lm{display:flex;gap:8px;align-items:center;margin-top:7px;font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.03em;flex-wrap:wrap;}
 .lead .lm .src{color:var(--cyan);}
 .qa{width:38px;height:38px;border-radius:var(--r);flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--glass);color:var(--dim);text-decoration:none;}
-.qa svg{width:17px;height:17px;} .qa.wa{color:#25D366;border-color:rgba(37,211,102,.3);}
+.qa svg{width:17px;height:17px;} .qa.wa{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint);}
 
 .pill{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.03em;padding:3px 8px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
 .pill.dot::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;}
+/* The .dot pulse-dot (brand status) sets width/height:6px + box-shadow + a
+   pulse animation. When that class lands on a status pill (.pill.*.dot), the
+   fixed size + global box-sizing:border-box collapses the pill to a 6px
+   sliver and clips its text. Neutralise the size/animation there — the pill's
+   own ::before dot above is what draws the status dot. */
+.pill.dot{width:auto;height:auto;box-shadow:none;animation:none;}
 .pill.cyan{background:var(--cyan-surface);color:var(--cyan);}
 .pill.neutral{background:var(--glass);color:var(--dim);border:1px solid var(--glass-line);}
 .pill.mute{background:rgba(232,234,230,.06);color:var(--muted);}
@@ -154,7 +160,7 @@ button,input,textarea{font-family:inherit;}
 .sheet.open{transform:translateY(0);}
 .grab{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;touch-action:none;}
 .grab::before{content:"";width:38px;height:5px;border-radius:3px;background:var(--border);}
-.sheet-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 18px 0;}
+.sheet-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 18px calc(16px + 62px);}
 .sheet-foot{flex-shrink:0;padding:12px 18px calc(14px + env(safe-area-inset-bottom));display:flex;gap:10px;border-top:1px solid var(--glass-line);background:var(--ink-2);}
 
 .vhero{height:198px;border-radius:16px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:13px;margin-top:6px;background:var(--ink-3);}
@@ -201,7 +207,7 @@ button,input,textarea{font-family:inherit;}
 .ldact{display:flex;gap:9px;margin:16px 0 2px;}
 .ldact a{flex:1;height:46px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-weight:600;font-size:13.5px;border:1px solid var(--border);background:var(--ink-3);color:var(--paper);}
 .ldact a:active{transform:scale(.97);} .ldact a svg{width:17px;height:17px;}
-.ldact a.wa{color:#25D366;border-color:rgba(37,211,102,.3);}
+.ldact a.wa{color:var(--cyan);border-color:var(--cyan-soft);background:var(--cyan-faint);}
 .ld-meta{display:flex;flex-direction:column;border:1px solid var(--glass-line);border-radius:var(--r);overflow:hidden;margin-top:14px;}
 .ld-mrow{display:flex;gap:12px;padding:11px 14px;background:var(--ink-3);border-bottom:1px solid var(--glass-line);}
 .ld-mrow:last-child{border-bottom:none;}
@@ -448,7 +454,7 @@ button,input,textarea{font-family:inherit;}
   background:var(--cyan-faint);border:1px solid var(--cyan-soft);color:var(--cyan);font-size:14px;font-weight:600;cursor:pointer;transition:.15s ease;}
 .mvbtn:active{transform:scale(.985);background:rgba(79,227,220,.16);} .mvbtn:disabled{opacity:.6;}
 .mvbtn svg{width:16px;height:16px;}
-.mv-free{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;padding:2px 7px;border-radius:var(--r-pill);background:rgba(52,211,153,.15);color:#34D399;}
+.mv-free{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.04em;padding:2px 7px;border-radius:var(--r-pill);background:var(--cyan-surface);color:var(--cyan);}
 .mv-out{margin-top:10px;border:1px solid var(--cyan-soft);background:var(--cyan-faint);border-radius:var(--r);padding:12px 14px;font-size:13px;}
 .mv-out.err{border-color:var(--danger-faint);background:var(--danger-faint);color:var(--danger);}
 .mv-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -517,7 +523,7 @@ button,input,textarea{font-family:inherit;}
       <div class="h-hi">Account</div>
       <div class="card acct">
         <div class="who"><div class="big" id="acctInit">TF</div><div><div style="font-weight:600;font-size:16px" id="acctName">Dealer</div><div id="acctCode" style="font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted);margin-top:3px"></div></div></div>
-        <div class="rowlink" id="support"><svg viewBox="0 0 24 24" fill="currentColor" style="color:#25D366"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>Support<span style="margin-left:auto;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted)">WhatsApp</span></div>
+        <div class="rowlink" id="support"><svg viewBox="0 0 24 24" fill="currentColor" style="color:var(--cyan)"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>Support<span style="margin-left:auto;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted)">WhatsApp</span></div>
         <div class="rowlink danger" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Sign out</div>
       </div>
       <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-top:22px">Version 1.3 · Powered by TruDealer</p>

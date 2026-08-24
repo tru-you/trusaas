@@ -220,6 +220,12 @@ All mobile-only (`truflow-mobile/public/index.html` + `sw.js` bump `tfm-2026-08-
 - Escape closes topmost overlay (chat → guide → sheet); sheets are `role="dialog" aria-modal` with focus moved in on open and restored on close
 - Toast is an `aria-live="polite"` status region; all icon-only buttons labelled
 
+**Visual alignment + overflow fixes (2026-08-24, sw `tfm-2026-08-24a`):**
+- Tokens re-aligned to the ACTUAL rendered suite (built `dist` CSS, not `brand.css` — the apps had diverged from the canonical file): `--ink-2` `#0D1117`, `--glass` `rgba(232,234,230,.055)`, `--glass-line` `rgba(232,234,230,.14)`, `--cyan-surface` `rgba(79,227,220,.1)`. Verified 17/17 tokens match TruLens + TruInspect builds byte-identically.
+- Fixed `.pill.dot` class collision: global pulse-dot `.dot{width:height:6px}` was collapsing every status pill (Live/Won/New…) to a 6px sliver; `.pill.dot{width:auto;height:auto;box-shadow:none;animation:none;}` restores full-size tags.
+- Green Purge completed in mobile: emerald `#34D399` (market-value "Free" badge) + WhatsApp `#25D366` (lead quick-actions, lead sheet, Support row) → cyan tokens. Zero raw greens left.
+- Sheet footer overflow: `.sheet-scroll` padding-bottom now clears the sticky footer so the market-value result card never hides behind Save/Delete.
+
 ---
 
 ### Unified Demo Mode (2026-08-22)
