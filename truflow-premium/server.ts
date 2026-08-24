@@ -1013,49 +1013,18 @@ app.post("/api/auth/codes/admin", (req: any, res) => {
    A prospect needs to see the product without a code and without ever touching
    a real dealership's data. The demo is a normal tenant (dealershipId "demo"),
    so every existing scope check isolates it for free — no special-cased reads.
-   Its data is seeded on first entry and can be reset without affecting anyone. */
+   It starts empty on purpose: the prospect fills it via the Lens capture ->
+   export -> showroom loop, and whatever they add is served at ?dealer=demo. */
 
 const DEMO_ENABLED = process.env.DEMO_MODE !== "0"; // on unless explicitly disabled
 
 function seedDemoTenant() {
-  const state = readState();
-  if (state.vehicles.some((v: any) => v.dealershipId === "demo")) return; // already seeded
-  const today = new Date().toISOString().slice(0, 10);
-  const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
-
-  const cars = [
-    { make: "Toyota", model: "Hilux", trim: "2.4 GD-6 SRX", year: 2020, cost: 318000, retail: 379900, km: 112000, age: 12, body: "Bakkie" },
-    { make: "Volkswagen", model: "Polo", trim: "1.0 TSI Comfortline", year: 2021, cost: 228000, retail: 269900, km: 52300, age: 41, body: "Hatchback" },
-    { make: "Ford", model: "EcoSport", trim: "1.5 Ambiente", year: 2018, cost: 172000, retail: 199900, km: 96800, age: 74, body: "SUV" },
-  ];
-  cars.forEach((c, i) => {
-    state.vehicles.unshift({
-      id: "demo_v" + (i + 1), year: c.year, make: c.make, model: c.model, trim: c.trim,
-      status: "INVENTORY", retailPrice: c.retail, costPrice: c.cost, mileage: c.km,
-      transmission: "Manual", fuelType: i === 0 ? "Diesel" : "Petrol",
-      stockNumber: "DEMO-" + (100 + i), dateAcquired: daysAgo(c.age), daysInInventory: c.age,
-      description: `${c.year} ${c.make} ${c.model} — sample stock for the demo.`,
-      bodyType: c.body, images: [], reconTasks: i === 1 ? [{ id: "demo_r1", name: "Valet & polish", cost: 1800, status: "Completed", dateAdded: today }] : [],
-      dealershipId: "demo",
-    } as any);
-  });
-
-  state.leads.unshift({
-    id: "demo_l1", firstName: "Sipho", lastName: "Ndlovu", phone: "079 000 0001",
-    email: "sipho@example.co.za", vehicleId: "demo_v1", source: "Website", status: "New",
-    assignedUserId: "u1", createdAt: today, lastContactedAt: null, digitalScore: 82,
-    notes: "Asked about finance on the Hilux.", nextAction: "First contact", nextActionAt: today,
-    stageChangedAt: today, dealershipId: "demo",
-  } as any);
-  state.leads.unshift({
-    id: "demo_l2", firstName: "Annelie", lastName: "Botha", phone: "082 000 0002",
-    email: "annelie@example.co.za", vehicleId: "demo_v2", source: "Walk-in", status: "Contacted",
-    assignedUserId: "u1", createdAt: daysAgo(9), lastContactedAt: daysAgo(9), digitalScore: 64,
-    notes: "Wants a trade-in valuation.", nextAction: "Follow up", nextActionAt: daysAgo(4),
-    stageChangedAt: daysAgo(9), dealershipId: "demo",
-  } as any);
-
-  writeState(state);
+  /* Demo no longer auto-seeds sample stock/leads. A prospect now builds the
+     tenant themselves (TruLens capture -> export to the demo showroom), which
+     is the loop we actually want shown. Deleting demo units in admin must stay
+     deleted — re-seeding on next login silently undid that — so this is a
+     deliberate no-op. The tenant is still fully isolated by dealershipId "demo"
+     via every existing scope check. */
 }
 
 /** Enter the demo. No code — that is the point. */
