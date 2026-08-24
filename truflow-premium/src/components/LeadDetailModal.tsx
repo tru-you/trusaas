@@ -578,7 +578,7 @@ export default function LeadDetailModal({
                         type="button"
                         onClick={() => startContactAction("whatsapp")}
                         title="WhatsApp"
-                        className="w-9 h-9 md:flex-1 flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-semibold bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 transition-colors cursor-pointer"
+                        className="w-9 h-9 md:flex-1 flex items-center justify-center gap-1.5 rounded-lg text-[12px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan)]/20 transition-colors cursor-pointer"
                       >
                         <Smartphone size={15} /><span className="hidden md:inline">WhatsApp</span>
                       </button>
@@ -818,10 +818,10 @@ export default function LeadDetailModal({
                       {contactLog.filter(e => e.leadId === leadId).map((entry, idx) => {
                         const EntryIcon = entry.channel === "call" ? Phone : entry.channel === "whatsapp" ? Smartphone : Mail;
                         const label = entry.channel === "call" ? "Phone call" : entry.channel === "whatsapp" ? "WhatsApp" : "Email sent";
-                        const color = entry.channel === "whatsapp" ? "text-[#25D366]" : "text-[color:var(--cyan)]";
+                        const color = "text-[color:var(--cyan)]";
                         return (
                           <div key={idx} className="relative">
-                            <span className={`absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white/10 ${entry.channel === "whatsapp" ? "bg-[#25D366]" : "bg-[color:var(--cyan)]"}`}></span>
+                            <span className="absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white/10 bg-[color:var(--cyan)]"></span>
                             <div className="flex items-center gap-2">
                               <EntryIcon size={12} className={color} />
                               <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono font-medium">{new Date(entry.timestamp).toLocaleString()}</div>
@@ -987,28 +987,31 @@ export default function LeadDetailModal({
                           const encodedText = encodeURIComponent(whatsappBody || "Good day! Following up from Sandton Pre-Owned.");
                           window.open(`https://wa.me/${sanitizedPhone}?text=${encodedText}`, "_blank");
                         }}
-                        className="w-full py-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-semibold tracking-normal transition-all cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full py-2 bg-[color:var(--cyan-faint)] hover:bg-[color:var(--cyan)]/20 text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] rounded-lg text-[13px] font-semibold tracking-normal transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
                         <Smartphone size={12} /> Open Real WhatsApp Desktop (wa.me)
                       </button>
                     </div>
 
-                    {/* RIGHT PANE: WHATSAPP PHONE SIMULATOR */}
-                    <div className="bg-[color:var(--ink)] border border-[#25D366]/20 rounded-2xl overflow-hidden flex flex-col shadow-inner h-64 font-sans text-[13px]">
-                      {/* Phone Header */}
-                      <div className="bg-[#075e54] text-[color:var(--white)] px-3 py-2 flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-[#128C7E] flex items-center justify-center text-[13px] font-semibold text-[color:var(--white)]  font-mono shadow-sm">
+                    {/* RIGHT PANE: MESSING SESSION SIMULATOR — rendered in the
+                        product's own chrome (ink surfaces, cyan live states)
+                        rather than mimicking WhatsApp's UI, so it reads as a
+                        TruSaaS surface, not a sticker. */}
+                    <div className="bg-[color:var(--ink)] border border-[color:var(--glass-line)] rounded-2xl overflow-hidden flex flex-col shadow-inner h-64 font-sans text-[13px]">
+                      {/* Session header */}
+                      <div className="bg-[color:var(--ink-2)] border-b border-white/5 px-3 py-2 flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] flex items-center justify-center text-[13px] font-semibold text-[color:var(--cyan-bright)] font-mono shadow-sm">
                           {lead.firstName[0]}
                         </div>
                         <div className="flex-1">
                           <div className="font-semibold text-[13px] leading-tight">{lead.firstName} {lead.lastName}</div>
-                          <div className="text-[13px] text-[#25D366] font-semibold">Online</div>
+                          <div className="text-[13px] text-[color:var(--cyan-bright)] font-semibold">Online</div>
                         </div>
-                        <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse"></span>
+                        <span className="w-2 h-2 rounded-full bg-[color:var(--cyan)] animate-pulse"></span>
                       </div>
 
-                      {/* Phone Chat Body */}
-                      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 bg-[radial-gradient(circle_at_center,rgba(7,94,84,0.08)_0%,transparent_80%)]">
+                      {/* Session body */}
+                      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 bg-[radial-gradient(circle_at_center,rgba(79,227,220,0.05)_0%,transparent_80%)]">
                         {whatsappHistory.map((msg, idx) => (
                           <div
                             key={idx}
@@ -1029,7 +1032,7 @@ export default function LeadDetailModal({
                       {/* Phone Footer */}
                       <div className="bg-[color:var(--ink-2)] border-t border-white/5 p-2 flex justify-between items-center text-[rgba(232,234,230,0.72)] font-mono text-[13px]">
                         <span>Secure Messaging Session</span>
-                        <span className="text-[#25D366] font-semibold  tracking-widest text-[13px]">WhatsApp API Active</span>
+                        <span className="text-[color:var(--cyan-bright)] font-semibold tracking-widest text-[13px]">WhatsApp API Active</span>
                       </div>
                     </div>
                   </div>
@@ -1135,7 +1138,7 @@ export default function LeadDetailModal({
                 // Add comms
                 communications.forEach(c => {
                   const iconMap: Record<string, any> = { email: Mail, sms: Smartphone, whatsapp: MessageSquare, call: Phone };
-                  const colorMap: Record<string, string> = { email: '#60a5fa', sms: '#34d399', whatsapp: '#25D366', call: '#fbbf24' };
+                  const colorMap: Record<string, string> = { email: '#60a5fa', sms: '#8AA2B8', whatsapp: '#4FE3DC', call: '#fbbf24' };
                   entries.push({
                     date: c.sentAt,
                     icon: iconMap[c.type] || Mail,
@@ -2384,7 +2387,7 @@ export default function LeadDetailModal({
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[min(380px,calc(100%-32px))] bg-[color:var(--ink-2)] border border-[rgba(138,162,184,0.22)] rounded-xl p-4 shadow-2xl z-[210] animate-in slide-in-from-bottom-4 duration-200">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[13px] font-semibold text-[color:var(--white)] flex items-center gap-2">
-              {logToast.channel === "call" ? <Phone size={14} className="text-[color:var(--cyan)]" /> : <Smartphone size={14} className="text-[#25D366]" />}
+              {logToast.channel === "call" ? <Phone size={14} className="text-[color:var(--cyan)]" /> : <Smartphone size={14} className="text-[color:var(--cyan)]" />}
               Log this {logToast.channel === "call" ? "call" : "WhatsApp"}?
             </span>
             <button onClick={() => setLogToast(null)} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] p-1 cursor-pointer"><X size={14} /></button>

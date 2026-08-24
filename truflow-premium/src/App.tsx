@@ -1587,10 +1587,11 @@ export default function App() {
           ))}
         </div>
 
-        {/* Support + sign out. WhatsApp green is the only non-brand colour used
-            here — it is the platform's own mark, and already appears on lead
-            cards in LeadDetailModal. The deep-link pre-fills who is asking and
-            where they were, so support opens with context. */}
+        {/* Support + sign out. No WhatsApp green — brand.css is explicit that
+            cyan carries every live state, and a sticker-green button read as a
+            widget, not the product. The glyph and the "WhatsApp" label carry
+            channel recognition instead. The deep-link pre-fills who is asking
+            and where they were, so support opens with context. */}
         <div className="pt-2.5 mt-1.5 border-t border-white/10 shrink-0 flex flex-col gap-1.5">
           <button
             type="button"
@@ -1599,10 +1600,10 @@ export default function App() {
                 `TruFlow ${PRODUCT_TIER} support · ${dealershipLabel}\nSection: ${activeSection}\n\n`
               )
             }
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-[color:var(--white)] bg-[rgba(37,211,102,0.10)] border border-[rgba(37,211,102,0.28)] hover:bg-[rgba(37,211,102,0.16)] transition-colors cursor-pointer"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-faint)] transition-colors cursor-pointer"
             title="Message TruSaaS support on WhatsApp"
           >
-            <MessageCircle size={15} className="text-[#25D366] shrink-0" />
+            <MessageCircle size={15} className="text-[color:var(--cyan-bright)] shrink-0" />
             Support
             <span className="ml-auto text-[12px] font-normal text-[color:var(--muted)]">WhatsApp</span>
           </button>
@@ -2147,7 +2148,7 @@ export default function App() {
                                   {hasProduct("lens") && v.status === "INVENTORY" && !v.archivedAt && (
                                     <button type="button" onClick={() => openTruLens(v.stockNumber)} className="px-2 py-1 rounded text-[11px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan-bright)] border border-[color:var(--cyan-soft)]"><Camera size={10} /></button>
                                   )}
-                                  <button type="button" onClick={() => openStockWhatsApp(v)} className="px-2 py-1 rounded text-[11px] font-semibold bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"><MessageCircle size={10} /></button>
+                                  <button type="button" onClick={() => openStockWhatsApp(v)} className="px-2 py-1 rounded text-[11px] font-semibold bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]"><MessageCircle size={10} /></button>
                                 </div>
                               </td>
                             </tr>
@@ -2798,7 +2799,7 @@ export default function App() {
                                 {l.phone && (
                                   <button
                                     type="button"
-                                    className="text-[13px] font-semibold px-2 py-0.5 rounded bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30"
+                                    className="text-[13px] font-semibold px-2 py-0.5 rounded bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]"
                                     title="WhatsApp this lead"
                                     onClick={() => {
                                       const digits = String(l.phone).replace(/\D/g, "").replace(/^0/, "27");
@@ -2886,7 +2887,7 @@ export default function App() {
                                     const text = `Hi ${l.firstName}, following up from the dealership re ${interest}. When works for a chat?`;
                                     window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, "_blank");
                                   }}
-                                  className="px-3 py-2 bg-[#25D366]/15 text-[#25D366] border border-[#25D366]/30 rounded-lg text-[13px] font-semibold"
+                                  className="px-3 py-2 bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] rounded-lg text-[13px] font-semibold"
                                 >
                                   WhatsApp
                                 </button>

@@ -677,11 +677,11 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                       type="button"
                       onClick={handleMarketValue}
                       disabled={marketValLoading}
-                      className="w-full inline-flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2 rounded-xl bg-[rgba(52,211,153,0.10)] border border-[rgba(52,211,153,0.25)] text-emerald-400 text-[13px] font-medium hover:bg-[rgba(52,211,153,0.16)] hover:border-[rgba(52,211,153,0.40)] active:translate-y-[1px] transition-all disabled:opacity-40 cursor-pointer select-none"
+                      className="w-full inline-flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2 rounded-xl bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-emerald-400 text-[13px] font-medium hover:bg-[color:var(--cyan)]/15 hover:border-[color:var(--cyan)] active:translate-y-[1px] transition-all disabled:opacity-40 cursor-pointer select-none"
                     >
                       {marketValLoading ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
                       <span className="truncate">{marketValLoading ? "Scraping..." : "Market Value"}</span>
-                      <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[rgba(52,211,153,0.15)] text-emerald-400 shrink-0">Free</span>
+                      <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[color:var(--cyan-faint)] text-emerald-400 shrink-0">Free</span>
                     </button>
                   </div>
 
@@ -1543,7 +1543,7 @@ export default function VehicleDetailModal({ vehicle, isOpen, onClose, onUpdateV
                 { id: "instagram",        label: "Instagram",       icon: <Instagram size={14} />,      color: "#E4405F" },
                 { id: "google-business",  label: "Google Business", icon: <Globe size={14} />,          color: "#4285F4" },
                 { id: "linkedin",         label: "LinkedIn",        icon: <Linkedin size={14} />,       color: "#0A66C2" },
-                { id: "whatsapp",         label: "WhatsApp",        icon: <MessageCircle size={14} />,  color: "#25D366" },
+                { id: "whatsapp",         label: "WhatsApp",        icon: <MessageCircle size={14} />,  color: "#4FE3DC" },
               ];
 
               // Load accounts on first render of this tab

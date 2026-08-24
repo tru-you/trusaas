@@ -1438,7 +1438,7 @@ export default function InventoryList({
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        <Cell fill="#10b981" />
+                        <Cell fill="#4FE3DC" />
                         <Cell fill="#f59e0b" />
                       </Pie>
                       <RechartsTooltip 

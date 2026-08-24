@@ -65,7 +65,8 @@ export function computeInspectionReadiness(vehicle: Vehicle): InspectionReadines
   } else if (allRequired && signedOff) {
     level = 'signed';
     label = 'Signed off · VIR ready';
-    color = '#22C55E';
+    // Brand system: good/live reads cyan, never traffic-light green.
+    color = '#4FE3DC';
   } else if (allRequired) {
     level = 'inspecting';
     label = checklistAnswered === 0 ? 'Photos done · checklist next' : 'Awaiting sign-off';

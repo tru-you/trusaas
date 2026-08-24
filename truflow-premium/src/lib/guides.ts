@@ -35,7 +35,7 @@ export interface GuideAppMeta {
 export const GUIDE_APPS: Record<GuideApp, GuideAppMeta> = {
   flow: { label: "TruFlow", tone: "var(--cyan)" },
   lens: { label: "TruLens", tone: "var(--blue)", url: TRULENS_URL },
-  website: { label: "Website", tone: "var(--success, #34d399)" },
+  website: { label: "Website", tone: "var(--success)" },
   inspect: { label: "TruInspect", tone: "var(--warning)", url: TRUINSPECT_URL },
 };
 

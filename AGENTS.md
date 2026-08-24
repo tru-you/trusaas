@@ -414,6 +414,15 @@ Results display inline as chips: "Clear" (emerald) / "Stolen" / "Finance pending
 
 **LoginSplash tagline:** "Dealer management Ecosystem for Dealers by Dealers" (owner wording).
 
+### Green Purge — one accent only (2026-08-24, owner call)
+
+The last hardcoded greens (`#25D366` WhatsApp, `rgba(52,211,153)` emerald) were removed from app chrome across all three apps. Doctrine per brand.css: one cyan accent carries every interactive/live state; the Tailwind @theme already remaps emerald/green/lime/teal to the cyan ramp, so these were just bypassing it.
+
+- Premium: sidebar Support button, inventory WhatsApp action, lead chips, LeadDetailModal (contact button, timeline, messaging simulator), VehicleDetailModal market-value button + TruSocial WhatsApp color, dmsReadiness "web-ready" badge → all cyan. `src/lib/guides.ts` tone fallback cleaned.
+- The messaging simulator no longer cosplays WhatsApp's chrome (dropped `#075e54`/`#128C7E` header) — it now renders in TruSaaS ink + cyan live states.
+- Lens: market-value button → cyan. Inspect: readiness "signed off" chip + dashboard pie slice → cyan.
+- **Intentional exception (printable paper documents only):** VIR / trade-in appraisal / report condition scales keep classic green-for-good. These are light-background print artifacts, document semantics, not app chrome (Lens ReportPreview:122, Inspect ReportPreview:31, TradeInSummary:94).
+
 ## 5. Configuration Notes
 
 ### Local Dev

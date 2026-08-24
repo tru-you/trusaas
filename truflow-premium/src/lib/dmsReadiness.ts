@@ -92,7 +92,9 @@ export function computeDmsGalleryReadiness(v: {
   return {
     level: "ready",
     label: "Gallery web-ready",
-    color: "#10B981",
+    /* Brand system: good/live reads cyan — no traffic-light green. Matches the
+       sold state's cyan family one step brighter. */
+    color: "#4FE3DC",
     photoCount,
     webReady: true,
     reasons: v.lastPhotoSync
