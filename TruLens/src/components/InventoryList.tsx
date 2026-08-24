@@ -1503,8 +1503,8 @@ export default function InventoryList({
                       <div className="grid grid-cols-3 gap-2">
                         <button
                           onClick={(e) => handleExportClick(e, vehicle)}
-                          disabled={isDemo || takenCount === 0 || exportingId === vehicle.id || !onExportToDms}
-                          title={isDemo ? 'Demo mode — export disabled' : takenCount > 0 ? `Push ${takenCount} photos to TruFlow DMS` : 'Take photos first'}
+                          disabled={takenCount === 0 || exportingId === vehicle.id || !onExportToDms}
+                          title={takenCount > 0 ? (isDemo ? `Push ${takenCount} photos to the demo showroom` : `Push ${takenCount} photos to TruFlow DMS`) : 'Take photos first'}
                           className="tru-btn-ghost flex items-center justify-center gap-1.5 text-[13px] cursor-pointer min-h-[44px] px-2 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           {exportingId === vehicle.id ? (

@@ -2044,14 +2044,6 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
   try {
     const userId = req.user.uid;
 
-    // Demo users cannot export to the real DMS — their data stays sandboxed.
-    if (req.user?.demo) {
-      return res.status(403).json({
-        success: false,
-        error: 'Demo mode — exports are disabled. Sign in with a dealership code to push to the DMS.',
-      });
-    }
-
     const {
       vehicleId,
       dmsUrl: dmsUrlOverride,
@@ -2061,8 +2053,14 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
 
     /* When the device signed in with a per-dealership code, that wins. The
        body value is a claim from the client; the token is evidence. This is
-       what stops a mis-set picker filing a car into another dealer's yard. */
-    const dealerSlug = req.user?.dealerSlug || claimedDealerSlug;
+       what stops a mis-set picker filing a car into another dealer's yard.
+
+       Demo sessions carry no dealership and are pinned to the HARDCODED "demo"
+       tenant in TruFlow — an isolated sandbox, never a real yard. The slug is
+       NOT read from the client for demo users, so a prospect cannot spoof a
+       real dealership's slug. This lets a demo run the full capture -> DMS ->
+       showroom loop without any path to live dealer data. */
+    const dealerSlug = req.user?.demo ? 'demo' : (req.user?.dealerSlug || claimedDealerSlug);
     if (req.user?.dealerSlug && claimedDealerSlug && claimedDealerSlug !== req.user.dealerSlug) {
       console.warn(
         `[export] device is signed in as "${req.user.dealerSlug}" but requested ` +
@@ -2155,7 +2153,13 @@ app.post('/api/export/dms', authenticate, async (req: any, res) => {
          website actually showed. TruFlow serves that feed, and it read "not
          set" as published, which is how a junk test capture ended up on a live
          dealer feed. Sending it makes the button mean what it says. */
-      showOnWebsite: typeof vehicle.showOnWebsite === "boolean" ? vehicle.showOnWebsite : undefined,
+      /* Real dealers still land unpublished until they press Publish in
+         TruLens — publishing is a second, deliberate act. Demo captures are
+         published straight to the demo showroom (the only consumer of the demo
+         tenant), so the prospect sees the car appear without an extra step. */
+      showOnWebsite: req.user?.demo
+        ? true
+        : (typeof vehicle.showOnWebsite === "boolean" ? vehicle.showOnWebsite : undefined),
       vehicle: {
         id: vehicle.id,
         make: vehicle.make,
