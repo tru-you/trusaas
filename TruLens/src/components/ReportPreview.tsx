@@ -8,6 +8,7 @@ import { computeWebReadiness, whatsAppSalesBlurb } from '../lib/readiness';
 import { buildWeb3DPackage } from '../lib/web3dPackage';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_TEMPLATE } from '../templates';
+import { SignaturePad } from './signature-pad';
 import trulensLockup from '../assets/images/trulens-wordmark.png';
 import trudealerLockup from '../assets/images/trudealer-lockup.png';
 
@@ -295,6 +296,16 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
             placeholder="Name of person signing off this report"
             className="w-full px-3 py-3 rounded-lg bg-[#06080D] border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
           />
+          {/* Drawn signature — mirrors the trade-in and VIR pads. Stored on the
+              vehicle as a PNG data URL and rendered inline on the printed
+              shoot report. */}
+          <div className="mt-3">
+            <SignaturePad
+              value={vehicle.capturedBySignatureUrl || null}
+              onChange={(url) => onVehicleUpdated?.({ ...vehicle, capturedBySignatureUrl: url ?? undefined })}
+              label="Photographer signature"
+            />
+          </div>
           {!vehicle.capturedBy && (
             <p className="text-[12px] text-amber-300/90 mt-2">
               No name recorded — the signature line prints blank on the report.
@@ -856,13 +867,19 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               </div>
             </div>
 
-            {/* Signature row */}
+            {/* Signature row — drawn signature renders inline; falls back to the
+                typed name so a report never ships with a blank line when the
+                photographer has signed. */}
             <div className="sig-row">
               <div className="sig">
                 <div className="line">
-                  <div className="name">{vehicle.capturedBy || ''}</div>
+                  {vehicle.capturedBySignatureUrl ? (
+                    <img src={vehicle.capturedBySignatureUrl} alt="Photographer signature" style={{ maxHeight: 48, maxWidth: '100%', display: 'block' }} />
+                  ) : (
+                    <div className="name">{vehicle.capturedBy || ''}</div>
+                  )}
                 </div>
-                <div className="lbl">Signed off by</div>
+                <div className="lbl">{vehicle.capturedBy || 'Signed off'} — photographer</div>
               </div>
               <div className="sig">
                 <div className="line">

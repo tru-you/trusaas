@@ -121,6 +121,19 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ## 4. Recent Changes (2026-08-21)
 
+### Inspector e-sign on all three reports (2026-08-24)
+
+All three dealer-facing reports now carry a drawn signature:
+- **TruInspect VIR** — inspector signs off the grading (`inspectorSignatureUrl` on `Vehicle`).
+- **TruInspect Trade-in appraisal** — already had the pad (`dealerDetails.digitalSignatureUrl`); no change.
+- **TruLens shoot report** — photographer signs off the session (`capturedBySignatureUrl` on `Vehicle`).
+
+**Shared `SignaturePad` component** in `packages/tru-ui-src/src/signature-pad.tsx` (syncs into each app's `src/components/` via `sync:ui`). Lifted out of `TradeInSummary` so all three reports use the same control: white pad, dark ink, `Clear` to start over, emits a PNG data URL on stroke end.
+
+**Printed output** in both `ReportPreview.tsx` files: when a signature exists, the printed report renders the image inline (max 48px tall) on the signature line; when it doesn't, it falls back to the typed name so a report never ships with a blank line when the inspector has signed.
+
+**Data model**: Inspect `types.ts` adds `inspectorSignatureUrl?: string` next to `inspectorName`/`inspectorRole`. Lens `types.ts` adds `capturedBySignatureUrl?: string` next to `capturedBy`. Both travel with the vehicle through the existing update endpoints — no server-side changes.
+
 ### Add Vehicle: TransUnion price + live market value + no silent no-ops (2026-08-24)
 
 **TruInspect `AddVehicleDialog.tsx`** — the form now carries all four pricing/verification/background buttons in a 2×2 grid, and every click shows feedback:

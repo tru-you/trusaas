@@ -84,6 +84,9 @@ export interface Vehicle {
   closeups?: Record<string, string[]>;
   /** Name of the person who captured / signed off on this vehicle */
   capturedBy?: string;
+  /** PNG data URL of the photographer's drawn signature. Prints on the shoot
+   *  report — 'I shot this car, these are my photos'. */
+  capturedBySignatureUrl?: string;
   /** Last web 3D / spin package export */
   lastWeb3dExportAt?: string;
   web3dPublicPath?: string;

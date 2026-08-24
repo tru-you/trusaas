@@ -7,6 +7,7 @@ import { Vehicle, PointResult } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { deriveReportId } from '../types/inspection';
 import { DEFAULT_TEMPLATE } from '../templates';
+import { SignaturePad } from './signature-pad';
 
 interface ReportPreviewProps {
   vehicle: Vehicle;
@@ -278,6 +279,16 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               }}
               placeholder="Designation (e.g. Workshop Manager)"
               className="w-full px-3 py-3 rounded-lg bg-[#06080D] border border-white/15 text-[13px] text-[#E8EAE6] placeholder-neutral-500"
+            />
+          </div>
+          {/* Drawn signature — sits right under the name/role inputs so the
+              inspector fills the block as one action and walks away. Stored on
+              the vehicle as a PNG data URL and printed inline on the VIR. */}
+          <div className="mt-3">
+            <SignaturePad
+              value={vehicle.inspectorSignatureUrl || null}
+              onChange={(url) => onVehicleUpdated?.({ ...vehicle, inspectorSignatureUrl: url ?? undefined })}
+              label="Inspector signature"
             />
           </div>
           {(!vehicle.inspectorName || !vehicle.vin) && (
@@ -840,11 +851,18 @@ export default function ReportPreview({ vehicle, onBack, onVehicleUpdated }: Rep
               </div>
             </div>
 
-            {/* Signature row */}
+            {/* Signature row — the inspector's drawn signature renders inline;
+                the customer line stays blank (they sign on receipt, if at all). */}
             <div className="sig-row">
               <div className="sig">
-                <div className="line"><span className="name">{vehicle.inspectorName || ''}</span></div>
-                <div className="lbl">Inspector — {vehicle.inspectorRole || 'signature'}</div>
+                <div className="line">
+                  {vehicle.inspectorSignatureUrl ? (
+                    <img src={vehicle.inspectorSignatureUrl} alt="Inspector signature" style={{ maxHeight: 48, maxWidth: '100%', display: 'block' }} />
+                  ) : (
+                    <span className="name">{vehicle.inspectorName || ''}</span>
+                  )}
+                </div>
+                <div className="lbl">{vehicle.inspectorName || 'Inspector'} — {vehicle.inspectorRole || 'signature'}</div>
               </div>
               <div className="sig">
                 <div className="line"><span className="name">&nbsp;</span></div>

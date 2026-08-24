@@ -39,6 +39,9 @@ export interface Vehicle {
    *  buyers and finance houses, and a dealership name is not an inspector. */
   inspectorName?: string;
   inspectorRole?: string;
+  /** PNG data URL of the inspector's drawn signature. Travels with the vehicle
+   *  so the printed VIR renders it inline — never fetched or re-signed. */
+  inspectorSignatureUrl?: string;
   status: 'In-Progress' | 'Ready' | 'Listed';
   createdAt: string;
   updatedAt: string;
