@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Plus, Search, Loader2, CheckCircle2, Shield, History } from 'lucide-react';
+import { X, Plus, Search, Loader2, CheckCircle2, Shield, History, TrendingUp, LineChart } from 'lucide-react';
 import { Vehicle } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { Imagin8GatedButton, Imagin8Bundles, ZERO_BUNDLES } from './imagin8-gating';
@@ -14,8 +14,18 @@ const labelCls = 'ti-field-label';
 
 const titleCase = (s: string) => s.replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
 
+const fmtZAR = (n: number | null | undefined) =>
+  n == null ? '—' : 'R ' + Math.round(n).toLocaleString('en-ZA');
+
+/** Synthetic identifier used by demo when no VIN/stock is typed yet — seeds the
+ *  simulated responder off the form's own data so every demo car gets a stable,
+ *  "generic" result rather than nothing. */
+const synthId = (f: { make: string; model: string; year: string; trim?: string }) =>
+  ('DEMO-' + (f.make || 'car') + '-' + (f.model || 'x') + '-' + f.year + (f.trim ? '-' + f.trim : ''))
+    .toUpperCase().replace(/[^A-Z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'DEMO-CAR';
+
 export default function AddVehicleDialog({ onClose, onAdd }: Props) {
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const [imagin8Bundles, setImagin8Bundles] = React.useState<Imagin8Bundles>(ZERO_BUNDLES);
   React.useEffect(() => {
     let alive = true;
@@ -79,8 +89,15 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
   const [regCheckResult, setRegCheckResult] = React.useState<any>(null);
   const [regCheckLoading, setRegCheckLoading] = React.useState(false);
   const runRegCheck = async () => {
-    const id = f.vin.trim() || f.stockNumber.trim();
-    if (!id || !user) return;
+    let id = f.vin.trim() || f.stockNumber.trim();
+    if (!id) {
+      if (!isDemo) {
+        setRegCheckResult({ error: 'Enter a VIN or stock # first — the check runs against that identifier.' });
+        return;
+      }
+      id = synthId(f); // demo: generic statement off the form itself
+    }
+    if (!user) return;
     setRegCheckLoading(true);
     setRegCheckResult(null);
     try {
@@ -103,8 +120,15 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
   const [accidentResult, setAccidentResult] = React.useState<any>(null);
   const [accidentLoading, setAccidentLoading] = React.useState(false);
   const runAccidentReport = async () => {
-    const id = f.vin.trim();
-    if (!id || !user) return;
+    let id = f.vin.trim();
+    if (!id) {
+      if (!isDemo) {
+        setAccidentResult({ error: 'Enter a VIN first — the report runs against that VIN.' });
+        return;
+      }
+      id = synthId(f);
+    }
+    if (!user) return;
     setAccidentLoading(true);
     setAccidentResult(null);
     try {
@@ -121,6 +145,64 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
     } finally {
       setAccidentLoading(false);
     }
+  };
+
+  // TransUnion price (bundle-gated) — needs an M&M code in production because
+  // getValues can only price off a real code, but in demo the simulated
+  // responder accepts any seed, so we synthesise one from the form itself.
+  const [tuPriceResult, setTuPriceResult] = React.useState<any>(null);
+  const [tuPriceLoading, setTuPriceLoading] = React.useState(false);
+  const runTuPrice = async () => {
+    const yearNum = Number(f.year);
+    if (!yearNum || (!f.mmCode.trim() && !isDemo)) {
+      setTuPriceResult({ error: 'Enter an M&M code (or pick model/variant) for a TransUnion price.' });
+      return;
+    }
+    const mm = f.mmCode.trim() || synthId(f);
+    setTuPriceLoading(true);
+    setTuPriceResult(null);
+    try {
+      const token = await user?.getIdToken();
+      const res = await fetch('/api/imagin8/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ mmCode: mm, year: yearNum, mileage: f.mileage ? Number(f.mileage) : undefined }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setTuPriceResult(res.ok ? data : { error: data.error || `Price failed (${res.status})` });
+    } catch (e: any) {
+      setTuPriceResult({ error: e?.message || 'Price failed' });
+    } finally { setTuPriceLoading(false); }
+  };
+
+  // Live market value (free scraper — not Imagin8, no gating) — needs make +
+  // model at minimum. Works identically in production and demo since it's the
+  // real Bright Data scraper, just flat-free and ungated for every tier.
+  const [marketResult, setMarketResult] = React.useState<any>(null);
+  const [marketLoading, setMarketLoading] = React.useState(false);
+  const runMarketValue = async () => {
+    if (!f.make.trim() || !f.model.trim()) {
+      setMarketResult({ error: 'Enter make and model to scan live listings.' });
+      return;
+    }
+    setMarketLoading(true);
+    setMarketResult(null);
+    try {
+      const token = await user?.getIdToken();
+      const res = await fetch('/api/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({
+          make: f.make.trim(), model: f.model.trim(), year: Number(f.year),
+          mileage: f.mileage ? Number(f.mileage) : undefined,
+          vin: f.vin.trim() || undefined,
+        }),
+      });
+      setMarketResult(res.ok ? await res.json() : { averageRetailPrice: null, listingsFound: 0 });
+    } catch {
+      setMarketResult({ averageRetailPrice: null, listingsFound: 0 });
+    } finally { setMarketLoading(false); }
   };
 
   const canSubmit = f.make.trim() && f.model.trim() && f.mileage.trim();
@@ -213,15 +295,26 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
           </div>
         </div>
 
-        {/* Imagin8 lookups — reg check & accident report */}
+        {/* Pricing + verification + background — TransUnion price & the two
+            bundle-gated checks, plus the free live market-value scan.
+            All four do something real; none ever silently no-op. */}
         <div className="grid grid-cols-2 gap-2">
+          <Imagin8GatedButton
+            feature="valuation"
+            bundles={imagin8Bundles}
+            onClick={runTuPrice}
+            onUnlock={() => alert('TransUnion valuations are bundle-gated. Contact your TruSaaS account manager to activate live pricing for this dealership.')}
+            className="w-full"
+            icon={tuPriceLoading ? <Loader2 size={13} className="animate-spin" /> : <TrendingUp size={13} />}
+            label="TransUnion price"
+          />
           <Imagin8GatedButton
             feature="regCheck"
             bundles={imagin8Bundles}
             onClick={runRegCheck}
             onUnlock={() => alert('Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.')}
             className="w-full"
-            icon={regCheckLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <Shield size={13} />}
+            icon={regCheckLoading ? <Loader2 size={13} className="animate-spin" /> : <Shield size={13} />}
           />
           <Imagin8GatedButton
             feature="accidentReport"
@@ -229,8 +322,17 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
             onClick={runAccidentReport}
             onUnlock={() => alert('Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.')}
             className="w-full"
-            icon={accidentLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <History size={13} />}
+            icon={accidentLoading ? <Loader2 size={13} className="animate-spin" /> : <History size={13} />}
           />
+          <button
+            type="button"
+            onClick={runMarketValue}
+            disabled={marketLoading}
+            className="inline-flex items-center justify-center gap-2 min-h-[42px] px-3.5 py-2 rounded-xl bg-[rgba(79,227,220,0.10)] border border-[rgba(79,227,220,0.25)] text-[#4FE3DC] text-[13px] font-medium hover:bg-[rgba(79,227,220,0.16)] hover:border-[rgba(79,227,220,0.40)] active:translate-y-[1px] transition-all cursor-pointer select-none disabled:opacity-60"
+          >
+            {marketLoading ? <Loader2 size={13} className="animate-spin" /> : <LineChart size={13} />}
+            <span className="truncate">Get market value · Free</span>
+          </button>
         </div>
         {regCheckResult && (
           <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
@@ -256,6 +358,45 @@ export default function AddVehicleDialog({ onClose, onAdd }: Props) {
                 <span className={accidentResult.claims?.length > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
                   {accidentResult.claims?.length > 0 ? `${accidentResult.claims.length} claim(s)` : 'No claims'}
                 </span>
+              )}
+            </div>
+          </div>
+        )}
+        {tuPriceResult && (
+          <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+            <div className="flex items-center justify-between">
+              <span style={{ color: 'var(--muted)' }}>TransUnion price</span>
+              {tuPriceResult.error ? (
+                <span className="text-amber-400 font-medium">{tuPriceResult.error}</span>
+              ) : (
+                <span className="font-semibold" style={{ color: 'var(--cyan)' }}>
+                  Retail {fmtZAR(tuPriceResult.retailPrice)} · Trade {fmtZAR(tuPriceResult.tradePrice)}
+                </span>
+              )}
+            </div>
+            {!tuPriceResult.error && tuPriceResult.marketValue != null && (
+              <div className="mt-1 flex items-center justify-between">
+                <span style={{ color: 'var(--muted)' }}>Market estimate</span>
+                <span style={{ color: 'var(--white)' }}>{fmtZAR(tuPriceResult.marketValue)}</span>
+              </div>
+            )}
+          </div>
+        )}
+        {marketResult && (
+          <div className="rounded-lg p-2.5 text-[12px]" style={{ background: 'var(--glass)', border: '1px solid var(--glass-line)' }}>
+            <div className="flex items-center justify-between gap-3">
+              <span style={{ color: 'var(--muted)' }}>Live market value</span>
+              {marketResult.error ? (
+                <span className="text-amber-400 font-medium">{marketResult.error}</span>
+              ) : marketResult.averageRetailPrice != null ? (
+                <span className="text-right">
+                  <span className="font-semibold" style={{ color: 'var(--white)' }}>{fmtZAR(marketResult.averageRetailPrice)}</span>
+                  <span className="ml-2" style={{ color: 'var(--muted)' }}>{marketResult.listingsFound} listings</span>
+                  <button type="button" onClick={() => setF((s) => ({ ...s, price: String(Math.round(marketResult.averageRetailPrice)) }))}
+                    className="ml-2 underline cursor-pointer" style={{ color: 'var(--cyan)' }}>Use as price</button>
+                </span>
+              ) : (
+                <span className="text-amber-400 font-medium">No live data right now — price manually.</span>
               )}
             </div>
           </div>

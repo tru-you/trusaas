@@ -331,8 +331,16 @@ export default function InventoryList({
   const [regCheckResult, setRegCheckResult] = React.useState<any>(null);
   const [regCheckLoading, setRegCheckLoading] = React.useState(false);
   const runRegCheck = React.useCallback(async () => {
-    const id = vin.trim() || stockNumber.trim();
-    if (!id || !user) return;
+    let id = vin.trim() || stockNumber.trim();
+    if (!id) {
+      if (!isDemo) {
+        setRegCheckResult({ error: 'Enter a VIN or stock # first — the check runs against that identifier.' });
+        return;
+      }
+      id = ('DEMO-' + (make || 'car') + '-' + (model || 'x') + '-' + year)
+        .toUpperCase().replace(/[^A-Z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'DEMO-CAR';
+    }
+    if (!user) return;
     setRegCheckLoading(true);
     setRegCheckResult(null);
     try {
@@ -349,13 +357,21 @@ export default function InventoryList({
     } finally {
       setRegCheckLoading(false);
     }
-  }, [vin, stockNumber, user]);
+  }, [vin, stockNumber, user, isDemo, make, model, year]);
 
   const [accidentResult, setAccidentResult] = React.useState<any>(null);
   const [accidentLoading, setAccidentLoading] = React.useState(false);
   const runAccidentReport = React.useCallback(async () => {
-    const id = vin.trim();
-    if (!id || !user) return;
+    let id = vin.trim();
+    if (!id) {
+      if (!isDemo) {
+        setAccidentResult({ error: 'Enter a VIN first — the report runs against that VIN.' });
+        return;
+      }
+      id = ('DEMO-' + (make || 'car') + '-' + (model || 'x') + '-' + year)
+        .toUpperCase().replace(/[^A-Z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'DEMO-CAR';
+    }
+    if (!user) return;
     setAccidentLoading(true);
     setAccidentResult(null);
     try {
@@ -372,7 +388,39 @@ export default function InventoryList({
     } finally {
       setAccidentLoading(false);
     }
-  }, [vin, user]);
+  }, [vin, user, isDemo, make, model, year]);
+
+  // TransUnion price (bundle-gated) — needs an M&M code in production, but in
+  // demo the simulated responder accepts any seed so we synthesise one from the
+  // form itself. Result renders in the Add Vehicle flow.
+  const fmtZAR = (n: number | null | undefined) =>
+    n == null ? '—' : 'R ' + Math.round(n).toLocaleString('en-ZA');
+  const [tuPriceResult, setTuPriceResult] = React.useState<any>(null);
+  const [tuPriceLoading, setTuPriceLoading] = React.useState(false);
+  const runTuPrice = React.useCallback(async () => {
+    const yearNum = Number(year);
+    if (!yearNum || (!mmCode.trim() && !isDemo)) {
+      setTuPriceResult({ error: 'Enter an M&M code (or pick model/variant) for a TransUnion price.' });
+      return;
+    }
+    const mm = mmCode.trim() || ('DEMO-' + (make || 'car') + '-' + (model || 'x') + '-' + year)
+      .toUpperCase().replace(/[^A-Z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'DEMO-CAR';
+    setTuPriceLoading(true);
+    setTuPriceResult(null);
+    try {
+      const token = await user?.getIdToken();
+      const res = await fetch('/api/imagin8/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ mmCode: mm, year: yearNum, mileage: mileage ? Number(mileage) : undefined }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.bundlesRemaining) setImagin8Bundles(data.bundlesRemaining);
+      setTuPriceResult(res.ok ? data : { error: data.error || `Price failed (${res.status})` });
+    } catch (e: any) {
+      setTuPriceResult({ error: e?.message || 'Price failed' });
+    } finally { setTuPriceLoading(false); }
+  }, [year, mmCode, isDemo, make, model, mileage, user]);
 
 
   // Fill the form from a scanned licence disc — everything stays editable.
@@ -878,15 +926,24 @@ export default function InventoryList({
               )}
             </div>
 
-            {/* Imagin8 lookups — reg check & accident report */}
+             {/* Imagin8 lookups — TransUnion price + reg check + accident report */}
             <div className="grid grid-cols-2 gap-2">
+              <Imagin8GatedButton
+                feature="valuation"
+                bundles={imagin8Bundles}
+                onClick={runTuPrice}
+                onUnlock={() => alert('TransUnion valuations are bundle-gated. Contact your TruSaaS account manager to activate live pricing for this dealership.')}
+                className="w-full col-span-2"
+                label="TransUnion price"
+                icon={tuPriceLoading ? <Loader2 size={13} className="animate-spin" /> : <TrendingUp size={13} />}
+              />
               <Imagin8GatedButton
                 feature="regCheck"
                 bundles={imagin8Bundles}
                 onClick={runRegCheck}
                 onUnlock={() => alert('Registration checks are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion verification for this dealership.')}
                 className="w-full"
-                icon={regCheckLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <Shield size={13} />}
+                icon={regCheckLoading ? <Loader2 size={13} className="animate-spin" /> : <Shield size={13} />}
               />
               <Imagin8GatedButton
                 feature="accidentReport"
@@ -894,9 +951,29 @@ export default function InventoryList({
                 onClick={runAccidentReport}
                 onUnlock={() => alert('Accident reports are bundle-gated. Contact your TruSaaS account manager to activate live TransUnion claims history for this dealership.')}
                 className="w-full"
-                icon={accidentLoading ? <Loader2 size={13} className="animate-spin text-cyan-400" /> : <History size={13} />}
+                icon={accidentLoading ? <Loader2 size={13} className="animate-spin" /> : <History size={13} />}
               />
             </div>
+            {tuPriceResult && (
+              <div className="rounded-[12px] border border-[rgba(79,227,220,0.2)] bg-[rgba(79,227,220,0.04)] p-3 text-[12px] text-[#E8EAE6]">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[rgba(232,234,230,0.72)]">TransUnion price</span>
+                  {tuPriceResult.error ? (
+                    <span className="text-amber-400 font-semibold">{tuPriceResult.error}</span>
+                  ) : (
+                    <span className="font-semibold text-[#4FE3DC]">
+                      Retail {fmtZAR(tuPriceResult.retailPrice)} · Trade {fmtZAR(tuPriceResult.tradePrice)}
+                    </span>
+                  )}
+                </div>
+                {!tuPriceResult.error && tuPriceResult.marketValue != null && (
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="text-[rgba(232,234,230,0.72)]">Market estimate</span>
+                    <span>{fmtZAR(tuPriceResult.marketValue)}</span>
+                  </div>
+                )}
+              </div>
+            )}
             {regCheckResult && (
               <div className="rounded-[12px] border border-[rgba(79,227,220,0.2)] bg-[rgba(79,227,220,0.04)] p-3 text-[12px] text-[#E8EAE6]">
                 <div className="flex items-center justify-between">

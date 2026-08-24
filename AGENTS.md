@@ -121,6 +121,17 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ## 4. Recent Changes (2026-08-21)
 
+### Add Vehicle: TransUnion price + live market value + no silent no-ops (2026-08-24)
+
+**TruInspect `AddVehicleDialog.tsx`** — the form now carries all four pricing/verification/background buttons in a 2×2 grid, and every click shows feedback:
+- **TransUnion price** (gated, `valuation` slot) — needs an M&M code in production (the live API only prices off a real code); in demo the simulated responder accepts any seed, so the client synthesises `DEMO-<make>-<model>-<year>` from the form itself.
+- **Get market value · Free** (plain cyan, no gating) — hits the live Bright Data scraper, identical in production and demo. "Use as price" fills the price field.
+- **Verify Registration** + **Accident Report** (gated) — no longer silent-return when no VIN/stock is typed. Production shows an inline "enter a VIN first" hint; demo synthesises an identifier from the form and returns the generic simulated statement.
+
+**TruLens `InventoryList.tsx` Add Vehicle** — market value already existed; added the TransUnion Price button (col-span-2 above the reg/accident pair) with the same synthetic-id demo behaviour and the same inline-hint-in-production fix on the two dead guards.
+
+**TruLens `App.tsx` demo routing** — demo no longer lands on `DealerSelect`. The picker still serves legacy shared-code logins (no slug from server → app must ask), but `isDemo` bypasses the route and skips the `/api/dealerships` warm-fetch so a prospect never caches our real client list.
+
 ### Demo Imagin8 unlocked — simulated TU calls, 5-of-each per session (2026-08-24)
 
 Owner call: demo mode must show the FULL Imagin8 experience so a prospect can run a valuation, reg check and accident report before the upsell wall. Chose **simulated** data (free, can't be gamed, safe on live instances) with a **5-of-each** bundle budget so the "credits running out → Unlock (Premium)" moment is still part of the demo arc.

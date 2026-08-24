@@ -77,7 +77,7 @@ function normalizeVehicle(raw: any): Vehicle {
 }
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, isDemo } = useAuth();
   // Which dealership this phone is filing to. Explicit choice at login — no
   // default, so nothing is ever captured against the wrong yard.
   const [dealerConfirmed, setDealerConfirmed] = React.useState<boolean>(
@@ -98,9 +98,11 @@ export default function App() {
      Only the picker used to fetch it, so a phone pinned by a per-dealership
      code — which skips the picker entirely — had nothing cached, and Settings
      could only show the raw slug where the dealer's name belongs. Failure is
-     silent on purpose: this is a display nicety, not something to block on. */
+     silent on purpose: this is a display nicety, not something to block on.
+     Demo sessions skip this too: the list names our real clients, and an
+     anonymous prospect has no business caching it. */
   React.useEffect(() => {
-    if (!user) return;
+    if (!user || isDemo) return;
     if (localStorage.getItem('trulens_dealerships_v1')) return;
     fetch('/api/dealerships', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
@@ -529,7 +531,12 @@ export default function App() {
     <MobileDevice>
       {!user ? (
         <Login />
-      ) : !dealerConfirmed ? (
+        /* Demo never sees the dealer picker: a prospect has no yard to pick,
+           and the picker's whole job was the legacy shared-code era where the
+           app had to ASK which dealership this was. Per-dealer codes pin it
+           server-side now, and demo is scoped to its own sandbox — routing a
+           prospect into a list of our real clients leaked the customer list. */
+      ) : !dealerConfirmed && !isDemo ? (
         <DealerSelect
           onSelected={(slug) => {
             localStorage.setItem('trulens_dealer_slug', slug);
