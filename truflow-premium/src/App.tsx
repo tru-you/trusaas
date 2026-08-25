@@ -38,6 +38,7 @@ import {
   ChevronDown,
   Contact,
   Globe2,
+  Image,
 } from "lucide-react";
 
 import {
@@ -85,7 +86,7 @@ import DocumentsHub from "./components/DocumentsHub";
 import DealerDetailsSettings from "./components/DealerDetailsSettings";
 import DocSettingsPanel from "./components/DocSettingsPanel";
 
-/* Split out of the initial bundle — none of these is needed to paint the
+/* Split out of the initial bundle â€” none of these is needed to paint the
    dashboard, and together they were roughly a third of a 540KB single chunk
    that every dealer downloaded before the login screen appeared. They load
    when the modal or section is first opened. */
@@ -95,7 +96,7 @@ const VehicleDetailModal = lazy(() => import("./components/VehicleDetailModal"))
 const DealershipAdmin = lazy(() => import("./components/DealershipAdmin"));
 const TruSocialSettings = lazy(() => import("./components/TruSocialSettings"));
 const AccountingIntegrationsSettings = lazy(() => import("./components/AccountingIntegrationsSettings"));
-/* DocHub — desktop-only, so the chunk (plus any future pdf-lib dep it
+/* DocHub â€” desktop-only, so the chunk (plus any future pdf-lib dep it
    pulls in) never reaches a phone. Gated on useIsDesktop() at the render site
    below, which is what actually keeps mobile from paying for it. */
 const DocHubPanel = lazy(() => import("./components/dochub/DocHubPanel"));
@@ -125,13 +126,13 @@ import {
 import { initGlassMotion } from "./lib/glassMotion";
 import { TRUFLOW_MOBILE_URL } from "./lib/ecosystem";
 
-/** Which dealership a newly-added vehicle belongs to — loaded from the
+/** Which dealership a newly-added vehicle belongs to â€” loaded from the
  *  server so every onboarded dealer appears automatically.
  *  The hardcoded DEALERSHIPS array was removed because it only listed MKR
  *  and Cars on Caledon, so every other dealer got the wrong name and URL. */
 
 
-/* ── Pipeline discipline ────────────────────────────────────────────────────
+/* â”€â”€ Pipeline discipline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    A lead is only "in the pipeline" if someone knows what happens next and
    when. These drive the board, the overdue filter and the day's worklist. */
 
@@ -165,14 +166,14 @@ function dueLabel(l: any): { text: string; overdue: boolean } | null {
   if (l.status === "Closed Won" || l.status === "Closed Lost") return null;
   if (l.nextActionAt) {
     const d = Math.round((new Date(l.nextActionAt).getTime() - new Date(today()).getTime()) / DAY_MS);
-    if (d < 0) return { text: `${l.nextAction || "Follow up"} · ${Math.abs(d)}d overdue`, overdue: true };
-    if (d === 0) return { text: `${l.nextAction || "Follow up"} · today`, overdue: false };
-    if (d === 1) return { text: `${l.nextAction || "Follow up"} · tomorrow`, overdue: false };
-    return { text: `${l.nextAction || "Follow up"} · in ${d}d`, overdue: false };
+    if (d < 0) return { text: `${l.nextAction || "Follow up"} Â· ${Math.abs(d)}d overdue`, overdue: true };
+    if (d === 0) return { text: `${l.nextAction || "Follow up"} Â· today`, overdue: false };
+    if (d === 1) return { text: `${l.nextAction || "Follow up"} Â· tomorrow`, overdue: false };
+    return { text: `${l.nextAction || "Follow up"} Â· in ${d}d`, overdue: false };
   }
   const idle = daysBetween(l.lastContactedAt || l.stageChangedAt || l.createdAt);
   if (idle == null) return { text: "No next step set", overdue: true };
-  return { text: idle === 0 ? "No next step set" : `No next step · idle ${idle}d`, overdue: leadOverdue(l) };
+  return { text: idle === 0 ? "No next step set" : `No next step Â· idle ${idle}d`, overdue: leadOverdue(l) };
 }
 
 /** Moving a lead on should propose the next step, not leave a blank. */
@@ -184,7 +185,7 @@ const NEXT_STEP_ON_STAGE: Record<string, { action: string; inDays: number }> = {
 };
 
 
-/* ── Stock economics ────────────────────────────────────────────────────────
+/* â”€â”€ Stock economics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Everything here already existed in the data and was never added up. A car's
    real cost is what you paid plus what you spent getting it saleable, and the
    number a principal actually wants is what's left after both. */
@@ -194,7 +195,7 @@ function reconSpend(v: any): number {
   return (v.reconTasks || []).reduce((sum: number, t: any) => sum + (Number(t.cost) || 0), 0);
 }
 
-/** Purchase price plus recon — the number a margin is honestly measured against. */
+/** Purchase price plus recon â€” the number a margin is honestly measured against. */
 function costBasis(v: any): number {
   return (Number(v.costPrice) || 0) + reconSpend(v);
 }
@@ -231,18 +232,18 @@ function ageBand(days: number) {
 }
 
 
-/** A flat segmented filter — replaces the row of rounded <select> boxes, which
+/** A flat segmented filter â€” replaces the row of rounded <select> boxes, which
  *  hid their options behind a click and gave no sense of what was set. Here the
  *  choices are visible and the active one reads in the accent. */
 /**
  * The add-vehicle form.
  *
  * fuelType and transmission were `as any` in the useState initialiser, which
- * switched off checking for the two fields most likely to be typo'd — every
+ * switched off checking for the two fields most likely to be typo'd â€” every
  * <option> already emits exactly the values Vehicle allows, so the cast was
  * hiding nothing but itself.
  *
- * category is the form's own type, not Vehicle's: the select offers an "Auto —
+ * category is the form's own type, not Vehicle's: the select offers an "Auto â€”
  * decide from price & model" choice whose value is "", and Vehicle has no such
  * member. "" is translated to undefined at the API boundary rather than being
  * sent as an empty string the website would have to special-case.
@@ -269,7 +270,7 @@ type NewVehicleForm = {
  * NoInfer on options is what makes T come from `value`.
  *
  * Without it TypeScript infers T from both `value` and `options`, and the
- * option literals widen to plain string — so T became string, and passing a
+ * option literals widen to plain string â€” so T became string, and passing a
  * setState for a narrow union like "ALL" | "NEEDS" | "PARTIAL" | "READY" was an
  * error. The practical cost was worse than the error: with T widened, a typo in
  * an option value type-checked fine and silently set a filter to a state the
@@ -306,14 +307,14 @@ export default function App() {
   const [backingUp, setBackingUp] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [lastBackupMb, setLastBackupMb] = useState<number | null>(null);
-  // Lifted out of ChatWidget so the dashboard can open the assistant directly —
+  // Lifted out of ChatWidget so the dashboard can open the assistant directly â€”
   // the floating bubble is easy to miss on a desk monitor.
   const [assistOpen, setAssistOpen] = useState(false);
-  // In-app how-to guides. Opens from the top bar, and once — on a dealer's very
-  // first session — it auto-opens so the Lens → Flow → Website spine is the
+  // In-app how-to guides. Opens from the top bar, and once â€” on a dealer's very
+  // first session â€” it auto-opens so the Lens â†’ Flow â†’ Website spine is the
   // first thing they meet instead of a cold dashboard.
   const [guideOpen, setGuideOpen] = useState(false);
-  // First-run setup checklist — server-derived (see lib/setupStatus), so every
+  // First-run setup checklist â€” server-derived (see lib/setupStatus), so every
   // device agrees on it. setupOpen is the modal's own toggle; the card has a
   // separate per-device snooze because "hide for a week" shouldn't need a
   // round-trip.
@@ -321,7 +322,7 @@ export default function App() {
   const [setupOpen, setSetupOpen] = useState(true);
   const [setupCardHidden, setSetupCardHidden] = useState(() => setupSnoozed());
   const [currentUserId, setCurrentUserId] = useState("u1");
-  // Driven by the signed token, not a sessionStorage flag — a flag said "logged
+  // Driven by the signed token, not a sessionStorage flag â€” a flag said "logged
   // in" while the token was gone or expired, and every API call 401'd behind a
   // dashboard that looked fine. The token also outlives the browser tab, which
   // is what "keep me signed in" needs.
@@ -333,18 +334,18 @@ export default function App() {
   }, [isLoggedIn]);
 
   // First-run: show the guides once, then never auto-open again. A flag in
-  // localStorage, not the token, so it survives sign-out and is per-device —
+  // localStorage, not the token, so it survives sign-out and is per-device â€”
   // the guide is about learning this browser, not the account.
   //
   // The "seen" flag is written when the panel is DISMISSED (see
   // handleGuideOpenChange), not here. Writing it at open-time raced React's
-  // double-invoked effects in dev — the flag landed on the first pass and the
+  // double-invoked effects in dev â€” the flag landed on the first pass and the
   // second, committed pass then saw it and never opened. Marking on dismiss is
   // both race-free and more honest: seen means they actually closed it.
   useEffect(() => {
     if (!isLoggedIn) return;
     // Hold off until setup status resolves: the setup modal takes precedence
-    // over the first-run tour — never stack two overlays on a brand-new
+    // over the first-run tour â€” never stack two overlays on a brand-new
     // dealer. The guide opens next session (or right after setup completes).
     if (setupStatus === null) return;
     const setupWillPrompt =
@@ -356,7 +357,7 @@ export default function App() {
     try {
       if (!localStorage.getItem("truflow_guide_seen")) setGuideOpen(true);
     } catch {
-      /* private browsing — skip the tour rather than nag every load */
+      /* private browsing â€” skip the tour rather than nag every load */
     }
   }, [isLoggedIn, setupStatus]);
 
@@ -368,7 +369,7 @@ export default function App() {
       try {
         localStorage.setItem("truflow_guide_seen", "1");
       } catch {
-        /* private browsing — nothing to persist */
+        /* private browsing â€” nothing to persist */
       }
     }
   };
@@ -400,7 +401,7 @@ export default function App() {
 
   /* Tenant scoping ----------------------------------------------------------
      The server already scopes /api/state to the signed-in tenant, so this is a
-     second, narrower net — useful for an admin looking at everything, wrong as
+     second, narrower net â€” useful for an admin looking at everything, wrong as
      a hard filter.
 
      It used to filter on `dealershipId` even when that was undefined, which
@@ -408,7 +409,7 @@ export default function App() {
      with none). Every list then matched nothing: the Leads header read
      "0 open" while the board beside it showed two, because the board built its
      own list straight off state.leads. Records with no dealershipId are kept
-     too — TruLens imports arrive without one. */
+     too â€” TruLens imports arrive without one. */
   const mine = (d?: string) => !d || d === dealershipId;
   const showAll = (isMasterAdmin && !adminDealerScope) || !dealershipId;
 
@@ -419,7 +420,7 @@ export default function App() {
    *  rather than `filteredVehicles`. Archived units were originally excluded in
    *  one list only, so they went on leaking into the photo-readiness tiles, the
    *  new-enquiry dropdown and the aged-stock counts. `filteredVehicles` is still
-   *  the right source where sold history matters — Stock Health's realised
+   *  the right source where sold history matters â€” Stock Health's realised
    *  margin has to keep counting them. */
   const activeStock = filteredVehicles.filter((v) => !v.archivedAt);
   const filteredLeads = !state ? [] : showAll ? state.leads : state.leads.filter(l => mine(l.dealershipId));
@@ -437,7 +438,7 @@ export default function App() {
 
   // The view follows the logged-in account. This was a "simulated role
   // selector" pill that let anyone flip to Dealer Owner regardless of their
-  // real login — a permissions hole now that seats are live. principal/admin
+  // real login â€” a permissions hole now that seats are live. principal/admin
   // see the owner view; managers and salespeople see their own.
   const account = sessionAccount;
   const accountRole: 'salesperson' | 'manager' | 'owner' =
@@ -446,7 +447,7 @@ export default function App() {
   const selectedRole = accountRole;
 
   // Setup checklist: fetched on login and re-fetched whenever the dealer moves
-  // between sections — fields are completed over in Settings, so coming back
+  // between sections â€” fields are completed over in Settings, so coming back
   // is the natural moment the card/modal should clear. Salespeople can't
   // reach Settings, so they never fetch or see any of it.
   useEffect(() => {
@@ -463,7 +464,7 @@ export default function App() {
 
   // The modal is armed once per login; closing it (either button acknowledges
   // server-side, or "Set up now" routes away) keeps it closed for the rest of
-  // the session — the Overview card carries the reminder from here.
+  // the session â€” the Overview card carries the reminder from here.
   useEffect(() => {
     if (isLoggedIn) setSetupOpen(true);
   }, [isLoggedIn]);
@@ -486,7 +487,7 @@ export default function App() {
   const [inventoryStatusFilter, setInventoryStatusFilter] = useState("ALL");
   const [inventoryPhotoFilter, setInventoryPhotoFilter] = useState<"ALL" | "NEEDS" | "PARTIAL" | "READY">("ALL");
   const [inventoryAgeFilter, setInventoryAgeFilter] = useState<"ALL" | "30" | "60" | "90">("ALL");
-  /** Inventory pagination — grid renders in pages of 24 so a 100+ car
+  /** Inventory pagination â€” grid renders in pages of 24 so a 100+ car
    *  floor doesn't mount every heavy card + image at once. Any filter
    *  change resets to the first page. */
   const INVENTORY_PAGE = 24;
@@ -571,7 +572,7 @@ export default function App() {
     setIsAutoAssigning(true);
     try {
       // Both calls used a bare fetch, so neither carried the session token and
-      // both 401'd — the button always reported failure.
+      // both 401'd â€” the button always reported failure.
       const data = await autoAssignLeads();
       setState(await fetchState());
       addNotification(
@@ -597,7 +598,7 @@ export default function App() {
   const [newAgreementForm, setNewAgreementForm] = useState({ leadId: "", vehicleId: "", purchasePrice: 0, depositAmount: 0, type: "Vehicle Sale" as any, status: "Pending Signature" as any });
   const [newTaskForm, setNewTaskForm] = useState({ title: "", leadId: "", vehicleId: "", assignedUserId: "", dueDate: new Date().toISOString().slice(0, 10), priority: "Normal" as any, status: "Pending" as any });
   const [newUserForm, setNewUserForm] = useState({ name: "", email: "", role: "salesperson" as any, phone: "" });
-  // Staff logins ("seats") — the principal manages these, and activeSeats is
+  // Staff logins ("seats") â€” the principal manages these, and activeSeats is
   // what the dealership is billed on.
   const [seats, setSeats] = useState<Seat[]>([]);
   const [activeSeats, setActiveSeats] = useState(0);
@@ -621,7 +622,7 @@ export default function App() {
       .then((data) => {
         // Nothing is logged here on purpose. This used to print the entire
         // /api/state payload to the browser console on every load and every
-        // 15s poll — every lead's name, phone, email and notes, every invoice —
+        // 15s poll â€” every lead's name, phone, email and notes, every invoice â€”
         // which put it in reach of anyone who opened DevTools on a yard machine.
         setState(data);
         if (data.vehicles.length > 0) {
@@ -644,7 +645,7 @@ export default function App() {
 
   useEffect(() => {
     // Everything below hits authenticated endpoints. Running it while signed
-    // out produced a 401 on a 15s timer, which used to reload the page — so the
+    // out produced a 401 on a 15s timer, which used to reload the page â€” so the
     // login screen mounted, polled, 401'd and reloaded, over and over.
     if (!isLoggedIn) return;
     loadAllState();
@@ -666,7 +667,7 @@ export default function App() {
     };
   }, [isLoggedIn]);
 
-  // Token rejected by the server — drop to the login screen without reloading.
+  // Token rejected by the server â€” drop to the login screen without reloading.
   useEffect(() => {
     const onExpired = () => setIsLoggedIn(false);
     window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
@@ -675,7 +676,7 @@ export default function App() {
 
   if (!isLoggedIn) {
     return (
-      // setIsLoggedIn inline, not handleLogin — this early return runs before
+      // setIsLoggedIn inline, not handleLogin â€” this early return runs before
       // handleLogin is initialised further down the component body.
       <LoginSplash onLogin={() => setIsLoggedIn(true)} />
     );
@@ -701,7 +702,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[color:var(--ink)] flex flex-col items-center justify-center p-6 text-[color:var(--white)] font-sans gap-3">
         <div className="w-12 h-12 rounded-full border-4 border-t-[color:var(--cyan)] border-[color:var(--cyan-faint)] animate-spin" />
-        <div className="font-semibold text-[16px] tracking-wide">Starting TruFlow Premium…</div>
+        <div className="font-semibold text-[16px] tracking-wide">Starting TruFlow Premiumâ€¦</div>
         <div className="text-[13px] text-[rgba(232,234,230,0.72)] text-center max-w-xs">
           Loading floor data from <span className="font-mono text-[color:var(--cyan)]">localhost:3001</span>.
           If this hangs, restart the server (`npm run dev` in truflow-premium).
@@ -729,7 +730,7 @@ export default function App() {
    *
    * This replaced a "Website analytics" card of hardcoded numbers (51 visits,
    * 94% bounce) that were never wired to anything. A car in stock with no
-   * photos is dead capital — it is paying floorplan and cannot be shopped —
+   * photos is dead capital â€” it is paying floorplan and cannot be shopped â€”
    * and nothing in the app put that number in front of the dealer daily.
    * Stock health already owns the money view; this owns the "why isn't it
    * moving" view, and every figure comes from the same readiness helper the
@@ -762,7 +763,7 @@ export default function App() {
 
   /* Leads waiting on a first reply ------------------------------------------
      The number that actually decides whether a lead converts is how long it
-     sat before anyone answered it — pipeline value can't be acted on at 9am,
+     sat before anyone answered it â€” pipeline value can't be acted on at 9am,
      but "3 people are waiting, one since yesterday" can. A lead counts as
      waiting when it is still open and has never been contacted. */
   const openLeads = state.leads.filter((l) => l.status !== "Closed Won" && l.status !== "Closed Lost");
@@ -772,7 +773,7 @@ export default function App() {
     const waited = Date.now() - new Date(l.createdAt).getTime();
     return Number.isFinite(waited) && waited > worst ? waited : worst;
   }, 0);
-  /** "4h" / "2d" / "18m" — the shape a dealer reads at a glance. */
+  /** "4h" / "2d" / "18m" â€” the shape a dealer reads at a glance. */
   const formatWait = (ms: number) => {
     const mins = Math.floor(ms / 60000);
     if (mins < 60) return `${Math.max(mins, 1)}m`;
@@ -784,7 +785,7 @@ export default function App() {
   const replyIsLate = oldestWaitMs > 60 * 60 * 1000;
 
   /** Whose floor this is. Matches the signed-in dealership first, then
-   *  falls back so the banner never renders a bare "· live". */
+   *  falls back so the banner never renders a bare "Â· live". */
   const currentDealership = (state?.dealerships || []).find((d: any) => d.id === dealershipId);
   const dealershipLabel =
     currentDealership?.name
@@ -802,20 +803,20 @@ export default function App() {
     year: "numeric",
   });
 
-  /* Card subtexts should answer "compared to what?" — "Ready for viewing" and
+  /* Card subtexts should answer "compared to what?" â€” "Ready for viewing" and
      "Cleared this cycle" are decoration. Aged stock and unpaid invoices are
      the two numbers a dealer principal actually chases. */
   const AGED_DAYS = 60;
   /* Uses stockAge(), the same helper Stock Health measures with. This counted
-     `daysInInventory` directly — a value written once on create and never
-     updated — while Stock Health preferred `dateAcquired`, so the Overview tile
+     `daysInInventory` directly â€” a value written once on create and never
+     updated â€” while Stock Health preferred `dateAcquired`, so the Overview tile
      and the Stock Health tile reported different aged-stock counts for the same
      floor, at the same threshold. */
   const agedStockCount = state.vehicles.filter(
     (v) => v.status !== "SOLD" && !v.archivedAt && stockAge(v) > AGED_DAYS
   ).length;
   /* The headline money figure is deal value less what was spent making the car
-     ready — sale price minus recon, summed over sold units. It replaces the old
+     ready â€” sale price minus recon, summed over sold units. It replaces the old
      invoice-derived "Banked" number, which assumed the DMS raised the invoice;
      dealers invoice from their own systems, so that number was never real. */
   /* End-of-day totals, computed once. The CSV export and the on-screen report
@@ -848,7 +849,7 @@ export default function App() {
      What a dealer needs to know before the doors open, in the order it costs
      money: who has been left hanging, what was promised for today, and what
      has to physically leave the yard. Kept in the chrome so it follows you
-     off the dashboard — the numbers are useless on a screen you've navigated
+     off the dashboard â€” the numbers are useless on a screen you've navigated
      away from. */
   const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
   const endOfToday = new Date(startOfToday); endOfToday.setDate(endOfToday.getDate() + 1);
@@ -857,7 +858,7 @@ export default function App() {
     const t = new Date(d).getTime();
     return t >= startOfToday.getTime() && t < endOfToday.getTime();
   };
-  // Anything promised for today — an open task, or a lead's next action.
+  // Anything promised for today â€” an open task, or a lead's next action.
   const dueTodayCount =
     state.tasks.filter((t) => t.status !== "Completed" && isToday(t.dueDate)).length +
     openLeads.filter((l) => isToday(l.nextActionAt)).length;
@@ -870,13 +871,13 @@ export default function App() {
       (l) => l.nextActionAt && new Date(l.nextActionAt) < startOfToday
     ).length;
   /* The "Going out" tile and its top-bar chip are gone. It counted vehicles in
-     PENDING — a status nothing had written since the stock kanban was removed —
+     PENDING â€” a status nothing had written since the stock kanban was removed â€”
      so it read zero forever. Rebuilding it on `Closed Won && !docFlowCompletedAt`
      was worse: no historical deal carries that stamp, so it counted every deal
      ever closed. Neither number was true, and Deal Readiness already answers
      "what is still outstanding" properly. */
 
-  /* Nav "needs attention" signals — one shared rule per destination, so the
+  /* Nav "needs attention" signals â€” one shared rule per destination, so the
      bottom bar and the sidebar read from the same source. Each value is a
      genuine to-do count: leads waiting on a first reply, overdue tasks/actions,
      and stock that can't sell yet because it has no photos / an incomplete
@@ -911,7 +912,7 @@ export default function App() {
       ]
     },
     {
-      /* Built, backed by real server routes, and previously unreachable — no nav
+      /* Built, backed by real server routes, and previously unreachable â€” no nav
          entry pointed at any of them. Invoices and agreements each have full
          GET/POST/PUT routes behind them (including pay and sign); the repayment
          calculator is self-contained arithmetic seeded from real stock. */
@@ -922,10 +923,16 @@ export default function App() {
         { id: "payment", label: "Repayment calculator", icon: Calculator },
       ]
     },
-    /* The old "Media & Web" group is gone altogether. Stock media / Edit stock
-       duplicated inventory with a filter, and Web Management remains reachable
-       from the dashboard's Web readiness card ("Manage") — which is where
-       gallery work starts anyway. No nav surface without its own job. */
+    /* Media & Web â€” restored at owner direction (was cut in eeedfb5). Stock
+       media is the gallery-readiness hub and the only surface with the public
+       feed link; Web Management is the power-user grid. */
+    {
+      category: "Media & Web",
+      items: [
+        { id: "media_web", label: "Stock media", icon: Image },
+        { id: "web_management", label: "Web Management", icon: Globe2 },
+      ]
+    },
     {
       category: "Dealer Settings",
       items: [
@@ -940,12 +947,12 @@ export default function App() {
     let items = group.items;
     if (selectedRole === 'salesperson') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'web_management',
+        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'media_web', 'web_management',
          'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     } else if (selectedRole === 'manager') {
       items = items.filter(item =>
-        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'stock_health', 'web_management', 'manager', 'settings',
+        ['dashboard', 'inventory', 'upload', 'bulk_import', 'leads', 'clients', 'tasks', 'test_drives', 'accounting_recon', 'stock_health', 'media_web', 'web_management', 'manager', 'settings',
          'deal_readiness', 'documents', 'payment'].includes(item.id)
       );
     }
@@ -998,9 +1005,9 @@ export default function App() {
     loadAllState();
   };
 
-  /** Cancellation: a closed sale fell through. Put the car back in stock — which
+  /** Cancellation: a closed sale fell through. Put the car back in stock â€” which
    *  re-lists it on the website, since the public feed only publishes INVENTORY
-   *  — and reopen the deals that closed on it, so the two never drift apart.
+   *  â€” and reopen the deals that closed on it, so the two never drift apart.
    *
    *  The reopen is the server's job now: this used to look up one Closed Won
    *  lead here and force it to Negotiating, which both missed any second deal
@@ -1027,7 +1034,7 @@ export default function App() {
   /** Mark a car sold, resolving which deal closed on it when that is ambiguous.
    *
    *  A car can carry several open deals, and only the dealer knows which
-   *  customer actually bought it — so ask, rather than guess. A car with no
+   *  customer actually bought it â€” so ask, rather than guess. A car with no
    *  open deals is sold outside the system entirely (cash off the floor,
    *  invoiced elsewhere), which must stay a single click: no prompt at all. */
   const handleMarkSold = async (v: Vehicle) => {
@@ -1043,14 +1050,14 @@ export default function App() {
       const choice = prompt(
         `Who bought the ${label}?\n\n` +
           openLeads.map((l, i) => `${i + 1}. ${l.firstName} ${l.lastName}`).join("\n") +
-          `\n0. Sold outside the system — no deal here\n\nEnter a number:`,
+          `\n0. Sold outside the system â€” no deal here\n\nEnter a number:`,
       );
-      if (choice === null) return; // cancelled — do not touch the car
+      if (choice === null) return; // cancelled â€” do not touch the car
       const n = parseInt(choice, 10);
       if (n >= 1 && n <= openLeads.length) {
         closeLeadId = openLeads[n - 1].id;
       } else if (n !== 0) {
-        /* Anything that is neither a listed deal nor the explicit "0 — sold
+        /* Anything that is neither a listed deal nor the explicit "0 â€” sold
            outside the system" is a typo, not an instruction. Selling the car
            anyway would leave the buyer's deal sitting open with the dealer
            told only "Marked sold." */
@@ -1079,14 +1086,14 @@ export default function App() {
 
   /** Remove a unit from stock.
    *  Deleting a car that a deal, invoice or lead points at leaves those records
-   *  referencing something that no longer exists — the lead's vehicle shows as
+   *  referencing something that no longer exists â€” the lead's vehicle shows as
    *  blank and the invoice loses what it was for. So say what is attached
    *  before asking, and archive rather than delete once the sale is recorded
    *  here: that is a record of a transaction, not stock to tidy away.
    *
    *  A car sold outside the DMS has no record here to protect, so it deletes
-   *  cleanly. Refusing those outright — as this used to, pointing at an
-   *  "archive" that did not exist — left them stuck on the floor forever. */
+   *  cleanly. Refusing those outright â€” as this used to, pointing at an
+   *  "archive" that did not exist â€” left them stuck on the floor forever. */
   const handleDeleteVehicle = async (id: string) => {
     const v = state.vehicles.find((x) => x.id === id);
     if (!v) return;
@@ -1106,7 +1113,7 @@ export default function App() {
 
     /* Is the sale actually recorded here? A closed deal, an invoice, an
        agreement or a signed document all mean deleting would destroy the record
-       of a transaction — those get archived instead. A car sold outside the DMS
+       of a transaction â€” those get archived instead. A car sold outside the DMS
        has none of them, so deleting it destroys nothing and simply removes it.
 
        An open or lost enquiry is not a record of a sale: those are unlinked by
@@ -1165,7 +1172,7 @@ export default function App() {
     }
   };
 
-  /* Tasks accumulate — completed and stale ones clutter the list with no way to
+  /* Tasks accumulate â€” completed and stale ones clutter the list with no way to
      clear them. A direct per-row delete keeps it tidy. Guarded by a confirm
      because it removes the task for the whole dealership and isn't reversible,
      matching the stock-removal flow. */
@@ -1206,7 +1213,7 @@ export default function App() {
     return u ? u.name : "Unassigned Pool";
   };
 
-  /* Lead search — filters the shared, tenant-scoped lead list on anything a
+  /* Lead search â€” filters the shared, tenant-scoped lead list on anything a
      salesperson might reach for: name, phone, email or the stock it points at.
      One matcher so Board and List answer the same query. */
   const leadMatchesQuery = (l: { firstName?: string; lastName?: string; phone?: string; email?: string; vehicleId?: string }) => {
@@ -1229,9 +1236,9 @@ export default function App() {
     loadAllState();
   };
 
-  // Resets (data only — not the same as log out)
+  // Resets (data only â€” not the same as log out)
   /** Log that this lead was actioned and schedule the next step.
-   *  Leads go cold because nothing forces the question "and then what?" —
+   *  Leads go cold because nothing forces the question "and then what?" â€”
    *  this asks it every time, and defaults sensibly by stage. */
   const advanceLead = async (l: any) => {
     const rule = NEXT_STEP_ON_STAGE[l.status] || { action: "Follow up", inDays: 2 };
@@ -1248,7 +1255,7 @@ export default function App() {
     // Typed confirmation, not an OK button. This deletes every dealership's
     // stock, leads, invoices and signed documents, permanently.
     const typed = prompt(
-      "This permanently deletes ALL data for EVERY dealership on this instance — " +
+      "This permanently deletes ALL data for EVERY dealership on this instance â€” " +
       "stock, leads, invoices and signed documents. There is no backup.\n\n" +
       "Type RESET EVERYTHING to confirm."
     );
@@ -1261,7 +1268,7 @@ export default function App() {
     }
   };
 
-  /** Sign out → access-code splash. Does not wipe inventory.
+  /** Sign out â†’ access-code splash. Does not wipe inventory.
    *  Discards the token too, otherwise "sign out" left a working session
    *  sitting in storage for the next person on a shared yard device. */
   const handleLogout = () => {
@@ -1364,7 +1371,7 @@ export default function App() {
 
   const handlePublishVehicle = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Metadata only — gallery comes from TruLens Export to DMS
+    // Metadata only â€” gallery comes from TruLens Export to DMS
     const { category, ...vehicleFields } = newVehicleForm;
     await createVehicle({
       ...vehicleFields,
@@ -1382,7 +1389,7 @@ export default function App() {
     const stock = newVehicleForm.stockNumber;
     addNotification(
       "Vehicle on floor",
-      `${newVehicleForm.year} ${newVehicleForm.make} ${newVehicleForm.model} (${stock}) — open TruLens to shoot, then Export to DMS`,
+      `${newVehicleForm.year} ${newVehicleForm.make} ${newVehicleForm.model} (${stock}) â€” open TruLens to shoot, then Export to DMS`,
       "info"
     );
     setActiveSection("inventory");
@@ -1501,7 +1508,7 @@ export default function App() {
               </g>
             </svg>
           </div>
-          {/* Admin dealer context switcher — pick a dealer to see their world. */}
+          {/* Admin dealer context switcher â€” pick a dealer to see their world. */}
           {isMasterAdmin && state?.dealerships && state.dealerships.length > 0 && (
             <div className="mt-2 w-full px-1">
               <select
@@ -1529,7 +1536,7 @@ export default function App() {
             return (
               <>
                 {/* The bare URL sat directly above a button that goes to the
-                    same place — the button says what it does, the URL didn't. */}
+                    same place â€” the button says what it does, the URL didn't. */}
                 <div className="flex gap-2 mt-3 flex-wrap">
                   <a href={site} target="_blank" rel="noopener noreferrer"
                      className="text-[13px] px-3 py-1 rounded-full bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-faint)] transition-colors">
@@ -1587,7 +1594,7 @@ export default function App() {
           ))}
         </div>
 
-        {/* Support + sign out. No WhatsApp green — brand.css is explicit that
+        {/* Support + sign out. No WhatsApp green â€” brand.css is explicit that
             cyan carries every live state, and a sticker-green button read as a
             widget, not the product. The glyph and the "WhatsApp" label carry
             channel recognition instead. The deep-link pre-fills who is asking
@@ -1597,7 +1604,7 @@ export default function App() {
             type="button"
             onClick={() =>
               openSupportWhatsApp(
-                `TruFlow ${PRODUCT_TIER} support · ${dealershipLabel}\nSection: ${activeSection}\n\n`
+                `TruFlow ${PRODUCT_TIER} support Â· ${dealershipLabel}\nSection: ${activeSection}\n\n`
               )
             }
             className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-[color:var(--white)] bg-[color:var(--glass)] border border-[color:var(--cyan-soft)] hover:bg-[color:var(--cyan-faint)] transition-colors cursor-pointer"
@@ -1624,20 +1631,20 @@ export default function App() {
         {/* Top Profile Bar - Hidden on mobile */}
         {/* The top bar was a row of pills on a hairline with nothing behind it,
             so it read as the first row of content rather than as chrome. It now
-            uses the same surface vocabulary as .card — ink-2, a lit top
-            hairline, one soft shadow — and sticks, which also keeps the three
+            uses the same surface vocabulary as .card â€” ink-2, a lit top
+            hairline, one soft shadow â€” and sticks, which also keeps the three
             counters reachable instead of only true at the top of the page.
             Inset rather than full-bleed on purpose: negative margins to reach
             the page edge would push past main's max-width and introduce a
             horizontal scrollbar at wide viewports. */}
         <div className="flex justify-between items-center gap-4 sticky top-3 z-[60] rounded-xl px-4 py-2.5 bg-[color:var(--ink-2)]/92 backdrop-blur-md border border-[color:var(--glass-line)] shadow-[0_1px_0_rgba(232,234,230,0.06)_inset,0_18px_40px_-28px_rgba(0,0,0,0.8)]">
-           {/* Morning strip — the floor at a glance, on every screen. Only the
+           {/* Morning strip â€” the floor at a glance, on every screen. Only the
                unanswered-lead figure is allowed to go red; if everything shouts,
                nothing does. */}
            <div className="flex items-center gap-2 min-w-0">
              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[length:var(--t-micro)] bg-[color:var(--cyan-faint)] text-[color:var(--cyan)] border border-[color:var(--cyan-soft)]">
                <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--cyan)] animate-pulse" />
-               {dealershipLabel} · live · {new Date().toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
+               {dealershipLabel} Â· live Â· {new Date().toLocaleDateString("en-ZA", { weekday: "short", day: "numeric", month: "short" })}
              </span>
            </div>
 
@@ -1671,7 +1678,7 @@ export default function App() {
                <MessageCircle size={14} />
                Assist
              </button>
-             {/* Who is signed in now lives under the sidebar logo — it was
+             {/* Who is signed in now lives under the sidebar logo â€” it was
                  repeated three times across the top bar. */}
              <button
                type="button"
@@ -1691,7 +1698,7 @@ export default function App() {
             {/* Framed header. The plain heading read like a page title on a
                 form; a dealer opening this at 8am should see whose floor it is,
                 that it is live, and have the assistant one click away. */}
-            {/* Framed header — desktop only. On a phone the sticky mobile header
+            {/* Framed header â€” desktop only. On a phone the sticky mobile header
                 already names the dealership and date, so this card is redundant
                 there (flex). The date folds into the live pill; the
                 page-title heading and the strapline prose are gone. */}
@@ -1721,7 +1728,7 @@ export default function App() {
               />
             )}
 
-            {/* Stats — mobile. Re-cut for a salesperson on the floor: the one
+            {/* Stats â€” mobile. Re-cut for a salesperson on the floor: the one
                 number that is actionable the moment the app opens leads
                 full-width with a chevron into leads; the rest fold down into a
                 pair and a strip. The 5-tile desktop grid is below (hidden md). */}
@@ -1790,7 +1797,7 @@ export default function App() {
               );
             })()}
 
-            {/* Leads — highest priority, what needs attention now */}
+            {/* Leads â€” highest priority, what needs attention now */}
             <div className="card">
               <div className="card-header flex justify-between items-center border-b border-white/5 px-4 py-3">
                 <h3 className="font-semibold text-[16px]">Leads</h3>
@@ -1874,7 +1881,7 @@ export default function App() {
                       return (
                         <tr key={v.id} onClick={() => setSelectedDetailVehicle(v)} className="border-b border-white/5 cursor-pointer hover:bg-white/[0.03] transition-colors">
                           <td className="py-2.5 px-4 font-semibold text-[color:var(--white)]">{v.year} {v.make} {v.model}
-                            <span className="block text-[11px] font-normal text-[rgba(232,234,230,0.55)]">{v.transmission} · {v.fuelType}</span>
+                            <span className="block text-[11px] font-normal text-[rgba(232,234,230,0.55)]">{v.transmission} Â· {v.fuelType}</span>
                           </td>
                           <td className="py-2.5 px-3 font-mono text-[color:var(--muted)]">{v.stockNumber}</td>
                           <td className="py-2.5 px-3 text-right font-mono font-semibold text-[color:var(--cyan-bright)]">{formatZAR(v.retailPrice)}</td>
@@ -1928,7 +1935,7 @@ export default function App() {
         {/* ALL VEHICLES SECTION */}
         {activeSection === "inventory" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-            {/* Search + filters — single compact bar */}
+            {/* Search + filters â€” single compact bar */}
             <div className="flex items-center gap-2 flex-wrap">
               <div className="relative flex-1 min-w-[180px] max-w-[280px]">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(232,234,230,0.72)]" />
@@ -2030,14 +2037,14 @@ export default function App() {
               </div>
             </div>
 
-            {/* Grid list — paginated so 100+ cars don't render at once */}
+            {/* Grid list â€” paginated so 100+ cars don't render at once */}
             {(() => {
               const filteredInventory = state.vehicles
                 .filter((v) => {
                   /* Archived units are off the floor: retired sold stock kept
                      only so the sale still counts in the money figures. Hidden
                      from every other view, but reachable through their own
-                     filter — archiving must not be a one-way door. */
+                     filter â€” archiving must not be a one-way door. */
                   if (inventoryStatusFilter === "ARCHIVED") {
                     if (!v.archivedAt) return false;
                   } else if (v.archivedAt) {
@@ -2113,14 +2120,14 @@ export default function App() {
                               </td>
                               <td className="px-3 py-2.5 font-mono text-[color:var(--muted)]">{v.stockNumber}</td>
                               <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)] font-mono">{Number(v.mileage || 0).toLocaleString()}</td>
-                              <td className="px-3 py-2.5 text-[rgba(232,234,230,0.72)]">{v.transmission || "—"}</td>
-                              <td className="px-3 py-2.5 text-[rgba(232,234,230,0.72)]">{v.fuelType || "—"}</td>
+                              <td className="px-3 py-2.5 text-[rgba(232,234,230,0.72)]">{v.transmission || "â€”"}</td>
+                              <td className="px-3 py-2.5 text-[rgba(232,234,230,0.72)]">{v.fuelType || "â€”"}</td>
                               <td className="px-3 py-2.5 text-right text-[color:var(--cyan-bright)] font-mono font-semibold">{formatZAR(Number(v.retailPrice) || 0)}</td>
                               {selectedRole !== 'salesperson' && <td className="px-3 py-2.5 text-right text-[rgba(232,234,230,0.72)] font-mono">{formatZAR(v.costPrice || 0)}</td>}
                               <td className={`px-3 py-2.5 text-right font-mono ${ageTone}`}>{days}d</td>
                               <td className="px-3 py-2.5 text-center">
                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: readiness.color, background: readiness.color + "22" }}>
-                                  {readiness.photoCount > 0 ? readiness.photoCount : "—"}
+                                  {readiness.photoCount > 0 ? readiness.photoCount : "â€”"}
                                 </span>
                               </td>
                               <td className="px-3 py-2.5 text-center" onClick={(e) => e.stopPropagation()}>
@@ -2161,7 +2168,7 @@ export default function App() {
                     <div className="flex items-center justify-between gap-3 flex-wrap pt-2 text-[13px] text-[rgba(232,234,230,0.55)]">
                       <span>
                         Showing {visibleInventory.length} of {liveInventory.length} in stock
-                        {soldInventory.length > 0 && ` · ${soldInventory.length} sold`}
+                        {soldInventory.length > 0 && ` Â· ${soldInventory.length} sold`}
                       </span>
                       {liveInventory.length > inventoryVisibleCount && (
                         <div className="flex gap-2">
@@ -2197,12 +2204,12 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* ── SOLD VEHICLES — collapsible table with deal details ── */}
+                  {/* â”€â”€ SOLD VEHICLES â€” collapsible table with deal details â”€â”€ */}
                   {soldInventory.length > 0 && (
                     <details className="card overflow-hidden mt-2">
                       <summary className="cursor-pointer px-4 py-3 text-[13px] font-semibold text-[color:var(--white)] select-none flex items-center gap-2 [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
                         <ChevronDown size={14} className="text-[color:var(--muted)] transition-transform [[open]>&]:rotate-180" />
-                        Sold Stock · {soldInventory.length} vehicle{soldInventory.length === 1 ? "" : "s"}
+                        Sold Stock Â· {soldInventory.length} vehicle{soldInventory.length === 1 ? "" : "s"}
                         <span className="text-[color:var(--muted)] font-normal ml-auto">
                           {formatZAR(soldInventory.reduce((s, v) => s + (v.retailPrice || 0), 0))} revenue
                         </span>
@@ -2266,7 +2273,7 @@ export default function App() {
                                 {(() => {
                                   const rev = soldInventory.reduce((s, v) => s + (v.retailPrice || 0), 0);
                                   const prof = soldInventory.reduce((s, v) => s + grossMargin(v).rand, 0);
-                                  return rev > 0 ? ((prof / rev) * 100).toFixed(1) + "%" : "—";
+                                  return rev > 0 ? ((prof / rev) * 100).toFixed(1) + "%" : "â€”";
                                 })()}
                               </td>
                               <td className="px-4 py-2.5"></td>
@@ -2289,7 +2296,7 @@ export default function App() {
               <div>
                 <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Add vehicle</h1>
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5">
-                  Create stock metadata here.{hasProduct("lens") && <> <b className="text-[color:var(--white)]">Photos only in TruLens</b> (guided shoot → Export to DMS).</>}
+                  Create stock metadata here.{hasProduct("lens") && <> <b className="text-[color:var(--white)]">Photos only in TruLens</b> (guided shoot â†’ Export to DMS).</>}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -2316,7 +2323,7 @@ export default function App() {
             <div className="card max-w-[700px] mx-auto w-full">
               <div className="card-body p-6 flex flex-col gap-4">
                 <form onSubmit={handlePublishVehicle} className="flex flex-col gap-4">
-                  {/* Showroom tier — which category page this car lands on */}
+                  {/* Showroom tier â€” which category page this car lands on */}
                   <div className="flex flex-col gap-1">
                     <label className="text-[13px] text-[rgba(232,234,230,0.72)]  font-semibold">Showroom Category</label>
                     <select
@@ -2324,7 +2331,7 @@ export default function App() {
                       onChange={(e) => setNewVehicleForm((p) => ({ ...p, category: e.target.value as NewVehicleForm["category"] }))}
                       className="bg-[color:var(--glass)] border border-white/5 rounded-lg px-2 py-2 text-[13px] text-[color:var(--white)] outline-none"
                     >
-                      <option value="">Auto — decide from price &amp; model</option>
+                      <option value="">Auto â€” decide from price &amp; model</option>
                       <option value="used">Premium Used</option>
                       <option value="select">Premium Select</option>
                       <option value="performance">Premium Performance</option>
@@ -2541,11 +2548,11 @@ export default function App() {
         )}
 
         {/* LEAD CRM SECTION */}
-        {/* STOCK HEALTH — ageing and margin, the two numbers that decide whether
+        {/* STOCK HEALTH â€” ageing and margin, the two numbers that decide whether
             a yard makes money. Everything shown was already in the data. */}
         {activeSection === "stock_health" && (() => {
           /* `live` excludes archived units explicitly. Archiving now forces
-             SOLD, so the status test would catch them anyway — but this once
+             SOLD, so the status test would catch them anyway â€” but this once
              relied on that invariant while nothing maintained it, and an
              archived car sat in Capital in stock. Say it outright.
 
@@ -2610,7 +2617,7 @@ export default function App() {
                 })}
               </div>
 
-              {/* Oldest first — this is the list to work through */}
+              {/* Oldest first â€” this is the list to work through */}
               <div className="card p-0 overflow-x-auto">
                 <div className="px-4 py-3 border-b border-white/5">
                   <span className="text-[13px] font-semibold text-[color:var(--white)]">Oldest stock first</span>
@@ -2643,7 +2650,7 @@ export default function App() {
                             </td>
                             <td data-label="Age" className="px-3 py-3 text-[13px] md:text-[15px] text-right" style={{ color: band.tone }}>{days}d</td>
                             <td data-label="Cost" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.costPrice || 0)}</td>
-                            <td data-label="Recon" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "—"}</td>
+                            <td data-label="Recon" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{reconSpend(v) ? formatZAR(reconSpend(v)) : "â€”"}</td>
                             <td data-label="Asking" className="px-3 py-3 text-[13px] md:text-[15px] text-right text-[rgba(232,234,230,0.72)]">{formatZAR(v.retailPrice || 0)}</td>
                             <td data-label="Margin" className={`px-4 py-3 text-[13px] md:text-[15px] text-right font-medium ${m.rand < 0 ? "text-[color:var(--muted)]" : "text-[color:var(--white)]"}`}>
                               {formatZAR(m.rand)}
@@ -2673,9 +2680,9 @@ export default function App() {
                   return (
                     <p className="text-[13px] mt-0.5 font-medium text-[rgba(232,234,230,0.72)]">
                       {late > 0 && <span className="text-[color:var(--muted)] font-semibold">{late} overdue</span>}
-                      {late > 0 && (due > 0 || open.length > 0) && " · "}
+                      {late > 0 && (due > 0 || open.length > 0) && " Â· "}
                       {due > 0 && <span>{due} due today</span>}
-                      {due > 0 && " · "}
+                      {due > 0 && " Â· "}
                       {open.length} open
                     </p>
                   );
@@ -2688,7 +2695,7 @@ export default function App() {
                     type="search"
                     value={leadQuery}
                     onChange={(e) => setLeadQuery(e.target.value)}
-                    placeholder="Search leads…"
+                    placeholder="Search leadsâ€¦"
                     aria-label="Search leads"
                     className="pl-9 pr-3 py-2 rounded-lg border bg-[color:var(--glass)] border-white/5 text-[13px] text-[color:var(--white)] placeholder-[color:var(--faint)] outline-none focus:border-[color:var(--cyan-soft)] w-[180px] md:w-[220px]"
                   />
@@ -2712,7 +2719,7 @@ export default function App() {
                   className="tru-btn-ghost px-3 min-h-[36px] text-[13px] flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <RefreshCw size={14} className={isAutoAssigning ? "animate-spin" : ""} />
-                  {isAutoAssigning ? "Assigning…" : `Auto-assign ${state?.leads.filter(l => l.status === "New").length ?? 0} new`}
+                  {isAutoAssigning ? "Assigningâ€¦" : `Auto-assign ${state?.leads.filter(l => l.status === "New").length ?? 0} new`}
                 </button>
                 <button onClick={() => setIsLeadModalOpen(true)} className="btn btn-primary">
                   New lead
@@ -2743,7 +2750,7 @@ export default function App() {
             {leadCrmTab === "kanban" ? (
               <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-thin">
                 {["New", "Contacted", "Test Drive Scheduled", "Negotiating", "Closed Won", "Closed Lost"].map((stage) => {
-                  // Off the scoped list, not state.leads — the board was the
+                  // Off the scoped list, not state.leads â€” the board was the
                   // one view ignoring tenant scoping, which is why its counts
                   // disagreed with the header above it.
                   const stageLeads = filteredLeads.filter((l) => {
@@ -2786,7 +2793,7 @@ export default function App() {
                               if (!d) return null;
                               return (
                                 <div className={`text-[13px] mt-2 font-medium ${d.overdue ? "text-[color:var(--muted)]" : "text-[rgba(232,234,230,0.72)]"}`}>
-                                  {d.overdue ? "● " : ""}{d.text}
+                                  {d.overdue ? "â— " : ""}{d.text}
                                 </div>
                               );
                             })()}
@@ -2866,10 +2873,10 @@ export default function App() {
                                 const d = dueLabel(l);
                                 return d ? (
                                   <span className={`text-[13px] font-medium ${d.overdue ? "text-[color:var(--muted)]" : "text-[rgba(232,234,230,0.72)]"}`}>
-                                    {d.overdue ? "● " : ""}{d.text}
+                                    {d.overdue ? "â— " : ""}{d.text}
                                   </span>
                                 ) : (
-                                  <span className="text-[13px] text-[color:var(--faint)]">—</span>
+                                  <span className="text-[13px] text-[color:var(--faint)]">â€”</span>
                                 );
                               })()}
                             </td>
@@ -2909,7 +2916,7 @@ export default function App() {
           </div>
         )}
 
-        {/* DEAL READINESS SECTION — replaces the old Invoices + Agreements
+        {/* DEAL READINESS SECTION â€” replaces the old Invoices + Agreements
             generators. Dealers issue invoices and contracts from their own
             systems; here we track only the status of each step to close and
             hand a deal over, so no customer documents live on the server. */}
@@ -2922,7 +2929,7 @@ export default function App() {
             { key: "delivered", label: "Delivered" },
           ] as const;
           const FINANCE_OPTS = ["N/A", "Submitted", "Approved", "Declined"] as const;
-          /* Labels only — the ORDER comes from DOC_STAGES so this cannot drift
+          /* Labels only â€” the ORDER comes from DOC_STAGES so this cannot drift
              from the server's idea of the sequence. It previously repeated the
              order by hand, under a comment warning not to. */
           const DOCHUB_LABELS: Record<DocStage, string> = {
@@ -2938,7 +2945,7 @@ export default function App() {
 
              Desktop only. The DocHub stage strip that explains WHY a deal
              disappeared is itself desktop-gated, so applying this on a phone
-             removed deals with nothing on screen accounting for it — and a
+             removed deals with nothing on screen accounting for it â€” and a
              mobile user cannot reach DocHub to put it back either. */
           const deals = filteredLeads.filter(
             (l) =>
@@ -2974,7 +2981,7 @@ export default function App() {
                     <Monitor size={12} /> Desktop
                   </span>
                 </div>
-                {/* Configure the DocHub flow once — behind a button, not a card
+                {/* Configure the DocHub flow once â€” behind a button, not a card
                     that re-reads itself every visit. Desktop-only, same gate. */}
                 {isDesktop && docFlowList.length > 0 && (
                   <button
@@ -2989,7 +2996,7 @@ export default function App() {
               </div>
 
               {/* Compliance flow settings dialog. Same isDesktop gate and Suspense
-                  boundary as the card it replaces — the lazy chunks still never
+                  boundary as the card it replaces â€” the lazy chunks still never
                   load on a phone. */}
               {isDesktop && docFlowSettingsOpen && docFlowList.length > 0 && (
                 <div
@@ -3018,12 +3025,12 @@ export default function App() {
                     <div className="p-5 flex flex-col gap-6">
                       {docFlowTarget.length === 0 && docFlowDemo.length > 0 && (
                         <div className="text-[12px] text-amber-300 border border-amber-500/30 bg-amber-500/10 rounded-md px-3 py-2">
-                          Preview only — this account has no persisted dealership record, so Save will not work.
+                          Preview only â€” this account has no persisted dealership record, so Save will not work.
                           Sign in with a dealer code to persist changes.
                         </div>
                       )}
                       {docFlowList.map((d) => (
-                        <Suspense key={d.id} fallback={<div className="text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+                        <Suspense key={d.id} fallback={<div className="text-[13px] text-[rgba(232,234,230,0.55)]">Loadingâ€¦</div>}>
                           <DocFlowSettings dealership={d as Dealership} isAdmin={isMasterAdmin} onSaved={loadAllState} />
                         </Suspense>
                       ))}
@@ -3046,7 +3053,7 @@ export default function App() {
                     const total = CHECK_ITEMS.length + 1;
                     /* Where the checklist and DocHub disagree, keyed to the box
                        it contradicts. DocHub stays authoritative and nothing is
-                       auto-corrected — surfacing the conflict beats silently
+                       auto-corrected â€” surfacing the conflict beats silently
                        picking a winner. Presentation moved from an amber banner
                        to a muted glyph beside the offending label; derivation
                        unchanged. Desktop only. */
@@ -3091,15 +3098,15 @@ export default function App() {
                             </div>
                           </div>
                         </div>
-                        {/* DocHub stage strip — a compact five-dot indicator of
+                        {/* DocHub stage strip â€” a compact five-dot indicator of
                             where this deal is in the paperwork lifecycle, with a
                             button that jumps straight into the DocHub tab on the
                             lead modal (no double-click via Overview). Desktop only:
                             the modal DocHub tab itself is gated the same way. */}
                         {isDesktop && (() => {
                           /* A completed deal has every stage behind it. Reading
-                             docStage alone cannot see that — it is null on both
-                             completion and on a lead that never started — so a
+                             docStage alone cannot see that â€” it is null on both
+                             completion and on a lead that never started â€” so a
                              finished deal showed five grey dots. */
                           const currentIdx = lead.docFlowCompletedAt
                             ? DOC_STAGES.length
@@ -3201,7 +3208,7 @@ export default function App() {
             </div>
           );
         })()}
-        {/* DOCUMENTS — DEALS IN PROGRESS */}
+        {/* DOCUMENTS â€” DEALS IN PROGRESS */}
         {activeSection === "documents" && (() => {
           /* Same ordered labels as Deal Readiness: the ORDER comes from
              DOC_STAGES so the rail and the modal DocHub can never disagree. */
@@ -3230,7 +3237,7 @@ export default function App() {
                 </div>
               </div>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] max-w-2xl -mt-3 leading-relaxed">
-                Every live deal, at a glance — where its paperwork stands and one tap into the signing flow.
+                Every live deal, at a glance â€” where its paperwork stands and one tap into the signing flow.
               </p>
 
               {docsDeals.length === 0 ? (
@@ -3269,7 +3276,7 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* DocHub stage rail — same five-dot language as Deal
+                        {/* DocHub stage rail â€” same five-dot language as Deal
                             Readiness. The Open Compliance Hub action stays desktop-only,
                             matching where the modal's DocHub tab is available. */}
                         <div className="flex items-center gap-3.5 pt-3 border-t border-white/5">
@@ -3316,7 +3323,7 @@ export default function App() {
         {/* ACCOUNTING & RECON SECTION */}
         {activeSection === "accounting_recon" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200">
-            <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+            <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loadingâ€¦</div>}>
               <AccountingRecon
               state={state}
               onAddExpense={handleCreateExpense}
@@ -3360,7 +3367,7 @@ export default function App() {
                   type="text"
                   value={clientSearch}
                   onChange={e => setClientSearchState(e.target.value)}
-                  placeholder="Search by name, company, phone, email…"
+                  placeholder="Search by name, company, phone, emailâ€¦"
                   className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-sm text-[color:var(--white)] placeholder:text-[rgba(232,234,230,0.35)] focus:outline-none focus:border-[rgba(29,185,84,0.5)]"
                 />
               </div>
@@ -3392,13 +3399,13 @@ export default function App() {
                           className="border-t border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.03)] cursor-pointer transition-colors"
                           onClick={() => setEditingClient(c)}
                         >
-                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)] font-mono text-xs">{c.code || '—'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)] font-mono text-xs">{c.code || 'â€”'}</td>
                           <td className="px-4 py-3 text-[color:var(--white)] font-medium">{c.title ? `${c.title} ` : ''}{c.firstName} {c.lastName}</td>
-                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.company || '—'}</td>
-                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.phone || '—'}</td>
-                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.email || '—'}</td>
-                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)] font-mono text-xs">{c.idNumber || '—'}</td>
-                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)]">{c.city || '—'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.company || 'â€”'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.phone || 'â€”'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.72)]">{c.email || 'â€”'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)] font-mono text-xs">{c.idNumber || 'â€”'}</td>
+                          <td className="px-4 py-3 text-[rgba(232,234,230,0.55)]">{c.city || 'â€”'}</td>
                           <td className="px-4 py-3 text-[rgba(232,234,230,0.45)] text-xs">{c.createdAt}</td>
                           <td className="px-4 py-3">
                             <button
@@ -3518,7 +3525,7 @@ export default function App() {
                   const done = state.tasks.length - open;
                   return (
                     <p className="text-[13px] md:text-[15px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
-                      {open} open · {done} done
+                      {open} open Â· {done} done
                     </p>
                   );
                 })()}
@@ -3635,7 +3642,7 @@ export default function App() {
                         {s.name}
                       </div>
                       <div className="text-[13px] text-[rgba(232,234,230,0.72)]  font-mono tracking-wider">
-                        {s.role}{s.isActive ? "" : " · no access"}
+                        {s.role}{s.isActive ? "" : " Â· no access"}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -3757,7 +3764,125 @@ export default function App() {
           </div>
         )}
 
-        {/* WEB MANAGEMENT — inline-editable stock grid */}
+        {/* WEB MANAGEMENT â€” inline-editable stock grid */}
+        {activeSection === "media_web" && (
+          <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)] flex items-center gap-2">
+                  <Image size={24} className="text-[color:var(--cyan)]" /> Stock media & web readiness
+                </h1>
+                <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium max-w-xl">
+                  Premium stores gallery + publish evidence. Capture is <b className="text-[color:var(--white)]">only in TruLens</b>.
+                  Pipeline: Shoot GåÆ Export to DMS GåÆ refresh here GåÆ website feed.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => openTruLens()}
+                className="btn btn-primary text-[13px] font-semibold flex items-center gap-2 px-4 py-3"
+              >
+                <Camera size={14} /> Open TruLens capture
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div className="card p-4">
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">With photos</div>
+                <div className="text-2xl font-semibold text-[color:var(--cyan)] mt-1">
+                  {activeStock.filter(v => (v.images?.length || 0) > 0).length}
+                </div>
+              </div>
+              <div className="card p-4">
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Need shoot</div>
+                <div className="text-2xl font-semibold text-[color:var(--warning)] mt-1">
+                  {activeStock.filter(v => computeDmsGalleryReadiness(v).level === "capture").length}
+                </div>
+              </div>
+              <div className="card p-4">
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Web-ready gallery</div>
+                <div className="text-2xl font-semibold text-[color:var(--cyan-bright)] mt-1">
+                  {activeStock.filter(v => computeDmsGalleryReadiness(v).webReady).length}
+                </div>
+              </div>
+              <div className="card p-4">
+                <div className="text-[13px] tracking-normal text-[rgba(232,234,230,0.72)] font-semibold">Public stock feed</div>
+                <a
+                  className="text-[13px] text-[color:var(--cyan-bright)] font-mono mt-2 block break-all hover:underline"
+                  href={`/api/public/stock?dealer=${encodeURIComponent(currentDealerSlug || getDealerSlug())}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  /api/public/stock?dealer={currentDealerSlug || getDealerSlug()}
+                </a>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+              {activeStock.map(v => {
+                const r = computeDmsGalleryReadiness(v as any);
+                return (
+                  <div key={v.id} className="card overflow-hidden flex flex-col">
+                    <div className="aspect-[4/3] bg-[color:var(--ink-2)] relative">
+                      {r.photoCount > 0 ? (
+                        <img src={v.images![0]} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-[rgba(232,234,230,0.45)] gap-2">
+                          <Camera size={28} />
+                          <span className="text-[13px] font-semibold tracking-normal">No gallery yet</span>
+                        </div>
+                      )}
+                      <span
+                        className="absolute top-2 left-2 text-[13px] font-semibold px-2 py-0.5 rounded border"
+                        style={{ color: r.color, borderColor: r.color + "55", background: r.color + "22" }}
+                        title={r.reasons.join(" -+ ")}
+                      >
+                        {r.label}
+                      </span>
+                      {r.photoCount > 0 && (
+                        <span className="absolute top-2 right-2 text-[13px] font-semibold px-2 py-0.5 rounded bg-black/50 text-[color:var(--white)]">
+                          {r.photoCount} photos
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-3 flex flex-col gap-2 flex-1">
+                      <div>
+                        <div className="text-[16px] font-semibold text-[color:var(--white)]">{v.year} {v.make} {v.model}</div>
+                        <div className="text-[13px] text-[rgba(232,234,230,0.72)] font-mono">{v.stockNumber}</div>
+                      </div>
+                      <div className="text-[13px] text-[rgba(232,234,230,0.72)]">
+                        {(v as any).lastPhotoSync
+                          ? `Last TruLens sync ${new Date((v as any).lastPhotoSync).toLocaleString()}`
+                          : "Not synced from TruLens yet"}
+                      </div>
+                      {r.reasons[0] && (
+                        <div className="text-[13px] text-[color:var(--glass-line)]">{r.reasons[0]}</div>
+                      )}
+                      <div className="mt-auto flex gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-secondary text-[13px] flex-1"
+                          onClick={() => setSelectedDetailVehicle(v)}
+                        >
+                          Open stock card
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openTruLens(v.stockNumber)}
+                          className="btn btn-primary text-[13px] flex items-center justify-center gap-1 px-3"
+                          title="Complete guided shoot in TruLens"
+                        >
+                          <Camera size={12} /> Shoot
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {activeSection === "web_management" && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 pt-6 md:pt-8">
             <WebManagementGrid
@@ -3775,14 +3900,14 @@ export default function App() {
             <div>
               <h1 className="font-sans text-2xl font-semibold tracking-tight text-[color:var(--white)]">Settings</h1>
               <p className="text-[13px] text-[rgba(232,234,230,0.72)] mt-0.5 font-medium">
-                {PRODUCT_NAME} — stock, CRM, media hub, full finance & website embeds
+                {PRODUCT_NAME} â€” stock, CRM, media hub, full finance & website embeds
               </p>
             </div>
 
             {/* Backup. Admin only, and the server enforces that independently.
                 The mounted disk holds the only copy of every dealer's photos,
                 and taking one previously meant the Render shell or a pasted
-                console snippet — the endpoint cannot be reached by typing its
+                console snippet â€” the endpoint cannot be reached by typing its
                 URL, because auth is a bearer token from localStorage rather
                 than a cookie, so a plain navigation arrives unauthenticated. */}
             {getAccount()?.role === "admin" && (
@@ -3794,8 +3919,8 @@ export default function App() {
                 </div>
                 <div className="card-body p-5 flex flex-col gap-3">
                   <p className="text-[13px] text-[rgba(232,234,230,0.72)] max-w-2xl">
-                    Downloads the entire DMS — every dealership, vehicle, photo, lead and
-                    invoice — as a dated JSON file. The disk on the server holds the only
+                    Downloads the entire DMS â€” every dealership, vehicle, photo, lead and
+                    invoice â€” as a dated JSON file. The disk on the server holds the only
                     copy, so keep a recent one somewhere else.
                   </p>
                   <div className="flex items-center gap-3 flex-wrap">
@@ -3841,14 +3966,14 @@ export default function App() {
                       }}
                       className="btn btn-primary"
                     >
-                      <Download size={14} /> {backingUp ? "Preparing…" : "Download full backup"}
+                      <Download size={14} /> {backingUp ? "Preparingâ€¦" : "Download full backup"}
                     </button>
                     {/* The other half. Without it the backup above was a file
                         nobody could put back: this instance could be downloaded
                         and could be wiped, and restoring meant writing to the
                         mounted disk through the Render shell. */}
                     <label className="btn btn-secondary cursor-pointer">
-                      <Upload size={14} /> {restoring ? "Restoring…" : "Restore from backup…"}
+                      <Upload size={14} /> {restoring ? "Restoringâ€¦" : "Restore from backupâ€¦"}
                       <input
                         type="file"
                         accept="application/json,.json"
@@ -3886,7 +4011,7 @@ export default function App() {
                             addNotification(
                               "Restored",
                               `${body.restored?.dealerships ?? 0} dealerships, ${body.restored?.vehicles ?? 0} vehicles. ` +
-                              `Previous state kept as ${body.previousStateSavedAs || "—"}.`,
+                              `Previous state kept as ${body.previousStateSavedAs || "â€”"}.`,
                               "info"
                             );
                             loadAllState();
@@ -3903,7 +4028,7 @@ export default function App() {
                         last: {lastBackupMb.toFixed(1)} MB
                         {lastBackupMb < 1 && (
                           <b className="text-[color:var(--warning)] ml-2">
-                            — suspiciously small, check you are master admin
+                            â€” suspiciously small, check you are master admin
                           </b>
                         )}
                       </span>
@@ -3913,10 +4038,10 @@ export default function App() {
               </div>
             )}
 
-            {/* Onboarding a dealership. Admin only — the server enforces it too,
+            {/* Onboarding a dealership. Admin only â€” the server enforces it too,
                 so this gate only avoids rendering a form that would 403. */}
             {getAccount()?.role === "admin" && (
-              <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+              <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loadingâ€¦</div>}>
                 <DealershipAdmin
                   onNotify={addNotification}
                   scopedDealershipId={adminDealerScope}
@@ -3925,7 +4050,7 @@ export default function App() {
               </Suspense>
             )}
 
-            {/* TruSocial — connect and auto-publish to social channels.
+            {/* TruSocial â€” connect and auto-publish to social channels.
                 For a dealer login, show their own panel. Master admin
                 accesses this per-dealer via DealershipAdmin's "Social" tab
                 instead of a stacked panel per dealer. */}
@@ -3934,7 +4059,7 @@ export default function App() {
                 ? hasProduct("social") ? [currentDealership] : []
                 : (state?.dealerships || []).filter((d: any) => (d.products || []).includes("social"));
               return socialDealers.map((d: any) => (
-                <Suspense key={d.id} fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+                <Suspense key={d.id} fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loadingâ€¦</div>}>
                   <TruSocialSettings
                     dealershipId={d.id}
                     dealerName={dealershipId ? undefined : d.name}
@@ -3945,12 +4070,12 @@ export default function App() {
               ));
             })()}
 
-            {/* Dealer details — self-service editor for the identity fields
+            {/* Dealer details â€” self-service editor for the identity fields
                 quoted on invoices, agreements and public listings. Master
                 admin edits these per-dealer inside DealershipAdmin's tabs,
                 so this stack now only renders for dealer logins. Demo (no
                 real dealer row in shared state) still gets a stub so the
-                form is testable — Save 404s and the amber banner explains why. */}
+                form is testable â€” Save 404s and the amber banner explains why. */}
             {!isMasterAdmin && state?.dealerships && (() => {
               const target = dealershipId
                 ? state.dealerships.filter((d) => d.id === dealershipId)
@@ -3968,7 +4093,7 @@ export default function App() {
                 <>
                   {target.length === 0 && synthesizedDemo.length > 0 && (
                     <div className="text-[12px] text-amber-300 border border-amber-500/30 bg-amber-500/10 rounded-md px-3 py-2">
-                      Preview only — this account has no persisted dealership record, so Save will not work.
+                      Preview only â€” this account has no persisted dealership record, so Save will not work.
                       Sign in with a dealer code to persist changes.
                     </div>
                   )}
@@ -3976,11 +4101,11 @@ export default function App() {
                     <React.Fragment key={d.id}>
                       <DealerDetailsSettings dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
                       <DocSettingsPanel dealership={d} isAdmin={isMasterAdmin} onSaved={loadAllState} />
-                      {/* Accounting integrations (Xero/QuickBooks/Zoho via Codat) —
+                      {/* Accounting integrations (Xero/QuickBooks/Zoho via Codat) â€”
                           feeds DocHub's 'connect' invoice mode. Same per-dealer loop
                           as the two panels above since it's part of the same document
                           settings surface, not gated behind a product flag. */}
-                      <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loading…</div>}>
+                      <Suspense fallback={<div className="p-6 text-[13px] text-[rgba(232,234,230,0.55)]">Loadingâ€¦</div>}>
                         <AccountingIntegrationsSettings
                           dealershipId={d.id}
                           dealerName={dealershipId ? undefined : d.name}
@@ -4025,7 +4150,7 @@ export default function App() {
 
       </main>
 
-      {/* Dealer Assist. Opens from the top bar — no floating launcher. */}
+      {/* Dealer Assist. Opens from the top bar â€” no floating launcher. */}
       <ChatWidget open={assistOpen} onOpenChange={setAssistOpen} />
       <GuidePanel
         open={guideOpen}
@@ -4035,7 +4160,7 @@ export default function App() {
         onAskAssist={() => setAssistOpen(true)}
       />
 
-      {/* First-run setup checklist. Takes precedence over the guide tour — the
+      {/* First-run setup checklist. Takes precedence over the guide tour â€” the
           first-run effect holds the tour back while this is about to fire. */}
       <SetupPrompt
         open={setupModalVisible}
@@ -4049,7 +4174,7 @@ export default function App() {
 
       {/* The public-facing website chatbot simulation used to float bottom-left
           of the dealer's own workstation, which put two different assistants on
-          one screen — one for the dealer, one pretending to be the customer's.
+          one screen â€” one for the dealer, one pretending to be the customer's.
           It belongs on the dealer's website, not in the DMS. Component kept;
           only the render is removed. */}
 
@@ -4200,12 +4325,12 @@ export default function App() {
               <button onClick={() => { setIsUserModalOpen(false); setIssuedCode(null); setSeatError(""); }} className="text-[rgba(232,234,230,0.72)] hover:text-[color:var(--white)] cursor-pointer"><X size={16} /></button>
             </div>
 
-            {/* Shown once. There is no way to read it back — only to issue a new one. */}
+            {/* Shown once. There is no way to read it back â€” only to issue a new one. */}
             {issuedCode ? (
               <div className="flex flex-col gap-3">
                 <p className="text-[13px] text-[rgba(232,234,230,0.72)] leading-relaxed">
                   Give this code to <b className="text-[color:var(--white)]">{issuedCode.name}</b>. It won't be
-                  shown again — if it goes missing, issue a new one from the staff list.
+                  shown again â€” if it goes missing, issue a new one from the staff list.
                 </p>
                 <div className="bg-[rgba(232,234,230,0.04)] border border-[rgba(232,234,230,0.14)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.35)] rounded-[12px] px-4 py-4 text-center">
                   <span className="text-[22px] font-semibold font-mono tracking-[0.2em] text-[color:var(--white)] select-all">{issuedCode.code}</span>
@@ -4264,9 +4389,9 @@ export default function App() {
       {/* --- DETAIL MODALS ---
           Both of these are lazy(), so they must sit inside a Suspense boundary.
           Without one, clicking a lead or a vehicle threw on render and the
-          error boundary swallowed it — the row simply did nothing. */}
+          error boundary swallowed it â€” the row simply did nothing. */}
       {leadDetailId && (
-        <Suspense fallback={<div className="fixed inset-0 z-[400] grid place-items-center bg-black/60 text-[13px] text-[rgba(232,234,230,0.72)]">Opening…</div>}>
+        <Suspense fallback={<div className="fixed inset-0 z-[400] grid place-items-center bg-black/60 text-[13px] text-[rgba(232,234,230,0.72)]">Openingâ€¦</div>}>
         <LeadDetailModal
           leadId={leadDetailId}
           vehicles={state.vehicles}
@@ -4282,7 +4407,7 @@ export default function App() {
             <DocumentsHub
               embedded
               leadId={leadDetailId}
-              /* DocHub-tracked documents (stage set) are excluded here — they have
+              /* DocHub-tracked documents (stage set) are excluded here â€” they have
                  their own tab with proper sign/finalize/skip flows that advance
                  lead.docStage and write the audit trail. Signing one through this
                  generic hub's plain signDocument() would mark it Signed without
@@ -4316,7 +4441,7 @@ export default function App() {
       )}
 
       {selectedDetailVehicle && (
-        <Suspense fallback={<div className="fixed inset-0 z-[400] grid place-items-center bg-black/60 text-[13px] text-[rgba(232,234,230,0.72)]">Opening…</div>}>
+        <Suspense fallback={<div className="fixed inset-0 z-[400] grid place-items-center bg-black/60 text-[13px] text-[rgba(232,234,230,0.72)]">Openingâ€¦</div>}>
         <VehicleDetailModal
           vehicle={state.vehicles.find((v) => v.id === selectedDetailVehicle.id) || selectedDetailVehicle}
           isOpen={true}
@@ -4330,7 +4455,7 @@ export default function App() {
           dealership={state.dealerships.find(d => d.id === dealershipId) || state.dealerships[0]}
           truSocialEnabled={(() => {
             // Publish tab shows only for a dealer that both carries the "social"
-            // product and has TruSocial switched on — the publish targets are
+            // product and has TruSocial switched on â€” the publish targets are
             // OAuth connections, so anything less would only ever fail.
             const d: any = (state?.dealerships || []).find(
               (x: any) => x.id === (dealershipId || selectedDetailVehicle?.dealershipId)
@@ -4450,7 +4575,7 @@ export default function App() {
                 }} 
                 className="px-4 py-2 bg-[color:var(--cyan-faint)] border border-[color:var(--cyan-soft)] text-[color:var(--cyan-bright)] hover:bg-[color:var(--cyan-soft)] rounded-xl text-[13px] font-semibold cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
               >
-                📧 Email to Stakeholders
+                ðŸ“§ Email to Stakeholders
               </button>
 
               <button 
@@ -4458,7 +4583,7 @@ export default function App() {
                 onClick={handleExportCSV} 
                 className="px-4 py-2 bg-[color:var(--cyan)] text-[color:var(--ink)] font-semibold rounded-xl text-[13px] shadow-lg hover:bg-[color:var(--cyan-soft)] cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
               >
-                ⬇️ Export Spreadsheet (CSV)
+                â¬‡ï¸ Export Spreadsheet (CSV)
               </button>
             </div>
 

@@ -461,6 +461,8 @@ Results display inline as chips: "Clear" (emerald) / "Stolen" / "Finance pending
 - `web_management` stays built and reachable via the dashboard Web readiness card's Manage button; recorded in tests/navigation.test.mjs WITHHELD with that reason. The nav-completeness guardrail caught the orphan within minutes of the nav edit — trust that test.
 - field-guide.html updated to match.
 
+**⚠️ Reverted 2026-08-25 at owner direction:** the Media & Web group is back. `media_web` ("Stock media") + `web_management` ("Web Management") are again in `groupedNavigation` (before Dealer Settings), both role menus, and `media_web`'s Stock Media hub render was restored from the pre-`eeedfb5` file (card grid is now `grid-cols-2/3/4` with `aspect-[4/3]` uniform tiles at owner request; `web_management` removed from WITHHELD). The `Image` lucide icon was re-added to the App.tsx import.
+
 **Guide copy grounded in what apps actually do (all 3 apps' src/lib/guides.ts):**
 - AI damage detection claims REMOVED everywhere. Damage tagging is manual in Inspect + Lens (tap spot, type, severity 1–5); Inspect's /api/inspect/damage endpoint is retired and returns empty findings; Lens's "Scan this photo with AI" button targets a route that does not exist in its server. Owner-set framing: "AI is involved, but not for detection."
 - Premium guides added: trade-in appraisal (Inspect walk-around → free market scraper / TU valuation → editable margin → signed offer), TruOrbit 360 spin (Lens lap panels → auto-built on DMS export ≥6 frames → drag-spin on listing).

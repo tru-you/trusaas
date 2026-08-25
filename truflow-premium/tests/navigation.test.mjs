@@ -33,10 +33,6 @@ const WITHHELD = {
   customer_form:
     "Duplicates the Lead CRM capture already in the menu and reports success " +
     "with a raw alert().",
-  web_management:
-    "Deliberately out of the sidebar (2026-08-24): its entry point is the " +
-    "dashboard's Web readiness card 'Manage' button, next to the gallery " +
-    "counters it manages. Still fully built and reachable.",
 };
 
 function navIds(src) {
