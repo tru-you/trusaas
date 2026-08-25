@@ -121,6 +121,17 @@ All defined in `render.yaml`. **Do not downgrade to free tier** — starter plan
 
 ## 4. Recent Changes (2026-08-21)
 
+### Shared market-scraper package (2026-08-25)
+
+The market-value engine — previously a ~1300-line `src/lib/scraper.ts` copy duplicated in TruLens, truinspect and truflow-premium — now lives once in **`packages/market-scraper/`**:
+- `engine.ts` — the full market-agnostic pipeline (dealer stock → classifieds → headless worker → Bright Data Unlocker → SERP). Market-dependent bits (currency symbol, country code, Google domain, price bounds, classifieds sources, title matcher) come from a `MarketConfig`.
+- `markets/{sa,us,uk,housing}.ts` — concrete configs. SA is the default and reproduces the old behaviour exactly (AutoTrader + Cars.co.za, ZAR, `country: za`).
+- `index.ts` — `fetchValuation(make, model, year, opts, market?)` (+ `markets` export). `market` defaults to SA, so existing callers are unchanged.
+- Each app's `src/lib/scraper.ts` + `makeAliases.ts` are now thin re-exports of the package (same relative path `../../../packages/market-scraper`).
+- `hooks`: the package has its own `package.json` (axios, cheerio) + `node_modules` so TS and the runtime resolve them from `packages/market-scraper/node_modules`; apps must install there after a fresh clone (`npm install --prefix packages/market-scraper`). Build uses `--packages=external`, so axios/cheerio resolve from each app's own node_modules at runtime.
+
+**Caveats for other markets:** the US/UK/housing `classifieds` URLs + CSS selectors are best-effort and should be retuned against live markup; housing uses a `titleMatch` property matcher instead of make/model/year.
+
 ### Inspector e-sign on all three reports (2026-08-24)
 
 All three dealer-facing reports now carry a drawn signature:
