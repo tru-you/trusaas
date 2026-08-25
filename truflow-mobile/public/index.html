@@ -288,6 +288,8 @@ button,input,textarea{font-family:inherit;}
 .gate input:focus{border-color:var(--cyan-soft);} .gate input.err{border-color:var(--danger);animation:shake .3s;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
 .gate .enter{width:100%;max-width:300px;height:52px;margin-top:14px;font-size:16px;z-index:1;}
+.gate .btn-demo{background:transparent;color:#4FE3DC;border:1.5px solid rgba(79,227,220,.55);margin-top:10px;font-weight:600;}
+.gate .btn-demo:hover{background:rgba(79,227,220,.08);}
 .gate .err-msg{font-family:var(--mono);font-size:12px;color:var(--danger);margin-top:12px;min-height:14px;z-index:1;}
 .gate .foot{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom));font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--faint);}
 
@@ -590,6 +592,7 @@ button,input,textarea{font-family:inherit;}
   <h1>Tru<b>Flow</b></h1><span class="tag">Mobile</span>
   <input id="gateCode" type="password" inputmode="text" placeholder="Dealer code" autocomplete="off" autocapitalize="off" style="margin-top:26px">
   <button class="enter btn-primary" id="gateEnter">Sign in</button>
+  <button class="enter btn-demo" id="gateDemo">Try demo (24h)</button>
   <div class="err-msg" id="gateErr"></div>
   <div class="foot">Powered by TruDealer</div>
 </div>
@@ -665,6 +668,23 @@ button,input,textarea{font-family:inherit;}
         enterApp();
       })
       .catch(function(){btn.disabled=false;btn.textContent="Sign in";errEl.textContent="Can't reach the server. Try again.";});
+  }
+
+  /* Prospect demo — same tenant as the Premium demo (dealershipId "demo"),
+     24h token, no code needed. The server proxies this to Premium. */
+  function doDemo(){
+    var errEl=$("#gateErr"), btn=$("#gateDemo");
+    btn.disabled=true;btn.textContent="Opening demo…";errEl.textContent="";
+    fetch(API+"/api/auth/demo",{method:"POST",headers:{"Content-Type":"application/json"}})
+      .then(function(r){return r.json().then(function(d){return {ok:r.ok,data:d};});})
+      .then(function(res){
+        btn.disabled=false;btn.textContent="Try demo (24h)";
+        if(!res.ok){errEl.textContent=res.data.error||"Demo is unavailable right now.";return;}
+        TOKEN=res.data.token;AUTH=res.data.account||{label:"Demo Dealership",demo:true};
+        try{localStorage.setItem("tflx_token",TOKEN);localStorage.setItem("tflx_auth",JSON.stringify(AUTH));}catch(e){}
+        enterApp();
+      })
+      .catch(function(){btn.disabled=false;btn.textContent="Try demo (24h)";errEl.textContent="Can't reach the server. Try again.";});
   }
   // Data safety: on sign-out, drop everything the service worker cached for this
   // dealer (leads + stock, incl. customer PII) so it can't linger on the device
@@ -1645,8 +1665,9 @@ button,input,textarea{font-family:inherit;}
   }
 
   /* ── Boot ── */
-  $("#gateEnter").addEventListener("click",doLogin);
-  $("#gateCode").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
+    $("#gateEnter").addEventListener("click",doLogin);
+    $("#gateCode").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
+    $("#gateDemo").addEventListener("click",doDemo);
   $("#signout").addEventListener("click",doLogout);
   // Support → TruSaaS WhatsApp, pre-filled with who is asking + their code.
   var SUPPORT_WA="447476995694";
