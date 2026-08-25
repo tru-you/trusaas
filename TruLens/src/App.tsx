@@ -274,9 +274,12 @@ export default function App() {
       // The DMS target is fixed on the server (TRUFLOW_DMS_URL) for every
       // device — the phone no longer carries its own base URL. A stale
       // localhost left in a phone's storage used to silently break exports.
-      const dealerSlug =
-        localStorage.getItem('trulens_dealer_slug') ||
-        undefined;
+      // Demo sessions send no slug at all: the server pins them to the
+      // hardcoded "demo" tenant, and a slug left in localStorage by a
+      // previous real sign-in must never ride along.
+      const dealerSlug = isDemo
+        ? undefined
+        : localStorage.getItem('trulens_dealer_slug') || undefined;
 
       const res = await fetch('/api/export/dms', {
         method: 'POST',

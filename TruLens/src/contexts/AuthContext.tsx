@@ -78,6 +78,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!res.ok) throw new Error(data?.error || 'Demo is not available here.');
     localStorage.setItem(DEMO_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
     localStorage.setItem(DEVICE_TOKEN_KEY, data.token);
+    /* Drop any real dealership's slug left by a previous sign-in on this
+       browser — in demo the export target is the pinned "demo" tenant, and
+       stale slug state must never show (or read) as the tagging yard. A real
+       dealer signing back in re-pins the slug from their access code. */
+    try {
+      localStorage.removeItem('trulens_dealer_slug');
+      localStorage.removeItem('trulens_dealer_confirmed');
+      localStorage.removeItem('trulens_dealer_pinned');
+    } catch { /* private mode */ }
     setIsDemo(true);
     setUser(createDemoUser(data.uid, data.token));
     setLoading(false);

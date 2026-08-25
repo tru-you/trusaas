@@ -196,8 +196,10 @@ export default function InventoryList({
       must match a slug the DMS's public website feed knows how to isolate.
       A phone used on Caledon's floor should be set to "cars-on-caledon" so
       captures never default to (and leak onto) MKR's site. */
-  /* Read-only now: the access code sets this, not the phone. */
-  const dealerSlug = localStorage.getItem('trulens_dealer_slug') || '';
+  /* Read-only now: the access code sets this, not the phone. Demo sessions
+     always read as "demo" — a slug left in localStorage by a previous real
+     sign-in on this browser must never show (or read) as the export target. */
+  const dealerSlug = isDemo ? 'demo' : localStorage.getItem('trulens_dealer_slug') || '';
   /** True when the access code itself carried the dealership, in which case the
       server enforces it and nothing on this phone can override it. */
   const dealerPinned = localStorage.getItem('trulens_dealer_pinned') === '1';
