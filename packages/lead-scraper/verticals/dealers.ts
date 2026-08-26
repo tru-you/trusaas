@@ -46,11 +46,16 @@ const COUNTRY_NAMES: Record<string, string> = {
   uk: "United Kingdom",
   us: "United States",
   au: "Australia",
-  ca: "Canada",
+  ca: "Canada"
 };
 
+function normalizeCity(city: string): string {
+  return city.trim().toLowerCase().replace(/[-_]+/g, " ");
+}
+
 function dealerListUrl(location: string, page = 1): string {
-  const entry = CITY_PROVINCE[location.trim().toLowerCase()];
+  const norm = normalizeCity(location);
+  const entry = CITY_PROVINCE[norm];
   const base = entry ? `https://www.cars.co.za/search-dealer/${entry}/` : "https://www.cars.co.za/search-dealer/";
   return page > 1 ? `${base}?page=${page}` : base;
 }
@@ -61,12 +66,11 @@ function dealerEntriesFromList(html: string): { detailUrl: string; name: string 
   const seen = new Set<string>();
   for (const m of html.matchAll(/\/groups\/[^/]+\/[^/]+\/\d+\//gi)) {
     const path = m[0];
-    const parts = path.split("/").filter(Boolean); // [groups, Group, Name, id]
+    const parts = path.split("/").filter(Boolean);
     const name = parts[2] || "";
-    const id = parts[3] || "";
-    if (!name || !id || seen.has(path)) continue;
+    if (seen.has(path)) continue;
     seen.add(path);
-    out.push({ detailUrl: `https://www.cars.co.za${path}`, name: name.replace(/-/g, " ") });
+    out.push({ detailUrl: `https://www.cars.co.za${path}`, name });
   }
   return out;
 }
@@ -103,7 +107,7 @@ function parseDealerPage(html: string, fallbackName: string): { name: string; ad
   };
 }
 
-/** Geoapify places search for dealerships across UK, US, SA, etc. */
+/** Geoapify places search for verified dealerships across SA, UK, US */
 async function geoapifyDealersInCity(city: string, country = "za", limit = 20): Promise<DealerLead[]> {
   const apiKey = (process.env.GEOAPIFY_API_KEY || "").trim();
   if (!apiKey) return [];
@@ -114,12 +118,7 @@ async function geoapifyDealersInCity(city: string, country = "za", limit = 20): 
     const coords = geo?.features?.[0]?.geometry?.coordinates;
     if (!Array.isArray(coords) || typeof coords[0] !== "number") return [];
 
-    const lon1 = (coords[0] - 0.4).toFixed(4);
-    const lat1 = (coords[1] - 0.3).toFixed(4);
-    const lon2 = (coords[0] + 0.4).toFixed(4);
-    const lat2 = (coords[1] + 0.3).toFixed(4);
-
-    const placesUrl = `https://api.geoapify.com/v2/places?apiKey=${apiKey}&categories=service.vehicle.car_dealer,commercial.vehicle&filter=rect:${lon1},${lat1},${lon2},${lat2}&bias=proximity:${coords[0]},${coords[1]}&limit=${limit}`;
+    const placesUrl = `https://api.geoapify.com/v2/places?apiKey=${apiKey}&categories=commercial.vehicle&filter=circle:${coords[0]},${coords[1]},35000&bias=proximity:${coords[0]},${coords[1]}&limit=${limit}`;
     const data = await (await import("../core")).fetchJson(placesUrl);
     const features: any[] = Array.isArray(data?.features) ? data.features : [];
 
@@ -165,121 +164,83 @@ async function scrapeDealersForSingleCity(
   enrichWebsites = true
 ): Promise<DealerLead[]> {
   const leads: DealerLead[] = [];
+  const core = await import("../core");
 
-  // For SA: try cars.co.za directory first
-  if (country === "za") {
-    const entries: { detailUrl: string; name: string }[] = [];
-    for (let page = 1; entries.length < maxDealers && page <= 3; page++) {
-      const listUrl = dealerListUrl(city, page);
-      let listHtml = await webUnlockerFetch(listUrl, { country: "za" });
-      if (!listHtml) listHtml = await webUnlockerFetch(listUrl, { country: "za" });
-      if (!listHtml || detectBlocked(listHtml)) break;
-      const pageEntries = dealerEntriesFromList(listHtml);
-      if (!pageEntries.length) break;
-      entries.push(...pageEntries);
-      if (entries.length >= maxDealers) break;
-    }
+  // 1. Primary: Geoapify Places (Fast, guaranteed real local dealerships)
+  const placesLeads = await geoapifyDealersInCity(city, country, maxDealers);
+  leads.push(...placesLeads);
 
-    const selectedEntries = entries.slice(0, maxDealers);
-    let cursor = 0;
-    const worker = async () => {
-      while (cursor < selectedEntries.length) {
-        const item = selectedEntries[cursor++];
+  // 2. Supplement with Cars.co.za directory if country is ZA and more needed
+  if (country === "za" && leads.length < maxDealers) {
+    try {
+      const entries: { detailUrl: string; name: string }[] = [];
+      const listUrl = dealerListUrl(city, 1);
+      const listHtml = await webUnlockerFetch(listUrl, { country: "za" });
+      if (listHtml && !detectBlocked(listHtml)) {
+        entries.push(...dealerEntriesFromList(listHtml));
+      }
+      for (const item of entries.slice(0, maxDealers - leads.length)) {
         const page = await webUnlockerFetch(item.detailUrl, { country: "za" });
         if (!page) continue;
         const pr = parseDealerPage(page, item.name);
         if (!pr.name) continue;
-
-        let website = pr.website;
-        let linkedin = "";
-        let emails = pr.email ? [pr.email] : [];
-        let phones = pr.phone ? [pr.phone] : [];
-        let contact = "";
-        let contactTitle = "";
-        let rating: number | undefined;
-        let reviews: number | undefined;
-        let address = pr.address || city;
-
-        // Run deep Google SERP lookup for business intelligence & decision maker
-        if (enrichWebsites) {
-          const serpInfo = await (await import("../core")).serpDeepBusinessLookup(pr.name, city, "za", "dealers");
-          if (serpInfo.website && !serpInfo.website.includes("cars.co.za")) website = serpInfo.website;
-          if (serpInfo.contact) {
-            contact = serpInfo.contact;
-            contactTitle = serpInfo.contactTitle || "";
-          }
-          if (serpInfo.linkedin) linkedin = serpInfo.linkedin;
-          if (serpInfo.address) address = serpInfo.address;
-          if (typeof serpInfo.rating === "number") rating = serpInfo.rating;
-          if (typeof serpInfo.reviews === "number") reviews = serpInfo.reviews;
-          if (serpInfo.phones.length > 0) phones = Array.from(new Set([...phones, ...serpInfo.phones])).slice(0, 5);
-          if (serpInfo.emails.length > 0) emails = Array.from(new Set([...emails, ...serpInfo.emails])).slice(0, 5);
-        }
-
-        const primaryPhone = phones[0] || pr.phone || "";
-        if (!primaryPhone && !website) continue;
-
-        const leadObj: DealerLead = {
+        leads.push({
           vertical: "dealers",
-          id: `dealers|za|${pr.name}|${primaryPhone || city}`.toLowerCase().replace(/\s+/g, " "),
+          id: `dealers|za|${pr.name}|${city}`.toLowerCase().replace(/\s+/g, " "),
           name: pr.name,
           location: city,
           country: "za",
-          website: website || item.detailUrl,
-          linkedin,
-          emails,
-          phones,
+          website: pr.website || item.detailUrl,
+          linkedin: "",
+          emails: pr.email ? [pr.email] : [],
+          phones: pr.phone ? [pr.phone] : [],
           source: "cars.co.za",
           foundAt: new Date().toISOString(),
           context: `Dealership — ${city}`,
-          address,
-          contact,
-          contactTitle,
-          rating,
-          reviews,
-        };
-
-        const core = await import("../core");
-        leadObj.pitch = core.generateBattlecard(leadObj);
-        leadObj.qualityScore = core.calculateQualityScore(leadObj);
-        if (primaryPhone) leadObj.formattedPhone = core.formatPhoneE164(primaryPhone, "za");
-
-        leads.push(leadObj);
+          address: pr.address || city,
+        });
       }
-    };
-    await Promise.all(Array.from({ length: Math.min(concurrency, selectedEntries.length || 1) }, worker));
+    } catch {
+      /* continue */
+    }
   }
 
-  // For UK / US / SA supplement: use Geoapify Places and SERP
-  if (leads.length < maxDealers) {
-    const extra = await geoapifyDealersInCity(city, country, maxDealers - leads.length);
-    if (enrichWebsites) {
-      let cursor = 0;
-      const enrichWorker = async () => {
-        while (cursor < extra.length) {
-          const item = extra[cursor++];
-          const serpInfo = await (await import("../core")).serpDeepBusinessLookup(item.name, city, country, "dealers");
-          if (serpInfo.website) item.website = serpInfo.website;
-          if (serpInfo.contact) {
-            item.contact = serpInfo.contact;
-            item.contactTitle = serpInfo.contactTitle;
+  // 3. Deep Enrichment (Web Search Fallback + Website Contact Crawl + Pitch Battlecards)
+  if (enrichWebsites && leads.length > 0) {
+    let cursor = 0;
+    const enrichWorker = async () => {
+      while (cursor < leads.length) {
+        const item = leads[cursor++];
+        try {
+          // If website or phone is missing, resolve via zero-block fast lookup
+          if (!item.website || item.phones.length === 0) {
+            const webInfo = await core.fastWebLookup(`${item.name} dealership ${city} South Africa contact phone`, country);
+            if (!item.website && webInfo.website) item.website = webInfo.website;
+            if (item.phones.length === 0 && webInfo.phone) item.phones = [webInfo.phone];
           }
-          if (serpInfo.linkedin) item.linkedin = serpInfo.linkedin;
-          if (serpInfo.address) item.address = serpInfo.address;
-          if (typeof serpInfo.rating === "number") item.rating = serpInfo.rating;
-          if (typeof serpInfo.reviews === "number") item.reviews = serpInfo.reviews;
-          if (serpInfo.phones.length > 0) item.phones = Array.from(new Set([...(item.phones || []), ...serpInfo.phones])).slice(0, 5);
-          if (serpInfo.emails.length > 0) item.emails = Array.from(new Set([...(item.emails || []), ...serpInfo.emails])).slice(0, 5);
 
-          const core = await import("../core");
+          // Crawl official website for sales emails & direct phone lines
+          if (item.website && !item.website.includes("cars.co.za")) {
+            const crawled = await core.crawlWebsiteContacts(item.website);
+            if (crawled.emails.length > 0) {
+              item.emails = Array.from(new Set([...item.emails, ...crawled.emails])).slice(0, 5);
+            }
+            if (crawled.phones.length > 0) {
+              item.phones = Array.from(new Set([...item.phones, ...crawled.phones])).slice(0, 5);
+            }
+            if (crawled.linkedin && !item.linkedin) item.linkedin = crawled.linkedin;
+          }
+
+          // Format phone, quality score, and 2-sentence battlecard
+          if (item.phones?.[0]) item.formattedPhone = core.formatPhoneE164(item.phones[0], country);
           item.pitch = core.generateBattlecard(item);
           item.qualityScore = core.calculateQualityScore(item);
-          if (item.phones?.[0]) item.formattedPhone = core.formatPhoneE164(item.phones[0], country);
+        } catch {
+          /* continue */
         }
-      };
-      await Promise.all(Array.from({ length: Math.min(concurrency, extra.length || 1) }, enrichWorker));
-    }
-    leads.push(...extra);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(concurrency, leads.length || 1) }, enrichWorker));
   }
 
   return leads;

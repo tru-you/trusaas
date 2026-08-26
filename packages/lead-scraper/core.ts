@@ -26,17 +26,36 @@ const BD_API_BASE = "https://api.brightdata.com";
 
 /* ── env ───────────────────────────────────────────────────────────────── */
 
-export function loadEnv(path = ".env"): void {
-  try {
-    const txt = fs.readFileSync(path, "utf-8");
-    for (const line of txt.split("\n")) {
-      const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
-      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+export function loadEnv(customPath?: string): void {
+  const pathsToTry = [
+    customPath,
+    ".env",
+    "../../TruCRM/.env",
+    "../TruCRM/.env",
+    "TruCRM/.env",
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(process.cwd(), "../../TruCRM/.env"),
+    path.resolve(process.cwd(), "../TruCRM/.env"),
+    path.resolve(process.cwd(), "TruCRM/.env"),
+  ].filter(Boolean) as string[];
+
+  for (const p of pathsToTry) {
+    try {
+      if (fs.existsSync(p)) {
+        const txt = fs.readFileSync(p, "utf-8");
+        for (const line of txt.split("\n")) {
+          const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+          if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+        }
+      }
+    } catch {
+      /* ignore */
     }
-  } catch {
-    // no .env — rely on real env vars
   }
 }
+
+// Auto-run on module import
+loadEnv();
 
 const bdEnv = (name: string) => (process.env[name] || "").trim();
 export const serpConfigured = () => !!bdEnv("BRIGHTDATA_API_KEY");
@@ -160,10 +179,10 @@ export async function fetchJson(url: string, timeoutMs = 20000): Promise<any> {
   }
 }
 
-export async function fetchPageText(url: string): Promise<string | null> {
+export async function fetchPageText(url: string, timeoutMs = 4500): Promise<string | null> {
   try {
     const { status, text, contentType } = await nodeGet(url, {
-      timeoutMs: 12000,
+      timeoutMs,
       accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     });
     if (status < 200 || status >= 300) return null;
@@ -375,75 +394,93 @@ export interface DeepBusinessIntelligence {
   contactTitle?: string;
 }
 
-/** Comprehensive Google SERP Business Intelligence & Knowledge Graph lookup */
+/** Fast HTML web search fallback that never blocks or requires API credits */
+export async function fastWebLookup(query: string, country = "za"): Promise<{ website: string; phone: string; snippet: string }> {
+  try {
+    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(6000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      },
+    });
+    if (!res.ok) return { website: "", phone: "", snippet: "" };
+    const html = await res.text();
+    const text = cleanHtmlText(html);
+    const phones = country.toLowerCase() === "za" ? extractSaPhones(text) : extractIntlPhones(text);
+
+    const matches = Array.from(html.matchAll(/class="result__url"[^>]*href="([^"]+)"/gi)).map((m) => m[1]);
+    let website = "";
+    for (const m of matches) {
+      const decoded = decodeURIComponent(m.replace(/^.*uddg=/, "").replace(/&.*$/, ""));
+      if (!SERP_EXCLUDE.test(decoded)) {
+        website = decoded;
+        break;
+      }
+    }
+    return { website, phone: phones[0] || "", snippet: text.slice(0, 300) };
+  } catch {
+    return { website: "", phone: "", snippet: "" };
+  }
+}
+
+/** Comprehensive Google SERP + Zero-Block Web Business Intelligence */
 export async function serpDeepBusinessLookup(
   name: string,
   location = "",
   country = "za",
   vertical = "dealers"
 ): Promise<DeepBusinessIntelligence> {
-  const key = bdEnv("BRIGHTDATA_API_KEY");
   const result: DeepBusinessIntelligence = {
     website: "",
     phones: [],
     emails: [],
   };
-  if (!key || !name) return result;
+  if (!name) return result;
 
+  const key = bdEnv("BRIGHTDATA_API_KEY");
   const zone = bdEnv("BRIGHTDATA_SERP_ZONE") || "tds";
   const gl = country === "gb" ? "uk" : country === "za" ? "za" : "us";
   const query = vertical === "dealers"
     ? `"${name}" ${location ? `"${location}"` : ""} dealership`
     : `"${name}" ${location ? `"${location}"` : ""}`;
 
-  const url = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${gl}&hl=en&num=8&brd_json=1`;
+  // 1. Try Bright Data SERP (fast 5s timeout)
+  if (key) {
+    try {
+      const url = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${gl}&hl=en&num=8&brd_json=1`;
+      const { status, text } = await postJson(`${BD_API_BASE}/request`, { zone, url, format: "raw" }, key, 5000);
+      if (status === 200 && text && text.trim().startsWith("{")) {
+        const data = JSON.parse(text);
+        const kg = data?.knowledge || {};
+        if (kg.phone) result.phones.push(String(kg.phone).trim());
+        if (kg.address) result.address = String(kg.address).trim();
+        if (typeof kg.rating === "number") result.rating = kg.rating;
+        if (typeof kg.reviews === "number") result.reviews = kg.reviews;
+        if (kg.website && !SERP_EXCLUDE.test(kg.website)) result.website = kg.website;
 
-  try {
-    const { status, text } = await postJson(`${BD_API_BASE}/request`, { zone, url, format: "raw" }, key, 20000);
-    if (status === 200 && text) {
-      const data = JSON.parse(text);
-
-      // 1. Google Knowledge Panel
-      const kg = data?.knowledge || {};
-      if (kg.phone) result.phones.push(String(kg.phone).trim());
-      if (kg.address) result.address = String(kg.address).trim();
-      if (typeof kg.rating === "number") result.rating = kg.rating;
-      if (typeof kg.reviews === "number") result.reviews = kg.reviews;
-      if (kg.website && !SERP_EXCLUDE.test(kg.website)) result.website = kg.website;
-
-      // 2. Google Maps Local Pack
-      const local = Array.isArray(data?.local_results) ? data.local_results : [];
-      if (local.length > 0) {
-        const bestLocal = local.find((l: any) => l.title?.toLowerCase().includes(name.toLowerCase())) || local[0];
-        if (bestLocal) {
-          if (result.phones.length === 0 && bestLocal.phone) result.phones.push(String(bestLocal.phone).trim());
-          if (!result.address && bestLocal.address) result.address = String(bestLocal.address).trim();
-          if (!result.rating && typeof bestLocal.rating === "number") result.rating = bestLocal.rating;
-          if (!result.reviews && typeof bestLocal.reviews === "number") result.reviews = bestLocal.reviews;
-          if (!result.website && bestLocal.link && !SERP_EXCLUDE.test(bestLocal.link)) result.website = bestLocal.link;
+        const local = Array.isArray(data?.local_results) ? data.local_results : [];
+        if (local.length > 0) {
+          const bestLocal = local.find((l: any) => l.title?.toLowerCase().includes(name.toLowerCase())) || local[0];
+          if (bestLocal) {
+            if (result.phones.length === 0 && bestLocal.phone) result.phones.push(String(bestLocal.phone).trim());
+            if (!result.address && bestLocal.address) result.address = String(bestLocal.address).trim();
+            if (!result.rating && typeof bestLocal.rating === "number") result.rating = bestLocal.rating;
+            if (!result.reviews && typeof bestLocal.reviews === "number") result.reviews = bestLocal.reviews;
+            if (!result.website && bestLocal.link && !SERP_EXCLUDE.test(bestLocal.link)) result.website = bestLocal.link;
+          }
         }
       }
-
-      // 3. Organic search links & social discovery
-      const organic = Array.isArray(data?.organic) ? data.organic : [];
-      for (const r of organic) {
-        const link = String(r?.link || "");
-        if (/facebook\.com\//i.test(link) && !result.facebook) result.facebook = link;
-        if (/instagram\.com\//i.test(link) && !result.instagram) result.instagram = link;
-        if (/linkedin\.com\/(company|in)\//i.test(link) && !result.linkedin) result.linkedin = link;
-
-        if (!result.website) {
-          try {
-            const host = new URL(link).hostname.replace(/^www\./, "");
-            if (host && !SERP_EXCLUDE.test(host)) {
-              result.website = `https://${host}`;
-            }
-          } catch {}
-        }
-      }
+    } catch {
+      /* fallback */
     }
-  } catch {
-    /* continue */
+  }
+
+  // 2. Zero-block web fallback (instant DuckDuckGo lookup) if phone or website still missing
+  if (!result.website || result.phones.length === 0) {
+    const webInfo = await fastWebLookup(`${name} ${location} ${vertical === "dealers" ? "dealership contact phone" : "contact phone"}`, country);
+    if (!result.website && webInfo.website) result.website = webInfo.website;
+    if (result.phones.length === 0 && webInfo.phone) result.phones.push(webInfo.phone);
   }
 
   // 4. Decision Maker SERP search
@@ -485,18 +522,16 @@ export async function crawlWebsiteContacts(rawUrlOrDomain: string): Promise<{ em
     `${origin}/`,
     `${origin}/contact`,
     `${origin}/contact-us`,
-    `${origin}/contactus`,
     `${origin}/about`,
     `${origin}/about-us`,
     `${origin}/team`,
-    `${origin}/our-team`,
   ];
   const emails = new Set<string>();
   const phones = new Set<string>();
   let foundLinkedin = "";
 
-  for (const u of pages) {
-    const html = await fetchPageText(u);
+  const pageTexts = await Promise.all(pages.map((u) => fetchPageText(u, 4000)));
+  for (const html of pageTexts) {
     if (!html) continue;
     const text = cleanHtmlText(html);
     extractEmails(text).forEach((e) => emails.add(e));
