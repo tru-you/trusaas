@@ -5,8 +5,14 @@
   "description": "Market-agnostic valuation pipeline for TruSaaS (cars + housing, any country).",
   "main": "index.ts",
   "types": "index.ts",
+  "scripts": {
+    "test": "tsx scripts/test-markets.ts"
+  },
   "dependencies": {
     "axios": "^1.7.0",
     "cheerio": "^1.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
   }
 }

@@ -130,7 +130,7 @@ A market-agnostic valuation engine lives in **`packages/market-scraper/`** — b
 - `hooks`: the package has its own `package.json` (axios, cheerio) + `node_modules` (`npm install --prefix packages/market-scraper` after a fresh clone). Build uses `--packages=external`, so axios/cheerio resolve from its own node_modules at runtime.
 - `scripts/test-markets.ts` — smoke-test harness (run per-market via esbuild + node).
 
-**Caveats for other markets:** the US/UK/housing `classifieds` URLs + CSS selectors are best-effort and should be retuned against live markup; housing uses a `titleMatch` property matcher instead of make/model/year.
+**Caveats for other markets:** the US/UK `classifieds` URLs + CSS selectors are best-effort and should be retuned against live markup; both sites (Autotrader.com/Cars.com, AutoTrader.co.uk/Parkers) **403 plain HTTP**, so they need the Bright Data Unlocker/worker to return data. Housing (`housingZa`) is verified working — Private Property + Property24 both load at `/for-sale` and return real ZAR prices on plain HTTP.
 
 ### Inspector e-sign on all three reports (2026-08-24)
 
