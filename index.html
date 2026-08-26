@@ -3,57 +3,198 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>TruSaas — Vertical Operating Systems</title>
-<meta name="description" content="TruSaas builds vertical operating systems. First out: TruDealer, the stack independent car dealers run their floor on. Built in Cape Town. Deployed anywhere."/>
+<title>TruSaaS — Vertical Operating Systems</title>
+<meta name="description" content="TruSaaS architects and deploys focused vertical operating systems and market scraper engines. Built in Cape Town. Deployed anywhere."/>
 <link rel="canonical" href="https://tru-saas.com/"/>
-<meta property="og:title" content="TruSaas"/>
-<meta property="og:description" content="Software company. Vertical operating systems, built in Cape Town, deployed anywhere."/>
+<meta property="og:title" content="TruSaaS — Vertical Operating Systems"/>
+<meta property="og:description" content="Vertical operating systems and proprietary market scraper engines built for real-world operations."/>
 <meta property="og:url" content="https://tru-saas.com/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="/assets/brand/ts-mark.jpg"/>
 <link rel="icon" type="image/jpeg" href="/assets/brand/ts-mark.jpg"/>
 <link rel="apple-touch-icon" href="/assets/brand/ts-mark.jpg"/>
+<meta name="theme-color" content="#F3F0E7"/>
 
+<!-- Typography: Fraunces (Display), Inter Tight (Body), JetBrains Mono (Technical) -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
 <!-- Three.js & GSAP -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
 <style>
+/* ─── DESIGN TOKENS & WARM LINEN PALETTE ──────────── */
 :root {
-  --bg: #030508;
-  --bg-surface: rgba(10, 15, 26, 0.65);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(79, 227, 220, 0.35);
-  --text-main: #F1F5F9;
-  --text-dim: #94A3B8;
-  --text-muted: #64748B;
-  --cyan: #00F2FE;
-  --cyan-soft: #4FE3DC;
-  --cyan-glow: rgba(0, 242, 254, 0.3);
-  --mono: 'JetBrains Mono', monospace;
-  --sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --ink: #F3F0E7;
+  --ink-subtle: #EBE7DC;
+  --ink-2: #EAE6DA;
+  --ink-3: #DFDAD0;
+  --white: #14141F;
+  --white-dim: rgba(20, 20, 31, 0.78);
+  --muted: rgba(64, 78, 100, 0.92);
+  --faint: rgba(64, 78, 100, 0.58);
+  --surface-card: #FFFFFF;
+  --surface-dark: #0E1620;
+  --surface-dark-card: #152232;
+  --cyan: #0B7C72;
+  --cyan-hover: #09685F;
+  --cyan-soft: rgba(11, 124, 114, 0.12);
+  --cyan-glow: rgba(11, 124, 114, 0.24);
+  --amber: #D4942A;
+  --amber-hover: #B87C1D;
+  --amber-soft: rgba(212, 148, 42, 0.15);
+  --amber-glow: rgba(212, 148, 42, 0.22);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-glow: rgba(11, 124, 114, 0.25);
+  --glass: rgba(255, 255, 255, 0.75);
+  --glass-line: rgba(0, 0, 0, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.84);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow: 0 14px 38px -4px rgba(0, 0, 0, 0.06), 0 4px 14px -2px rgba(0, 0, 0, 0.04);
+  --glass-shadow-hover: 0 24px 56px -8px rgba(0, 0, 0, 0.11), 0 8px 22px -4px rgba(0, 0, 0, 0.06);
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --sans: 'Inter Tight', 'Inter Tight Fallback', 'Inter', system-ui, -apple-system, sans-serif;
+  --display: 'Fraunces', 'Fraunces Fallback', Georgia, serif;
+  --nav-h: 68px;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Fallback metrics for stable layout paint */
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia');
+  size-adjust: 105%;
+  ascent-override: 92%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Inter Tight Fallback';
+  src: local('Arial');
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+  scrollbar-gutter: stable;
+}
 
 html, body {
-  background: var(--bg);
-  color: var(--text-main);
+  background: var(--ink);
+  color: var(--white);
   font-family: var(--sans);
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-::selection { background: var(--cyan); color: var(--bg); }
-a { color: inherit; text-decoration: none; }
+::selection {
+  background: var(--cyan);
+  color: #FFFFFF;
+}
 
-/* ─── CANVAS 3D BACKGROUND ────────────────────────── */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  color: inherit;
+}
+
+img, video {
+  max-width: 100%;
+  display: block;
+}
+
+/* ─── BOOT OVERLAY ───────────────────────────────── */
+#bootOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.6s ease;
+}
+#bootOverlay.loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.boot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 36px 48px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(16px);
+  text-align: center;
+}
+.boot-logo {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-family: var(--sans);
+}
+.boot-logo .tru { color: var(--white); }
+.boot-logo .saas { color: var(--cyan); }
+.boot-status {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.boot-bar-track {
+  width: 220px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+.boot-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--cyan), #5EEAD4);
+  border-radius: 99px;
+}
+
+/* ─── 3D BACKGROUND CANVAS ───────────────────────── */
 #webgl-canvas {
   position: fixed;
   top: 0;
@@ -64,15 +205,56 @@ a { color: inherit; text-decoration: none; }
   pointer-events: none;
 }
 
-/* ─── ATMOSPHERE OVERLAYS ────────────────────────── */
-.ambient-vignette {
+/* ─── AMBIENT ORBS & ATMOSPHERE ─────────────────── */
+.ambient-scene {
   position: fixed;
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background: 
-    radial-gradient(circle at 50% 35%, transparent 15%, rgba(3, 5, 8, 0.85) 75%),
-    linear-gradient(to bottom, rgba(3, 5, 8, 0.5), transparent 30%, transparent 70%, var(--bg));
+  overflow: hidden;
+}
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  will-change: transform;
+}
+.orb-1 {
+  top: 8%;
+  left: 15%;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(11, 124, 114, 0.18) 0%, rgba(11, 124, 114, 0) 70%);
+  animation: orbFloat1 22s ease-in-out infinite alternate;
+}
+.orb-2 {
+  top: 45%;
+  right: 10%;
+  width: 540px;
+  height: 540px;
+  background: radial-gradient(circle, rgba(212, 148, 42, 0.14) 0%, rgba(212, 148, 42, 0) 70%);
+  animation: orbFloat2 28s ease-in-out infinite alternate;
+}
+.orb-3 {
+  bottom: 10%;
+  left: 25%;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, rgba(13, 148, 136, 0) 70%);
+  animation: orbFloat3 20s ease-in-out infinite alternate;
+}
+@keyframes orbFloat1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(60px, 40px) scale(1.15); }
+}
+@keyframes orbFloat2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-50px, -60px) scale(1.1); }
+}
+@keyframes orbFloat3 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, -30px) scale(1.2); }
 }
 
 .grid-overlay {
@@ -80,30 +262,30 @@ a { color: inherit; text-decoration: none; }
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
+  background-image:
+    linear-gradient(rgba(20, 20, 31, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 20, 31, 0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at 50% 40%, black 40%, transparent 85%);
 }
 
 /* ─── HUD CORNER FRAME ────────────────────────────── */
 .hud-frame {
   position: fixed;
-  inset: 20px;
-  z-index: 10;
+  inset: 18px;
+  z-index: 20;
   pointer-events: none;
   font-family: var(--mono);
   font-size: 10px;
-  letter-spacing: 0.22em;
-  color: var(--cyan-soft);
+  letter-spacing: 0.18em;
+  color: var(--cyan);
   text-transform: uppercase;
 }
 .hud-frame .corner {
   position: absolute;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--border-glow);
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--cyan-glow);
 }
 .hud-frame .tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .hud-frame .tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
@@ -115,284 +297,892 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(3, 5, 8, 0.7);
+  background: rgba(255, 255, 255, 0.85);
   padding: 4px 10px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  backdrop-filter: blur(8px);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(10px);
+  color: var(--white);
+  font-weight: 500;
 }
-.hud-tl { top: 0; left: 24px; }
-.hud-tr { top: 0; right: 24px; }
-.hud-bl { bottom: 0; left: 24px; }
-.hud-br { bottom: 0; right: 24px; }
+.hud-tl { top: 0; left: 20px; }
+.hud-tr { top: 0; right: 20px; color: var(--muted); }
+.hud-bl { bottom: 0; left: 20px; color: var(--cyan); font-weight: 600; }
+.hud-br { bottom: 0; right: 20px; color: var(--muted); }
 
 .pulse-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--cyan);
-  box-shadow: 0 0 10px var(--cyan);
-  animation: pulse 2s infinite;
+  box-shadow: 0 0 8px var(--cyan);
+  animation: livePing 1.8s ease-out infinite;
 }
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
+@keyframes livePing {
+  0% { box-shadow: 0 0 0 0 rgba(11, 124, 114, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(11, 124, 114, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(11, 124, 114, 0); }
 }
 
-/* ─── CUSTOM 3D LOGO STYLING (FROM IMAGE) ────────── */
+/* ─── 3D LOGO STYLING ────────────────────────────── */
 .logo-3d {
   display: inline-flex;
   align-items: center;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   line-height: 1;
   user-select: none;
+  font-family: var(--sans);
 }
-
-/* Metallic Silver "Tru" */
 .logo-3d .tru {
-  background: linear-gradient(180deg, #FFFFFF 0%, #E2E8F0 25%, #94A3B8 50%, #475569 80%, #1E293B 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-  position: relative;
+  color: var(--white);
 }
-
-/* Glowing Glass Cyan "Saas" */
 .logo-3d .saas {
-  background: linear-gradient(180deg, #E0F2FE 0%, #38BDF8 25%, #00F2FE 55%, #0284C7 85%, #0369A1 100%);
+  color: var(--cyan);
+  background: linear-gradient(135deg, var(--cyan) 0%, #0D9488 40%, #5EEAD4 75%, var(--cyan) 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 25px rgba(0, 242, 254, 0.5)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7));
+  background-clip: text;
+  animation: shineSaas 4s linear infinite;
 }
-
-/* Navbar specific logo sizing */
-.navbar-logo {
-  font-size: 22px;
-}
-
-/* Hero primary 3D Logo Display */
-.hero-logo-display {
-  font-size: clamp(64px, 11vw, 128px);
-  margin-bottom: 20px;
-  opacity: 0;
-  transform: translateY(30px) scale(0.96);
-  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.9));
-}
-
-/* ─── MAIN VIEWPORT ──────────────────────────────── */
-.app-viewport {
-  position: relative;
-  z-index: 5;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 110px 24px 40px;
-  max-width: 1140px;
-  margin: 0 auto;
+@keyframes shineSaas {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }
 
 /* ─── NAVBAR ─────────────────────────────────────── */
 .navbar {
   position: fixed;
-  top: 24px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 20;
+  z-index: 50;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 8px 20px;
-  background: rgba(8, 12, 20, 0.75);
+  justify-content: space-between;
+  gap: 20px;
+  padding: 8px 18px 8px 22px;
+  background: rgba(255, 255, 255, 0.88);
   border: 1px solid var(--border);
   border-radius: 99px;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  max-width: 1120px;
+  width: calc(100% - 48px);
+  transition: all 0.3s ease;
 }
-
+.navbar.scrolled {
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.09);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.navbar-logo {
+  font-size: 22px;
+}
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--white-dim);
+}
+.navbar-nav a {
+  transition: color 0.2s ease;
+  position: relative;
+  padding: 4px 0;
+}
+.navbar-nav a:hover {
+  color: var(--cyan);
+}
+.navbar-nav a.active {
+  color: var(--cyan);
+  font-weight: 600;
+}
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .location-pill {
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--text-dim);
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.05);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 5px 12px;
+  background: rgba(0, 0, 0, 0.04);
   border-radius: 99px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+}
+.nav-cta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 99px;
+  background: var(--cyan);
+  color: #FFFFFF;
+  border: 1px solid var(--cyan);
+  box-shadow: 0 4px 14px -3px var(--cyan-glow);
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+}
+.nav-cta:hover {
+  background: var(--cyan-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -3px var(--cyan-glow);
+}
+
+/* ─── MAIN CONTAINER & LAYOUT ────────────────────── */
+.main-wrapper {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 120px 24px 60px;
+}
+
+/* ─── BUTTONS ────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--cyan);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px -6px var(--cyan-glow);
+  border: 1px solid var(--cyan);
+}
+.btn-primary:hover {
+  background: var(--cyan-hover);
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -6px var(--cyan-glow);
+}
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--white);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+.btn-secondary:hover {
+  background: #FFFFFF;
+  border-color: var(--cyan);
+  color: var(--cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+.btn-amber {
+  background: var(--amber);
+  color: #FFFFFF;
+  border: 1px solid var(--amber);
+  box-shadow: 0 6px 20px -6px var(--amber-glow);
+}
+.btn-amber:hover {
+  background: var(--amber-hover);
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -6px var(--amber-glow);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid rgba(11, 124, 114, 0.25);
+}
+.btn-ghost:hover {
+  background: var(--cyan-soft);
+  border-color: var(--cyan);
+  transform: translateY(-2px);
+}
+.btn-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
 }
 
 /* ─── HERO SECTION ───────────────────────────────── */
-.hero {
+.hero-section {
   text-align: center;
-  max-width: 860px;
+  max-width: 920px;
+  margin: 0 auto 64px;
+  padding: 40px 0 20px;
+  position: relative;
 }
-
 .hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
   border-radius: 99px;
-  background: rgba(0, 242, 254, 0.06);
-  border: 1px solid rgba(0, 242, 254, 0.2);
-  color: var(--cyan-soft);
+  background: var(--cyan-soft);
+  border: 1px solid rgba(11, 124, 114, 0.2);
+  color: var(--cyan);
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  font-weight: 600;
   margin-bottom: 24px;
+  opacity: 0;
+  transform: translateY(16px);
+}
+.hero-title {
+  font-family: var(--display);
+  font-size: clamp(40px, 6.2vw, 76px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 400;
+  font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 0;
+  color: var(--white);
+  margin-bottom: 22px;
+  text-wrap: balance;
+  opacity: 0;
+  transform: translateY(24px);
+}
+.hero-title .accent {
+  color: var(--cyan);
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+}
+.hero-subtitle {
+  font-size: clamp(16px, 1.8vw, 20px);
+  line-height: 1.6;
+  color: var(--white-dim);
+  max-width: 680px;
+  margin: 0 auto 36px;
+  text-wrap: pretty;
+  opacity: 0;
+  transform: translateY(24px);
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 56px;
   opacity: 0;
   transform: translateY(20px);
 }
 
-.hero-subtitle {
-  font-size: clamp(16px, 2vw, 20px);
-  color: var(--text-dim);
-  font-weight: 400;
-  line-height: 1.6;
-  max-width: 640px;
-  margin: 0 auto 52px;
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-/* ─── CARDS CONTAINER (VERTICAL DOORS) ───────────── */
-.doors-grid {
+/* ─── STATS ROW (REQUIREMENT 4) ──────────────────── */
+.stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
   width: 100%;
-  max-width: 820px;
-  margin-bottom: 60px;
+  max-width: 1060px;
+  margin: 0 auto 84px;
   opacity: 0;
-  transform: translateY(40px);
+  transform: translateY(24px);
 }
-
-.card {
-  position: relative;
-  background: var(--bg-surface);
+.stat-card {
+  background: var(--surface-card);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 34px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: left;
-  backdrop-filter: blur(20px);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s, box-shadow 0.35s;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
   overflow: hidden;
 }
-
-.card::before {
+.stat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(11, 124, 114, 0.28);
+  box-shadow: var(--glass-shadow-hover);
+}
+.stat-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan-soft), transparent);
 }
-
-.card-live {
-  border-color: rgba(0, 242, 254, 0.2);
+.stat-value {
+  font-family: var(--display);
+  font-size: clamp(32px, 3.6vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--white);
+  line-height: 1.1;
+  margin-bottom: 6px;
 }
-
-.card-live:hover {
-  transform: translateY(-6px);
-  border-color: var(--cyan);
-  box-shadow: 0 20px 45px -15px rgba(0, 242, 254, 0.22);
+.stat-value .stat-unit {
+  color: var(--cyan);
 }
-
-.card-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.stat-label {
   font-family: var(--mono);
   font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--cyan-soft);
-  margin-bottom: 20px;
+  color: var(--muted);
 }
 
-.card-status.soon {
-  color: var(--text-muted);
-}
-
-.card-title {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 12px;
-  color: var(--text-main);
-}
-
-.card-desc {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--text-dim);
-  margin-bottom: 32px;
-}
-
-.card-action {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--cyan);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: gap 0.2s ease;
-}
-
-.card-live:hover .card-action {
-  gap: 12px;
-}
-
-.card-disabled {
-  opacity: 0.55;
-}
-
-/* ─── HUD MATRIX TICKER ──────────────────────────── */
-.ticker-wrap {
-  width: 100%;
+/* ─── TICKER WRAPPER (REQUIREMENT 6) ─────────────── */
+.ticker-container {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-bottom: 96px;
   overflow: hidden;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 12px 0;
-  margin-bottom: 40px;
-  background: rgba(3, 5, 8, 0.5);
-  backdrop-filter: blur(8px);
-  mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+  padding: 14px 0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
 }
-
 .ticker-track {
   display: flex;
-  gap: 48px;
+  gap: 40px;
   white-space: nowrap;
-  animation: marquee 28s linear infinite;
+  animation: marqueeTicker 32s linear infinite;
   font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-muted);
-  letter-spacing: 0.15em;
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
 }
-
+.ticker-track:hover {
+  animation-play-state: paused;
+}
 .ticker-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
 }
-
-.ticker-item span { color: var(--cyan-soft); }
-
-@keyframes marquee {
+.ticker-item .t-code {
+  color: var(--white);
+  font-weight: 600;
+}
+.ticker-item .t-sub {
+  color: var(--cyan);
+  font-weight: 500;
+}
+.ticker-item .t-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cyan);
+  opacity: 0.6;
+}
+@keyframes marqueeTicker {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 
-/* ─── FOOTER BASE ────────────────────────────────── */
+/* ─── VERTICALS / PRODUCT SHOWCASE SECTION ───────── */
+.section-verticals {
+  position: relative;
+  z-index: 5;
+  margin-bottom: 110px;
+}
+.section-header {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 56px;
+}
+.section-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title {
+  font-family: var(--display);
+  font-size: clamp(32px, 4.4vw, 54px);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 400;
+  font-variation-settings: "opsz" 144, "SOFT" 30;
+  color: var(--white);
+  margin-bottom: 16px;
+  text-wrap: balance;
+}
+.section-title .accent {
+  color: var(--cyan);
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+}
+.section-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--white-dim);
+}
+
+/* ─── THE 3 GATES PRODUCT CARDS GRID ─────────────── */
+.gates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  align-items: stretch;
+}
+.gate-card {
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  padding: 30px 28px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s ease;
+  overflow: hidden;
+}
+.gate-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--glass-shadow-hover);
+  border-color: rgba(11, 124, 114, 0.32);
+}
+.gate-card.featured-gate {
+  border-color: rgba(11, 124, 114, 0.22);
+  background: linear-gradient(180deg, rgba(11, 124, 114, 0.03) 0%, #FFFFFF 22%);
+}
+.gate-card.featured-gate:hover {
+  border-color: var(--cyan);
+}
+.gate-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.gate-card:hover::before {
+  opacity: 1;
+}
+
+/* Header & Badges inside Gate Card */
+.gate-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.gate-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  font-weight: 700;
+  background: var(--cyan-soft);
+  border: 1px solid rgba(11, 124, 114, 0.18);
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+.gate-tag.amber-tag {
+  color: var(--amber);
+  background: var(--amber-soft);
+  border-color: rgba(212, 148, 42, 0.2);
+}
+.gate-tag.amber-tag .pulse-dot {
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber);
+}
+.gate-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  letter-spacing: 0.1em;
+}
+
+.gate-title-wrap {
+  margin-bottom: 14px;
+}
+.gate-title {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  color: var(--white);
+  line-height: 1.15;
+}
+.gate-subtitle {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-weight: 600;
+}
+.gate-card.gate-3 .gate-subtitle {
+  color: var(--amber);
+}
+
+.gate-desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--white-dim);
+  margin-bottom: 22px;
+}
+
+/* Gate Visual & Video Lightbox Trigger */
+.product-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0E1620;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.18);
+  margin-bottom: 22px;
+  cursor: pointer;
+  display: block;
+  flex-shrink: 0;
+}
+.product-visual img, .product-visual video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.product-visual:hover img, .product-visual:hover video {
+  transform: scale(1.04);
+}
+.product-visual-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(14, 22, 32, 0.15) 0%, rgba(14, 22, 32, 0.65) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 14px;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+.product-visual:hover .product-visual-shade {
+  background: linear-gradient(180deg, rgba(14, 22, 32, 0.05) 0%, rgba(14, 22, 32, 0.55) 100%);
+}
+.product-visual-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pv-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5EEAD4;
+  background: rgba(14, 22, 32, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(94, 234, 212, 0.3);
+  padding: 3px 8px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.pv-badge .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #5EEAD4;
+}
+.product-visual-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--cyan);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease;
+}
+.product-visual:hover .product-visual-center {
+  transform: translate(-50%, -50%) scale(1.12);
+  background: #FFFFFF;
+}
+.product-visual-center svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  margin-left: 2px;
+}
+.product-visual-bottom {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Feature Bullets inside Gate */
+.gate-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 26px;
+  display: grid;
+  gap: 10px;
+  flex: 1;
+}
+.gate-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--white-dim);
+}
+.gate-feature-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--cyan-soft);
+  border: 1px solid rgba(11, 124, 114, 0.2);
+  color: var(--cyan);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.gate-card.gate-3 .gate-feature-icon {
+  background: var(--amber-soft);
+  border-color: rgba(212, 148, 42, 0.25);
+  color: var(--amber);
+}
+.gate-feature-icon svg {
+  width: 10px;
+  height: 10px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+/* Gate Actions Row */
+.gate-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.gate-actions .btn {
+  font-size: 13px;
+  padding: 10px 16px;
+  flex: 1;
+  text-align: center;
+}
+.gate-actions .btn-wide {
+  flex: 1 1 100%;
+}
+
+/* ─── ARCHITECTURAL PHILOSOPHY ────────────────────── */
+.section-philosophy {
+  padding: 72px 32px;
+  border-radius: 28px;
+  background: var(--ink-2);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 96px;
+  position: relative;
+  overflow: hidden;
+}
+.phil-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-top: 40px;
+}
+.phil-card {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 28px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+.phil-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.phil-card h3 {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+  color: var(--white);
+}
+.phil-card p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--white-dim);
+}
+
+/* ─── VIDEO LIGHTBOX MODAL (REQUIREMENT 3) ───────── */
+.video-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.3s ease;
+}
+.video-lightbox.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.vl-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 22, 32, 0.84);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+}
+.vl-dialog {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 960px;
+  max-height: calc(100vh - 40px);
+  background: #0E1620;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95) translateY(12px);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.video-lightbox.active .vl-dialog {
+  transform: scale(1) translateY(0);
+}
+.vl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 20px;
+  background: #152232;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #F1F5F9;
+}
+.vl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #5EEAD4;
+  font-weight: 700;
+}
+.vl-badge .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #5EEAD4;
+  animation: livePing 2s ease-in-out infinite;
+}
+.vl-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vl-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #F1F5F9;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.vl-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  transform: scale(1.08);
+}
+.vl-content {
+  position: relative;
+  width: 100%;
+  max-height: calc(85vh - 60px);
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.vl-content video {
+  width: 100%;
+  max-height: calc(85vh - 60px);
+  object-fit: contain;
+  display: block;
+}
+
+/* ─── FOOTER ─────────────────────────────────────── */
 .footer {
   width: 100%;
   display: flex;
@@ -400,155 +1190,472 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   flex-wrap: wrap;
   gap: 20px;
-  padding-top: 24px;
+  padding: 32px 0 16px;
   border-top: 1px solid var(--border);
   font-family: var(--mono);
   font-size: 12px;
-  color: var(--text-muted);
-  opacity: 0;
-  transform: translateY(20px);
+  color: var(--muted);
 }
-
 .footer-links {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
 }
-
 .footer-links a {
   transition: color 0.2s ease;
 }
-
 .footer-links a:hover {
   color: var(--cyan);
 }
 
-/* ─── RESPONSIVE ─────────────────────────────────── */
+/* ─── RESPONSIVE BREAKPOINTS ─────────────────────── */
+@media (max-width: 1080px) {
+  .gates-grid {
+    grid-template-columns: 1fr;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .phil-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .hud-frame { display: none; }
-  .app-viewport { padding-top: 110px; }
-  .navbar { width: calc(100% - 32px); justify-content: space-between; }
+  .navbar-nav { display: none; }
+  .navbar { width: calc(100% - 32px); padding: 8px 14px; }
+  .main-wrapper { padding-top: 100px; padding-left: 16px; padding-right: 16px; }
+  .stats-row { grid-template-columns: 1fr; }
   .footer { flex-direction: column; text-align: center; justify-content: center; }
   .footer-links { justify-content: center; }
+  .hero-actions { flex-direction: column; }
+  .hero-actions .btn { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ticker-track { animation: none; }
   #webgl-canvas { display: none; }
+  .ambient-orb { animation: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- THREE.JS CANVAS -->
+<!-- ─── BOOT OVERLAY ──────────────────────────────── -->
+<div id="bootOverlay">
+  <div class="boot-card">
+    <div class="boot-logo logo-3d">
+      <span class="tru">Tru</span><span class="saas">SaaS</span>
+    </div>
+    <div class="boot-status">
+      <span class="pulse-dot"></span>
+      <span id="bootText">TRUSAAS // INITIALIZING ARCHITECTURE</span>
+    </div>
+    <div class="boot-bar-track">
+      <div class="boot-bar-fill" id="bootBarFill"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── 3D BACKGROUND CANVAS ───────────────────────── -->
 <canvas id="webgl-canvas"></canvas>
 
-<!-- ATMOSPHERE OVERLAYS -->
-<div class="ambient-vignette"></div>
+<!-- ─── ATMOSPHERE & AMBIENT ORBS ─────────────────── -->
+<div class="ambient-scene">
+  <div class="ambient-orb orb-1"></div>
+  <div class="ambient-orb orb-2"></div>
+  <div class="ambient-orb orb-3"></div>
+</div>
 <div class="grid-overlay"></div>
 
-<!-- HUD FRAME -->
-<div class="hud-frame">
+<!-- ─── HUD CORNER FRAME (REQUIREMENT 5) ───────────── -->
+<div class="hud-frame" aria-hidden="true">
   <div class="corner tl"></div><div class="corner tr"></div>
   <div class="corner bl"></div><div class="corner br"></div>
   <div class="hud-tag hud-tl"><span class="pulse-dot"></span> TRUSAAS // SYSTEM ACTIVE</div>
   <div class="hud-tag hud-tr">CPT · ZA</div>
-  <div class="hud-tag hud-bl">1 SUITE LIVE</div>
+  <div class="hud-tag hud-bl">3 VERTICALS · 12+ MODULES</div>
   <div class="hud-tag hud-br">DEPLOY // ANY MARKET</div>
 </div>
 
-<!-- NAVBAR -->
-<nav class="navbar">
-  <div class="logo-3d navbar-logo">
-    <span class="tru">Tru</span><span class="saas">Saas</span>
+<!-- ─── NAVBAR ─────────────────────────────────────── -->
+<nav class="navbar" id="mainNav">
+  <div class="navbar-brand">
+    <a href="#" class="logo-3d navbar-logo" aria-label="TruSaaS Home">
+      <span class="tru">Tru</span><span class="saas">SaaS</span>
+    </a>
   </div>
-  <div class="location-pill">
-    Built in Cape Town
+  <div class="navbar-nav">
+    <a href="#verticals" class="active">Verticals</a>
+    <a href="#philosophy">Architecture</a>
+    <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener">TruDealer ↗</a>
+    <a href="https://truproperty.tru-saas.com" target="_blank" rel="noopener">TruProperty ↗</a>
+  </div>
+  <div class="navbar-right">
+    <div class="location-pill">Cape Town · ZA</div>
+    <a href="https://wa.me/27620502091?text=Hi%20Paul%20%E2%80%94%20interested%20in%20TruSaas" class="nav-cta" target="_blank" rel="noopener">
+      Talk to Founder ↗
+    </a>
   </div>
 </nav>
 
-<!-- MAIN VIEWPORT CONTENT -->
-<main class="app-viewport">
+<!-- ─── MAIN CONTENT ───────────────────────────────── -->
+<main class="main-wrapper">
 
-  <!-- HERO -->
-  <section class="hero">
+  <!-- ─── HERO SECTION ─────────────────────────────── -->
+  <section class="hero-section" id="hero">
     <div class="hero-badge" id="heroBadge">
-      Vertical Operating Systems
+      <span class="pulse-dot"></span> Vertical Operating Systems
     </div>
     
-    <!-- 3D LOGO DISPLAY (REPLACES TAGLINE / TEXT HEADLINE) -->
-    <div class="logo-3d hero-logo-display" id="heroLogo">
-      <span class="tru">Tru</span><span class="saas">Saas</span>
-    </div>
+    <h1 class="hero-title" id="heroTitle">
+      High-performance software for <span class="accent">real-world</span> operations.
+    </h1>
     
     <p class="hero-subtitle" id="heroSubtitle">
-      Software built for real operations. We design and deploy focused operating systems for industries running on legacy tech, spreadsheets, and WhatsApp clutter.
+      We design and deploy focused vertical operating systems and live data engines for industries running on legacy tech, spreadsheets, and fragmented workflows.
     </p>
 
-    <!-- CARDS / DOORS -->
-    <div class="doors-grid" id="doorsGrid">
-      
-      <!-- TruDealer Live Card -->
-      <a class="card card-live" href="https://trudealer.tru-saas.com">
-        <div>
-          <div class="card-status">
-            <span class="pulse-dot"></span> Live & Deployed
-          </div>
-          <h2 class="card-title">TruDealer</h2>
-          <p class="card-desc">
-            The stack independent car dealers run their floor on. Vehicle capture, DMS sync, condition inspections, and trade-in appraisals — all in one system.
-          </p>
-        </div>
-        <div class="card-action">
-          Enter TruDealer →
-        </div>
+    <div class="hero-actions" id="heroActions">
+      <a href="#verticals" class="btn btn-primary">
+        Explore 3 Verticals ↓
       </a>
+      <a href="https://wa.me/27620502091?text=Hi%20Paul%20%E2%80%94%20interested%20in%20TruSaas" target="_blank" rel="noopener" class="btn btn-secondary">
+        Discuss a Custom Build →
+      </a>
+    </div>
+  </section>
 
-      <!-- In Build Card -->
-      <div class="card card-disabled">
-        <div>
-          <div class="card-status soon">
-            <span>◇</span> In Build
-          </div>
-          <h2 class="card-title">Next Vertical</h2>
-          <p class="card-desc">
-            Taking our core engine — capture, evidence proof, inventory tracking, and workflows — into the next vertical still using pen and paper.
-          </p>
-        </div>
-        <div class="card-action" style="color: var(--text-muted);">
-          Announcing Soon
-        </div>
+  <!-- ─── STATS ROW (REQUIREMENT 4) ────────────────── -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card">
+      <div class="stat-value"><span class="counter" data-target="3">0</span><span class="stat-unit"></span></div>
+      <div class="stat-label">3 Live Verticals</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value"><span class="counter" data-target="12">0</span><span class="stat-unit">+</span></div>
+      <div class="stat-label">12+ Modules Shipping</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value"><span>99.97</span><span class="stat-unit">%</span></div>
+      <div class="stat-label">99.97% DMS Uptime</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value"><span class="counter" data-target="10">0</span><span class="stat-unit">d</span></div>
+      <div class="stat-label">10d To Go Live</div>
+    </div>
+  </div>
+
+  <!-- ─── HUD MATRIX TICKER (REQUIREMENT 6) ────────── -->
+  <div class="ticker-container" aria-hidden="true">
+    <div class="ticker-track">
+      <div class="ticker-item"><span class="t-code">TRUSCRAPER</span><span class="t-sub">::MARKET</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUCMS</span><span class="t-sub">::CORE</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUDEALER</span><span class="t-sub">::AUTO</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUPROPERTY</span><span class="t-sub">::ESTATE</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRULENS</span><span class="t-sub">::CAPTURE</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUINSPECT</span><span class="t-sub">::CONDITION</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUFLOW</span><span class="t-sub">::DMS</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUCHAT</span><span class="t-sub">::AI</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRULIVE</span><span class="t-sub">::STREAM</span><span class="t-dot"></span></div>
+      <!-- Duplicate sequence for infinite seamless loop -->
+      <div class="ticker-item"><span class="t-code">TRUSCRAPER</span><span class="t-sub">::MARKET</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUCMS</span><span class="t-sub">::CORE</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUDEALER</span><span class="t-sub">::AUTO</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUPROPERTY</span><span class="t-sub">::ESTATE</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRULENS</span><span class="t-sub">::CAPTURE</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUINSPECT</span><span class="t-sub">::CONDITION</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUFLOW</span><span class="t-sub">::DMS</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRUCHAT</span><span class="t-sub">::AI</span><span class="t-dot"></span></div>
+      <div class="ticker-item"><span class="t-code">TRULIVE</span><span class="t-sub">::STREAM</span><span class="t-dot"></span></div>
+    </div>
+  </div>
+
+  <!-- ─── VERTICALS / 3 GATES SHOWCASE (REQUIREMENT 2) -->
+  <section class="section-verticals" id="verticals">
+    <div class="section-header">
+      <div class="section-eyebrow">
+        <span>●</span> VERTICAL STACKS &amp; ENGINES
       </div>
+      <h2 class="section-title">
+        Three verticals. <span class="accent">One philosophy.</span>
+      </h2>
+      <p class="section-desc">
+        Purpose-built vertical operating systems engineered for high-integrity evidence proof, speed, and automated synchronization across complex operations.
+      </p>
+    </div>
+
+    <!-- The 3 Gates Cards Grid -->
+    <div class="gates-grid" id="gatesGrid">
+
+      <!-- ── GATE 1: TruDealer ── -->
+      <article class="gate-card featured-gate gate-1" id="gateTruDealer">
+        <div class="gate-head">
+          <span class="gate-tag"><span class="pulse-dot"></span> Live · 8+ Modules</span>
+          <span class="gate-num">01 // AUTO</span>
+        </div>
+        
+        <div class="gate-title-wrap">
+          <h3 class="gate-title">TruDealer</h3>
+          <div class="gate-subtitle">The dealer operating system</div>
+        </div>
+
+        <p class="gate-desc">
+          The complete floor-to-cloud operating system for independent dealerships. Capture to close, stock portal sync, and instant valuation.
+        </p>
+
+        <!-- Video Visual Trigger -->
+        <div class="product-visual" 
+             data-video-src="trudealer/tddeploy/EDIT DMS.mp4" 
+             data-video-title="TruDealer — The Dealer Operating System"
+             title="Click to play TruDealer walkthrough"
+             role="button"
+             tabindex="0"
+             aria-label="Play TruDealer demo video">
+          <img src="trudealer/tddeploy/dealer-assist-poster.jpg" alt="TruDealer Operating System Preview" loading="lazy" />
+          <div class="product-visual-shade">
+            <div class="product-visual-top">
+              <span class="pv-badge"><span class="dot"></span> 8+ MODULES</span>
+            </div>
+            <div class="product-visual-center">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="product-visual-bottom">
+              TruDealer Core DMS Walkthrough
+            </div>
+          </div>
+        </div>
+
+        <!-- Features List -->
+        <ul class="gate-features">
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Capture to close:</strong> seamless vehicle workflow engine</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>360° Spins &amp; Studio:</strong> guided vehicle photography</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Condition Reports:</strong> digital inspections &amp; damage tagger</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>24/7 AI Chat:</strong> autonomous sales agent with WhatsApp lead routing</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>TransUnion eValue8:</strong> live trade-in valuations &amp; DMS feeds</span>
+          </li>
+        </ul>
+
+        <!-- Gate Actions -->
+        <div class="gate-actions">
+          <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener" class="btn btn-primary">
+            Enter TruDealer →
+          </a>
+          <a href="https://true-cars.co.za" target="_blank" rel="noopener" class="btn btn-secondary">
+            See it live ↗
+          </a>
+        </div>
+      </article>
+
+      <!-- ── GATE 2: TruProperty ── -->
+      <article class="gate-card gate-2" id="gateTruProperty">
+        <div class="gate-head">
+          <span class="gate-tag"><span class="pulse-dot"></span> Live · 6+ Modules</span>
+          <span class="gate-num">02 // ESTATE</span>
+        </div>
+        
+        <div class="gate-title-wrap">
+          <h3 class="gate-title">TruProperty</h3>
+          <div class="gate-subtitle">The estate agent operating system</div>
+        </div>
+
+        <p class="gate-desc">
+          End-to-end property listing capture, room-by-room condition verification, live video walkthroughs, and mandate lifecycle tracking.
+        </p>
+
+        <!-- Video Visual Trigger -->
+        <div class="product-visual" 
+             data-video-src="trudealer/tddeploy/trulive-demo.mp4" 
+             data-video-title="TruProperty — The Estate Agent Operating System"
+             title="Click to play TruProperty walkthrough"
+             role="button"
+             tabindex="0"
+             aria-label="Play TruProperty demo video">
+          <img src="trudealer/tddeploy/trushowroom-buyer-poster.jpg" alt="TruProperty Walkaround Preview" loading="lazy" />
+          <div class="product-visual-shade">
+            <div class="product-visual-top">
+              <span class="pv-badge"><span class="dot"></span> 6+ MODULES</span>
+            </div>
+            <div class="product-visual-center">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="product-visual-bottom">
+              TruLive Virtual Walkaround
+            </div>
+          </div>
+        </div>
+
+        <!-- Features List -->
+        <ul class="gate-features">
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Property Capture:</strong> guided room-by-room flow &amp; asset tagging</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Condition Reports:</strong> digital ingoing/outgoing inspection jackets</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Virtual Tours:</strong> high-def 360° panos &amp; live video streaming</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Mandate Tracking:</strong> OTP deal management &amp; compliance proof</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Multi-Portal Push:</strong> automated syndication to property portals</span>
+          </li>
+        </ul>
+
+        <!-- Gate Actions -->
+        <div class="gate-actions">
+          <a href="https://truproperty.tru-saas.com" target="_blank" rel="noopener" class="btn btn-primary">
+            Enter TruProperty →
+          </a>
+          <button type="button" 
+                  class="btn btn-secondary" 
+                  data-video-src="trudealer/tddeploy/trulive-demo.mp4" 
+                  data-video-title="TruProperty — Virtual Walkaround Demo">
+            Watch Walkaround ▷
+          </button>
+        </div>
+      </article>
+
+      <!-- ── GATE 3: TruCustom ── -->
+      <article class="gate-card gate-3" id="gateTruCustom">
+        <div class="gate-head">
+          <span class="gate-tag amber-tag"><span class="pulse-dot"></span> Live · Bespoke Engineering</span>
+          <span class="gate-num">03 // SCRAPER &amp; CMS</span>
+        </div>
+        
+        <div class="gate-title-wrap">
+          <h3 class="gate-title">TruCustom</h3>
+          <div class="gate-subtitle">Custom CMS &amp; Live Scraper Engine</div>
+        </div>
+
+        <p class="gate-desc">
+          High-performance custom CMS architectures paired with our proprietary market scraper engine. Pull live vehicle, property, and classifieds market data with automated syndication.
+        </p>
+
+        <!-- Video Visual Trigger -->
+        <div class="product-visual" 
+             data-video-src="trudealer/tddeploy/inpect market price.mp4" 
+             data-video-title="TruCustom — Scraper Engine &amp; CMS Demo"
+             title="Click to play Scraper Engine demo"
+             role="button"
+             tabindex="0"
+             aria-label="Play TruCustom demo video">
+          <img src="trudealer/tddeploy/market-loading-poster.jpg" alt="Market Scraper Engine Preview" loading="lazy" />
+          <div class="product-visual-shade">
+            <div class="product-visual-top">
+              <span class="pv-badge" style="color: #FCD34D; border-color: rgba(252, 211, 77, 0.4);"><span class="dot" style="background: #FCD34D;"></span> LIVE ENGINE</span>
+            </div>
+            <div class="product-visual-center" style="color: var(--amber);">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="product-visual-bottom">
+              Live Classifieds Price Fetcher
+            </div>
+          </div>
+        </div>
+
+        <!-- Features List -->
+        <ul class="gate-features">
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Real-time Scraper:</strong> Bright Data unlocker + classifieds price engine</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Custom Back-Office:</strong> tailored CMS pipelines &amp; permission tiers</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>High-Throughput API:</strong> multi-portal syndication &amp; custom webhooks</span>
+          </li>
+          <li class="gate-feature-item">
+            <span class="gate-feature-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><strong>Rapid Delivery:</strong> 2-week turnaround from scoping to production</span>
+          </li>
+        </ul>
+
+        <!-- Gate Actions -->
+        <div class="gate-actions">
+          <a href="https://wa.me/27620502091?text=Hi%20Paul%20%E2%80%94%20interested%20in%20TruCustom%20software" target="_blank" rel="noopener" class="btn btn-amber">
+            Discuss a Build →
+          </a>
+          <button type="button" 
+                  class="btn btn-secondary" 
+                  data-video-src="trudealer/tddeploy/inpect market price.mp4" 
+                  data-video-title="TruCustom — Market Scraper Engine Demo">
+            Watch Scraper Demo ▷
+          </button>
+        </div>
+      </article>
 
     </div>
   </section>
 
-  <!-- MATRIX HUD TICKER -->
-  <div class="ticker-wrap" aria-hidden="true">
-    <div class="ticker-track">
-      <div class="ticker-item"><span>01</span> TRULENS::CAPTURE</div>
-      <div class="ticker-item"><span>02</span> TRU3D::ORBIT</div>
-      <div class="ticker-item"><span>03</span> TRUVIR::INSPECT</div>
-      <div class="ticker-item"><span>04</span> TRUFLOW::DMS</div>
-      <div class="ticker-item"><span>05</span> TRUSYNC::PUSH</div>
-      <div class="ticker-item"><span>06</span> TRULIVE::STREAM</div>
-      <div class="ticker-item"><span>07</span> TRUTRADE::APPRAISE</div>
-      <!-- Duplicate for marquee loop -->
-      <div class="ticker-item"><span>01</span> TRULENS::CAPTURE</div>
-      <div class="ticker-item"><span>02</span> TRU3D::ORBIT</div>
-      <div class="ticker-item"><span>03</span> TRUVIR::INSPECT</div>
-      <div class="ticker-item"><span>04</span> TRUFLOW::DMS</div>
-      <div class="ticker-item"><span>05</span> TRUSYNC::PUSH</div>
-      <div class="ticker-item"><span>06</span> TRULIVE::STREAM</div>
-      <div class="ticker-item"><span>07</span> TRUTRADE::APPRAISE</div>
+  <!-- ─── ARCHITECTURAL PHILOSOPHY SECTION ─────────── -->
+  <section class="section-philosophy" id="philosophy">
+    <div class="section-header" style="margin-bottom: 0;">
+      <div class="section-eyebrow">
+        <span>●</span> CORE ARCHITECTURE
+      </div>
+      <h2 class="section-title">
+        Engineered for zero friction &amp; <span class="accent">evidence truth</span>.
+      </h2>
+      <p class="section-desc">
+        Every TruSaaS vertical shares the same robust foundations: zero spreadsheet sprawl, verifiable proof logs, and instant edge-deployed web architectures.
+      </p>
     </div>
-  </div>
 
-  <!-- FOOTER -->
+    <div class="phil-grid">
+      <div class="phil-card">
+        <div class="phil-num">01 // SINGLE SOURCE OF TRUTH</div>
+        <h3>Zero Spreadsheet Sprawl</h3>
+        <p>Eliminate double data entry. From initial phone capture to live portal syndication and invoicing, all inventory lives in a single synchronized state.</p>
+      </div>
+
+      <div class="phil-card">
+        <div class="phil-num">02 // VERIFIABLE PROOF</div>
+        <h3>Evidence-First Integrity</h3>
+        <p>High-resolution 360° orbits, pinpoint damage tagging, and timestamped condition reports guarantee transparency for buyers and sellers alike.</p>
+      </div>
+
+      <div class="phil-card">
+        <div class="phil-num">03 // SPEED &amp; DEPLOYMENT</div>
+        <h3>Micro-Service Agility</h3>
+        <p>Lightweight, resilient, and blazing fast. Deployed on modern cloud primitives with zero legacy bloat and 99.97% operational uptime.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─────────────────────────────────────── -->
   <footer class="footer" id="footer">
-    <div>© 2026 TruSaas. Built in Cape Town.</div>
+    <div>© 2026 TruSaaS Inc. Built with precision in Cape Town.</div>
     <div class="footer-links">
-      <a href="https://trudealer.tru-saas.com">TruDealer ↗</a>
+      <a href="https://trudealer.tru-saas.com" target="_blank" rel="noopener">TruDealer ↗</a>
+      <a href="https://truproperty.tru-saas.com" target="_blank" rel="noopener">TruProperty ↗</a>
       <a href="mailto:paul@trusaas.com">paul@trusaas.com</a>
       <a href="https://wa.me/27620502091?text=Hi%20Paul%20%E2%80%94%20saw%20TruSaas" target="_blank" rel="noopener">WhatsApp ↗</a>
     </div>
@@ -556,9 +1663,49 @@ a { color: inherit; text-decoration: none; }
 
 </main>
 
+<!-- ─── VIDEO LIGHTBOX MODAL (REQUIREMENT 3) ───────── -->
+<div class="video-lightbox" id="videoLightbox" aria-modal="true" role="dialog" aria-labelledby="vlTitle">
+  <div class="vl-backdrop" id="vlBackdrop"></div>
+  <div class="vl-dialog">
+    <div class="vl-header">
+      <div class="vl-badge"><span class="dot"></span> LIVE DEMO</div>
+      <h3 class="vl-title" id="vlTitle">Product Walkthrough</h3>
+      <button type="button" class="vl-close" id="vlClose" aria-label="Close demo modal">✕</button>
+    </div>
+    <div class="vl-content">
+      <video id="vlVideo" controls playsinline preload="metadata">
+        Your browser does not support HTML5 video playback.
+      </video>
+    </div>
+  </div>
+</div>
+
+<!-- ─── INTERACTIVE SCRIPTS & GSAP TIMELINES ───────── -->
 <script>
-/* ── THREE.JS REAL 3D STAGE ───────────────────────── */
-(function setup3D() {
+/* ── 1. BOOT SEQUENCE & TIMELINE ──────────────────── */
+(function setupBootSequence() {
+  const bootOverlay = document.getElementById('bootOverlay');
+  const bootBarFill = document.getElementById('bootBarFill');
+  const bootText = document.getElementById('bootText');
+
+  if (!bootOverlay) return;
+
+  const bootTl = gsap.timeline({
+    onComplete: () => {
+      bootOverlay.classList.add('loaded');
+      runEntranceAnimations();
+    }
+  });
+
+  bootTl.to(bootBarFill, { width: '40%', duration: 0.3, ease: 'power2.out' })
+        .call(() => { if (bootText) bootText.textContent = 'TRUSAAS // CONNECTING VERTICAL ENGINES...'; })
+        .to(bootBarFill, { width: '100%', duration: 0.4, ease: 'power3.inOut' })
+        .call(() => { if (bootText) bootText.textContent = 'TRUSAAS // SYSTEM READY'; })
+        .to(bootOverlay, { opacity: 0, duration: 0.4, delay: 0.1 });
+})();
+
+/* ── 2. THREE.JS SUBTLE 3D AMBIENT STAGE ──────────── */
+(function setup3DScene() {
   const canvas = document.getElementById('webgl-canvas');
   if (!canvas || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -568,81 +1715,83 @@ a { color: inherit; text-decoration: none; }
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 14;
+  camera.position.z = 15;
 
-  // Ambient & Point Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
   scene.add(ambientLight);
 
-  const lightCyan = new THREE.PointLight(0x00f2fe, 2.5, 40);
-  lightCyan.position.set(4, 4, 4);
-  scene.add(lightCyan);
+  const pointCyan = new THREE.PointLight(0x0b7c72, 3.5, 50);
+  pointCyan.position.set(6, 6, 6);
+  scene.add(pointCyan);
 
-  const lightBlue = new THREE.PointLight(0x3b82f6, 2, 40);
-  lightBlue.position.set(-4, -4, -2);
-  scene.add(lightBlue);
+  const pointAmber = new THREE.PointLight(0xd4942a, 2.8, 50);
+  pointAmber.position.set(-6, -6, -4);
+  scene.add(pointAmber);
 
-  // Group Container
   const group = new THREE.Group();
   scene.add(group);
 
-  // Dual Orbit Rings
-  const ring1Geo = new THREE.TorusGeometry(3.0, 0.025, 16, 100);
+  // Outer Torus Orbit Ring 1 (Teal)
+  const ring1Geo = new THREE.TorusGeometry(3.6, 0.02, 16, 120);
   const ring1Mat = new THREE.MeshStandardMaterial({
-    color: 0x00f2fe,
-    emissive: 0x00f2fe,
-    emissiveIntensity: 0.5,
+    color: 0x0b7c72,
+    emissive: 0x0b7c72,
+    emissiveIntensity: 0.6,
     roughness: 0.2
   });
   const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
   ring1.rotation.x = Math.PI / 3;
   group.add(ring1);
 
-  const ring2Geo = new THREE.TorusGeometry(3.8, 0.015, 16, 100);
-  const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x4fe3dc, wireframe: true, transparent: true, opacity: 0.3 });
+  // Outer Torus Orbit Ring 2 (Amber Soft)
+  const ring2Geo = new THREE.TorusGeometry(4.4, 0.015, 16, 120);
+  const ring2Mat = new THREE.MeshStandardMaterial({
+    color: 0xd4942a,
+    emissive: 0xd4942a,
+    emissiveIntensity: 0.4,
+    roughness: 0.3
+  });
   const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
   ring2.rotation.y = Math.PI / 4;
   group.add(ring2);
 
-  // Core Solid Glass Geometric Shape
-  const coreGeo = new THREE.OctahedronGeometry(1.6, 0);
+  // Core Polyhedron (Warm Slate)
+  const coreGeo = new THREE.IcosahedronGeometry(1.6, 0);
   const coreMat = new THREE.MeshStandardMaterial({
-    color: 0x0a0f1d,
-    roughness: 0.1,
-    metalness: 0.8,
+    color: 0xeae6da,
+    roughness: 0.25,
+    metalness: 0.4,
     flatShading: true
   });
   const core = new THREE.Mesh(coreGeo, coreMat);
   group.add(core);
 
-  // Outer Wireframe Overlay
-  const wireGeo = new THREE.OctahedronGeometry(1.65, 0);
+  // Wireframe Cage Overlay
+  const wireGeo = new THREE.IcosahedronGeometry(1.68, 0);
   const wireMat = new THREE.MeshBasicMaterial({
-    color: 0x00f2fe,
+    color: 0x0b7c72,
     wireframe: true,
     transparent: true,
-    opacity: 0.4
+    opacity: 0.28
   });
   const wire = new THREE.Mesh(wireGeo, wireMat);
   group.add(wire);
 
-  // Floating Particles
-  const particleCount = 180;
+  // Floating Micro Particles
+  const particleCount = 120;
   const particleGeo = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
-
   for (let i = 0; i < particleCount * 3; i += 3) {
-    positions[i] = (Math.random() - 0.5) * 28;
-    positions[i + 1] = (Math.random() - 0.5) * 28;
-    positions[i + 2] = (Math.random() - 0.5) * 28;
+    positions[i] = (Math.random() - 0.5) * 32;
+    positions[i + 1] = (Math.random() - 0.5) * 32;
+    positions[i + 2] = (Math.random() - 0.5) * 32;
   }
-
   particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   const particleMat = new THREE.PointsMaterial({
-    size: 0.045,
-    color: 0x4fe3dc,
+    size: 0.04,
+    color: 0x0b7c72,
     transparent: true,
-    opacity: 0.5
+    opacity: 0.45
   });
   const particles = new THREE.Points(particleGeo, particleMat);
   scene.add(particles);
@@ -660,22 +1809,21 @@ a { color: inherit; text-decoration: none; }
 
   function animate() {
     requestAnimationFrame(animate);
-    const elapsedTime = clock.getElapsedTime();
+    const elapsed = clock.getElapsedTime();
 
-    targetX += (mouseX - targetX) * 0.04;
-    targetY += (mouseY - targetY) * 0.04;
+    targetX += (mouseX - targetX) * 0.035;
+    targetY += (mouseY - targetY) * 0.035;
 
-    group.rotation.y = elapsedTime * 0.25 + (targetX * 0.4);
-    group.rotation.x = Math.sin(elapsedTime * 0.2) * 0.15 + (-targetY * 0.4);
-    ring1.rotation.z = elapsedTime * 0.15;
-    ring2.rotation.z = -elapsedTime * 0.1;
+    group.rotation.y = elapsed * 0.18 + (targetX * 0.35);
+    group.rotation.x = Math.sin(elapsed * 0.15) * 0.12 + (-targetY * 0.35);
+    ring1.rotation.z = elapsed * 0.12;
+    ring2.rotation.z = -elapsed * 0.08;
 
-    group.position.y = Math.sin(elapsedTime * 0.7) * 0.25;
-    particles.rotation.y = elapsedTime * 0.015;
+    group.position.y = Math.sin(elapsed * 0.6) * 0.18;
+    particles.rotation.y = elapsed * 0.012;
 
     renderer.render(scene, camera);
   }
-
   animate();
 
   window.addEventListener('resize', () => {
@@ -685,18 +1833,166 @@ a { color: inherit; text-decoration: none; }
   });
 })();
 
-/* ── GSAP ENTRANCE ANIMATION ─────────────────────── */
-(function setupAnimations() {
+/* ── 3. GSAP ENTRANCE & COUNTER ANIMATIONS ────────── */
+function runEntranceAnimations() {
   if (typeof gsap === 'undefined') return;
 
   const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-  tl.to('#heroBadge', { opacity: 1, y: 0, duration: 0.8, delay: 0.2 })
-    .to('#heroLogo', { opacity: 1, y: 0, scale: 1, duration: 1.0 }, '-=0.5')
-    .to('#heroSubtitle', { opacity: 1, y: 0, duration: 0.8 }, '-=0.6')
-    .to('#doorsGrid', { opacity: 1, y: 0, duration: 0.8 }, '-=0.5')
-    .to('#footer', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4');
+  tl.to('#heroBadge', { opacity: 1, y: 0, duration: 0.7 })
+    .to('#heroTitle', { opacity: 1, y: 0, duration: 0.8 }, '-=0.4')
+    .to('#heroSubtitle', { opacity: 1, y: 0, duration: 0.7 }, '-=0.5')
+    .to('#heroActions', { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+    .to('#statsRow', { opacity: 1, y: 0, duration: 0.8 }, '-=0.3');
+
+  // Stats number counters
+  const counters = document.querySelectorAll('.counter');
+  counters.forEach(counter => {
+    const target = +counter.getAttribute('data-target') || 0;
+    gsap.fromTo(counter, 
+      { textContent: 0 }, 
+      {
+        textContent: target,
+        duration: 1.6,
+        ease: 'power2.out',
+        snap: { textContent: 1 },
+        scrollTrigger: {
+          trigger: '#statsRow',
+          start: 'top 85%',
+          once: true
+        }
+      }
+    );
+  });
+
+  // Gates entrance stagger
+  if (typeof ScrollTrigger !== 'undefined') {
+    gsap.from('.gate-card', {
+      scrollTrigger: {
+        trigger: '#gatesGrid',
+        start: 'top 80%',
+        once: true
+      },
+      y: 40,
+      opacity: 0,
+      duration: 0.8,
+      stagger: 0.18,
+      ease: 'power3.out'
+    });
+  }
+}
+
+/* ── 4. VIDEO LIGHTBOX MODAL CONTROLLER (REQ 3) ──── */
+(function setupVideoLightbox() {
+  const lightbox = document.getElementById('videoLightbox');
+  const backdrop = document.getElementById('vlBackdrop');
+  const closeBtn = document.getElementById('vlClose');
+  const titleEl = document.getElementById('vlTitle');
+  const videoEl = document.getElementById('vlVideo');
+  let previousActiveElement = null;
+
+  if (!lightbox || !videoEl) return;
+
+  function openLightbox(src, title) {
+    if (!src) return;
+    previousActiveElement = document.activeElement;
+
+    if (titleEl) {
+      titleEl.textContent = title || 'Product Demo Walkthrough';
+    }
+
+    // Set video src and load
+    videoEl.src = src;
+    videoEl.load();
+
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Focus close button for accessibility
+    setTimeout(() => {
+      if (closeBtn) closeBtn.focus();
+    }, 100);
+
+    // Auto-play video after modal animation
+    videoEl.play().catch(() => {
+      // Autoplay with audio was blocked; muted fallback
+      videoEl.muted = true;
+      videoEl.play().catch(e => console.log('Video play prompt:', e));
+    });
+  }
+
+  function closeLightbox() {
+    if (!lightbox.classList.contains('active')) return;
+
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+
+    // Proper cleanup required by spec
+    videoEl.pause();
+    videoEl.removeAttribute('src');
+    videoEl.load();
+
+    // Restore focus
+    if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+      previousActiveElement.focus();
+    }
+  }
+
+  // Global event delegation for all [data-video-src] and .product-visual triggers
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-video-src]');
+    if (trigger) {
+      e.preventDefault();
+      const src = trigger.getAttribute('data-video-src');
+      const title = trigger.getAttribute('data-video-title');
+      openLightbox(src, title);
+      return;
+    }
+
+    const visualTrigger = e.target.closest('.product-visual');
+    if (visualTrigger && visualTrigger.hasAttribute('data-video-src')) {
+      e.preventDefault();
+      const src = visualTrigger.getAttribute('data-video-src');
+      const title = visualTrigger.getAttribute('data-video-title');
+      openLightbox(src, title);
+    }
+  });
+
+  // Keyboard accessibility for product-visual divs
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const activeEl = document.activeElement;
+      if (activeEl && activeEl.classList.contains('product-visual') && activeEl.hasAttribute('data-video-src')) {
+        e.preventDefault();
+        const src = activeEl.getAttribute('data-video-src');
+        const title = activeEl.getAttribute('data-video-title');
+        openLightbox(src, title);
+      }
+    }
+  });
+
+  // Close triggers
+  if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+  if (backdrop) backdrop.addEventListener('click', closeLightbox);
+
+  // ESC key listener
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+      closeLightbox();
+    }
+  });
 })();
+
+/* ── 5. NAVBAR SCROLL EFFECT ──────────────────────── */
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('mainNav');
+  if (!nav) return;
+  if (window.scrollY > 40) {
+    nav.classList.add('scrolled');
+  } else {
+    nav.classList.remove('scrolled');
+  }
+}, { passive: true });
 </script>
 </body>
 </html>
