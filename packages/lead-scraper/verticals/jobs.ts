@@ -83,14 +83,31 @@ export function likelyAgency(company: string, descriptionHtml: string): boolean 
 
 /* ── Adzuna ────────────────────────────────────────────────────────────── */
 
+export const DEFAULT_JOB_ROLES: RoleQuery[] = [
+  { name: "SDR", what: "sales development representative" },
+  { name: "BDR", what: "business development representative" },
+  { name: "Appointment Setter", what: "appointment setter" },
+  { name: "Account Executive", what: "account executive" },
+  { name: "Sales Manager", what: "sales manager" },
+  { name: "Lead Generation", what: "lead generation specialist" },
+  { name: "SEO / AEO", what: "seo specialist" },
+  { name: "PPC / Paid Ads", what: "ppc specialist" },
+  { name: "Media Buyer", what: "media buyer" },
+  { name: "AI Automation", what: "ai automation engineer" },
+  { name: "Software Developer", what: "software developer" },
+  { name: "Full Stack Engineer", what: "full stack engineer" },
+  { name: "Growth Marketer", what: "growth marketing manager" },
+];
+
 async function adzunaSearch(country: string, what: string, p: JobSearchParams): Promise<any[]> {
   const id = (process.env.ADZUNA_APP_ID || "").trim();
   const key = (process.env.ADZUNA_APP_KEY || "").trim();
   if (!id || !key) throw new Error("ADZUNA_APP_ID / ADZUNA_APP_KEY not set in env.");
 
   const perPage = 50;
-  const want = p.resultsPerRole ?? 12;
-  const out: any[] = [];
+  const want = p.resultsPerRole ?? 15;
+  const excludeAgencies = p.excludeAgencies !== false;
+  const collected: any[] = [];
   const baseParams: Record<string, string> = {
     app_id: id, app_key: key, results_per_page: String(perPage), what,
   };
@@ -99,14 +116,29 @@ async function adzunaSearch(country: string, what: string, p: JobSearchParams): 
   if (p.salaryMin) baseParams.salary_min = String(p.salaryMin);
   if (p.fullTimeOnly) baseParams.full_time = "1";
 
-  for (let page = 1; out.length < want && page <= 5; page++) {
+  // Fetch multiple pages until we collect enough valid non-agency employer leads
+  for (let page = 1; collected.length < want && page <= 8; page++) {
     const qs = new URLSearchParams(baseParams);
-    const data = await fetchJson(`${ADZUNA_BASE}/${country}/search/${page}?${qs.toString()}`);
+    let data: any;
+    try {
+      data = await fetchJson(`${ADZUNA_BASE}/${country}/search/${page}?${qs.toString()}`);
+    } catch {
+      break;
+    }
     const results: any[] = Array.isArray(data?.results) ? data.results : [];
     if (!results.length) break;
-    out.push(...results);
+
+    for (const r of results) {
+      const company = cleanCompany(str(r?.company?.display_name) || str(r?.company));
+      const desc = str(r?.description);
+      if (excludeAgencies && likelyAgency(company, desc)) {
+        continue;
+      }
+      collected.push(r);
+      if (collected.length >= want) break;
+    }
   }
-  return out.slice(0, want);
+  return collected;
 }
 
 function normalize(job: any, country: string, role: string): JobLead {
@@ -126,6 +158,7 @@ function normalize(job: any, country: string, role: string): JobLead {
     phones: [],
     source: "adzuna",
     foundAt: new Date().toISOString(),
+    context: `${title} (${role})`,
     description,
     title,
     role,
@@ -152,9 +185,12 @@ export const JOB_COLUMNS = [
 
 export async function searchJobs(p: JobSearchParams): Promise<JobLead[]> {
   const excludeAgencies = p.excludeAgencies !== false;
+  const roles = p.roles?.length ? p.roles : DEFAULT_JOB_ROLES;
+  const countries = p.countries?.length ? p.countries : ["gb", "us"];
   const all: JobLead[] = [];
-  for (const country of p.countries || ["gb", "us"]) {
-    for (const role of p.roles) {
+
+  for (const country of countries) {
+    for (const role of roles) {
       try {
         const raw = await adzunaSearch(country, role.what, p);
         all.push(...raw.map((r) => normalize(r, country, role.name)));
@@ -168,6 +204,9 @@ export async function searchJobs(p: JobSearchParams): Promise<JobLead[]> {
   if (excludeAgencies) leads = leads.filter((l) => !l.likelyAgency);
   if (p.remoteOnly) leads = leads.filter((l) => l.remote);
 
-  if (p.enrich !== false) leads = await enrichLeads(leads, p.maxEnrich ?? 10);
+  if (p.enrich !== false) {
+    const maxEnrich = p.maxEnrich ?? Math.min(leads.length, 50);
+    leads = await enrichLeads(leads, maxEnrich, p.concurrency ?? 6);
+  }
   return leads;
 }

@@ -75,3 +75,12 @@ _deploy/
 
 # Local Netlify folder
 .netlify
+
+# TruCRM & Scraper runtime
+TruCRM/data/
+TruCRM/dist/
+TruCRM/stdout.txt
+TruCRM/stderr.txt
+*-leads.csv
+call-list.csv
+

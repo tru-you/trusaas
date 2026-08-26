@@ -8,6 +8,10 @@
     "jobs": "tsx cli.ts jobs",
     "dealers": "tsx cli.ts dealers",
     "property": "tsx cli.ts property",
+    "call-list": "tsx call-list.ts",
+    "push:jobs": "tsx cli.ts jobs --push",
+    "push:dealers": "tsx cli.ts dealers --push",
+    "push:all": "tsx call-list.ts --push",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {},
