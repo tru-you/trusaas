@@ -280,7 +280,7 @@ export function linksFromDescription(descriptionHtml: string): string[] {
 /* ── SERP business lookup (Bright Data SERP zone "tds") ────────────────── */
 
 const SERP_EXCLUDE =
-  /(wikipedia|linkedin|facebook|instagram|youtube|twitter|x\.com|yahoo|finance\.yahoo|zoominfo|crunchbase|glassdoor|indeed|adzuna|google|maps|g2\.com|trustpilot|yelp|bbb\.org|reddit|quora|amazon|play\.google|bloomberg|forbes)/i;
+  /(wikipedia|linkedin|facebook|instagram|youtube|twitter|x\.com|yahoo|finance\.yahoo|zoominfo|crunchbase|glassdoor|indeed|adzuna|google|maps|g2\.com|trustpilot|yelp|bbb\.org|reddit|quora|amazon|play\.google|bloomberg|forbes|autotrader|cars\.co\.za|gumtree|olx|webuycars|autodealer|yellowpages|yell\.com|parkers|heycar|cazoo|carvana|carmax)/i;
 
 /** Resolve a company name → its real domain via Google SERP (organic results). */
 export async function serpBusinessLookup(name: string, country: string): Promise<string[]> {

@@ -8,7 +8,7 @@
  * dial.
  */
 
-import { webUnlockerFetch, detectBlocked, cleanHtmlText, extractEmails, extractSaPhones, extractJsonLdBusinesses, dedupeById } from "../core";
+import { webUnlockerFetch, detectBlocked, cleanHtmlText, extractEmails, extractSaPhones, extractJsonLdBusinesses, serpBusinessLookup, serpLinkedInLookup, dedupeById } from "../core";
 import type { DealerLead, SearchParams } from "../types";
 
 const CITY_PROVINCE: Record<string, string> = {
@@ -110,14 +110,23 @@ export async function searchDealers(
       if (!page) continue;
       const pr = parseDealerPage(page, item.name);
       if (!pr.name || !pr.phone) continue;
+      // The listing page rarely links the dealer's own site — resolve it via
+      // SERP, and always keep the cars.co.za listing URL as a clickable fallback.
+      let website = pr.website;
+      let linkedin = "";
+      if (!website) {
+        const real = await serpBusinessLookup(pr.name, "za");
+        if (real[0]) website = `https://${real[0]}`;
+        linkedin = await serpLinkedInLookup(pr.name, "za");
+      }
       leads.push({
         vertical: "dealers",
         id: `dealers|za|${pr.name}|${pr.phone}`.toLowerCase().replace(/\s+/g, " "),
         name: pr.name,
         location,
         country: "za",
-        website: pr.website,
-        linkedin: "",
+        website: website || item.detailUrl,
+        linkedin,
         emails: pr.email ? [pr.email] : [],
         phones: [pr.phone],
         source: "cars.co.za",
