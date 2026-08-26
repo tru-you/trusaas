@@ -188,29 +188,40 @@ async function scrapeDealersForSingleCity(
         const page = await webUnlockerFetch(item.detailUrl, { country: "za" });
         if (!page) continue;
         const pr = parseDealerPage(page, item.name);
-        if (!pr.name || !pr.phone) continue;
+        if (!pr.name) continue;
 
         let website = pr.website;
         let linkedin = "";
         let emails = pr.email ? [pr.email] : [];
-        let phones = [pr.phone];
+        let phones = pr.phone ? [pr.phone] : [];
+        let contact = "";
+        let contactTitle = "";
+        let rating: number | undefined;
+        let reviews: number | undefined;
+        let address = pr.address || city;
 
-        if (!website) {
-          const real = await serpBusinessLookup(pr.name, "za");
-          if (real[0]) website = `https://${real[0]}`;
-          linkedin = await serpLinkedInLookup(pr.name, "za");
+        // Run deep Google SERP lookup for business intelligence & decision maker
+        if (enrichWebsites) {
+          const serpInfo = await (await import("../core")).serpDeepBusinessLookup(pr.name, city, "za", "dealers");
+          if (serpInfo.website && !serpInfo.website.includes("cars.co.za")) website = serpInfo.website;
+          if (serpInfo.contact) {
+            contact = serpInfo.contact;
+            contactTitle = serpInfo.contactTitle || "";
+          }
+          if (serpInfo.linkedin) linkedin = serpInfo.linkedin;
+          if (serpInfo.address) address = serpInfo.address;
+          if (typeof serpInfo.rating === "number") rating = serpInfo.rating;
+          if (typeof serpInfo.reviews === "number") reviews = serpInfo.reviews;
+          if (serpInfo.phones.length > 0) phones = Array.from(new Set([...phones, ...serpInfo.phones])).slice(0, 5);
+          if (serpInfo.emails.length > 0) emails = Array.from(new Set([...emails, ...serpInfo.emails])).slice(0, 5);
         }
 
-        if (website && enrichWebsites && !website.includes("cars.co.za")) {
-          const crawled = await crawlWebsiteContacts(website);
-          if (crawled.emails.length > 0) emails = Array.from(new Set([...emails, ...crawled.emails])).slice(0, 5);
-          if (crawled.phones.length > 0) phones = Array.from(new Set([...phones, ...crawled.phones])).slice(0, 5);
-          if (!linkedin && crawled.linkedin) linkedin = crawled.linkedin;
-        }
+        const primaryPhone = phones[0] || pr.phone || "";
+        if (!primaryPhone && !website) continue;
 
-        leads.push({
+        const leadObj: DealerLead = {
           vertical: "dealers",
-          id: `dealers|za|${pr.name}|${pr.phone}`.toLowerCase().replace(/\s+/g, " "),
+          id: `dealers|za|${pr.name}|${primaryPhone || city}`.toLowerCase().replace(/\s+/g, " "),
           name: pr.name,
           location: city,
           country: "za",
@@ -221,8 +232,19 @@ async function scrapeDealersForSingleCity(
           source: "cars.co.za",
           foundAt: new Date().toISOString(),
           context: `Dealership — ${city}`,
-          address: pr.address || city,
-        });
+          address,
+          contact,
+          contactTitle,
+          rating,
+          reviews,
+        };
+
+        const core = await import("../core");
+        leadObj.pitch = core.generateBattlecard(leadObj);
+        leadObj.qualityScore = core.calculateQualityScore(leadObj);
+        if (primaryPhone) leadObj.formattedPhone = core.formatPhoneE164(primaryPhone, "za");
+
+        leads.push(leadObj);
       }
     };
     await Promise.all(Array.from({ length: Math.min(concurrency, selectedEntries.length || 1) }, worker));
@@ -236,17 +258,23 @@ async function scrapeDealersForSingleCity(
       const enrichWorker = async () => {
         while (cursor < extra.length) {
           const item = extra[cursor++];
-          if (!item.website) {
-            const hosts = await serpBusinessLookup(`${item.name} dealership ${city}`, country);
-            if (hosts[0]) item.website = `https://${hosts[0]}`;
-            item.linkedin = await serpLinkedInLookup(item.name, country);
+          const serpInfo = await (await import("../core")).serpDeepBusinessLookup(item.name, city, country, "dealers");
+          if (serpInfo.website) item.website = serpInfo.website;
+          if (serpInfo.contact) {
+            item.contact = serpInfo.contact;
+            item.contactTitle = serpInfo.contactTitle;
           }
-          if (item.website) {
-            const crawled = await crawlWebsiteContacts(item.website);
-            if (crawled.emails.length > 0) item.emails = crawled.emails.slice(0, 3);
-            if (crawled.phones.length > 0 && item.phones.length === 0) item.phones = crawled.phones.slice(0, 3);
-            if (!item.linkedin && crawled.linkedin) item.linkedin = crawled.linkedin;
-          }
+          if (serpInfo.linkedin) item.linkedin = serpInfo.linkedin;
+          if (serpInfo.address) item.address = serpInfo.address;
+          if (typeof serpInfo.rating === "number") item.rating = serpInfo.rating;
+          if (typeof serpInfo.reviews === "number") item.reviews = serpInfo.reviews;
+          if (serpInfo.phones.length > 0) item.phones = Array.from(new Set([...(item.phones || []), ...serpInfo.phones])).slice(0, 5);
+          if (serpInfo.emails.length > 0) item.emails = Array.from(new Set([...(item.emails || []), ...serpInfo.emails])).slice(0, 5);
+
+          const core = await import("../core");
+          item.pitch = core.generateBattlecard(item);
+          item.qualityScore = core.calculateQualityScore(item);
+          if (item.phones?.[0]) item.formattedPhone = core.formatPhoneE164(item.phones[0], country);
         }
       };
       await Promise.all(Array.from({ length: Math.min(concurrency, extra.length || 1) }, enrichWorker));

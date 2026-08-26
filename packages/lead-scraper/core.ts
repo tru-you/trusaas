@@ -361,6 +361,114 @@ export async function serpLinkedInLookup(name: string, country: string): Promise
   }
 }
 
+export interface DeepBusinessIntelligence {
+  website: string;
+  phones: string[];
+  emails: string[];
+  address?: string;
+  rating?: number;
+  reviews?: number;
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  contact?: string;
+  contactTitle?: string;
+}
+
+/** Comprehensive Google SERP Business Intelligence & Knowledge Graph lookup */
+export async function serpDeepBusinessLookup(
+  name: string,
+  location = "",
+  country = "za",
+  vertical = "dealers"
+): Promise<DeepBusinessIntelligence> {
+  const key = bdEnv("BRIGHTDATA_API_KEY");
+  const result: DeepBusinessIntelligence = {
+    website: "",
+    phones: [],
+    emails: [],
+  };
+  if (!key || !name) return result;
+
+  const zone = bdEnv("BRIGHTDATA_SERP_ZONE") || "tds";
+  const gl = country === "gb" ? "uk" : country === "za" ? "za" : "us";
+  const query = vertical === "dealers"
+    ? `"${name}" ${location ? `"${location}"` : ""} dealership`
+    : `"${name}" ${location ? `"${location}"` : ""}`;
+
+  const url = `https://www.google.com/search?q=${encodeURIComponent(query)}&gl=${gl}&hl=en&num=8&brd_json=1`;
+
+  try {
+    const { status, text } = await postJson(`${BD_API_BASE}/request`, { zone, url, format: "raw" }, key, 20000);
+    if (status === 200 && text) {
+      const data = JSON.parse(text);
+
+      // 1. Google Knowledge Panel
+      const kg = data?.knowledge || {};
+      if (kg.phone) result.phones.push(String(kg.phone).trim());
+      if (kg.address) result.address = String(kg.address).trim();
+      if (typeof kg.rating === "number") result.rating = kg.rating;
+      if (typeof kg.reviews === "number") result.reviews = kg.reviews;
+      if (kg.website && !SERP_EXCLUDE.test(kg.website)) result.website = kg.website;
+
+      // 2. Google Maps Local Pack
+      const local = Array.isArray(data?.local_results) ? data.local_results : [];
+      if (local.length > 0) {
+        const bestLocal = local.find((l: any) => l.title?.toLowerCase().includes(name.toLowerCase())) || local[0];
+        if (bestLocal) {
+          if (result.phones.length === 0 && bestLocal.phone) result.phones.push(String(bestLocal.phone).trim());
+          if (!result.address && bestLocal.address) result.address = String(bestLocal.address).trim();
+          if (!result.rating && typeof bestLocal.rating === "number") result.rating = bestLocal.rating;
+          if (!result.reviews && typeof bestLocal.reviews === "number") result.reviews = bestLocal.reviews;
+          if (!result.website && bestLocal.link && !SERP_EXCLUDE.test(bestLocal.link)) result.website = bestLocal.link;
+        }
+      }
+
+      // 3. Organic search links & social discovery
+      const organic = Array.isArray(data?.organic) ? data.organic : [];
+      for (const r of organic) {
+        const link = String(r?.link || "");
+        if (/facebook\.com\//i.test(link) && !result.facebook) result.facebook = link;
+        if (/instagram\.com\//i.test(link) && !result.instagram) result.instagram = link;
+        if (/linkedin\.com\/(company|in)\//i.test(link) && !result.linkedin) result.linkedin = link;
+
+        if (!result.website) {
+          try {
+            const host = new URL(link).hostname.replace(/^www\./, "");
+            if (host && !SERP_EXCLUDE.test(host)) {
+              result.website = `https://${host}`;
+            }
+          } catch {}
+        }
+      }
+    }
+  } catch {
+    /* continue */
+  }
+
+  // 4. Decision Maker SERP search
+  const dm = await findDecisionMaker(name, vertical, country);
+  if (dm.name) {
+    result.contact = dm.title ? `${dm.name} (${dm.title})` : dm.name;
+    result.contactTitle = dm.title;
+    if (dm.linkedin && !result.linkedin) result.linkedin = dm.linkedin;
+  }
+
+  // 5. Deep crawl official website for team emails and direct phone lines
+  if (result.website && !SERP_EXCLUDE.test(result.website)) {
+    const crawled = await crawlWebsiteContacts(result.website);
+    if (crawled.emails.length > 0) {
+      result.emails = Array.from(new Set([...result.emails, ...crawled.emails])).slice(0, 5);
+    }
+    if (crawled.phones.length > 0) {
+      result.phones = Array.from(new Set([...result.phones, ...crawled.phones])).slice(0, 5);
+    }
+    if (!result.linkedin && crawled.linkedin) result.linkedin = crawled.linkedin;
+  }
+
+  return result;
+}
+
 export interface Enrichment {
   website: string;
   linkedin: string;
