@@ -13,7 +13,7 @@ import { fetchValuation, markets } from "../index";
 interface Case { label: string; id: string; make: string; model: string; year: string; mileage?: number; market: any; }
 
 const cases: Case[] = [
-  { label: "ZA (car)",      id: "za",         make: "Volkswagen", model: "Golf",      year: "2021", mileage: 40000, market: markets.sa },
+  { label: "ZA (car)",      id: "za",         make: "Volkswagen", model: "Golf",      year: "2021", mileage: 40000, market: markets.za },
   { label: "US (car)",      id: "us",         make: "Honda",      model: "Civic",     year: "2021", mileage: 40000, market: markets.us },
   { label: "UK (car)",      id: "uk",         make: "Ford",       model: "Fiesta",    year: "2021", mileage: 40000, market: markets.uk },
   { label: "Housing ZA",    id: "housingZa",  make: "Cape Town",  model: "apartment", year: "2024",              market: markets.housingZa },

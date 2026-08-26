@@ -1,0 +1,10 @@
+# Market Value webapp — Netlify
+#   netlify deploy --prod --dir packages/market-scraper/webapp --site <site-id>
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200

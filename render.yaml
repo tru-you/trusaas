@@ -394,3 +394,45 @@ services:
   # Removed from this Blueprint — TruCRM lives in its own repository and is
   # deployed as its own Render service. Services: trusaas-crm, trusaas-crm-scraper.
   # Create them manually on Render pointing at the TruCRM repo.
+
+  # ── 6. Market Value — public valuation webapp (cars + housing, any country) ──
+  #   trusaas-market-value.onrender.com  →  the market-scraper webapp
+  # Base for customers to run their own instance, each with their OWN Bright Data /
+  # SERP keys set in the Render dashboard. No key = free path only (US/UK sites
+  # 403 plain HTTP until BRIGHTDATA_API_KEY is added).
+  - type: web
+    name: trusaas-market-value
+    runtime: node
+    plan: starter
+    rootDir: packages/market-scraper
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - packages/market-scraper/**
+    buildCommand: npm install && npm run build:webapp
+    startCommand: npm run start:webapp
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      # Bright Data Web Unlocker — unblocks US/UK classifieds (Autotrader.com,
+      # Cars.com, AutoTrader.co.uk) so they return real listings. Key set in the
+      # dashboard by the instance owner, never committed.
+      - key: SCRAPER_UNLOCKER_ENABLED
+        value: "1"
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: BRIGHTDATA_UNLOCKER_ZONE
+        sync: false
+      # Google SERP fallback tier (wide net when the free layers are thin).
+      - key: SERP_API_KEY
+        sync: false
+      - key: SERP_PROVIDER
+        sync: false
+      - key: SERP_ZONE
+        sync: false
+      # Headless render workers (comma-separated) for JS-heavy sites.
+      - key: SCRAPER_SERVICE_URLS
+        sync: false

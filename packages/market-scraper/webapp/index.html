@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market Value — TruSaaS</title>
+<meta name="description" content="Market valuation for cars and property across South Africa, US, UK and more. Live listings, per-source breakdown.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F1E8; --paper-2:#EBE5D8; --night:#080C14; --night-2:#0F1621;
+    --ink:#121A26; --ink-2:#3A4553; --muted:#6E6656; --faint:#A79D8C;
+    --line:rgba(18,26,38,.14); --cyan:#07889B; --cyan-lit:#00E0F5; --amber:#B07A26;
+    --sans:'Inter Tight',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+    --serif:'Fraunces',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  header{background:var(--night);color:var(--paper);padding:46px 0 40px;position:relative;overflow:hidden}
+  header .grid{position:absolute;inset:0;opacity:.5;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:46px 46px;mask-image:radial-gradient(70% 60% at 30% 20%,#000,transparent 80%)}
+  header .inner{position:relative;z-index:1}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--cyan-lit);margin-bottom:14px}
+  h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,5vw,52px);letter-spacing:-.03em;line-height:1.02;max-width:640px}
+  h1 em{font-style:italic;color:var(--cyan-lit);font-variation-settings:"SOFT" 100,"WONK" 1}
+  header .sub{color:rgba(245,241,232,.7);max-width:540px;margin-top:16px;font-size:16px;line-height:1.55}
+  .brand{position:absolute;top:26px;right:24px;font-size:15px;font-weight:800;letter-spacing:-.02em;color:var(--paper);z-index:2}
+  .brand b{color:var(--cyan-lit)}
+
+  main{padding:40px 0 72px}
+  .form{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px;box-shadow:0 10px 34px -20px rgba(18,26,38,.3)}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.frow{grid-template-columns:1fr}}
+  label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  select,input{width:100%;border:1px solid var(--line);border-radius:10px;padding:14px 14px;font-size:16px;font-family:var(--sans);color:var(--ink);background:#FBFBF9;outline:none;transition:border-color .2s}
+  select:focus,input:focus{border-color:var(--cyan)}
+  .btn{margin-top:18px;width:100%;border:none;border-radius:12px;padding:17px;font-size:17px;font-weight:700;cursor:pointer;background:linear-gradient(115deg,#15C7C0,#0D9488);color:#03211F;transition:transform .2s,filter .2s;font-family:var(--sans)}
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
+  .btn:disabled{opacity:.5;cursor:wait}
+
+  .note{margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--faint);text-align:center}
+
+  /* result */
+  .res{margin-top:26px;display:none}
+  .res.show{display:block}
+  .res-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+  .res-head h2{font-family:var(--serif);font-weight:400;font-size:24px;letter-spacing:-.02em}
+  .res-head .cache{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+  .cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  @media(max-width:720px){.cards{grid-template-columns:1fr}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px}
+  .stat .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .stat .v{font-family:var(--serif);font-size:28px;letter-spacing:-.02em;line-height:1}
+  .stat .v.small{font-size:22px}
+  .stat .sub{font-size:12px;color:var(--muted);margin-top:6px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px}
+  .panel h3{font-size:14px;font-weight:700;margin-bottom:12px;font-family:var(--sans)}
+  .src{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line-soft, rgba(18,26,38,.08));font-size:13.5px}
+  .src:last-child{border-bottom:none}
+  .src b{font-weight:600}
+  .src .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .link{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--cyan);word-break:break-all}
+  .warn{background:#fff8e6;border:1px solid #f2d98a;color:#7a5b00;border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5;margin-top:14px}
+  .err{background:#fdeaea;border:1px solid #f0b4b4;color:#a01d1d;border-radius:12px;padding:14px 16px;font-size:13.5px;margin-top:14px;display:none}
+  .loading{display:none;margin-top:22px;text-align:center;font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .loading .spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--cyan);border-radius:50%;display:inline-block;vertical-align:middle;margin-right:10px;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  footer{background:var(--night);color:rgba(245,241,232,.55);padding:26px 0;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  footer b{color:var(--cyan-lit)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="grid"></div>
+  <span class="brand">Tru<b>SaaS</b></span>
+  <div class="wrap">
+    <div class="eyebrow">Market valuation</div>
+    <h1>What's a <em>Golf</em> worth in <em>Cape Town</em>?</h1>
+    <p class="sub">Live listings across AutoTrader, Cars.co.za, Property24, Private Property and more — per-source breakdown, mileage-adjusted, honest about when the sample is thin.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <form class="form" id="form">
+    <div class="frow">
+      <div>
+        <label for="market">Market</label>
+        <select id="market" name="market"></select>
+      </div>
+      <div id="locWrap" style="display:none">
+        <label for="loc">Location</label>
+        <input id="loc" placeholder="e.g. Cape Town" autocomplete="off">
+      </div>
+    </div>
+    <div class="frow" style="margin-top:14px">
+      <div><label for="make">Make / location</label><input id="make" placeholder="Volkswagen" autocomplete="off"></div>
+      <div><label for="model">Model / type</label><input id="model" placeholder="Golf" autocomplete="off"></div>
+    </div>
+    <div class="frow" style="margin-top:14px">
+      <div><label for="year">Year</label><input id="year" type="number" placeholder="2021" min="1990" max="2100"></div>
+      <div><label for="mileage">Mileage (km)</label><input id="mileage" type="number" placeholder="40000" min="0"></div>
+    </div>
+    <button class="btn" id="run" type="submit">Get a market value</button>
+    <p class="note">Estimates only — not a formal valuation. Seeded from live listings; subject to full assessment.</p>
+  </form>
+
+  <div class="loading" id="loading"><span class="spin"></span>Pulling listings…</div>
+  <div class="err" id="err"></div>
+
+  <section class="res" id="res">
+    <div class="res-head">
+      <h2 id="resTitle"></h2>
+      <span class="cache" id="cached">live</span>
+    </div>
+    <div class="cards">
+      <div class="stat"><div class="k">Market average</div><div class="v" id="avg">—</div><div class="sub" id="avgSub"></div></div>
+      <div class="stat"><div class="k">Listings found</div><div class="v small" id="count">—</div><div class="sub" id="countSub"></div></div>
+      <div class="stat"><div class="k">Sample mileage</div><div class="v small" id="km">—</div><div class="sub">median of the comps</div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>By source</h3><div id="sources"></div></div>
+      <div class="panel"><h3>Open the market</h3>
+        <div id="links" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+    </div>
+    <div class="warn" id="warn" style="display:none"></div>
+  </section>
+</main>
+
+<footer>© TruSaaS · <b>Cape Town</b> · Deployed anywhere</footer>
+
+<script>
+(function () {
+  var SYM = { za: "R", us: "$", uk: "£", housingZa: "R" };
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]; }); };
+  var money = function (n, sym) { return (sym || "") + Math.round(Number(n) || 0).toLocaleString("en-ZA"); };
+  var kmFmt = function (n) { return Number(n) ? Math.round(n).toLocaleString("en-ZA") + " km" : "—"; };
+
+  function loadMarkets() {
+    fetch("/api/markets").then(function (r) { return r.json(); }).then(function (list) {
+      var sel = $("market");
+      sel.innerHTML = list.map(function (m) { return '<option value="' + esc(m.id) + '">' + esc(m.label) + "</option>"; }).join("");
+      // show/hide location field (housing needs a location)
+      syncLocation(list[0] && list[0].id);
+    }).catch(function () { $("market").innerHTML = '<option value="za">South Africa — cars</option>'; });
+  }
+  function syncLocation(id) {
+    $("locWrap").style.display = (id === "housingZa") ? "block" : "none";
+  }
+  $("market").addEventListener("change", function () { syncLocation($("market").value); });
+
+  function render(r, cur) {
+    $("res").classList.add("show");
+    $("resTitle").textContent = $("model").value + " · " + $("make").value + " " + $("year").value;
+    $("cached").textContent = r.fallbackRequired ? "thin sample" : "live";
+    $("avg").textContent = r.averageRetailPrice != null ? money(r.averageRetailPrice, cur) : "—";
+    $("avgSub").textContent = r.mileageAdjusted ? "mileage-adjusted" : "";
+    $("count").textContent = r.listingsFound;
+    $("countSub").textContent = r.fallbackRequired ? "low-confidence, approximate" : "comps across all sources";
+    $("km").textContent = kmFmt(r.sampleMedianKm);
+
+    $("sources").innerHTML = (r.sources && r.sources.length)
+      ? r.sources.map(function (s) {
+          return '<div class="src"><b>' + esc(s.name) + "</b><span>" + s.count + " listings</span><span class=\"n\">" +
+            (s.avg != null ? money(s.avg, cur) : "—") + "</span></div>";
+        }).join("")
+      : '<div class="src"><b>No sources reached</b><span>0</span><span class="n">—</span></div>';
+
+    var links = "";
+    if (r.searchUrl) links += '<a class="link" target="_blank" rel="noopener" href="' + esc(r.searchUrl) + '">Market search ↗</a>';
+    if (r.carsUrl) links += '<a class="link" target="_blank" rel="noopener" href="' + esc(r.carsUrl) + '">Cars.co.za ↗</a>';
+    $("links").innerHTML = links || '<span class="link">No search URL returned.</span>';
+
+    var w = $("warn");
+    if (r.averageRetailPrice == null) {
+      w.style.display = "block";
+      w.textContent = "Couldn't reach the listing sites for this market — the source(s) block plain HTTP. Open the search link to view listings, or enable the Web Unlocker / retune the selectors for this market.";
+    } else if (r.fallbackRequired) {
+      w.style.display = "block";
+      w.textContent = "Thin sample — treat this as a ballpark, not a valuation. Enable the Web Unlocker or add dealer sources to widen it.";
+    } else { w.style.display = "none"; }
+  }
+
+  $("form").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var market = $("market").value;
+    var make, model;
+    if (market === "housingZa") { make = $("loc").value.trim() || $("make").value.trim(); model = $("model").value.trim() || "property"; }
+    else { make = $("make").value.trim(); model = $("model").value.trim(); }
+    var year = $("year").value.trim();
+    if (!make || !model || !year) { showErr("Fill in make/type, model and year."); return; }
+    var payload = { market: market, make: make, model: model, year: year };
+    var mi = parseInt($("mileage").value, 10);
+    if (mi > 0) payload.mileage = mi;
+
+    $("loading").style.display = "block"; $("err").style.display = "none"; $("res").classList.remove("show");
+    $("run").disabled = true;
+
+    fetch("/api/valuation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (o) {
+        $("loading").style.display = "none"; $("run").disabled = false;
+        if (!o.ok) { showErr(o.d.error || "Valuation failed."); return; }
+        render(o.d, SYM[market] || "");
+      })
+      .catch(function () { $("loading").style.display = "none"; $("run").disabled = false; showErr("Network error — try again."); });
+  });
+
+  function showErr(msg) { var e = $("err"); e.textContent = msg; e.style.display = "block"; }
+
+  loadMarkets();
+})();
+</script>
+</body>
+</html>

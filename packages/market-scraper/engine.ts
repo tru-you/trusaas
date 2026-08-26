@@ -46,6 +46,8 @@ export interface ValuationResult {
   searchUrl?: string;
   carsUrl?: string;
   sources: SourceResult[];
+  /** Currency symbol of the market the estimate is in (R, $, £). */
+  currency?: string;
   mileageAdjusted?: boolean;
   sampleMedianKm?: number | null;
 }
