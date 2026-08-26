@@ -1,0 +1,19 @@
+{
+  "name": "@trusaas/lead-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vertical-agnostic prospect/lead scraper — jobs (Adzuna/SERP), dealers, property.",
+  "scripts": {
+    "jobs": "tsx cli.ts jobs",
+    "dealers": "tsx cli.ts dealers",
+    "property": "tsx cli.ts property",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2"
+  }
+}

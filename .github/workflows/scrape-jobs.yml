@@ -1,0 +1,25 @@
+name: Scrape jobs → TruCRM
+
+on:
+  schedule:
+    - cron: '30 5 * * *'   # daily 05:30 UTC
+  workflow_dispatch: {}     # manual "Run workflow" button
+
+jobs:
+  scrape-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run jobs scrape and push to CRM
+        env:
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+          BRIGHTDATA_API_KEY: ${{ secrets.BRIGHTDATA_API_KEY }}
+          BRIGHTDATA_SERP_ZONE: tds
+          BRIGHTDATA_UNLOCKER_ZONE: tds2
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
+          CRM_URL: ${{ secrets.CRM_URL }}
+        run: npx tsx@4 packages/lead-scraper/cli.ts jobs --push "$CRM_URL"
