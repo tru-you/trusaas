@@ -83,4 +83,6 @@ TruCRM/stdout.txt
 TruCRM/stderr.txt
 *-leads.csv
 call-list.csv
+*.mp4
+*.webm
 
