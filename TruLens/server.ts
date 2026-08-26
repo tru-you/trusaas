@@ -2588,7 +2588,16 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (/\.(js|css|html|json)$/i.test(filePath)) {
+          const ct = res.getHeader('Content-Type');
+          if (ct && !String(ct).includes('charset')) {
+            res.setHeader('Content-Type', ct + '; charset=utf-8');
+          }
+        }
+      }
+    }));
     // Ensure public PWA files exist in dist after vite build (copied automatically)
     app.use(express.static(publicDir));
     app.get('*', (req, res) => {

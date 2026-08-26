@@ -7124,7 +7124,16 @@ async function startServer() {
   } else {
     console.log("Starting in production mode. Static files serving enabled.");
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (/\.(js|css|html|json)$/i.test(filePath)) {
+          const ct = res.getHeader('Content-Type');
+          if (ct && !String(ct).includes('charset')) {
+            res.setHeader('Content-Type', ct + '; charset=utf-8');
+          }
+        }
+      }
+    }));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
