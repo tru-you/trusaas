@@ -1,0 +1,34 @@
+# TruSaaS — scheduled lead scraper → TruCRM
+#
+# Runs on GitLab scheduled pipelines (CI/CD → Schedules → New schedule) and on
+# manual "Run pipeline" (CI/CD → Pipelines → Run pipeline). Scrapes the jobs
+# vertical (Adzuna + SERP enrichment) and pushes leads into the live CRM via
+# POST /api/leads/import.
+#
+# Required CI/CD variables (Settings → CI/CD → Variables, masked + protected):
+#   CRM_URL            — live TruCRM origin, e.g. https://trucrm.onrender.com
+#   SCRAPER_API_KEY    — must match SCRAPER_API_KEY set on the TruCRM service
+#   ADZUNA_APP_ID
+#   ADZUNA_APP_KEY
+#   BRIGHTDATA_API_KEY
+
+stages:
+  - scrape
+
+scrape-jobs:
+  stage: scrape
+  image: node:20
+  timeout: 20m
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  variables:
+    BRIGHTDATA_SERP_ZONE: "tds"
+    BRIGHTDATA_UNLOCKER_ZONE: "tds2"
+  script:
+    - npx --yes tsx@4 packages/lead-scraper/cli.ts jobs --push "$CRM_URL"
+  artifacts:
+    when: always
+    paths:
+      - jobs-leads.csv
+    expire_in: 7 days
