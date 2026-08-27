@@ -11,18 +11,55 @@ const DEFAULT_HEADERS = {
   'Cache-Control': 'no-cache',
 };
 
+const WORKER_URLS = (
+  process.env.SCRAPER_SERVICE_URLS ||
+  process.env.SCRAPER_SERVICE_URL ||
+  process.env.TRUCRM_SCRAPER_URL ||
+  ''
+)
+  .split(',')
+  .map((u) => u.trim())
+  .filter(Boolean);
+
+let workerIndex = 0;
+
 function num(v: unknown): number | null {
   if (v == null) return null;
   const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/[^\d.]/g, ''));
   return Number.isFinite(n) ? n : null;
 }
 
+async function renderViaHeadlessWorker(url: string): Promise<string | null> {
+  if (WORKER_URLS.length === 0) return null;
+  for (let attempt = 0; attempt < WORKER_URLS.length; attempt++) {
+    const worker = WORKER_URLS[workerIndex++ % WORKER_URLS.length];
+    try {
+      const res = await axios.post(
+        `${worker.replace(/\/$/, '')}/scrape`,
+        { url },
+        { headers: { 'Content-Type': 'application/json' }, timeout: 25000 }
+      );
+      if (res.data?.ok && typeof res.data?.html === 'string') {
+        return res.data.html;
+      }
+    } catch (err: any) {
+      console.warn(`[ingestion] Headless worker ${worker} failed on ${url}:`, err?.message || err);
+    }
+  }
+  return null;
+}
+
 async function fetchPageWithUnlockerFallback(url: string): Promise<string | null> {
+  // 1. Try headless worker first if available
+  const workerHtml = await renderViaHeadlessWorker(url);
+  if (workerHtml && workerHtml.length > 200) return workerHtml;
+
+  // 2. Try direct HTTP
   try {
     const res = await axios.get(url, { headers: DEFAULT_HEADERS, timeout: CONFIG.SCRAPER_TIMEOUT_MS });
     if (res.status === 200 && typeof res.data === 'string') return res.data;
   } catch (err: any) {
-    // If blocked (403) and Bright Data key exists, use Unlocker
+    // 3. Fallback to Bright Data Web Unlocker if enabled
     if (CONFIG.BRIGHTDATA_API_KEY) {
       try {
         const bdRes = await axios.post(
@@ -60,7 +97,6 @@ async function fetchPageWithUnlockerFallback(url: string): Promise<string | null
   }
   return null;
 }
-
 
 export async function fetchCarsCoZaNewest(): Promise<RawFbListing[]> {
   const url = 'https://www.cars.co.za/usedcars/?P=1&sort=date_desc';
