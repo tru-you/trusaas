@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en-ZA" class="dark" data-app="truarbitrage">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+  <title>TruArbitrage — Dealer Sourcing & Floorplan Distress Radar</title>
+  <meta name="description" content="Multi-source vehicle arbitrage, private-to-dealer deal flow, and Days-on-Market distress radar for South African dealerships.">
+  <meta name="theme-color" content="#06080D">
+  <meta name="color-scheme" content="dark">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter Tight"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            tru: {
+              night: '#06080D',
+              surface: '#0B0F17',
+              panel: '#111722',
+              cyan: '#00E0F5',
+              cyanDark: '#07889B',
+              emerald: '#10B981',
+              amber: '#F59E0B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #06080D;
+      --surface: #0B0F17;
+      --panel: #111722;
+      --cyan: #00E0F5;
+      --cyan-dark: #07889B;
+      --emerald: #10B981;
+      --amber: #F59E0B;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+    body {
+      background-color: var(--bg);
+      color: #F3F4F6;
+      font-family: 'Inter Tight', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .glass-nav {
+      background: rgba(6, 8, 13, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .tru-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .tru-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tru-card:hover {
+      border-color: rgba(0, 224, 245, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px -10px rgba(0, 224, 245, 0.15);
+    }
+    .radar-pulse {
+      animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- TruSaaS Header Bar -->
+  <header class="sticky top-0 z-50 glass-nav px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-700 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-300/30">
+          <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-extrabold tracking-tight text-white">Tru<span class="text-tru-cyan font-black">Arbitrage</span></span>
+            <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-tru-cyan border border-cyan-500/30 px-2 py-0.5 rounded-md">Live Radar</span>
+          </div>
+          <p class="text-xs text-slate-400 font-medium">Dealer Sourcing & Floorplan Distress Radar • South Africa</p>
+        </div>
+      </div>
+
+      <!-- Live Actions -->
+      <div class="flex items-center gap-3">
+        <button onclick="triggerScan()" id="scanBtn" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 text-slate-950 font-bold text-xs font-mono-code shadow-lg shadow-cyan-500/25 transition">
+          <span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span>
+          <span>SCAN ALL PLATFORMS</span>
+        </button>
+        <button onclick="openBuyBoxModal()" class="px-4 py-2.5 rounded-xl tru-panel hover:bg-slate-800 text-slate-200 text-xs font-semibold font-mono-code transition border border-white/10">
+          ⚙️ BUY-BOX SETTINGS
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Hero Metrics Bar -->
+  <section class="max-w-7xl mx-auto w-full px-6 pt-8 pb-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="tru-panel p-5 rounded-2xl">
+        <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Profit Identified</span>
+        <div class="font-mono-code text-2xl font-black text-tru-emerald mt-1" id="statTotalProfit">R0</div>
+        <span class="text-xs text-slate-500 mt-1 block">Net margin after recon buffer</span>
+      </div>
+      <div class="tru-panel p-5 rounded-2xl">
+        <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Active High-Margin Deals</span>
+        <div class="font-mono-code text-2xl font-black text-white mt-1" id="statActiveDeals">0</div>
+        <span class="text-xs text-cyan-400/80 mt-1 block">Net profit &ge; R25,000</span>
+      </div>
+      <div class="tru-panel p-5 rounded-2xl">
+        <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Avg Net Margin / Deal</span>
+        <div class="font-mono-code text-2xl font-black text-tru-cyan mt-1" id="statAvgMargin">R0</div>
+        <span class="text-xs text-slate-500 mt-1 block">Across qualified stock</span>
+      </div>
+      <div class="tru-panel p-5 rounded-2xl">
+        <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Stale Floorplan Distress</span>
+        <div class="font-mono-code text-2xl font-black text-tru-amber mt-1" id="statDesperateSellers">0</div>
+        <span class="text-xs text-amber-400/80 mt-1 block">&ge; 40d on floor or price dropped</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Search Toolbar -->
+  <section class="max-w-7xl mx-auto w-full px-6 py-4">
+    <div class="tru-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3 flex-wrap flex-1">
+        <div class="relative min-w-[180px] flex-1 max-w-xs">
+          <input type="text" id="filterSearch" oninput="renderDeals()" placeholder="Search make, model, dealer, city..." class="w-full bg-[#080C14] border border-white/10 text-xs rounded-xl pl-8 pr-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-sans">
+          <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+        </div>
+        <select id="filterSource" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+          <option value="ALL">All Platforms</option>
+          <option value="facebook">Facebook Marketplace</option>
+          <option value="cars_co_za">Cars.co.za</option>
+          <option value="autotrader">AutoTrader SA</option>
+          <option value="dealer_direct">Dealer Sites (Google SERP)</option>
+          <option value="gumtree">Gumtree</option>
+        </select>
+        <select id="filterCategory" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+          <option value="ALL">All Deal Types</option>
+          <option value="underpriced_arbitrage">⚡ Underpriced Bargains</option>
+          <option value="stale_floorplan_distress">🔥 Stale Floorplan (&ge;40d)</option>
+          <option value="price_drop_velocity">📉 Major Price Drops</option>
+        </select>
+        <select id="filterProvince" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+          <option value="ALL">All Provinces</option>
+          <option value="Gauteng">Gauteng (JHB / PTA)</option>
+          <option value="Western Cape">Western Cape (CPT)</option>
+          <option value="KwaZulu-Natal">KwaZulu-Natal (DBN)</option>
+        </select>
+        <select id="filterMake" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+          <option value="ALL">All Makes</option>
+        </select>
+        <select id="filterSort" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+          <option value="profit_desc">Highest Net Margin</option>
+          <option value="dom_desc">Oldest on Floor (DOM)</option>
+          <option value="price_asc">Lowest Asking Price</option>
+        </select>
+      </div>
+      <div class="font-mono-code text-xs text-slate-400 font-semibold whitespace-nowrap">
+        Showing <span id="dealCountBadge" class="text-tru-cyan font-bold">0</span> qualified opportunities
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Arbitrage Cards Grid -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-4 flex-1">
+    <div id="dealsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Injected via JavaScript -->
+    </div>
+    
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden tru-panel p-12 rounded-3xl text-center max-w-lg mx-auto my-12">
+      <div class="w-16 h-16 rounded-2xl bg-[#080C14] border border-white/10 flex items-center justify-center mx-auto mb-4 text-2xl">🚗</div>
+      <h3 class="text-lg font-bold text-white">No Arbitrage Deals Match Your Filter</h3>
+      <p class="text-sm text-slate-400 mt-2">Try clearing your filters or click below to trigger a fresh multi-source scan.</p>
+      <div class="flex justify-center gap-3 mt-6">
+        <button onclick="resetFilters()" class="px-4 py-2 rounded-xl tru-panel hover:bg-slate-800 text-slate-300 text-xs font-mono-code font-semibold">Reset Filters</button>
+        <button onclick="triggerScan()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:brightness-110 text-slate-950 font-mono-code font-bold text-xs">Scan All Platforms</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Buy-Box Modal -->
+  <div id="buyBoxModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="tru-panel p-6 rounded-3xl max-w-lg w-full border border-cyan-500/20 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <span>Dealer Buy-Box Settings</span>
+          <span class="font-mono-code text-[10px] bg-cyan-500/10 text-tru-cyan border border-cyan-500/20 px-2 py-0.5 rounded">Preferences</span>
+        </h2>
+        <button onclick="closeBuyBoxModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+      </div>
+      <p class="text-xs text-slate-400 mb-6">Configure the exact types of private & wholesale stock you want pushed to your WhatsApp and dashboard.</p>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">Dealership Name</label>
+          <input type="text" id="bbDealerName" value="Apex Auto Motors" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-sans">
+        </div>
+        <div>
+          <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">WhatsApp Phone Number for Alerts</label>
+          <input type="text" id="bbPhone" value="+27821234567" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-mono-code">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">Minimum Net Margin (ZAR)</label>
+            <input type="number" id="bbMinMargin" value="25000" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-mono-code">
+          </div>
+          <div>
+            <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">Maximum Price Ceiling (ZAR)</label>
+            <input type="number" id="bbMaxPrice" value="350000" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-mono-code">
+          </div>
+        </div>
+        <div>
+          <label class="font-mono-code text-[10px] uppercase tracking-wider font-bold text-slate-300 block mb-1">Target Provinces / Cities</label>
+          <input type="text" id="bbProvinces" value="Gauteng, Western Cape, KwaZulu-Natal" class="w-full bg-[#080C14] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 font-sans">
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="closeBuyBoxModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-mono-code font-medium">Cancel</button>
+        <button onclick="saveBuyBoxSettings()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:brightness-110 text-slate-950 text-xs font-mono-code font-bold">Save Buy-Box</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allDeals = [];
+
+    const PROVINCE_MAP = {
+      'Gauteng': ['gauteng', 'johannesburg', 'jhb', 'pretoria', 'pta', 'randburg', 'centurion', 'sandton', 'boksburg', 'midrand', 'roodepoort', 'soweto', 'kempton'],
+      'Western Cape': ['western cape', 'cape town', 'cpt', 'bellville', 'stellenbosch', 'somerset', 'paarl', 'george'],
+      'KwaZulu-Natal': ['kwazulu', 'natal', 'kzn', 'durban', 'dbn', 'umhlanga', 'pinetown', 'pietermaritzburg']
+    };
+
+    const SOURCE_BADGES = {
+      'facebook': { label: 'FB Marketplace', color: 'bg-blue-500/10 border-blue-500/30 text-blue-400', icon: '🔵' },
+      'cars_co_za': { label: 'Cars.co.za', color: 'bg-red-500/10 border-red-500/30 text-red-400', icon: '🔴' },
+      'autotrader': { label: 'AutoTrader SA', color: 'bg-amber-500/10 border-amber-500/30 text-amber-400', icon: '🟡' },
+      'dealer_direct': { label: 'Dealer Website (SERP)', color: 'bg-purple-500/10 border-purple-500/30 text-purple-400', icon: '🟣' },
+      'gumtree': { label: 'Gumtree Private', color: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400', icon: '🟢' },
+      'webuycars': { label: 'WeBuyCars', color: 'bg-cyan-500/10 border-cyan-500/30 text-tru-cyan', icon: '💎' },
+    };
+
+    async function loadDeals() {
+      try {
+        const res = await fetch('/api/deals');
+        const data = await res.json();
+        allDeals = data.deals || [];
+        console.log('Loaded multi-source deals:', allDeals);
+
+        populateMakeFilter();
+        renderDeals();
+        updateStats();
+      } catch (err) {
+        console.error('Failed to load deals:', err);
+      }
+    }
+
+    function populateMakeFilter() {
+      const select = document.getElementById('filterMake');
+      const current = select.value;
+      const makes = new Set();
+      
+      allDeals.forEach(d => {
+        const make = d.vehicle?.make || d.make;
+        if (make) makes.add(make);
+      });
+
+      select.innerHTML = '<option value="ALL">All Makes</option>' + 
+        Array.from(makes).sort().map(m => `<option value="${m}">${m}</option>`).join('');
+      
+      if (makes.has(current)) select.value = current;
+    }
+
+    function updateStats() {
+      const totalProfit = allDeals.reduce((sum, d) => sum + (d.projectedNetMargin || 0), 0);
+      const avgMargin = allDeals.length ? Math.round(totalProfit / allDeals.length) : 0;
+      const staleDistress = allDeals.filter(d => (d.daysOnMarket || 0) >= 40 || d.dealCategory === 'stale_floorplan_distress' || (d.urgencyScore || 0) >= 40).length;
+
+      document.getElementById('statTotalProfit').textContent = `R${totalProfit.toLocaleString('en-ZA')}`;
+      document.getElementById('statActiveDeals').textContent = allDeals.length;
+      document.getElementById('statAvgMargin').textContent = `R${avgMargin.toLocaleString('en-ZA')}`;
+      document.getElementById('statDesperateSellers').textContent = staleDistress;
+    }
+
+    function resetFilters() {
+      document.getElementById('filterSearch').value = '';
+      document.getElementById('filterSource').value = 'ALL';
+      document.getElementById('filterCategory').value = 'ALL';
+      document.getElementById('filterProvince').value = 'ALL';
+      document.getElementById('filterMake').value = 'ALL';
+      document.getElementById('filterSort').value = 'profit_desc';
+      renderDeals();
+    }
+
+    function renderDeals() {
+      const search = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
+      const source = document.getElementById('filterSource')?.value || 'ALL';
+      const category = document.getElementById('filterCategory')?.value || 'ALL';
+      const province = document.getElementById('filterProvince')?.value || 'ALL';
+      const make = document.getElementById('filterMake')?.value || 'ALL';
+      const sort = document.getElementById('filterSort')?.value || 'profit_desc';
+
+      let filtered = allDeals.filter(deal => {
+        const v = deal.vehicle || deal;
+        const loc = (v.location || '').toLowerCase();
+        const vehicleMake = (v.make || '').toLowerCase();
+        const vehicleSource = deal.source || v.source || 'facebook';
+        const dealCat = deal.dealCategory || 'underpriced_arbitrage';
+        const fullTitle = `${v.year || ''} ${v.make || ''} ${v.model || ''} ${v.sellerName || ''} ${v.location || ''}`.toLowerCase();
+
+        if (search && !fullTitle.includes(search)) return false;
+        if (source !== 'ALL' && vehicleSource !== source) return false;
+        if (category !== 'ALL' && dealCat !== category) return false;
+
+        if (province !== 'ALL') {
+          const keywords = PROVINCE_MAP[province] || [province.toLowerCase()];
+          const matchedProvince = keywords.some(kw => loc.includes(kw));
+          if (!matchedProvince && !loc.includes('south africa') && loc !== '') return false;
+        }
+
+        if (make !== 'ALL' && vehicleMake !== make.toLowerCase()) return false;
+
+        return true;
+      });
+
+      if (sort === 'profit_desc') filtered.sort((a, b) => (b.projectedNetMargin || 0) - (a.projectedNetMargin || 0));
+      if (sort === 'dom_desc') filtered.sort((a, b) => (b.daysOnMarket || 0) - (a.daysOnMarket || 0));
+      if (sort === 'price_asc') filtered.sort((a, b) => (a.askingPrice || 0) - (b.askingPrice || 0));
+
+      document.getElementById('dealCountBadge').textContent = filtered.length;
+      const grid = document.getElementById('dealsGrid');
+      const empty = document.getElementById('emptyState');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      grid.innerHTML = filtered.map(deal => {
+        const v = deal.vehicle || deal;
+        const kmText = v.mileageKm ? `${v.mileageKm.toLocaleString('en-ZA')} km` : 'Unspecified km';
+        const netProfit = (deal.projectedNetMargin || 0).toLocaleString('en-ZA');
+        const retail = (deal.marketRetailPrice || 0).toLocaleString('en-ZA');
+        const asking = (deal.askingPrice || 0).toLocaleString('en-ZA');
+        const daysOnMarket = deal.daysOnMarket || 0;
+        const dealSource = deal.source || v.source || 'facebook';
+        const srcBadge = SOURCE_BADGES[dealSource] || SOURCE_BADGES.facebook;
+        const isDealerStock = dealSource === 'cars_co_za' || dealSource === 'autotrader' || dealSource === 'dealer_direct';
+
+        let categoryTag = '⚡ UNDERPRICED ARBITRAGE';
+        let categoryClass = 'bg-cyan-500/10 border-cyan-500/30 text-tru-cyan';
+        if (deal.dealCategory === 'stale_floorplan_distress' || daysOnMarket >= 40) {
+          categoryTag = `🔥 STALE FLOORPLAN (${daysOnMarket}d)`;
+          categoryClass = 'bg-amber-500/10 border-amber-500/30 text-tru-amber';
+        } else if (deal.dealCategory === 'price_drop_velocity') {
+          categoryTag = '📉 MAJOR PRICE CUT';
+          categoryClass = 'bg-purple-500/10 border-purple-500/30 text-purple-400';
+        }
+
+        const offerAmount = Math.round((deal.askingPrice || 100000) * 0.93);
+        const offerText = encodeURIComponent(
+          isDealerStock
+            ? `Hi ${v.sellerName || 'Trade Desk'}, following up on your ${v.year} ${v.make} ${v.model} listed on your floor. Can you do a dealer wholesale trade release at R${offerAmount.toLocaleString('en-ZA')} on floorplan settlement? Instant payment available today.`
+            : `Hi ${v.sellerName || 'there'}, I saw your ${v.year} ${v.make} ${v.model} listed for R${asking}. We can make an immediate cash offer of R${offerAmount.toLocaleString('en-ZA')} with instant EFT and handle all paperwork today. Are you free for an inspection?`
+        );
+
+        return `
+          <div class="tru-card rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+            
+            <!-- Badges -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="font-mono-code text-[10px] font-bold uppercase px-2.5 py-1 rounded-md border ${srcBadge.color}">
+                ${srcBadge.icon} ${srcBadge.label}
+              </span>
+              <span class="font-mono-code text-[10px] font-bold uppercase px-2.5 py-1 rounded-md border ${categoryClass}">
+                ${categoryTag}
+              </span>
+            </div>
+
+            <div>
+              <div class="text-xs font-semibold text-slate-400">${v.location || 'South Africa'} • <span class="text-slate-300 font-medium">${v.sellerName || 'Direct Seller'}</span></div>
+              <h3 class="text-lg font-bold text-white mt-1 pr-4">${v.year} ${v.make} ${v.model}</h3>
+              <p class="text-xs text-slate-400 mt-0.5">${v.trim || 'Verified Private Listing'} • <span class="font-mono-code text-slate-300">${kmText}</span></p>
+
+              <!-- Financial Box -->
+              <div class="bg-[#080C14] rounded-xl p-3.5 mt-4 border border-white/5 space-y-2">
+                <div class="flex items-center justify-between text-xs font-sans">
+                  <span class="text-slate-400">Listed Asking Price:</span>
+                  <span class="font-mono-code font-bold text-white">R${asking}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-sans">
+                  <span class="text-slate-400">Live Market Retail:</span>
+                  <span class="font-mono-code font-bold text-slate-300">R${retail}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-sans">
+                  <span class="text-slate-400">Recon & Floor Buffer:</span>
+                  <span class="font-mono-code text-slate-400 font-medium">-R${(deal.reconBuffer || 8500).toLocaleString('en-ZA')}</span>
+                </div>
+                <div class="border-t border-white/10 pt-2 flex items-center justify-between">
+                  <span class="font-mono-code text-[11px] font-extrabold text-tru-emerald uppercase tracking-wider">Estimated Net Profit:</span>
+                  <span class="font-mono-code text-base font-black text-tru-emerald">+R${netProfit}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-5 pt-3 border-t border-white/5 flex items-center gap-2">
+              <a href="https://wa.me/?text=${offerText}" target="_blank" class="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:brightness-110 text-slate-950 font-mono-code font-bold text-xs shadow-md transition">
+                ${isDealerStock ? '🤝 1-Click Trade Offer' : '💬 1-Click Cash Offer'}
+              </a>
+              <a href="${v.url || '#'}" target="_blank" class="px-3.5 py-2.5 rounded-xl tru-panel hover:bg-slate-800 text-slate-300 text-xs font-mono-code font-semibold transition border border-white/10">
+                View ↗
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function triggerScan() {
+      const btn = document.getElementById('scanBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="font-mono-code">SCANNING PLATFORMS...</span>';
+
+      try {
+        await fetch('/api/ingest/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ limit: 20 })
+        });
+        await loadDeals();
+      } catch (err) {
+        console.error('Scan error:', err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-950 radar-pulse"></span><span>SCAN ALL PLATFORMS</span>';
+      }
+    }
+
+    function openBuyBoxModal() {
+      document.getElementById('buyBoxModal').classList.remove('hidden');
+    }
+
+    function closeBuyBoxModal() {
+      document.getElementById('buyBoxModal').classList.add('hidden');
+    }
+
+    async function saveBuyBoxSettings() {
+      const dealerName = document.getElementById('bbDealerName').value;
+      const contactNumber = document.getElementById('bbPhone').value;
+      const minNetMargin = Number(document.getElementById('bbMinMargin').value);
+      const maxPrice = Number(document.getElementById('bbMaxPrice').value);
+      const provinces = document.getElementById('bbProvinces').value.split(',').map(s => s.trim());
+
+      await fetch('/api/buybox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealerName, contactNumber, minNetMargin, maxPrice, provinces })
+      });
+
+      closeBuyBoxModal();
+      alert('Buy-Box filters saved!');
+    }
+
+    // Auto-load on boot
+    loadDeals();
+  </script>
+</body>
+</html>

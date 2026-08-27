@@ -436,3 +436,50 @@ services:
       # Headless render workers (comma-separated) for JS-heavy sites.
       - key: SCRAPER_SERVICE_URLS
         sync: false
+
+  # ── 7. TruArbitrage — Multi-Source Vehicle Arbitrage & Floorplan Radar ─────
+  #   trusaas-arbitrage.onrender.com  →  packages/tru-arbitrage
+  - type: web
+    name: trusaas-arbitrage
+    runtime: node
+    plan: starter
+    rootDir: packages/tru-arbitrage
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - packages/tru-arbitrage/**
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: truarbitrage-data
+      mountPath: /var/data
+      sizeGB: 2
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "4500"
+      - key: DATA_DIR
+        value: /var/data
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: BRIGHTDATA_DATASET_ID
+        value: gd_lvt9iwuh6fbcwmx1a
+      - key: BRIGHTDATA_UNLOCKER_ZONE
+        value: unlocker
+      - key: SERP_API_KEY
+        sync: false
+      - key: SERP_PROVIDER
+        value: brightdata
+      - key: SERP_ZONE
+        value: serp
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MIN_ARBITRAGE_MARGIN
+        value: "25000"
+      - key: DEFAULT_RECON_BUFFER
+        value: "8500"
+      - key: STALE_FLOORPLAN_DAYS
+        value: "40"
+

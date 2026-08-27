@@ -1,0 +1,63 @@
+export const CANONICAL_MAKES: Record<string, string> = {
+  'vw': 'Volkswagen',
+  'volkswagen': 'Volkswagen',
+  'toyota': 'Toyota',
+  'ford': 'Ford',
+  'bmw': 'BMW',
+  'mercedes': 'Mercedes-Benz',
+  'mercedes-benz': 'Mercedes-Benz',
+  'merc': 'Mercedes-Benz',
+  'audi': 'Audi',
+  'hyundai': 'Hyundai',
+  'kia': 'Kia',
+  'nissan': 'Nissan',
+  'renault': 'Renault',
+  'suzuki': 'Suzuki',
+  'isuzu': 'Isuzu',
+  'mazda': 'Mazda',
+  'honda': 'Honda',
+  'haval': 'Haval',
+  'chery': 'Chery',
+  'mahindra': 'Mahindra',
+  'land rover': 'Land Rover',
+  'landrover': 'Land Rover',
+  'range rover': 'Land Rover',
+  'rangerover': 'Land Rover',
+  'jeep': 'Jeep',
+  'volvo': 'Volvo',
+  'chevrolet': 'Chevrolet',
+  'chevy': 'Chevrolet',
+  'opel': 'Opel',
+  'peugeot': 'Peugeot',
+  'mitsubishi': 'Mitsubishi',
+  'citroen': 'Citroen',
+  'fiat': 'Fiat',
+  'jaguar': 'Jaguar',
+  'porsche': 'Porsche',
+  'lexus': 'Lexus',
+  'subaru': 'Subaru',
+  'alfa romeo': 'Alfa Romeo',
+  'alfa': 'Alfa Romeo',
+  'mini': 'MINI',
+};
+
+export const COMMON_MODELS_BY_MAKE: Record<string, string[]> = {
+  'Volkswagen': ['Polo', 'Polo Vivo', 'Golf', 'T-Cross', 'Tiguan', 'Amarok', 'Touareg', 'T-Roc', 'Caddy', 'Passat', 'Jetta', 'Up'],
+  'Toyota': ['Hilux', 'Fortuner', 'Corolla', 'Corolla Cross', 'Starlet', 'Urban Cruiser', 'Rav4', 'Yaris', 'Prado', 'Land Cruiser', 'Agya', 'Rumion', 'Etios', 'Quantum'],
+  'Ford': ['Ranger', 'EcoSport', 'Everest', 'Fiesta', 'Focus', 'Figo', 'Kuga', 'Puma', 'Mustang', 'Transit'],
+  'BMW': ['1 Series', '2 Series', '3 Series', '4 Series', '5 Series', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'M2', 'M3', 'M4', '320i', '320d', '118i', '120d'],
+  'Mercedes-Benz': ['A-Class', 'C-Class', 'E-Class', 'GLA', 'GLC', 'GLE', 'CLA', 'A200', 'C200', 'C220d', 'C300', 'E200'],
+  'Hyundai': ['i20', 'i10', 'Grand i10', 'Creta', 'Tucson', 'Venue', 'Kona', 'Santa Fe', 'H100', 'Accent', 'Elantra'],
+  'Kia': ['Picanto', 'Rio', 'Seltos', 'Sportage', 'Sonet', 'Pegas', 'Carnival'],
+  'Nissan': ['NP200', 'Navara', 'Magnite', 'Qashqai', 'X-Trail', 'Almera', 'Micra', 'Patrol'],
+  'Suzuki': ['Swift', 'Jimny', 'Baleno', 'S-Presso', 'Vitara', 'Vitara Brezza', 'Celerio', 'Ertiga', 'Dzire', 'Ignis'],
+  'Renault': ['Kwid', 'Triber', 'Kiger', 'Clio', 'Duster', 'Captur', 'Megane', 'Sandero'],
+  'Isuzu': ['D-Max', 'KB', 'mu-X'],
+  'Mazda': ['CX-3', 'CX-30', 'CX-5', 'Mazda2', 'Mazda3', 'BT-50'],
+};
+
+export function canonicalMake(input: string): string | null {
+  if (!input) return null;
+  const clean = input.trim().toLowerCase();
+  return CANONICAL_MAKES[clean] || null;
+}
