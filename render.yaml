@@ -467,7 +467,7 @@ services:
       - key: BRIGHTDATA_DATASET_ID
         value: gd_lvt9iwuh6fbcwmx1a
       - key: BRIGHTDATA_UNLOCKER_ZONE
-        value: unlocker
+        value: tds2
       # Cloudflare-bypass switch. The free crawler is blocked on Cars.co.za/AutoTrader
       # (server fetch = 403); this forces the Web Unlocker path instead of relying on
       # the live comps coming through on a plain HTTP GET. Set to "1" in the dashboard.
