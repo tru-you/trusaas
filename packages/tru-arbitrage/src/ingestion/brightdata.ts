@@ -40,8 +40,12 @@ export async function fetchFacebookMarketplaceListings(
     datasetId
   )}&include_errors=true&type=discover_new&discover_by=url`;
 
+  // NOTE: Bright Data dataset v3 rejects a per-input `country` field (HTTP 400
+  // "This input should not contain a country field"). The dataset infers the
+  // geo from the marketplace URL path (e.g. /johannesburg/vehicles), so we send
+  // only the url and the per-input limit.
   const requestBody = {
-    input: urls.map((url) => ({ url, country: 'ZA' })),
+    input: urls.map((url) => ({ url })),
     limit_per_input: limit,
   };
 
@@ -121,7 +125,7 @@ async function fallbackScrape(apiKey: string, datasetId: string, urls: string[],
   )}&include_errors=true&type=discover_new&discover_by=url`;
 
   const requestBody = {
-    input: urls.map((url) => ({ url, country: 'ZA' })),
+    input: urls.map((url) => ({ url })),
     limit_per_input: limit,
   };
 
