@@ -60,7 +60,7 @@ async function fetchPageWithUnlockerFallback(url: string): Promise<string | null
     if (res.status === 200 && typeof res.data === 'string') return res.data;
   } catch (err: any) {
     // 3. Fallback to Bright Data Web Unlocker if enabled
-    if (CONFIG.BRIGHTDATA_API_KEY) {
+    if (CONFIG.SCRAPER_UNLOCKER_ENABLED || CONFIG.BRIGHTDATA_API_KEY) {
       try {
         const bdRes = await axios.post(
           'https://api.brightdata.com/request',

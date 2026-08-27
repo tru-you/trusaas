@@ -52,6 +52,8 @@ export interface ValuationComp {
 export interface ValuationResult {
   averageRetailPrice: number | null;
   listingsFound: number;
+  /** True when the free crawler found zero live comps and no numeric price was produced. Caller decides how to react (skip, fall back to TU, etc.). */
+  fallbackRequired?: boolean;
   mileageAdjusted: boolean;
   sampleMedianKm: number | null;
   sources: Array<{ name: string; count: number; avg: number | null }>;

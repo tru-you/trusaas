@@ -50,6 +50,12 @@ export async function processListingBatch(rawListings: RawFbListing[]): Promise<
     );
 
     if (!valuation.averageRetailPrice) {
+      // Caller decision: no live market benchmark → cannot price a dip, so we
+      // cannot responsibly flag an opportunity. Log it (not silently) and skip.
+      console.log(
+        `[ingest] Skipping ${normalized.year} ${normalized.make} ${normalized.model} — ` +
+        `no live comps (fallbackRequired=${valuation.fallbackRequired === true})`
+      );
       continue;
     }
 

@@ -8,6 +8,9 @@ export const CONFIG = {
   BRIGHTDATA_API_KEY: process.env.BRIGHTDATA_API_KEY || '',
   BRIGHTDATA_DATASET_ID: process.env.BRIGHTDATA_DATASET_ID || 'gd_lvt9iwuh6fbcwmx1a',
   BRIGHTDATA_UNLOCKER_ZONE: process.env.BRIGHTDATA_UNLOCKER_ZONE || process.env.UNLOCKER_ZONE || 'unlocker',
+  // Force the Web Unlocker lane even when BRIGHTDATA_API_KEY is unset (some services
+  // gate the unlocker behind dashboard-set keys). "1" = always attempt unlocker.
+  SCRAPER_UNLOCKER_ENABLED: process.env.SCRAPER_UNLOCKER_ENABLED === '1',
   
   // Google SERP Ingestion for Dealer Sites
   SERP_API_KEY: process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || '',

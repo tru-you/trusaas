@@ -6,6 +6,16 @@ import { CONFIG } from '../config';
 
 const cache = new Map<string, { data: ValuationResult; ts: number }>();
 
+const WORKER_URLS = (
+  process.env.SCRAPER_SERVICE_URLS ||
+  process.env.SCRAPER_SERVICE_URL ||
+  process.env.TRUCRM_SCRAPER_URL ||
+  ''
+)
+  .split(',')
+  .map((u) => u.trim())
+  .filter(Boolean);
+
 const DEFAULT_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
@@ -24,12 +34,38 @@ function cleanNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+let workerIndex = 0;
+
+async function renderViaHeadlessWorker(url: string): Promise<string | null> {
+  if (WORKER_URLS.length === 0) return null;
+  for (let attempt = 0; attempt < WORKER_URLS.length; attempt++) {
+    const worker = WORKER_URLS[workerIndex++ % WORKER_URLS.length];
+    try {
+      const res = await axios.post(
+        `${worker.replace(/\/$/, '')}/scrape`,
+        { url },
+        { headers: { 'Content-Type': 'application/json' }, timeout: 25000 }
+      );
+      if (res.data?.ok && typeof res.data?.html === 'string') {
+        return res.data.html;
+      }
+    } catch (err: any) {
+      console.warn(`[valuation] Headless worker ${worker} failed on ${url}:`, err?.message || err);
+    }
+  }
+  return null;
+}
+
 async function fetchHtml(url: string): Promise<string | null> {
+  // 0. Try remote headless render worker first (Cloudflare bypass)
+  const workerHtml = await renderViaHeadlessWorker(url);
+  if (workerHtml && workerHtml.length > 200) return workerHtml;
+
   try {
     const res = await axios.get(url, { headers: DEFAULT_HEADERS, timeout: CONFIG.SCRAPER_TIMEOUT_MS });
     if (res.status === 200 && typeof res.data === 'string') return res.data;
   } catch (err: any) {
-    if (CONFIG.BRIGHTDATA_API_KEY) {
+    if (CONFIG.SCRAPER_UNLOCKER_ENABLED || CONFIG.BRIGHTDATA_API_KEY) {
       try {
         const bdRes = await axios.post(
           'https://api.brightdata.com/request',
@@ -209,32 +245,29 @@ export async function fetchLiveMarketValuation(
 
   let adjustedComps = adjustForMileage(dedupedComps, mileageKm);
   let avg = robustAverage(adjustedComps);
-
-  // If live classifieds were thin, generate a reliable statistical baseline from current SA vehicle retail bands
-  if (!avg || dedupedComps.length === 0) {
-    // Generate realistic baseline from vehicle age and segment
-    const currentYear = new Date().getFullYear();
-    const age = Math.max(1, currentYear - year);
-    // Standard vehicle retail calculation: base depreciated retail estimate
-    const baseNewPrice = 
-      make.toLowerCase().includes('toyota') && model.toLowerCase().includes('hilux') ? 580000 :
-      make.toLowerCase().includes('ford') && model.toLowerCase().includes('ranger') ? 520000 :
-      make.toLowerCase().includes('vw') || make.toLowerCase().includes('volkswagen') ? 340000 :
-      make.toLowerCase().includes('bmw') || make.toLowerCase().includes('mercedes') ? 650000 :
-      260000;
-    
-    // Depreciation curve
-    const estimatedRetail = Math.round(baseNewPrice * Math.pow(0.88, age));
-    avg = Math.max(75000, estimatedRetail);
-    
-    sourcesOutput.push({ name: 'Market Baseline', count: 12, avg });
-  }
-
   const kmValues = dedupedComps.map((c) => c.km).filter((k): k is number => typeof k === 'number');
+
+  // Matches the source scraper contract (truflow-premium/src/lib/scraper.ts):
+  // when the free crawler finds zero live comps we return an honest null, never an
+  // invented price. A synthetic number that lands below the real asking would
+  // silently kill every deal through the margin gate. Caller decides the fallback.
+  if (!avg || dedupedComps.length === 0) {
+    const result: ValuationResult = {
+      averageRetailPrice: null,
+      listingsFound: dedupedComps.length,
+      fallbackRequired: true,
+      mileageAdjusted: false,
+      sampleMedianKm: null,
+      sources: sourcesOutput,
+    };
+    cache.set(key, { data: result, ts: Date.now() });
+    return result;
+  }
 
   const result: ValuationResult = {
     averageRetailPrice: avg,
-    listingsFound: Math.max(dedupedComps.length, 12),
+    listingsFound: dedupedComps.length,
+    fallbackRequired: false,
     mileageAdjusted: !!mileageKm && mileageKm > 0 && kmValues.length > 0,
     sampleMedianKm: median(kmValues) || (mileageKm ? Math.round(mileageKm * 1.05) : 110000),
     sources: sourcesOutput,

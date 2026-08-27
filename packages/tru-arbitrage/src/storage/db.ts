@@ -27,7 +27,8 @@ export class ArbitrageDatabase {
     try {
       if (fs.existsSync(this.filePath)) {
         const raw = fs.readFileSync(this.filePath, 'utf-8');
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw) as DatabaseSchema;
+        return this.migrate(parsed);
       }
     } catch (err) {
       console.warn('[db] Could not load database file, starting fresh:', err);
@@ -37,6 +38,51 @@ export class ArbitrageDatabase {
       deals: {},
       dealerSubscriptions: this.getDefaultSubscriptions(),
     };
+  }
+
+  /** One-time cleanup of legacy/polluted state. Run on every load, idempotent. */
+  private migrate(data: DatabaseSchema): DatabaseSchema {
+    let changed = false;
+
+    // A listing is "mock" if its payload obviously came from the SA mock fixtures
+    // (fb_item_* / cars_item_* / at_item_* / serp_dealer_* / gumtree_* rawIds, or
+    // image URLs containing "/mock"). These pollute real results and must go.
+    const isMockRawId = (rawId: string) =>
+      /^(fb_item_|cars_item_|at_item_|serp_dealer_|gumtree_|fb_item_golf_)/i.test(rawId || '');
+    const isMockImages = (images?: string[]) => Array.isArray(images) && images.some((i) => i.includes('mock'));
+    const isMockVehicle = (v: { rawId?: string; images?: string[] }) => isMockRawId(v.rawId || '') || isMockImages(v.images);
+
+    const keptTracked: DatabaseSchema['trackedVehicles'] = {};
+    for (const [k, v] of Object.entries(data.trackedVehicles || {})) {
+      if (isMockVehicle(v)) { changed = true; continue; }
+      keptTracked[k] = v;
+    }
+
+    // Rebuild deals: drop mock vehicles, then dedupe by fingerprint (keep newest — a
+    // re-ingested car must update its deal row, never append a duplicate like the old
+    // saveDeal did).
+    const keptDeals: DatabaseSchema['deals'] = {};
+    for (const deal of Object.values(data.deals || {})) {
+      if (isMockVehicle(deal.vehicle as { rawId?: string; images?: string[] })) { changed = true; continue; }
+      const key = deal.fingerprint || deal.id;
+      const existing = keptDeals[key];
+      if (!existing || (deal.detectedAt || '') >= (existing.detectedAt || '')) {
+        keptDeals[key] = deal;
+        if (existing) changed = true;
+      }
+    }
+
+    if (changed) {
+      const out: DatabaseSchema = {
+        trackedVehicles: keptTracked,
+        deals: keptDeals,
+        dealerSubscriptions: data.dealerSubscriptions || this.getDefaultSubscriptions(),
+      };
+      this.data = out;
+      this.save();
+      return out;
+    }
+    return data;
   }
 
   private save(): void {
@@ -147,7 +193,26 @@ export class ArbitrageDatabase {
   // --- Arbitrage Deals Operations ---
 
   public saveDeal(deal: ArbitrageDeal): void {
-    this.data.deals[deal.id] = deal;
+    // Upsert by fingerprint: re-ingesting the same vehicle must update the existing
+    // deal (fresh detection time, latest margin), never append a duplicate row.
+    const key = deal.fingerprint || deal.id;
+    const existing = this.data.deals[key];
+
+    if (existing) {
+      const preserved = {
+        // Keep the original first-seen/detection identity for alert lifecycle.
+        id: existing.id,
+        detectedAt: existing.detectedAt,
+        status: existing.status === 'new' ? deal.status : existing.status,
+      };
+      this.data.deals[key] = {
+        ...existing,
+        ...deal,
+        ...preserved,
+      };
+    } else {
+      this.data.deals[key] = deal;
+    }
     this.save();
   }
 
