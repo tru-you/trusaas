@@ -4,7 +4,7 @@ dotenv.config();
 export const CONFIG = {
   PORT: Number(process.env.PORT) || 4500,
   
-  // Bright Data Keys & Endpoints
+  // Bright Data Keys & Endpoints (Solves Cloudflare on Cars.co.za / AutoTrader)
   BRIGHTDATA_API_KEY: process.env.BRIGHTDATA_API_KEY || '',
   BRIGHTDATA_DATASET_ID: process.env.BRIGHTDATA_DATASET_ID || 'gd_lvt9iwuh6fbcwmx1a',
   BRIGHTDATA_UNLOCKER_ZONE: process.env.BRIGHTDATA_UNLOCKER_ZONE || process.env.UNLOCKER_ZONE || 'unlocker',
@@ -16,11 +16,14 @@ export const CONFIG = {
   SERP_ZONE: process.env.SERP_ZONE || process.env.BRIGHTDATA_SERP_ZONE || 'serp',
   SERP_TIMEOUT_MS: Number(process.env.SERP_TIMEOUT_MS) || 30000,
   
+  // Remote Headless Render Worker (Optional Cloudflare bypass)
+  SCRAPER_SERVICE_URL: process.env.SCRAPER_SERVICE_URL || '',
+  
   // AI Normalization
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
   
-  // Arbitrage Margins & Thresholds
-  MIN_ARBITRAGE_MARGIN: Number(process.env.MIN_ARBITRAGE_MARGIN) || 25000,
+  // Arbitrage Margins & Thresholds (Lowered to R15,000 for high-volume turns)
+  MIN_ARBITRAGE_MARGIN: Number(process.env.MIN_ARBITRAGE_MARGIN) || 15000,
   DEFAULT_RECON_BUFFER: Number(process.env.DEFAULT_RECON_BUFFER) || 8500,
   MIN_VEHICLE_PRICE: 20000,
   MAX_VEHICLE_PRICE: 2500000,

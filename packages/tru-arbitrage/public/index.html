@@ -129,7 +129,7 @@
       <div class="tru-panel p-5 rounded-2xl">
         <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Active High-Margin Deals</span>
         <div class="font-mono-code text-2xl font-black text-white mt-1" id="statActiveDeals">0</div>
-        <span class="text-xs text-cyan-400/80 mt-1 block">Net profit &ge; R25,000</span>
+        <span class="text-xs text-cyan-400/80 mt-1 block">Net profit &ge; R15,000</span>
       </div>
       <div class="tru-panel p-5 rounded-2xl">
         <span class="font-mono-code text-[10px] font-bold uppercase tracking-wider text-slate-400">Avg Net Margin / Deal</span>
@@ -152,6 +152,13 @@
           <input type="text" id="filterSearch" oninput="renderDeals()" placeholder="Search make, model, dealer, city..." class="w-full bg-[#080C14] border border-white/10 text-xs rounded-xl pl-8 pr-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-sans">
           <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
         </div>
+        <select id="filterMinMargin" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
+          <option value="15000">Min Net: R15k</option>
+          <option value="10000">Min Net: R10k</option>
+          <option value="25000">Min Net: R25k</option>
+          <option value="35000">Min Net: R35k</option>
+          <option value="0">All Margins</option>
+        </select>
         <select id="filterSource" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
           <option value="ALL">All Platforms</option>
           <option value="facebook">Facebook Marketplace</option>
@@ -160,6 +167,7 @@
           <option value="dealer_direct">Dealer Sites (Google SERP)</option>
           <option value="gumtree">Gumtree</option>
         </select>
+
         <select id="filterCategory" onchange="renderDeals()" class="bg-[#080C14] border border-white/10 text-xs rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-cyan-400 font-mono-code">
           <option value="ALL">All Deal Types</option>
           <option value="underpriced_arbitrage">⚡ Underpriced Bargains</option>
@@ -321,6 +329,7 @@
 
     function renderDeals() {
       const search = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
+      const minMargin = Number(document.getElementById('filterMinMargin')?.value || 0);
       const source = document.getElementById('filterSource')?.value || 'ALL';
       const category = document.getElementById('filterCategory')?.value || 'ALL';
       const province = document.getElementById('filterProvince')?.value || 'ALL';
@@ -335,9 +344,16 @@
         const dealCat = deal.dealCategory || 'underpriced_arbitrage';
         const fullTitle = `${v.year || ''} ${v.make || ''} ${v.model || ''} ${v.sellerName || ''} ${v.location || ''}`.toLowerCase();
 
+        // 1. Min Margin filter
+        if (minMargin > 0 && (deal.projectedNetMargin || 0) < minMargin && dealCat !== 'stale_floorplan_distress') return false;
+
+        // 2. Keyword search
         if (search && !fullTitle.includes(search)) return false;
+
+        // 3. Source platform filter
         if (source !== 'ALL' && vehicleSource !== source) return false;
         if (category !== 'ALL' && dealCat !== category) return false;
+
 
         if (province !== 'ALL') {
           const keywords = PROVINCE_MAP[province] || [province.toLowerCase()];
