@@ -27,23 +27,40 @@ async function fetchPageWithUnlockerFallback(url: string): Promise<string | null
       try {
         const bdRes = await axios.post(
           'https://api.brightdata.com/request',
-          { zone: 'unlocker', url, format: 'raw', country: 'za' },
+          { zone: CONFIG.BRIGHTDATA_UNLOCKER_ZONE, url, format: 'raw', country: 'za' },
           {
             headers: {
               Authorization: `Bearer ${CONFIG.BRIGHTDATA_API_KEY}`,
               'Content-Type': 'application/json',
             },
-            timeout: 20000,
+            timeout: 25000,
           }
         );
-        if (bdRes.status === 200 && typeof bdRes.data === 'string') return bdRes.data;
+        if (bdRes.status === 200) {
+          const raw = bdRes.data;
+          if (typeof raw === 'string') {
+            if (raw.startsWith('{') || raw.startsWith('[')) {
+              try {
+                const parsed = JSON.parse(raw);
+                return parsed?.body ?? parsed?.html ?? parsed?.result ?? raw;
+              } catch {
+                return raw;
+              }
+            }
+            return raw;
+          }
+          if (raw && typeof raw === 'object') {
+            return raw.body ?? raw.html ?? raw.result ?? JSON.stringify(raw);
+          }
+        }
       } catch (bdErr: any) {
-        console.warn(`[ingestion] Bright Data Unlocker failed on ${url}:`, bdErr?.message || bdErr);
+        console.warn(`[ingestion] Bright Data Unlocker failed on ${url} (Zone: ${CONFIG.BRIGHTDATA_UNLOCKER_ZONE}):`, bdErr?.response?.data || bdErr?.message || bdErr);
       }
     }
   }
   return null;
 }
+
 
 export async function fetchCarsCoZaNewest(): Promise<RawFbListing[]> {
   const url = 'https://www.cars.co.za/usedcars/?P=1&sort=date_desc';

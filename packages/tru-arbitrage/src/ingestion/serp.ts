@@ -24,7 +24,7 @@ export async function fetchDealerWebsitesViaSerp(query?: string): Promise<RawFbL
     let json: any = null;
 
     if (CONFIG.SERP_PROVIDER === 'brightdata') {
-      const googleUrl = `https://www.google.co.za/search?q=${encodeURIComponent(q)}&gl=za&hl=en&num=30&brd_json=1`;
+      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(q)}&gl=za&hl=en&num=20&brd_json=1`;
       const res = await axios.post(
         CONFIG.SERP_API_URL || 'https://api.brightdata.com/request',
         { zone: CONFIG.SERP_ZONE, url: googleUrl, format: 'raw' },
@@ -36,8 +36,11 @@ export async function fetchDealerWebsitesViaSerp(query?: string): Promise<RawFbL
           timeout: CONFIG.SERP_TIMEOUT_MS,
         }
       );
-      json = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+      if (res.status === 200) {
+        json = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+      }
     } else {
+
       // SerpApi fallback
       const base = CONFIG.SERP_API_URL || 'https://serpapi.com/search.json';
       const url = `${base}?engine=google&google_domain=google.co.za&gl=za&hl=en&num=30&q=${encodeURIComponent(

@@ -5,15 +5,16 @@ export const CONFIG = {
   PORT: Number(process.env.PORT) || 4500,
   
   // Bright Data Keys & Endpoints
-  BRIGHTDATA_API_KEY: process.env.BRIGHTDATA_API_KEY || process.env.SERP_API_KEY || '',
+  BRIGHTDATA_API_KEY: process.env.BRIGHTDATA_API_KEY || '',
   BRIGHTDATA_DATASET_ID: process.env.BRIGHTDATA_DATASET_ID || 'gd_lvt9iwuh6fbcwmx1a',
+  BRIGHTDATA_UNLOCKER_ZONE: process.env.BRIGHTDATA_UNLOCKER_ZONE || process.env.UNLOCKER_ZONE || 'unlocker',
   
   // Google SERP Ingestion for Dealer Sites
   SERP_API_KEY: process.env.SERP_API_KEY || process.env.BRIGHTDATA_API_KEY || '',
   SERP_API_URL: process.env.SERP_API_URL || '',
   SERP_PROVIDER: (process.env.SERP_PROVIDER || 'brightdata').toLowerCase(),
-  SERP_ZONE: process.env.SERP_ZONE || 'serp',
-  SERP_TIMEOUT_MS: Number(process.env.SERP_TIMEOUT_MS) || 15000,
+  SERP_ZONE: process.env.SERP_ZONE || process.env.BRIGHTDATA_SERP_ZONE || 'serp',
+  SERP_TIMEOUT_MS: Number(process.env.SERP_TIMEOUT_MS) || 30000,
   
   // AI Normalization
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
@@ -30,7 +31,7 @@ export const CONFIG = {
   MIN_DISTRESS_PRICE_DROP: 15000,
   
   // Scraper Timeout & Cache
-  SCRAPER_TIMEOUT_MS: Number(process.env.SCRAPER_TIMEOUT_MS) || 12000,
+  SCRAPER_TIMEOUT_MS: Number(process.env.SCRAPER_TIMEOUT_MS) || 15000,
   SCRAPER_CACHE_TTL_MS: Number(process.env.SCRAPER_CACHE_TTL_MS) || 15 * 60 * 1000,
   DATA_DIR: process.env.DATA_DIR || './data',
 };
