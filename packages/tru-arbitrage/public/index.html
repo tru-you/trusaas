@@ -7,6 +7,7 @@
   <meta name="description" content="Confidence-gated vehicle sourcing radar for South African dealers. Underpriced and distress stock from classifieds and dealer sites, priced against live market comps.">
   <meta name="theme-color" content="#06080D">
   <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2306080D'/><path d='M17 5 8 18h7l-1 9 9-13h-7l1-9z' fill='%234FE3DC'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -46,6 +47,24 @@
     .finlabel { color: var(--muted); }
     details.mfilters > summary { list-style: none; cursor: pointer; }
     details.mfilters > summary::-webkit-details-marker { display: none; }
+    /* Loading skeleton shimmer */
+    .skeleton { background: var(--glass); border-radius: var(--r-card); position: relative; overflow: hidden; }
+    .skeleton::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(232,234,230,0.04) 40%, rgba(232,234,230,0.08) 50%, rgba(232,234,230,0.04) 60%, transparent 100%);
+      animation: shimmer 1.5s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    /* Mobile nav badge */
+    .nav-badge {
+      position: absolute; top: 4px; right: 50%; transform: translateX(18px);
+      min-width: 18px; height: 18px; padding: 0 5px;
+      background: var(--accent); color: var(--text-on-accent);
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .nav-badge:empty { display: none; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -201,6 +220,7 @@
             <span class="text-[12px] mt-1 block" style="color: var(--muted)">40d+ listed or heavy price cuts</span>
           </div>
         </div>
+        <p class="text-[12px] mt-2 font-mono-code" style="color: var(--faint)" id="lastScannedLine"></p>
 
         <!-- Scan progress -->
         <section id="scanProgress" class="hidden mt-4">
@@ -349,7 +369,8 @@
     <button data-mview="viewSearch" onclick="setMobileView('viewSearch')" aria-current="page">
       <svg class="icon-lg"><use href="#i-search"/></svg> Search
     </button>
-    <button data-mview="viewDeals" onclick="setMobileView('viewDeals')">
+    <button data-mview="viewDeals" onclick="setMobileView('viewDeals')" style="position:relative">
+      <span class="nav-badge" id="mNavDealCount"></span>
       <svg class="icon-lg"><use href="#i-list"/></svg> Deals
     </button>
     <button data-mview="viewAccount" onclick="setMobileView('viewAccount')">
@@ -425,8 +446,14 @@
     }
 
     // ── Deals ─────────────────────────────────────────────────────────────
+    function showSkeletons() {
+      const grid = document.getElementById('dealsGrid');
+      grid.innerHTML = Array.from({ length: 6 }, () => '<div class="skeleton" style="height:280px"></div>').join('');
+    }
+
     async function loadDeals() {
       try {
+        showSkeletons();
         const res = await fetch('/api/deals', { headers: auth.headers() });
         if (res.status === 401) return authFailed();
         const data = await res.json();
@@ -475,6 +502,18 @@
       document.getElementById('statActiveDeals').textContent = open.length;
       document.getElementById('statAvgMargin').textContent = `R${avgMargin.toLocaleString('en-ZA')}`;
       document.getElementById('statDistress').textContent = distress;
+      // Mobile nav badge
+      const badge = document.getElementById('mNavDealCount');
+      if (badge) badge.textContent = open.length > 0 ? open.length : '';
+      // Last scanned timestamp
+      const lastLine = document.getElementById('lastScannedLine');
+      if (lastLine) {
+        const ts = localStorage.getItem('ta_last_scan');
+        if (ts) {
+          const ago = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+          lastLine.textContent = ago < 1 ? 'Last scanned: just now' : ago < 60 ? `Last scanned: ${ago}m ago` : `Last scanned: ${Math.round(ago / 60)}h ago`;
+        }
+      }
     }
 
     function resetFilters() {
@@ -690,6 +729,7 @@
           addLog(`Done — ${d.arbitrageDealsFound || 0} deals, ${d.overpricedStockFound || 0} own-stock flags, ${d.alertsDispatched || 0} webhook alerts`);
           document.getElementById('scanBar').style.width = '100%';
           document.getElementById('scanPhase').textContent = 'Scan complete';
+          localStorage.setItem('ta_last_scan', new Date().toISOString());
           source.close(); loadDeals();
           setTimeout(() => { progress.classList.add('hidden'); btn.disabled = false; btn.innerHTML = '<span class="w-2 h-2 rounded-full radar-pulse" style="background: var(--text-on-accent)"></span><span>Scan Market</span>'; }, 3000);
         });
