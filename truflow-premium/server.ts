@@ -1065,7 +1065,7 @@ const DEFAULT_MOCK_STATE: DMSState = {
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
     { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://www.carsoncaledon.co.za' },
     { id: 'true-cars', name: 'True Cars', location: 'Port Elizabeth', slug: 'true-cars', websiteUrl: 'https://www.true-cars.co.za' },
-    { id: 'demo', name: 'Demo', location: 'Demo', slug: 'demo', websiteUrl: 'https://lens.tru-saas.com' },
+    { id: 'demo', name: 'Demo', location: 'Demo', slug: 'demo', websiteUrl: 'https://www.true-cars.co.za' },
   ],
   vehicles: [],
   leads: [],
@@ -5259,7 +5259,7 @@ function buildPublicStock(state: any, dealerSlug: string, source: string, origin
   const wantedId = dealerIdForSlug(dealerSlug, state);
   const rawVehicles = state.vehicles || [];
   const scoped = wantedId
-    ? rawVehicles.filter((v: any) => v.dealershipId === wantedId)
+    ? rawVehicles.filter((v: any) => v.dealershipId === wantedId || (wantedId === 'true-cars' && v.dealershipId === 'demo'))
     : [];
   const vehicles = scoped
     .map((v: any) => toPublicVehicle(v, source, origin))
@@ -5312,7 +5312,7 @@ app.get("/api/feed/vehicle/:stockNumber", (req, res) => {
 
   const v = state.vehicles.find(
     (v: any) =>
-      v.dealershipId === wantedId &&
+      (v.dealershipId === wantedId || (wantedId === 'true-cars' && v.dealershipId === 'demo')) &&
       (v.stockNumber === req.params.stockNumber || v.id === req.params.stockNumber)
   );
   if (!v) return res.status(404).json({ error: "Vehicle not found" });
