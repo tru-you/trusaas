@@ -350,31 +350,51 @@ function htmlToListings(html: string, selectors: string[]): Listing[] {
   return extractPrices(html, selectors).map((price) => ({ price }));
 }
 
-/** Pull {price, km} listings off a card-based classifieds page (AutoTrader's
- *  SPA markup). Each result tile carries the year/make/model title, an e-price
- *  element and an "N km" summary — so listings can be year/make/model filtered
- *  and mileage-adjusted, which the raw CSS price scan below cannot. Returns []
- *  when the page has no recognisable tiles, so callers fall back to the price
- *  scan unchanged. */
+/** Pull {price, km} listings off a card-based classifieds page. Two very
+ *  different markup styles appear here:
+ *   - AutoTrader:   <a class*="result-tile"> with an .e-price__ + "N km" summary
+ *   - Cars.co.za:   Next.js CSS-module [class*="VehicleCard_vehicleCard"] tile
+ *  Both are SPAs whose __NEXT_DATA__/JSON-LD is a stub, so the card grid is what
+ *  actually carries the data. We match card containers by class fragments and
+ *  read price/km/year by regex from the (CSS-module noise-laden) card text, so
+ *  the markup namespace doesn't matter. Year tolerance is 2 because AutoTrader
+ *  ignores ?year= and returns a spread; a wildly-out-of-range year still drops.
+ *  Returns [] when no recognisable cards, so callers fall back to the price scan.
+ */
 export function extractCardListings(html: string, make: string, model: string, year: string): Listing[] {
   const $ = cheerio.load(html);
   const out: Listing[] = [];
   const seen = new Set<string>();
-  $('a[class*="result-tile"]').each((_, el) => {
+
+  const selectCards = () => {
+    const anchors = $('a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"], a[class*="VehicleCard"]');
+    if (anchors.length) return anchors;
+    return $('[class*="VehicleCard_vehicleCard"], [class*="vehicleCard"], [class*="listing-card"]');
+  };
+  const cards = selectCards();
+
+  cards.each((_, el) => {
     const $c = $(el);
-    const titleEl = $c.find('[class*="highlight-title"], [class*="result-title"], h2, h3').first();
-    const title = (titleEl.length ? titleEl.text() : $c.text()).replace(/\s+/g, ' ').trim();
-    if (!titleMentionsVehicle(title, make, model, year)) return;
-    const priceEl = $c.find('[class^="e-price__"], [class*="price"]').first();
-    const price = priceEl.length ? num(priceEl.text()) : priceFromText($c.text());
+    const cardText = $c.text().replace(/\s+/g, ' ').trim();
+    if (cardText.length < 8) return;
+
+    // make/model + year (tolerance 2) against the CARD TEXT, not just the title
+    // element — CSS-module noise strips the title out of some tiles but the text
+    // still names the vehicle.
+    if (!titleMentionsVehicle(cardText, make, model, year, undefined, { yearTolerance: 2 })) return;
+
+    const price = priceFromText(cardText);
     if (price == null || price < MIN_PRICE || price > MAX_PRICE) return;
-    const kmMatch = $c.text().match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);
+
+    const kmMatch = cardText.match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);
     const km = kmMatch ? num(kmMatch[1]) : undefined;
     const key = `${Math.round(price)}|${km ?? ''}`;
     if (seen.has(key)) return;
     seen.add(key);
+
     out.push({ price: Math.round(price), km: km != null && km > 0 && km < 1_000_000 ? Math.round(km) : undefined });
   });
+
   return out;
 }
 
@@ -667,14 +687,15 @@ const YEAR_TOLERANCE = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
  *  year, and dropping every year-less card was throwing away real comps.
  *  `match` exists for dealers whose titles abbreviate the model ("GTI",
  *  "R-Line", "1.4 TSI"). */
-function titleMentionsVehicle(title: string, make: string, model: string, year: string, match?: string): boolean {
+function titleMentionsVehicle(title: string, make: string, model: string, year: string, match?: string, opts?: { yearTolerance?: number }): boolean {
   const t = String(title || '');
   const y = parseInt(String(year), 10);
+  const tolerance = opts?.yearTolerance ?? YEAR_TOLERANCE;
   if (Number.isFinite(y) && y >= 1990 && y <= 2100) {
     const ym = t.match(/\b(?:19|20)\d{2}\b/);
     // Only reject on a year that's present AND out of band; a missing year is
     // allowed through (the query URL already narrowed the year).
-    if (ym && Math.abs(parseInt(ym[0], 10) - y) > YEAR_TOLERANCE) return false;
+    if (ym && Math.abs(parseInt(ym[0], 10) - y) > tolerance) return false;
   }
   const makeOk = makeVariants(make).some((kw) => new RegExp(escapeRegex(kw), 'i').test(t));
   const q = modelCore(model);
