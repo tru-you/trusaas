@@ -627,9 +627,10 @@ const TRULENS_URL = (process.env.TRULENS_URL || "https://lens.tru-saas.com").rep
 function requireAuth(req: any, res: any, next: any) {
   if (!req.path.startsWith("/api/") || isPublicPath(req.path)) return next();
 
-  if (req.path === "/api/sync/push-photos") {
-    if (!SYNC_SERVICE_KEY) return next();
-    if (req.headers["x-tru-sync-key"] === SYNC_SERVICE_KEY) return next();
+  // Allow system-to-system sync/admin requests using the shared key
+  if (SYNC_SERVICE_KEY && req.headers["x-tru-sync-key"] === SYNC_SERVICE_KEY) {
+    req.auth = { role: "admin", system: true };
+    return next();
   }
 
   /* Product-to-product identity. The caller is TruLens or TruInspect asking
@@ -1064,7 +1065,7 @@ const DEFAULT_MOCK_STATE: DMSState = {
     { id: 'd1', name: 'MKR Auto Sales', location: 'Johannesburg', slug: 'mkr-autosales', websiteUrl: 'https://mkrauto.netlify.app' },
     { id: 'd2', name: 'Cars on Caledon', location: 'Kariega, Eastern Cape', slug: 'cars-on-caledon', websiteUrl: 'https://www.carsoncaledon.co.za' },
     { id: 'true-cars', name: 'True Cars', location: 'Port Elizabeth', slug: 'true-cars', websiteUrl: 'https://www.true-cars.co.za' },
-    { id: 'demo', name: 'Demo', location: 'Demo', slug: 'demo', websiteUrl: 'https://www.true-cars.co.za' },
+    { id: 'demo', name: 'Demo', location: 'Demo', slug: 'demo', websiteUrl: 'https://lens.tru-saas.com' },
   ],
   vehicles: [],
   leads: [],

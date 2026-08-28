@@ -706,11 +706,8 @@ type LensScope = { uid: string; dealerSlug?: string | null };
    be editable in Lens if it's inside the retention window. */
 const LENS_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 function isExpired(v: any, nowMs: number): boolean {
-  const first = v.firstDmsExportAt;
-  if (!first) return false;
-  const t = Date.parse(first);
-  if (!Number.isFinite(t)) return false;
-  return nowMs - t > LENS_RETENTION_MS;
+  // 14-day sweep retention is disabled; sold vehicles are removed by DMS sync/callbacks instead.
+  return false;
 }
 
 async function listVehicles(user: LensScope): Promise<any[]> {
@@ -766,8 +763,11 @@ async function listVehicles(user: LensScope): Promise<any[]> {
    - Untagged (legacy) vehicle → fall back to ownerId match. Using the
      default-dealer fallback for access decisions was a bug — it 404'd the
      rightful owner of any legacy capture that predates dealer tagging. */
-function passesScope(record: any, user?: LensScope): boolean {
+function passesScope(record: any, user?: LensScope & { demo?: boolean }): boolean {
   if (!user) return true;
+  if (user.demo) {
+    return record.dealerSlug === 'demo' || (!record.dealerSlug && record.ownerId === user.uid);
+  }
   if (record.dealerSlug) {
     return !user.dealerSlug || record.dealerSlug === user.dealerSlug;
   }
@@ -1458,7 +1458,9 @@ app.post('/api/inventory', authenticate, async (req: any, res) => {
 
     /* Token-pinned dealerSlug wins; then existing record; body is last resort
        (legacy shared-code tokens where the picker is the only signal). */
-    const dealerSlug = req.user?.dealerSlug || existing?.dealerSlug || _claimedSlug || undefined;
+    const dealerSlug = req.user?.demo
+      ? 'demo'
+      : (req.user?.dealerSlug || existing?.dealerSlug || _claimedSlug || undefined);
 
     if (existing) {
       if (!LOCAL_MODE && existing.ownerId && existing.ownerId !== userId) {
@@ -2549,6 +2551,54 @@ app.post('/api/imagin8/bundles', authenticate, (_req: any, res) => {
   res.status(403).json({ error: 'Top-ups are managed by TruSaaS. Contact your account manager.' });
 });
 
+async function restoreCorruptedDemoVehicles() {
+  const SYNC_KEY = process.env.TRUFLOW_SYNC_KEY;
+  if (!SYNC_KEY) return;
+  try {
+    const dlRes = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/public/dealerships`);
+    if (!dlRes.ok) return;
+    const dlList = await dlRes.json();
+    if (!Array.isArray(dlList)) return;
+    const slugMap = new Map<string, string>();
+    for (const d of dlList) {
+      if (d.id && d.slug) slugMap.set(d.id, d.slug);
+    }
+
+    const invRes = await fetch(`${DEFAULT_DMS_URL.replace(/\/$/, '')}/api/inventory`, {
+      headers: { 'x-tru-sync-key': SYNC_KEY }
+    });
+    if (!invRes.ok) {
+      console.warn('[restore] failed to fetch DMS inventory:', invRes.status);
+      return;
+    }
+    const dmsVehicles = await invRes.json();
+    if (!Array.isArray(dmsVehicles)) return;
+
+    const store = readLocalStore();
+    let changed = false;
+    for (const v of store.vehicles) {
+      const hasRealOwner = v.ownerId && v.ownerId !== 'local-demo-user' && !v.ownerId.startsWith('demo-');
+      if (v.dealerSlug === 'demo' && hasRealOwner) {
+        const dmsMatch = dmsVehicles.find((dv: any) => dv.stockNumber === v.stockNumber || dv.id === v.lastDmsVehicleId);
+        if (dmsMatch && dmsMatch.dealershipId && dmsMatch.dealershipId !== 'demo') {
+          const correctSlug = slugMap.get(dmsMatch.dealershipId);
+          if (correctSlug) {
+            console.log(`[restore] Restoring hijacked vehicle ${v.id} (${v.year} ${v.make} ${v.model}) to ${correctSlug}`);
+            v.dealerSlug = correctSlug;
+            changed = true;
+          }
+        }
+      }
+    }
+    if (changed) {
+      writeLocalStore(store);
+      console.log('[restore] Database repaired successfully.');
+    }
+  } catch (err: any) {
+    console.error('[restore] demo recovery error:', err?.message || err);
+  }
+}
+
 // ==================== VITE & STATIC FILES ====================
 
 async function startServer() {
@@ -2608,6 +2658,7 @@ async function startServer() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(` PWA: ${PORT === 443 || process.env.HTTPS ? 'https' : 'http'}://<this-host>:${PORT}  → Add to Home Screen on phone`);
+    restoreCorruptedDemoVehicles().catch((err) => console.error('[restore] failed to run recovery:', err));
   });
 }
 
