@@ -3,6 +3,7 @@ import { RawFbListing, IngestionBatchResult, ArbitrageDeal } from './types';
 import { normalizeListing } from './normalizer/gemini-extractor';
 import { fetchLiveMarketValuation } from './engine/valuation';
 import { evaluateArbitrageOpportunity } from './engine/arbitrage';
+import { matchVariant } from './engine/tu-matcher';
 import { db } from './storage/db';
 import { dispatchDealAlerts } from './alerts/dispatcher';
 import { fetchFacebookMarketplaceListings } from './ingestion/brightdata';
@@ -44,11 +45,19 @@ export async function processListingBatch(
     }
     result.validNormalized++;
 
-    // 2. Track
+    // 2. Resolve exact TransUnion variant (local lookup, zero API cost)
+    const tuMatch = matchVariant(normalized.make, normalized.model, normalized.year, normalized.title, normalized.trim);
+    if (tuMatch) {
+      // Upgrade trim to the exact TU variant description for precise comp filtering
+      normalized.trim = tuMatch.trim;
+      console.log(`[tu-match] ${normalized.title} → ${tuMatch.variant} (${tuMatch.mmCode}, ${tuMatch.cc}cc, ${tuMatch.kw}kW, new R${tuMatch.newListPrice?.toLocaleString()}, score ${tuMatch.matchScore.toFixed(2)})`);
+    }
+
+    // 3. Track
     const tracked = db.upsertTrackedVehicle(normalized);
     result.trackedUpdated++;
 
-    // 3. Valuate
+    // 4. Valuate
     const valuation = await fetchLiveMarketValuation(
       normalized.make,
       normalized.model,
@@ -56,6 +65,13 @@ export async function processListingBatch(
       normalized.mileageKm,
       normalized.trim
     );
+
+    // Sanity cap: if TU gives us a new list price, the average retail should never
+    // exceed it — a used car can't be worth more than new (barring classic/collectible).
+    if (tuMatch?.newListPrice && valuation?.averageRetailPrice && valuation.averageRetailPrice > tuMatch.newListPrice) {
+      console.log(`[valuation-cap] Capping ${normalized.title} retail from R${valuation.averageRetailPrice.toLocaleString()} to new list R${tuMatch.newListPrice.toLocaleString()}`);
+      valuation.averageRetailPrice = tuMatch.newListPrice;
+    }
     if (!valuation || !valuation.averageRetailPrice) {
       processed++;
       emitter?.emit('progress', { current: processed, total: rawListings.length, vehicle: `${normalized.year} ${normalized.make} ${normalized.model}`, status: 'no_comps' });
