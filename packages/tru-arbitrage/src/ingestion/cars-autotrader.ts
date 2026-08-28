@@ -178,6 +178,44 @@ export async function fetchAutoTraderNewest(): Promise<RawFbListing[]> {
     } catch {}
   });
 
+  // AutoTrader is a SPA: the JSON-LD pass above usually finds nothing because the
+  // result set is in a client-rendered card grid (a[class*=result-tile] with an
+  // e-price__ + N-km summary). Fall back to the card scan so the feed isn't empty.
+  if (out.length === 0) {
+    const seen = new Set<string>();
+    $('a[class*="result-tile"]').each((_, el) => {
+      const $c = $(el);
+      const titleEl = $c.find('[class*="highlight-title"], [class*="result-title"], h2, h3').first();
+      const title = (titleEl.length ? titleEl.text() : $c.text()).replace(/\s+/g, ' ').trim();
+      if (!title) return;
+      // AutoTrader prices live in the namespaced .e-price__ element. A bare
+      // [class*="price"] can grab the tile wrapper and glue two prices, so only
+      // accept the e-price__ prefix (the feed's own markers use .e-price__).
+      const priceEl = $c.find('[class^="e-price__"]');
+      const price = priceEl.length ? num(priceEl.text()) : null;
+      if (!priceEl.length || price == null || price < CONFIG.MIN_VEHICLE_PRICE) return;
+      const odo = num($c.text().match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i)?.[1]);
+      const href = $c.attr('href') || '';
+      const id = `at_${encodeURIComponent(href || title)}`;
+      if (seen.has(id)) return;
+      seen.add(id);
+      out.push({
+        id,
+        source: 'autotrader',
+        url: href ? (href.startsWith('http') ? href : `https://www.autotrader.co.za${href}`) : url,
+        title,
+        description: `Mileage: ${odo || 'N/A'} km. AutoTrader`,
+        final_price: price,
+        price: price,
+        currency: 'ZAR',
+        location: 'South Africa',
+        seller_name: 'AutoTrader Dealer',
+        images: [],
+        date_posted: new Date().toISOString(),
+      });
+    });
+  }
+
   return out;
 }
 

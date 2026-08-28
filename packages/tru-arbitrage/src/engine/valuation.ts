@@ -183,6 +183,84 @@ export function extractCssComps(html: string): ValuationComp[] {
   return out;
 }
 
+/** Escape regex special chars so a make/model literal can be used in a pattern. */
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Base model token: lowercase, and truncate at a trim/engine suffix so
+ *  "Polo 1.2 TSI" matches a card titled just "Polo". Keeps the leading model
+ *  word(s) — never strips the whole token. */
+function modelCore(text: string): string {
+  const t = String(text || '').toLowerCase().trim();
+  if (!t) return '';
+  // Drop a trailing engine/trim fragment like "1.2 tsi", "2.8 gd-6 4x4", "comfortline".
+  const base = t
+    .replace(/\b(1\.[0-9]+(\s?[a-z0-9-]+)*)\b.*$/i, '')
+    .replace(/\b(2\.[0-9]+(\s?[a-z0-9-]+)*)\b.*$/i, '')
+    .trim();
+  return base.split(/\s+/)[0] || t.split(/\s+/)[0];
+}
+
+/** Extract {price, km} comps off a SPA card grid. AutoTrader renders each
+ *  listing as an <a class*="result-tile"> with an .e-price__ element; Cars.co.za
+ *  uses Next.js CSS modules ([class*="VehicleCard_vehicleCard"]). We match both
+ *  by card-container class fragments and read price/km/year from the card text
+ *  via regex, so the exact markup namespace doesn't matter. Only cards whose
+ *  title names the queried make/model within the year tolerance count, so other
+ *  models on the same page can't skew the sample. */
+export function extractCardComps(html: string, make: string, model: string, year: number): ValuationComp[] {
+  const $ = cheerio.load(html);
+  const out: ValuationComp[] = [];
+  const seen = new Set<string>();
+  const yearTol = Number(process.env.SCRAPER_YEAR_TOLERANCE) || 3;
+  const makeKey = make.toLowerCase();
+  const modelKey = modelCore(model);
+
+  const pickCards = () => {
+    const tiles = $('a[class*="result-tile"], a[class*="vehicle-card"], a[class*="listing-card"]');
+    if (tiles.length) return tiles;
+    // Next.js CSS-module VehicleCard container (Cars.co.za) — not a link.
+    return $('[class*="VehicleCard_vehicleCard"], [class*="vehicleCard"], [class*="card"]');
+  };
+  const cards = pickCards();
+
+  cards.each((_, el) => {
+    const $c = $(el);
+    const text = $c.text().replace(/\s+/g, ' ').trim();
+    if (!text || text.length < 8) return;
+
+    // Year filter.
+    const yearMatch = text.match(/\b(19|20)\d{2}\b/);
+    if (yearMatch && Math.abs(parseInt(yearMatch[0], 10) - year) > yearTol) return;
+
+    // Make/model filter against the card text.
+    const lower = text.toLowerCase();
+    const makeOk = lower.includes(makeKey);
+    const modelOk = !modelKey || lower.includes(modelKey);
+    if (!makeOk || !modelOk) return;
+
+    const priceMatch = text.match(/R\s?((?:\d{1,3}(?:[ ,]\d{3})+|\d{6,7}))/i);
+    if (!priceMatch) return;
+    const price = cleanNumber(priceMatch[1]);
+    if (price == null || price < CONFIG.MIN_VEHICLE_PRICE || price > CONFIG.MAX_VEHICLE_PRICE) return;
+
+    const kmMatch = text.match(/(\d{1,3}(?:[ ,]\d{3})?)\s?km/i);
+    const km = kmMatch ? cleanNumber(kmMatch[1]) : undefined;
+    const key = `${Math.round(price)}|${km ?? ''}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+
+    out.push({
+      price: Math.round(price),
+      km: km && km > 0 && km < 1000000 ? Math.round(km) : undefined,
+      source: 'card',
+    });
+  });
+
+  return out;
+}
+
 export async function fetchLiveMarketValuation(
   make: string,
   model: string,
@@ -216,9 +294,16 @@ export async function fetchLiveMarketValuation(
         if (html) {
           const nextData = extractNextDataComps(html, make, model);
           const jsonLd = extractJsonLdComps(html);
+          const card = extractCardComps(html, make, model, year);
           const css = extractCssComps(html);
 
-          const comps = nextData.length ? nextData : jsonLd.length ? jsonLd : css;
+          // Prefer the RICHEST extraction, not the first non-empty. Autotrader's
+          // SPA card grid (20-30) beats its single JSON-LD node; Cars.co.za's
+          // card grid beats its stub __NEXT_DATA__. On pages where structured
+          // data is genuinely richer (older CSS sites), cards are empty and the
+          // Next/JSON-LD path still wins.
+          const candidates = [nextData, jsonLd, card, css];
+          const comps = candidates.reduce((best, c) => (c.length > best.length ? c : best), []);
           allComps.push(...comps);
 
           const prices = comps.map((c) => c.price);
