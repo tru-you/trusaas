@@ -182,7 +182,7 @@ const SERP_TRIGGER_MAX = Math.max(0, Number(process.env.SERP_TRIGGER_MAX) || 6);
 /** Hard ceiling on a whole valuation (dealer + classifieds combined). The
  *  pipeline returns whatever it has when the budget runs out, so a dead worker
  *  or a slow unlocker can never hang the trade-in flow. */
-const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 12000;
+const TOTAL_BUDGET_MS = Number(process.env.SCRAPER_TOTAL_BUDGET_MS) || 20000;
 
 // ==================== CACHE ====================
 
@@ -903,7 +903,7 @@ const UNLOCKER_ENABLED = /^(1|true|yes)$/i.test(process.env.SCRAPER_UNLOCKER_ENA
 // fell back to the market estimate, which reads as "timed out". 8s is plenty
 // for a healthy unlocker and drops to the estimate quickly when it's slow.
 // Override with UNLOCKER_TIMEOUT_MS if a source genuinely needs longer.
-const UNLOCKER_TIMEOUT_MS = Number(process.env.UNLOCKER_TIMEOUT_MS) || 8000;
+const UNLOCKER_TIMEOUT_MS = Number(process.env.UNLOCKER_TIMEOUT_MS) || 20000;
 /** Unlocker only fetches the first N pages of a classifieds source (it's paid);
  *  the free worker still paginates further. */
 const UNLOCKER_MAX_PAGES = Math.max(1, Number(process.env.UNLOCKER_MAX_PAGES) || 1);
