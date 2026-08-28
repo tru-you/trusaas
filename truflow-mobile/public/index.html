@@ -474,6 +474,16 @@ button,input,textarea{font-family:inherit;}
 .share-row svg{width:18px;height:18px;color:var(--cyan);flex-shrink:0;}
 .share-row:active{transform:scale(.985);background:var(--ink-4);}
 .share-row .sr-hint{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.03em;color:var(--faint);font-weight:400;}
+
+/* ── v1.4 · Hub links (TruLens / TruInspect deep-links) ── */
+.pill.hub{cursor:pointer;} .pill.hub:active{transform:scale(.96);}
+.vhero .hubshoot{position:relative;z-index:2;margin-top:10px;display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.03em;color:var(--cyan);background:rgba(6,8,13,.55);border:1px solid var(--glass-line2);border-radius:var(--r-pill);padding:6px 12px;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.vhero .hubshoot:active{transform:scale(.97);}
+
+/* ── v1.4 · Sold capture ── */
+.sold-block .btn-primary{width:100%;margin-top:10px;}
+.sold-cancel{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted);cursor:pointer;}
+.sold-cancel:active{color:var(--paper);}
 </style>
 </head>
 <body>
@@ -528,7 +538,7 @@ button,input,textarea{font-family:inherit;}
         <div class="rowlink" id="support"><svg viewBox="0 0 24 24" fill="currentColor" style="color:var(--cyan)"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>Support<span style="margin-left:auto;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted)">WhatsApp</span></div>
         <div class="rowlink danger" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Sign out</div>
       </div>
-      <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-top:22px">Version 1.3 · Powered by TruDealer</p>
+      <p style="text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-top:22px">Version 1.4 · Powered by TruDealer</p>
     </section>
 
     <section class="screen" id="s-add">
@@ -620,6 +630,15 @@ button,input,textarea{font-family:inherit;}
   "use strict";
   var API="", TOKEN="", AUTH=null, cachedLeads=[], cachedStock=[], cachedTasks=[];
   var DEALER_SITE="", mvCache={}, curTaskId=null;
+  /* ── Hub links: sibling app origins ──
+     Both TruLens and TruInspect accept the /?stock=STK-123 deep-link contract
+     (search + highlight + banner, built for Flow). Prod domains are fixed;
+     localStorage overrides keep local dev + a running sibling pointed right.
+     Inspect is standalone (pulls the DMS catalogue, never pushes back) —
+     links go to its root, results stay there until the Inspect→Flow push exists. */
+  var LENS_URL=(function(){try{return (localStorage.getItem("tfm_lens_url")||"https://lens.tru-saas.com").replace(/\/+$/,"");}catch(e){return "https://lens.tru-saas.com";}})();
+  var INSPECT_URL=(function(){try{return (localStorage.getItem("tfm_inspect_url")||"https://inspect.tru-saas.com").replace(/\/+$/,"");}catch(e){return "https://inspect.tru-saas.com";}})();
+  var openStockLink=function(base,stock){window.open(base+"/?stock="+encodeURIComponent(stock||""),"_blank","noopener");};
   var $=function(s,r){return (r||document).querySelector(s);};
    var el=function(t,c,h,ds,act){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;if(ds)for(var k in ds)e.setAttribute(k,ds[k]);if(act)e.setAttribute("data-act",act);return e;};
   /* Divs that behave like buttons (cards, rows, tiles) get real button
@@ -852,6 +871,11 @@ button,input,textarea{font-family:inherit;}
       (specs.length?'<div class="vspecs">'+specs.map(function(s){return '<span class="spec">'+esc(s)+'</span>';}).join("")+'</div>':'')+'</div>';
     c.addEventListener("click",function(){openVeh(v);});
     pressable(c,"Vehicle: "+(name||"unnamed")+(vPrice(v)?", "+money(vPrice(v)):"")+(sold?", sold":pub?", live":", draft"));
+    // The card's Shoot cue is a real deep-link, not decoration — straight into
+    // TruLens on this car, without opening the sheet first. Don't bubble to the card.
+    var sh=c.querySelector(".shoot");
+    if(sh){sh.setAttribute("role","button");sh.setAttribute("tabindex","0");sh.style.cursor="pointer";
+      sh.addEventListener("click",function(e){e.stopPropagation();openStockLink(LENS_URL,v.stockNumber||v.id);});}
     return c;
   }
 
@@ -996,8 +1020,8 @@ button,input,textarea{font-family:inherit;}
     // Publish-state pill on the hero, so the sheet and the stock card agree.
     var topPill=v.status==="SOLD"?'<span class="pill mute">Sold</span>':(pub?'<span class="pill cyan dot">Live</span>':'<span class="pill glass">Draft</span>');
     var heroHtml = hero
-      ? '<div class="vhero"><img class="bg" src="'+esc(hero)+'" alt=""><button class="close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><div class="tr">'+topPill+'<span class="pill glass">'+(((v.images&&v.images.length)||0)+((v.extrasPhotos&&v.extrasPhotos.length)||0))+' photos</span></div><div><span class="pill glass">'+(typeof v.vir==="number"?"VIR "+v.vir+"/100":"No VIR")+'</span></div></div>'
-      : '<div class="vhero" style="background:repeating-linear-gradient(135deg,var(--ink-3),var(--ink-3) 12px,var(--ink-2) 12px,var(--ink-2) 24px)"><button class="close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><div class="tr">'+topPill+'</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);z-index:2"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg><span style="font-size:12px">No photos — capture in TruLens</span></div></div>';
+      ? '<div class="vhero"><img class="bg" src="'+esc(hero)+'" alt=""><button class="close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><div class="tr">'+topPill+'<button type="button" class="pill glass hub" id="phLens" aria-label="Manage photos in TruLens">'+(((v.images&&v.images.length)||0)+((v.extrasPhotos&&v.extrasPhotos.length)||0))+' photos</button></div><div><button type="button" class="pill glass hub" id="virInspect" aria-label="Full inspection and trade-in in TruInspect">'+(typeof v.vir==="number"?"VIR "+v.vir+"/100":"No VIR")+'</button></div></div>'
+      : '<div class="vhero" style="background:repeating-linear-gradient(135deg,var(--ink-3),var(--ink-3) 12px,var(--ink-2) 12px,var(--ink-2) 24px)"><button class="close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><div class="tr">'+topPill+(typeof v.vir==="number"?'<button type="button" class="pill glass hub" id="virInspect" aria-label="Full inspection and trade-in in TruInspect">VIR '+v.vir+"/100</button>":"")+'</div><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);z-index:2"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg><button type="button" class="hubshoot" id="shootLens">Shoot in TruLens</button></div></div>';
     var meta=[];
     if(v.mileage)meta.push('<span class="mchip"><b>'+Number(v.mileage).toLocaleString("en-ZA")+'</b> km</span>');
     if(v.transmission)meta.push('<span class="mchip">'+esc(v.transmission)+'</span>');
@@ -1021,6 +1045,12 @@ button,input,textarea{font-family:inherit;}
     $("#sheetFoot").innerHTML='<button class="btn-primary foot-save" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Save changes</button><button class="tru-btn-ghost danger foot-del" id="delBtn" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
 
     $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
+    /* Hub links — photos in TruLens, deeper VIR + trade-in in TruInspect.
+       Both siblings accept /?stock= (search + highlight); Inspect's DMS sync
+       pulls this car into its catalogue on its side if it isn't there yet. */
+    var stockRef=v.stockNumber||v.id;
+    var hub=function(id,url){var b=$("#"+id);if(b)b.addEventListener("click",function(){openStockLink(url,stockRef);});};
+    hub("phLens",LENS_URL);hub("shootLens",LENS_URL);hub("virInspect",INSPECT_URL);
     // keep focused input above the keyboard
     Array.prototype.forEach.call($("#sheetBody").querySelectorAll("input,textarea"),function(inp){
       inp.addEventListener("focus",function(){setTimeout(function(){inp.scrollIntoView({block:"center",behavior:"smooth"});},250);});
@@ -1037,15 +1067,101 @@ button,input,textarea{font-family:inherit;}
     };
     sw.addEventListener("click",flipSw);
     sw.addEventListener("keydown",function(e){if(e.key===" "||e.key==="Enter"||e.key==="Spacebar"){e.preventDefault();flipSw();}});
-    Array.prototype.forEach.call($("#statusSeg").children,function(b){
+Array.prototype.forEach.call($("#statusSeg").children,function(b){
       b.addEventListener("click",function(){
         var cv=curVeh();if(!cv)return;var val=b.getAttribute("data-v");if(cv.status===val)return;
-        patch({status:val},"Status → "+(val==="SOLD"?"Sold":"In stock")).then(function(){
+        if(val==="SOLD"){showSoldBlock();return;}
+        patch({status:val},"Status → In stock").then(function(){
           Array.prototype.forEach.call($("#statusSeg").children,function(x){x.classList.remove("on");x.setAttribute("aria-pressed","false");});b.classList.add("on");b.setAttribute("aria-pressed","true");
           var nv=curVeh(),p=isPub(nv);sw.classList.toggle("on",p);sw.setAttribute("aria-checked",p?"true":"false");
+          var sb=$("#soldBlock");if(sb)sb.remove();
         });
       });
     });
+    /* ── Sold capture ──
+       The sale is recorded as a DEAL on the Lead — the same record Flow Premium
+       renders — never a mobile-only side note. Closing the lead sells the car
+       server-side (coupling: status→SOLD, off the website, soldByLeadId), so
+       mobile only writes the deal and Flow owns every transition. */
+    function openLeadsOf(cv){
+      return cachedLeads.filter(function(l){return l.vehicleId===cv.id&&l.status!=="Closed Won"&&l.status!=="Closed Lost";});
+    }
+    function showSoldBlock(){
+      var cv=curVeh();if(!cv)return;
+      if($("#soldBlock"))return;
+      var opens=openLeadsOf(cv);
+      var blk=document.createElement("div");blk.id="soldBlock";blk.className="sold-block";
+      var html='<div class="lbl" style="margin-top:14px">Sold — the deal</div>';
+      if(opens.length>1){
+        html+='<div class="field"><label>Which enquiry closed?</label><select id="soldDeal">';
+        opens.forEach(function(l,i){var n=((l.firstName||"")+" "+(l.lastName||"")).trim()||"Enquiry";html+='<option value="'+esc(l.id)+'"'+(i===0?" selected":"")+'>'+esc(n)+" · "+esc(l.source||"")+'</option>';});
+        html+='<option value="__new">New buyer — no enquiry on file</option></select></div>';
+      }
+      html+='<div class="field"><label>'+(opens.length?'Buyer':'Buyer name')+'</label><input type="text" id="soldBuyer" value="'+(opens.length?esc(((opens[0].firstName||"")+" "+(opens[0].lastName||"")).trim()):"")+'" placeholder="Who bought it?"></div>';
+      html+='<div class="field"><label>Agreed price (R)</label><input inputmode="numeric" value="'+(vPrice(cv)||"")+'" id="soldPrice"></div>';
+      html+='<div class="field"><label>Note (optional)</label><input type="text" id="soldNote" placeholder="e.g. Deposit paid, collects Friday"></div>';
+      html+='<button type="button" class="btn-primary" id="soldConfirm">Confirm sale</button>';
+      html+='<span class="sold-cancel" role="button" tabindex="0" id="soldCancel">Cancel</span>';
+      blk.innerHTML=html;
+      var listingDiv=$("#sheetBody .listing");
+      if(listingDiv&&listingDiv.parentNode)listingDiv.parentNode.insertBefore(blk,listingDiv.nextSibling);else $("#sheetBody").appendChild(blk);
+      blk.scrollIntoView({block:"center",behavior:"smooth"});
+      $("#soldCancel").addEventListener("click",function(){blk.remove();});
+      $("#soldCancel").addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();blk.remove();}});
+      var sel=$("#soldDeal");
+      if(sel)sel.addEventListener("change",function(){
+        for(var i=0;i<opens.length;i++){if(opens[i].id===sel.value){$("#soldBuyer").value=((opens[i].firstName||"")+" "+(opens[i].lastName||"")).trim();break;}}
+        if(sel.value==="__new")$("#soldBuyer").value="";
+      });
+      $("#soldConfirm").addEventListener("click",function(){confirmSale(blk);});
+    }
+    function confirmSale(blk){
+      var cv=curVeh();if(!cv)return;
+      var buyer=($("#soldBuyer").value||"").trim();
+      if(!buyer){toast("Who bought it?");$("#soldBuyer").focus();return;}
+      var price=parseInt(($("#soldPrice").value||""),10)||0;
+      var note=($("#soldNote").value||"").trim();
+      var parts=buyer.split(/\s+/),first=parts.shift()||"Anonymous",last=parts.join(" ")||"Lead";
+      var btn=$("#soldConfirm");btn.disabled=true;btn.textContent="Recording…";
+      var opens=openLeadsOf(cv),target=null;
+      var sel=$("#soldDeal");
+      if(sel&&sel.value!=="__new"){for(var i=0;i<opens.length;i++){if(opens[i].id===sel.value){target=opens[i];break;}}}
+      var journey=(target&&target.journey?target.journey.slice():[]);
+      journey.push({time:stampNow(),at:new Date().toISOString(),action:"Note",detail:"Sold — agreed "+(price?money(price):"price on file")+(note?" · "+note:"")});
+      var fail=function(msg){btn.disabled=false;btn.textContent="Confirm sale";toast(msg,true);};
+      var closeLead=function(id){
+        var upd={status:"Closed Won",sellingPrice:price||undefined,soldPrice:price||undefined,soldDate:todayISO(),lastContactedAt:todayISO(),journey:journey};
+        if(target&&target.id===id){upd.firstName=first;upd.lastName=last;}
+        api("PUT","/api/leads/"+id,upd).then(function(res){
+          if(res&&res.lead)updateLeadCache(res.lead);
+          // Stamp the archive field the activity feed reads; the sale transition
+          // itself already happened server-side when the deal closed. Full ISO —
+          // a date-only stamp parses as UTC midnight and renders as "16h ago".
+          api("PUT","/api/inventory/"+cv.id,{soldAt:new Date().toISOString()}).then(function(r2){
+            if(r2&&r2.vehicle){for(var j=0;j<cachedStock.length;j++){if(cachedStock[j].id===r2.vehicle.id){cachedStock[j]=r2.vehicle;break;}}}
+            done();
+          }).catch(done);
+        }).catch(function(){fail("Couldn't close the deal — check connection");});
+      };
+      if(target){closeLead(target.id);}
+      else{
+        api("POST","/api/leads",{firstName:first,lastName:last,phone:"N/A",email:"N/A",source:"Walk-in",vehicleId:cv.id,notes:note||"Sold from the floor"}).then(function(res){
+          var l=res&&res.lead;if(!l){fail("Couldn't open the deal — try again");return;}
+          closeLead(l.id);
+        }).catch(function(){fail("Couldn't open the deal — check connection");});
+      }
+      function done(){
+        blk.remove();
+        Array.prototype.forEach.call($("#statusSeg").children,function(x){
+          var on=x.getAttribute("data-v")==="SOLD";
+          x.classList.toggle("on",on);x.setAttribute("aria-pressed",on?"true":"false");
+        });
+        var nv=curVeh();if(nv){sw.classList.remove("on");sw.setAttribute("aria-checked","false");}
+        renderHome();renderStock();
+        toast("Sold — "+buyer+(price?" · "+money(price):""));
+        closeSheet();
+      }
+    }
     $("#saveBtn").addEventListener("click",function(){
       var g=function(id){var e=$("#"+id);return e?e.value:"";};
       var btn=$("#saveBtn");btn.disabled=true;
@@ -1090,6 +1206,7 @@ button,input,textarea{font-family:inherit;}
   var svgCall='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>';
   var svgWa='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.5-.8-2.6-1.4-3.6-3.1-.3-.5.3-.5.7-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.5-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 5 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.3-.1-.2-.3-.2-.6-.3z"/></svg>';
   var svgMail='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>';
+  var svgInspect='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>';
 
   function openLead(id){
     curLeadId=id; var l=findLead(id); if(!l){closeSheet();return;}
@@ -1105,6 +1222,10 @@ button,input,textarea{font-family:inherit;}
     if(pd)actions+='<a class="wa" href="https://wa.me/'+pd+'" target="_blank" rel="noopener">'+svgWa+'WhatsApp</a>';
     if(email)actions+='<a href="mailto:'+esc(email)+'">'+svgMail+'Email</a>';
     actions+='</div>';
+    /* Trade-in cue: Inspect owns the deeper VIR + trade-in appraisal, standalone
+       for every tier. Shown when the enquiry mentions a trade — the lead text is
+       free-form, so this is a hint, not a contract. */
+    var tradeRow=/trade/i.test(l.notes||"")?'<button type="button" class="share-row" id="tdInspect">'+svgInspect+'Appraise this trade-in<span class="sr-hint">TruInspect</span></button>':"";
 
     // Phone + email are spent by the Call/WhatsApp/Email buttons; source + age
     // fold into the pill by the name. What's left — vehicle, last contact —
@@ -1128,6 +1249,7 @@ button,input,textarea{font-family:inherit;}
     $("#sheetBody").innerHTML=
       '<div class="ld-head"><div class="lav" style="">'+esc(initials(nm))+'</div><div class="nm"><div class="n">'+esc(nm)+'</div><div class="s"><span class="pill '+cls+' dot">'+esc(lbl)+'</span> <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">· '+esc(l.source||"Website")+' · '+timeAgo(l.createdAt)+'</span></div></div><button class="ld-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>'+
       actions+
+      tradeRow+
       (l.notes?'<div class="lbl">Enquiry</div><div class="ld-enq">'+esc(l.notes)+'</div>':'')+
       spills+
       '<div class="lbl">Log a note</div><textarea class="ld-note" id="ldNote" placeholder="What happened? e.g. Left a voicemail, will try Friday"></textarea>'+
@@ -1138,12 +1260,14 @@ button,input,textarea{font-family:inherit;}
     $("#sheetBody").querySelector("[data-close]").addEventListener("click",closeSheet);
     Array.prototype.forEach.call($("#ldSpills").children,function(b){b.addEventListener("click",function(){setLeadStatus(b.getAttribute("data-s"));});});
     $("#ldLog").addEventListener("click",logNote);
+    var td=$("#tdInspect");
+    if(td)td.addEventListener("click",function(){window.open(INSPECT_URL+"/","_blank","noopener");});
     var nt=$("#ldNote");if(nt)nt.addEventListener("focus",function(){setTimeout(function(){nt.scrollIntoView({block:"center",behavior:"smooth"});},250);});
     openSheet();
   }
   function setLeadStatus(s){
     var l=findLead(curLeadId);if(!l||l.status===s)return;
-    var journey=(l.journey||[]).slice();journey.push({time:stampNow(),action:"Stage",detail:"Moved to "+s});
+    var journey=(l.journey||[]).slice();journey.push({time:stampNow(),at:new Date().toISOString(),action:"Stage",detail:"Moved to "+s});
     api("PUT","/api/leads/"+curLeadId,{status:s,stageChangedAt:todayISO(),lastContactedAt:todayISO(),journey:journey}).then(function(res){
       if(res&&res.lead)updateLeadCache(res.lead);renderHome();renderLeads();openLead(curLeadId);toast("Stage → "+(LEAD_LBL[s]||s));
     }).catch(function(){toast("Couldn't update — check connection",true);});
@@ -1152,7 +1276,7 @@ button,input,textarea{font-family:inherit;}
     var l=findLead(curLeadId);if(!l)return;
     var ta=$("#ldNote"),text=((ta&&ta.value)||"").trim();
     if(!text){toast("Add a note first");if(ta)ta.focus();return;}
-    var journey=(l.journey||[]).slice();journey.push({time:stampNow(),action:"Note",detail:text});
+    var journey=(l.journey||[]).slice();journey.push({time:stampNow(),at:new Date().toISOString(),action:"Note",detail:text});
     if(journey.length>60)journey=journey.slice(journey.length-60);
     var btn=$("#ldLog");if(btn){btn.disabled=true;btn.textContent="Saving…";}
     api("PUT","/api/leads/"+curLeadId,{journey:journey,lastContactedAt:todayISO()}).then(function(res){
@@ -1392,7 +1516,10 @@ button,input,textarea{font-family:inherit;}
       var nm=((l.firstName||"")+" "+(l.lastName||"")).trim()||"New enquiry";
       if(l.createdAt)items.push({t:l.createdAt,icon:"lead",action:"New lead",detail:nm,sub:l.source||"Website"});
       (l.journey||[]).forEach(function(j){
-        var ts=j.time||l.createdAt;
+        /* Feed times must be dates: journey entries carry an ISO `at` alongside
+           the display `time` the lead sheet renders. Legacy entries without `at`
+           fall back to the lead's creation date — grouped today-ish, sorted. */
+        var ts=(j.at&&/^\d{4}-/.test(j.at))?j.at:l.createdAt;
         if(j.action==="Stage")items.push({t:ts,icon:"stage",action:j.detail||"Stage change",detail:nm});
         else items.push({t:ts,icon:"note",action:"Note on "+nm,detail:j.detail||""});
       });
@@ -1400,7 +1527,7 @@ button,input,textarea{font-family:inherit;}
     cachedStock.forEach(function(v){
       var nm=vName(v);
       if(v.createdAt)items.push({t:v.createdAt,icon:"car",action:"Vehicle added",detail:nm,sub:money(vPrice(v))});
-      if(v.status==="SOLD"&&v.soldAt)items.push({t:v.soldAt,icon:"sold",action:"Sold",detail:nm,sub:money(vPrice(v))});
+      if(v.status==="SOLD"&&v.soldAt){var sl=null;for(var li=0;li<cachedLeads.length;li++){var ld=cachedLeads[li];if(ld.vehicleId===v.id&&(ld.soldPrice||ld.sellingPrice)){sl=ld;break;}}items.push({t:v.soldAt,icon:"sold",action:"Sold",detail:nm,sub:sl?money(sl.soldPrice||sl.sellingPrice):money(vPrice(v))});}
     });
     items.sort(function(a,b){return new Date(b.t||0)-new Date(a.t||0);});
     return items.slice(0,50);
@@ -1437,14 +1564,17 @@ button,input,textarea{font-family:inherit;}
     var today=new Date().toISOString().slice(0,10), yesterday=new Date(Date.now()-864e5).toISOString().slice(0,10);
     var lastGroup="";
     cachedActivity.forEach(function(a){
-      var d=(a.t||"").slice(0,10);
+      /* Display strings (legacy journey times) are rendered verbatim, not parsed. */
+      var isDate=/^\d{4}-\d{2}-\d{2}/.test(a.t||"");
+      var d=isDate?(a.t||"").slice(0,10):today;
       var grp=d===today?"Today":d===yesterday?"Yesterday":d;
       if(grp!==lastGroup){lastGroup=grp;box.appendChild(el("div","grp",grp));}
       var iconKey=a.icon||"note";
       var ic=ACT_ICONS[iconKey]||ACT_ICONS.note;
       var isCyan=iconKey==="lead"||iconKey==="sold";
+      var when=isDate?timeAgo(a.t):(a.t||"");
       var row=el("div","card");
-      row.innerHTML='<div class="lead" style="cursor:default"><div class="lav" style="background:'+(isCyan?"var(--cyan-faint)":"var(--glass)")+';color:'+(isCyan?"var(--cyan)":"var(--dim)")+'">'+ic+'</div><div class="lb"><div class="lnm">'+esc(a.action||"Activity")+'</div><div class="li">'+esc(a.detail||"")+'</div>'+(a.sub?'<div class="lm"><span>'+esc(a.sub)+'</span><span>·</span><span>'+timeAgo(a.t)+'</span></div>':'<div class="lm"><span>'+timeAgo(a.t)+'</span></div>')+'</div></div>';
+      row.innerHTML='<div class="lead" style="cursor:default"><div class="lav" style="background:'+(isCyan?"var(--cyan-faint)":"var(--glass)")+';color:'+(isCyan?"var(--cyan)":"var(--dim)")+'">'+ic+'</div><div class="lb"><div class="lnm">'+esc(a.action||"Activity")+'</div><div class="li">'+esc(a.detail||"")+'</div>'+(a.sub?'<div class="lm"><span>'+esc(a.sub)+'</span><span>·</span><span>'+esc(when)+'</span></div>':'<div class="lm"><span>'+esc(when)+'</span></div>')+'</div></div>';
       box.appendChild(row);
     });
   }
@@ -1551,7 +1681,7 @@ button,input,textarea{font-family:inherit;}
       {title:"Search",detail:"Type a make, model, stock number, or VIN in the search bar."},
       {title:"Filter",detail:"Use the chips to show All, In stock, Live (on your website), or Sold."},
       {title:"Open a vehicle",detail:"Tap the card. The detail sheet shows photos, specs, pricing, and listing controls."},
-      {title:"Toggle listing",detail:"Flip the Website switch to put the vehicle on or take it off your site. Change status to Sold when it leaves."}
+      {title:"Toggle listing",detail:"Flip the Website switch to put the vehicle on or take it off your site. Tap Sold when it leaves — you'll record who bought it and the agreed price, the deal closes, and the car comes off the site automatically."}
     ]},
     {id:"follow-ups",title:"Plan your day with follow-ups",goal:"Keep track of who to call back and what's due today — never drop a lead.",blurb:"Add follow-ups, tick them off, reschedule in one tap.",section:"home",steps:[
       {title:"Check Due today",detail:"The Home screen lists every follow-up that's overdue or due today, with the lead or car it relates to."},
@@ -1564,6 +1694,11 @@ button,input,textarea{font-family:inherit;}
       {title:"Read the result",detail:"You'll see the market average, how many listings were found, and whether the sample was adjusted for mileage."},
       {title:"Use the number",detail:"Tap Use as asking price to fill it in, or use it as a sanity check and type your own."},
       {title:"On cars you already have",detail:"Open any vehicle in Stock and tap Get market value under Details to see how your asking price compares."}
+    ]},
+    {id:"hub-links",title:"Shoot and inspect from the hub",goal:"Mobile moves the day — TruLens shoots the car, TruInspect does the deep check and trade-ins.",blurb:"One tap from a car opens the right app on it.",section:"stock",steps:[
+      {title:"Shoot the photos",detail:"Open a car and tap Shoot in TruLens (or the photos pill). TruLens opens straight on that car — your phone is the studio."},
+      {title:"Go deeper on condition",detail:"Tap the VIR pill to open TruInspect on the same car: full graded walk-around, condition report and trade-in appraisal."},
+      {title:"Trade-in enquiry?",detail:"When a lead's enquiry mentions a trade-in, the lead sheet shows Appraise this trade-in — one tap into TruInspect's appraisal flow."}
     ]},
     {id:"dealer-assist",title:"Use Dealer Assist",goal:"Chat with your AI assistant for quick answers about stock, leads, and deals.",blurb:"Open the chat, ask a question, get an answer.",section:"home",steps:[
       {title:"Open the chat",detail:"Tap the chat bubble in the bottom-right corner. Dealer Assist opens full-screen."},
